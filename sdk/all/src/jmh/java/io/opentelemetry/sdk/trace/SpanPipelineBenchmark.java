@@ -9,8 +9,8 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSettings;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -41,7 +41,7 @@ public class SpanPipelineBenchmark {
     private static final int HEALTH_CHECK_PORT = 13133;
     private SdkSpanBuilder sdkSpanBuilder;
 
-    protected abstract SpanProcessor getSpanProcessor(String collectorAddress);
+    protected abstract BatchSettings getBatchSettings();
 
     protected abstract void runThePipeline();
 
@@ -71,10 +71,13 @@ public class SpanPipelineBenchmark {
       TraceConfig alwaysOn =
           TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOn()).build();
 
+      SpanExporter exporter =
+          OtlpGrpcSpanExporter.builder().setEndpoint(address).setDeadlineMs(50000).build();
+
       SdkTracerProvider tracerProvider =
           SdkTracerProvider.builder()
               .setTraceConfig(alwaysOn)
-              .addSpanProcessor(getSpanProcessor(address))
+              .addExporter(exporter, getBatchSettings())
               .build();
 
       Tracer tracerSdk = tracerProvider.get("PipelineBenchmarkTracer");
@@ -95,12 +98,8 @@ public class SpanPipelineBenchmark {
 
   public static class SimpleSpanProcessorBenchmark extends AbstractProcessorBenchmark {
     @Override
-    protected SpanProcessor getSpanProcessor(String collectorAddress) {
-      return SimpleSpanProcessor.create(
-          OtlpGrpcSpanExporter.builder()
-              .setEndpoint(collectorAddress)
-              .setDeadlineMs(50000)
-              .build());
+    protected BatchSettings getBatchSettings() {
+      return BatchSettings.noBatching();
     }
 
     @Override
@@ -112,13 +111,8 @@ public class SpanPipelineBenchmark {
   public static class BatchSpanProcessorBenchmark extends AbstractProcessorBenchmark {
 
     @Override
-    protected SpanProcessor getSpanProcessor(String collectorAddress) {
-      return BatchSpanProcessor.builder(
-              OtlpGrpcSpanExporter.builder()
-                  .setEndpoint(collectorAddress)
-                  .setDeadlineMs(50000)
-                  .build())
-          .build();
+    protected BatchSettings getBatchSettings() {
+      return BatchSettings.builder().build();
     }
 
     @Override

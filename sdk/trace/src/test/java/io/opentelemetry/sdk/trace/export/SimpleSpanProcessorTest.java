@@ -46,7 +46,6 @@ import org.mockito.quality.Strictness;
 // TODO(anuraaga): Remove after builder() is removed.
 @SuppressWarnings("deprecation")
 class SimpleSpanProcessorTest {
-  private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private static final String SPAN_NAME = "MySpanName";
   @Mock private ReadableSpan readableSpan;
   @Mock private ReadWriteSpan readWriteSpan;
@@ -140,10 +139,7 @@ class SimpleSpanProcessorTest {
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     SdkTracerProvider sdkTracerProvider =
         SdkTracerProvider.builder()
-            .addSpanProcessor(
-                BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-                    .build())
+            .addSpanProcessor(SimpleSpanProcessor.create(waitingSpanExporter))
             .build();
 
     try {

@@ -28,7 +28,7 @@ import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSettings;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -264,15 +264,17 @@ public class OtlpPipelineStressTest {
                     + toxiproxyContainer.getMappedPort(COLLECTOR_PROXY_PORT))
             //            .setDeadlineMs(1000)
             .build();
-    BatchSpanProcessor spanProcessor =
-        BatchSpanProcessor.builder(spanExporter)
-            //            .setMaxQueueSize(1000)
-            //            .setMaxExportBatchSize(1024)
-            //            .setScheduleDelayMillis(1000)
-            .build();
 
     SdkTracerProvider tracerProvider =
-        SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
+        SdkTracerProvider.builder()
+            .addExporter(
+                spanExporter,
+                BatchSettings.builder()
+                    //            .setMaxQueueSize(1000)
+                    //            .setMaxExportBatchSize(1024)
+                    //            .setScheduleDelayMillis(1000)
+                    .build())
+            .build();
     openTelemetry = OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
     tracerManagement = tracerProvider;
   }

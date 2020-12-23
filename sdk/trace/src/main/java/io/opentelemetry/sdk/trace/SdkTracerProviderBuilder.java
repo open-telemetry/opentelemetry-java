@@ -11,6 +11,8 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.export.BatchSettings;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -18,6 +20,8 @@ import java.util.function.Supplier;
 /** Builder of {@link SdkTracerProvider}. */
 public final class SdkTracerProviderBuilder {
   private final List<SpanProcessor> spanProcessors = new ArrayList<>();
+
+  private final List<SpanProcessor> exporterSpanProcessors = new ArrayList<>();
 
   private Clock clock = SystemClock.getInstance();
   private IdGenerator idsGenerator = IdGenerator.random();
@@ -95,13 +99,52 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
+   * Adds a {@link SpanExporter} to the end of the span pipeline, enabling default batching of spans
+   * before export. To configure batching or disable it, use {@link #addExporter(SpanExporter,
+   * BatchSettings)} instead.
+   */
+  public SdkTracerProviderBuilder addExporter(SpanExporter exporter) {
+    requireNonNull(exporter, "exporter");
+    return addExporter(exporter, BatchSettings.builder().build());
+  }
+
+  /**
+   * Adds a {@link SpanExporter} to the end of the span pipeline. {@link BatchSettings} will
+   * configure the batching used before exporting spans. If {@link BatchSettings#noBatching()} is
+   * provided, no batching will be done.
+   */
+  // Using deprecated for public use class
+  @SuppressWarnings({"deprecation", "UnnecessarilyFullyQualified"})
+  public SdkTracerProviderBuilder addExporter(SpanExporter exporter, BatchSettings batchSettings) {
+    requireNonNull(exporter, "exporter");
+    requireNonNull(batchSettings, "batchSettings");
+    if (batchSettings == BatchSettings.noBatching()) {
+      exporterSpanProcessors.add(
+          io.opentelemetry.sdk.trace.export.SimpleSpanProcessor.create(exporter));
+    } else {
+      exporterSpanProcessors.add(
+          io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(exporter)
+              .setScheduleDelayMillis(batchSettings.getScheduleDelayMillis())
+              .setExporterTimeoutMillis(batchSettings.getExporterTimeoutMillis())
+              .setMaxQueueSize(batchSettings.getMaxQueueSize())
+              .setMaxExportBatchSize(batchSettings.getMaxExportBatchSize())
+              .build());
+    }
+    return this;
+  }
+
+  /**
    * Create a new TraceSdkProvider instance.
    *
    * @return An initialized TraceSdkProvider.
    */
   public SdkTracerProvider build() {
+    List<SpanProcessor> allSpanProcessors =
+        new ArrayList<>(spanProcessors.size() + exporterSpanProcessors.size());
+    allSpanProcessors.addAll(spanProcessors);
+    allSpanProcessors.addAll(exporterSpanProcessors);
     return new SdkTracerProvider(
-        clock, idsGenerator, resource, traceConfigSupplier, spanProcessors);
+        clock, idsGenerator, resource, traceConfigSupplier, allSpanProcessors);
   }
 
   SdkTracerProviderBuilder() {}

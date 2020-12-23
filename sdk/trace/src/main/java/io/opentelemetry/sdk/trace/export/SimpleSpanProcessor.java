@@ -40,7 +40,12 @@ import java.util.logging.Logger;
  * <ul>
  *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
  * </ul>
+ *
+ * @deprecated Use {@link
+ *     io.opentelemetry.sdk.trace.SdkTracerProviderBuilder#addExporter(SpanExporter, BatchSettings)}
+ *     with {@link BatchSettings#noBatching()}
  */
+@Deprecated
 public final class SimpleSpanProcessor implements SpanProcessor {
 
   private static final Logger logger = Logger.getLogger(SimpleSpanProcessor.class.getName());
@@ -52,7 +57,12 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   /**
    * Returns a new {@link SimpleSpanProcessor} which exports spans to the {@link SpanExporter}
    * synchronously.
+   *
+   * @deprecated Use {@link
+   *     io.opentelemetry.sdk.trace.SdkTracerProviderBuilder#addExporter(SpanExporter,
+   *     BatchSettings)} with {@link BatchSettings#noBatching()}
    */
+  @Deprecated
   public static SpanProcessor create(SpanExporter exporter) {
     requireNonNull(exporter, "exporter");
     return new SimpleSpanProcessor(exporter, /* sampled= */ true);

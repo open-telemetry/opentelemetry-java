@@ -12,7 +12,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSettings;
 
 public class SendTraceToJaeger {
   // Jaeger Endpoint URL and PORT
@@ -40,7 +40,7 @@ public class SendTraceToJaeger {
     return OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
+                .addExporter(jaegerExporter, BatchSettings.noBatching())
                 .build())
         .build();
   }

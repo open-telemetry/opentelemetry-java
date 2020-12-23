@@ -26,7 +26,7 @@ import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSettings;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.junit.jupiter.api.Test;
@@ -158,8 +158,8 @@ class OpenTelemetrySdkTest {
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder()
-                    .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
-                    .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
+                    .addExporter(mock(SpanExporter.class)) // BatchSpanProcessor
+                    .addExporter(mock(SpanExporter.class), BatchSettings.noBatching())
                     .setClock(mock(Clock.class))
                     .setIdGenerator(mock(IdGenerator.class))
                     .setResource(mock(Resource.class))
@@ -176,9 +176,7 @@ class OpenTelemetrySdkTest {
   void trivialOpenTelemetrySdkConfigurationDemo() {
     OpenTelemetrySdk.builder()
         .setTracerProvider(
-            SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
-                .build())
+            SdkTracerProvider.builder().addExporter(mock(SpanExporter.class)).build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
         .build();
   }
@@ -190,7 +188,7 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
+                .addExporter(mock(SpanExporter.class))
                 .setTraceConfig(
                     TraceConfig.getDefault().toBuilder().setSampler(mock(Sampler.class)).build())
                 .build())
@@ -200,7 +198,7 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
+                .addExporter(mock(SpanExporter.class))
                 .setTraceConfig(
                     TraceConfig.getDefault().toBuilder().setSampler(mock(Sampler.class)).build())
                 .setIdGenerator(mock(IdGenerator.class))

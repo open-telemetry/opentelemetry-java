@@ -61,7 +61,11 @@ import java.util.logging.Logger;
  *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT}: sets the maximum allowed time to export data.
  *   <li>{@code OTEL_BSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
  * </ul>
+ *
+ * @deprecated Use {@link
+ *     io.opentelemetry.sdk.trace.SdkTracerProviderBuilder#addExporter(SpanExporter)}
  */
+@Deprecated
 public final class BatchSpanProcessor implements SpanProcessor {
 
   private static final String WORKER_THREAD_NAME =
@@ -79,7 +83,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
    * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
    * @return a new {@link BatchSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
+   * @deprecated Use {@link
+   *     io.opentelemetry.sdk.trace.SdkTracerProviderBuilder#addExporter(SpanExporter,
+   *     BatchSettings)}
    */
+  @Deprecated
   public static BatchSpanProcessorBuilder builder(SpanExporter spanExporter) {
     return new BatchSpanProcessorBuilder(spanExporter);
   }

@@ -21,7 +21,7 @@ abstract class StressTestRunner {
 
   abstract SdkTracer getTracer();
 
-  abstract SpanProcessor getSpanProcessor();
+  abstract SdkTracerManagement getTracerManagement();
 
   final void run() {
     List<Operation> operations = getOperations();
@@ -50,7 +50,7 @@ abstract class StressTestRunner {
       Uninterruptibles.joinUninterruptibly(thread);
     }
 
-    getSpanProcessor().shutdown().join(1, TimeUnit.MINUTES);
+    getTracerManagement().shutdown();
   }
 
   static Builder builder() {
@@ -64,7 +64,7 @@ abstract class StressTestRunner {
 
     abstract ImmutableList.Builder<Operation> operationsBuilder();
 
-    abstract Builder setSpanProcessor(SpanProcessor spanProcessor);
+    abstract Builder setTracerManagement(SdkTracerManagement tracerManagement);
 
     Builder addOperation(final Operation operation) {
       operationsBuilder().add(operation);

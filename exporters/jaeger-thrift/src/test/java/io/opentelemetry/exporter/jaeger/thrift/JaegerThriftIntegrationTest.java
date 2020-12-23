@@ -11,7 +11,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSettings;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import okhttp3.OkHttpClient;
@@ -64,7 +64,7 @@ class JaegerThriftIntegrationTest {
     return OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
+                .addExporter(jaegerExporter, BatchSettings.noBatching())
                 .build())
         .build();
   }

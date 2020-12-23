@@ -31,6 +31,7 @@ import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark)
+@SuppressWarnings("deprecation") // Benchmarking deprecated for public use class
 public class BatchSpanProcessorBenchmark {
 
   private static class DelayingSpanExporter implements SpanExporter {

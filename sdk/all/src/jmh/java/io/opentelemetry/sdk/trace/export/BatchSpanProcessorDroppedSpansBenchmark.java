@@ -33,6 +33,7 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
+@SuppressWarnings("deprecation") // Benchmarking deprecated for public use class
 public class BatchSpanProcessorDroppedSpansBenchmark {
 
   private static class DelayingSpanExporter implements SpanExporter {

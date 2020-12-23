@@ -56,8 +56,7 @@ public interface SpanExporter {
 
   /**
    * Called to export sampled {@code Span}s. Note that export operations can be performed
-   * simultaneously depending on the type of span processor being used. However, the {@link
-   * BatchSpanProcessor} will ensure that only one export can occur at a time.
+   * simultaneously depending on the type of span processor being used.
    *
    * @param spans the collection of sampled Spans to be exported.
    * @return the result of the export, which is often an asynchronous operation.

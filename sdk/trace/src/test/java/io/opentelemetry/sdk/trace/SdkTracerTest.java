@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
@@ -70,7 +69,7 @@ class SdkTracerTest {
             sdkTracerProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);
+        StressTestRunner.builder().setTracer(tracer).setTracerManagement(sdkTracerProvider);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -85,15 +84,14 @@ class SdkTracerTest {
   @Test
   void stressTest_withBatchSpanProcessor() {
     CountingSpanExporter countingSpanExporter = new CountingSpanExporter();
-    SpanProcessor spanProcessor = BatchSpanProcessor.builder(countingSpanExporter).build();
     SdkTracerProvider sdkTracerProvider =
-        SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
+        SdkTracerProvider.builder().addExporter(countingSpanExporter).build();
     SdkTracer tracer =
         (SdkTracer)
             sdkTracerProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);
+        StressTestRunner.builder().setTracer(tracer).setTracerManagement(sdkTracerProvider);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(

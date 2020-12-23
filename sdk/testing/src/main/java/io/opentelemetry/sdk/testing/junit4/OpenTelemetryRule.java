@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSettings;
 import java.util.List;
 import org.junit.rules.ExternalResource;
 
@@ -52,9 +52,7 @@ public final class OpenTelemetryRule extends ExternalResource {
     InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
     SdkTracerProvider tracerProvider =
-        SdkTracerProvider.builder()
-            .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-            .build();
+        SdkTracerProvider.builder().addExporter(spanExporter, BatchSettings.noBatching()).build();
 
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()

@@ -10,7 +10,13 @@ import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Map;
 import java.util.Objects;
 
-/** Builder class for {@link BatchSpanProcessor}. */
+/**
+ * Builder class for {@link BatchSpanProcessor}.
+ *
+ * @deprecated Use {@link
+ *     io.opentelemetry.sdk.trace.SdkTracerProviderBuilder#addExporter(SpanExporter, BatchSettings)}
+ */
+@Deprecated
 public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProcessorBuilder> {
 
   private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay.millis";

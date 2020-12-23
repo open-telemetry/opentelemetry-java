@@ -38,9 +38,8 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.BatchSettings;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -67,10 +66,12 @@ class TraceInteroperabilityTest {
     spanExporter = spy(SpanExporter.class);
     when(spanExporter.export(anyList())).thenReturn(CompletableResultCode.ofSuccess());
 
-    SpanProcessor spanProcessor = SimpleSpanProcessor.create(spanExporter);
     openTelemetry =
         OpenTelemetrySdk.builder()
-            .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .addExporter(spanExporter, BatchSettings.noBatching())
+                    .build())
             .build();
     GlobalOpenTelemetry.set(openTelemetry);
   }
