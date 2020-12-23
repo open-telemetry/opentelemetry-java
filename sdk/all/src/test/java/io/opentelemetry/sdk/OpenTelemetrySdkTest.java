@@ -158,8 +158,8 @@ class OpenTelemetrySdkTest {
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder()
-                    .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
-                    .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
+                    .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
+                    .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                     .setClock(mock(Clock.class))
                     .setIdGenerator(mock(IdGenerator.class))
                     .setResource(mock(Resource.class))
@@ -177,7 +177,7 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
+                .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
         .build();
@@ -190,7 +190,7 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
+                .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                 .setTraceConfig(
                     TraceConfig.getDefault().toBuilder().setSampler(mock(Sampler.class)).build())
                 .build())
@@ -200,7 +200,7 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
+                .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                 .setTraceConfig(
                     TraceConfig.getDefault().toBuilder().setSampler(mock(Sampler.class)).build())
                 .setIdGenerator(mock(IdGenerator.class))

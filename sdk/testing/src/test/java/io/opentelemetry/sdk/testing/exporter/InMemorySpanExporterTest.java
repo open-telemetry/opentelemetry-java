@@ -32,9 +32,7 @@ class InMemorySpanExporterTest {
   @BeforeEach
   void setup() {
     tracerProvider =
-        SdkTracerProvider.builder()
-            .addSpanProcessor(SimpleSpanProcessor.builder(exporter).build())
-            .build();
+        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter)).build();
     tracer = tracerProvider.get("InMemorySpanExporterTest");
   }
 

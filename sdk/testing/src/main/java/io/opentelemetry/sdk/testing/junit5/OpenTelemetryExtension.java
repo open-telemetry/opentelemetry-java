@@ -59,7 +59,7 @@ public final class OpenTelemetryExtension
 
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
-            .addSpanProcessor(SimpleSpanProcessor.builder(spanExporter).build())
+            .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
             .build();
 
     OpenTelemetrySdk openTelemetry =

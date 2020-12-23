@@ -64,7 +64,7 @@ class JaegerThriftIntegrationTest {
     return OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build())
+                .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
                 .build())
         .build();
   }
