@@ -26,12 +26,14 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TestUtils;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -138,23 +140,24 @@ class SimpleSpanProcessorTest {
   void tracerSdk_NotSampled_Span() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
+    AtomicReference<TraceConfig> traceConfig =
+        new AtomicReference<>(
+            TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build());
     SdkTracerProvider sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
                     .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
                     .build())
+            .setTraceConfig(traceConfig::get)
             .build();
 
     try {
       Tracer tracer = sdkTracerProvider.get(getClass().getName());
-      TestUtils.startSpanWithSampler(sdkTracerProvider, tracer, SPAN_NAME, Sampler.alwaysOff())
-          .startSpan()
-          .end();
-      TestUtils.startSpanWithSampler(sdkTracerProvider, tracer, SPAN_NAME, Sampler.alwaysOff())
-          .startSpan()
-          .end();
+      tracer.spanBuilder(SPAN_NAME).startSpan();
+      tracer.spanBuilder(SPAN_NAME).startSpan();
 
+      traceConfig.set(traceConfig.get().toBuilder().setSampler(Sampler.alwaysOn()).build());
       Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
       span.end();
 
