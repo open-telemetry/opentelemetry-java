@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 final class DoubleCounterSdk extends AbstractSynchronousInstrument implements DoubleCounter {
 
   private DoubleCounterSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
     super(descriptor, accumulator);
   }
 

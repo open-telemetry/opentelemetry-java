@@ -16,7 +16,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
     implements DoubleUpDownCounter {
 
   private DoubleUpDownCounterSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
     super(descriptor, accumulator);
   }
 

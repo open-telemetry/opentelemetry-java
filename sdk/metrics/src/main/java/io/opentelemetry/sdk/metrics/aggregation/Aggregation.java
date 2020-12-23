@@ -20,7 +20,7 @@ import javax.annotation.concurrent.Immutable;
  * given {@code Instrument} into the equivalent {@code MetricData}.
  */
 @Immutable
-public interface Aggregation {
+public interface Aggregation<T extends Accumulation> {
 
   /**
    * Returns an {@code AggregationFactory} that can be used to produce the {@link
@@ -29,14 +29,14 @@ public interface Aggregation {
    *
    * @return the {@code AggregationFactory}.
    */
-  AggregatorFactory<?> getAggregatorFactory();
+  AggregatorFactory<T> getAggregatorFactory();
 
   /**
    * Returns the result of the merge of the given {@link Accumulation}s.
    *
    * @return the result of the merge of the given {@link Accumulation}s.
    */
-  Accumulation merge(Accumulation a1, Accumulation a2);
+  T merge(T a1, T a2);
 
   /**
    * Returns the {@link MetricData} that this {@code Aggregation} will produce.
@@ -55,7 +55,7 @@ public interface Aggregation {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, Accumulation> accumulationMap,
+      Map<Labels, ? extends Accumulation> accumulationMap,
       long startEpochNanos,
       long epochNanos);
 }

@@ -16,7 +16,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument
     implements LongValueRecorder {
 
   private LongValueRecorderSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
     super(descriptor, accumulator);
   }
 

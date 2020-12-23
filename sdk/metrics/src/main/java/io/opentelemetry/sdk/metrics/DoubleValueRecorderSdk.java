@@ -16,7 +16,7 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
     implements DoubleValueRecorder {
 
   private DoubleValueRecorderSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
     super(descriptor, accumulator);
   }
 

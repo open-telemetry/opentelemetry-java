@@ -28,13 +28,13 @@ import java.util.Objects;
  * multiple calls to {@link #batch(Labels, Accumulation)} followed by one {@link
  * #completeCollectionCycle()};
  */
-final class InstrumentProcessor {
+final class InstrumentProcessor<T extends Accumulation> {
   private final InstrumentDescriptor descriptor;
-  private final Aggregation aggregation;
+  private final Aggregation<T> aggregation;
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final Clock clock;
-  private Map<Labels, Accumulation> accumulationMap;
+  private Map<Labels, T> accumulationMap;
   private long startEpochNanos;
   private final boolean delta;
 
@@ -43,12 +43,12 @@ final class InstrumentProcessor {
    * aggregation. "Cumulative" means that all metrics that are generated will be considered for the
    * lifetime of the Instrument being aggregated.
    */
-  static InstrumentProcessor getCumulativeAllLabels(
+  static <T extends Accumulation> InstrumentProcessor<T> getCumulativeAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Aggregation aggregation) {
-    return new InstrumentProcessor(
+      Aggregation<T> aggregation) {
+    return new InstrumentProcessor<>(
         descriptor,
         aggregation,
         meterProviderSharedState.getResource(),
@@ -62,12 +62,12 @@ final class InstrumentProcessor {
    * aggregation. "Delta" means that all metrics that are generated are only for the most recent
    * collection interval.
    */
-  static InstrumentProcessor getDeltaAllLabels(
+  static <T extends Accumulation> InstrumentProcessor<T> getDeltaAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Aggregation aggregation) {
-    return new InstrumentProcessor(
+      Aggregation<T> aggregation) {
+    return new InstrumentProcessor<>(
         descriptor,
         aggregation,
         meterProviderSharedState.getResource(),
@@ -78,7 +78,7 @@ final class InstrumentProcessor {
 
   private InstrumentProcessor(
       InstrumentDescriptor descriptor,
-      Aggregation aggregation,
+      Aggregation<T> aggregation,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Clock clock,
@@ -100,8 +100,8 @@ final class InstrumentProcessor {
    * @param labelSet the {@link Labels} associated with this {@code Aggregator}.
    * @param accumulation the {@link Accumulation} produced by this instrument.
    */
-  void batch(Labels labelSet, Accumulation accumulation) {
-    Accumulation currentAccumulation = accumulationMap.get(labelSet);
+  void batch(Labels labelSet, T accumulation) {
+    T currentAccumulation = accumulationMap.get(labelSet);
     if (currentAccumulation == null) {
       accumulationMap.put(labelSet, accumulation);
       return;
@@ -142,7 +142,7 @@ final class InstrumentProcessor {
     return metricData == null ? Collections.emptyList() : Collections.singletonList(metricData);
   }
 
-  Aggregation getAggregation() {
+  Aggregation<T> getAggregation() {
     return this.aggregation;
   }
 
@@ -154,6 +154,7 @@ final class InstrumentProcessor {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -162,7 +163,7 @@ final class InstrumentProcessor {
       return false;
     }
 
-    InstrumentProcessor allLabels = (InstrumentProcessor) o;
+    InstrumentProcessor<T> allLabels = (InstrumentProcessor<T>) o;
 
     if (startEpochNanos != allLabels.startEpochNanos) {
       return false;

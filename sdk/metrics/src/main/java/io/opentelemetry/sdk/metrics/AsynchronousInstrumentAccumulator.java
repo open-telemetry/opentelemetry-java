@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.AsynchronousInstrument;
+import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
@@ -15,18 +16,18 @@ import javax.annotation.Nullable;
 
 final class AsynchronousInstrumentAccumulator {
   private final ReentrantLock collectLock = new ReentrantLock();
-  private final InstrumentProcessor instrumentProcessor;
+  private final InstrumentProcessor<?> instrumentProcessor;
   private final Runnable metricUpdater;
 
-  static AsynchronousInstrumentAccumulator doubleAsynchronousAccumulator(
-      InstrumentProcessor instrumentProcessor,
+  static <T extends Accumulation> AsynchronousInstrumentAccumulator doubleAsynchronousAccumulator(
+      InstrumentProcessor<T> instrumentProcessor,
       @Nullable Consumer<AsynchronousInstrument.DoubleResult> metricUpdater) {
     // TODO: Decide what to do with null updater.
     if (metricUpdater == null) {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    AggregatorFactory<?> aggregatorFactory =
+    AggregatorFactory<T> aggregatorFactory =
         instrumentProcessor.getAggregation().getAggregatorFactory();
     AsynchronousInstrument.DoubleResult result =
         (value, labels) ->
@@ -36,15 +37,15 @@ final class AsynchronousInstrumentAccumulator {
         instrumentProcessor, () -> metricUpdater.accept(result));
   }
 
-  static AsynchronousInstrumentAccumulator longAsynchronousAccumulator(
-      InstrumentProcessor instrumentProcessor,
+  static <T extends Accumulation> AsynchronousInstrumentAccumulator longAsynchronousAccumulator(
+      InstrumentProcessor<T> instrumentProcessor,
       @Nullable Consumer<AsynchronousInstrument.LongResult> metricUpdater) {
     // TODO: Decide what to do with null updater.
     if (metricUpdater == null) {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    AggregatorFactory<?> aggregatorFactory =
+    AggregatorFactory<T> aggregatorFactory =
         instrumentProcessor.getAggregation().getAggregatorFactory();
     AsynchronousInstrument.LongResult result =
         (value, labels) ->
@@ -55,7 +56,7 @@ final class AsynchronousInstrumentAccumulator {
   }
 
   private AsynchronousInstrumentAccumulator(
-      InstrumentProcessor instrumentProcessor, Runnable metricUpdater) {
+      InstrumentProcessor<?> instrumentProcessor, Runnable metricUpdater) {
     this.instrumentProcessor = instrumentProcessor;
     this.metricUpdater = metricUpdater;
   }

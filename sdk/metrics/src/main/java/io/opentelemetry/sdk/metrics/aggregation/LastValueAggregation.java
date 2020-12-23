@@ -18,25 +18,18 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class LastValueAggregation implements Aggregation {
-  static final LastValueAggregation LONG_INSTANCE =
-      new LastValueAggregation(LongLastValueAggregator.getFactory());
-  static final LastValueAggregation DOUBLE_INSTANCE =
-      new LastValueAggregation(DoubleLastValueAggregator.getFactory());
+final class LastValueAggregation<T extends Accumulation> extends AbstractAggregation<T> {
+  static final LastValueAggregation<LongAccumulation> LONG_INSTANCE =
+      new LastValueAggregation<>(LongLastValueAggregator.getFactory());
+  static final LastValueAggregation<DoubleAccumulation> DOUBLE_INSTANCE =
+      new LastValueAggregation<>(DoubleLastValueAggregator.getFactory());
 
-  private final AggregatorFactory<?> aggregatorFactory;
-
-  private LastValueAggregation(AggregatorFactory<?> aggregatorFactory) {
-    this.aggregatorFactory = aggregatorFactory;
+  private LastValueAggregation(AggregatorFactory<T> aggregatorFactory) {
+    super(aggregatorFactory);
   }
 
   @Override
-  public AggregatorFactory<?> getAggregatorFactory() {
-    return aggregatorFactory;
-  }
-
-  @Override
-  public Accumulation merge(Accumulation a1, Accumulation a2) {
+  public T merge(T a1, T a2) {
     // TODO: Define the order between accumulation.
     return a2;
   }
@@ -46,7 +39,7 @@ final class LastValueAggregation implements Aggregation {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, Accumulation> accumulationMap,
+      Map<Labels, ? extends Accumulation> accumulationMap,
       long startEpochNanos,
       long epochNanos) {
     List<MetricData.Point> points =

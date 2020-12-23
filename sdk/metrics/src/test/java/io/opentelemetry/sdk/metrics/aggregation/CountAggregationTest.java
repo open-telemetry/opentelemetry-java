@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 class CountAggregationTest {
   @Test
   void toMetricData() {
-    Aggregation count = AggregationFactory.count().create(InstrumentValueType.LONG);
+    Aggregation<?> count = AggregationFactory.count().create(InstrumentValueType.LONG);
     Aggregator<?> aggregator = count.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);
 

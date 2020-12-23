@@ -9,36 +9,40 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class ImmutableAggregationFactory implements AggregationFactory {
+final class ImmutableAggregationFactory<L extends Accumulation, D extends Accumulation>
+    implements AggregationFactory {
   static final AggregationFactory SUM =
-      new ImmutableAggregationFactory(SumAggregation.LONG_INSTANCE, SumAggregation.DOUBLE_INSTANCE);
+      new ImmutableAggregationFactory<>(
+          SumAggregation.LONG_INSTANCE, SumAggregation.DOUBLE_INSTANCE);
 
   static final AggregationFactory COUNT =
-      new ImmutableAggregationFactory(CountAggregation.INSTANCE, CountAggregation.INSTANCE);
+      new ImmutableAggregationFactory<>(CountAggregation.INSTANCE, CountAggregation.INSTANCE);
 
   static final AggregationFactory LAST_VALUE =
-      new ImmutableAggregationFactory(
+      new ImmutableAggregationFactory<>(
           LastValueAggregation.LONG_INSTANCE, LastValueAggregation.DOUBLE_INSTANCE);
 
   static final AggregationFactory MIN_MAX_SUM_COUNT =
-      new ImmutableAggregationFactory(
+      new ImmutableAggregationFactory<>(
           MinMaxSumCountAggregation.LONG_INSTANCE, MinMaxSumCountAggregation.DOUBLE_INSTANCE);
 
-  private final Aggregation longAggregation;
-  private final Aggregation doubleAggregation;
+  private final Aggregation<L> longAggregation;
+  private final Aggregation<D> doubleAggregation;
 
-  private ImmutableAggregationFactory(Aggregation longAggregation, Aggregation doubleAggregation) {
+  private ImmutableAggregationFactory(
+      Aggregation<L> longAggregation, Aggregation<D> doubleAggregation) {
     this.longAggregation = longAggregation;
     this.doubleAggregation = doubleAggregation;
   }
 
   @Override
-  public Aggregation create(InstrumentValueType instrumentValueType) {
+  @SuppressWarnings("unchecked")
+  public <V extends Accumulation> Aggregation<V> create(InstrumentValueType instrumentValueType) {
     switch (instrumentValueType) {
       case LONG:
-        return longAggregation;
+        return (Aggregation<V>) longAggregation;
       case DOUBLE:
-        return doubleAggregation;
+        return (Aggregation<V>) doubleAggregation;
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

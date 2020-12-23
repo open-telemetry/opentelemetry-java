@@ -42,14 +42,14 @@ class ViewRegistryTest {
             .build(),
         specification);
 
-    InstrumentProcessor expectedInstrumentProcessor =
+    InstrumentProcessor<?> expectedInstrumentProcessor =
         InstrumentProcessor.getCumulativeAllLabels(
             descriptor,
             providerSharedState,
             meterSharedState,
             AggregationFactory.count().create(descriptor.getValueType()));
 
-    InstrumentProcessor result =
+    InstrumentProcessor<?> result =
         viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
 
     assertThat(result.generatesDeltas()).isFalse();
@@ -80,14 +80,14 @@ class ViewRegistryTest {
             .build(),
         specification);
 
-    InstrumentProcessor expectedInstrumentProcessor =
+    InstrumentProcessor<?> expectedInstrumentProcessor =
         InstrumentProcessor.getDeltaAllLabels(
             descriptor,
             providerSharedState,
             meterSharedState,
             AggregationFactory.count().create(descriptor.getValueType()));
 
-    InstrumentProcessor result =
+    InstrumentProcessor<?> result =
         viewRegistry.createBatcher(providerSharedState, meterSharedState, descriptor);
 
     assertThat(result.generatesDeltas()).isTrue();

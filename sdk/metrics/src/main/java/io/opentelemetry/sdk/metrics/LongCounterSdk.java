@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 final class LongCounterSdk extends AbstractSynchronousInstrument implements LongCounter {
 
   private LongCounterSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
     super(descriptor, accumulator);
   }
 
