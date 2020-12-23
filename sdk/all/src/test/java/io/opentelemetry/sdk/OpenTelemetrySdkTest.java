@@ -118,15 +118,18 @@ class OpenTelemetrySdkTest {
     TracerProvider unobfuscatedTracerProvider =
         ((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate();
 
-    assertThat(unobfuscatedTracerProvider).isInstanceOf(SdkTracerProvider.class);
+    assertThat(unobfuscatedTracerProvider)
+        .isInstanceOfSatisfying(
+            SdkTracerProvider.class,
+            sdkTracerProvider ->
+                assertThat(sdkTracerProvider.getActiveTraceConfig()).isEqualTo(traceConfig));
     // Since TracerProvider is in a different package, the only alternative to this reflective
     // approach would be to make the fields public for testing which is worse than this.
     assertThat(unobfuscatedTracerProvider)
         .extracting("sharedState")
         .hasFieldOrPropertyWithValue("clock", clock)
         .hasFieldOrPropertyWithValue("resource", resource)
-        .hasFieldOrPropertyWithValue("idGenerator", idGenerator)
-        .hasFieldOrPropertyWithValue("activeTraceConfig", traceConfig);
+        .hasFieldOrPropertyWithValue("idGenerator", idGenerator);
   }
 
   @Test
