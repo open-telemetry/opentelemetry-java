@@ -199,6 +199,7 @@ subprojects {
                     jsr305                      : "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
                     prometheus_client           : "io.prometheus:simpleclient:${prometheusVersion}",
                     prometheus_client_common    : "io.prometheus:simpleclient_common:${prometheusVersion}",
+                    prometheus_client_httpserver: "io.prometheus:simpleclient_httpserver:${prometheusVersion}",
                     protobuf                    : "com.google.protobuf:protobuf-java",
                     protobuf_util               : "com.google.protobuf:protobuf-java-util",
                     zipkin_reporter             : "io.zipkin.reporter2:zipkin-reporter",

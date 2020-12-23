@@ -1,0 +1,27 @@
+plugins {
+    id "java-library"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry SDK Auto-configuration'
+ext.moduleName = "io.opentelemetry.sdk.autoconfigure"
+
+dependencies {
+    api project(':sdk:all'),
+            project(':sdk:metrics')
+
+    implementation project(':extensions:trace-propagators')
+
+    compileOnly project(':exporters:jaeger')
+    compileOnly project(':exporters:jaeger-thrift')
+    compileOnly project(':exporters:logging')
+    compileOnly project(':exporters:otlp:all')
+    compileOnly project(':exporters:otlp:metrics')
+
+    compileOnly project(':exporters:prometheus')
+    compileOnly libraries.prometheus_client_httpserver
+
+    compileOnly project(':exporters:zipkin')
+}
