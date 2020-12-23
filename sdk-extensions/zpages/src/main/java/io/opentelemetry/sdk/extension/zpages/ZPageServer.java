@@ -6,19 +6,20 @@
 package io.opentelemetry.sdk.extension.zpages;
 
 import com.sun.net.httpserver.HttpServer;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A collection of HTML pages to display stats and trace data and allow library configuration
- * control. To use, add {@linkplain ZPageServer#getSpanProcessor() the z-pages span processor} to a
+ * control. To use, add {@linkplain ZPageServer#getSpanProcessor() the z-pages span processor} and
+ * {@linkplain ZPageServer#getTracezTraceConfigSupplier() the z-pages dynamic trace config} to a
  * {@link io.opentelemetry.sdk.trace.SdkTracerProviderBuilder}. Currently all tracers can only be
  * made visible to a singleton {@link ZPageServer}.
  *
@@ -30,6 +31,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *     OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
  *         .setTracerProvider(SdkTracerProvider.builder()
  *             .addSpanProcessor(ZPageServer.getSpanProcessor())
+ *             .setTraceConfigSupplier(ZPageServer.getTraceConfigSupplier())
  *             .build();
  *         .build();
  *
@@ -47,6 +49,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *     OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
  *         .setTracerProvider(SdkTracerProvider.builder()
  *             .addSpanProcessor(ZPageServer.getSpanProcessor())
+ *             .setTraceConfigSupplier(ZPageServer.getTraceConfigSupplier())
  *             .build();
  *         .build();
  *
@@ -67,16 +70,16 @@ public final class ZPageServer {
   // Tracez SpanProcessor and DataAggregator for constructing TracezZPageHandler
   private static final TracezSpanProcessor tracezSpanProcessor =
       TracezSpanProcessor.builder().build();
+  private static final TracezTraceConfigSupplier tracezTraceConfigSupplier =
+      new TracezTraceConfigSupplier();
   private static final TracezDataAggregator tracezDataAggregator =
       new TracezDataAggregator(tracezSpanProcessor);
-  private static final SdkTracerManagement TRACER_SDK_MANAGEMENT =
-      OpenTelemetrySdk.getGlobalTracerManagement();
   // Handler for /tracez page
   private static final ZPageHandler tracezZPageHandler =
       new TracezZPageHandler(tracezDataAggregator);
   // Handler for /traceconfigz page
   private static final ZPageHandler traceConfigzZPageHandler =
-      new TraceConfigzZPageHandler(TRACER_SDK_MANAGEMENT);
+      new TraceConfigzZPageHandler(tracezTraceConfigSupplier);
   // Handler for index page, **please include all available ZPageHandlers in the constructor**
   private static final ZPageHandler indexZPageHandler =
       new IndexZPageHandler(Arrays.asList(tracezZPageHandler, traceConfigzZPageHandler));
@@ -86,6 +89,11 @@ public final class ZPageServer {
   @GuardedBy("mutex")
   @Nullable
   private static HttpServer server;
+
+  /** Returns a supplier of {@link TraceConfig} which can be reconfigured using zpages. */
+  public static Supplier<TraceConfig> getTracezTraceConfigSupplier() {
+    return tracezTraceConfigSupplier;
+  }
 
   /**
    * Returns a {@link SpanProcessor} which will allow processing of spans by {@link ZPageServer}.

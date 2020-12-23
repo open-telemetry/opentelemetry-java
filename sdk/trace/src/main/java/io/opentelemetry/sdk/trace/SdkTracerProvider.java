@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -44,10 +45,10 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
       Clock clock,
       IdGenerator idsGenerator,
       Resource resource,
-      TraceConfig traceConfig,
+      Supplier<TraceConfig> traceConfigSupplier,
       List<SpanProcessor> spanProcessors) {
     this.sharedState =
-        new TracerSharedState(clock, idsGenerator, resource, traceConfig, spanProcessors);
+        new TracerSharedState(clock, idsGenerator, resource, traceConfigSupplier, spanProcessors);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkTracer(sharedState, instrumentationLibraryInfo));

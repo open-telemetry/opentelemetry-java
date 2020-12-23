@@ -15,4 +15,10 @@ class ZPageServerTest {
   void spanProcessor() {
     assertThat(ZPageServer.getSpanProcessor()).isInstanceOf(TracezSpanProcessor.class);
   }
+
+  @Test
+  void traceConfigSupplier() {
+    assertThat(ZPageServer.getTracezTraceConfigSupplier())
+        .isInstanceOf(TracezTraceConfigSupplier.class);
+  }
 }

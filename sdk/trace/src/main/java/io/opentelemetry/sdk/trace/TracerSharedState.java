@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.annotation.concurrent.GuardedBy;
 
 // Represents the shared state/config between all Tracers created by the same TracerProvider.
@@ -22,7 +23,7 @@ final class TracerSharedState {
 
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
   // operations are visible on other CPUs as well.
-  private volatile TraceConfig activeTraceConfig;
+  private volatile Supplier<TraceConfig> traceConfigSupplier;
   private volatile SpanProcessor activeSpanProcessor = NoopSpanProcessor.getInstance();
   private volatile boolean isStopped = false;
 
@@ -33,12 +34,12 @@ final class TracerSharedState {
       Clock clock,
       IdGenerator idGenerator,
       Resource resource,
-      TraceConfig traceConfig,
+      Supplier<TraceConfig> traceConfigSupplier,
       List<SpanProcessor> spanProcessors) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.resource = resource;
-    this.activeTraceConfig = traceConfig;
+    this.traceConfigSupplier = traceConfigSupplier;
     this.registeredSpanProcessors = new ArrayList<>(spanProcessors);
     activeSpanProcessor = SpanProcessor.composite(registeredSpanProcessors);
   }
@@ -61,7 +62,7 @@ final class TracerSharedState {
    * @return the active {@code TraceConfig}.
    */
   TraceConfig getActiveTraceConfig() {
-    return activeTraceConfig;
+    return traceConfigSupplier.get();
   }
 
   /**
@@ -70,7 +71,7 @@ final class TracerSharedState {
    * @param traceConfig the new active {@code TraceConfig}.
    */
   void updateActiveTraceConfig(TraceConfig traceConfig) {
-    activeTraceConfig = traceConfig;
+    traceConfigSupplier = () -> traceConfig;
   }
 
   /**
