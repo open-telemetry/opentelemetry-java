@@ -42,7 +42,8 @@ class GlobalOpenTelemetryTest {
               assertThat(record.getLevel()).isEqualTo(Level.SEVERE);
               assertThat(record.getMessage())
                   .contains(
-                      "Attempt to access GlobalOpenTelemetry.get before OpenTelemetrySdk has been initialized.");
+                      "Attempt to access GlobalOpenTelemetry.get before OpenTelemetrySdk has been "
+                          + "initialized.");
             });
   }
 }
