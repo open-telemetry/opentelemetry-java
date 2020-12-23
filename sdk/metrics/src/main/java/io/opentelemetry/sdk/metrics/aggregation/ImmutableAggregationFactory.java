@@ -37,12 +37,12 @@ final class ImmutableAggregationFactory<L extends Accumulation, D extends Accumu
 
   @Override
   @SuppressWarnings("unchecked")
-  public <V extends Accumulation> Aggregation<V> create(InstrumentValueType instrumentValueType) {
+  public <T extends Accumulation> Aggregation<T> create(InstrumentValueType instrumentValueType) {
     switch (instrumentValueType) {
       case LONG:
-        return (Aggregation<V>) longAggregation;
+        return (Aggregation<T>) longAggregation;
       case DOUBLE:
-        return (Aggregation<V>) doubleAggregation;
+        return (Aggregation<T>) doubleAggregation;
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }
