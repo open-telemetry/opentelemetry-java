@@ -16,7 +16,7 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
     implements LongUpDownCounter {
 
   private LongUpDownCounterSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
     super(descriptor, accumulator);
   }
 

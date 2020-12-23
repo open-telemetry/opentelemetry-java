@@ -17,21 +17,19 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class CountAggregation implements Aggregation {
+final class CountAggregation implements Aggregation<LongAccumulation> {
   static final CountAggregation INSTANCE = new CountAggregation();
 
   private CountAggregation() {}
 
   @Override
-  public AggregatorFactory<?> getAggregatorFactory() {
+  public AggregatorFactory<LongAccumulation> getAggregatorFactory() {
     return CountAggregator.getFactory();
   }
 
   @Override
-  public Accumulation merge(Accumulation a1, Accumulation a2) {
-    LongAccumulation longAccumulation1 = (LongAccumulation) a1;
-    LongAccumulation longAccumulation2 = (LongAccumulation) a2;
-    return LongAccumulation.create(longAccumulation1.getValue() + longAccumulation2.getValue());
+  public LongAccumulation merge(LongAccumulation a1, LongAccumulation a2) {
+    return LongAccumulation.create(a1.getValue() + a2.getValue());
   }
 
   @Override
@@ -39,7 +37,7 @@ final class CountAggregation implements Aggregation {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, Accumulation> accumulationMap,
+      Map<Labels, ? extends Accumulation> accumulationMap,
       long startEpochNanos,
       long epochNanos) {
     List<MetricData.Point> points =

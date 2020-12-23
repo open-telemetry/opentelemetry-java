@@ -27,7 +27,7 @@ public abstract class AggregatorFactory<T extends Accumulation> {
    * @param value the given value to be used to create the {@code Accumulation}.
    * @return a new {@code Accumulation} for the given value.
    */
-  public Accumulation accumulateLong(long value) {
+  public T accumulateLong(long value) {
     throw new UnsupportedOperationException(
         "This aggregator does not support recording long values.");
   }
@@ -39,7 +39,7 @@ public abstract class AggregatorFactory<T extends Accumulation> {
    * @param value the given value to be used to create the {@code Accumulation}.
    * @return a new {@code Accumulation} for the given value.
    */
-  public Accumulation accumulateDouble(double value) {
+  public T accumulateDouble(double value) {
     throw new UnsupportedOperationException(
         "This aggregator does not support recording double values.");
   }

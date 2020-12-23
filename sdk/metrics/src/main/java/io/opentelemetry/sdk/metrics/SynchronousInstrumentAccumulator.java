@@ -16,13 +16,13 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-final class SynchronousInstrumentAccumulator {
-  private final ConcurrentHashMap<Labels, Aggregator<?>> aggregatorLabels;
+final class SynchronousInstrumentAccumulator<T extends Accumulation> {
+  private final ConcurrentHashMap<Labels, Aggregator<T>> aggregatorLabels;
   private final ReentrantLock collectLock;
-  private final AggregatorFactory<?> aggregatorFactory;
-  private final InstrumentProcessor instrumentProcessor;
+  private final AggregatorFactory<T> aggregatorFactory;
+  private final InstrumentProcessor<T> instrumentProcessor;
 
-  SynchronousInstrumentAccumulator(InstrumentProcessor instrumentProcessor) {
+  SynchronousInstrumentAccumulator(InstrumentProcessor<T> instrumentProcessor) {
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
     this.instrumentProcessor = instrumentProcessor;
@@ -31,7 +31,7 @@ final class SynchronousInstrumentAccumulator {
 
   Aggregator<?> bind(Labels labels) {
     Objects.requireNonNull(labels, "labels");
-    Aggregator<?> aggregator = aggregatorLabels.get(labels);
+    Aggregator<T> aggregator = aggregatorLabels.get(labels);
     if (aggregator != null && aggregator.acquire()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
       return aggregator;
@@ -62,14 +62,14 @@ final class SynchronousInstrumentAccumulator {
   public final List<MetricData> collectAll() {
     collectLock.lock();
     try {
-      for (Map.Entry<Labels, Aggregator<?>> entry : aggregatorLabels.entrySet()) {
+      for (Map.Entry<Labels, Aggregator<T>> entry : aggregatorLabels.entrySet()) {
         boolean unmappedEntry = entry.getValue().tryUnmap();
         if (unmappedEntry) {
           // If able to unmap then remove the record from the current Map. This can race with the
           // acquire but because we requested a specific value only one will succeed.
           aggregatorLabels.remove(entry.getKey(), entry.getValue());
         }
-        Accumulation accumulation = entry.getValue().accumulateThenReset();
+        T accumulation = entry.getValue().accumulateThenReset();
         if (accumulation == null) {
           continue;
         }

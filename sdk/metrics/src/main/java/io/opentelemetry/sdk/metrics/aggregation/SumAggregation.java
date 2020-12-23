@@ -19,33 +19,24 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class SumAggregation implements Aggregation {
-  static final SumAggregation LONG_INSTANCE = new SumAggregation(LongSumAggregator.getFactory());
-  static final SumAggregation DOUBLE_INSTANCE =
-      new SumAggregation(DoubleSumAggregator.getFactory());
+abstract class SumAggregation<T extends Accumulation> extends AbstractAggregation<T> {
+  static final SumAggregation<LongAccumulation> LONG_INSTANCE =
+      new SumAggregation<LongAccumulation>(LongSumAggregator.getFactory()) {
+        @Override
+        public LongAccumulation merge(LongAccumulation a1, LongAccumulation a2) {
+          return LongAccumulation.create(a1.getValue() + a2.getValue());
+        }
+      };
+  static final SumAggregation<DoubleAccumulation> DOUBLE_INSTANCE =
+      new SumAggregation<DoubleAccumulation>(DoubleSumAggregator.getFactory()) {
+        @Override
+        public final DoubleAccumulation merge(DoubleAccumulation a1, DoubleAccumulation a2) {
+          return DoubleAccumulation.create(a1.getValue() + a2.getValue());
+        }
+      };
 
-  private final AggregatorFactory<?> aggregatorFactory;
-
-  private SumAggregation(AggregatorFactory<?> aggregatorFactory) {
-    this.aggregatorFactory = aggregatorFactory;
-  }
-
-  @Override
-  public AggregatorFactory<?> getAggregatorFactory() {
-    return aggregatorFactory;
-  }
-
-  @Override
-  public Accumulation merge(Accumulation a1, Accumulation a2) {
-    // TODO: Fix this by splitting the Aggregation per instrument value type.
-    if (a1 instanceof LongAccumulation) {
-      LongAccumulation longAccumulation1 = (LongAccumulation) a1;
-      LongAccumulation longAccumulation2 = (LongAccumulation) a2;
-      return LongAccumulation.create(longAccumulation1.getValue() + longAccumulation2.getValue());
-    }
-    DoubleAccumulation longAccumulation1 = (DoubleAccumulation) a1;
-    DoubleAccumulation longAccumulation2 = (DoubleAccumulation) a2;
-    return DoubleAccumulation.create(longAccumulation1.getValue() + longAccumulation2.getValue());
+  private SumAggregation(AggregatorFactory<T> aggregatorFactory) {
+    super(aggregatorFactory);
   }
 
   @Override
@@ -53,7 +44,7 @@ final class SumAggregation implements Aggregation {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, Accumulation> accumulationMap,
+      Map<Labels, ? extends Accumulation> accumulationMap,
       long startEpochNanos,
       long epochNanos) {
     List<MetricData.Point> points =

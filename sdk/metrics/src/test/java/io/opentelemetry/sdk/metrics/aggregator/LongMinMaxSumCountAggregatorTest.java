@@ -110,9 +110,10 @@ class LongMinMaxSumCountAggregatorTest {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     @GuardedBy("lock")
+    @Nullable
     private Accumulation accumulation;
 
-    void process(@Nullable Accumulation other) {
+    void process(@Nullable MinMaxSumCountAccumulation other) {
       if (other == null) {
         return;
       }

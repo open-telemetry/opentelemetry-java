@@ -113,6 +113,7 @@ class DoubleMinMaxSumCountAggregatorTest {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     @GuardedBy("lock")
+    @Nullable
     private Accumulation accumulation;
 
     void process(@Nullable Accumulation other) {

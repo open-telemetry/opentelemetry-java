@@ -61,5 +61,5 @@ public interface AggregationFactory {
    * @param instrumentValueType the type of recorded values for the {@code Instrument}.
    * @return a new {@link Aggregation}.
    */
-  Aggregation create(InstrumentValueType instrumentValueType);
+  <T extends Accumulation> Aggregation<T> create(InstrumentValueType instrumentValueType);
 }

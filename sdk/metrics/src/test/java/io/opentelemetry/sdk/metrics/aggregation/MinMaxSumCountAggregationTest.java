@@ -24,7 +24,7 @@ class MinMaxSumCountAggregationTest {
 
   @Test
   void toMetricData() {
-    Aggregation minMaxSumCount =
+    Aggregation<?> minMaxSumCount =
         AggregationFactory.minMaxSumCount().create(InstrumentValueType.LONG);
     Aggregator<?> aggregator = minMaxSumCount.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);

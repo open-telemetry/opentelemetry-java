@@ -12,10 +12,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 
 abstract class AbstractSynchronousInstrument extends AbstractInstrument {
-  private final SynchronousInstrumentAccumulator accumulator;
+  private final SynchronousInstrumentAccumulator<?> accumulator;
 
   AbstractSynchronousInstrument(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
     super(descriptor);
     this.accumulator = accumulator;
   }

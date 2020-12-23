@@ -29,8 +29,8 @@ public class SynchronousInstrumentAccumulatorTest {
 
   @Test
   void sameAggregator_ForSameLabelSet() {
-    SynchronousInstrumentAccumulator accumulator =
-        new SynchronousInstrumentAccumulator(
+    SynchronousInstrumentAccumulator<?> accumulator =
+        new SynchronousInstrumentAccumulator<>(
             InstrumentProcessor.getCumulativeAllLabels(
                 DESCRIPTOR,
                 providerSharedState,
