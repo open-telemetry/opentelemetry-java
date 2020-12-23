@@ -145,8 +145,6 @@ public final class GlobalOpenTelemetry {
       }
 
       if (hasSdk) {
-        // TODO(anuraaga): Play https://www.youtube.com/watch?v=tBA-1ENblN4 if JavaFX detected on
-        // classpath.
         logger.log(
             Level.SEVERE,
             "Attempt to access GlobalOpenTelemetry.get before OpenTelemetrySdk has been "
@@ -156,10 +154,14 @@ public final class GlobalOpenTelemetry {
                 + "If you do not need to use the OpenTelemetry SDK, either exclude it from your "
                 + "classpath or set the 'otel.sdk.suppress-sdk-initialized-warning' system "
                 + "property to true.",
+            // Add stack trace to log to allow user to find the problematic invocation.
             new Throwable());
       }
     }
 
+    // All the logic is in the static initializer, this method is called just to load the class and
+    // that's it. JVM will then optimize it away completely because it's empty so we have no
+    // overhead for a log-once pattern.
     static void logIfSdkFound() {}
   }
 }
