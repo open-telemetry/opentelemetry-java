@@ -7,6 +7,7 @@ package io.opentelemetry.context.propagation;
 
 import io.opentelemetry.context.Context;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -17,6 +18,10 @@ import javax.annotation.Nullable;
 final class MultiTextMapPropagator implements TextMapPropagator {
   private final TextMapPropagator[] textPropagators;
   private final Collection<String> allFields;
+
+  MultiTextMapPropagator(TextMapPropagator... textPropagators) {
+    this(Arrays.asList(textPropagators));
+  }
 
   MultiTextMapPropagator(List<TextMapPropagator> textPropagators) {
     this.textPropagators = new TextMapPropagator[textPropagators.size()];
