@@ -7,7 +7,8 @@ package io.opentelemetry.opentracingshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -23,8 +24,11 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class TracerShimTest {
+
+  @RegisterExtension public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
   TracerShim tracerShim;
 
@@ -33,8 +37,8 @@ class TracerShimTest {
     tracerShim =
         new TracerShim(
             new TelemetryInfo(
-                GlobalOpenTelemetry.getTracer("opentracingshim"),
-                GlobalOpenTelemetry.getPropagators()));
+                otelTesting.getOpenTelemetry().getTracer("opentracingshim"),
+                ContextPropagators.noop()));
   }
 
   @Test
