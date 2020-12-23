@@ -18,12 +18,23 @@ import javax.annotation.Nullable;
  * values once.
  */
 public final class DoubleLastValueAggregator extends Aggregator<DoubleAccumulation> {
-
   @Nullable private static final Double DEFAULT_VALUE = null;
   private static final AggregatorFactory<DoubleAccumulation> AGGREGATOR_FACTORY =
-      DoubleLastValueAggregator::new;
+      new AggregatorFactory<DoubleAccumulation>() {
+        @Override
+        public Aggregator<DoubleAccumulation> getAggregator() {
+          return new DoubleLastValueAggregator();
+        }
+
+        @Override
+        public DoubleAccumulation accumulateDouble(double value) {
+          return DoubleAccumulation.create(value);
+        }
+      };
 
   private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
+
+  private DoubleLastValueAggregator() {}
 
   /**
    * Returns an {@link AggregatorFactory} that produces {@link DoubleLastValueAggregator} instances.

@@ -12,12 +12,20 @@ import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
 public final class DoubleMinMaxSumCountAggregator extends Aggregator<MinMaxSumCountAccumulation> {
-
   private static final AggregatorFactory<MinMaxSumCountAccumulation> AGGREGATOR_FACTORY =
-      DoubleMinMaxSumCountAggregator::new;
+      new AggregatorFactory<MinMaxSumCountAccumulation>() {
+        @Override
+        public Aggregator<MinMaxSumCountAccumulation> getAggregator() {
+          return new DoubleMinMaxSumCountAggregator();
+        }
+
+        @Override
+        public MinMaxSumCountAccumulation accumulateDouble(double value) {
+          return MinMaxSumCountAccumulation.create(1, value, value, value);
+        }
+      };
 
   private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
   // The current value. This controls its own internal thread-safety via method access. Don't
   // try to use its fields directly.
   @GuardedBy("lock")

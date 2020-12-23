@@ -92,7 +92,6 @@ final class ViewRegistry {
     AggregationConfiguration specification = chooseAggregation(descriptor);
     Aggregation aggregation =
         specification.getAggregationFactory().create(descriptor.getValueType());
-
     if (MetricData.AggregationTemporality.CUMULATIVE == specification.getTemporality()) {
       return InstrumentProcessor.getCumulativeAllLabels(
           descriptor, meterProviderSharedState, meterSharedState, aggregation);

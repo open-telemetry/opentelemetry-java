@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.Map;
@@ -18,12 +19,14 @@ import java.util.concurrent.locks.ReentrantLock;
 final class SynchronousInstrumentAccumulator {
   private final ConcurrentHashMap<Labels, Aggregator<?>> aggregatorLabels;
   private final ReentrantLock collectLock;
+  private final AggregatorFactory<?> aggregatorFactory;
   private final InstrumentProcessor instrumentProcessor;
 
   SynchronousInstrumentAccumulator(InstrumentProcessor instrumentProcessor) {
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
     this.instrumentProcessor = instrumentProcessor;
+    this.aggregatorFactory = instrumentProcessor.getAggregation().getAggregatorFactory();
   }
 
   Aggregator<?> bind(Labels labels) {
@@ -35,7 +38,7 @@ final class SynchronousInstrumentAccumulator {
     }
 
     // Missing entry or no longer mapped, try to add a new entry.
-    aggregator = instrumentProcessor.getAggregator();
+    aggregator = aggregatorFactory.getAggregator();
     while (true) {
       Aggregator<?> boundAggregator = aggregatorLabels.putIfAbsent(labels, aggregator);
       if (boundAggregator != null) {

@@ -5,38 +5,17 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.BatchRecorder;
 import io.opentelemetry.api.metrics.DoubleValueObserver;
 import io.opentelemetry.api.metrics.LongValueObserver;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
-import io.opentelemetry.sdk.resources.Resource;
-import java.util.Arrays;
-import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link SdkMeter}. */
 class SdkMeterTest {
-  private static final Resource RESOURCE =
-      Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.MeterSdkTest", null);
-  private final TestClock testClock = TestClock.create();
-  private final MeterProviderSharedState meterProviderSharedState =
-      MeterProviderSharedState.create(testClock, RESOURCE);
-  private final SdkMeter testSdk =
-      new SdkMeter(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+  private final SdkMeterProvider testMeterProvider = SdkMeterProvider.builder().build();
+  private final SdkMeter testSdk = testMeterProvider.get(getClass().getName());
 
   @Test
   void testLongCounter() {
@@ -378,82 +357,5 @@ class SdkMeterTest {
     BatchRecorder batchRecorder = testSdk.newBatchRecorder("key", "value");
     assertThat(batchRecorder).isNotNull();
     assertThat(batchRecorder).isInstanceOf(BatchRecorderSdk.class);
-  }
-
-  @Test
-  void collectAll() {
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
-    longCounter.add(10, Labels.empty());
-    LongValueRecorderSdk longValueRecorder =
-        testSdk.longValueRecorderBuilder("testLongValueRecorder").build();
-    longValueRecorder.record(10, Labels.empty());
-    // LongSumObserver longObserver = testSdk.longSumObserverBuilder("testLongSumObserver").build();
-    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
-    doubleCounter.add(10.1, Labels.empty());
-    DoubleValueRecorderSdk doubleValueRecorder =
-        testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
-    doubleValueRecorder.record(10.1, Labels.empty());
-    // DoubleSumObserver doubleObserver =
-    // testSdk.doubleSumObserverBuilder("testDoubleSumObserver").build();
-
-    assertThat(testSdk.collectAll())
-        .containsExactlyInAnyOrder(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongCounter",
-                "",
-                "1",
-                MetricData.LongSumData.create(
-                    /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))),
-            MetricData.createDoubleSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleCounter",
-                "",
-                "1",
-                MetricData.DoubleSumData.create(
-                    /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        DoublePoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 10.1)))),
-            MetricData.createDoubleSummary(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongValueRecorder",
-                "",
-                "1",
-                MetricData.DoubleSummaryData.create(
-                    Collections.singletonList(
-                        DoubleSummaryPoint.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.empty(),
-                            1,
-                            10,
-                            Arrays.asList(
-                                ValueAtPercentile.create(0, 10),
-                                ValueAtPercentile.create(100, 10)))))),
-            MetricData.createDoubleSummary(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleValueRecorder",
-                "",
-                "1",
-                MetricData.DoubleSummaryData.create(
-                    Collections.singletonList(
-                        DoubleSummaryPoint.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.empty(),
-                            1,
-                            10.1d,
-                            Arrays.asList(
-                                ValueAtPercentile.create(0, 10.1d),
-                                ValueAtPercentile.create(100, 10.1d)))))));
   }
 }
