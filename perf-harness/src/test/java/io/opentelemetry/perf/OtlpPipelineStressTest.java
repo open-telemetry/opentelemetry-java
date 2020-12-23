@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.IOException;
@@ -102,7 +103,7 @@ public class OtlpPipelineStressTest {
 
   private final InMemoryMetricExporter metricExporter = InMemoryMetricExporter.create();
 
-  private SdkTracerProvider tracerProvider;
+  private SdkTracerManagement tracerManagement;
   private OpenTelemetry openTelemetry;
   private IntervalMetricReader intervalMetricReader;
   private Proxy collectorProxy;
@@ -131,7 +132,7 @@ public class OtlpPipelineStressTest {
   @AfterEach
   void tearDown() throws IOException {
     intervalMetricReader.shutdown();
-    tracerProvider.shutdown();
+    tracerManagement.shutdown();
 
     toxiproxyClient.reset();
     collectorProxy.delete();
@@ -237,14 +238,6 @@ public class OtlpPipelineStressTest {
   }
 
   private void setupSdk() {
-    // this will make sure that a proper service.name attribute is set on all the spans/metrics.
-    // note: this is not something you should generally do in code, but should be provided on the
-    // command-line. This is here to make the example more self-contained.
-    System.setProperty(
-        "otel.resource.attributes", "service.name=PerfTester,service.version=1.0.1-RC-1");
-
-    // set up the metric exporter and wire it into the SDK and a timed reader.
-
     Resource resource =
         Resource.create(
             Attributes.builder()
@@ -252,6 +245,7 @@ public class OtlpPipelineStressTest {
                 .put(ResourceAttributes.SERVICE_VERSION, "1.0.1-RC-1")
                 .build());
 
+    // set up the metric exporter and wire it into the SDK and a timed reader.
     SdkMeterProvider meterProvider = SdkMeterProvider.builder().setResource(resource).build();
 
     intervalMetricReader =
@@ -277,7 +271,9 @@ public class OtlpPipelineStressTest {
             //            .setScheduleDelayMillis(1000)
             .build();
 
-    tracerProvider = SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
     openTelemetry = OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
+    tracerManagement = tracerProvider;
   }
 }
