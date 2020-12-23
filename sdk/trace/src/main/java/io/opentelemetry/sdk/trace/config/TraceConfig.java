@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace.config;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import java.util.function.Supplier;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -16,8 +15,8 @@ import javax.annotation.concurrent.Immutable;
  *
  * <p>Note: To allow dynamic updates of {@link TraceConfig} you should register a {@link
  * java.util.function.Supplier} with {@link
- * io.opentelemetry.sdk.trace.SdkTracerProviderBuilder#setTraceConfig(Supplier)} which supplies
- * dynamic configs when queried.
+ * io.opentelemetry.sdk.trace.SdkTracerProviderBuilder#setTraceConfig(java.util.function.Supplier)}
+ * which supplies dynamic configs when queried.
  *
  * <p>Configuration options for {@link TraceConfig} can be read from system properties, environment
  * variables, or {@link java.util.Properties} objects.
