@@ -22,51 +22,50 @@ import org.junit.jupiter.api.Test;
 
 class DoubleMinMaxSumCountAggregatorTest {
   @Test
-  void factoryAggregation() {
-    AggregatorFactory<MinMaxSumCountAccumulation> factory =
-        DoubleMinMaxSumCountAggregator.getFactory();
-    assertThat(factory.getAggregator()).isInstanceOf(DoubleMinMaxSumCountAggregator.class);
+  void createHandle() {
+    assertThat(DoubleMinMaxSumCountAggregator.getInstance().createHandle())
+        .isInstanceOf(DoubleMinMaxSumCountAggregator.Handle.class);
   }
 
   @Test
   void testRecordings() {
-    Aggregator<MinMaxSumCountAccumulation> aggregator =
-        DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
+    AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
+        DoubleMinMaxSumCountAggregator.getInstance().createHandle();
 
-    aggregator.recordDouble(100);
-    assertThat(aggregator.accumulateThenReset())
+    aggregatorHandle.recordDouble(100);
+    assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
 
-    aggregator.recordDouble(200);
-    assertThat(aggregator.accumulateThenReset())
+    aggregatorHandle.recordDouble(200);
+    assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 200, 200, 200));
 
-    aggregator.recordDouble(-75);
-    assertThat(aggregator.accumulateThenReset())
+    aggregatorHandle.recordDouble(-75);
+    assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, -75, -75, -75));
   }
 
   @Test
   void toAccumulationAndReset() {
-    Aggregator<MinMaxSumCountAccumulation> aggregator =
-        DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
-    assertThat(aggregator.accumulateThenReset()).isNull();
+    AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
+        DoubleMinMaxSumCountAggregator.getInstance().createHandle();
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
-    aggregator.recordDouble(100);
-    assertThat(aggregator.accumulateThenReset())
+    aggregatorHandle.recordDouble(100);
+    assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
-    assertThat(aggregator.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
-    aggregator.recordDouble(100);
-    assertThat(aggregator.accumulateThenReset())
+    aggregatorHandle.recordDouble(100);
+    assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
-    assertThat(aggregator.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 
   @Test
   void testMultithreadedUpdates() throws Exception {
-    final Aggregator<MinMaxSumCountAccumulation> aggregator =
-        DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
+    final AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
+        DoubleMinMaxSumCountAggregator.getInstance().createHandle();
     final Summary summarizer = new Summary();
     int numberOfThreads = 10;
     final double[] updates = new double[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
@@ -85,9 +84,9 @@ class DoubleMinMaxSumCountAggregatorTest {
                   throw new RuntimeException(e);
                 }
                 for (int j = 0; j < numberOfUpdates; j++) {
-                  aggregator.recordDouble(update);
+                  aggregatorHandle.recordDouble(update);
                   if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                    summarizer.process(aggregator.accumulateThenReset());
+                    summarizer.process(aggregatorHandle.accumulateThenReset());
                   }
                 }
               });
@@ -102,7 +101,7 @@ class DoubleMinMaxSumCountAggregatorTest {
       worker.join();
     }
     // make sure everything gets merged when all the aggregation is done.
-    summarizer.process(aggregator.accumulateThenReset());
+    summarizer.process(aggregatorHandle.accumulateThenReset());
 
     assertThat(summarizer.accumulation)
         .isEqualTo(

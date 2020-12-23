@@ -13,24 +13,33 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link CountAggregator}. */
 class CountAggregatorTest {
   @Test
-  void factoryAggregation() {
-    AggregatorFactory<LongAccumulation> factory = CountAggregator.getFactory();
-    assertThat(factory.getAggregator()).isInstanceOf(CountAggregator.class);
+  void createHandle() {
+    assertThat(CountAggregator.getInstance().createHandle())
+        .isInstanceOf(CountAggregator.Handle.class);
+  }
+
+  @Test
+  void toPoint() {
+    AggregatorHandle<LongAccumulation> aggregatorHandle =
+        CountAggregator.getInstance().createHandle();
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 
   @Test
   void recordLongOperations() {
-    Aggregator<LongAccumulation> aggregator = CountAggregator.getFactory().getAggregator();
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(2));
+    AggregatorHandle<LongAccumulation> aggregatorHandle =
+        CountAggregator.getInstance().createHandle();
+    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(12);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(2));
   }
 
   @Test
   void recordDoubleOperations() {
-    Aggregator<LongAccumulation> aggregator = CountAggregator.getFactory().getAggregator();
-    aggregator.recordDouble(12.3);
-    aggregator.recordDouble(12.3);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(2));
+    AggregatorHandle<LongAccumulation> aggregatorHandle =
+        CountAggregator.getInstance().createHandle();
+    aggregatorHandle.recordDouble(12.3);
+    aggregatorHandle.recordDouble(12.3);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(2));
   }
 }

@@ -11,7 +11,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -36,24 +36,24 @@ public class SynchronousInstrumentAccumulatorTest {
                 providerSharedState,
                 meterSharedState,
                 AggregationFactory.count().create(DESCRIPTOR.getValueType())));
-    Aggregator<?> aggregator = accumulator.bind(Labels.of("K", "V"));
-    Aggregator<?> duplicateAggregator = accumulator.bind(Labels.of("K", "V"));
+    AggregatorHandle<?> aggregatorHandle = accumulator.bind(Labels.of("K", "V"));
+    AggregatorHandle<?> duplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     try {
-      assertThat(duplicateAggregator).isSameAs(aggregator);
+      assertThat(duplicateAggregatorHandle).isSameAs(aggregatorHandle);
       accumulator.collectAll();
-      Aggregator<?> anotherDuplicateAggregator = accumulator.bind(Labels.of("K", "V"));
+      AggregatorHandle<?> anotherDuplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
       try {
-        assertThat(anotherDuplicateAggregator).isSameAs(aggregator);
+        assertThat(anotherDuplicateAggregatorHandle).isSameAs(aggregatorHandle);
       } finally {
-        anotherDuplicateAggregator.release();
+        anotherDuplicateAggregatorHandle.release();
       }
     } finally {
-      duplicateAggregator.release();
-      aggregator.release();
+      duplicateAggregatorHandle.release();
+      aggregatorHandle.release();
     }
 
     // At this point we should be able to unmap because all references are gone. Because this is an
     // internal detail we cannot call collectAll after this anymore.
-    assertThat(aggregator.tryUnmap()).isTrue();
+    assertThat(aggregatorHandle.tryUnmap()).isTrue();
   }
 }

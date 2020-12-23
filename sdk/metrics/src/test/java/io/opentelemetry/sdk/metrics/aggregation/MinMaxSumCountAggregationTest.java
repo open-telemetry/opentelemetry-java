@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -26,9 +26,9 @@ class MinMaxSumCountAggregationTest {
   void toMetricData() {
     Aggregation<MinMaxSumCountAccumulation> minMaxSumCount =
         AggregationFactory.minMaxSumCount().create(InstrumentValueType.LONG);
-    Aggregator<MinMaxSumCountAccumulation> aggregator =
-        minMaxSumCount.getAggregatorFactory().getAggregator();
-    aggregator.recordLong(10);
+    AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
+        minMaxSumCount.getAggregator().createHandle();
+    aggregatorHandle.recordLong(10);
 
     MetricData metricData =
         minMaxSumCount.toMetricData(
@@ -40,7 +40,7 @@ class MinMaxSumCountAggregationTest {
                 "unit",
                 InstrumentType.VALUE_RECORDER,
                 InstrumentValueType.LONG),
-            Collections.singletonMap(Labels.empty(), aggregator.accumulateThenReset()),
+            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             100);
     assertThat(metricData).isNotNull();
@@ -50,9 +50,9 @@ class MinMaxSumCountAggregationTest {
   @Test
   void getAggregatorFactory() {
     AggregationFactory minMaxSumCount = AggregationFactory.minMaxSumCount();
-    assertThat(minMaxSumCount.create(InstrumentValueType.LONG).getAggregatorFactory())
-        .isInstanceOf(LongMinMaxSumCountAggregator.getFactory().getClass());
-    assertThat(minMaxSumCount.create(InstrumentValueType.DOUBLE).getAggregatorFactory())
-        .isInstanceOf(DoubleMinMaxSumCountAggregator.getFactory().getClass());
+    assertThat(minMaxSumCount.create(InstrumentValueType.LONG).getAggregator())
+        .isInstanceOf(LongMinMaxSumCountAggregator.getInstance().getClass());
+    assertThat(minMaxSumCount.create(InstrumentValueType.DOUBLE).getAggregator())
+        .isInstanceOf(DoubleMinMaxSumCountAggregator.getInstance().getClass());
   }
 }

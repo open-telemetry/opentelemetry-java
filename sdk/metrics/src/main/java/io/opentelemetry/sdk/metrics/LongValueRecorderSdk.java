@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.LongValueRecorder;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -22,11 +22,11 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument
 
   @Override
   public void record(long value, Labels labels) {
-    Aggregator<?> aggregator = acquireHandle(labels);
+    AggregatorHandle<?> aggregatorHandle = acquireHandle(labels);
     try {
-      aggregator.recordLong(value);
+      aggregatorHandle.recordLong(value);
     } finally {
-      aggregator.release();
+      aggregatorHandle.release();
     }
   }
 
@@ -41,20 +41,20 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument
   }
 
   static final class BoundInstrument implements BoundLongValueRecorder {
-    private final Aggregator<?> aggregator;
+    private final AggregatorHandle<?> aggregatorHandle;
 
-    BoundInstrument(Aggregator<?> aggregator) {
-      this.aggregator = aggregator;
+    BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
+      this.aggregatorHandle = aggregatorHandle;
     }
 
     @Override
     public void record(long value) {
-      aggregator.recordLong(value);
+      aggregatorHandle.recordLong(value);
     }
 
     @Override
     public void unbind() {
-      aggregator.release();
+      aggregatorHandle.release();
     }
   }
 
