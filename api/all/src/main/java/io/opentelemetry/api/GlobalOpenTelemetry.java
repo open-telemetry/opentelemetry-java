@@ -49,21 +49,25 @@ public final class GlobalOpenTelemetry {
    *     interface FQCN but the specified provider cannot be found.
    */
   public static OpenTelemetry get() {
-    if (globalOpenTelemetry == null) {
+    OpenTelemetry current = globalOpenTelemetry;
+    if (current == null) {
       synchronized (mutex) {
-        if (globalOpenTelemetry == null) {
+        current = globalOpenTelemetry;
+        if (current == null) {
           SdkChecker.logIfSdkFound();
 
           OpenTelemetryFactory openTelemetryFactory = Utils.loadSpi(OpenTelemetryFactory.class);
           if (openTelemetryFactory != null) {
+            current = openTelemetryFactory.create();
             set(openTelemetryFactory.create());
           } else {
-            set(DefaultOpenTelemetry.builder().build());
+            current = DefaultOpenTelemetry.builder().build();
           }
+          set(current);
         }
       }
     }
-    return globalOpenTelemetry;
+    return current;
   }
 
   /**
