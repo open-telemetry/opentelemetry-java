@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,7 +56,15 @@ class SdkTracerProviderTest {
 
   @Test
   void builder_NullTraceConfig() {
-    assertThatThrownBy(() -> SdkTracerProvider.builder().setTraceConfig(null))
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setTraceConfig((TraceConfig) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("traceConfig");
+  }
+
+  @Test
+  void builder_NullTraceConfigSupplier() {
+    assertThatThrownBy(
+            () -> SdkTracerProvider.builder().setTraceConfig((Supplier<TraceConfig>) null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("traceConfig");
   }

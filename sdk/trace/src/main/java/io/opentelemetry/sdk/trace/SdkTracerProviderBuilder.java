@@ -78,9 +78,8 @@ public final class SdkTracerProviderBuilder {
    *
    * @return this
    */
-  public SdkTracerProviderBuilder setTraceConfigSupplier(
-      Supplier<TraceConfig> traceConfigSupplier) {
-    requireNonNull(traceConfigSupplier, "traceConfigSupplier");
+  public SdkTracerProviderBuilder setTraceConfig(Supplier<TraceConfig> traceConfigSupplier) {
+    requireNonNull(traceConfigSupplier, "traceConfig");
     this.traceConfigSupplier = traceConfigSupplier;
     return this;
   }
