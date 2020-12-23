@@ -44,11 +44,11 @@ abstract class SumAggregation<T extends Accumulation> extends AbstractAggregatio
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, ? extends Accumulation> accumulationMap,
+      Map<Labels, T> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
     List<MetricData.Point> points =
-        MetricDataUtils.getPointList(accumulationMap, startEpochNanos, epochNanos);
+        MetricDataUtils.getPointList(accumulationByLabels, startEpochNanos, epochNanos);
     boolean isMonotonic =
         descriptor.getType() == InstrumentType.COUNTER
             || descriptor.getType() == InstrumentType.SUM_OBSERVER;

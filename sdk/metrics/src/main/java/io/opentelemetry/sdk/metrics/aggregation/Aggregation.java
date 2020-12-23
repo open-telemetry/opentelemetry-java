@@ -45,7 +45,7 @@ public interface Aggregation<T extends Accumulation> {
    * @param instrumentationLibraryInfo the InstrumentationLibraryInfo associated with the {@code
    *     Instrument}.
    * @param descriptor the InstrumentDescriptor of the {@code Instrument}.
-   * @param accumulationMap the map of Labels to Accumulation.
+   * @param accumulationByLabels the map of Labels to Accumulation.
    * @param startEpochNanos the startEpochNanos for the {@code Point}.
    * @param epochNanos the epochNanos for the {@code Point}.
    * @return the {@link MetricData.Type} that this {@code Aggregation} will produce.
@@ -55,7 +55,7 @@ public interface Aggregation<T extends Accumulation> {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, ? extends Accumulation> accumulationMap,
+      Map<Labels, T> accumulationByLabels,
       long startEpochNanos,
       long epochNanos);
 }

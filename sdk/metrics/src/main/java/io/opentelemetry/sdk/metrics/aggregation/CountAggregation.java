@@ -37,11 +37,11 @@ final class CountAggregation implements Aggregation<LongAccumulation> {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, ? extends Accumulation> accumulationMap,
+      Map<Labels, LongAccumulation> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
     List<MetricData.Point> points =
-        MetricDataUtils.getPointList(accumulationMap, startEpochNanos, epochNanos);
+        MetricDataUtils.getPointList(accumulationByLabels, startEpochNanos, epochNanos);
 
     return MetricData.createLongSum(
         resource,
