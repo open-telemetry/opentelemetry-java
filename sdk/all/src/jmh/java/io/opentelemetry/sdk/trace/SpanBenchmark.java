@@ -36,12 +36,11 @@ public class SpanBenchmark {
 
   @Setup(Level.Trial)
   public final void setup() {
-    SdkTracerProvider tracerProvider =
-        SdkTracerProvider.builder().setResource(serviceResource).build();
 
     TraceConfig alwaysOn =
-        tracerProvider.getActiveTraceConfig().toBuilder().setSampler(Sampler.alwaysOn()).build();
-    tracerProvider.updateActiveTraceConfig(alwaysOn);
+        TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOn()).build();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder().setResource(serviceResource).setTraceConfig(alwaysOn).build();
 
     Tracer tracerSdk = tracerProvider.get("benchmarkTracer");
     sdkSpanBuilder =
