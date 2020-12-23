@@ -44,14 +44,11 @@ final class MinMaxSumCountAggregation extends AbstractAggregation<MinMaxSumCount
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, ? extends Accumulation> accumulationMap,
+      Map<Labels, MinMaxSumCountAccumulation> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    if (accumulationMap.isEmpty()) {
-      return null;
-    }
     List<MetricData.Point> points =
-        MetricDataUtils.getPointList(accumulationMap, startEpochNanos, epochNanos);
+        MetricDataUtils.getPointList(accumulationByLabels, startEpochNanos, epochNanos);
     return MetricData.createDoubleSummary(
         resource,
         instrumentationLibraryInfo,
