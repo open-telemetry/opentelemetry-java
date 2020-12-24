@@ -115,6 +115,7 @@ class SdkTracerProviderTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")  // Testing the deprecated method
   void updateActiveTraceConfig() {
     assertThat(tracerFactory.getActiveTraceConfig()).isEqualTo(TraceConfig.getDefault());
     TraceConfig newConfig =
