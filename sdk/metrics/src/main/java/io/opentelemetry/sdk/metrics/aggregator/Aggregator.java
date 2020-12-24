@@ -8,7 +8,14 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import javax.annotation.concurrent.Immutable;
 
-/** Factory class for {@link AggregatorHandle}. */
+/**
+ * Aggregator represents the abstract class for all the available aggregations that can be computed
+ * during the accumulation phase for all the instrument.
+ *
+ * <p>The synchronous instruments will create an {@link AggregatorHandle} to record individual
+ * measurements synchronously, and for asynchronous the {@link #accumulateDouble(double)} or {@link
+ * #accumulateLong(long)} will be used when reading values from the instrument callbacks.
+ */
 @Immutable
 public interface Aggregator<T extends Accumulation> {
 

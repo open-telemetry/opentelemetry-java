@@ -8,16 +8,22 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Aggregator represents the abstract class for all the available aggregations that can be computed
- * during the accumulation phase for a synchronous instrument.
+ * Aggregator represents the abstract class that is used for synchronous instruments. It must be
+ * thread-safe and avoid locking when possible, because values are recorded synchronously on the
+ * calling thread.
+ *
+ * <p>An {@link AggregatorHandle} must be created for every unique {@code LabelSet} recorded, and
+ * can be referenced by the bound instruments.
  *
  * <p>It atomically counts the number of references (usages) while also keeping a state of
  * mapped/unmapped into an external map. It uses an atomic value where the least significant bit is
  * used to keep the state of mapping ('1' is used for unmapped and '0' is for mapped) and the rest
  * of the bits are used for reference (usage) counting.
  */
+@ThreadSafe
 public abstract class AggregatorHandle<T extends Accumulation> {
   // Atomically counts the number of references (usages) while also keeping a state of
   // mapped/unmapped into a registry map.
