@@ -39,11 +39,11 @@ final class LastValueAggregation<T extends Accumulation> extends AbstractAggrega
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, ? extends Accumulation> accumulationMap,
+      Map<Labels, T> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
     List<MetricData.Point> points =
-        MetricDataUtils.getPointList(accumulationMap, startEpochNanos, epochNanos);
+        MetricDataUtils.getPointList(accumulationByLabels, startEpochNanos, epochNanos);
 
     switch (descriptor.getType()) {
       case SUM_OBSERVER:

@@ -24,8 +24,9 @@ class LastValueAggregationTest {
 
   @Test
   void toMetricData() {
-    Aggregation<?> lastValue = AggregationFactory.lastValue().create(InstrumentValueType.LONG);
-    Aggregator<?> aggregator = lastValue.getAggregatorFactory().getAggregator();
+    Aggregation<LongAccumulation> lastValue =
+        AggregationFactory.lastValue().create(InstrumentValueType.LONG);
+    Aggregator<LongAccumulation> aggregator = lastValue.getAggregatorFactory().getAggregator();
     aggregator.recordLong(10);
 
     MetricData metricData =
