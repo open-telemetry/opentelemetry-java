@@ -287,6 +287,38 @@ class W3CTraceContextPropagatorTest {
   }
 
   @Test
+  void extract_invalidDelimiters() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(
+        W3CTraceContextPropagator.TRACE_PARENT,
+        "01+" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00-02");
+    assertThat(
+            getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(SpanContext.getInvalid());
+
+    carrier.put(
+        W3CTraceContextPropagator.TRACE_PARENT,
+        "01-" + TRACE_ID_BASE16 + "+" + SPAN_ID_BASE16 + "-00-02");
+    assertThat(
+            getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(SpanContext.getInvalid());
+
+    carrier.put(
+        W3CTraceContextPropagator.TRACE_PARENT,
+        "01-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "+00-02");
+    assertThat(
+            getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(SpanContext.getInvalid());
+
+    carrier.put(
+        W3CTraceContextPropagator.TRACE_PARENT,
+        "01-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00+02");
+    assertThat(
+            getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(SpanContext.getInvalid());
+  }
+
+  @Test
   void extract_InvalidTraceId() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(

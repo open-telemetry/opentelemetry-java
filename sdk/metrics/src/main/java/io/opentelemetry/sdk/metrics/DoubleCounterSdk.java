@@ -7,28 +7,28 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.DoubleCounter;
-import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
-final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
-    implements DoubleCounter {
+final class DoubleCounterSdk extends AbstractSynchronousInstrument implements DoubleCounter {
 
   private DoubleCounterSdk(
-      InstrumentDescriptor descriptor,
-      SynchronousInstrumentAccumulator<BoundInstrument> accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
     super(descriptor, accumulator);
   }
 
   @Override
   public void add(double increment, Labels labels) {
-    BoundInstrument boundInstrument = bind(labels);
+    Aggregator<?> aggregator = acquireHandle(labels);
     try {
-      boundInstrument.add(increment);
+      if (increment < 0) {
+        throw new IllegalArgumentException("Counters can only increase");
+      }
+      aggregator.recordDouble(increment);
     } finally {
-      boundInstrument.unbind();
+      aggregator.release();
     }
   }
 
@@ -37,11 +37,16 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
     add(increment, Labels.empty());
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument
-      implements DoubleCounter.BoundDoubleCounter {
+  @Override
+  public BoundDoubleCounter bind(Labels labels) {
+    return new BoundInstrument(acquireHandle(labels));
+  }
 
-    BoundInstrument(Aggregator aggregator) {
-      super(aggregator);
+  static final class BoundInstrument implements DoubleCounter.BoundDoubleCounter {
+    private final Aggregator<?> aggregator;
+
+    BoundInstrument(Aggregator<?> aggregator) {
+      this.aggregator = aggregator;
     }
 
     @Override
@@ -49,7 +54,12 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
       if (increment < 0) {
         throw new IllegalArgumentException("Counters can only increase");
       }
-      recordDouble(increment);
+      aggregator.recordDouble(increment);
+    }
+
+    @Override
+    public void unbind() {
+      aggregator.release();
     }
   }
 
@@ -75,7 +85,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
 
     @Override
     public DoubleCounterSdk build() {
-      return buildInstrument(BoundInstrument::new, DoubleCounterSdk::new);
+      return buildInstrument(DoubleCounterSdk::new);
     }
   }
 }

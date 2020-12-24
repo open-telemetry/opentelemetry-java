@@ -36,6 +36,7 @@ class SpanBuilderTest {
     spanBuilder.setAttribute(stringKey("key"), "value");
     spanBuilder.setStartTimestamp(12345L, TimeUnit.NANOSECONDS);
     spanBuilder.setStartTimestamp(Instant.EPOCH);
+    spanBuilder.setStartTimestamp(null);
     assertThat(spanBuilder.startSpan().getSpanContext().isValid()).isFalse();
   }
 

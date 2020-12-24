@@ -177,36 +177,6 @@ class LongValueRecorderSdkTest {
   }
 
   @Test
-  void sameBound_ForSameLabelSet() {
-    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
-    BoundLongValueRecorder boundMeasure = longMeasure.bind(Labels.of("K", "V"));
-    BoundLongValueRecorder duplicateBoundMeasure = longMeasure.bind(Labels.of("K", "V"));
-    try {
-      assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
-    } finally {
-      boundMeasure.unbind();
-      duplicateBoundMeasure.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
-    BoundLongValueRecorder boundMeasure = longMeasure.bind(Labels.of("K", "V"));
-    try {
-      longMeasure.collectAll();
-      BoundLongValueRecorder duplicateBoundMeasure = longMeasure.bind(Labels.of("K", "V"));
-      try {
-        assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
-      } finally {
-        duplicateBoundMeasure.unbind();
-      }
-    } finally {
-      boundMeasure.unbind();
-    }
-  }
-
-  @Test
   void stressTest() {
     final LongValueRecorderSdk longMeasure =
         testSdk.longValueRecorderBuilder("testRecorder").build();

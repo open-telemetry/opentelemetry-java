@@ -55,7 +55,7 @@ public final class OpenTelemetrySdkBuilder {
    * @see GlobalOpenTelemetry
    */
   public OpenTelemetrySdk buildAndRegisterGlobal() {
-    OpenTelemetrySdk sdk = buildWithoutRegisteringGlobal();
+    OpenTelemetrySdk sdk = build();
     GlobalOpenTelemetry.set(sdk);
     return sdk;
   }
@@ -69,7 +69,7 @@ public final class OpenTelemetrySdkBuilder {
    *
    * @see GlobalOpenTelemetry
    */
-  public OpenTelemetrySdk buildWithoutRegisteringGlobal() {
+  public OpenTelemetrySdk build() {
     if (tracerProvider == null) {
       tracerProvider = SdkTracerProvider.builder().build();
     }

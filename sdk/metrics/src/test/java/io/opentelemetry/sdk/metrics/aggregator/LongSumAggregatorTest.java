@@ -14,13 +14,13 @@ import org.junit.jupiter.api.Test;
 class LongSumAggregatorTest {
   @Test
   void factoryAggregation() {
-    AggregatorFactory factory = LongSumAggregator.getFactory();
+    AggregatorFactory<LongAccumulation> factory = LongSumAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(LongSumAggregator.class);
   }
 
   @Test
   void multipleRecords() {
-    Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
+    Aggregator<LongAccumulation> aggregator = LongSumAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
     aggregator.recordLong(12);
     aggregator.recordLong(12);
@@ -32,7 +32,7 @@ class LongSumAggregatorTest {
 
   @Test
   void multipleRecords_WithNegatives() {
-    Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
+    Aggregator<LongAccumulation> aggregator = LongSumAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
     aggregator.recordLong(12);
     aggregator.recordLong(-23);
@@ -45,7 +45,7 @@ class LongSumAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
+    Aggregator<LongAccumulation> aggregator = LongSumAggregator.getFactory().getAggregator();
     aggregator.recordLong(13);
     aggregator.recordLong(12);
     assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(25));

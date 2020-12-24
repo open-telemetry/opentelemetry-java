@@ -180,38 +180,6 @@ class DoubleValueRecorderSdkTest {
   }
 
   @Test
-  void sameBound_ForSameLabelSet() {
-    DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testRecorder").build();
-    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
-    BoundDoubleValueRecorder duplicateBoundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
-    try {
-      assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
-    } finally {
-      boundMeasure.unbind();
-      duplicateBoundMeasure.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testRecorder").build();
-    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
-    try {
-      doubleMeasure.collectAll();
-      BoundDoubleValueRecorder duplicateBoundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
-      try {
-        assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
-      } finally {
-        duplicateBoundMeasure.unbind();
-      }
-    } finally {
-      boundMeasure.unbind();
-    }
-  }
-
-  @Test
   void stressTest() {
     final DoubleValueRecorderSdk doubleMeasure =
         testSdk.doubleValueRecorderBuilder("testRecorder").build();

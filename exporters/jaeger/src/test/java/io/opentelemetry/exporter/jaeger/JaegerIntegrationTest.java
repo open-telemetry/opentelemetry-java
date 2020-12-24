@@ -66,9 +66,9 @@ class JaegerIntegrationTest {
     return OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build())
+                .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
                 .build())
-        .buildWithoutRegisteringGlobal();
+        .build();
   }
 
   private void imitateWork(OpenTelemetry openTelemetry) {

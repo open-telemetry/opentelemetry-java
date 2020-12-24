@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.trace.testbed.clientserver;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
@@ -27,8 +27,7 @@ final class Server extends Thread {
 
   private void process(Message message) {
     Context context =
-        GlobalOpenTelemetry.getPropagators()
-            .getTextMapPropagator()
+        W3CTraceContextPropagator.getInstance()
             .extract(
                 Context.current(),
                 message,

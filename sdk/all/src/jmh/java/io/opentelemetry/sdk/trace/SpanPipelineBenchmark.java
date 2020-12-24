@@ -96,12 +96,11 @@ public class SpanPipelineBenchmark {
   public static class SimpleSpanProcessorBenchmark extends AbstractProcessorBenchmark {
     @Override
     protected SpanProcessor getSpanProcessor(String collectorAddress) {
-      return SimpleSpanProcessor.builder(
-              OtlpGrpcSpanExporter.builder()
-                  .setEndpoint(collectorAddress)
-                  .setDeadlineMs(50000)
-                  .build())
-          .build();
+      return SimpleSpanProcessor.create(
+          OtlpGrpcSpanExporter.builder()
+              .setEndpoint(collectorAddress)
+              .setDeadlineMs(50000)
+              .build());
     }
 
     @Override

@@ -14,19 +14,19 @@ import org.junit.jupiter.api.Test;
 class LongLastValueAggregatorTest {
   @Test
   void factoryAggregation() {
-    AggregatorFactory factory = LongLastValueAggregator.getFactory();
+    AggregatorFactory<LongAccumulation> factory = LongLastValueAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(LongLastValueAggregator.class);
   }
 
   @Test
   void toPoint() {
-    Aggregator aggregator = LongLastValueAggregator.getFactory().getAggregator();
+    Aggregator<LongAccumulation> aggregator = LongLastValueAggregator.getFactory().getAggregator();
     assertThat(aggregator.accumulateThenReset()).isNull();
   }
 
   @Test
   void multipleRecords() {
-    Aggregator aggregator = LongLastValueAggregator.getFactory().getAggregator();
+    Aggregator<LongAccumulation> aggregator = LongLastValueAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
     assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(12));
     aggregator.recordLong(13);
@@ -36,7 +36,7 @@ class LongLastValueAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    Aggregator aggregator = LongLastValueAggregator.getFactory().getAggregator();
+    Aggregator<LongAccumulation> aggregator = LongLastValueAggregator.getFactory().getAggregator();
     aggregator.recordLong(13);
     assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(13));
     assertThat(aggregator.accumulateThenReset()).isNull();

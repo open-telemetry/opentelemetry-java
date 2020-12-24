@@ -35,6 +35,7 @@ class TraceIdTest {
     assertThat(TraceId.isValid(second)).isTrue();
 
     assertThat(TraceId.isValid("000000000000004z0000000000000016")).isFalse();
+    assertThat(TraceId.isValid("001")).isFalse();
   }
 
   @Test

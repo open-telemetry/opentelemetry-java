@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -54,6 +54,7 @@ class IntervalMetricReaderTest {
               LONG_POINT_LIST));
 
   @Mock private MetricProducer metricProducer;
+  @Mock private MetricExporter metricExporter;
 
   @BeforeEach
   void setup() {
@@ -64,10 +65,15 @@ class IntervalMetricReaderTest {
   void configTest() {
     Properties options = new Properties();
     options.put("otel.imr.export.interval", "12");
-    IntervalMetricReader.Builder config = IntervalMetricReader.builder();
-    IntervalMetricReader.Builder spy = Mockito.spy(config);
-    spy.readProperties(options);
-    Mockito.verify(spy).setExportIntervalMillis(12);
+    IntervalMetricReader.Builder config =
+        IntervalMetricReader.builder()
+            .readProperties(options)
+            .setMetricProducers(Arrays.asList(metricProducer))
+            .setMetricExporter(metricExporter);
+    assertThat(config)
+        .extracting("optionsBuilder")
+        .extracting("exportIntervalMillis")
+        .isEqualTo(12L);
   }
 
   @Test

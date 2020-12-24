@@ -140,38 +140,6 @@ class LongUpDownCounterSdkTest {
   }
 
   @Test
-  void sameBound_ForSameLabelSet() {
-    LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
-    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
-    BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
-    try {
-      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-    } finally {
-      boundCounter.unbind();
-      duplicateBoundCounter.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
-    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
-    try {
-      longUpDownCounter.collectAll();
-      BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
-      try {
-        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-      } finally {
-        duplicateBoundCounter.unbind();
-      }
-    } finally {
-      boundCounter.unbind();
-    }
-  }
-
-  @Test
   void stressTest() {
     final LongUpDownCounterSdk longUpDownCounter =
         testSdk.longUpDownCounterBuilder("testUpDownCounter").build();

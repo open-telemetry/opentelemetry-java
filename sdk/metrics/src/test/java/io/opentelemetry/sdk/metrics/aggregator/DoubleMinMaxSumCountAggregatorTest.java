@@ -9,8 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
-import io.opentelemetry.sdk.metrics.aggregation.Aggregations;
+import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
 import io.opentelemetry.sdk.metrics.aggregation.MinMaxSumCountAccumulation;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -22,13 +23,15 @@ import org.junit.jupiter.api.Test;
 class DoubleMinMaxSumCountAggregatorTest {
   @Test
   void factoryAggregation() {
-    AggregatorFactory factory = DoubleMinMaxSumCountAggregator.getFactory();
+    AggregatorFactory<MinMaxSumCountAccumulation> factory =
+        DoubleMinMaxSumCountAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(DoubleMinMaxSumCountAggregator.class);
   }
 
   @Test
   void testRecordings() {
-    Aggregator aggregator = DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
+    Aggregator<MinMaxSumCountAccumulation> aggregator =
+        DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
 
     aggregator.recordDouble(100);
     assertThat(aggregator.accumulateThenReset())
@@ -45,7 +48,8 @@ class DoubleMinMaxSumCountAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    Aggregator aggregator = DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
+    Aggregator<MinMaxSumCountAccumulation> aggregator =
+        DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
     assertThat(aggregator.accumulateThenReset()).isNull();
 
     aggregator.recordDouble(100);
@@ -61,7 +65,8 @@ class DoubleMinMaxSumCountAggregatorTest {
 
   @Test
   void testMultithreadedUpdates() throws Exception {
-    final Aggregator aggregator = DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
+    final Aggregator<MinMaxSumCountAccumulation> aggregator =
+        DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
     final Summary summarizer = new Summary();
     int numberOfThreads = 10;
     final double[] updates = new double[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
@@ -108,6 +113,7 @@ class DoubleMinMaxSumCountAggregatorTest {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     @GuardedBy("lock")
+    @Nullable
     private Accumulation accumulation;
 
     void process(@Nullable Accumulation other) {
@@ -120,7 +126,10 @@ class DoubleMinMaxSumCountAggregatorTest {
           accumulation = other;
           return;
         }
-        accumulation = Aggregations.minMaxSumCount().merge(accumulation, other);
+        accumulation =
+            AggregationFactory.minMaxSumCount()
+                .create(InstrumentValueType.DOUBLE)
+                .merge(accumulation, other);
       } finally {
         lock.writeLock().unlock();
       }

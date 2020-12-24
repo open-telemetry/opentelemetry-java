@@ -12,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.nio.CharBuffer;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link BigendianEncoding}. */
 class BigendianEncodingTest {
 
   private static final long FIRST_LONG = 0x1213141516171819L;
@@ -148,6 +147,7 @@ class BigendianEncodingTest {
     assertThat(BigendianEncoding.isValidBase16String("abcdef1234567890")).isTrue();
     assertThat(BigendianEncoding.isValidBase16String("abcdefg1234567890")).isFalse();
     assertThat(BigendianEncoding.isValidBase16String("<abcdef1234567890")).isFalse();
+    assertThat(BigendianEncoding.isValidBase16String("(abcdef1234567890")).isFalse();
     assertThat(BigendianEncoding.isValidBase16String("abcdef1234567890B")).isFalse();
   }
 
@@ -175,6 +175,30 @@ class BigendianEncodingTest {
     toFromBase16StringValidate(0);
     toFromBase16StringValidate(1);
     toFromBase16StringValidate(0x7FFFFFFFFFFFFFFFL);
+  }
+
+  @Test
+  void invalidOffset() {
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("fff", 2))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("chars too small");
+  }
+
+  @Test
+  @SuppressWarnings("checkstyle:AvoidEscapedUnicodeCharacters")
+  void invalidBytes() {
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("gf", 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid character g");
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("\u0129f", 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid character \u0129");
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("fg", 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid character g");
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("f\u0129", 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid character \u0129");
   }
 
   private static void toFromByteArrayValidate(long value) {

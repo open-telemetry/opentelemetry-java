@@ -161,7 +161,7 @@ public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpa
       metadataValue = getStringProperty(CommonProperties.KEY_HEADERS, configMap);
     }
     if (metadataValue != null) {
-      for (String keyValueString : Splitter.on(';').split(metadataValue)) {
+      for (String keyValueString : Splitter.on(',').split(metadataValue)) {
         final List<String> keyValue =
             Splitter.on('=').limit(2).trimResults().omitEmptyStrings().splitToList(keyValueString);
         if (keyValue.size() == 2) {

@@ -14,19 +14,19 @@ import org.junit.jupiter.api.Test;
 class DoubleSumAggregatorTest {
   @Test
   void factoryAggregation() {
-    AggregatorFactory factory = DoubleSumAggregator.getFactory();
+    AggregatorFactory<DoubleAccumulation> factory = DoubleSumAggregator.getFactory();
     assertThat(factory.getAggregator()).isInstanceOf(DoubleSumAggregator.class);
   }
 
   @Test
   void toPoint() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
+    Aggregator<DoubleAccumulation> aggregator = DoubleSumAggregator.getFactory().getAggregator();
     assertThat(aggregator.accumulateThenReset()).isNull();
   }
 
   @Test
   void multipleRecords() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
+    Aggregator<DoubleAccumulation> aggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.1);
     aggregator.recordDouble(12.1);
@@ -37,7 +37,7 @@ class DoubleSumAggregatorTest {
 
   @Test
   void multipleRecords_WithNegatives() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
+    Aggregator<DoubleAccumulation> aggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12);
     aggregator.recordDouble(12);
     aggregator.recordDouble(-23);
@@ -49,7 +49,7 @@ class DoubleSumAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
+    Aggregator<DoubleAccumulation> aggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.recordDouble(13);
     aggregator.recordDouble(12);
     assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(25));

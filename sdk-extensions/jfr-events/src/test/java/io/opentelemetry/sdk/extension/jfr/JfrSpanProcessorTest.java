@@ -7,12 +7,10 @@ package io.opentelemetry.sdk.extension.jfr;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,25 +19,31 @@ import java.util.List;
 import jdk.jfr.Recording;
 import jdk.jfr.consumer.RecordedEvent;
 import jdk.jfr.consumer.RecordingFile;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class JfrSpanProcessorTest {
 
   private static final String OPERATION_NAME = "Test Span";
-  private final Tracer tracer;
+
+  private SdkTracerProvider sdkTracerProvider;
+  private Tracer tracer;
+
+  @BeforeEach
+  void setUp() {
+    sdkTracerProvider =
+        SdkTracerProvider.builder().addSpanProcessor(new JfrSpanProcessor()).build();
+    tracer = sdkTracerProvider.get("JfrSpanProcessorTest");
+  }
+
+  @AfterEach
+  void tearDown() {
+    sdkTracerProvider.shutdown();
+  }
 
   static {
     ContextStorage.addWrapper(JfrContextStorageWrapper::new);
-    GlobalOpenTelemetry.set(
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(
-                SdkTracerProvider.builder().addSpanProcessor(new JfrSpanProcessor()).build())
-            .buildAndRegisterGlobal());
-  }
-
-  /** Simple test to validate JFR events for Span and Scope. */
-  public JfrSpanProcessorTest() {
-    tracer = GlobalOpenTelemetry.getTracer("JfrSpanProcessorTest");
   }
 
   /**
