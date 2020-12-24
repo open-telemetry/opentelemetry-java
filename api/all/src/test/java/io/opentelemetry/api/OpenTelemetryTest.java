@@ -6,7 +6,7 @@
 package io.opentelemetry.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -101,7 +101,8 @@ class OpenTelemetryTest {
   @Test
   void testTracerNotFound() {
     System.setProperty(TracerProviderFactory.class.getName(), "io.does.not.exists");
-    assertThrows(IllegalStateException.class, () -> GlobalOpenTelemetry.getTracer("testTracer"));
+    assertThatThrownBy(() -> GlobalOpenTelemetry.getTracer("testTracer"))
+        .isInstanceOf(IllegalStateException.class);
   }
 
   @Test

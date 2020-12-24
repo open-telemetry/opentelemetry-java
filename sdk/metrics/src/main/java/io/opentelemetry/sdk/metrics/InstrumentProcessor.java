@@ -8,11 +8,10 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
+import io.opentelemetry.sdk.metrics.aggregation.Aggregation;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,18 +24,17 @@ import java.util.Objects;
  * specific {code Instrument}. It records individual measurements (via the {@code Aggregator}). It
  * batches together {@code Aggregator}s for the similar sets of labels.
  *
- * <p>The only thread safe method in this class is {@link #getAggregator()}. An entire collection
- * cycle must be protected by a lock. A collection cycle is defined by multiple calls to {@link
- * #batch(Labels, Aggregator, boolean)} followed by one {@link #completeCollectionCycle()};
+ * <p>An entire collection cycle must be protected by a lock. A collection cycle is defined by
+ * multiple calls to {@link #batch(Labels, Accumulation)} followed by one {@link
+ * #completeCollectionCycle()};
  */
-final class InstrumentProcessor {
+final class InstrumentProcessor<T extends Accumulation> {
   private final InstrumentDescriptor descriptor;
-  private final Aggregation aggregation;
+  private final Aggregation<T> aggregation;
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final Clock clock;
-  private final AggregatorFactory aggregatorFactory;
-  private Map<Labels, Aggregator> aggregatorMap;
+  private Map<Labels, T> accumulationMap;
   private long startEpochNanos;
   private final boolean delta;
 
@@ -45,12 +43,12 @@ final class InstrumentProcessor {
    * aggregation. "Cumulative" means that all metrics that are generated will be considered for the
    * lifetime of the Instrument being aggregated.
    */
-  static InstrumentProcessor getCumulativeAllLabels(
+  static <T extends Accumulation> InstrumentProcessor<T> getCumulativeAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Aggregation aggregation) {
-    return new InstrumentProcessor(
+      Aggregation<T> aggregation) {
+    return new InstrumentProcessor<>(
         descriptor,
         aggregation,
         meterProviderSharedState.getResource(),
@@ -64,12 +62,12 @@ final class InstrumentProcessor {
    * aggregation. "Delta" means that all metrics that are generated are only for the most recent
    * collection interval.
    */
-  static InstrumentProcessor getDeltaAllLabels(
+  static <T extends Accumulation> InstrumentProcessor<T> getDeltaAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Aggregation aggregation) {
-    return new InstrumentProcessor(
+      Aggregation<T> aggregation) {
+    return new InstrumentProcessor<>(
         descriptor,
         aggregation,
         meterProviderSharedState.getResource(),
@@ -80,7 +78,7 @@ final class InstrumentProcessor {
 
   private InstrumentProcessor(
       InstrumentDescriptor descriptor,
-      Aggregation aggregation,
+      Aggregation<T> aggregation,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Clock clock,
@@ -90,19 +88,9 @@ final class InstrumentProcessor {
     this.resource = resource;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.clock = clock;
-    this.aggregatorFactory = aggregation.getAggregatorFactory(descriptor.getValueType());
     this.delta = delta;
-    this.aggregatorMap = new HashMap<>();
+    this.accumulationMap = new HashMap<>();
     startEpochNanos = clock.now();
-  }
-
-  /**
-   * Returns the {@link Aggregator} that should be used by the bindings, or observers.
-   *
-   * @return the {@link Aggregator} used to aggregate individual events.
-   */
-  Aggregator getAggregator() {
-    return aggregatorFactory.getAggregator();
   }
 
   /**
@@ -110,26 +98,15 @@ final class InstrumentProcessor {
    * the {@link Labels} and merge aggregations together.
    *
    * @param labelSet the {@link Labels} associated with this {@code Aggregator}.
-   * @param aggregator the {@link Aggregator} used to aggregate individual events for the given
-   *     {@code LabelSetSdk}.
-   * @param mappedAggregator {@code true} if the {@code Aggregator} is still in used by a binding.
-   *     If {@code false} the {@code InstrumentProcessor} can reuse the {@code Aggregator} instance.
+   * @param accumulation the {@link Accumulation} produced by this instrument.
    */
-  void batch(Labels labelSet, Aggregator aggregator, boolean mappedAggregator) {
-    if (!aggregator.hasRecordings()) {
+  void batch(Labels labelSet, T accumulation) {
+    T currentAccumulation = accumulationMap.get(labelSet);
+    if (currentAccumulation == null) {
+      accumulationMap.put(labelSet, accumulation);
       return;
     }
-    Aggregator currentAggregator = aggregatorMap.get(labelSet);
-    if (currentAggregator == null) {
-      // This aggregator is not mapped, we can use this instance.
-      if (!mappedAggregator) {
-        aggregatorMap.put(labelSet, aggregator);
-        return;
-      }
-      currentAggregator = aggregatorFactory.getAggregator();
-      aggregatorMap.put(labelSet, currentAggregator);
-    }
-    aggregator.mergeToAndReset(currentAggregator);
+    accumulationMap.put(labelSet, aggregation.merge(currentAccumulation, accumulation));
   }
 
   /**
@@ -144,7 +121,7 @@ final class InstrumentProcessor {
    */
   List<MetricData> completeCollectionCycle() {
     long epochNanos = clock.now();
-    if (aggregatorMap.isEmpty()) {
+    if (accumulationMap.isEmpty()) {
       return Collections.emptyList();
     }
 
@@ -153,16 +130,20 @@ final class InstrumentProcessor {
             resource,
             instrumentationLibraryInfo,
             descriptor,
-            aggregatorMap,
+            accumulationMap,
             startEpochNanos,
             epochNanos);
 
     if (delta) {
       startEpochNanos = epochNanos;
-      aggregatorMap = new HashMap<>();
+      accumulationMap = new HashMap<>();
     }
 
     return metricData == null ? Collections.emptyList() : Collections.singletonList(metricData);
+  }
+
+  Aggregation<T> getAggregation() {
+    return this.aggregation;
   }
 
   /**
@@ -173,6 +154,7 @@ final class InstrumentProcessor {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -181,7 +163,7 @@ final class InstrumentProcessor {
       return false;
     }
 
-    InstrumentProcessor allLabels = (InstrumentProcessor) o;
+    InstrumentProcessor<T> allLabels = (InstrumentProcessor<T>) o;
 
     if (startEpochNanos != allLabels.startEpochNanos) {
       return false;
@@ -204,10 +186,7 @@ final class InstrumentProcessor {
     if (!Objects.equals(clock, allLabels.clock)) {
       return false;
     }
-    if (!Objects.equals(aggregatorFactory, allLabels.aggregatorFactory)) {
-      return false;
-    }
-    return Objects.equals(aggregatorMap, allLabels.aggregatorMap);
+    return Objects.equals(accumulationMap, allLabels.accumulationMap);
   }
 
   @Override
@@ -219,8 +198,7 @@ final class InstrumentProcessor {
         31 * result
             + (instrumentationLibraryInfo != null ? instrumentationLibraryInfo.hashCode() : 0);
     result = 31 * result + (clock != null ? clock.hashCode() : 0);
-    result = 31 * result + (aggregatorFactory != null ? aggregatorFactory.hashCode() : 0);
-    result = 31 * result + (aggregatorMap != null ? aggregatorMap.hashCode() : 0);
+    result = 31 * result + (accumulationMap != null ? accumulationMap.hashCode() : 0);
     result = 31 * result + (int) (startEpochNanos ^ (startEpochNanos >>> 32));
     result = 31 * result + (delta ? 1 : 0);
     return result;

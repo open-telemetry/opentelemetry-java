@@ -72,8 +72,10 @@ public class SpanPipelineBenchmark {
           TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOn()).build();
 
       SdkTracerProvider tracerProvider =
-          SdkTracerProvider.builder().setTraceConfig(alwaysOn).build();
-      tracerProvider.addSpanProcessor(getSpanProcessor(address));
+          SdkTracerProvider.builder()
+              .setTraceConfig(alwaysOn)
+              .addSpanProcessor(getSpanProcessor(address))
+              .build();
 
       Tracer tracerSdk = tracerProvider.get("PipelineBenchmarkTracer");
       sdkSpanBuilder = (SdkSpanBuilder) tracerSdk.spanBuilder("PipelineBenchmarkSpan");
@@ -94,12 +96,11 @@ public class SpanPipelineBenchmark {
   public static class SimpleSpanProcessorBenchmark extends AbstractProcessorBenchmark {
     @Override
     protected SpanProcessor getSpanProcessor(String collectorAddress) {
-      return SimpleSpanProcessor.builder(
-              OtlpGrpcSpanExporter.builder()
-                  .setEndpoint(collectorAddress)
-                  .setDeadlineMs(50000)
-                  .build())
-          .build();
+      return SimpleSpanProcessor.create(
+          OtlpGrpcSpanExporter.builder()
+              .setEndpoint(collectorAddress)
+              .setDeadlineMs(50000)
+              .build());
     }
 
     @Override

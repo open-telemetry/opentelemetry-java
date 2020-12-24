@@ -15,7 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -28,6 +28,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -37,7 +38,6 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -58,26 +58,28 @@ class SdkSpanBuilderTest {
           TraceState.getDefault());
   private final SpanProcessor mockedSpanProcessor = Mockito.mock(SpanProcessor.class);
 
-  private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
-  private final SdkTracer sdkTracer = (SdkTracer) tracerSdkFactory.get("SpanBuilderSdkTest");
+  private SdkTracer sdkTracer;
 
   @BeforeEach
   public void setUp() {
+    SdkTracerProvider tracerSdkFactory =
+        SdkTracerProvider.builder().addSpanProcessor(mockedSpanProcessor).build();
+    sdkTracer = (SdkTracer) tracerSdkFactory.get("SpanBuilderSdkTest");
+
     Mockito.when(mockedSpanProcessor.isStartRequired()).thenReturn(true);
     Mockito.when(mockedSpanProcessor.isEndRequired()).thenReturn(true);
-    tracerSdkFactory.addSpanProcessor(mockedSpanProcessor);
   }
 
   @Test
   void setSpanKind_null() {
-    assertThrows(
-        NullPointerException.class, () -> sdkTracer.spanBuilder(SPAN_NAME).setSpanKind(null));
+    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).setSpanKind(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void setParent_null() {
-    assertThrows(
-        NullPointerException.class, () -> sdkTracer.spanBuilder(SPAN_NAME).setParent(null));
+    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).setParent(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -99,12 +101,10 @@ class SdkSpanBuilderTest {
   void truncateLink() {
     final int maxNumberOfLinks = 8;
     TraceConfig traceConfig =
-        tracerSdkFactory.getActiveTraceConfig().toBuilder()
-            .setMaxNumberOfLinks(maxNumberOfLinks)
-            .build();
-    tracerSdkFactory.updateActiveTraceConfig(traceConfig);
+        TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(maxNumberOfLinks).build();
+    TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
     // Verify methods do not crash.
-    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
+    SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
       spanBuilder.addLink(sampledSpanContext);
     }
@@ -119,18 +119,16 @@ class SdkSpanBuilderTest {
       }
     } finally {
       span.end();
-      tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
     }
   }
 
   @Test
   void truncateLinkAttributes() {
     TraceConfig traceConfig =
-        tracerSdkFactory.getActiveTraceConfig().toBuilder()
-            .setMaxNumberOfAttributesPerLink(1)
-            .build();
-    tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
+        TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributesPerLink(1).build();
+    TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
+    // Verify methods do not crash.
+    SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     Attributes attributes =
         Attributes.of(
             stringKey("key0"), "str",
@@ -144,7 +142,6 @@ class SdkSpanBuilderTest {
               Link.create(sampledSpanContext, Attributes.of(stringKey("key0"), "str"), 3));
     } finally {
       span.end();
-      tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
     }
   }
 
@@ -173,21 +170,22 @@ class SdkSpanBuilderTest {
 
   @Test
   void addLinkSpanContext_null() {
-    assertThrows(NullPointerException.class, () -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null));
+    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void addLinkSpanContextAttributes_nullContext() {
-    assertThrows(
-        NullPointerException.class,
-        () -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty()));
+    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty()))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void addLinkSpanContextAttributes_nullAttributes() {
-    assertThrows(
-        NullPointerException.class,
-        () -> sdkTracer.spanBuilder(SPAN_NAME).addLink(Span.getInvalid().getSpanContext(), null));
+    assertThatThrownBy(
+            () ->
+                sdkTracer.spanBuilder(SPAN_NAME).addLink(Span.getInvalid().getSpanContext(), null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -353,11 +351,10 @@ class SdkSpanBuilderTest {
   void droppingAttributes() {
     final int maxNumberOfAttrs = 8;
     TraceConfig traceConfig =
-        tracerSdkFactory.getActiveTraceConfig().toBuilder()
-            .setMaxNumberOfAttributes(maxNumberOfAttrs)
-            .build();
-    tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
+        TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributes(maxNumberOfAttrs).build();
+    TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
+    // Verify methods do not crash.
+    SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfAttrs; i++) {
       spanBuilder.setAttribute("key" + i, i);
     }
@@ -370,18 +367,16 @@ class SdkSpanBuilderTest {
       }
     } finally {
       span.end();
-      tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
     }
   }
 
   @Test
   public void tooLargeAttributeValuesAreTruncated() {
     TraceConfig traceConfig =
-        tracerSdkFactory.getActiveTraceConfig().toBuilder()
-            .setMaxLengthOfAttributeValues(10)
-            .build();
-    tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
+        TraceConfig.getDefault().toBuilder().setMaxLengthOfAttributeValues(10).build();
+    TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
+    // Verify methods do not crash.
+    SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("builderStringNull", null);
     spanBuilder.setAttribute("builderStringSmall", "small");
     spanBuilder.setAttribute("builderStringLarge", "very large string that we have to cut");
@@ -419,18 +414,16 @@ class SdkSpanBuilderTest {
           .isEqualTo(Arrays.asList("small", null, "very large"));
     } finally {
       span.end();
-      tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
     }
   }
 
   @Test
   void addAttributes_OnlyViaSampler() {
     TraceConfig traceConfig =
-        tracerSdkFactory.getActiveTraceConfig().toBuilder()
-            .setSampler(Sampler.traceIdRatioBased(1))
-            .build();
-    tracerSdkFactory.updateActiveTraceConfig(traceConfig);
-    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
+        TraceConfig.getDefault().toBuilder().setSampler(Sampler.traceIdRatioBased(1)).build();
+    TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
+    // Verify methods do not crash.
+    SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
@@ -440,7 +433,6 @@ class SdkSpanBuilderTest {
           .isEqualTo(1);
     } finally {
       span.end();
-      tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
     }
   }
 
@@ -480,7 +472,12 @@ class SdkSpanBuilderTest {
   @Test
   void sampler() {
     Span span =
-        TestUtils.startSpanWithSampler(tracerSdkFactory, sdkTracer, SPAN_NAME, Sampler.alwaysOff())
+        SdkTracerProvider.builder()
+            .setTraceConfig(
+                TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build())
+            .build()
+            .get("test")
+            .spanBuilder(SPAN_NAME)
             .startSpan();
     try {
       assertThat(span.getSpanContext().isSampled()).isFalse();
@@ -495,38 +492,43 @@ class SdkSpanBuilderTest {
     AttributeKey<String> samplerAttributeKey = stringKey(samplerAttributeName);
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
-            TestUtils.startSpanWithSampler(
-                    tracerSdkFactory,
-                    sdkTracer,
-                    SPAN_NAME,
-                    new Sampler() {
-                      @Override
-                      public SamplingResult shouldSample(
-                          @Nullable Context parentContext,
-                          String traceId,
-                          String name,
-                          Kind spanKind,
-                          Attributes attributes,
-                          List<Link> parentLinks) {
-                        return new SamplingResult() {
-                          @Override
-                          public Decision getDecision() {
-                            return Decision.RECORD_AND_SAMPLE;
-                          }
+            SdkTracerProvider.builder()
+                .setTraceConfig(
+                    TraceConfig.getDefault().toBuilder()
+                        .setSampler(
+                            new Sampler() {
+                              @Override
+                              public SamplingResult shouldSample(
+                                  @Nullable Context parentContext,
+                                  String traceId,
+                                  String name,
+                                  Kind spanKind,
+                                  Attributes attributes,
+                                  List<Link> parentLinks) {
+                                return new SamplingResult() {
+                                  @Override
+                                  public Decision getDecision() {
+                                    return Decision.RECORD_AND_SAMPLE;
+                                  }
 
-                          @Override
-                          public Attributes getAttributes() {
-                            return Attributes.of(samplerAttributeKey, "bar");
-                          }
-                        };
-                      }
+                                  @Override
+                                  public Attributes getAttributes() {
+                                    return Attributes.of(samplerAttributeKey, "bar");
+                                  }
+                                };
+                              }
 
-                      @Override
-                      public String getDescription() {
-                        return "test sampler";
-                      }
-                    },
-                    Collections.singletonMap(samplerAttributeKey.getKey(), "none"))
+                              @Override
+                              public String getDescription() {
+                                return "test sampler";
+                              }
+                            })
+                        .build())
+                .addSpanProcessor(mockedSpanProcessor)
+                .build()
+                .get("test")
+                .spanBuilder(SPAN_NAME)
+                .setAttribute(samplerAttributeKey, "none")
                 .startSpan();
     try {
       assertThat(span.getSpanContext().isSampled()).isTrue();
@@ -543,43 +545,50 @@ class SdkSpanBuilderTest {
     AttributeKey<String> samplerAttributeKey = stringKey(samplerAttributeName);
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
-            TestUtils.startSpanWithSampler(
-                    tracerSdkFactory,
-                    sdkTracer,
-                    SPAN_NAME,
-                    new Sampler() {
-                      @Override
-                      public SamplingResult shouldSample(
-                          Context parentContext,
-                          String traceId,
-                          String name,
-                          Kind spanKind,
-                          Attributes attributes,
-                          List<Link> parentLinks) {
-                        return new SamplingResult() {
-                          @Override
-                          public Decision getDecision() {
-                            return Decision.RECORD_AND_SAMPLE;
-                          }
+            SdkTracerProvider.builder()
+                .setTraceConfig(
+                    TraceConfig.getDefault().toBuilder()
+                        .setSampler(
+                            new Sampler() {
+                              @Override
+                              public SamplingResult shouldSample(
+                                  Context parentContext,
+                                  String traceId,
+                                  String name,
+                                  Kind spanKind,
+                                  Attributes attributes,
+                                  List<Link> parentLinks) {
+                                return new SamplingResult() {
+                                  @Override
+                                  public Decision getDecision() {
+                                    return Decision.RECORD_AND_SAMPLE;
+                                  }
 
-                          @Override
-                          public Attributes getAttributes() {
-                            return Attributes.empty();
-                          }
+                                  @Override
+                                  public Attributes getAttributes() {
+                                    return Attributes.empty();
+                                  }
 
-                          @Override
-                          public TraceState getUpdatedTraceState(TraceState parentTraceState) {
-                            return parentTraceState.toBuilder().set("newkey", "newValue").build();
-                          }
-                        };
-                      }
+                                  @Override
+                                  public TraceState getUpdatedTraceState(
+                                      TraceState parentTraceState) {
+                                    return parentTraceState.toBuilder()
+                                        .set("newkey", "newValue")
+                                        .build();
+                                  }
+                                };
+                              }
 
-                      @Override
-                      public String getDescription() {
-                        return "test sampler";
-                      }
-                    },
-                    Collections.singletonMap(samplerAttributeKey.getKey(), "none"))
+                              @Override
+                              public String getDescription() {
+                                return "test sampler";
+                              }
+                            })
+                        .build())
+                .build()
+                .get("test")
+                .spanBuilder(SPAN_NAME)
+                .setAttribute(samplerAttributeKey, "none")
                 .startSpan();
     try {
       assertThat(span.getSpanContext().isSampled()).isTrue();
@@ -591,12 +600,16 @@ class SdkSpanBuilderTest {
     }
   }
 
+  // TODO(anuraaga): Is this test correct? It's not sampled
   @Test
   void sampledViaParentLinks() {
     Span span =
-        TestUtils.startSpanWithSampler(
-                tracerSdkFactory, sdkTracer, SPAN_NAME, Sampler.traceIdRatioBased(0.0))
-            .addLink(sampledSpanContext)
+        SdkTracerProvider.builder()
+            .setTraceConfig(
+                TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build())
+            .build()
+            .get("test")
+            .spanBuilder(SPAN_NAME)
             .startSpan();
     try {
       assertThat(span.getSpanContext().isSampled()).isFalse();
@@ -823,10 +836,10 @@ class SdkSpanBuilderTest {
 
   @Test
   void startTimestamp_null() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> sdkTracer.spanBuilder(SPAN_NAME).setStartTimestamp(-1, TimeUnit.NANOSECONDS),
-        "Negative startTimestamp");
+    assertThatThrownBy(
+            () -> sdkTracer.spanBuilder(SPAN_NAME).setStartTimestamp(-1, TimeUnit.NANOSECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Negative startTimestamp");
   }
 
   @Test

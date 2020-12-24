@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.junit.jupiter.api.Test;
@@ -26,57 +26,52 @@ class TraceConfigTest {
 
   @Test
   void updateTraceConfig_NullSampler() {
-    assertThrows(
-        NullPointerException.class, () -> TraceConfig.getDefault().toBuilder().setSampler(null));
+    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().setSampler(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfAttributes() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributes(0));
+    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributes(0))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfEvents() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfEvents(0));
+    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().setMaxNumberOfEvents(0))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfLinks() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(0));
+    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(0))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfAttributesPerEvent() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributesPerEvent(0));
+    assertThatThrownBy(
+            () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributesPerEvent(0))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfAttributesPerLink() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributesPerLink(0));
+    assertThatThrownBy(
+            () -> TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributesPerLink(0))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void updateTraceConfig_InvalidTraceIdRatioBased() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(2));
+    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(2))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void updateTraceConfig_NegativeTraceIdRatioBased() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(-1));
+    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().setTraceIdRatioBased(-1))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

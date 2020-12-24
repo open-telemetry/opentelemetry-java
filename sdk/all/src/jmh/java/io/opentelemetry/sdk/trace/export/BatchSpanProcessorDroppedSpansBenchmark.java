@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -15,6 +14,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,7 +66,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
       SpanExporter exporter = new DelayingSpanExporter();
       processor = BatchSpanProcessor.builder(exporter).build();
 
-      tracer = GlobalOpenTelemetry.getTracerProvider().get("benchmarkTracer");
+      tracer = SdkTracerProvider.builder().build().get("benchmarkTracer");
     }
 
     @TearDown(Level.Trial)

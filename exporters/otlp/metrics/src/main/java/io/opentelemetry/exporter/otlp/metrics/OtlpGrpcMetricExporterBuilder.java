@@ -19,7 +19,8 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Builder utility for this exporter. */
-public class OtlpGrpcMetricExporterBuilder extends ConfigBuilder<OtlpGrpcMetricExporterBuilder> {
+public final class OtlpGrpcMetricExporterBuilder
+    extends ConfigBuilder<OtlpGrpcMetricExporterBuilder> {
   private static final String KEY_TIMEOUT = "otel.exporter.otlp.metric.timeout";
   private static final String KEY_ENDPOINT = "otel.exporter.otlp.metric.endpoint";
   private static final String KEY_INSECURE = "otel.exporter.otlp.metric.insecure";
@@ -161,7 +162,7 @@ public class OtlpGrpcMetricExporterBuilder extends ConfigBuilder<OtlpGrpcMetricE
       metadataValue = getStringProperty(CommonProperties.KEY_HEADERS, configMap);
     }
     if (metadataValue != null) {
-      for (String keyValueString : Splitter.on(';').split(metadataValue)) {
+      for (String keyValueString : Splitter.on(',').split(metadataValue)) {
         final List<String> keyValue =
             Splitter.on('=').limit(2).trimResults().omitEmptyStrings().splitToList(keyValueString);
         if (keyValue.size() == 2) {

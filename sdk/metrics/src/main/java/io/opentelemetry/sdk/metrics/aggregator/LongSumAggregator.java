@@ -5,35 +5,39 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import java.util.concurrent.atomic.LongAdder;
 
-public final class LongSumAggregator extends AbstractAggregator {
+public final class LongSumAggregator extends Aggregator<LongAccumulation> {
+  private static final AggregatorFactory<LongAccumulation> AGGREGATOR_FACTORY =
+      new AggregatorFactory<LongAccumulation>() {
+        @Override
+        public Aggregator<LongAccumulation> getAggregator() {
+          return new LongSumAggregator();
+        }
 
-  private static final AggregatorFactory AGGREGATOR_FACTORY = LongSumAggregator::new;
+        @Override
+        public LongAccumulation accumulateLong(long value) {
+          return LongAccumulation.create(value);
+        }
+      };
 
   private final LongAdder current = new LongAdder();
+
+  private LongSumAggregator() {}
 
   /**
    * Returns an {@link AggregatorFactory} that produces {@link LongSumAggregator} instances.
    *
    * @return an {@link AggregatorFactory} that produces {@link LongSumAggregator} instances.
    */
-  public static AggregatorFactory getFactory() {
+  public static AggregatorFactory<LongAccumulation> getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
   @Override
-  void doMergeAndReset(Aggregator aggregator) {
-    LongSumAggregator other = (LongSumAggregator) aggregator;
-    other.current.add(this.current.sumThenReset());
-  }
-
-  @Override
-  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
-    return LongPoint.create(startEpochNanos, epochNanos, labels, current.sum());
+  protected LongAccumulation doAccumulateThenReset() {
+    return LongAccumulation.create(this.current.sumThenReset());
   }
 
   @Override

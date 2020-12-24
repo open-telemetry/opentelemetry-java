@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
+import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
-import io.opentelemetry.sdk.metrics.view.Aggregations;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -40,16 +40,16 @@ final class ViewRegistry {
       new LinkedHashMap<>();
   private static final AggregationConfiguration CUMULATIVE_SUM =
       AggregationConfiguration.create(
-          Aggregations.sum(), MetricData.AggregationTemporality.CUMULATIVE);
+          AggregationFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_SUMMARY =
       AggregationConfiguration.create(
-          Aggregations.minMaxSumCount(), MetricData.AggregationTemporality.DELTA);
+          AggregationFactory.minMaxSumCount(), MetricData.AggregationTemporality.DELTA);
   private static final AggregationConfiguration CUMULATIVE_LAST_VALUE =
       AggregationConfiguration.create(
-          Aggregations.lastValue(), MetricData.AggregationTemporality.CUMULATIVE);
+          AggregationFactory.lastValue(), MetricData.AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_LAST_VALUE =
       AggregationConfiguration.create(
-          Aggregations.lastValue(), MetricData.AggregationTemporality.DELTA);
+          AggregationFactory.lastValue(), MetricData.AggregationTemporality.DELTA);
 
   private final ReentrantLock collectLock = new ReentrantLock();
   private volatile EnumMap<InstrumentType, LinkedHashMap<Pattern, AggregationConfiguration>>
@@ -84,23 +84,27 @@ final class ViewRegistry {
   }
 
   /** Create a new {@link InstrumentProcessor} for use in metric recording aggregation. */
-  InstrumentProcessor createBatcher(
+  <T extends Accumulation> InstrumentProcessor<T> createBatcher(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
 
     AggregationConfiguration specification = chooseAggregation(descriptor);
-
-    Aggregation aggregation = specification.aggregation();
-
-    if (MetricData.AggregationTemporality.CUMULATIVE == specification.temporality()) {
-      return InstrumentProcessor.getCumulativeAllLabels(
-          descriptor, meterProviderSharedState, meterSharedState, aggregation);
-    } else if (MetricData.AggregationTemporality.DELTA == specification.temporality()) {
-      return InstrumentProcessor.getDeltaAllLabels(
-          descriptor, meterProviderSharedState, meterSharedState, aggregation);
+    switch (specification.getTemporality()) {
+      case CUMULATIVE:
+        return InstrumentProcessor.getCumulativeAllLabels(
+            descriptor,
+            meterProviderSharedState,
+            meterSharedState,
+            specification.getAggregationFactory().create(descriptor.getValueType()));
+      case DELTA:
+        return InstrumentProcessor.getDeltaAllLabels(
+            descriptor,
+            meterProviderSharedState,
+            meterSharedState,
+            specification.getAggregationFactory().create(descriptor.getValueType()));
     }
-    throw new IllegalStateException("unsupported Temporality: " + specification.temporality());
+    throw new IllegalStateException("unsupported Temporality: " + specification.getTemporality());
   }
 
   // Visible for tests.

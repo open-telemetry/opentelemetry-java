@@ -9,10 +9,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
@@ -36,7 +36,6 @@ class JaegerIntegrationTest {
   private static final int COLLECTOR_PORT = 14250;
   private static final String SERVICE_NAME = "E2E-test";
   private static final String JAEGER_URL = "http://localhost";
-  private final Tracer tracer = GlobalOpenTelemetry.getTracer(getClass().getCanonicalName());
 
   @Container
   public static GenericContainer<?> jaegerContainer =
@@ -46,14 +45,14 @@ class JaegerIntegrationTest {
 
   @Test
   void testJaegerIntegration() {
-    setupJaegerExporter();
-    imitateWork();
+    OpenTelemetry openTelemetry = initOpenTelemetry();
+    imitateWork(openTelemetry);
     Awaitility.await()
         .atMost(Duration.ofSeconds(30))
         .until(JaegerIntegrationTest::assertJaegerHaveTrace);
   }
 
-  private static void setupJaegerExporter() {
+  private static OpenTelemetry initOpenTelemetry() {
     ManagedChannel jaegerChannel =
         ManagedChannelBuilder.forAddress("127.0.0.1", jaegerContainer.getMappedPort(COLLECTOR_PORT))
             .usePlaintext()
@@ -64,12 +63,17 @@ class JaegerIntegrationTest {
             .setChannel(jaegerChannel)
             .setDeadlineMs(30000)
             .build();
-    OpenTelemetrySdk.getGlobalTracerManagement()
-        .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
+                .build())
+        .build();
   }
 
-  private void imitateWork() {
-    Span span = this.tracer.spanBuilder("Test span").startSpan();
+  private void imitateWork(OpenTelemetry openTelemetry) {
+    Span span =
+        openTelemetry.getTracer(getClass().getCanonicalName()).spanBuilder("Test span").startSpan();
     span.addEvent("some event");
     try {
       Thread.sleep(1000);

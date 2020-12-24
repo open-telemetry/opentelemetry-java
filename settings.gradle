@@ -26,7 +26,8 @@ plugins {
 }
 
 rootProject.name = "opentelemetry-java"
-include ":api:all",
+include ":all",
+        ":api:all",
         ":api:context",
         ":api:metrics",
         ":bom",
@@ -36,6 +37,7 @@ include ":api:all",
         ":exporters:jaeger",
         ":exporters:jaeger-thrift",
         ":exporters:logging",
+        ":exporters:logging-otlp",
         ":exporters:otlp:all",
         ":exporters:otlp:metrics",
         ":exporters:otlp:trace",

@@ -6,7 +6,7 @@
 package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,8 @@ class DefaultTracerTest {
 
   @Test
   void spanBuilderWithName_NullName() {
-    assertThrows(NullPointerException.class, () -> defaultTracer.spanBuilder(null));
+    assertThatThrownBy(() -> defaultTracer.spanBuilder(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -66,8 +67,8 @@ class DefaultTracerTest {
 
   @Test
   void testSpanContextPropagation_nullContext() {
-    assertThrows(
-        NullPointerException.class, () -> defaultTracer.spanBuilder(SPAN_NAME).setParent(null));
+    assertThatThrownBy(() -> defaultTracer.spanBuilder(SPAN_NAME).setParent(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test

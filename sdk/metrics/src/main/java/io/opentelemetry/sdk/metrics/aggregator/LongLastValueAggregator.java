@@ -5,9 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
@@ -19,39 +17,41 @@ import javax.annotation.Nullable;
  * problem because LastValueAggregator is currently only available for Observers which record all
  * values once.
  */
-public final class LongLastValueAggregator extends AbstractAggregator {
-
+public final class LongLastValueAggregator extends Aggregator<LongAccumulation> {
   @Nullable private static final Long DEFAULT_VALUE = null;
-  private static final AggregatorFactory AGGREGATOR_FACTORY = LongLastValueAggregator::new;
+  private static final AggregatorFactory<LongAccumulation> AGGREGATOR_FACTORY =
+      new AggregatorFactory<LongAccumulation>() {
+        @Override
+        public Aggregator<LongAccumulation> getAggregator() {
+          return new LongLastValueAggregator();
+        }
+
+        @Override
+        public LongAccumulation accumulateLong(long value) {
+          return LongAccumulation.create(value);
+        }
+      };
 
   private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
+
+  private LongLastValueAggregator() {}
 
   /**
    * Returns an {@link AggregatorFactory} that produces {@link LongLastValueAggregator} instances.
    *
    * @return an {@link AggregatorFactory} that produces {@link LongLastValueAggregator} instances.
    */
-  public static AggregatorFactory getFactory() {
+  public static AggregatorFactory<LongAccumulation> getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
   @Override
-  void doMergeAndReset(Aggregator aggregator) {
-    LongLastValueAggregator other = (LongLastValueAggregator) aggregator;
-    other.current.set(this.current.getAndSet(DEFAULT_VALUE));
+  protected LongAccumulation doAccumulateThenReset() {
+    return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
   }
 
   @Override
-  @Nullable
-  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
-    @Nullable Long currentValue = current.get();
-    return currentValue == null
-        ? null
-        : LongPoint.create(startEpochNanos, epochNanos, labels, currentValue);
-  }
-
-  @Override
-  public void doRecordLong(long value) {
+  protected void doRecordLong(long value) {
     current.set(value);
   }
 }

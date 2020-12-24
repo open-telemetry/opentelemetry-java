@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,13 +33,13 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SdkTracerProviderTest {
   @Mock private SpanProcessor spanProcessor;
-  private final SdkTracerProvider tracerFactory = SdkTracerProvider.builder().build();
+  private SdkTracerProvider tracerFactory;
 
   @BeforeEach
   void setUp() {
+    tracerFactory = SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
     when(spanProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(spanProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    tracerFactory.addSpanProcessor(spanProcessor);
   }
 
   @Test
@@ -55,32 +56,38 @@ class SdkTracerProviderTest {
 
   @Test
   void builder_NullTraceConfig() {
-    assertThrows(
-        NullPointerException.class,
-        () -> SdkTracerProvider.builder().setTraceConfig(null),
-        "traceConfig");
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setTraceConfig((TraceConfig) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("traceConfig");
+  }
+
+  @Test
+  void builder_NullTraceConfigSupplier() {
+    assertThatThrownBy(
+            () -> SdkTracerProvider.builder().setTraceConfig((Supplier<TraceConfig>) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("traceConfig");
   }
 
   @Test
   void builder_NullClock() {
-    assertThrows(
-        NullPointerException.class, () -> SdkTracerProvider.builder().setClock(null), "clock");
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setClock(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("clock");
   }
 
   @Test
   void builder_NullResource() {
-    assertThrows(
-        NullPointerException.class,
-        () -> SdkTracerProvider.builder().setResource(null),
-        "resource");
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setResource(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("resource");
   }
 
   @Test
   void builder_NullIdsGenerator() {
-    assertThrows(
-        NullPointerException.class,
-        () -> SdkTracerProvider.builder().setIdGenerator(null),
-        "idsGenerator");
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setIdGenerator(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("idGenerator");
   }
 
   @Test

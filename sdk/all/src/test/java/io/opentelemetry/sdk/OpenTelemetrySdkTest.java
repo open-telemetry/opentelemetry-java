@@ -26,6 +26,8 @@ import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -116,15 +118,18 @@ class OpenTelemetrySdkTest {
     TracerProvider unobfuscatedTracerProvider =
         ((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate();
 
-    assertThat(unobfuscatedTracerProvider).isInstanceOf(SdkTracerProvider.class);
+    assertThat(unobfuscatedTracerProvider)
+        .isInstanceOfSatisfying(
+            SdkTracerProvider.class,
+            sdkTracerProvider ->
+                assertThat(sdkTracerProvider.getActiveTraceConfig()).isEqualTo(traceConfig));
     // Since TracerProvider is in a different package, the only alternative to this reflective
     // approach would be to make the fields public for testing which is worse than this.
     assertThat(unobfuscatedTracerProvider)
         .extracting("sharedState")
         .hasFieldOrPropertyWithValue("clock", clock)
         .hasFieldOrPropertyWithValue("resource", resource)
-        .hasFieldOrPropertyWithValue("idGenerator", idGenerator)
-        .hasFieldOrPropertyWithValue("activeTraceConfig", traceConfig);
+        .hasFieldOrPropertyWithValue("idGenerator", idGenerator);
   }
 
   @Test
@@ -153,11 +158,8 @@ class OpenTelemetrySdkTest {
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder()
-                    // TODO: Add support to configure SpanProcessor the builder.
-                    // .addSpanProcessor(SimpleSpanProcessor.builder(
-                    //     mock(SpanExporter.class)).build())
-                    // .addSpanProcessor(SimpleSpanProcessor.builder(
-                    //     mock(SpanExporter.class)).build())
+                    .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
+                    .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                     .setClock(mock(Clock.class))
                     .setIdGenerator(mock(IdGenerator.class))
                     .setResource(mock(Resource.class))
@@ -175,8 +177,7 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                // TODO: Add support to configure SpanProcessor the builder.
-                // .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
+                .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
         .build();
@@ -189,8 +190,7 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                // TODO: Add support to configure SpanProcessor the builder.
-                // .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
+                .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                 .setTraceConfig(
                     TraceConfig.getDefault().toBuilder().setSampler(mock(Sampler.class)).build())
                 .build())
@@ -200,8 +200,7 @@ class OpenTelemetrySdkTest {
     OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                // TODO: Add support to configure SpanProcessor the builder.
-                // .addSpanProcessor(SimpleSpanProcessor.builder(mock(SpanExporter.class)).build())
+                .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                 .setTraceConfig(
                     TraceConfig.getDefault().toBuilder().setSampler(mock(Sampler.class)).build())
                 .setIdGenerator(mock(IdGenerator.class))

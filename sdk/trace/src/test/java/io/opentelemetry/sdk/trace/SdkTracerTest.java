@@ -63,8 +63,8 @@ class SdkTracerTest {
   @Test
   void stressTest() {
     CountingSpanProcessor spanProcessor = new CountingSpanProcessor();
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
-    sdkTracerProvider.addSpanProcessor(spanProcessor);
+    SdkTracerProvider sdkTracerProvider =
+        SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
     SdkTracer tracer =
         (SdkTracer)
             sdkTracerProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
@@ -86,8 +86,8 @@ class SdkTracerTest {
   void stressTest_withBatchSpanProcessor() {
     CountingSpanExporter countingSpanExporter = new CountingSpanExporter();
     SpanProcessor spanProcessor = BatchSpanProcessor.builder(countingSpanExporter).build();
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
-    sdkTracerProvider.addSpanProcessor(spanProcessor);
+    SdkTracerProvider sdkTracerProvider =
+        SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
     SdkTracer tracer =
         (SdkTracer)
             sdkTracerProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);

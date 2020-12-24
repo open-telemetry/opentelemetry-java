@@ -60,7 +60,9 @@ public interface BaggageBuilder {
    * @param value the {@code String} value to set for the given key.
    * @return this
    */
-  BaggageBuilder put(String key, String value);
+  default BaggageBuilder put(String key, String value) {
+    return put(key, value, BaggageEntryMetadata.empty());
+  }
 
   /**
    * Removes the key if it exists.

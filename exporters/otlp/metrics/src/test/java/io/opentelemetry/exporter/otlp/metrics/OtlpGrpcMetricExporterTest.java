@@ -5,8 +5,9 @@
 
 package io.opentelemetry.exporter.otlp.metrics;
 
+import static com.google.common.base.Charsets.US_ASCII;
+import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
 
 import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
@@ -37,7 +38,6 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class OtlpGrpcMetricExporterTest {
 
@@ -70,11 +70,24 @@ class OtlpGrpcMetricExporterTest {
     Properties options = new Properties();
     options.put("otel.exporter.otlp.metric.timeout", "12");
     options.put("otel.exporter.otlp.insecure", "true");
-    OtlpGrpcMetricExporterBuilder config = OtlpGrpcMetricExporter.builder();
-    OtlpGrpcMetricExporterBuilder spy = Mockito.spy(config);
-    spy.readProperties(options);
-    verify(spy).setDeadlineMs(12);
-    verify(spy).setUseTls(false);
+    options.put("otel.exporter.otlp.headers", "test_1=1,test_2=2");
+    OtlpGrpcMetricExporterBuilder config = OtlpGrpcMetricExporter.builder().readProperties(options);
+    assertThat(config).extracting("useTls").isEqualTo(false);
+    assertThat(config).extracting("deadlineMs").isEqualTo(12L);
+    assertThat(config)
+        .extracting("metadata")
+        .extracting("namesAndValues")
+        .isEqualTo(
+            new Object[] {
+              "test_1".getBytes(US_ASCII),
+              ASCII_STRING_MARSHALLER.toAsciiString("1").getBytes(US_ASCII),
+              "test_2".getBytes(US_ASCII),
+              ASCII_STRING_MARSHALLER.toAsciiString("2").getBytes(US_ASCII),
+              null,
+              null,
+              null,
+              null
+            });
   }
 
   @Test

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -13,7 +15,6 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,18 +50,29 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
+   * Returns a new {@link SimpleSpanProcessor} which exports spans to the {@link SpanExporter}
+   * synchronously.
+   */
+  public static SpanProcessor create(SpanExporter exporter) {
+    requireNonNull(exporter, "exporter");
+    return new SimpleSpanProcessor(exporter, /* sampled= */ true);
+  }
+
+  /**
    * Returns a new Builder for {@link SimpleSpanProcessor}.
    *
    * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
    * @return a new {@link SimpleSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
+   * @deprecated Use {@link SimpleSpanProcessor#create(SpanExporter)}
    */
+  @Deprecated
   public static SimpleSpanProcessorBuilder builder(SpanExporter spanExporter) {
     return new SimpleSpanProcessorBuilder(spanExporter);
   }
 
   SimpleSpanProcessor(SpanExporter spanExporter, boolean sampled) {
-    this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
+    this.spanExporter = requireNonNull(spanExporter, "spanExporter");
     this.sampled = sampled;
   }
 

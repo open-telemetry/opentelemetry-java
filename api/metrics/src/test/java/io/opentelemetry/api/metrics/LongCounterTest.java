@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.internal.StringUtils;
@@ -22,23 +22,23 @@ class LongCounterTest {
 
   @Test
   void preventNull_Name() {
-    assertThrows(NullPointerException.class, () -> meter.longCounterBuilder(null), "name");
+    assertThatThrownBy(() -> meter.longCounterBuilder(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("name");
   }
 
   @Test
   void preventEmpty_Name() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.longCounterBuilder("").build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.longCounterBuilder("").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNonPrintableName() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.longCounterBuilder("\2").build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.longCounterBuilder("\2").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
@@ -46,34 +46,30 @@ class LongCounterTest {
     char[] chars = new char[StringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> meter.longCounterBuilder(longName).build(),
-        DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    assertThatThrownBy(() -> meter.longCounterBuilder(longName).build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
   }
 
   @Test
   void preventNull_Description() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longCounterBuilder("metric").setDescription(null).build(),
-        "description");
+    assertThatThrownBy(() -> meter.longCounterBuilder("metric").setDescription(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("description");
   }
 
   @Test
   void preventNull_Unit() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longCounterBuilder("metric").setUnit(null).build(),
-        "unit");
+    assertThatThrownBy(() -> meter.longCounterBuilder("metric").setUnit(null).build())
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
   }
 
   @Test
   void add_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longCounterBuilder("metric").build().add(1, null),
-        "labels");
+    assertThatThrownBy(() -> meter.longCounterBuilder("metric").build().add(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -88,18 +84,16 @@ class LongCounterTest {
   void add_PreventNegativeValue() {
     LongCounter longCounter =
         meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> longCounter.add(-1, Labels.empty()),
-        "Counters can only increase");
+    assertThatThrownBy(() -> longCounter.add(-1, Labels.empty()))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Counters can only increase");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> meter.longCounterBuilder("metric").build().bind(null),
-        "labels");
+    assertThatThrownBy(() -> meter.longCounterBuilder("metric").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -117,8 +111,9 @@ class LongCounterTest {
         meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     BoundLongCounter bound = longCounter.bind(Labels.empty());
     try {
-      assertThrows(
-          IllegalArgumentException.class, () -> bound.add(-1), "Counters can only increase");
+      assertThatThrownBy(() -> bound.add(-1))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("Counters can only increase");
     } finally {
       bound.unbind();
     }

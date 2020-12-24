@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.common.Labels;
@@ -37,14 +37,16 @@ class SdkMeterRegistryTest {
 
   @Test
   void builder_NullClock() {
-    assertThrows(
-        NullPointerException.class, () -> SdkMeterProvider.builder().setClock(null), "clock");
+    assertThatThrownBy(() -> SdkMeterProvider.builder().setClock(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("clock");
   }
 
   @Test
   void builder_NullResource() {
-    assertThrows(
-        NullPointerException.class, () -> SdkMeterProvider.builder().setResource(null), "resource");
+    assertThatThrownBy(() -> SdkMeterProvider.builder().setResource(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("resource");
   }
 
   @Test
