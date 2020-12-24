@@ -137,7 +137,7 @@ public class PropagatorContextInjectBenchmark {
 
   /** Benchmark for injecting trace context into AWS X-Ray headers. */
   public static class AwsXRayPropagatorInjectBenchmark extends AbstractContextInjectBenchmark {
-    private final AwsXRayPropagator xrayPropagator = AwsXRayPropagator.getInstance();
+    private final AwsXrayPropagator xrayPropagator = AwsXrayPropagator.getInstance();
     private final TextMapPropagator.Setter<Map<String, String>> setter =
         new TextMapPropagator.Setter<Map<String, String>>() {
           @Override

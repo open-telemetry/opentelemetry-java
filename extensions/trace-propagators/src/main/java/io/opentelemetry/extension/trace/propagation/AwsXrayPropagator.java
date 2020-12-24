@@ -30,17 +30,17 @@ import javax.annotation.Nullable;
  * OpenTelemetry.setPropagators(
  *   DefaultContextPropagators
  *     .builder()
- *     .addTextMapPropagator(new HttpTraceContext())
- *     .addTextMapPropagator(new AWSXRayPropagator())
+ *     .addTextMapPropagator(W3CTraceContextPropagator.getDefaultInstance())
+ *     .addTextMapPropagator(AWSXrayPropagator.getDefaultInstance())
  *     .build());
  * }</pre>
  */
-public final class AwsXRayPropagator implements TextMapPropagator {
+public final class AwsXrayPropagator implements TextMapPropagator {
 
   // Visible for testing
   static final String TRACE_HEADER_KEY = "X-Amzn-Trace-Id";
 
-  private static final Logger logger = Logger.getLogger(AwsXRayPropagator.class.getName());
+  private static final Logger logger = Logger.getLogger(AwsXrayPropagator.class.getName());
 
   private static final char TRACE_HEADER_DELIMITER = ';';
   private static final char KV_DELIMITER = '=';
@@ -63,13 +63,13 @@ public final class AwsXRayPropagator implements TextMapPropagator {
 
   private static final Collection<String> FIELDS = Collections.singletonList(TRACE_HEADER_KEY);
 
-  private static final AwsXRayPropagator INSTANCE = new AwsXRayPropagator();
+  private static final AwsXrayPropagator INSTANCE = new AwsXrayPropagator();
 
-  private AwsXRayPropagator() {
+  private AwsXrayPropagator() {
     // singleton
   }
 
-  public static AwsXRayPropagator getInstance() {
+  public static AwsXrayPropagator getInstance() {
     return INSTANCE;
   }
 
