@@ -30,8 +30,8 @@ import javax.annotation.Nullable;
  * OpenTelemetry.setPropagators(
  *   DefaultContextPropagators
  *     .builder()
- *     .addTextMapPropagator(W3CTraceContextPropagator.getDefaultInstance())
- *     .addTextMapPropagator(AWSXrayPropagator.getDefaultInstance())
+ *     .addTextMapPropagator(W3CTraceContextPropagator.getInstance())
+ *     .addTextMapPropagator(AWSXrayPropagator.getInstance())
  *     .build());
  * }</pre>
  */
