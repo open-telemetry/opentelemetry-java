@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.function.Supplier;
 
 /**
  * "Management" interface for the Tracing SDK. This interface exposes methods for configuring the
@@ -34,7 +35,11 @@ public interface SdkTracerManagement {
    *
    * @param traceConfig the new active {@code TraceConfig}.
    * @see TraceConfig
+   *
+   * @deprecated Use {@link SdkTracerProviderBuilder#setTraceConfig(Supplier)} to register a
+   * supplier of {@link TraceConfig} if you need to make dynamic updates.
    */
+  @Deprecated
   void updateActiveTraceConfig(TraceConfig traceConfig);
 
   /**
