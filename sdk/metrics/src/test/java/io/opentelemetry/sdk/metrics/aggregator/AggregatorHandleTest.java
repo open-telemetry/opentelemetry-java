@@ -13,11 +13,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
-public class AggregatorTest {
+public class AggregatorHandleTest {
 
   @Test
   void acquireMapped() {
-    TestAggregator testAggregator = new TestAggregator();
+    TestAggregatorHandle testAggregator = new TestAggregatorHandle();
     assertThat(testAggregator.acquire()).isTrue();
     testAggregator.release();
     assertThat(testAggregator.acquire()).isTrue();
@@ -30,7 +30,7 @@ public class AggregatorTest {
 
   @Test
   void tryUnmap_AcquiredHandler() {
-    TestAggregator testAggregator = new TestAggregator();
+    TestAggregatorHandle testAggregator = new TestAggregatorHandle();
     assertThat(testAggregator.acquire()).isTrue();
     assertThat(testAggregator.tryUnmap()).isFalse();
     testAggregator.release();
@@ -42,7 +42,7 @@ public class AggregatorTest {
 
   @Test
   void tryUnmap_AcquiredHandler_MultipleTimes() {
-    TestAggregator testAggregator = new TestAggregator();
+    TestAggregatorHandle testAggregator = new TestAggregatorHandle();
     assertThat(testAggregator.acquire()).isTrue();
     assertThat(testAggregator.acquire()).isTrue();
     assertThat(testAggregator.acquire()).isTrue();
@@ -63,7 +63,7 @@ public class AggregatorTest {
 
   @Test
   void bind_ThenUnmap_ThenTryToBind() {
-    TestAggregator testAggregator = new TestAggregator();
+    TestAggregatorHandle testAggregator = new TestAggregatorHandle();
     testAggregator.release();
     assertThat(testAggregator.tryUnmap()).isTrue();
     assertThat(testAggregator.acquire()).isFalse();
@@ -72,7 +72,7 @@ public class AggregatorTest {
 
   @Test
   void testRecordings() {
-    TestAggregator testAggregator = new TestAggregator();
+    TestAggregatorHandle testAggregator = new TestAggregatorHandle();
 
     testAggregator.recordLong(22);
     assertThat(testAggregator.recordedLong.get()).isEqualTo(22);
@@ -91,7 +91,7 @@ public class AggregatorTest {
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
   }
 
-  private static class TestAggregator extends Aggregator<Accumulation> {
+  private static class TestAggregatorHandle extends AggregatorHandle<Accumulation> {
     final AtomicLong recordedLong = new AtomicLong();
     final AtomicDouble recordedDouble = new AtomicDouble();
 

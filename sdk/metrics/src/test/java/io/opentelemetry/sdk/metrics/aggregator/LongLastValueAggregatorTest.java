@@ -13,35 +13,34 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link LongLastValueAggregator}. */
 class LongLastValueAggregatorTest {
   @Test
-  void factoryAggregation() {
-    AggregatorFactory<LongAccumulation> factory = LongLastValueAggregator.getFactory();
-    assertThat(factory.getAggregator()).isInstanceOf(LongLastValueAggregator.class);
-  }
-
-  @Test
-  void toPoint() {
-    Aggregator<LongAccumulation> aggregator = LongLastValueAggregator.getFactory().getAggregator();
-    assertThat(aggregator.accumulateThenReset()).isNull();
+  void createHandle() {
+    assertThat(LongLastValueAggregator.getInstance().createHandle())
+        .isInstanceOf(LongLastValueAggregator.Handle.class);
   }
 
   @Test
   void multipleRecords() {
-    Aggregator<LongAccumulation> aggregator = LongLastValueAggregator.getFactory().getAggregator();
-    aggregator.recordLong(12);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(12));
-    aggregator.recordLong(13);
-    aggregator.recordLong(14);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(14));
+    AggregatorHandle<LongAccumulation> aggregatorHandle =
+        LongLastValueAggregator.getInstance().createHandle();
+    aggregatorHandle.recordLong(12);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(12));
+    aggregatorHandle.recordLong(13);
+    aggregatorHandle.recordLong(14);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(14));
   }
 
   @Test
   void toAccumulationAndReset() {
-    Aggregator<LongAccumulation> aggregator = LongLastValueAggregator.getFactory().getAggregator();
-    aggregator.recordLong(13);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(13));
-    assertThat(aggregator.accumulateThenReset()).isNull();
-    aggregator.recordLong(12);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(12));
-    assertThat(aggregator.accumulateThenReset()).isNull();
+    AggregatorHandle<LongAccumulation> aggregatorHandle =
+        LongLastValueAggregator.getInstance().createHandle();
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+
+    aggregatorHandle.recordLong(13);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(13));
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+
+    aggregatorHandle.recordLong(12);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(12));
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 }

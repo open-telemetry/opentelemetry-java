@@ -7,53 +7,56 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import java.util.concurrent.atomic.LongAdder;
+import javax.annotation.concurrent.ThreadSafe;
 
-public final class CountAggregator extends Aggregator<LongAccumulation> {
-  private static final AggregatorFactory<LongAccumulation> AGGREGATOR_FACTORY =
-      new AggregatorFactory<LongAccumulation>() {
-        @Override
-        public Aggregator<LongAccumulation> getAggregator() {
-          return new CountAggregator();
-        }
-
-        @Override
-        public LongAccumulation accumulateDouble(double value) {
-          return LongAccumulation.create(1);
-        }
-
-        @Override
-        public LongAccumulation accumulateLong(long value) {
-          return LongAccumulation.create(1);
-        }
-      };
-
-  private final LongAdder current;
-
-  private CountAggregator() {
-    this.current = new LongAdder();
-  }
+@ThreadSafe
+public final class CountAggregator implements Aggregator<LongAccumulation> {
+  private static final Aggregator<LongAccumulation> INSTANCE = new CountAggregator();
 
   /**
-   * Returns an {@link AggregatorFactory} that produces {@link CountAggregator} instances.
+   * Returns the instance of this {@link Aggregator}.
    *
-   * @return an {@link AggregatorFactory} that produces {@link CountAggregator} instances.
+   * @return the instance of this {@link Aggregator}.
    */
-  public static AggregatorFactory<LongAccumulation> getFactory() {
-    return AGGREGATOR_FACTORY;
+  public static Aggregator<LongAccumulation> getInstance() {
+    return INSTANCE;
+  }
+
+  private CountAggregator() {}
+
+  @Override
+  public AggregatorHandle<LongAccumulation> createHandle() {
+    return new Handle();
   }
 
   @Override
-  protected void doRecordLong(long value) {
-    current.add(1);
+  public LongAccumulation accumulateDouble(double value) {
+    return LongAccumulation.create(1);
   }
 
   @Override
-  protected void doRecordDouble(double value) {
-    current.add(1);
+  public LongAccumulation accumulateLong(long value) {
+    return LongAccumulation.create(1);
   }
 
-  @Override
-  protected LongAccumulation doAccumulateThenReset() {
-    return LongAccumulation.create(current.sumThenReset());
+  static final class Handle extends AggregatorHandle<LongAccumulation> {
+    private final LongAdder current = new LongAdder();
+
+    private Handle() {}
+
+    @Override
+    protected void doRecordLong(long value) {
+      current.add(1);
+    }
+
+    @Override
+    protected void doRecordDouble(double value) {
+      current.add(1);
+    }
+
+    @Override
+    protected LongAccumulation doAccumulateThenReset() {
+      return LongAccumulation.create(current.sumThenReset());
+    }
   }
 }

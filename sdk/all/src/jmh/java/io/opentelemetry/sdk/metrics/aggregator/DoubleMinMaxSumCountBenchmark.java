@@ -21,11 +21,11 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class DoubleMinMaxSumCountBenchmark {
 
-  private Aggregator<MinMaxSumCountAccumulation> aggregator;
+  private AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle;
 
   @Setup(Level.Trial)
   public final void setup() {
-    aggregator = DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
+    aggregatorHandle = DoubleMinMaxSumCountAggregator.getInstance().createHandle();
   }
 
   @Benchmark
@@ -35,7 +35,7 @@ public class DoubleMinMaxSumCountBenchmark {
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   @Threads(value = 10)
   public void aggregate_10Threads() {
-    aggregator.recordDouble(100.0056);
+    aggregatorHandle.recordDouble(100.0056);
   }
 
   @Benchmark
@@ -45,7 +45,7 @@ public class DoubleMinMaxSumCountBenchmark {
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   @Threads(value = 5)
   public void aggregate_5Threads() {
-    aggregator.recordDouble(100.0056);
+    aggregatorHandle.recordDouble(100.0056);
   }
 
   @Benchmark
@@ -55,6 +55,6 @@ public class DoubleMinMaxSumCountBenchmark {
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   @Threads(value = 1)
   public void aggregate_1Threads() {
-    aggregator.recordDouble(100.0056);
+    aggregatorHandle.recordDouble(100.0056);
   }
 }

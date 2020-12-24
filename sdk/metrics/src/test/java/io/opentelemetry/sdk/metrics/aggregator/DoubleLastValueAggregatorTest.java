@@ -10,41 +10,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link Aggregator}. */
+/** Unit tests for {@link AggregatorHandle}. */
 class DoubleLastValueAggregatorTest {
   @Test
-  void factoryAggregation() {
-    AggregatorFactory<DoubleAccumulation> factory = DoubleLastValueAggregator.getFactory();
-    assertThat(factory.getAggregator()).isInstanceOf(DoubleLastValueAggregator.class);
-  }
-
-  @Test
-  void toPoint() {
-    Aggregator<DoubleAccumulation> aggregator =
-        DoubleLastValueAggregator.getFactory().getAggregator();
-    assertThat(aggregator.accumulateThenReset()).isNull();
+  void createHandle() {
+    assertThat(DoubleLastValueAggregator.getInstance().createHandle())
+        .isInstanceOf(DoubleLastValueAggregator.Handle.class);
   }
 
   @Test
   void multipleRecords() {
-    Aggregator<DoubleAccumulation> aggregator =
-        DoubleLastValueAggregator.getFactory().getAggregator();
-    aggregator.recordDouble(12.1);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(12.1));
-    aggregator.recordDouble(13.1);
-    aggregator.recordDouble(14.1);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(14.1));
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle =
+        DoubleLastValueAggregator.getInstance().createHandle();
+    aggregatorHandle.recordDouble(12.1);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(12.1));
+    aggregatorHandle.recordDouble(13.1);
+    aggregatorHandle.recordDouble(14.1);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(14.1));
   }
 
   @Test
   void toAccumulationAndReset() {
-    Aggregator<DoubleAccumulation> aggregator =
-        DoubleLastValueAggregator.getFactory().getAggregator();
-    aggregator.recordDouble(13.1);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(13.1));
-    assertThat(aggregator.accumulateThenReset()).isNull();
-    aggregator.recordDouble(12.1);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(12.1));
-    assertThat(aggregator.accumulateThenReset()).isNull();
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle =
+        DoubleLastValueAggregator.getInstance().createHandle();
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+
+    aggregatorHandle.recordDouble(13.1);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(13.1));
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+
+    aggregatorHandle.recordDouble(12.1);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(12.1));
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 }

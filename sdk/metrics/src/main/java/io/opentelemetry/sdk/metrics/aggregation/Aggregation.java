@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregation;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -23,13 +23,12 @@ import javax.annotation.concurrent.Immutable;
 public interface Aggregation<T extends Accumulation> {
 
   /**
-   * Returns an {@code AggregationFactory} that can be used to produce the {@link
-   * io.opentelemetry.sdk.metrics.aggregator.Aggregator} that needs to be used to aggregate all the
-   * values to produce this {@code Aggregation}.
+   * Returns an {@link Aggregator} that can be used to aggregate measurements and produce {@link
+   * Accumulation}.
    *
-   * @return the {@code AggregationFactory}.
+   * @return the {@link Aggregator} for this {@link Aggregation}.
    */
-  AggregatorFactory<T> getAggregatorFactory();
+  Aggregator<T> getAggregator();
 
   /**
    * Returns the result of the merge of the given {@link Accumulation}s.
