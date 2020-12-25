@@ -17,41 +17,42 @@ import javax.annotation.Nullable;
  * problem because LastValueAggregator is currently only available for Observers which record all
  * values once.
  */
-public final class LongLastValueAggregator extends Aggregator<LongAccumulation> {
+public final class LongLastValueAggregator implements Aggregator<LongAccumulation> {
   @Nullable private static final Long DEFAULT_VALUE = null;
-  private static final AggregatorFactory<LongAccumulation> AGGREGATOR_FACTORY =
-      new AggregatorFactory<LongAccumulation>() {
-        @Override
-        public Aggregator<LongAccumulation> getAggregator() {
-          return new LongLastValueAggregator();
-        }
+  private static final LongLastValueAggregator INSTANCE = new LongLastValueAggregator();
 
-        @Override
-        public LongAccumulation accumulateLong(long value) {
-          return LongAccumulation.create(value);
-        }
-      };
-
-  private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
+  /**
+   * Returns the instance of this {@link Aggregator}.
+   *
+   * @return the instance of this {@link Aggregator}.
+   */
+  public static Aggregator<LongAccumulation> getInstance() {
+    return INSTANCE;
+  }
 
   private LongLastValueAggregator() {}
 
-  /**
-   * Returns an {@link AggregatorFactory} that produces {@link LongLastValueAggregator} instances.
-   *
-   * @return an {@link AggregatorFactory} that produces {@link LongLastValueAggregator} instances.
-   */
-  public static AggregatorFactory<LongAccumulation> getFactory() {
-    return AGGREGATOR_FACTORY;
+  @Override
+  public AggregatorHandle<LongAccumulation> createHandle() {
+    return new Handle();
   }
 
   @Override
-  protected LongAccumulation doAccumulateThenReset() {
-    return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
+  public LongAccumulation accumulateLong(long value) {
+    return LongAccumulation.create(value);
   }
 
-  @Override
-  protected void doRecordLong(long value) {
-    current.set(value);
+  static final class Handle extends AggregatorHandle<LongAccumulation> {
+    private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
+
+    @Override
+    protected LongAccumulation doAccumulateThenReset() {
+      return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
+    }
+
+    @Override
+    protected void doRecordLong(long value) {
+      current.set(value);
+    }
   }
 }

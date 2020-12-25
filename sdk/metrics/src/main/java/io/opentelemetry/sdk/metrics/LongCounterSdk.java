@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -15,20 +15,20 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 final class LongCounterSdk extends AbstractSynchronousInstrument implements LongCounter {
 
   private LongCounterSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator accumulator) {
+      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
     super(descriptor, accumulator);
   }
 
   @Override
   public void add(long increment, Labels labels) {
-    Aggregator<?> aggregator = acquireHandle(labels);
+    AggregatorHandle<?> aggregatorHandle = acquireHandle(labels);
     try {
       if (increment < 0) {
         throw new IllegalArgumentException("Counters can only increase");
       }
-      aggregator.recordLong(increment);
+      aggregatorHandle.recordLong(increment);
     } finally {
-      aggregator.release();
+      aggregatorHandle.release();
     }
   }
 
@@ -43,10 +43,10 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
   }
 
   static final class BoundInstrument implements LongCounter.BoundLongCounter {
-    private final Aggregator<?> aggregator;
+    private final AggregatorHandle<?> aggregatorHandle;
 
-    BoundInstrument(Aggregator<?> aggregator) {
-      this.aggregator = aggregator;
+    BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
+      this.aggregatorHandle = aggregatorHandle;
     }
 
     @Override
@@ -54,12 +54,12 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
       if (increment < 0) {
         throw new IllegalArgumentException("Counters can only increase");
       }
-      aggregator.recordLong(increment);
+      aggregatorHandle.recordLong(increment);
     }
 
     @Override
     public void unbind() {
-      aggregator.release();
+      aggregatorHandle.release();
     }
   }
 

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.sdk.metrics.aggregation.Aggregation;
+import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -84,20 +84,25 @@ final class ViewRegistry {
   }
 
   /** Create a new {@link InstrumentProcessor} for use in metric recording aggregation. */
-  InstrumentProcessor createBatcher(
+  <T extends Accumulation> InstrumentProcessor<T> createBatcher(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
 
     AggregationConfiguration specification = chooseAggregation(descriptor);
-    Aggregation aggregation =
-        specification.getAggregationFactory().create(descriptor.getValueType());
-    if (MetricData.AggregationTemporality.CUMULATIVE == specification.getTemporality()) {
-      return InstrumentProcessor.getCumulativeAllLabels(
-          descriptor, meterProviderSharedState, meterSharedState, aggregation);
-    } else if (MetricData.AggregationTemporality.DELTA == specification.getTemporality()) {
-      return InstrumentProcessor.getDeltaAllLabels(
-          descriptor, meterProviderSharedState, meterSharedState, aggregation);
+    switch (specification.getTemporality()) {
+      case CUMULATIVE:
+        return InstrumentProcessor.getCumulativeAllLabels(
+            descriptor,
+            meterProviderSharedState,
+            meterSharedState,
+            specification.getAggregationFactory().create(descriptor.getValueType()));
+      case DELTA:
+        return InstrumentProcessor.getDeltaAllLabels(
+            descriptor,
+            meterProviderSharedState,
+            meterSharedState,
+            specification.getAggregationFactory().create(descriptor.getValueType()));
     }
     throw new IllegalStateException("unsupported Temporality: " + specification.getTemporality());
   }

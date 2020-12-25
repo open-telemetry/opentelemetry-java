@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregation;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -18,32 +18,24 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class MinMaxSumCountAggregation implements Aggregation {
+final class MinMaxSumCountAggregation extends AbstractAggregation<MinMaxSumCountAccumulation> {
   static final MinMaxSumCountAggregation LONG_INSTANCE =
-      new MinMaxSumCountAggregation(LongMinMaxSumCountAggregator.getFactory());
+      new MinMaxSumCountAggregation(LongMinMaxSumCountAggregator.getInstance());
   static final MinMaxSumCountAggregation DOUBLE_INSTANCE =
-      new MinMaxSumCountAggregation(DoubleMinMaxSumCountAggregator.getFactory());
+      new MinMaxSumCountAggregation(DoubleMinMaxSumCountAggregator.getInstance());
 
-  private final AggregatorFactory<?> aggregatorFactory;
-
-  private MinMaxSumCountAggregation(AggregatorFactory<?> aggregatorFactory) {
-    this.aggregatorFactory = aggregatorFactory;
+  private MinMaxSumCountAggregation(Aggregator<MinMaxSumCountAccumulation> aggregator) {
+    super(aggregator);
   }
 
   @Override
-  public AggregatorFactory<?> getAggregatorFactory() {
-    return aggregatorFactory;
-  }
-
-  @Override
-  public Accumulation merge(Accumulation a1, Accumulation a2) {
-    MinMaxSumCountAccumulation minMaxSumCountAccumulation1 = (MinMaxSumCountAccumulation) a1;
-    MinMaxSumCountAccumulation minMaxSumCountAccumulation2 = (MinMaxSumCountAccumulation) a2;
+  public MinMaxSumCountAccumulation merge(
+      MinMaxSumCountAccumulation a1, MinMaxSumCountAccumulation a2) {
     return MinMaxSumCountAccumulation.create(
-        minMaxSumCountAccumulation1.getCount() + minMaxSumCountAccumulation2.getCount(),
-        minMaxSumCountAccumulation1.getSum() + minMaxSumCountAccumulation2.getSum(),
-        Math.min(minMaxSumCountAccumulation1.getMin(), minMaxSumCountAccumulation2.getMin()),
-        Math.max(minMaxSumCountAccumulation1.getMax(), minMaxSumCountAccumulation2.getMax()));
+        a1.getCount() + a2.getCount(),
+        a1.getSum() + a2.getSum(),
+        Math.min(a1.getMin(), a2.getMin()),
+        Math.max(a1.getMax(), a2.getMax()));
   }
 
   @Override
@@ -51,14 +43,11 @@ final class MinMaxSumCountAggregation implements Aggregation {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, Accumulation> accumulationMap,
+      Map<Labels, MinMaxSumCountAccumulation> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    if (accumulationMap.isEmpty()) {
-      return null;
-    }
     List<MetricData.Point> points =
-        MetricDataUtils.getPointList(accumulationMap, startEpochNanos, epochNanos);
+        MetricDataUtils.getPointList(accumulationByLabels, startEpochNanos, epochNanos);
     return MetricData.createDoubleSummary(
         resource,
         instrumentationLibraryInfo,

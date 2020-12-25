@@ -40,9 +40,9 @@ public class SendTraceToJaeger {
     return OpenTelemetrySdk.builder()
         .setTracerProvider(
             SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build())
+                .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
                 .build())
-        .build();
+        .buildAndRegisterGlobal();
   }
 
   private static void myWonderfulUseCase(OpenTelemetry openTelemetry) {

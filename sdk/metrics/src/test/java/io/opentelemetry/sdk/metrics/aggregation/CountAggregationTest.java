@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.aggregator.CountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -22,9 +22,10 @@ import org.junit.jupiter.api.Test;
 class CountAggregationTest {
   @Test
   void toMetricData() {
-    Aggregation count = AggregationFactory.count().create(InstrumentValueType.LONG);
-    Aggregator<?> aggregator = count.getAggregatorFactory().getAggregator();
-    aggregator.recordLong(10);
+    Aggregation<LongAccumulation> count =
+        AggregationFactory.count().create(InstrumentValueType.LONG);
+    AggregatorHandle<LongAccumulation> aggregatorHandle = count.getAggregator().createHandle();
+    aggregatorHandle.recordLong(10);
 
     MetricData metricData =
         count.toMetricData(
@@ -36,7 +37,7 @@ class CountAggregationTest {
                 "unit",
                 InstrumentType.VALUE_RECORDER,
                 InstrumentValueType.LONG),
-            Collections.singletonMap(Labels.empty(), aggregator.accumulateThenReset()),
+            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             100);
     assertThat(metricData).isNotNull();
@@ -47,9 +48,9 @@ class CountAggregationTest {
   @Test
   void getAggregatorFactory() {
     AggregationFactory count = AggregationFactory.count();
-    assertThat(count.create(InstrumentValueType.LONG).getAggregatorFactory())
-        .isInstanceOf(CountAggregator.getFactory().getClass());
-    assertThat(count.create(InstrumentValueType.DOUBLE).getAggregatorFactory())
-        .isInstanceOf(CountAggregator.getFactory().getClass());
+    assertThat(count.create(InstrumentValueType.LONG).getAggregator())
+        .isInstanceOf(CountAggregator.getInstance().getClass());
+    assertThat(count.create(InstrumentValueType.DOUBLE).getAggregator())
+        .isInstanceOf(CountAggregator.getInstance().getClass());
   }
 }

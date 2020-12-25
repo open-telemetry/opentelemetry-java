@@ -28,18 +28,17 @@ abstract class AbstractSynchronousInstrumentBuilder<
   }
 
   final <I extends AbstractInstrument> I buildInstrument(
-      BiFunction<InstrumentDescriptor, SynchronousInstrumentAccumulator, I> instrumentFactory) {
+      BiFunction<InstrumentDescriptor, SynchronousInstrumentAccumulator<?>, I> instrumentFactory) {
     InstrumentDescriptor descriptor = buildDescriptor();
     return meterSharedState
         .getInstrumentRegistry()
         .register(instrumentFactory.apply(descriptor, buildAccumulator(descriptor)));
   }
 
-  private SynchronousInstrumentAccumulator buildAccumulator(InstrumentDescriptor descriptor) {
-    InstrumentProcessor processor =
+  private SynchronousInstrumentAccumulator<?> buildAccumulator(InstrumentDescriptor descriptor) {
+    return new SynchronousInstrumentAccumulator<>(
         meterProviderSharedState
             .getViewRegistry()
-            .createBatcher(meterProviderSharedState, meterSharedState, descriptor);
-    return new SynchronousInstrumentAccumulator(processor);
+            .createBatcher(meterProviderSharedState, meterSharedState, descriptor));
   }
 }

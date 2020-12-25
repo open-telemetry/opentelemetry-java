@@ -76,7 +76,7 @@ final class MetricDataUtils {
   }
 
   static List<MetricData.Point> getPointList(
-      Map<Labels, Accumulation> accumulationMap, long startEpochNanos, long epochNanos) {
+      Map<Labels, ? extends Accumulation> accumulationMap, long startEpochNanos, long epochNanos) {
     List<MetricData.Point> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, aggregator) -> {

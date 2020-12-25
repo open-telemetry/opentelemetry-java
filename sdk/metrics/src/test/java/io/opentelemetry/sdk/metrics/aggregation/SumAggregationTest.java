@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -25,9 +25,9 @@ class SumAggregationTest {
 
   @Test
   void toMetricData() {
-    Aggregation sum = AggregationFactory.sum().create(InstrumentValueType.LONG);
-    Aggregator<?> aggregator = sum.getAggregatorFactory().getAggregator();
-    aggregator.recordLong(10);
+    Aggregation<LongAccumulation> sum = AggregationFactory.sum().create(InstrumentValueType.LONG);
+    AggregatorHandle<LongAccumulation> aggregatorHandle = sum.getAggregator().createHandle();
+    aggregatorHandle.recordLong(10);
 
     MetricData metricData =
         sum.toMetricData(
@@ -39,7 +39,7 @@ class SumAggregationTest {
                 "unit",
                 InstrumentType.VALUE_RECORDER,
                 InstrumentValueType.LONG),
-            Collections.singletonMap(Labels.empty(), aggregator.accumulateThenReset()),
+            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             100);
     assertThat(metricData).isNotNull();
@@ -50,9 +50,9 @@ class SumAggregationTest {
   @Test
   void getAggregatorFactory() {
     AggregationFactory sum = AggregationFactory.sum();
-    assertThat(sum.create(InstrumentValueType.LONG).getAggregatorFactory())
-        .isInstanceOf(LongSumAggregator.getFactory().getClass());
-    assertThat(sum.create(InstrumentValueType.DOUBLE).getAggregatorFactory())
-        .isInstanceOf(DoubleSumAggregator.getFactory().getClass());
+    assertThat(sum.create(InstrumentValueType.LONG).getAggregator())
+        .isInstanceOf(LongSumAggregator.getInstance().getClass());
+    assertThat(sum.create(InstrumentValueType.DOUBLE).getAggregator())
+        .isInstanceOf(DoubleSumAggregator.getInstance().getClass());
   }
 }

@@ -17,10 +17,7 @@ testSets {
 }
 
 dependencies {
-    api project(':api:context'),
-            project(':api:baggage'),
-            project(':api:common'),
-            project(':api:trace')
+    api project(':api:context')
 
     testLogsIfSdkFoundImplementation project(':sdk:all')
     testDoesNotLogIfSdkFoundAndSuppressedImplementation project(':sdk:all')

@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
+import static com.google.common.base.Charsets.US_ASCII;
+import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -97,8 +99,23 @@ class OtlpGrpcSpanExporterTest {
     options.put("otel.exporter.otlp.span.insecure", "true");
     options.put(
         "otel.exporter.otlp.span.headers",
-        "key=value;key2=value2=;key3=val=ue3; key4 = value4 ;key5= ");
-    OtlpGrpcSpanExporter exporter = OtlpGrpcSpanExporter.builder().readProperties(options).build();
+        "key=value,key2=value2=,key3=val=ue3, key4 = value4 ,key5= ");
+    OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder().readProperties(options);
+    assertThat(builder)
+        .extracting("metadata")
+        .extracting("namesAndValues")
+        .isEqualTo(
+            new Object[] {
+              "key".getBytes(US_ASCII),
+              ASCII_STRING_MARSHALLER.toAsciiString("value").getBytes(US_ASCII),
+              "key2".getBytes(US_ASCII),
+              ASCII_STRING_MARSHALLER.toAsciiString("value2=").getBytes(US_ASCII),
+              "key3".getBytes(US_ASCII),
+              ASCII_STRING_MARSHALLER.toAsciiString("val=ue3").getBytes(US_ASCII),
+              "key4".getBytes(US_ASCII),
+              ASCII_STRING_MARSHALLER.toAsciiString("value4").getBytes(US_ASCII)
+            });
+    OtlpGrpcSpanExporter exporter = builder.build();
 
     assertThat(exporter.getDeadlineMs()).isEqualTo(5124);
     assertThat(

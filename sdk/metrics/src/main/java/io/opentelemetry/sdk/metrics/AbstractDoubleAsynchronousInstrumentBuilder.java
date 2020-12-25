@@ -38,16 +38,15 @@ abstract class AbstractDoubleAsynchronousInstrumentBuilder<B extends AbstractIns
   final <I extends AbstractInstrument> I buildInstrument(
       BiFunction<InstrumentDescriptor, AsynchronousInstrumentAccumulator, I> instrumentFactory) {
     InstrumentDescriptor descriptor = buildDescriptor();
-    InstrumentProcessor processor =
-        meterProviderSharedState
-            .getViewRegistry()
-            .createBatcher(meterProviderSharedState, meterSharedState, descriptor);
     return meterSharedState
         .getInstrumentRegistry()
         .register(
             instrumentFactory.apply(
                 descriptor,
                 AsynchronousInstrumentAccumulator.doubleAsynchronousAccumulator(
-                    processor, updater)));
+                    meterProviderSharedState
+                        .getViewRegistry()
+                        .createBatcher(meterProviderSharedState, meterSharedState, descriptor),
+                    updater)));
   }
 }

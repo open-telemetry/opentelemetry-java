@@ -15,7 +15,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.TestUtils;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
@@ -63,20 +64,11 @@ class BatchSpanProcessorTest {
   }
   */
 
-  private ReadableSpan createSampledEndedSpan(String spanName) {
+  private ReadableSpan createEndedSpan(String spanName) {
     Tracer tracer = sdkTracerProvider.get(getClass().getName());
-    Span span =
-        TestUtils.startSpanWithSampler(sdkTracerProvider, tracer, spanName, Sampler.alwaysOn())
-            .startSpan();
+    Span span = tracer.spanBuilder(spanName).startSpan();
     span.end();
     return (ReadableSpan) span;
-  }
-
-  private void createNotSampledEndedSpan(String spanName) {
-    Tracer tracer = sdkTracerProvider.get(getClass().getName());
-    TestUtils.startSpanWithSampler(sdkTracerProvider, tracer, spanName, Sampler.alwaysOff())
-        .startSpan()
-        .end();
   }
 
   @Test
@@ -135,8 +127,8 @@ class BatchSpanProcessorTest {
                     .build())
             .build();
 
-    ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
-    ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
+    ReadableSpan span1 = createEndedSpan(SPAN_NAME_1);
+    ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span1.toSpanData(), span2.toSpanData());
   }
@@ -155,12 +147,12 @@ class BatchSpanProcessorTest {
                     .build())
             .build();
 
-    ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
-    ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_1);
-    ReadableSpan span3 = createSampledEndedSpan(SPAN_NAME_1);
-    ReadableSpan span4 = createSampledEndedSpan(SPAN_NAME_1);
-    ReadableSpan span5 = createSampledEndedSpan(SPAN_NAME_1);
-    ReadableSpan span6 = createSampledEndedSpan(SPAN_NAME_1);
+    ReadableSpan span1 = createEndedSpan(SPAN_NAME_1);
+    ReadableSpan span2 = createEndedSpan(SPAN_NAME_1);
+    ReadableSpan span3 = createEndedSpan(SPAN_NAME_1);
+    ReadableSpan span4 = createEndedSpan(SPAN_NAME_1);
+    ReadableSpan span5 = createEndedSpan(SPAN_NAME_1);
+    ReadableSpan span6 = createEndedSpan(SPAN_NAME_1);
 
     spanExporter.succeed();
 
@@ -192,7 +184,7 @@ class BatchSpanProcessorTest {
 
     sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
     for (int i = 0; i < 100; i++) {
-      createSampledEndedSpan("notExported");
+      createEndedSpan("notExported");
     }
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
@@ -220,8 +212,8 @@ class BatchSpanProcessorTest {
                     .build())
             .build();
 
-    ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
-    ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
+    ReadableSpan span1 = createEndedSpan(SPAN_NAME_1);
+    ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
     List<SpanData> exported1 = waitingSpanExporter.waitForExport();
     List<SpanData> exported2 = waitingSpanExporter2.waitForExport();
     assertThat(exported1).containsExactly(span1.toSpanData(), span2.toSpanData());
@@ -249,19 +241,19 @@ class BatchSpanProcessorTest {
     // Wait to block the worker thread in the BatchSampledSpansProcessor. This ensures that no items
     // can be removed from the queue. Need to add a span to trigger the export otherwise the
     // pipeline is never called.
-    spansToExport.add(createSampledEndedSpan("blocking_span").toSpanData());
+    spansToExport.add(createEndedSpan("blocking_span").toSpanData());
     blockingSpanExporter.waitUntilIsBlocked();
 
     for (int i = 0; i < maxQueuedSpans; i++) {
       // First export maxQueuedSpans, the worker thread is blocked so all items should be queued.
-      spansToExport.add(createSampledEndedSpan("span_1_" + i).toSpanData());
+      spansToExport.add(createEndedSpan("span_1_" + i).toSpanData());
     }
 
     // TODO: assertThat(spanExporter.getReferencedSpans()).isEqualTo(maxQueuedSpans);
 
     // Now we should start dropping.
     for (int i = 0; i < 7; i++) {
-      createSampledEndedSpan("span_2_" + i);
+      createEndedSpan("span_2_" + i);
       // TODO: assertThat(getDroppedSpans()).isEqualTo(i + 1);
     }
 
@@ -284,7 +276,7 @@ class BatchSpanProcessorTest {
     // TODO: assertThat(getPushedSpans()).isAtLeast((long) maxQueuedSpans - maxBatchSize);
 
     for (int i = 0; i < maxQueuedSpans; i++) {
-      spansToExport.add(createSampledEndedSpan("span_3_" + i).toSpanData());
+      spansToExport.add(createEndedSpan("span_3_" + i).toSpanData());
       // No more dropped spans.
       // TODO: assertThat(getDroppedSpans()).isEqualTo(7);
     }
@@ -310,12 +302,12 @@ class BatchSpanProcessorTest {
                     .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
                     .build())
             .build();
-    ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
+    ReadableSpan span1 = createEndedSpan(SPAN_NAME_1);
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span1.toSpanData());
     waitingSpanExporter.reset();
     // Continue to export after the exception was received.
-    ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
+    ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
     exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span2.toSpanData());
   }
@@ -361,7 +353,7 @@ class BatchSpanProcessorTest {
                     .build())
             .build();
 
-    ReadableSpan span = createSampledEndedSpan(SPAN_NAME_1);
+    ReadableSpan span = createEndedSpan(SPAN_NAME_1);
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span.toSpanData());
 
@@ -374,17 +366,22 @@ class BatchSpanProcessorTest {
   void exportNotSampledSpans() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
+    AtomicReference<TraceConfig> traceConfig =
+        new AtomicReference<>(
+            TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build());
     sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
                     .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
                     .build())
+            .setTraceConfig(traceConfig::get)
             .build();
 
-    createNotSampledEndedSpan(SPAN_NAME_1);
-    createNotSampledEndedSpan(SPAN_NAME_2);
-    ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
+    sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_1).startSpan().end();
+    sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_2).startSpan().end();
+    traceConfig.set(traceConfig.get().toBuilder().setSampler(Sampler.alwaysOn()).build());
+    ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
     // Spans are recorded and exported in the same order as they are ended, we test that a non
     // sampled span is not exported by creating and ending a sampled span after a non sampled span
     // and checking that the first exported span is the sampled span (the non sampled did not get
@@ -443,7 +440,7 @@ class BatchSpanProcessorTest {
                     .build())
             .build();
 
-    ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
+    ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
 
     // Force a shutdown, which forces processing of all remaining spans.
     sdkTracerProvider.shutdown();

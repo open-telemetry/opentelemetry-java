@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregation;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.CountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -17,21 +17,19 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class CountAggregation implements Aggregation {
+final class CountAggregation implements Aggregation<LongAccumulation> {
   static final CountAggregation INSTANCE = new CountAggregation();
 
   private CountAggregation() {}
 
   @Override
-  public AggregatorFactory<?> getAggregatorFactory() {
-    return CountAggregator.getFactory();
+  public Aggregator<LongAccumulation> getAggregator() {
+    return CountAggregator.getInstance();
   }
 
   @Override
-  public Accumulation merge(Accumulation a1, Accumulation a2) {
-    LongAccumulation longAccumulation1 = (LongAccumulation) a1;
-    LongAccumulation longAccumulation2 = (LongAccumulation) a2;
-    return LongAccumulation.create(longAccumulation1.getValue() + longAccumulation2.getValue());
+  public LongAccumulation merge(LongAccumulation a1, LongAccumulation a2) {
+    return LongAccumulation.create(a1.getValue() + a2.getValue());
   }
 
   @Override
@@ -39,11 +37,11 @@ final class CountAggregation implements Aggregation {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, Accumulation> accumulationMap,
+      Map<Labels, LongAccumulation> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
     List<MetricData.Point> points =
-        MetricDataUtils.getPointList(accumulationMap, startEpochNanos, epochNanos);
+        MetricDataUtils.getPointList(accumulationByLabels, startEpochNanos, epochNanos);
 
     return MetricData.createLongSum(
         resource,

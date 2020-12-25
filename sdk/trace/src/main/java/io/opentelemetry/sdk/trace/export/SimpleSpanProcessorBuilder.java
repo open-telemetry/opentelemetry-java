@@ -9,7 +9,12 @@ import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Map;
 import java.util.Objects;
 
-/** Builder class for {@link SimpleSpanProcessor}. */
+/**
+ * Builder class for {@link SimpleSpanProcessor}.
+ *
+ * @deprecated Use {@link SimpleSpanProcessor#create(SpanExporter)}
+ */
+@Deprecated
 public final class SimpleSpanProcessorBuilder extends ConfigBuilder<SimpleSpanProcessorBuilder> {
 
   private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
