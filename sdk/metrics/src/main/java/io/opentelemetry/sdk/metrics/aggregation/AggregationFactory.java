@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.aggregation;
 
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import javax.annotation.concurrent.Immutable;
 
-/** Factory class for {@link Aggregator}. */
+/** Factory class for {@link AggregatorHandle}. */
 @Immutable
 public interface AggregationFactory {
   /**

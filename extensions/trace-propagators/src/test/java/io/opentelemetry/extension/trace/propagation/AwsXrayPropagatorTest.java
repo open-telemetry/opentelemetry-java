@@ -5,7 +5,7 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
-import static io.opentelemetry.extension.trace.propagation.AwsXRayPropagator.TRACE_HEADER_KEY;
+import static io.opentelemetry.extension.trace.propagation.AwsXrayPropagator.TRACE_HEADER_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.Span;
@@ -20,7 +20,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
-class AwsXRayPropagatorTest {
+class AwsXrayPropagatorTest {
 
   private static final String TRACE_ID_BASE16 = "8a3c60f7d188f8fa79d48a391a778fa6";
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.getDefault();
@@ -42,7 +42,7 @@ class AwsXRayPropagatorTest {
           return carrier.get(key);
         }
       };
-  private final AwsXRayPropagator xrayPropagator = AwsXRayPropagator.getInstance();
+  private final AwsXrayPropagator xrayPropagator = AwsXrayPropagator.getInstance();
 
   @Test
   void inject_SampledContext() {

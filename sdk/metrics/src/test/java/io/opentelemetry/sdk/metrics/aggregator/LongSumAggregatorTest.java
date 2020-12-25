@@ -13,46 +13,52 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link LongSumAggregator}. */
 class LongSumAggregatorTest {
   @Test
-  void factoryAggregation() {
-    AggregatorFactory<LongAccumulation> factory = LongSumAggregator.getFactory();
-    assertThat(factory.getAggregator()).isInstanceOf(LongSumAggregator.class);
+  void createHandle() {
+    assertThat(LongSumAggregator.getInstance().createHandle())
+        .isInstanceOf(LongSumAggregator.Handle.class);
   }
 
   @Test
   void multipleRecords() {
-    Aggregator<LongAccumulation> aggregator = LongSumAggregator.getFactory().getAggregator();
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(12 * 5));
-    assertThat(aggregator.accumulateThenReset()).isNull();
+    AggregatorHandle<LongAccumulation> aggregatorHandle =
+        LongSumAggregator.getInstance().createHandle();
+    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(12);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(12 * 5));
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 
   @Test
   void multipleRecords_WithNegatives() {
-    Aggregator<LongAccumulation> aggregator = LongSumAggregator.getFactory().getAggregator();
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    aggregator.recordLong(-23);
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    aggregator.recordLong(-11);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(14));
-    assertThat(aggregator.accumulateThenReset()).isNull();
+    AggregatorHandle<LongAccumulation> aggregatorHandle =
+        LongSumAggregator.getInstance().createHandle();
+    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(-23);
+    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(-11);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(14));
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 
   @Test
   void toAccumulationAndReset() {
-    Aggregator<LongAccumulation> aggregator = LongSumAggregator.getFactory().getAggregator();
-    aggregator.recordLong(13);
-    aggregator.recordLong(12);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(25));
-    assertThat(aggregator.accumulateThenReset()).isNull();
-    aggregator.recordLong(12);
-    aggregator.recordLong(-25);
-    assertThat(aggregator.accumulateThenReset()).isEqualTo(LongAccumulation.create(-13));
-    assertThat(aggregator.accumulateThenReset()).isNull();
+    AggregatorHandle<LongAccumulation> aggregatorHandle =
+        LongSumAggregator.getInstance().createHandle();
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+
+    aggregatorHandle.recordLong(13);
+    aggregatorHandle.recordLong(12);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(25));
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+
+    aggregatorHandle.recordLong(12);
+    aggregatorHandle.recordLong(-25);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(-13));
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 }

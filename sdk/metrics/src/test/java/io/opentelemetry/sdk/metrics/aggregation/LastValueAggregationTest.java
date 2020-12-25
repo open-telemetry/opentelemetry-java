@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -26,8 +26,8 @@ class LastValueAggregationTest {
   void toMetricData() {
     Aggregation<LongAccumulation> lastValue =
         AggregationFactory.lastValue().create(InstrumentValueType.LONG);
-    Aggregator<LongAccumulation> aggregator = lastValue.getAggregatorFactory().getAggregator();
-    aggregator.recordLong(10);
+    AggregatorHandle<LongAccumulation> aggregatorHandle = lastValue.getAggregator().createHandle();
+    aggregatorHandle.recordLong(10);
 
     MetricData metricData =
         lastValue.toMetricData(
@@ -39,7 +39,7 @@ class LastValueAggregationTest {
                 "unit",
                 InstrumentType.VALUE_OBSERVER,
                 InstrumentValueType.LONG),
-            Collections.singletonMap(Labels.empty(), aggregator.accumulateThenReset()),
+            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             100);
     assertThat(metricData).isNotNull();
@@ -49,9 +49,9 @@ class LastValueAggregationTest {
   @Test
   void getAggregatorFactory() {
     AggregationFactory lastValue = AggregationFactory.lastValue();
-    assertThat(lastValue.create(InstrumentValueType.LONG).getAggregatorFactory())
-        .isInstanceOf(LongLastValueAggregator.getFactory().getClass());
-    assertThat(lastValue.create(InstrumentValueType.DOUBLE).getAggregatorFactory())
-        .isInstanceOf(DoubleLastValueAggregator.getFactory().getClass());
+    assertThat(lastValue.create(InstrumentValueType.LONG).getAggregator())
+        .isInstanceOf(LongLastValueAggregator.getInstance().getClass());
+    assertThat(lastValue.create(InstrumentValueType.DOUBLE).getAggregator())
+        .isInstanceOf(DoubleLastValueAggregator.getInstance().getClass());
   }
 }

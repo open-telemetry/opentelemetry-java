@@ -5,17 +5,17 @@
 
 package io.opentelemetry.sdk.metrics.aggregation;
 
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 
 abstract class AbstractAggregation<T extends Accumulation> implements Aggregation<T> {
-  private final AggregatorFactory<T> aggregatorFactory;
+  private final Aggregator<T> aggregator;
 
-  AbstractAggregation(AggregatorFactory<T> aggregatorFactory) {
-    this.aggregatorFactory = aggregatorFactory;
+  AbstractAggregation(Aggregator<T> aggregator) {
+    this.aggregator = aggregator;
   }
 
   @Override
-  public final AggregatorFactory<T> getAggregatorFactory() {
-    return aggregatorFactory;
+  public final Aggregator<T> getAggregator() {
+    return aggregator;
   }
 }

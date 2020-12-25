@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.Map;
@@ -17,41 +17,42 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 final class SynchronousInstrumentAccumulator<T extends Accumulation> {
-  private final ConcurrentHashMap<Labels, Aggregator<T>> aggregatorLabels;
+  private final ConcurrentHashMap<Labels, AggregatorHandle<T>> aggregatorLabels;
   private final ReentrantLock collectLock;
-  private final AggregatorFactory<T> aggregatorFactory;
+  private final Aggregator<T> aggregator;
   private final InstrumentProcessor<T> instrumentProcessor;
 
   SynchronousInstrumentAccumulator(InstrumentProcessor<T> instrumentProcessor) {
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
     this.instrumentProcessor = instrumentProcessor;
-    this.aggregatorFactory = instrumentProcessor.getAggregation().getAggregatorFactory();
+    this.aggregator = instrumentProcessor.getAggregation().getAggregator();
   }
 
-  Aggregator<?> bind(Labels labels) {
+  AggregatorHandle<?> bind(Labels labels) {
     Objects.requireNonNull(labels, "labels");
-    Aggregator<T> aggregator = aggregatorLabels.get(labels);
-    if (aggregator != null && aggregator.acquire()) {
+    AggregatorHandle<T> aggregatorHandle = aggregatorLabels.get(labels);
+    if (aggregatorHandle != null && aggregatorHandle.acquire()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
-      return aggregator;
+      return aggregatorHandle;
     }
 
     // Missing entry or no longer mapped, try to add a new entry.
-    aggregator = aggregatorFactory.getAggregator();
+    aggregatorHandle = aggregator.createHandle();
     while (true) {
-      Aggregator<?> boundAggregator = aggregatorLabels.putIfAbsent(labels, aggregator);
-      if (boundAggregator != null) {
-        if (boundAggregator.acquire()) {
+      AggregatorHandle<?> boundAggregatorHandle =
+          aggregatorLabels.putIfAbsent(labels, aggregatorHandle);
+      if (boundAggregatorHandle != null) {
+        if (boundAggregatorHandle.acquire()) {
           // At this moment it is guaranteed that the Bound is in the map and will not be removed.
-          return boundAggregator;
+          return boundAggregatorHandle;
         }
         // Try to remove the boundAggregator. This will race with the collect method, but only one
         // will succeed.
-        aggregatorLabels.remove(labels, boundAggregator);
+        aggregatorLabels.remove(labels, boundAggregatorHandle);
         continue;
       }
-      return aggregator;
+      return aggregatorHandle;
     }
   }
 
@@ -62,7 +63,7 @@ final class SynchronousInstrumentAccumulator<T extends Accumulation> {
   public final List<MetricData> collectAll() {
     collectLock.lock();
     try {
-      for (Map.Entry<Labels, Aggregator<T>> entry : aggregatorLabels.entrySet()) {
+      for (Map.Entry<Labels, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {
         boolean unmappedEntry = entry.getValue().tryUnmap();
         if (unmappedEntry) {
           // If able to unmap then remove the record from the current Map. This can race with the

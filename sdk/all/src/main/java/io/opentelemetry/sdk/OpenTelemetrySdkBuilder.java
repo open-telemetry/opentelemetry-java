@@ -10,11 +10,9 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /** A builder for configuring an {@link OpenTelemetrySdk}. */
 public final class OpenTelemetrySdkBuilder {
-  private static final AtomicBoolean INITIALIZED_GLOBAL = new AtomicBoolean();
 
   private ContextPropagators propagators = ContextPropagators.noop();
   private SdkTracerProvider tracerProvider;
@@ -51,19 +49,31 @@ public final class OpenTelemetrySdkBuilder {
 
   /**
    * Returns a new {@link OpenTelemetrySdk} built with the configuration of this {@link
-   * OpenTelemetrySdkBuilder}.
+   * OpenTelemetrySdkBuilder} and registers it as the global {@link
+   * io.opentelemetry.api.OpenTelemetry}.
+   *
+   * @see GlobalOpenTelemetry
+   */
+  public OpenTelemetrySdk buildAndRegisterGlobal() {
+    OpenTelemetrySdk sdk = build();
+    GlobalOpenTelemetry.set(sdk);
+    return sdk;
+  }
+
+  /**
+   * Returns a new {@link OpenTelemetrySdk} built with the configuration of this {@link
+   * OpenTelemetrySdkBuilder}. This SDK is not registered as the global {@link
+   * io.opentelemetry.api.OpenTelemetry}. It is recommended that you register one SDK using {@link
+   * OpenTelemetrySdkBuilder#buildAndRegisterGlobal()} for use by instrumentation that requires
+   * access to a global instance of {@link io.opentelemetry.api.OpenTelemetry}.
+   *
+   * @see GlobalOpenTelemetry
    */
   public OpenTelemetrySdk build() {
     if (tracerProvider == null) {
       tracerProvider = SdkTracerProvider.builder().build();
     }
 
-    OpenTelemetrySdk sdk =
-        new OpenTelemetrySdk(new ObfuscatedTracerProvider(tracerProvider), propagators);
-    // Automatically initialize global OpenTelemetry with the first SDK we build.
-    if (INITIALIZED_GLOBAL.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
-      GlobalOpenTelemetry.set(sdk);
-    }
-    return sdk;
+    return new OpenTelemetrySdk(new ObfuscatedTracerProvider(tracerProvider), propagators);
   }
 }

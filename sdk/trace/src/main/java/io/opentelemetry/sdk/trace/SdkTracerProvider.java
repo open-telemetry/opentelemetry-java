@@ -75,6 +75,7 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
   }
 
   @Override
+  @Deprecated
   public void updateActiveTraceConfig(TraceConfig traceConfig) {
     sharedState.updateActiveTraceConfig(traceConfig);
   }
