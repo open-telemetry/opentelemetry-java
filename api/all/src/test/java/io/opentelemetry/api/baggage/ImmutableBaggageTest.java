@@ -30,8 +30,7 @@ class ImmutableBaggageTest {
   private static final String V2 = "v2";
 
   private static final Baggage ONE_ENTRY = Baggage.builder().put(K1, V1, TMD).build();
-  private static final Baggage TWO_ENTRIES =
-      Baggage.builder().put(K1, V1, TMD).put(K2, V2, TMD).build();
+  private static final Baggage TWO_ENTRIES = ONE_ENTRY.toBuilder().put(K2, V2, TMD).build();
 
   @Test
   void getEntries_empty() {

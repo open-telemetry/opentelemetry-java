@@ -17,7 +17,8 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry> implements Baggage {
+abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry>
+    implements Baggage {
 
   private static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
 

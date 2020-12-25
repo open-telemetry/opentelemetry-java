@@ -12,9 +12,11 @@ import org.junit.jupiter.api.Test;
 class StringUtilsTest {
 
   @Test
+  @SuppressWarnings("AvoidEscapedUnicodeCharacters")
   void isPrintableString() {
     assertThat(StringUtils.isPrintableString("abcd")).isTrue();
-    assertThat(StringUtils.isPrintableString("\2ab\3cd")).isFalse();
+    assertThat(StringUtils.isPrintableString("\u0002ab")).isFalse();
+    assertThat(StringUtils.isPrintableString("\u0127ab")).isFalse();
   }
 
   @Test
