@@ -150,10 +150,10 @@ public final class GlobalOpenTelemetry {
             "Attempt to access GlobalOpenTelemetry.get before OpenTelemetrySdk has been "
                 + "initialized. This generally means telemetry will not be recorded for parts of "
                 + "your application. Make sure to initialize OpenTelemetrySdk, using "
-                + "OpenTelemetrySdk.builder(), as early as possible in your application. "
-                + "If you do not need to use the OpenTelemetry SDK, either exclude it from your "
-                + "classpath or set the 'otel.sdk.suppress-sdk-initialized-warning' system "
-                + "property to true.",
+                + "OpenTelemetrySdk.builder()...buildAndRegisterGlobal(), as early as possible in "
+                + "your application.  If you do not need to use the OpenTelemetry SDK, either "
+                + "exclude it from your classpath or set the "
+                + "'otel.sdk.suppress-sdk-initialized-warning' system property to true.",
             // Add stack trace to log to allow user to find the problematic invocation.
             new Throwable());
       }
