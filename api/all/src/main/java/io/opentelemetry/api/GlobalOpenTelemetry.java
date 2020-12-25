@@ -34,8 +34,6 @@ import javax.annotation.Nullable;
 public final class GlobalOpenTelemetry {
   private static final Object mutex = new Object();
 
-  private static final OpenTelemetry NO_OP = DefaultOpenTelemetry.builder().build();
-
   @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
 
   private GlobalOpenTelemetry() {}
@@ -60,7 +58,12 @@ public final class GlobalOpenTelemetry {
             return autoConfigured;
           }
 
-          return NO_OP;
+          OpenTelemetryFactory openTelemetryFactory = Utils.loadSpi(OpenTelemetryFactory.class);
+          if (openTelemetryFactory != null) {
+            set(openTelemetryFactory.create());
+          } else {
+            set(DefaultOpenTelemetry.builder().build());
+          }
         }
       }
     }

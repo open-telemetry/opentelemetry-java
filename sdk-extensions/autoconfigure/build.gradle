@@ -2,11 +2,16 @@ plugins {
     id "java-library"
     id "maven-publish"
 
+    id "org.unbroken-dome.test-sets"
     id "ru.vyarus.animalsniffer"
 }
 
 description = 'OpenTelemetry SDK Auto-configuration'
 ext.moduleName = "io.opentelemetry.sdk.autoconfigure"
+
+testSets {
+    testFullConfig
+}
 
 dependencies {
     api project(':sdk:all'),
@@ -19,9 +24,27 @@ dependencies {
     compileOnly project(':exporters:logging')
     compileOnly project(':exporters:otlp:all')
     compileOnly project(':exporters:otlp:metrics')
-
     compileOnly project(':exporters:prometheus')
     compileOnly libraries.prometheus_client_httpserver
-
     compileOnly project(':exporters:zipkin')
+
+    testImplementation project(':proto'),
+            'com.linecorp.armeria:armeria-junit5',
+            'com.linecorp.armeria:armeria-grpc'
+    testRuntimeOnly 'io.grpc:grpc-netty-shaded'
+
+    testFullConfigImplementation project(':exporters:jaeger')
+    testFullConfigImplementation project(':exporters:jaeger-thrift')
+    testFullConfigImplementation project(':exporters:logging')
+    testFullConfigImplementation project(':exporters:otlp:all')
+    testFullConfigImplementation project(':exporters:otlp:metrics')
+    testFullConfigImplementation project(':exporters:prometheus')
+    testFullConfigImplementation libraries.prometheus_client_httpserver
+    testFullConfigImplementation project(':exporters:zipkin')
+}
+
+testFullConfig {
+    environment("OTEL_EXPORTER", "otlp,jaeger,zipkin")
+    environment("OTEL_BSP_SCHEDULE_DELAY", "10")
+    environment("OTEL_IMR_EXPORT_INTERVAL", "10")
 }
