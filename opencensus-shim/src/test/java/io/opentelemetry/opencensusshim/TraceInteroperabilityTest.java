@@ -26,7 +26,6 @@ import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Status;
 import io.opencensus.trace.Tracing;
 import io.opencensus.trace.samplers.Samplers;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -71,8 +70,7 @@ class TraceInteroperabilityTest {
     openTelemetry =
         OpenTelemetrySdk.builder()
             .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
-            .build();
-    GlobalOpenTelemetry.set(openTelemetry);
+            .buildAndRegisterGlobal();
   }
 
   @Captor private ArgumentCaptor<Collection<SpanData>> spanDataCaptor;
