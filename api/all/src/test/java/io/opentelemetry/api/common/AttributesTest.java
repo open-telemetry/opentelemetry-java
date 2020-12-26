@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 
@@ -70,10 +71,13 @@ class AttributesTest {
     assertThat(map.entrySet())
         .containsExactlyInAnyOrder(
             entry(stringKey("key1"), "value1"), entry(longKey("key2"), 333L));
+    assertThat(map.entrySet().contains(entry(stringKey("key1"), "value1"))).isTrue();
+    assertThat(map.entrySet().contains(entry(stringKey("key1"), "value2"))).isFalse();
     assertThat(map.isEmpty()).isFalse();
     assertThat(map.containsKey(stringKey("key1"))).isTrue();
     assertThat(map.containsKey(longKey("key2"))).isTrue();
     assertThat(map.containsKey(stringKey("key3"))).isFalse();
+    assertThat(map.containsKey(null)).isFalse();
     assertThat(map.containsValue("value1")).isTrue();
     assertThat(map.containsValue(333L)).isTrue();
     assertThat(map.containsValue("cat")).isFalse();
@@ -87,6 +91,12 @@ class AttributesTest {
 
     assertThat(map.keySet().contains(stringKey("key1"))).isTrue();
     assertThat(map.keySet().contains(stringKey("key3"))).isFalse();
+    assertThat(map.keySet().containsAll(Arrays.asList(stringKey("key1"), longKey("key2"))))
+        .isTrue();
+    assertThat(map.keySet().containsAll(Arrays.asList(stringKey("key1"), longKey("key3"))))
+        .isFalse();
+    assertThat(map.keySet().containsAll(null)).isFalse();
+    assertThat(map.keySet().containsAll(Collections.emptyList())).isTrue();
     assertThat(map.keySet().size()).isEqualTo(2);
     assertThat(map.keySet().toArray())
         .containsExactlyInAnyOrder(stringKey("key1"), longKey("key2"));
@@ -121,7 +131,10 @@ class AttributesTest {
 
     assertThat(map.toString()).isEqualTo("ReadOnlyArrayMap{key1=value1,key2=333}");
 
-    assertThat(Attributes.builder().build().asMap()).isEmpty();
+    Map<AttributeKey<?>, Object> emptyMap = Attributes.builder().build().asMap();
+    assertThat(emptyMap.isEmpty()).isTrue();
+    assertThatThrownBy(() -> emptyMap.entrySet().iterator().next())
+        .isInstanceOf(NoSuchElementException.class);
   }
 
   @Test
