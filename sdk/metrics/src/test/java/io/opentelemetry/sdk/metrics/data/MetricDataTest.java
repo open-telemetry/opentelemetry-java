@@ -92,9 +92,9 @@ class MetricDataTest {
             MetricData.LongSumData.create(
                 /* isMonotonic= */ false,
                 MetricData.AggregationTemporality.CUMULATIVE,
-                Collections.singletonList(DOUBLE_POINT)));
+                Collections.singletonList(LONG_POINT)));
     assertThat(metricData.isEmpty()).isFalse();
-    assertThat(metricData.getLongSumData().getPoints()).containsExactly(DOUBLE_POINT);
+    assertThat(metricData.getLongSumData().getPoints()).containsExactly(LONG_POINT);
   }
 
   @Test

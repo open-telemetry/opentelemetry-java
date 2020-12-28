@@ -196,7 +196,7 @@ public class OtlpPipelineStressTest {
     metricsByName.forEach(
         (name, metricData) -> {
           Stream<LongPoint> longPointStream =
-              metricData.stream().flatMap(md -> md.getPoints().stream()).map(p -> (LongPoint) p);
+              metricData.stream().flatMap(md -> md.getLongSumData().getPoints().stream());
           Map<Labels, List<LongPoint>> pointsByLabelset =
               longPointStream.collect(Collectors.groupingBy(Point::getLabels));
           pointsByLabelset.forEach(
