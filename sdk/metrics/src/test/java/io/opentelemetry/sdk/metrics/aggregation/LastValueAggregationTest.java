@@ -9,9 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
-import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -50,8 +49,8 @@ class LastValueAggregationTest {
   void getAggregatorFactory() {
     AggregationFactory lastValue = AggregationFactory.lastValue();
     assertThat(lastValue.create(InstrumentValueType.LONG).getAggregator())
-        .isInstanceOf(LongLastValueAggregator.getInstance().getClass());
+        .isInstanceOf(Aggregator.longLastValue().getClass());
     assertThat(lastValue.create(InstrumentValueType.DOUBLE).getAggregator())
-        .isInstanceOf(DoubleLastValueAggregator.getInstance().getClass());
+        .isInstanceOf(Aggregator.doubleLastValue().getClass());
   }
 }

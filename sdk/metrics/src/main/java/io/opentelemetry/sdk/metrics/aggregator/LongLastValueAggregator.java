@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Aggregator that aggregates recorded values by storing the last recorded value.
@@ -17,18 +18,10 @@ import javax.annotation.Nullable;
  * problem because LastValueAggregator is currently only available for Observers which record all
  * values once.
  */
-public final class LongLastValueAggregator implements Aggregator<LongAccumulation> {
+@ThreadSafe
+final class LongLastValueAggregator implements Aggregator<LongAccumulation> {
   @Nullable private static final Long DEFAULT_VALUE = null;
-  private static final LongLastValueAggregator INSTANCE = new LongLastValueAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  public static Aggregator<LongAccumulation> getInstance() {
-    return INSTANCE;
-  }
+  static final LongLastValueAggregator INSTANCE = new LongLastValueAggregator();
 
   private LongLastValueAggregator() {}
 

@@ -9,8 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
-import io.opentelemetry.sdk.metrics.aggregator.CountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -49,8 +49,8 @@ class CountAggregationTest {
   void getAggregatorFactory() {
     AggregationFactory count = AggregationFactory.count();
     assertThat(count.create(InstrumentValueType.LONG).getAggregator())
-        .isInstanceOf(CountAggregator.getInstance().getClass());
+        .isInstanceOf(Aggregator.count().getClass());
     assertThat(count.create(InstrumentValueType.DOUBLE).getAggregator())
-        .isInstanceOf(CountAggregator.getInstance().getClass());
+        .isInstanceOf(Aggregator.count().getClass());
   }
 }

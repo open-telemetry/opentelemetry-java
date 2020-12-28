@@ -14,14 +14,12 @@ import org.junit.jupiter.api.Test;
 class LongSumAggregatorTest {
   @Test
   void createHandle() {
-    assertThat(LongSumAggregator.getInstance().createHandle())
-        .isInstanceOf(LongSumAggregator.Handle.class);
+    assertThat(Aggregator.longSum().createHandle()).isInstanceOf(LongSumAggregator.Handle.class);
   }
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle =
-        LongSumAggregator.getInstance().createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = Aggregator.longSum().createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
@@ -33,8 +31,7 @@ class LongSumAggregatorTest {
 
   @Test
   void multipleRecords_WithNegatives() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle =
-        LongSumAggregator.getInstance().createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = Aggregator.longSum().createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(-23);
@@ -47,8 +44,7 @@ class LongSumAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle =
-        LongSumAggregator.getInstance().createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = Aggregator.longSum().createHandle();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordLong(13);

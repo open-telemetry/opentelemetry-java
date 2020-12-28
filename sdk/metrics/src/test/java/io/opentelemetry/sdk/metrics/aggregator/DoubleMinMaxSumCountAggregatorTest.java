@@ -23,14 +23,14 @@ import org.junit.jupiter.api.Test;
 class DoubleMinMaxSumCountAggregatorTest {
   @Test
   void createHandle() {
-    assertThat(DoubleMinMaxSumCountAggregator.getInstance().createHandle())
+    assertThat(Aggregator.doubleMinMaxSumCount().createHandle())
         .isInstanceOf(DoubleMinMaxSumCountAggregator.Handle.class);
   }
 
   @Test
   void testRecordings() {
     AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
-        DoubleMinMaxSumCountAggregator.getInstance().createHandle();
+        Aggregator.doubleMinMaxSumCount().createHandle();
 
     aggregatorHandle.recordDouble(100);
     assertThat(aggregatorHandle.accumulateThenReset())
@@ -48,7 +48,7 @@ class DoubleMinMaxSumCountAggregatorTest {
   @Test
   void toAccumulationAndReset() {
     AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
-        DoubleMinMaxSumCountAggregator.getInstance().createHandle();
+        Aggregator.doubleMinMaxSumCount().createHandle();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordDouble(100);
@@ -65,7 +65,7 @@ class DoubleMinMaxSumCountAggregatorTest {
   @Test
   void testMultithreadedUpdates() throws Exception {
     final AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
-        DoubleMinMaxSumCountAggregator.getInstance().createHandle();
+        Aggregator.doubleMinMaxSumCount().createHandle();
     final Summary summarizer = new Summary();
     int numberOfThreads = 10;
     final double[] updates = new double[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};

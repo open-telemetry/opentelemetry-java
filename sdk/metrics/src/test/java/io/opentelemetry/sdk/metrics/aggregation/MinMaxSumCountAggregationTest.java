@@ -9,9 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
-import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCountAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -51,8 +50,8 @@ class MinMaxSumCountAggregationTest {
   void getAggregatorFactory() {
     AggregationFactory minMaxSumCount = AggregationFactory.minMaxSumCount();
     assertThat(minMaxSumCount.create(InstrumentValueType.LONG).getAggregator())
-        .isInstanceOf(LongMinMaxSumCountAggregator.getInstance().getClass());
+        .isInstanceOf(Aggregator.longMinMaxSumCount().getClass());
     assertThat(minMaxSumCount.create(InstrumentValueType.DOUBLE).getAggregator())
-        .isInstanceOf(DoubleMinMaxSumCountAggregator.getInstance().getClass());
+        .isInstanceOf(Aggregator.doubleMinMaxSumCount().getClass());
   }
 }

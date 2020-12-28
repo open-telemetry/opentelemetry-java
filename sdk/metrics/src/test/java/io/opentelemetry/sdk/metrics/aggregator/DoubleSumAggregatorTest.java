@@ -14,14 +14,13 @@ import org.junit.jupiter.api.Test;
 class DoubleSumAggregatorTest {
   @Test
   void createHandle() {
-    assertThat(DoubleSumAggregator.getInstance().createHandle())
+    assertThat(Aggregator.doubleSum().createHandle())
         .isInstanceOf(DoubleSumAggregator.Handle.class);
   }
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle =
-        DoubleSumAggregator.getInstance().createHandle();
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle = Aggregator.doubleSum().createHandle();
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
@@ -33,8 +32,7 @@ class DoubleSumAggregatorTest {
 
   @Test
   void multipleRecords_WithNegatives() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle =
-        DoubleSumAggregator.getInstance().createHandle();
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle = Aggregator.doubleSum().createHandle();
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-23);
@@ -46,8 +44,7 @@ class DoubleSumAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle =
-        DoubleSumAggregator.getInstance().createHandle();
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle = Aggregator.doubleSum().createHandle();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordDouble(13);

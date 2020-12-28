@@ -10,17 +10,8 @@ import java.util.concurrent.atomic.LongAdder;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-public final class CountAggregator implements Aggregator<LongAccumulation> {
-  private static final Aggregator<LongAccumulation> INSTANCE = new CountAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  public static Aggregator<LongAccumulation> getInstance() {
-    return INSTANCE;
-  }
+final class CountAggregator implements Aggregator<LongAccumulation> {
+  static final CountAggregator INSTANCE = new CountAggregator();
 
   private CountAggregator() {}
 

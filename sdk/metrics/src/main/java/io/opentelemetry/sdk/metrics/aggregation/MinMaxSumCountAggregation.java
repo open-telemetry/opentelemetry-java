@@ -8,8 +8,6 @@ package io.opentelemetry.sdk.metrics.aggregation;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCountAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -20,9 +18,9 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 final class MinMaxSumCountAggregation extends AbstractAggregation<MinMaxSumCountAccumulation> {
   static final MinMaxSumCountAggregation LONG_INSTANCE =
-      new MinMaxSumCountAggregation(LongMinMaxSumCountAggregator.getInstance());
+      new MinMaxSumCountAggregation(Aggregator.longMinMaxSumCount());
   static final MinMaxSumCountAggregation DOUBLE_INSTANCE =
-      new MinMaxSumCountAggregation(DoubleMinMaxSumCountAggregator.getInstance());
+      new MinMaxSumCountAggregation(Aggregator.doubleMinMaxSumCount());
 
   private MinMaxSumCountAggregation(Aggregator<MinMaxSumCountAccumulation> aggregator) {
     super(aggregator);

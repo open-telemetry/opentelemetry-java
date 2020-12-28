@@ -25,7 +25,7 @@ public class DoubleMinMaxSumCountBenchmark {
 
   @Setup(Level.Trial)
   public final void setup() {
-    aggregatorHandle = DoubleMinMaxSumCountAggregator.getInstance().createHandle();
+    aggregatorHandle = Aggregator.doubleMinMaxSumCount().createHandle();
   }
 
   @Benchmark

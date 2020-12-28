@@ -11,19 +11,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-public final class DoubleMinMaxSumCountAggregator
-    implements Aggregator<MinMaxSumCountAccumulation> {
-  private static final DoubleMinMaxSumCountAggregator INSTANCE =
-      new DoubleMinMaxSumCountAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  public static Aggregator<MinMaxSumCountAccumulation> getInstance() {
-    return INSTANCE;
-  }
+final class DoubleMinMaxSumCountAggregator implements Aggregator<MinMaxSumCountAccumulation> {
+  static final DoubleMinMaxSumCountAggregator INSTANCE = new DoubleMinMaxSumCountAggregator();
 
   private DoubleMinMaxSumCountAggregator() {}
 

@@ -14,14 +14,13 @@ import org.junit.jupiter.api.Test;
 class LongLastValueAggregatorTest {
   @Test
   void createHandle() {
-    assertThat(LongLastValueAggregator.getInstance().createHandle())
+    assertThat(Aggregator.longLastValue().createHandle())
         .isInstanceOf(LongLastValueAggregator.Handle.class);
   }
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle =
-        LongLastValueAggregator.getInstance().createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = Aggregator.longLastValue().createHandle();
     aggregatorHandle.recordLong(12);
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(12));
     aggregatorHandle.recordLong(13);
@@ -31,8 +30,7 @@ class LongLastValueAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle =
-        LongLastValueAggregator.getInstance().createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = Aggregator.longLastValue().createHandle();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordLong(13);

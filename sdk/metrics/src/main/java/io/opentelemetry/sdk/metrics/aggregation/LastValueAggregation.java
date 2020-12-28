@@ -8,8 +8,6 @@ package io.opentelemetry.sdk.metrics.aggregation;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -20,9 +18,9 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 final class LastValueAggregation<T extends Accumulation> extends AbstractAggregation<T> {
   static final LastValueAggregation<LongAccumulation> LONG_INSTANCE =
-      new LastValueAggregation<>(LongLastValueAggregator.getInstance());
+      new LastValueAggregation<>(Aggregator.longLastValue());
   static final LastValueAggregation<DoubleAccumulation> DOUBLE_INSTANCE =
-      new LastValueAggregation<>(DoubleLastValueAggregator.getInstance());
+      new LastValueAggregation<>(Aggregator.doubleLastValue());
 
   private LastValueAggregation(Aggregator<T> aggregator) {
     super(aggregator);

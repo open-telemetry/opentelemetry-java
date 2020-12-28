@@ -23,14 +23,14 @@ import org.junit.jupiter.api.Test;
 class LongMinMaxSumCountAggregatorTest {
   @Test
   void createHandle() {
-    assertThat(LongMinMaxSumCountAggregator.getInstance().createHandle())
+    assertThat(Aggregator.longMinMaxSumCount().createHandle())
         .isInstanceOf(LongMinMaxSumCountAggregator.Handle.class);
   }
 
   @Test
   void testRecordings() {
     AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
-        LongMinMaxSumCountAggregator.getInstance().createHandle();
+        Aggregator.longMinMaxSumCount().createHandle();
     aggregatorHandle.recordLong(100);
     assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
@@ -45,7 +45,7 @@ class LongMinMaxSumCountAggregatorTest {
   @Test
   void toAccumulationAndReset() {
     AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
-        LongMinMaxSumCountAggregator.getInstance().createHandle();
+        Aggregator.longMinMaxSumCount().createHandle();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordLong(100);
@@ -62,7 +62,7 @@ class LongMinMaxSumCountAggregatorTest {
   @Test
   void testMultithreadedUpdates() throws Exception {
     final AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
-        LongMinMaxSumCountAggregator.getInstance().createHandle();
+        Aggregator.longMinMaxSumCount().createHandle();
     final Summary summarizer = new Summary();
     int numberOfThreads = 10;
     final long[] updates = new long[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};

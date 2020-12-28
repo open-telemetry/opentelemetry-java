@@ -7,18 +7,11 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
 import java.util.concurrent.atomic.LongAdder;
+import javax.annotation.concurrent.ThreadSafe;
 
-public final class LongSumAggregator implements Aggregator<LongAccumulation> {
-  private static final LongSumAggregator INSTANCE = new LongSumAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  public static Aggregator<LongAccumulation> getInstance() {
-    return INSTANCE;
-  }
+@ThreadSafe
+final class LongSumAggregator implements Aggregator<LongAccumulation> {
+  static final LongSumAggregator INSTANCE = new LongSumAggregator();
 
   private LongSumAggregator() {}
 

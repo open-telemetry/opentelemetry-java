@@ -14,14 +14,14 @@ import org.junit.jupiter.api.Test;
 class DoubleLastValueAggregatorTest {
   @Test
   void createHandle() {
-    assertThat(DoubleLastValueAggregator.getInstance().createHandle())
+    assertThat(Aggregator.doubleLastValue().createHandle())
         .isInstanceOf(DoubleLastValueAggregator.Handle.class);
   }
 
   @Test
   void multipleRecords() {
     AggregatorHandle<DoubleAccumulation> aggregatorHandle =
-        DoubleLastValueAggregator.getInstance().createHandle();
+        Aggregator.doubleLastValue().createHandle();
     aggregatorHandle.recordDouble(12.1);
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(12.1));
     aggregatorHandle.recordDouble(13.1);
@@ -32,7 +32,7 @@ class DoubleLastValueAggregatorTest {
   @Test
   void toAccumulationAndReset() {
     AggregatorHandle<DoubleAccumulation> aggregatorHandle =
-        DoubleLastValueAggregator.getInstance().createHandle();
+        Aggregator.doubleLastValue().createHandle();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordDouble(13.1);

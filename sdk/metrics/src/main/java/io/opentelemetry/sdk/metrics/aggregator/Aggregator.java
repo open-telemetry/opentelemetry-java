@@ -6,6 +6,9 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
+import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
+import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
+import io.opentelemetry.sdk.metrics.aggregation.MinMaxSumCountAccumulation;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -18,9 +21,78 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface Aggregator<T extends Accumulation> {
+  /**
+   * Returns a count {@link Aggregator}.
+   *
+   * @return a count {@link Aggregator}.
+   */
+  static Aggregator<LongAccumulation> count() {
+    return CountAggregator.INSTANCE;
+  }
 
-  // TODO: Move all getInstance methods here as static methods and make the implementations package
-  //  protected.
+  /**
+   * Returns a last value {@link Aggregator} for {@code double} measurements.
+   *
+   * <p>Limitation: The current implementation does not store a time when the value was recorded, so
+   * merging multiple LastValueAggregators will not preserve the ordering of records. This is not a
+   * problem because LastValueAggregator is currently only available for Observers which record all
+   * values once.
+   *
+   * @return a last value {@link Aggregator} for {@code double} measurements.
+   */
+  static Aggregator<DoubleAccumulation> doubleLastValue() {
+    return DoubleLastValueAggregator.INSTANCE;
+  }
+
+  /**
+   * Returns a min, max, sum, count {@link Aggregator} for {@code double} measurements.
+   *
+   * @return a min, max, sum, count {@link Aggregator} for {@code double} measurements.
+   */
+  static Aggregator<MinMaxSumCountAccumulation> doubleMinMaxSumCount() {
+    return DoubleMinMaxSumCountAggregator.INSTANCE;
+  }
+
+  /**
+   * Returns a sum {@link Aggregator} for {@code double} measurements.
+   *
+   * @return a sum {@link Aggregator} for {@code double} measurements.
+   */
+  static Aggregator<DoubleAccumulation> doubleSum() {
+    return DoubleSumAggregator.INSTANCE;
+  }
+
+  /**
+   * Returns a last value {@link Aggregator} for {@code long} measurements.
+   *
+   * <p>Limitation: The current implementation does not store a time when the value was recorded, so
+   * merging multiple LastValueAggregators will not preserve the ordering of records. This is not a
+   * problem because LastValueAggregator is currently only available for Observers which record all
+   * values once.
+   *
+   * @return a last value {@link Aggregator} for {@code long} measurements.
+   */
+  static Aggregator<LongAccumulation> longLastValue() {
+    return LongLastValueAggregator.INSTANCE;
+  }
+
+  /**
+   * Returns a min, max, sum, count {@link Aggregator} for {@code long} measurements.
+   *
+   * @return a min, max, sum, count {@link Aggregator} for {@code long} measurements.
+   */
+  static Aggregator<MinMaxSumCountAccumulation> longMinMaxSumCount() {
+    return LongMinMaxSumCountAggregator.INSTANCE;
+  }
+
+  /**
+   * Returns a sum {@link Aggregator} for {@code long} measurements.
+   *
+   * @return a sum {@link Aggregator} for {@code long} measurements.
+   */
+  static Aggregator<LongAccumulation> longSum() {
+    return LongSumAggregator.INSTANCE;
+  }
 
   /**
    * Returns a new {@link AggregatorHandle}. This MUST by used by the synchronous to aggregate

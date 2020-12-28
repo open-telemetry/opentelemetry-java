@@ -7,18 +7,11 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
 import java.util.concurrent.atomic.DoubleAdder;
+import javax.annotation.concurrent.ThreadSafe;
 
-public final class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {
-  private static final DoubleSumAggregator INSTANCE = new DoubleSumAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  public static Aggregator<DoubleAccumulation> getInstance() {
-    return INSTANCE;
-  }
+@ThreadSafe
+final class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {
+  static final DoubleSumAggregator INSTANCE = new DoubleSumAggregator();
 
   private DoubleSumAggregator() {}
 

@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.aggregation;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.aggregator.CountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -24,7 +23,7 @@ final class CountAggregation implements Aggregation<LongAccumulation> {
 
   @Override
   public Aggregator<LongAccumulation> getAggregator() {
-    return CountAggregator.getInstance();
+    return Aggregator.count();
   }
 
   @Override
