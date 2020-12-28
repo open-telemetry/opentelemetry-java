@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregation;
 
+import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 
 abstract class AbstractAggregation<T extends Accumulation> implements Aggregation<T> {
