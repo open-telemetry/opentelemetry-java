@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregation;
 
+import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import javax.annotation.concurrent.Immutable;
 

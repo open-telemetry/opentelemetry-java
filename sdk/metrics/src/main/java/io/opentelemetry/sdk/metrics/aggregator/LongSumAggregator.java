@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.aggregation.LongAccumulation;
+import io.opentelemetry.sdk.metrics.accumulation.LongAccumulation;
 import java.util.concurrent.atomic.LongAdder;
 
 public final class LongSumAggregator implements Aggregator<LongAccumulation> {

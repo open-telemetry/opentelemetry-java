@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.aggregation;
+package io.opentelemetry.sdk.metrics.accumulation;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Labels;
@@ -29,13 +29,33 @@ public abstract class MinMaxSumCountAccumulation implements Accumulation {
 
   MinMaxSumCountAccumulation() {}
 
-  abstract long getCount();
+  /**
+   * Returns the count (number of measurements) stored by this {@link Accumulation}.
+   *
+   * @return the count stored by this {@link Accumulation}.
+   */
+  public abstract long getCount();
 
-  abstract double getSum();
+  /**
+   * Returns the sum (sum of measurements) stored by this {@link Accumulation}.
+   *
+   * @return the sum stored by this {@link Accumulation}.
+   */
+  public abstract double getSum();
 
-  abstract double getMin();
+  /**
+   * Returns the min (minimum of all measurements) stored by this {@link Accumulation}.
+   *
+   * @return the min stored by this {@link Accumulation}.
+   */
+  public abstract double getMin();
 
-  abstract double getMax();
+  /**
+   * Returns the max (maximum of all measurements) stored by this {@link Accumulation}.
+   *
+   * @return the max stored by this {@link Accumulation}.
+   */
+  public abstract double getMax();
 
   @Override
   public MetricData.DoubleSummaryPoint toPoint(
