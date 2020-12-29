@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregation;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.accumulation.LongAccumulation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.CountAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;

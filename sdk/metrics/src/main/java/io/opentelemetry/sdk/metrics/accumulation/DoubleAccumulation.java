@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.aggregation;
+package io.opentelemetry.sdk.metrics.accumulation;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Labels;
@@ -26,10 +26,15 @@ public abstract class DoubleAccumulation implements Accumulation {
 
   DoubleAccumulation() {}
 
-  abstract double getValue();
+  /**
+   * Returns the {@code double} value stored by this {@link Accumulation}.
+   *
+   * @return the {@code double} value stored by this {@link Accumulation}.
+   */
+  public abstract double getValue();
 
   @Override
-  public MetricData.Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
+  public MetricData.DoublePoint toPoint(long startEpochNanos, long epochNanos, Labels labels) {
     return MetricData.DoublePoint.create(startEpochNanos, epochNanos, labels, getValue());
   }
 }

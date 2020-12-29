@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
-import io.opentelemetry.sdk.metrics.aggregation.MinMaxSumCountAccumulation;
+import io.opentelemetry.sdk.metrics.accumulation.MinMaxSumCountAccumulation;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.concurrent.ThreadSafe;
 
