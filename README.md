@@ -2,12 +2,11 @@
 ![Continuous Build](https://github.com/open-telemetry/opentelemetry-java/workflows/Continuous%20Build/badge.svg)
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
-[![Gitter chat][gitter-image]][gitter-url]
 
 We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#java-sdk).
 
-We encourage using github's [discussions](https://github.com/open-telemetry/opentelemetry-java/discussions)
-  feature rather than using Gitter for support or general questions.
+We use [GitHub Discussions](https://github.com/open-telemetry/opentelemetry-java/discussions)
+  for support or general questions. Feel free to drop a line.
 
 ## Overview
 
@@ -175,8 +174,6 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 
 [circleci-image]: https://circleci.com/gh/open-telemetry/opentelemetry-java.svg?style=svg 
 [circleci-url]: https://circleci.com/gh/open-telemetry/opentelemetry-java
-[gitter-image]: https://badges.gitter.im/open-telemetry/opentelemetry-java.svg 
-[gitter-url]: https://gitter.im/open-telemetry/opentelemetry-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/master/
 [maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api/badge.svg
