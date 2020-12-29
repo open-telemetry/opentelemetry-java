@@ -45,6 +45,8 @@ dependencies {
 
 testFullConfig {
     environment("OTEL_EXPORTER", "otlp,jaeger,zipkin")
+    environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottracer,xray")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
     environment("OTEL_IMR_EXPORT_INTERVAL", "10")
+    environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
 }
