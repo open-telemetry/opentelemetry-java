@@ -33,28 +33,12 @@ jobs:
           languages: java
 
       # Build the code
-      # - uses: actions/checkout@v2
-      #   with:
-      #     fetch-depth: 0
-      # - id: setup-java-8
-      #   name: Setup Java 8
-      #   uses: actions/setup-java@v1
-      #   with:
-      #     java-version: 8
-      #     java-package: jre
       - name: Setup Java 11
         uses: actions/setup-java@v1
         with:
           java-version: 11
 
       - run: ./gradlew build --stacktrace jacocoTestReport
-      # - uses: burrunan/gradle-cache-action@v1.6
-      #   with:
-      #     remote-build-cache-proxy-enabled: false
-      #     arguments: build --stacktrace jacocoTestReport
-      #     properties: |
-      #       testAdditionalJavaVersions=true
-      #       org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }}
 
       # Perform Analysis
       - name: Perform CodeQL Analysis
