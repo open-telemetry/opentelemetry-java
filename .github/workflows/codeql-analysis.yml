@@ -40,7 +40,6 @@ jobs:
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v1
-      # - run: ./gradlew build --stacktrace jacocoTestReport
 
       # Perform Analysis
       - name: Perform CodeQL Analysis
