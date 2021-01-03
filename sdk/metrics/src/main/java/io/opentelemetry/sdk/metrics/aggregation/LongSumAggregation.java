@@ -7,11 +7,8 @@ package io.opentelemetry.sdk.metrics.aggregation;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
-import io.opentelemetry.sdk.metrics.accumulation.DoubleAccumulation;
 import io.opentelemetry.sdk.metrics.accumulation.LongAccumulation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -22,24 +19,17 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-abstract class SumAggregation<T extends Accumulation> extends AbstractAggregation<T> {
-  static final SumAggregation<LongAccumulation> LONG_INSTANCE =
-      new SumAggregation<LongAccumulation>(LongSumAggregator.getInstance()) {
-        @Override
-        public LongAccumulation merge(LongAccumulation a1, LongAccumulation a2) {
-          return LongAccumulation.create(a1.getValue() + a2.getValue());
-        }
-      };
-  static final SumAggregation<DoubleAccumulation> DOUBLE_INSTANCE =
-      new SumAggregation<DoubleAccumulation>(DoubleSumAggregator.getInstance()) {
-        @Override
-        public final DoubleAccumulation merge(DoubleAccumulation a1, DoubleAccumulation a2) {
-          return DoubleAccumulation.create(a1.getValue() + a2.getValue());
-        }
-      };
+final class LongSumAggregation extends AbstractAggregation<LongAccumulation> {
+  static final LongSumAggregation INSTANCE =
+      new LongSumAggregation(LongSumAggregator.getInstance());
 
-  private SumAggregation(Aggregator<T> aggregator) {
+  private LongSumAggregation(Aggregator<LongAccumulation> aggregator) {
     super(aggregator);
+  }
+
+  @Override
+  public LongAccumulation merge(LongAccumulation a1, LongAccumulation a2) {
+    return LongAccumulation.create(a1.getValue() + a2.getValue());
   }
 
   @Override
@@ -47,15 +37,15 @@ abstract class SumAggregation<T extends Accumulation> extends AbstractAggregatio
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, T> accumulationByLabels,
+      Map<Labels, LongAccumulation> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    List<MetricData.Point> points =
-        MetricDataUtils.getPointList(accumulationByLabels, startEpochNanos, epochNanos);
+    List<MetricData.LongPoint> points =
+        MetricDataUtils.toLongPointList(accumulationByLabels, startEpochNanos, epochNanos);
     boolean isMonotonic =
         descriptor.getType() == InstrumentType.COUNTER
             || descriptor.getType() == InstrumentType.SUM_OBSERVER;
-    return MetricDataUtils.getSumMetricData(
+    return MetricDataUtils.toLongSumMetricData(
         resource, instrumentationLibraryInfo, descriptor, points, isMonotonic);
   }
 

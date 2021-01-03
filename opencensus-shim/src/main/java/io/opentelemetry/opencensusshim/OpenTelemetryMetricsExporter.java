@@ -194,10 +194,11 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
   }
 
   @Nullable
+  @SuppressWarnings("unchecked")
   private static MetricData toMetricData(
       MetricDescriptor.Type type,
       MetricDescriptor metricDescriptor,
-      List<MetricData.Point> points) {
+      List<? extends MetricData.Point> points) {
     if (metricDescriptor.getType() == null) {
       return null;
     }
@@ -209,7 +210,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             metricDescriptor.getName(),
             metricDescriptor.getDescription(),
             metricDescriptor.getUnit(),
-            MetricData.LongGaugeData.create(points));
+            MetricData.LongGaugeData.create((List<LongPoint>) points));
 
       case GAUGE_DOUBLE:
         return MetricData.createDoubleGauge(
@@ -218,7 +219,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             metricDescriptor.getName(),
             metricDescriptor.getDescription(),
             metricDescriptor.getUnit(),
-            MetricData.DoubleGaugeData.create(points));
+            MetricData.DoubleGaugeData.create((List<DoublePoint>) points));
 
       case CUMULATIVE_INT64:
         return MetricData.createLongSum(
@@ -228,7 +229,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             metricDescriptor.getDescription(),
             metricDescriptor.getUnit(),
             MetricData.LongSumData.create(
-                true, MetricData.AggregationTemporality.CUMULATIVE, points));
+                true, MetricData.AggregationTemporality.CUMULATIVE, (List<LongPoint>) points));
       case CUMULATIVE_DOUBLE:
         return MetricData.createDoubleSum(
             Resource.getDefault(),
@@ -237,7 +238,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             metricDescriptor.getDescription(),
             metricDescriptor.getUnit(),
             MetricData.DoubleSumData.create(
-                true, MetricData.AggregationTemporality.CUMULATIVE, points));
+                true, MetricData.AggregationTemporality.CUMULATIVE, (List<DoublePoint>) points));
       case SUMMARY:
         return MetricData.createDoubleSummary(
             Resource.getDefault(),
@@ -245,7 +246,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             metricDescriptor.getName(),
             metricDescriptor.getDescription(),
             metricDescriptor.getUnit(),
-            MetricData.DoubleSummaryData.create(points));
+            MetricData.DoubleSummaryData.create((List<DoubleSummaryPoint>) points));
       default:
         return null;
     }

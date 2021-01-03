@@ -90,7 +90,8 @@ final class MetricAdapter {
   private static final Function<String, String> sanitizer = new LabelNameSanitizer();
 
   // Converts a list of points from MetricData to a list of Prometheus Samples.
-  static List<Sample> toSamples(String name, MetricData.Type type, Collection<Point> points) {
+  static List<Sample> toSamples(
+      String name, MetricData.Type type, Collection<? extends Point> points) {
     final List<Sample> samples = new ArrayList<>(estimateNumSamples(points.size(), type));
 
     for (Point point : points) {
@@ -173,7 +174,7 @@ final class MetricAdapter {
     return numPoints;
   }
 
-  private static Collection<MetricData.Point> getPoints(MetricData metricData) {
+  private static Collection<? extends MetricData.Point> getPoints(MetricData metricData) {
     switch (metricData.getType()) {
       case DOUBLE_GAUGE:
         return metricData.getDoubleGaugeData().getPoints();

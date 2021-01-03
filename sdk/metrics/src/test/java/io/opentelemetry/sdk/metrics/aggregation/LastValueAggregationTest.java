@@ -45,6 +45,8 @@ class LastValueAggregationTest {
             100);
     assertThat(metricData).isNotNull();
     assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_GAUGE);
+    assertThat(metricData.getLongGaugeData().getPoints())
+        .containsExactly(MetricData.LongPoint.create(0, 100, Labels.empty(), 10));
   }
 
   @Test
