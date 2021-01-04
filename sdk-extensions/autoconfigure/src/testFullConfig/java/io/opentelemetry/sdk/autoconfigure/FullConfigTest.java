@@ -39,6 +39,8 @@ import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
+import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.KeyValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -137,7 +139,7 @@ public class FullConfigTest {
       };
 
   @Test
-  void configures() {
+  void configures() throws Exception {
     // We can't configure endpoint declaratively as would be normal in non-test environments.
     String endpoint = "localhost:" + server.httpPort();
     System.setProperty("otel.exporter.otlp.endpoint", endpoint);
@@ -187,8 +189,19 @@ public class FullConfigTest {
 
               // Not well defined how many metric exports would have happened by now, check that any
               // did. The metrics will be BatchSpanProcessor metrics.
-              // TODO(anuraaga): WIP
-              // assertThat(otlpMetricsRequests).isNotEmpty();
+              assertThat(otlpMetricsRequests).isNotEmpty();
             });
+
+    ExportTraceServiceRequest traceRequest = otlpTraceRequests.take();
+    assertThat(traceRequest.getResourceSpans(0).getResource().getAttributesList())
+        .contains(
+            KeyValue.newBuilder()
+                .setKey("service.name")
+                .setValue(AnyValue.newBuilder().setStringValue("test").build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("cat")
+                .setValue(AnyValue.newBuilder().setStringValue("meow").build())
+                .build());
   }
 }

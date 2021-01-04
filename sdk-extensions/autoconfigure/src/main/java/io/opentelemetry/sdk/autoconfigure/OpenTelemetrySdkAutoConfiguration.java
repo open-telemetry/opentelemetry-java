@@ -52,7 +52,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
         ServiceLoader.load(SdkMeterProviderConfigurer.class)) {
       configurer.configure(meterProviderBuilder);
     }
-    SdkMeterProvider meterProvider = meterProviderBuilder.build();
+    SdkMeterProvider meterProvider = meterProviderBuilder.buildAndRegisterGlobal();
 
     List<String> exporterNames = config.getCommaSeparatedValues("otel.exporter");
     boolean metricsConfigured = false;
@@ -68,6 +68,13 @@ public final class OpenTelemetrySdkAutoConfiguration {
             .setResource(resource)
             .setTraceConfig(configureTraceConfig(config));
 
+    // Run user configuration before setting exporters from environment to allow user span
+    // processors to effect export.
+    for (SdkTracerProviderConfigurer configurer :
+        ServiceLoader.load(SdkTracerProviderConfigurer.class)) {
+      configurer.configure(tracerProviderBuilder);
+    }
+
     List<SpanExporter> spanExporters = new ArrayList<>();
     for (String exporterName : exporterNames) {
       exporterName = exporterName.toLowerCase(Locale.ROOT);
@@ -81,10 +88,8 @@ public final class OpenTelemetrySdkAutoConfiguration {
       tracerProviderBuilder.addSpanProcessor(configureSpanProcessor(config, spanExporters));
     }
 
-    for (SdkTracerProviderConfigurer configurer :
-        ServiceLoader.load(SdkTracerProviderConfigurer.class)) {
-      configurer.configure(tracerProviderBuilder);
-    }
+    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
+    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::shutdown));
 
     List<TextMapPropagator> propagators = new ArrayList<>();
     for (String propagatorName : config.getCommaSeparatedValues("otel.propagators")) {
@@ -94,9 +99,6 @@ public final class OpenTelemetrySdkAutoConfiguration {
         propagators.add(propagator);
       }
     }
-
-    SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
-    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::shutdown));
 
     return OpenTelemetrySdk.builder()
         .setTracerProvider(tracerProvider)
