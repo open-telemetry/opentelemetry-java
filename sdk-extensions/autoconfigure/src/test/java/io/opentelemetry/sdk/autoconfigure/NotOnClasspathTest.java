@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-class ExporterNotOnClasspathTest {
+class NotOnClasspathTest {
 
   private static final ConfigProperties EMPTY =
       ConfigProperties.createForTest(Collections.emptyMap());
@@ -72,6 +72,19 @@ class ExporterNotOnClasspathTest {
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "Prometheus Metrics Server enabled but opentelemetry-exporter-prometheus not found on "
+                + "classpath");
+  }
+
+  @Test
+  void b3propagator() {
+    assertThatThrownBy(
+            () ->
+                PropagatorConfiguration.configurePropagators(
+                    ConfigProperties.createForTest(
+                        Collections.singletonMap("otel.propagators", "b3"))))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining(
+            "b3 propagator enabled but opentelemetry-extension-trace-propagators not found on "
                 + "classpath");
   }
 }

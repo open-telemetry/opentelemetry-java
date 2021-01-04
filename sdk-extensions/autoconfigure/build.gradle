@@ -18,8 +18,7 @@ dependencies {
     api project(':sdk:all'),
             project(':sdk:metrics')
 
-    implementation project(':extensions:trace-propagators')
-
+    compileOnly project(':extensions:trace-propagators')
     compileOnly project(':exporters:jaeger')
     compileOnly project(':exporters:logging')
     compileOnly project(':exporters:otlp:all')
@@ -34,6 +33,7 @@ dependencies {
             'com.linecorp.armeria:armeria-grpc'
     testRuntimeOnly 'io.grpc:grpc-netty-shaded'
 
+    testFullConfigImplementation project(':extensions:trace-propagators')
     testFullConfigImplementation project(':exporters:jaeger')
     testFullConfigImplementation project(':exporters:logging')
     testFullConfigImplementation project(':exporters:otlp:all')

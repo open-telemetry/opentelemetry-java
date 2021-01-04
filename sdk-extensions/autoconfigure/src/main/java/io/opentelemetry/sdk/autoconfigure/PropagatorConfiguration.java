@@ -29,11 +29,20 @@ final class PropagatorConfiguration {
   }
 
   private static TextMapPropagator getPropagator(String name) {
+    if (name.equals("tracecontext")) {
+      return W3CTraceContextPropagator.getInstance();
+    }
+    if (name.equals("baggage")) {
+      return W3CBaggagePropagator.getInstance();
+    }
+
+    // Other propagators are in the extension artifact. Check one of the propagators.
+    ClasspathUtil.checkClassExists(
+        "io.opentelemetry.extension.trace.propagation.B3Propagator",
+        name + " propagator",
+        "opentelemetry-extension-trace-propagators");
+
     switch (name) {
-      case "tracecontext":
-        return W3CTraceContextPropagator.getInstance();
-      case "baggage":
-        return W3CBaggagePropagator.getInstance();
       case "b3":
         return B3Propagator.getInstance();
       case "b3multi":
