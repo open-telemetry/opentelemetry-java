@@ -7,8 +7,6 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
-import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
-import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporterBuilder;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
@@ -27,8 +25,6 @@ final class SpanExporterConfiguration {
         return configureOtlpSpans(config);
       case "jaeger":
         return configureJaeger(config);
-      case "jaeger-thrift":
-        return configureJaegerThrift(config);
       case "zipkin":
         return configureZipkin(config);
       case "logging":
@@ -63,17 +59,6 @@ final class SpanExporterConfiguration {
 
   private static SpanExporter configureJaeger(ConfigProperties config) {
     JaegerGrpcSpanExporterBuilder builder = JaegerGrpcSpanExporter.builder();
-
-    String endpoint = config.getString("otel.exporter.jaeger.endpoint");
-    if (endpoint != null) {
-      builder.setEndpoint(endpoint);
-    }
-
-    return builder.build();
-  }
-
-  private static SpanExporter configureJaegerThrift(ConfigProperties config) {
-    JaegerThriftSpanExporterBuilder builder = JaegerThriftSpanExporter.builder();
 
     String endpoint = config.getString("otel.exporter.jaeger.endpoint");
     if (endpoint != null) {

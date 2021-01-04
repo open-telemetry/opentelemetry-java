@@ -12,11 +12,9 @@ import io.opentelemetry.extension.trace.propagation.AwsXrayPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracerPropagator;
-import javax.annotation.Nullable;
 
 final class PropagatorConfiguration {
 
-  @Nullable
   static TextMapPropagator getPropagator(String name) {
     switch (name) {
       case "tracecontext":
@@ -34,7 +32,8 @@ final class PropagatorConfiguration {
       case "xray":
         return AwsXrayPropagator.getInstance();
       default:
-        return null;
+        throw new IllegalStateException(
+            "Unrecognized value for otel.propagators coniguration: " + name);
     }
   }
 

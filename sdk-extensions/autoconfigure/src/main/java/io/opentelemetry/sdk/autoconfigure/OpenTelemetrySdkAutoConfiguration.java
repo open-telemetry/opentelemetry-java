@@ -10,7 +10,6 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.spi.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
@@ -45,13 +44,9 @@ public final class OpenTelemetrySdkAutoConfiguration {
 
     AttributesBuilder resourceAttributes = Attributes.builder();
     config.getCommaSeparatedMap("otel.resource.attributes").forEach(resourceAttributes::put);
-    Resource resource = Resource.getDefault().merge(Resource.create(resourceAttributes.build()));
+    Resource resource = Resource.create(resourceAttributes.build()).merge(Resource.getDefault());
 
     SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
-    for (SdkMeterProviderConfigurer configurer :
-        ServiceLoader.load(SdkMeterProviderConfigurer.class)) {
-      configurer.configure(meterProviderBuilder);
-    }
     SdkMeterProvider meterProvider = meterProviderBuilder.buildAndRegisterGlobal();
 
     List<String> exporterNames = config.getCommaSeparatedValues("otel.exporter");
@@ -94,10 +89,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     List<TextMapPropagator> propagators = new ArrayList<>();
     for (String propagatorName : config.getCommaSeparatedValues("otel.propagators")) {
       propagatorName = propagatorName.toLowerCase(Locale.ROOT);
-      TextMapPropagator propagator = PropagatorConfiguration.getPropagator(propagatorName);
-      if (propagator != null) {
-        propagators.add(propagator);
-      }
+      propagators.add(PropagatorConfiguration.getPropagator(propagatorName));
     }
 
     return OpenTelemetrySdk.builder()
@@ -109,34 +101,24 @@ public final class OpenTelemetrySdkAutoConfiguration {
   private static TraceConfig configureTraceConfig(ConfigProperties config) {
     TraceConfigBuilder builder = TraceConfig.getDefault().toBuilder();
 
-    Double samplerProbability = config.getDouble("otel.config.sampler.probability");
-    if (samplerProbability != null) {
-      builder.setSampler(Sampler.traceIdRatioBased(samplerProbability));
+    String sampler = config.getString("otel.trace.sampler");
+    if (sampler != null) {
+      builder.setSampler(configureSampler(sampler, config));
     }
 
-    Integer maxAttrs = config.getInt("otel.config.max.attrs");
+    Integer maxAttrs = config.getInt("otel.span.attribute.count.limit");
     if (maxAttrs != null) {
       builder.setMaxNumberOfAttributes(maxAttrs);
     }
 
-    Integer maxEvents = config.getInt("otel.config.max.events");
+    Integer maxEvents = config.getInt("otel.span.event.count.limit");
     if (maxEvents != null) {
       builder.setMaxNumberOfEvents(maxEvents);
     }
 
-    Integer maxLinks = config.getInt("otel.config.max.links");
+    Integer maxLinks = config.getInt("otel.span.link.count.limit");
     if (maxLinks != null) {
       builder.setMaxNumberOfLinks(maxLinks);
-    }
-
-    Integer maxEventAttrs = config.getInt("otel.config.max.event.attrs");
-    if (maxEventAttrs != null) {
-      builder.setMaxNumberOfAttributesPerEvent(maxEventAttrs);
-    }
-
-    Integer maxLinkAttrs = config.getInt("otel.config.max.link.attrs");
-    if (maxLinkAttrs != null) {
-      builder.setMaxNumberOfAttributesPerLink(maxLinkAttrs);
     }
 
     return builder.build();
@@ -147,27 +129,64 @@ public final class OpenTelemetrySdkAutoConfiguration {
     SpanExporter exporter = SpanExporter.composite(exporters);
     BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(exporter);
 
-    Long scheduleDelayMillis = config.getLong("otel.bsp.schedule.delay");
+    Long scheduleDelayMillis = config.getLong("otel.bsp.schedule.delay.millis");
     if (scheduleDelayMillis != null) {
       builder.setScheduleDelayMillis(scheduleDelayMillis);
     }
 
-    Integer maxQueue = config.getInt("otel.bsp.max.queue");
+    Integer maxQueue = config.getInt("otel.bsp.max.queue.size");
     if (maxQueue != null) {
       builder.setMaxQueueSize(maxQueue);
     }
 
-    Integer maxExportBatch = config.getInt("otel.bsp.max.export.batch");
+    Integer maxExportBatch = config.getInt("otel.bsp.max.export.batch.size");
     if (maxExportBatch != null) {
       builder.setMaxExportBatchSize(maxExportBatch);
     }
 
-    Integer timeout = config.getInt("otel.bsp.export.timeout");
+    Integer timeout = config.getInt("otel.bsp.export.timeout.millis");
     if (timeout != null) {
       builder.setExporterTimeoutMillis(timeout);
     }
 
     return builder.build();
+  }
+
+  private static Sampler configureSampler(String sampler, ConfigProperties config) {
+    switch (sampler) {
+      case "always_on":
+        return Sampler.alwaysOn();
+      case "always_off":
+        return Sampler.alwaysOff();
+      case "traceidratio":
+        {
+          Double ratio = config.getDouble("otel.trace.sampler.arg");
+          if (ratio == null) {
+            throw new IllegalStateException(
+                "otel.trace.sampler=traceidratio but otel.trace.sampler.arg is not provided or is "
+                    + "not a number. Set otel.trace.sampler.arg to a value in the range "
+                    + "[0.0, 1.0].");
+          }
+          return Sampler.traceIdRatioBased(ratio);
+        }
+      case "parentbased_always_on":
+        return Sampler.parentBased(Sampler.alwaysOn());
+      case "parentbased_always_off":
+        return Sampler.parentBased(Sampler.alwaysOff());
+      case "parentbased_traceidratio":
+        {
+          Double ratio = config.getDouble("otel.trace.sampler.arg");
+          if (ratio == null) {
+            throw new IllegalStateException(
+                "otel.trace.sampler=parentbased_traceidratio but otel.trace.sampler.arg is not "
+                    + "provided or is not a number. Set otel.trace.sampler.arg to a value in the "
+                    + "range [0.0, 1.0].");
+          }
+          return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
+        }
+      default:
+        throw new IllegalStateException("Unrecognized value for otel.trace.sampler: " + sampler);
+    }
   }
 
   private OpenTelemetrySdkAutoConfiguration() {}

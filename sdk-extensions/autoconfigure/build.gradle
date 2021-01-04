@@ -20,7 +20,6 @@ dependencies {
     implementation project(':extensions:trace-propagators')
 
     compileOnly project(':exporters:jaeger')
-    compileOnly project(':exporters:jaeger-thrift')
     compileOnly project(':exporters:logging')
     compileOnly project(':exporters:otlp:all')
     compileOnly project(':exporters:otlp:metrics')
@@ -34,7 +33,6 @@ dependencies {
     testRuntimeOnly 'io.grpc:grpc-netty-shaded'
 
     testFullConfigImplementation project(':exporters:jaeger')
-    testFullConfigImplementation project(':exporters:jaeger-thrift')
     testFullConfigImplementation project(':exporters:logging')
     testFullConfigImplementation project(':exporters:otlp:all')
     testFullConfigImplementation project(':exporters:otlp:metrics')
@@ -47,7 +45,7 @@ testFullConfig {
     environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
     environment("OTEL_EXPORTER", "otlp,jaeger,zipkin")
     environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottracer,xray")
-    environment("OTEL_BSP_SCHEDULE_DELAY", "10")
+    environment("OTEL_BSP_SCHEDULE_DELAY_MILLIS", "10")
     environment("OTEL_IMR_EXPORT_INTERVAL", "10")
     environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
     environment("OTEL_EXPORTER_OTLP_TIMEOUT", "5000")

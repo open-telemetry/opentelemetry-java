@@ -203,5 +203,16 @@ public class FullConfigTest {
                 .setKey("cat")
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
+    assertThat(
+            traceRequest
+                .getResourceSpans(0)
+                .getInstrumentationLibrarySpans(0)
+                .getSpans(0)
+                .getAttributesList())
+        .contains(
+            KeyValue.newBuilder()
+                .setKey("configured")
+                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
+                .build());
   }
 }
