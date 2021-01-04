@@ -13,15 +13,14 @@ import javax.annotation.concurrent.Immutable;
 final class ImmutableAggregationFactory<L extends Accumulation, D extends Accumulation>
     implements AggregationFactory {
   static final AggregationFactory SUM =
-      new ImmutableAggregationFactory<>(
-          SumAggregation.LONG_INSTANCE, SumAggregation.DOUBLE_INSTANCE);
+      new ImmutableAggregationFactory<>(LongSumAggregation.INSTANCE, DoubleSumAggregation.INSTANCE);
 
   static final AggregationFactory COUNT =
       new ImmutableAggregationFactory<>(CountAggregation.INSTANCE, CountAggregation.INSTANCE);
 
   static final AggregationFactory LAST_VALUE =
       new ImmutableAggregationFactory<>(
-          LastValueAggregation.LONG_INSTANCE, LastValueAggregation.DOUBLE_INSTANCE);
+          LongLastValueAggregation.INSTANCE, DoubleLastValueAggregation.INSTANCE);
 
   static final AggregationFactory MIN_MAX_SUM_COUNT =
       new ImmutableAggregationFactory<>(

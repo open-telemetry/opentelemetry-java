@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
@@ -47,9 +48,27 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * Create a new TracerSdkFactory instance.
+   * Returns a new {@link SdkMeterProvider} built with the configuration of this {@link
+   * SdkMeterProviderBuilder} and registers it as the global {@link
+   * io.opentelemetry.api.metrics.MeterProvider}.
    *
-   * @return An initialized TracerSdkFactory.
+   * @see GlobalMetricsProvider
+   */
+  public SdkMeterProvider buildAndRegisterGlobal() {
+    SdkMeterProvider meterProvider = build();
+    GlobalMetricsProvider.set(meterProvider);
+    return meterProvider;
+  }
+
+  /**
+   * Returns a new {@link SdkMeterProvider} built with the configuration of this {@link
+   * SdkMeterProviderBuilder}. This provider is not registered as the global {@link
+   * io.opentelemetry.api.metrics.MeterProvider}. It is recommended that you register one provider
+   * using {@link SdkMeterProviderBuilder#buildAndRegisterGlobal()} for use by instrumentation when
+   * that requires access to a global instance of {@link
+   * io.opentelemetry.api.metrics.MeterProvider}.
+   *
+   * @see GlobalMetricsProvider
    */
   public SdkMeterProvider build() {
     return new SdkMeterProvider(clock, resource);

@@ -170,7 +170,7 @@ public abstract class MetricData {
    */
   public abstract Type getType();
 
-  abstract Data getData();
+  abstract Data<?> getData();
 
   /**
    * Returns {@code true} if there are no points associated with this metric.
@@ -252,41 +252,39 @@ public abstract class MetricData {
   }
 
   @Immutable
-  abstract static class Data {
+  abstract static class Data<T extends Point> {
     /**
      * Returns the data {@link Point}s for this metric.
      *
      * @return the data {@link Point}s for this metric, or empty {@code Collection} if no points.
      */
-    public abstract Collection<Point> getPoints();
+    public abstract Collection<T> getPoints();
   }
 
   @Immutable
   @AutoValue
-  // TODO: Change to use DoublePoint.
-  public abstract static class DoubleGaugeData extends Data {
-    public static DoubleGaugeData create(List<Point> points) {
+  public abstract static class DoubleGaugeData extends Data<DoublePoint> {
+    public static DoubleGaugeData create(Collection<DoublePoint> points) {
       return new AutoValue_MetricData_DoubleGaugeData(points);
     }
 
     @Override
-    public abstract Collection<Point> getPoints();
+    public abstract Collection<DoublePoint> getPoints();
   }
 
   @Immutable
   @AutoValue
-  // TODO: Change to use LongPoint.
-  public abstract static class LongGaugeData extends Data {
-    public static LongGaugeData create(List<Point> points) {
+  public abstract static class LongGaugeData extends Data<LongPoint> {
+    public static LongGaugeData create(Collection<LongPoint> points) {
       return new AutoValue_MetricData_LongGaugeData(points);
     }
 
     @Override
-    public abstract Collection<Point> getPoints();
+    public abstract Collection<LongPoint> getPoints();
   }
 
   @Immutable
-  abstract static class SumData extends Data {
+  abstract static class SumData<T extends Point> extends Data<T> {
     /**
      * Returns "true" if the sum is monotonic.
      *
@@ -307,45 +305,37 @@ public abstract class MetricData {
 
   @Immutable
   @AutoValue
-  // TODO: Change to use DoublePoint.
-  public abstract static class DoubleSumData extends SumData {
+  public abstract static class DoubleSumData extends SumData<DoublePoint> {
     public static DoubleSumData create(
-        boolean isMonotonic, AggregationTemporality temporality, Collection<Point> points) {
+        boolean isMonotonic, AggregationTemporality temporality, Collection<DoublePoint> points) {
       return new AutoValue_MetricData_DoubleSumData(isMonotonic, temporality, points);
     }
 
     @Override
-    public abstract Collection<Point> getPoints();
+    public abstract Collection<DoublePoint> getPoints();
   }
 
   @Immutable
   @AutoValue
-  // TODO: Change to use LongPoint.
-  public abstract static class LongSumData extends SumData {
+  public abstract static class LongSumData extends SumData<LongPoint> {
     public static LongSumData create(
-        boolean isMonotonic, AggregationTemporality temporality, Collection<Point> points) {
+        boolean isMonotonic, AggregationTemporality temporality, Collection<LongPoint> points) {
       return new AutoValue_MetricData_LongSumData(isMonotonic, temporality, points);
     }
 
     @Override
-    public abstract Collection<Point> getPoints();
+    public abstract Collection<LongPoint> getPoints();
   }
 
   @Immutable
   @AutoValue
-  // TODO: Change to use DoubleSummaryPoint.
-  public abstract static class DoubleSummaryData extends Data {
-    public static DoubleSummaryData create(Collection<Point> points) {
+  public abstract static class DoubleSummaryData extends Data<DoubleSummaryPoint> {
+    public static DoubleSummaryData create(Collection<DoubleSummaryPoint> points) {
       return new AutoValue_MetricData_DoubleSummaryData(points);
     }
 
     @Override
-    public abstract Collection<Point> getPoints();
-  }
-
-  /** This method will be removed soon. */
-  public Collection<Point> getPoints() {
-    return getData().getPoints();
+    public abstract Collection<DoubleSummaryPoint> getPoints();
   }
 
   @Immutable
