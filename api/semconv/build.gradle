@@ -13,7 +13,4 @@ dependencies {
     api project(':api:all')
 
     signature libraries.android_signature
-
-    testImplementation libraries.jqf,
-            libraries.guava_testlib
 }
