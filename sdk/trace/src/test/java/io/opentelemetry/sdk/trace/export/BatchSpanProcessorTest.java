@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +46,14 @@ class BatchSpanProcessorTest {
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private SdkTracerProvider sdkTracerProvider;
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
-  @Mock private SpanExporter mockServiceHandler;
+
+  @Mock(lenient = true)
+  private SpanExporter mockServiceHandler;
+
+  @BeforeEach
+  void setUp() {
+    when(mockServiceHandler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+  }
 
   @AfterEach
   void cleanup() {
@@ -443,7 +451,7 @@ class BatchSpanProcessorTest {
     ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
 
     // Force a shutdown, which forces processing of all remaining spans.
-    sdkTracerProvider.shutdown();
+    sdkTracerProvider.shutdown().join(10, TimeUnit.SECONDS);
 
     List<SpanData> exported = waitingSpanExporter.getExported();
     assertThat(exported).containsExactly(span2.toSpanData());

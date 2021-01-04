@@ -86,12 +86,12 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
   }
 
   @Override
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
     if (sharedState.isStopped()) {
       logger.log(Level.WARNING, "Calling shutdown() multiple times.");
-      return;
+      return CompletableResultCode.ofSuccess();
     }
-    sharedState.stop();
+    return sharedState.stop();
   }
 
   @Override

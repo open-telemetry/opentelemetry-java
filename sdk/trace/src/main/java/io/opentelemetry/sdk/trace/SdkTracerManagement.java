@@ -64,8 +64,11 @@ public interface SdkTracerManagement {
    * <p>After this is called, further attempts at re-using or reconfiguring this instance will
    * result in undefined behavior. It should be considered a terminal operation for the SDK
    * implementation.
+   *
+   * @return a {@link CompletableResultCode} which is completed when all the span processors have
+   *     been shut down.
    */
-  void shutdown();
+  CompletableResultCode shutdown();
 
   /**
    * Requests the active span processor to process all span events that have not yet been processed

@@ -6,12 +6,13 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 // Represents the shared state/config between all Tracers created by the same TracerProvider.
@@ -25,7 +26,7 @@ final class TracerSharedState {
   // operations are visible on other CPUs as well.
   private volatile Supplier<TraceConfig> traceConfigSupplier;
   private volatile SpanProcessor activeSpanProcessor = NoopSpanProcessor.getInstance();
-  private volatile boolean isStopped = false;
+  @Nullable private volatile CompletableResultCode isStopped = null;
 
   @GuardedBy("lock")
   private final List<SpanProcessor> registeredSpanProcessors;
@@ -101,19 +102,22 @@ final class TracerSharedState {
    * @return {@code true} if tracing is stopped.
    */
   boolean isStopped() {
-    return isStopped;
+    return isStopped != null && isStopped.isSuccess();
   }
 
   /**
    * Stops tracing, including shutting down processors and set to {@code true} {@link #isStopped()}.
+   *
+   * @return a {@link CompletableResultCode} that will be completed when the span processor is shut
+   *     down.
    */
-  void stop() {
+  CompletableResultCode stop() {
     synchronized (lock) {
-      if (isStopped) {
-        return;
+      if (isStopped != null) {
+        return isStopped;
       }
-      activeSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
-      isStopped = true;
+      isStopped = activeSpanProcessor.shutdown();
     }
+    return isStopped;
   }
 }
