@@ -44,14 +44,14 @@ class TraceIdRatioBasedSamplerTest {
 
   @Test
   void alwaysSample() {
-    TraceIdRatioBasedSampler sampler = TraceIdRatioBasedSampler.create(1);
-    assertThat(sampler.getIdUpperBound()).isEqualTo(Long.MAX_VALUE);
+    Sampler sampler = TraceIdRatioBasedSampler.create(1);
+    assertThat(sampler).isEqualTo(Sampler.alwaysOn());
   }
 
   @Test
   void neverSample() {
-    TraceIdRatioBasedSampler sampler = TraceIdRatioBasedSampler.create(0);
-    assertThat(sampler.getIdUpperBound()).isEqualTo(Long.MIN_VALUE);
+    Sampler sampler = TraceIdRatioBasedSampler.create(0);
+    assertThat(sampler).isEqualTo(Sampler.alwaysOff());
   }
 
   @Test

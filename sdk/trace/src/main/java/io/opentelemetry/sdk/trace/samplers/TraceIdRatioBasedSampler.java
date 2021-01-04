@@ -27,22 +27,17 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
 
   TraceIdRatioBasedSampler() {}
 
-  static TraceIdRatioBasedSampler create(double ratio) {
+  static Sampler create(double ratio) {
     if (ratio < 0.0 || ratio > 1.0) {
       throw new IllegalArgumentException("ratio must be in range [0.0, 1.0]");
     }
-    long idUpperBound;
-    // Special case the limits, to avoid any possible issues with lack of precision across
-    // double/long boundaries. For probability == 0.0, we use Long.MIN_VALUE as this guarantees
-    // that we will never sample a trace, even in the case where the id == Long.MIN_VALUE, since
-    // Math.Abs(Long.MIN_VALUE) == Long.MIN_VALUE.
     if (ratio == 0.0) {
-      idUpperBound = Long.MIN_VALUE;
-    } else if (ratio == 1.0) {
-      idUpperBound = Long.MAX_VALUE;
-    } else {
-      idUpperBound = (long) (ratio * Long.MAX_VALUE);
+      return Sampler.alwaysOff();
     }
+    if (ratio == 1.0) {
+      return Sampler.alwaysOn();
+    }
+    long idUpperBound = (long) (ratio * Long.MAX_VALUE);
     return new AutoValue_TraceIdRatioBasedSampler(
         ratio,
         idUpperBound,
