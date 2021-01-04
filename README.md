@@ -6,7 +6,7 @@
 We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#java-sdk).
 
 We use [GitHub Discussions](https://github.com/open-telemetry/opentelemetry-java/discussions)
-  for support or general questions. Feel free to drop a line.
+  for support or general questions. Feel free to drop us a line.
 
 ## Overview
 
