@@ -25,8 +25,11 @@ final class TracerSharedState {
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
   // operations are visible on other CPUs as well.
   private volatile Supplier<TraceConfig> traceConfigSupplier;
-  private volatile SpanProcessor activeSpanProcessor = NoopSpanProcessor.getInstance();
-  @Nullable private volatile CompletableResultCode isStopped = null;
+  private volatile SpanProcessor activeSpanProcessor;
+
+  @GuardedBy("lock")
+  @Nullable
+  private volatile CompletableResultCode isStopped = null;
 
   @GuardedBy("lock")
   private final List<SpanProcessor> registeredSpanProcessors;
@@ -102,7 +105,9 @@ final class TracerSharedState {
    * @return {@code true} if tracing is stopped.
    */
   boolean isStopped() {
-    return isStopped != null && isStopped.isSuccess();
+    synchronized (lock) {
+      return isStopped != null && isStopped.isSuccess();
+    }
   }
 
   /**
@@ -117,7 +122,7 @@ final class TracerSharedState {
         return isStopped;
       }
       isStopped = activeSpanProcessor.shutdown();
+      return isStopped;
     }
-    return isStopped;
   }
 }
