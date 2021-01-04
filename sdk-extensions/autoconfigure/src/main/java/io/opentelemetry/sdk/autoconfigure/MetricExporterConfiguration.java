@@ -25,7 +25,7 @@ final class MetricExporterConfiguration {
       case "otlp":
       case "otlp_metrics":
         if (metricsAlreadyRegistered) {
-          throw new IllegalStateException(
+          throw new ConfigurationException(
               "Multiple metrics exporters configured. Only one metrics exporter can be "
                   + "configured at a time.");
         }
@@ -33,7 +33,7 @@ final class MetricExporterConfiguration {
         return true;
       case "prometheus":
         if (metricsAlreadyRegistered) {
-          throw new IllegalStateException(
+          throw new ConfigurationException(
               "Multiple metrics exporters configured. Only one metrics exporter can be "
                   + "configured at a time.");
         }
@@ -44,8 +44,13 @@ final class MetricExporterConfiguration {
     }
   }
 
-  private static void configureOtlpMetrics(
+  // Visible for testing
+  static OtlpGrpcMetricExporter configureOtlpMetrics(
       ConfigProperties config, SdkMeterProvider meterProvider) {
+    ClasspathUtil.checkClassExists(
+        "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
+        "OTLP Metrics Exporter",
+        "opentelemetry-exporter-otlp-metrics");
     OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
 
     String endpoint = config.getString("otel.exporter.otlp.endpoint");
@@ -77,10 +82,16 @@ final class MetricExporterConfiguration {
     }
     IntervalMetricReader reader = readerBuilder.build();
     Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
+
+    return exporter;
   }
 
   private static void configurePrometheusMetrics(
       ConfigProperties config, SdkMeterProvider meterProvider) {
+    ClasspathUtil.checkClassExists(
+        "io.opentelemetry.exporter.prometheus.PrometheusCollector",
+        "Prometheus Metrics Server",
+        "opentelemetry-exporter-prometheus");
     PrometheusCollector.builder()
         .setMetricProducer(meterProvider.getMetricProducer())
         .buildAndRegister();

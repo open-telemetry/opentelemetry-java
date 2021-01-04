@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 final class SpanExporterConfiguration {
 
   @Nullable
-  static SpanExporter getExporter(String name, ConfigProperties config) {
+  static SpanExporter configureExporter(String name, ConfigProperties config) {
     switch (name) {
       case "otlp":
       case "otlp_span":
@@ -28,13 +28,22 @@ final class SpanExporterConfiguration {
       case "zipkin":
         return configureZipkin(config);
       case "logging":
+        ClasspathUtil.checkClassExists(
+            "io.opentelemetry.exporter.logging.LoggingSpanExporter",
+            "Logging Trace Exporter",
+            "opentelemetry-exporter-logging");
         return new LoggingSpanExporter();
       default:
         return null;
     }
   }
 
-  private static SpanExporter configureOtlpSpans(ConfigProperties config) {
+  // Visible for testing
+  static OtlpGrpcSpanExporter configureOtlpSpans(ConfigProperties config) {
+    ClasspathUtil.checkClassExists(
+        "io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter",
+        "OTLP Trace Exporter",
+        "opentelemetry-exporter-otlp-trace");
     OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder();
 
     String endpoint = config.getString("otel.exporter.otlp.endpoint");
@@ -58,6 +67,10 @@ final class SpanExporterConfiguration {
   }
 
   private static SpanExporter configureJaeger(ConfigProperties config) {
+    ClasspathUtil.checkClassExists(
+        "io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter",
+        "Jaeger gRPC Exporter",
+        "opentelemetry-exporter-jaeger");
     JaegerGrpcSpanExporterBuilder builder = JaegerGrpcSpanExporter.builder();
 
     String endpoint = config.getString("otel.exporter.jaeger.endpoint");
@@ -69,6 +82,10 @@ final class SpanExporterConfiguration {
   }
 
   private static SpanExporter configureZipkin(ConfigProperties config) {
+    ClasspathUtil.checkClassExists(
+        "io.opentelemetry.exporter.zipkin.ZipkinSpanExporter",
+        "Zipkin Exporter",
+        "opentelemetry-exporter-zipkin");
     ZipkinSpanExporterBuilder builder = ZipkinSpanExporter.builder();
 
     String endpoint = config.getString("otel.exporter.zipkin.endpoint");

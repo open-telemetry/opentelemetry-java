@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -22,18 +21,21 @@ class ConfigProperties {
     return new ConfigProperties(System.getProperties(), System.getenv());
   }
 
+  // Visible for testing
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  static ConfigProperties createForTest(Map<String, String> properties) {
+    return new ConfigProperties((Map) properties, Collections.emptyMap());
+  }
+
   private final Map<String, String> config;
 
-  private ConfigProperties(Properties systemProperties, Map<String, String> environmentVariables) {
+  private ConfigProperties(
+      Map<Object, Object> systemProperties, Map<String, String> environmentVariables) {
     Map<String, String> config = new HashMap<>();
     environmentVariables.forEach(
-        (name, value) -> {
-          config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value);
-        });
+        (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
     systemProperties.forEach(
-        (key, value) -> {
-          config.put(((String) key).toLowerCase(Locale.ROOT), (String) value);
-        });
+        (key, value) -> config.put(((String) key).toLowerCase(Locale.ROOT), (String) value));
 
     this.config = config;
   }

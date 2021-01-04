@@ -19,7 +19,7 @@ import java.util.Locale;
 
 final class PropagatorConfiguration {
 
-  static ContextPropagators getPropagators(ConfigProperties config) {
+  static ContextPropagators configurePropagators(ConfigProperties config) {
     List<TextMapPropagator> propagators = new ArrayList<>();
     for (String propagatorName : config.getCommaSeparatedValues("otel.propagators")) {
       propagatorName = propagatorName.toLowerCase(Locale.ROOT);

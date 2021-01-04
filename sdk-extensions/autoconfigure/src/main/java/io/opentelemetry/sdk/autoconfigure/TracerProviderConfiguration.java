@@ -9,17 +9,16 @@ import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
-import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 final class TracerProviderConfiguration {
 
@@ -37,14 +36,12 @@ final class TracerProviderConfiguration {
       configurer.configure(tracerProviderBuilder);
     }
 
-    List<SpanExporter> spanExporters = new ArrayList<>();
-    for (String exporterName : exporterNames) {
-      exporterName = exporterName.toLowerCase(Locale.ROOT);
-      SpanExporter exporter = SpanExporterConfiguration.getExporter(exporterName, config);
-      if (exporter != null) {
-        spanExporters.add(exporter);
-      }
-    }
+    List<SpanExporter> spanExporters =
+        exporterNames.stream()
+            .map(String::toLowerCase)
+            .map(name -> SpanExporterConfiguration.configureExporter(name, config))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
 
     if (!spanExporters.isEmpty()) {
       tracerProviderBuilder.addSpanProcessor(configureSpanProcessor(config, spanExporters));
@@ -55,33 +52,8 @@ final class TracerProviderConfiguration {
     return tracerProvider;
   }
 
-  static TraceConfig configureTraceConfig(ConfigProperties config) {
-    TraceConfigBuilder builder = TraceConfig.getDefault().toBuilder();
-
-    String sampler = config.getString("otel.trace.sampler");
-    if (sampler != null) {
-      builder.setSampler(configureSampler(sampler, config));
-    }
-
-    Integer maxAttrs = config.getInt("otel.span.attribute.count.limit");
-    if (maxAttrs != null) {
-      builder.setMaxNumberOfAttributes(maxAttrs);
-    }
-
-    Integer maxEvents = config.getInt("otel.span.event.count.limit");
-    if (maxEvents != null) {
-      builder.setMaxNumberOfEvents(maxEvents);
-    }
-
-    Integer maxLinks = config.getInt("otel.span.link.count.limit");
-    if (maxLinks != null) {
-      builder.setMaxNumberOfLinks(maxLinks);
-    }
-
-    return builder.build();
-  }
-
-  static SpanProcessor configureSpanProcessor(
+  // VisibleForTesting
+  static BatchSpanProcessor configureSpanProcessor(
       ConfigProperties config, List<SpanExporter> exporters) {
     SpanExporter exporter = SpanExporter.composite(exporters);
     BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(exporter);
@@ -109,6 +81,34 @@ final class TracerProviderConfiguration {
     return builder.build();
   }
 
+  // Visible for testing
+  static TraceConfig configureTraceConfig(ConfigProperties config) {
+    TraceConfigBuilder builder = TraceConfig.getDefault().toBuilder();
+
+    String sampler = config.getString("otel.trace.sampler");
+    if (sampler != null) {
+      builder.setSampler(configureSampler(sampler, config));
+    }
+
+    Integer maxAttrs = config.getInt("otel.span.attribute.count.limit");
+    if (maxAttrs != null) {
+      builder.setMaxNumberOfAttributes(maxAttrs);
+    }
+
+    Integer maxEvents = config.getInt("otel.span.event.count.limit");
+    if (maxEvents != null) {
+      builder.setMaxNumberOfEvents(maxEvents);
+    }
+
+    Integer maxLinks = config.getInt("otel.span.link.count.limit");
+    if (maxLinks != null) {
+      builder.setMaxNumberOfLinks(maxLinks);
+    }
+
+    return builder.build();
+  }
+
+  // Visible for testing
   static Sampler configureSampler(String sampler, ConfigProperties config) {
     switch (sampler) {
       case "always_on":
@@ -119,7 +119,7 @@ final class TracerProviderConfiguration {
         {
           Double ratio = config.getDouble("otel.trace.sampler.arg");
           if (ratio == null) {
-            throw new IllegalStateException(
+            throw new ConfigurationException(
                 "otel.trace.sampler=traceidratio but otel.trace.sampler.arg is not provided or is "
                     + "not a number. Set otel.trace.sampler.arg to a value in the range "
                     + "[0.0, 1.0].");
@@ -134,7 +134,7 @@ final class TracerProviderConfiguration {
         {
           Double ratio = config.getDouble("otel.trace.sampler.arg");
           if (ratio == null) {
-            throw new IllegalStateException(
+            throw new ConfigurationException(
                 "otel.trace.sampler=parentbased_traceidratio but otel.trace.sampler.arg is not "
                     + "provided or is not a number. Set otel.trace.sampler.arg to a value in the "
                     + "range [0.0, 1.0].");
@@ -142,7 +142,7 @@ final class TracerProviderConfiguration {
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
         }
       default:
-        throw new IllegalStateException("Unrecognized value for otel.trace.sampler: " + sampler);
+        throw new ConfigurationException("Unrecognized value for otel.trace.sampler: " + sampler);
     }
   }
 

@@ -37,7 +37,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
 
     SdkTracerProvider tracerProvider =
         TracerProviderConfiguration.configureTracerProvider(resource, exporterNames, config);
-    ContextPropagators propagators = PropagatorConfiguration.getPropagators(config);
+    ContextPropagators propagators = PropagatorConfiguration.configurePropagators(config);
 
     return OpenTelemetrySdk.builder()
         .setTracerProvider(tracerProvider)

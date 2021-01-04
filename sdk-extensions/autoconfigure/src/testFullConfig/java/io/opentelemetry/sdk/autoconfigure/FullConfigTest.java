@@ -16,7 +16,7 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.Span;
@@ -47,10 +47,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class FullConfigTest {
+@SuppressWarnings("InterruptedExceptionSwallowed")
+class FullConfigTest {
 
   private static final BlockingQueue<Collector.PostSpansRequest> jaegerRequests =
       new LinkedBlockingDeque<>();
@@ -64,7 +66,7 @@ public class FullConfigTest {
   public static final ServerExtension server =
       new ServerExtension() {
         @Override
-        protected void configure(ServerBuilder sb) throws Exception {
+        protected void configure(ServerBuilder sb) {
           sb.service(
               GrpcService.builder()
                   // OTLP spans
@@ -79,8 +81,9 @@ public class FullConfigTest {
                                 ServiceRequestContext.current().request().headers();
                             assertThat(headers.get("cat")).isEqualTo("meow");
                             assertThat(headers.get("dog")).isEqualTo("bark");
-                          } catch (AssertionError e) {
-                            responseObserver.onError(e);
+                          } catch (Throwable t) {
+                            responseObserver.onError(t);
+                            return;
                           }
                           otlpTraceRequests.add(request);
                           responseObserver.onNext(ExportTraceServiceResponse.getDefaultInstance());
@@ -99,8 +102,9 @@ public class FullConfigTest {
                                 ServiceRequestContext.current().request().headers();
                             assertThat(headers.get("cat")).isEqualTo("meow");
                             assertThat(headers.get("dog")).isEqualTo("bark");
-                          } catch (AssertionError e) {
-                            responseObserver.onError(e);
+                          } catch (Throwable t) {
+                            responseObserver.onError(t);
+                            return;
                           }
                           if (request.getResourceMetricsCount() > 0) {
                             otlpMetricsRequests.add(request);
@@ -122,6 +126,7 @@ public class FullConfigTest {
                           responseObserver.onCompleted();
                         }
                       })
+                  .useBlockingTaskExecutor(true)
                   .build());
 
           // Zipkin
@@ -138,21 +143,27 @@ public class FullConfigTest {
         }
       };
 
+  @BeforeEach
+  void setUp() {
+    otlpTraceRequests.clear();
+    otlpMetricsRequests.clear();
+    jaegerRequests.clear();
+    zipkinJsonRequests.clear();
+  }
+
   @Test
   void configures() throws Exception {
-    // We can't configure endpoint declaratively as would be normal in non-test environments.
     String endpoint = "localhost:" + server.httpPort();
     System.setProperty("otel.exporter.otlp.endpoint", endpoint);
     System.setProperty("otel.exporter.otlp.insecure", "true");
+    System.setProperty("otel.exporter.otlp.timeout", "10000");
 
     System.setProperty("otel.exporter.jaeger.endpoint", endpoint);
 
     System.setProperty("otel.exporter.zipkin.endpoint", "http://" + endpoint + "/api/v2/spans");
-
-    OpenTelemetry openTelemetry = OpenTelemetrySdkAutoConfiguration.initialize();
-
+    OpenTelemetrySdkAutoConfiguration.initialize();
     Map<String, String> headers = new HashMap<>();
-    openTelemetry
+    GlobalOpenTelemetry.get()
         .getPropagators()
         .getTextMapPropagator()
         .inject(
@@ -178,7 +189,13 @@ public class FullConfigTest {
     keys.addAll(AwsXrayPropagator.getInstance().fields());
     assertThat(headers).containsOnlyKeys(keys);
 
-    openTelemetry.getTracer("test").spanBuilder("test").startSpan().end();
+    GlobalOpenTelemetry.get()
+        .getTracer("test")
+        .spanBuilder("test")
+        .startSpan()
+        .setAttribute("cat", "meow")
+        .setAttribute("dog", "bark")
+        .end();
 
     await()
         .untilAsserted(
@@ -187,7 +204,8 @@ public class FullConfigTest {
               assertThat(otlpTraceRequests).hasSize(1);
               assertThat(zipkinJsonRequests).hasSize(1);
 
-              // Not well defined how many metric exports would have happened by now, check that any
+              // Not well defined how many metric exports would have happened by now, check that
+              // any
               // did. The metrics will be BatchSpanProcessor metrics.
               assertThat(otlpMetricsRequests).isNotEmpty();
             });
@@ -203,16 +221,18 @@ public class FullConfigTest {
                 .setKey("cat")
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
-    assertThat(
-            traceRequest
-                .getResourceSpans(0)
-                .getInstrumentationLibrarySpans(0)
-                .getSpans(0)
-                .getAttributesList())
-        .contains(
+    io.opentelemetry.proto.trace.v1.Span span =
+        traceRequest.getResourceSpans(0).getInstrumentationLibrarySpans(0).getSpans(0);
+    // Dog dropped by attribute limit.
+    assertThat(span.getAttributesList())
+        .containsExactlyInAnyOrder(
             KeyValue.newBuilder()
                 .setKey("configured")
                 .setValue(AnyValue.newBuilder().setBoolValue(true).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("cat")
+                .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
   }
 }
