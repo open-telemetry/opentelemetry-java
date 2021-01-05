@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.trace.attributes;
+package io.opentelemetry.semconv.trace.attributes;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
@@ -13,16 +13,8 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import io.opentelemetry.api.common.AttributeKey;
 import java.util.List;
 
-// DO NOT EDIT, this is an Auto-generated file from /templates/SemanticAttributes.java.j2
-
-/**
- * This is the deprecated version of the SemanticAttributes class. It will be removed in the next
- * release.
- *
- * @deprecated Please use the new version of these attributes in {@link
- *     io.opentelemetry.semconv.trace.attributes.SemanticAttributes}.
- */
-@Deprecated
+// DO NOT EDIT, this is an Auto-generated file from
+// buildscripts/semantic-convention//templates/SemanticAttributes.java.j2
 public final class SemanticAttributes {
 
   /** Name of the cloud provider. */

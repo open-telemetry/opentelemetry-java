@@ -9,6 +9,6 @@
  * @see io.opentelemetry.semconv.trace.attributes.SemanticAttributes
  */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.api.trace.attributes;
+package io.opentelemetry.semconv.trace.attributes;
 
 import javax.annotation.ParametersAreNonnullByDefault;

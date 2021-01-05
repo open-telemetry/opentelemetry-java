@@ -22,13 +22,13 @@ cd ${SCRIPT_DIR}
 docker run --rm \
   -v ${SCRIPT_DIR}/opentelemetry-specification/semantic_conventions:/source \
   -v ${SCRIPT_DIR}/templates:/templates \
-  -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/api/trace/attributes/:/output \
+  -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/semconv/trace/attributes/:/output \
   otel/semconvgen \
   -f /source code \
   --template /templates/SemanticAttributes.java.j2 \
   --output /output/SemanticAttributes.java \
   -Dclass=SemanticAttributes \
-  -Dpkg=io.opentelemetry.api.trace.attributes
+  -Dpkg=io.opentelemetry.semconv.trace.attributes
 
 cd "$ROOT_DIR"
 ./gradlew spotlessApply

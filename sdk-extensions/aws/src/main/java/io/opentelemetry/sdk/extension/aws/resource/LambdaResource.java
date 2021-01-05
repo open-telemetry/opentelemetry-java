@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.aws.resource;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Map;
 import java.util.stream.Stream;
 
