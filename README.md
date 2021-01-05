@@ -17,7 +17,7 @@ This project contains the following top level components:
 
 * [OpenTelemetry API](api/):
   * [stable apis](api/all/src/main/java/io/opentelemetry/api/all/) including `Tracer`, `Span`, `SpanContext`, and `Baggage`
-  * [semantic conventions](api/semconv/) Generated code for the OpenTelemetry semantic conventions.
+  * [semantic conventions](semconv/) Generated code for the OpenTelemetry semantic conventions.
   * [context api](api/context/src/main/java/io/opentelemetry/context/) The OpenTelmetry Context implementation.
   * [metrics api](api/metrics/src/main/java/io/opentelemetry/api/metrics/) alpha code for the metrics API.
 * [extensions](extensions/) define additional API extensions, which are not part of the core API.
