@@ -1,0 +1,157 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.sdk.autoconfigure;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
+
+class ConfigPropertiesTest {
+
+  @Test
+  void allValid() {
+    Map<String, String> properties = new HashMap<>();
+    properties.put("string", "str");
+    properties.put("int", "10");
+    properties.put("long", "20");
+    properties.put("double", "5.4");
+    properties.put("list", "cat,dog,bear");
+    properties.put("map", "cat=meow,dog=bark,bear=growl");
+
+    ConfigProperties config = ConfigProperties.createForTest(properties);
+    assertThat(config.getString("string")).isEqualTo("str");
+    assertThat(config.getInt("int")).isEqualTo(10);
+    assertThat(config.getLong("long")).isEqualTo(20);
+    assertThat(config.getDouble("double")).isEqualTo(5.4);
+    assertThat(config.getCommaSeparatedValues("list")).containsExactly("cat", "dog", "bear");
+    assertThat(config.getCommaSeparatedMap("map"))
+        .containsExactly(entry("cat", "meow"), entry("dog", "bark"), entry("bear", "growl"));
+  }
+
+  @Test
+  void allMissing() {
+    ConfigProperties config = ConfigProperties.createForTest(Collections.emptyMap());
+    assertThat(config.getString("string")).isNull();
+    assertThat(config.getInt("int")).isNull();
+    assertThat(config.getLong("long")).isNull();
+    assertThat(config.getDouble("double")).isNull();
+    assertThat(config.getCommaSeparatedValues("list")).isEmpty();
+    assertThat(config.getCommaSeparatedMap("map")).isEmpty();
+  }
+
+  @Test
+  void allEmpty() {
+    Map<String, String> properties = new HashMap<>();
+    properties.put("string", "");
+    properties.put("int", "");
+    properties.put("long", "");
+    properties.put("double", "");
+    properties.put("list", "");
+    properties.put("map", "");
+
+    ConfigProperties config = ConfigProperties.createForTest(properties);
+    assertThat(config.getString("string")).isEmpty();
+    assertThat(config.getInt("int")).isNull();
+    assertThat(config.getLong("long")).isNull();
+    assertThat(config.getDouble("double")).isNull();
+    assertThat(config.getCommaSeparatedValues("list")).isEmpty();
+    assertThat(config.getCommaSeparatedMap("map")).isEmpty();
+  }
+
+  @Test
+  void invalidInt() {
+    assertThatThrownBy(
+            () ->
+                ConfigProperties.createForTest(Collections.singletonMap("int", "bar"))
+                    .getInt("int"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Invalid value for property int=bar. Must be a integer.");
+    assertThatThrownBy(
+            () ->
+                ConfigProperties.createForTest(Collections.singletonMap("int", "999999999999999"))
+                    .getInt("int"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Invalid value for property int=999999999999999. Must be a integer.");
+  }
+
+  @Test
+  void invalidLong() {
+    assertThatThrownBy(
+            () ->
+                ConfigProperties.createForTest(Collections.singletonMap("long", "bar"))
+                    .getLong("long"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Invalid value for property long=bar. Must be a long.");
+    assertThatThrownBy(
+            () ->
+                ConfigProperties.createForTest(
+                        Collections.singletonMap("long", "99223372036854775807"))
+                    .getLong("long"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Invalid value for property long=99223372036854775807. Must be a long.");
+  }
+
+  @Test
+  void invalidDouble() {
+    assertThatThrownBy(
+            () ->
+                ConfigProperties.createForTest(Collections.singletonMap("double", "bar"))
+                    .getDouble("double"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Invalid value for property double=bar. Must be a double.");
+    assertThatThrownBy(
+            () ->
+                ConfigProperties.createForTest(Collections.singletonMap("double", "1.0.1"))
+                    .getDouble("double"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Invalid value for property double=1.0.1. Must be a double.");
+  }
+
+  @Test
+  void uncleanList() {
+    assertThat(
+            ConfigProperties.createForTest(
+                    Collections.singletonMap("list", "  a  ,b,c  ,  d,,   ,"))
+                .getCommaSeparatedValues("list"))
+        .containsExactly("a", "b", "c", "d");
+  }
+
+  @Test
+  void uncleanMap() {
+    assertThat(
+            ConfigProperties.createForTest(
+                    Collections.singletonMap("map", "  a=1  ,b=2,c = 3  ,  d=  4,,  ,"))
+                .getCommaSeparatedMap("map"))
+        .containsExactly(entry("a", "1"), entry("b", "2"), entry("c", "3"), entry("d", "4"));
+  }
+
+  @Test
+  void invalidMap() {
+    assertThatThrownBy(
+            () ->
+                ConfigProperties.createForTest(Collections.singletonMap("map", "a=1,b="))
+                    .getCommaSeparatedMap("map"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Map property key missing value: map=a=1,b=");
+    assertThatThrownBy(
+            () ->
+                ConfigProperties.createForTest(Collections.singletonMap("map", "a=1,b"))
+                    .getCommaSeparatedMap("map"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Map property key missing value: map=a=1,b");
+    assertThatThrownBy(
+            () ->
+                ConfigProperties.createForTest(Collections.singletonMap("map", "a=1,=b"))
+                    .getCommaSeparatedMap("map"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Map property key missing value: map=a=1,=b");
+  }
+}

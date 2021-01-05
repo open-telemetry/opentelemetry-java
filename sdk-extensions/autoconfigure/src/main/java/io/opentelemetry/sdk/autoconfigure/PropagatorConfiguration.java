@@ -15,14 +15,12 @@ import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracerPropagator;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 final class PropagatorConfiguration {
 
   static ContextPropagators configurePropagators(ConfigProperties config) {
     List<TextMapPropagator> propagators = new ArrayList<>();
     for (String propagatorName : config.getCommaSeparatedValues("otel.propagators")) {
-      propagatorName = propagatorName.toLowerCase(Locale.ROOT);
       propagators.add(PropagatorConfiguration.getPropagator(propagatorName));
     }
     return ContextPropagators.create(TextMapPropagator.composite(propagators));
@@ -54,8 +52,7 @@ final class PropagatorConfiguration {
       case "xray":
         return AwsXrayPropagator.getInstance();
       default:
-        throw new IllegalStateException(
-            "Unrecognized value for otel.propagators coniguration: " + name);
+        throw new ConfigurationException("Unrecognized value for otel.propagators: " + name);
     }
   }
 

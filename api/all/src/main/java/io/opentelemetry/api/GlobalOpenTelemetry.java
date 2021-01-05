@@ -12,6 +12,8 @@ import io.opentelemetry.spi.OpenTelemetryFactory;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -32,6 +34,9 @@ import javax.annotation.Nullable;
  * @see ContextPropagators
  */
 public final class GlobalOpenTelemetry {
+  // Visible for testing
+  static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
+
   private static final Object mutex = new Object();
 
   @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
@@ -139,11 +144,17 @@ public final class GlobalOpenTelemetry {
     try {
       Method initialize = openTelemetrySdkAutoConfiguration.getMethod("initialize");
       return (OpenTelemetry) initialize.invoke(null);
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+    } catch (NoSuchMethodException | IllegalAccessException e) {
       throw new IllegalStateException(
           "OpenTelemetrySdkAutoConfiguration detected on classpath "
               + "but could not invoke initialize method. This is a bug in OpenTelemetry.",
           e);
+    } catch (InvocationTargetException t) {
+      logger.log(
+          Level.SEVERE,
+          "Error automatically configuring OpenTelemetry SDK. OpenTelemetry will not be enabled.",
+          t.getTargetException());
+      return null;
     }
   }
 }

@@ -10,6 +10,7 @@ description = 'OpenTelemetry SDK Auto-configuration'
 ext.moduleName = "io.opentelemetry.sdk.autoconfigure"
 
 testSets {
+    testConfigError
     testFullConfig
     testPrometheus
 }
@@ -41,6 +42,16 @@ dependencies {
     testFullConfigImplementation project(':exporters:prometheus')
     testFullConfigImplementation libraries.prometheus_client_httpserver
     testFullConfigImplementation project(':exporters:zipkin')
+
+    testConfigErrorImplementation project(':extensions:trace-propagators')
+    testConfigErrorImplementation project(':exporters:jaeger')
+    testConfigErrorImplementation project(':exporters:logging')
+    testConfigErrorImplementation project(':exporters:otlp:all')
+    testConfigErrorImplementation project(':exporters:otlp:metrics')
+    testConfigErrorImplementation project(':exporters:prometheus')
+    testConfigErrorImplementation libraries.prometheus_client_httpserver
+    testConfigErrorImplementation project(':exporters:zipkin')
+    testConfigErrorImplementation libraries.junit_pioneer
 
     testPrometheusImplementation project(':exporters:prometheus')
     testPrometheusImplementation libraries.prometheus_client_httpserver

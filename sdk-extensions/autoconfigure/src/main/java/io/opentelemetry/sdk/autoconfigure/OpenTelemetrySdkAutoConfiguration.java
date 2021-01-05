@@ -12,8 +12,9 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import java.util.List;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Auto-configuration for the OpenTelemetry SDK. As an alternative to programmatically configuring
@@ -28,16 +29,23 @@ public final class OpenTelemetrySdkAutoConfiguration {
    */
   public static OpenTelemetrySdk initialize() {
     ConfigProperties config = ConfigProperties.get();
+    ContextPropagators propagators = PropagatorConfiguration.configurePropagators(config);
 
     Resource resource = configureResource(config);
 
-    List<String> exporterNames = config.getCommaSeparatedValues("otel.exporter");
+    Set<String> exporterNames =
+        new LinkedHashSet<>(config.getCommaSeparatedValues("otel.exporter"));
 
     configureMeterProvider(resource, exporterNames, config);
 
     SdkTracerProvider tracerProvider =
         TracerProviderConfiguration.configureTracerProvider(resource, exporterNames, config);
-    ContextPropagators propagators = PropagatorConfiguration.configurePropagators(config);
+
+    if (!exporterNames.isEmpty()) {
+      tracerProvider.shutdown();
+      throw new ConfigurationException(
+          "Unrecognized value for otel.exporter: " + String.join(",", exporterNames));
+    }
 
     return OpenTelemetrySdk.builder()
         .setTracerProvider(tracerProvider)
@@ -46,20 +54,23 @@ public final class OpenTelemetrySdkAutoConfiguration {
   }
 
   private static void configureMeterProvider(
-      Resource resource, List<String> exporterNames, ConfigProperties config) {
+      Resource resource, Set<String> exporterNames, ConfigProperties config) {
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().setResource(resource).buildAndRegisterGlobal();
 
     boolean metricsConfigured = false;
-    for (String exporterName : exporterNames) {
-      exporterName = exporterName.toLowerCase(Locale.ROOT);
+    for (String exporterName : new ArrayList<>(exporterNames)) {
       metricsConfigured =
           MetricExporterConfiguration.configureExporter(
               exporterName, config, metricsConfigured, meterProvider);
+      if (metricsConfigured) {
+        exporterNames.remove(exporterName);
+      }
     }
   }
 
-  private static Resource configureResource(ConfigProperties config) {
+  // Visible for testing
+  static Resource configureResource(ConfigProperties config) {
     AttributesBuilder resourceAttributes = Attributes.builder();
     config.getCommaSeparatedMap("otel.resource.attributes").forEach(resourceAttributes::put);
     return Resource.create(resourceAttributes.build()).merge(Resource.getDefault());

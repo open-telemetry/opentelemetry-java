@@ -15,15 +15,15 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 final class TracerProviderConfiguration {
 
   static SdkTracerProvider configureTracerProvider(
-      Resource resource, List<String> exporterNames, ConfigProperties config) {
+      Resource resource, Set<String> exporterNames, ConfigProperties config) {
     SdkTracerProviderBuilder tracerProviderBuilder =
         SdkTracerProvider.builder()
             .setResource(resource)
@@ -36,12 +36,14 @@ final class TracerProviderConfiguration {
       configurer.configure(tracerProviderBuilder);
     }
 
-    List<SpanExporter> spanExporters =
-        exporterNames.stream()
-            .map(String::toLowerCase)
-            .map(name -> SpanExporterConfiguration.configureExporter(name, config))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+    List<SpanExporter> spanExporters = new ArrayList<>();
+    for (String name : new ArrayList<>(exporterNames)) {
+      SpanExporter exporter = SpanExporterConfiguration.configureExporter(name, config);
+      if (exporter != null) {
+        spanExporters.add(exporter);
+        exporterNames.remove(name);
+      }
+    }
 
     if (!spanExporters.isEmpty()) {
       tracerProviderBuilder.addSpanProcessor(configureSpanProcessor(config, spanExporters));
@@ -120,9 +122,8 @@ final class TracerProviderConfiguration {
           Double ratio = config.getDouble("otel.trace.sampler.arg");
           if (ratio == null) {
             throw new ConfigurationException(
-                "otel.trace.sampler=traceidratio but otel.trace.sampler.arg is not provided or is "
-                    + "not a number. Set otel.trace.sampler.arg to a value in the range "
-                    + "[0.0, 1.0].");
+                "otel.trace.sampler=traceidratio but otel.trace.sampler.arg is not provided. "
+                    + "Set otel.trace.sampler.arg to a value in the range [0.0, 1.0].");
           }
           return Sampler.traceIdRatioBased(ratio);
         }
@@ -136,7 +137,7 @@ final class TracerProviderConfiguration {
           if (ratio == null) {
             throw new ConfigurationException(
                 "otel.trace.sampler=parentbased_traceidratio but otel.trace.sampler.arg is not "
-                    + "provided or is not a number. Set otel.trace.sampler.arg to a value in the "
+                    + "provided. Set otel.trace.sampler.arg to a value in the "
                     + "range [0.0, 1.0].");
           }
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));

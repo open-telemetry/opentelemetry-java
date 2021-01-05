@@ -9,6 +9,7 @@ import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,35 +47,44 @@ class ConfigProperties {
   }
 
   @Nullable
+  @SuppressWarnings("UnusedException")
   Integer getInt(String name) {
-    try {
-      // Null will throw NumberFormatException too.
-      return Integer.parseInt(config.get(name));
-    } catch (NumberFormatException ex) {
+    String value = config.get(name);
+    if (value == null || value.isEmpty()) {
       return null;
+    }
+    try {
+      return Integer.parseInt(value);
+    } catch (NumberFormatException ex) {
+      throw newInvalidPropertyException(name, value, "integer");
     }
   }
 
   @Nullable
+  @SuppressWarnings("UnusedException")
   Long getLong(String name) {
-    try {
-      // Null will throw NumberFormatException too.
-      return Long.parseLong(config.get(name));
-    } catch (NumberFormatException ex) {
+    String value = config.get(name);
+    if (value == null || value.isEmpty()) {
       return null;
+    }
+    try {
+      return Long.parseLong(value);
+    } catch (NumberFormatException ex) {
+      throw newInvalidPropertyException(name, value, "long");
     }
   }
 
-  /**
-   * Get a double property from the config or {@code null} if it cannot be found or it has a wrong
-   * type.
-   */
   @Nullable
+  @SuppressWarnings("UnusedException")
   Double getDouble(String name) {
-    try {
-      return Double.parseDouble(config.get(name));
-    } catch (NumberFormatException | NullPointerException ex) {
+    String value = config.get(name);
+    if (value == null || value.isEmpty()) {
       return null;
+    }
+    try {
+      return Double.parseDouble(value);
+    } catch (NumberFormatException ex) {
+      throw newInvalidPropertyException(name, value, "double");
     }
   }
 
@@ -98,13 +108,28 @@ class ConfigProperties {
                     .filter(s -> !s.isEmpty())
                     .collect(Collectors.toList()))
         .map(
-            splitKeyValuePairs ->
-                new AbstractMap.SimpleImmutableEntry<>(
-                    splitKeyValuePairs.get(0), splitKeyValuePairs.get(1)))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            splitKeyValuePairs -> {
+              if (splitKeyValuePairs.size() != 2) {
+                throw new ConfigurationException(
+                    "Map property key missing value: " + name + "=" + config.get(name));
+              }
+              return new AbstractMap.SimpleImmutableEntry<>(
+                  splitKeyValuePairs.get(0), splitKeyValuePairs.get(1));
+            })
+        // If duplicate keys, prioritize later ones similar to duplicate system properties on a
+        // Java command line.
+        .collect(
+            Collectors.toMap(
+                Map.Entry::getKey, Map.Entry::getValue, (first, next) -> next, LinkedHashMap::new));
   }
 
   boolean getBoolean(String name) {
     return Boolean.parseBoolean(config.get(name));
+  }
+
+  private static ConfigurationException newInvalidPropertyException(
+      String name, String value, String type) {
+    throw new ConfigurationException(
+        "Invalid value for property " + name + "=" + value + ". Must be a " + type + ".");
   }
 }

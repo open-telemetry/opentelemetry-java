@@ -47,7 +47,7 @@ class TracerProviderConfigurationTest {
     // are verified in other test sets like testFullConfig.
     SdkTracerProvider tracerProvider =
         TracerProviderConfiguration.configureTracerProvider(
-            resource, Collections.emptyList(), ConfigProperties.createForTest(properties));
+            resource, Collections.emptySet(), ConfigProperties.createForTest(properties));
     try {
       assertThat(tracerProvider.getActiveTraceConfig().getSampler()).isEqualTo(Sampler.alwaysOff());
 
