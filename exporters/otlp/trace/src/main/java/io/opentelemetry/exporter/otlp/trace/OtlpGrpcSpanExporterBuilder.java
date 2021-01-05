@@ -11,12 +11,16 @@ import com.google.common.base.Splitter;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
+import io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extension.otproto.CommonProperties;
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLException;
 
 /** Builder utility for this exporter. */
 public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpanExporterBuilder> {
@@ -31,6 +35,7 @@ public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpa
   private String endpoint = OtlpGrpcSpanExporter.DEFAULT_ENDPOINT;
   private boolean useTls = false;
   @Nullable private Metadata metadata;
+  @Nullable private byte[] trustedCertificatesPem;
 
   /**
    * Sets the managed chanel to use when communicating with the backend. Takes precedence over
@@ -79,6 +84,16 @@ public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpa
   }
 
   /**
+   * Sets the certificate chain to use for verifying servers when TLS is enabled. The {@code byte[]}
+   * should contain an X.509 certificate collection in PEM format. If not set, TLS connections will
+   * use the system default trusted certificates.
+   */
+  public OtlpGrpcSpanExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
+    this.trustedCertificatesPem = trustedCertificatesPem;
+    return this;
+  }
+
+  /**
    * Add header to request. Optional. Applicable only if {@link
    * OtlpGrpcSpanExporterBuilder#endpoint} is set to build channel.
    *
@@ -112,6 +127,51 @@ public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpa
 
       if (metadata != null) {
         managedChannelBuilder.intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+      }
+
+      if (trustedCertificatesPem != null) {
+        // gRPC does not abstract TLS configuration so we need to check the implementation and act
+        // accordingly.
+        if (managedChannelBuilder
+            .getClass()
+            .getName()
+            .equals("io.grpc.netty.NettyChannelBuilder")) {
+          NettyChannelBuilder nettyBuilder = (NettyChannelBuilder) managedChannelBuilder;
+          try {
+            nettyBuilder.sslContext(
+                GrpcSslContexts.forClient()
+                    .trustManager(new ByteArrayInputStream(trustedCertificatesPem))
+                    .build());
+          } catch (IllegalArgumentException | SSLException e) {
+            throw new IllegalStateException(
+                "Could not set trusted certificates for gRPC TLS connection, are they valid "
+                    + "X.509 in PEM format?",
+                e);
+          }
+        } else if (managedChannelBuilder
+            .getClass()
+            .getName()
+            .equals("io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder")) {
+          io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder nettyBuilder =
+              (io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder) managedChannelBuilder;
+          try {
+            nettyBuilder.sslContext(
+                io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts.forClient()
+                    .trustManager(new ByteArrayInputStream(trustedCertificatesPem))
+                    .build());
+          } catch (IllegalArgumentException | SSLException e) {
+            throw new IllegalStateException(
+                "Could not set trusted certificates for gRPC TLS connection, are they valid "
+                    + "X.509 in PEM format?",
+                e);
+          }
+        } else {
+          throw new IllegalStateException(
+              "TLS cerificate configuration only supported with Netty. "
+                  + "If you need to configure a certificate, switch to grpc-netty or "
+                  + "grpc-netty-shaded.");
+        }
+        // TODO(anuraaga): Support okhttp.
       }
 
       channel = managedChannelBuilder.build();
