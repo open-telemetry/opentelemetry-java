@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -37,14 +38,13 @@ import io.opentelemetry.sdk.trace.IdGenerator;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
+import org.slf4j.event.LoggingEvent;
 
 @SuppressWarnings("MustBeClosedChecker")
 class StrictContextStorageTest {
@@ -67,6 +67,9 @@ class StrictContextStorageTest {
     strictStorage = StrictContextStorage.create(previousStorage);
     SettableContextStorageProvider.setContextStorage(strictStorage);
   }
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(StrictContextStorage.class);
 
   // In this test we intentionally leak context so need to restore it ourselves, bypassing the
   // strict storage.
@@ -190,42 +193,18 @@ class StrictContextStorageTest {
 
   @Test
   void garbageCollectedScope() {
-    Logger logger = Logger.getLogger(StrictContextStorage.class.getName());
-    AtomicReference<LogRecord> logged = new AtomicReference<>();
-    Handler handler =
-        new Handler() {
-          @Override
-          public void publish(LogRecord record) {
-            logged.set(record);
-          }
+    Context.current().with(ANIMAL, "cat").makeCurrent();
 
-          @Override
-          public void flush() {}
-
-          @Override
-          public void close() {}
-        };
-    logger.addHandler(handler);
-    logger.setUseParentHandlers(false);
-    try {
-      Context.current().with(ANIMAL, "cat").makeCurrent();
-
-      await()
-          .atMost(Duration.ofSeconds(30))
-          .untilAsserted(
-              () -> {
-                System.gc();
-                assertThat(logged).doesNotHaveValue(null);
-                LogRecord record = logged.get();
-                assertThat(record.getLevel()).isEqualTo(Level.SEVERE);
-                assertThat(record.getMessage())
-                    .isEqualTo("Scope garbage collected before being closed.");
-                assertThat(record.getThrown().getMessage())
-                    .matches("Thread \\[Test worker\\] opened a scope of .* here:");
-              });
-    } finally {
-      logger.removeHandler(handler);
-      logger.setUseParentHandlers(true);
-    }
+    await()
+        .atMost(Duration.ofSeconds(30))
+        .untilAsserted(
+            () -> {
+              System.gc();
+              LoggingEvent log =
+                  logs.assertContains("Scope garbage collected before being closed.");
+              assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+              assertThat(log.getThrowable().getMessage())
+                  .matches("Thread \\[Test worker\\] opened a scope of .* here:");
+            });
   }
 }

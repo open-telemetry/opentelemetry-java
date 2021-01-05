@@ -35,8 +35,8 @@ public class OtlpJsonLoggingMetricExporter implements MetricExporter {
           .omittingInsignificantWhitespace(true)
           .build();
 
-  // Visible for testing
-  static final Logger logger = Logger.getLogger(OtlpJsonLoggingMetricExporter.class.getName());
+  private static final Logger logger =
+      Logger.getLogger(OtlpJsonLoggingMetricExporter.class.getName());
 
   /** Returns a new {@link OtlpJsonLoggingMetricExporter}. */
   public static MetricExporter create() {
