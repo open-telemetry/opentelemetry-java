@@ -49,7 +49,10 @@ public interface SdkTracerManagement {
    * io.opentelemetry.sdk.trace.export.SpanExporter#composite(SpanExporter...)}.
    *
    * @param spanProcessor the new {@code SpanProcessor} to be added.
+   * @deprecated Use {@link SdkTracerProvider#addSpanProcessor(SpanProcessor)} when initializing the
+   *     SDK
    */
+  @Deprecated
   void addSpanProcessor(SpanProcessor spanProcessor);
 
   /**
