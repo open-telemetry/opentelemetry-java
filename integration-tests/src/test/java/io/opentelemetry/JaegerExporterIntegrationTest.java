@@ -15,7 +15,6 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -43,6 +42,7 @@ class JaegerExporterIntegrationTest {
 
   private static final int QUERY_PORT = 16686;
   private static final int COLLECTOR_PORT = 14250;
+  private static final int HEALTH_PORT = 14269;
   private static final String SERVICE_NAME = "integration test";
   private static final String JAEGER_HOSTNAME = "jaeger";
   private static final String JAEGER_URL = "http://localhost";
@@ -53,20 +53,17 @@ class JaegerExporterIntegrationTest {
   @Container
   public static GenericContainer jaegerContainer =
       new GenericContainer<>(
-              DockerImageName.parse(
-                  "open-telemetry-docker-dev.bintray.io/java-test-containers:jaeger"))
+              DockerImageName.parse("ghcr.io/open-telemetry/java-test-containers:jaeger"))
           .withNetwork(network)
           .withNetworkAliases(JAEGER_HOSTNAME)
-          .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
-          .waitingFor(
-              new HttpWaitStrategy().forPath("/").withStartupTimeout(Duration.ofMinutes(2)));
+          .withExposedPorts(COLLECTOR_PORT, QUERY_PORT, HEALTH_PORT)
+          .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));
 
   @SuppressWarnings("rawtypes")
   @Container
   public static GenericContainer jaegerExampleAppContainer =
       new GenericContainer(
-              DockerImageName.parse(
-                  "open-telemetry-docker-dev.bintray.io/java-test-containers:openjdk8"))
+              DockerImageName.parse("ghcr.io/open-telemetry/java-test-containers:openjdk8"))
           .withNetwork(network)
           .withCopyFileToContainer(MountableFile.forHostPath(ARCHIVE_NAME), "/app/" + APP_NAME)
           .withCommand(
