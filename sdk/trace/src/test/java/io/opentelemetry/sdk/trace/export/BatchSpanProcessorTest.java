@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,13 +46,7 @@ class BatchSpanProcessorTest {
   private SdkTracerProvider sdkTracerProvider;
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
 
-  @Mock(lenient = true)
-  private SpanExporter mockServiceHandler;
-
-  @BeforeEach
-  void setUp() {
-    when(mockServiceHandler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-  }
+  @Mock private SpanExporter mockSpanExporter;
 
   @AfterEach
   void cleanup() {
@@ -295,18 +288,18 @@ class BatchSpanProcessorTest {
   }
 
   @Test
-  void serviceHandlerThrowsException() {
+  void exporterThrowsException() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     doThrow(new IllegalArgumentException("No export for you."))
-        .when(mockServiceHandler)
+        .when(mockSpanExporter)
         .export(ArgumentMatchers.anyList());
     sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(
                         SpanExporter.composite(
-                            Arrays.asList(mockServiceHandler, waitingSpanExporter)))
+                            Arrays.asList(mockSpanExporter, waitingSpanExporter)))
                     .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
                     .build())
             .build();
@@ -460,8 +453,8 @@ class BatchSpanProcessorTest {
 
   @Test
   void shutdownPropagatesSuccess() {
-    when(mockServiceHandler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockServiceHandler).build();
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isTrue();
@@ -469,8 +462,8 @@ class BatchSpanProcessorTest {
 
   @Test
   void shutdownPropagatesFailure() {
-    when(mockServiceHandler.shutdown()).thenReturn(CompletableResultCode.ofFailure());
-    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockServiceHandler).build();
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofFailure());
+    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isFalse();

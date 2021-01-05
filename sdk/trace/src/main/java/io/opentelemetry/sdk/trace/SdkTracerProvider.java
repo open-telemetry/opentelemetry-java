@@ -91,7 +91,7 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
       logger.log(Level.WARNING, "Calling shutdown() multiple times.");
       return CompletableResultCode.ofSuccess();
     }
-    return sharedState.stop();
+    return sharedState.shutdown();
   }
 
   @Override

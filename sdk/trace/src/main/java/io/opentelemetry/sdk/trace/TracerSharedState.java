@@ -29,7 +29,7 @@ final class TracerSharedState {
 
   @GuardedBy("lock")
   @Nullable
-  private volatile CompletableResultCode isStopped = null;
+  private volatile CompletableResultCode shutdownResult = null;
 
   @GuardedBy("lock")
   private final List<SpanProcessor> registeredSpanProcessors;
@@ -106,7 +106,7 @@ final class TracerSharedState {
    */
   boolean isStopped() {
     synchronized (lock) {
-      return isStopped != null && isStopped.isSuccess();
+      return shutdownResult != null && shutdownResult.isSuccess();
     }
   }
 
@@ -116,13 +116,13 @@ final class TracerSharedState {
    * @return a {@link CompletableResultCode} that will be completed when the span processor is shut
    *     down.
    */
-  CompletableResultCode stop() {
+  CompletableResultCode shutdown() {
     synchronized (lock) {
-      if (isStopped != null) {
-        return isStopped;
+      if (shutdownResult != null) {
+        return shutdownResult;
       }
-      isStopped = activeSpanProcessor.shutdown();
-      return isStopped;
+      shutdownResult = activeSpanProcessor.shutdown();
+      return shutdownResult;
     }
   }
 }
