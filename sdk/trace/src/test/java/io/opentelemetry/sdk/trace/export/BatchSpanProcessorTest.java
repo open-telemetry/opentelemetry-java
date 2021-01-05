@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace.export;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.trace.Span;
@@ -32,12 +33,8 @@ import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 class BatchSpanProcessorTest {
 
   private static final String SPAN_NAME_1 = "MySpanName/1";
@@ -45,8 +42,6 @@ class BatchSpanProcessorTest {
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private SdkTracerProvider sdkTracerProvider;
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
-
-  @Mock private SpanExporter mockSpanExporter;
 
   @AfterEach
   void cleanup() {
@@ -289,6 +284,7 @@ class BatchSpanProcessorTest {
 
   @Test
   void exporterThrowsException() {
+    SpanExporter mockSpanExporter = mock(SpanExporter.class);
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     doThrow(new IllegalArgumentException("No export for you."))
@@ -453,6 +449,7 @@ class BatchSpanProcessorTest {
 
   @Test
   void shutdownPropagatesSuccess() {
+    SpanExporter mockSpanExporter = mock(SpanExporter.class);
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     CompletableResultCode result = processor.shutdown();
@@ -462,6 +459,7 @@ class BatchSpanProcessorTest {
 
   @Test
   void shutdownPropagatesFailure() {
+    SpanExporter mockSpanExporter = mock(SpanExporter.class);
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofFailure());
     BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     CompletableResultCode result = processor.shutdown();
