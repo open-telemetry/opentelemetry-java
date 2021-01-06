@@ -18,6 +18,8 @@ import javax.annotation.Nullable;
 
 class ConfigProperties {
 
+  private final Map<String, String> config;
+
   static ConfigProperties get() {
     return new ConfigProperties(System.getProperties(), System.getenv());
   }
@@ -25,13 +27,10 @@ class ConfigProperties {
   // Visible for testing
   @SuppressWarnings({"unchecked", "rawtypes"})
   static ConfigProperties createForTest(Map<String, String> properties) {
-    return new ConfigProperties((Map) properties, Collections.emptyMap());
+    return new ConfigProperties(properties, Collections.emptyMap());
   }
 
-  private final Map<String, String> config;
-
-  private ConfigProperties(
-      Map<Object, Object> systemProperties, Map<String, String> environmentVariables) {
+  private ConfigProperties(Map<?, ?> systemProperties, Map<String, String> environmentVariables) {
     Map<String, String> config = new HashMap<>();
     environmentVariables.forEach(
         (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
@@ -93,25 +92,17 @@ class ConfigProperties {
     if (value == null) {
       return Collections.emptyList();
     }
-    return Arrays.stream(value.split(","))
-        .map(String::trim)
-        .filter(s -> !s.isEmpty())
-        .collect(Collectors.toList());
+    return filterBlanksAndNulls(value.split(","));
   }
 
   Map<String, String> getCommaSeparatedMap(String name) {
     return getCommaSeparatedValues(name).stream()
-        .map(
-            keyValuePair ->
-                Arrays.stream(keyValuePair.split("=", 2))
-                    .map(String::trim)
-                    .filter(s -> !s.isEmpty())
-                    .collect(Collectors.toList()))
+        .map(keyValuePair -> filterBlanksAndNulls(keyValuePair.split("=", 2)))
         .map(
             splitKeyValuePairs -> {
               if (splitKeyValuePairs.size() != 2) {
                 throw new ConfigurationException(
-                    "Map property key missing value: " + name + "=" + config.get(name));
+                    "Invalid map property: " + name + "=" + config.get(name));
               }
               return new AbstractMap.SimpleImmutableEntry<>(
                   splitKeyValuePairs.get(0), splitKeyValuePairs.get(1));
@@ -131,5 +122,12 @@ class ConfigProperties {
       String name, String value, String type) {
     throw new ConfigurationException(
         "Invalid value for property " + name + "=" + value + ". Must be a " + type + ".");
+  }
+
+  private static List<String> filterBlanksAndNulls(String[] values) {
+    return Arrays.stream(values)
+        .map(String::trim)
+        .filter(s -> !s.isEmpty())
+        .collect(Collectors.toList());
   }
 }

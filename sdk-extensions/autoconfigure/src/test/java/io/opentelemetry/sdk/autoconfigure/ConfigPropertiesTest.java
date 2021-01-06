@@ -140,18 +140,18 @@ class ConfigPropertiesTest {
                 ConfigProperties.createForTest(Collections.singletonMap("map", "a=1,b="))
                     .getCommaSeparatedMap("map"))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Map property key missing value: map=a=1,b=");
+        .hasMessage("Invalid map property: map=a=1,b=");
     assertThatThrownBy(
             () ->
                 ConfigProperties.createForTest(Collections.singletonMap("map", "a=1,b"))
                     .getCommaSeparatedMap("map"))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Map property key missing value: map=a=1,b");
+        .hasMessage("Invalid map property: map=a=1,b");
     assertThatThrownBy(
             () ->
                 ConfigProperties.createForTest(Collections.singletonMap("map", "a=1,=b"))
                     .getCommaSeparatedMap("map"))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Map property key missing value: map=a=1,=b");
+        .hasMessage("Invalid map property: map=a=1,=b");
   }
 }
