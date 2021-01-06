@@ -420,20 +420,35 @@ class SdkSpanBuilderTest {
   @Test
   void addAttributes_OnlyViaSampler() {
     TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder().setSampler(Sampler.traceIdRatioBased(1)).build();
+        TraceConfig.getDefault().toBuilder()
+            .setSampler(
+                new Sampler() {
+                  @Override
+                  public SamplingResult shouldSample(
+                      Context parentContext,
+                      String traceId,
+                      String name,
+                      Kind spanKind,
+                      Attributes attributes,
+                      List<Link> parentLinks) {
+                    return SamplingResult.create(
+                        SamplingResult.Decision.RECORD_AND_SAMPLE,
+                        Attributes.builder().put("cat", "meow").build());
+                  }
+
+                  @Override
+                  public String getDescription() {
+                    return "test";
+                  }
+                })
+            .build();
     TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
-    try {
-      assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
-      // TODO(anuraaga): Don't inline once spec is finalized and key is made public.
-      assertThat(
-              span.toSpanData().getAttributes().get(AttributeKey.doubleKey("sampling.probability")))
-          .isEqualTo(1);
-    } finally {
-      span.end();
-    }
+    span.end();
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
+    assertThat(span.toSpanData().getAttributes().get(stringKey("cat"))).isEqualTo("meow");
   }
 
   @Test
