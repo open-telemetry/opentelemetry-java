@@ -14,6 +14,15 @@ import io.opentelemetry.api.common.AttributeKey;
 import java.util.List;
 
 // DO NOT EDIT, this is an Auto-generated file from /templates/SemanticAttributes.java.j2
+
+/**
+ * This is the deprecated version of the SemanticAttributes class. It will be removed in the next
+ * release.
+ *
+ * @deprecated Please use the new version of these attributes in {@link
+ *     io.opentelemetry.semconv.trace.attributes.SemanticAttributes}.
+ */
+@Deprecated
 public final class SemanticAttributes {
 
   /** Name of the cloud provider. */

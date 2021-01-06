@@ -11,8 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
