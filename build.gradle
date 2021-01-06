@@ -213,7 +213,8 @@ subprojects {
 
                     // Test dependencies.
                     assertj                     : "org.assertj:assertj-core:3.18.1",
-                    equals_verifier              : "nl.jqno.equalsverifier:equalsverifier:3.5",
+                    brave                       : "io.zipkin.brave:brave:5.13.1",
+                    equals_verifier             : "nl.jqno.equalsverifier:equalsverifier:3.5",
                     guava_testlib               : "com.google.guava:guava-testlib",
                     junit                       : 'junit:junit:4.13.1',
                     junit_pioneer               : 'org.junit-pioneer:junit-pioneer:1.1.0',
