@@ -1,4 +1,5 @@
 import nebula.plugin.release.git.opinion.Strategies
+import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 
 plugins {
     id "com.diffplug.spotless"
@@ -377,8 +378,10 @@ subprojects {
         }
 
         plugins.withId("ru.vyarus.animalsniffer") {
-            animalsnifferTest {
-                enabled = false
+            tasks.withType(AnimalSniffer) {
+                if (name.startsWith('animalsnifferTest')) {
+                    enabled = false
+                }
             }
             // If JMH enabled ignore animalsniffer.
             plugins.withId("me.champeau.gradle.jmh") {
