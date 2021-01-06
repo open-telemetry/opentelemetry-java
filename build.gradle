@@ -438,9 +438,12 @@ subprojects {
         publishing {
             publications {
                 mavenPublication(MavenPublication) {
-                    version project.name.endsWith('metrics') ? "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
-                            "${major}.${minor}.${patch}-alpha"
-                        } : version
+                    def release = project.findProperty("otel.release")
+                    if (release != null) {
+                        version "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
+                            "${major}.${minor}.${patch}-${release}"
+                        }
+                    }
                     groupId "io.opentelemetry"
                     afterEvaluate {
                         artifactId = archivesBaseName
