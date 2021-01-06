@@ -31,8 +31,8 @@ public class OtlpJsonLoggingSpanExporter implements SpanExporter {
           .omittingInsignificantWhitespace(true)
           .build();
 
-  // Visible for testing
-  static final Logger logger = Logger.getLogger(OtlpJsonLoggingSpanExporter.class.getName());
+  private static final Logger logger =
+      Logger.getLogger(OtlpJsonLoggingSpanExporter.class.getName());
 
   /** Returns a new {@link OtlpJsonLoggingSpanExporter}. */
   public static SpanExporter create() {
