@@ -11,6 +11,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
@@ -20,21 +21,18 @@ import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Status;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
 
 /** Tests for the {@link LoggingSpanExporter}. */
 class LoggingSpanExporterTest {
@@ -72,6 +70,9 @@ class LoggingSpanExporterTest {
           .setKind(Kind.CLIENT)
           .build();
 
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(LoggingSpanExporter.class);
+
   LoggingSpanExporter exporter;
 
   @BeforeEach
@@ -86,39 +87,17 @@ class LoggingSpanExporterTest {
 
   @Test
   void log() {
-    Logger logger = LoggingSpanExporter.logger;
-    List<LogRecord> logged = new ArrayList<>();
-    Handler handler =
-        new Handler() {
-          @Override
-          public void publish(LogRecord record) {
-            logged.add(record);
-          }
+    exporter.export(Arrays.asList(SPAN1, SPAN2));
 
-          @Override
-          public void flush() {}
-
-          @Override
-          public void close() {}
-        };
-    logger.addHandler(handler);
-    logger.setUseParentHandlers(false);
-    try {
-      exporter.export(Arrays.asList(SPAN1, SPAN2));
-
-      assertThat(logged)
-          .hasSize(2)
-          .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
-      assertThat(logged.get(0).getMessage())
-          .isEqualTo(
-              "testSpan1 00000000000004d20000000000001a85 0000000000002694 "
-                  + "{animal=\"cat\", lives=9}");
-      assertThat(logged.get(1).getMessage())
-          .isEqualTo("testSpan2 0000000000000014000000000000001e 000000000000000f {}");
-    } finally {
-      logger.removeHandler(handler);
-      logger.setUseParentHandlers(true);
-    }
+    assertThat(logs.getEvents())
+        .hasSize(2)
+        .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
+    assertThat(logs.getEvents().get(0).getMessage())
+        .isEqualTo(
+            "testSpan1 00000000000004d20000000000001a85 0000000000002694 "
+                + "{animal=\"cat\", lives=9}");
+    assertThat(logs.getEvents().get(1).getMessage())
+        .isEqualTo("testSpan2 0000000000000014000000000000001e 000000000000000f {}");
   }
 
   @Test

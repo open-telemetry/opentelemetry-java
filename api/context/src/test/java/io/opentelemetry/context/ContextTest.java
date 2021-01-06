@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.github.netmikey.logunit.api.LogCapturer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -26,10 +27,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,8 +36,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.event.Level;
+import org.slf4j.event.LoggingEvent;
 
 @SuppressWarnings("ClassCanBeStatic")
 @ExtendWith(MockitoExtension.class)
@@ -50,6 +50,10 @@ class ContextTest {
   private static final ContextKey<Object> BAG = ContextKey.named("bag");
 
   private static final Context CAT = Context.current().with(ANIMAL, "cat");
+
+  @RegisterExtension
+  LogCapturer logs =
+      LogCapturer.create().captureForType(ThreadLocalContextStorage.class, Level.DEBUG);
 
   // Make sure all tests clean up
   @AfterEach
@@ -109,41 +113,18 @@ class ContextTest {
 
   @Test
   public void closingScopeWhenNotActiveIsLogged() {
-    final AtomicReference<LogRecord> logRef = new AtomicReference<>();
-    Handler handler =
-        new Handler() {
-          @Override
-          public void publish(LogRecord record) {
-            logRef.set(record);
-          }
-
-          @Override
-          public void flush() {}
-
-          @Override
-          public void close() {}
-        };
-    Logger logger = Logger.getLogger(ThreadLocalContextStorage.class.getName());
-    Level level = logger.getLevel();
-    logger.setLevel(Level.ALL);
-    try {
-      logger.addHandler(handler);
-      Context initial = Context.current();
-      Context context = initial.with(ANIMAL, "cat");
-      try (Scope scope = context.makeCurrent()) {
-        Context context2 = context.with(ANIMAL, "dog");
-        try (Scope ignored = context2.makeCurrent()) {
-          assertThat(Context.current().get(ANIMAL)).isEqualTo("dog");
-          scope.close();
-        }
+    Context initial = Context.current();
+    Context context = initial.with(ANIMAL, "cat");
+    try (Scope scope = context.makeCurrent()) {
+      Context context2 = context.with(ANIMAL, "dog");
+      try (Scope ignored = context2.makeCurrent()) {
+        assertThat(Context.current().get(ANIMAL)).isEqualTo("dog");
+        scope.close();
       }
-      assertThat(Context.current()).isEqualTo(initial);
-      assertThat(logRef.get()).isNotNull();
-      assertThat(logRef.get().getMessage()).contains("Context in storage not the expected context");
-    } finally {
-      logger.removeHandler(handler);
-      logger.setLevel(level);
     }
+    assertThat(Context.current()).isEqualTo(initial);
+    LoggingEvent log = logs.assertContains("Context in storage not the expected context");
+    assertThat(log.getLevel()).isEqualTo(Level.DEBUG);
   }
 
   @Test
