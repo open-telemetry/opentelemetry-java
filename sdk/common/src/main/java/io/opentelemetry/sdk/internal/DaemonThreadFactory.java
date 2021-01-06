@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A {@link ThreadFactory} that delegates to {@code Executors.defaultThreadFactory()} and marks all
  * threads as daemon.
  */
-public class DaemonThreadFactory implements ThreadFactory {
+public final class DaemonThreadFactory implements ThreadFactory {
   private final String namePrefix;
   private final AtomicInteger counter = new AtomicInteger();
 

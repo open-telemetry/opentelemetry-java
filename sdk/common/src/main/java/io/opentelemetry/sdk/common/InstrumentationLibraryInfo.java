@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.common;
 
+import static java.util.Objects.requireNonNull;
+
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.trace.Tracer;
 import javax.annotation.Nullable;
@@ -28,6 +30,7 @@ public abstract class InstrumentationLibraryInfo {
    * @return the new instance
    */
   public static InstrumentationLibraryInfo create(String name, @Nullable String version) {
+    requireNonNull(name, "name");
     return new AutoValue_InstrumentationLibraryInfo(name, version);
   }
 

@@ -24,7 +24,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -33,12 +33,13 @@ import java.util.logging.Logger;
 /** Server that manages startup/shutdown of a {@code Greeter} server. */
 public class HelloWorldServer {
   private static final Logger logger = Logger.getLogger(HelloWorldServer.class.getName());
+
   private static final int PORT = 50051;
   private static final LoggingSpanExporter exporter = new LoggingSpanExporter();
+  private static final OpenTelemetry openTelemetry = initOpenTelemetry(exporter);
 
   private Server server;
 
-  private final OpenTelemetry openTelemetry = OpenTelemetry.get();
   private final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
   private final TextMapPropagator textFormat =
@@ -165,19 +166,20 @@ public class HelloWorldServer {
     }
   }
 
-  private static void initTracing() {
-    // install the W3C Trace Context propagator
-    OpenTelemetry.setGlobalPropagators(
-        ContextPropagators.create(W3CTraceContextPropagator.getInstance()));
-    // Get the tracer management instance
-    TracerSdkManagement tracerManagement = OpenTelemetrySdk.getGlobalTracerManagement();
+  private static OpenTelemetry initOpenTelemetry(LoggingSpanExporter exporter) {
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
     // Set to process the the spans by the LogExporter
-    tracerManagement.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(sdkTracerProvider)
+        // install the W3C Trace Context propagator
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .build();
   }
 
   /** Main launches the server from the command line. */
   public static void main(String[] args) throws IOException, InterruptedException {
-    initTracing();
     final HelloWorldServer server = new HelloWorldServer();
     server.start();
     server.blockUntilShutdown();

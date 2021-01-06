@@ -29,7 +29,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -38,13 +37,11 @@ import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import zipkin2.Call;
 import zipkin2.Callback;
@@ -239,7 +236,7 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
-  void generateSpan_WithRpcErrorStatus() {
+  void generateSpan_WithRpcTimeoutErrorStatus_WithTimeoutErrorDescription() {
     Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
 
     String errorMessage = "timeout";
@@ -253,10 +250,28 @@ class ZipkinSpanExporterTest {
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
             buildZipkinSpan(Span.Kind.SERVER).toBuilder()
-                .putTag(ZipkinSpanExporter.OTEL_STATUS_DESCRIPTION, errorMessage)
                 .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
                 .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "ERROR")
-                .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), "ERROR")
+                .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), errorMessage)
+                .build());
+  }
+
+  @Test
+  void generateSpan_WithRpcErrorStatus_WithNullErrorDescription() {
+    Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
+
+    SpanData data =
+        buildStandardSpan()
+            .setStatus(SpanData.Status.create(StatusCode.ERROR, null))
+            .setAttributes(attributeMap)
+            .build();
+
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+        .isEqualTo(
+            buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+                .putTag(SemanticAttributes.RPC_SERVICE.getKey(), "my service name")
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "ERROR")
+                .putTag(ZipkinSpanExporter.STATUS_ERROR.getKey(), "")
                 .build());
   }
 
@@ -386,23 +401,15 @@ class ZipkinSpanExporterTest {
         .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT");
   }
 
-  abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {
-    public static NamingConvention getNaming() {
-      return NamingConvention.DOT;
-    }
-  }
-
   @Test
   void configTest() {
-    Map<String, String> options = new HashMap<>();
+    Properties options = new Properties();
     String serviceName = "myGreatService";
     String endpoint = "http://127.0.0.1:9090";
     options.put("otel.exporter.zipkin.service.name", serviceName);
     options.put("otel.exporter.zipkin.endpoint", endpoint);
-    ZipkinSpanExporterBuilder config = ZipkinSpanExporter.builder();
-    ZipkinSpanExporterBuilder spy = Mockito.spy(config);
-    spy.fromConfigMap(options, ConfigBuilderTest.getNaming()).build();
-    Mockito.verify(spy).setServiceName(serviceName);
-    Mockito.verify(spy).setEndpoint(endpoint);
+    ZipkinSpanExporterBuilder config = ZipkinSpanExporter.builder().readProperties(options);
+    assertThat(config).extracting("serviceName").isEqualTo(serviceName);
+    assertThat(config).extracting("endpoint").isEqualTo(endpoint);
   }
 }

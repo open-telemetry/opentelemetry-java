@@ -6,7 +6,7 @@
 package io.opentelemetry.extension.trace.propagation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -30,6 +30,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("deprecation") // the class under test will go away soon
 class TraceMultiPropagatorTest {
   private static final TextMapPropagator PROPAGATOR1 = B3Propagator.getInstance();
   private static final TextMapPropagator PROPAGATOR2 =
@@ -60,8 +61,8 @@ class TraceMultiPropagatorTest {
 
   @Test
   void addPropagator_null() {
-    assertThrows(
-        NullPointerException.class, () -> TraceMultiPropagator.create((TextMapPropagator) null));
+    assertThatThrownBy(() -> TraceMultiPropagator.create((TextMapPropagator) null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -92,7 +93,7 @@ class TraceMultiPropagatorTest {
             new EmptyPropagator("foo", "bar"), new EmptyPropagator("hello", "world"));
 
     Collection<String> fields = prop.fields();
-    assertThrows(UnsupportedOperationException.class, () -> fields.add("hi"));
+    assertThatThrownBy(() -> fields.add("hi")).isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test

@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
@@ -15,7 +15,6 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
@@ -34,23 +33,21 @@ class LongCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
-  private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+  private final SdkMeter testSdk =
+      new SdkMeter(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void add_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.longCounterBuilder("testCounter").build().add(1, null),
-        "labels");
+    assertThatThrownBy(() -> testSdk.longCounterBuilder("testCounter").build().add(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.longCounterBuilder("testCounter").build().bind(null),
-        "labels");
+    assertThatThrownBy(() -> testSdk.longCounterBuilder("testCounter").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -61,7 +58,7 @@ class LongCounterSdkTest {
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
-    BoundInstrument bound = longCounter.bind(Labels.of("foo", "bar"));
+    BoundLongCounter bound = longCounter.bind(Labels.of("foo", "bar"));
     assertThat(longCounter.collectAll()).isEmpty();
 
     bound.unbind();
@@ -139,47 +136,19 @@ class LongCounterSdkTest {
   }
 
   @Test
-  void sameBound_ForSameLabelSet() {
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(Labels.of("K", "V"));
-    BoundLongCounter duplicateBoundCounter = longCounter.bind(Labels.of("K", "V"));
-    try {
-      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-    } finally {
-      boundCounter.unbind();
-      duplicateBoundCounter.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(Labels.of("K", "V"));
-    try {
-      longCounter.collectAll();
-      BoundLongCounter duplicateBoundCounter = longCounter.bind(Labels.of("K", "V"));
-      try {
-        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-      } finally {
-        duplicateBoundCounter.unbind();
-      }
-    } finally {
-      boundCounter.unbind();
-    }
-  }
-
-  @Test
   void longCounterAdd_MonotonicityCheck() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
-    assertThrows(IllegalArgumentException.class, () -> longCounter.add(-45, Labels.empty()));
+    assertThatThrownBy(() -> longCounter.add(-45, Labels.empty()))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void boundLongCounterAdd_MonotonicityCheck() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
-    assertThrows(IllegalArgumentException.class, () -> longCounter.bind(Labels.empty()).add(-9));
+    assertThatThrownBy(() -> longCounter.bind(Labels.empty()).add(-9))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

@@ -36,15 +36,20 @@ jobs:
       - uses: burrunan/gradle-cache-action@v1.6
         with:
           remote-build-cache-proxy-enabled: false
-          arguments: build --stacktrace ${{ matrix.coverage && ':opentelemetry-all:jacocoTestReport' || '' }}
+          arguments: build --stacktrace ${{ matrix.coverage && 'jacocoTestReport' || '' }}
           properties: |
             testAdditionalJavaVersions=${{ matrix.testAdditionalJavaVersions }}
             org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }}
       - uses: codecov/codecov-action@v1
         if: ${{ matrix.coverage }}
+      - uses: actions/upload-artifact@v2
+        if: ${{ matrix.coverage }}
+        with:
+          name: coverage-report
+          path: all/build/reports/jacoco/test/html
   publish-snapshots:
     name: Publish snapshots to JFrog
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.event_name == 'push' && github.repository == 'open-telemetry/opentelemetry-java' }}
     needs: build
     runs-on: ubuntu-latest
     steps:

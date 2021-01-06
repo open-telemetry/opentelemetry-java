@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
@@ -37,23 +37,22 @@ class LongValueRecorderSdkTest {
   private final TestClock testClock = TestClock.create();
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
-  private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+  private final SdkMeter testSdk =
+      new SdkMeter(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void record_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.longValueRecorderBuilder("testRecorder").build().record(1, null),
-        "labels");
+    assertThatThrownBy(
+            () -> testSdk.longValueRecorderBuilder("testRecorder").build().record(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.longValueRecorderBuilder("testRecorder").build().bind(null),
-        "labels");
+    assertThatThrownBy(() -> testSdk.longValueRecorderBuilder("testRecorder").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -172,36 +171,6 @@ class LongValueRecorderSdkTest {
                   1,
                   222,
                   valueAtPercentiles(222, 222)));
-    } finally {
-      boundMeasure.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet() {
-    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
-    BoundLongValueRecorder boundMeasure = longMeasure.bind(Labels.of("K", "V"));
-    BoundLongValueRecorder duplicateBoundMeasure = longMeasure.bind(Labels.of("K", "V"));
-    try {
-      assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
-    } finally {
-      boundMeasure.unbind();
-      duplicateBoundMeasure.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
-    BoundLongValueRecorder boundMeasure = longMeasure.bind(Labels.of("K", "V"));
-    try {
-      longMeasure.collectAll();
-      BoundLongValueRecorder duplicateBoundMeasure = longMeasure.bind(Labels.of("K", "V"));
-      try {
-        assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
-      } finally {
-        duplicateBoundMeasure.unbind();
-      }
     } finally {
       boundMeasure.unbind();
     }

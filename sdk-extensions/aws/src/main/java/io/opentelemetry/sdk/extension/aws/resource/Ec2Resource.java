@@ -12,28 +12,21 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /**
  * A {@link ResourceProvider} which provides information about the current EC2 instance if running
  * on AWS EC2.
  */
-public class Ec2Resource extends ResourceProvider {
+public final class Ec2Resource extends ResourceProvider {
 
   private static final Logger logger = Logger.getLogger(Ec2Resource.class.getName());
-
-  private static final int TIMEOUT_MILLIS = 2000;
 
   private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
@@ -67,72 +60,18 @@ public class Ec2Resource extends ResourceProvider {
   }
 
   // Generic HTTP fetch function for IMDS.
-  // TODO(anuraaga): Migrate to JdkHttpClient
   private static String fetchString(String httpMethod, URL url, String token, boolean includeTtl) {
-    final HttpURLConnection connection;
-    try {
-      connection = (HttpURLConnection) url.openConnection();
-    } catch (Exception e) {
-      logger.log(Level.FINE, "Error connecting to IMDS.", e);
-      return "";
-    }
-
-    try {
-      connection.setRequestMethod(httpMethod);
-    } catch (ProtocolException e) {
-      logger.log(Level.FINE, "Unknown HTTP method, this is a programming bug.", e);
-      return "";
-    }
-
-    connection.setConnectTimeout(TIMEOUT_MILLIS);
-    connection.setReadTimeout(TIMEOUT_MILLIS);
+    JdkHttpClient client = new JdkHttpClient();
+    Map<String, String> headers = new HashMap<>();
 
     if (includeTtl) {
-      connection.setRequestProperty("X-aws-ec2-metadata-token-ttl-seconds", "60");
+      headers.put("X-aws-ec2-metadata-token-ttl-seconds", "60");
     }
     if (!token.isEmpty()) {
-      connection.setRequestProperty("X-aws-ec2-metadata-token", token);
+      headers.put("X-aws-ec2-metadata-token", token);
     }
 
-    final int responseCode;
-    try {
-      responseCode = connection.getResponseCode();
-    } catch (Exception e) {
-      logger.log(Level.FINE, "Error connecting to IMDS: ", e);
-      return "";
-    }
-
-    if (responseCode != 200) {
-      logger.log(
-          Level.FINE,
-          "Error reponse from IMDS: code ("
-              + responseCode
-              + ") text "
-              + readResponseString(connection));
-    }
-
-    return readResponseString(connection).trim();
-  }
-
-  private static String readResponseString(HttpURLConnection connection) {
-    ByteArrayOutputStream os = new ByteArrayOutputStream();
-    try (InputStream is = connection.getInputStream()) {
-      readTo(is, os);
-    } catch (IOException e) {
-      // Only best effort read if we can.
-    }
-    try (InputStream is = connection.getErrorStream()) {
-      if (is != null) {
-        readTo(is, os);
-      }
-    } catch (IOException e) {
-      // Only best effort read if we can.
-    }
-    try {
-      return os.toString(StandardCharsets.UTF_8.name());
-    } catch (UnsupportedEncodingException e) {
-      throw new IllegalStateException("UTF-8 not supported can't happen.", e);
-    }
+    return client.fetchString(httpMethod, url.toString(), headers, null);
   }
 
   @Override
@@ -205,17 +144,5 @@ public class Ec2Resource extends ResourceProvider {
 
   private String fetchHostname(String token) {
     return fetchString("GET", hostnameUrl, token, /* includeTtl= */ false);
-  }
-
-  private static void readTo(@Nullable InputStream is, ByteArrayOutputStream os)
-      throws IOException {
-    if (is == null) {
-      return;
-    }
-    byte[] buf = new byte[8192];
-    int read;
-    while ((read = is.read(buf)) > 0) {
-      os.write(buf, 0, read);
-    }
   }
 }

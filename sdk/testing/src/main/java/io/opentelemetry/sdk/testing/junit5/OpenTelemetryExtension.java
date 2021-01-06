@@ -47,7 +47,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * >  }
  * }</pre>
  */
-public class OpenTelemetryExtension
+public final class OpenTelemetryExtension
     implements BeforeEachCallback, BeforeAllCallback, AfterAllCallback {
 
   /**
@@ -57,8 +57,10 @@ public class OpenTelemetryExtension
   public static OpenTelemetryExtension create() {
     InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
-    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
-    tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(spanExporter).build());
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
+            .build();
 
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()

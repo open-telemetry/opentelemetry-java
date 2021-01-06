@@ -5,39 +5,44 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.accumulation.LongAccumulation;
 import java.util.concurrent.atomic.LongAdder;
 
-public final class LongSumAggregator extends AbstractAggregator {
-
-  private static final AggregatorFactory AGGREGATOR_FACTORY = LongSumAggregator::new;
-
-  private final LongAdder current = new LongAdder();
+public final class LongSumAggregator implements Aggregator<LongAccumulation> {
+  private static final LongSumAggregator INSTANCE = new LongSumAggregator();
 
   /**
-   * Returns an {@link AggregatorFactory} that produces {@link LongSumAggregator} instances.
+   * Returns the instance of this {@link Aggregator}.
    *
-   * @return an {@link AggregatorFactory} that produces {@link LongSumAggregator} instances.
+   * @return the instance of this {@link Aggregator}.
    */
-  public static AggregatorFactory getFactory() {
-    return AGGREGATOR_FACTORY;
+  public static Aggregator<LongAccumulation> getInstance() {
+    return INSTANCE;
+  }
+
+  private LongSumAggregator() {}
+
+  @Override
+  public AggregatorHandle<LongAccumulation> createHandle() {
+    return new Handle();
   }
 
   @Override
-  void doMergeAndReset(Aggregator aggregator) {
-    LongSumAggregator other = (LongSumAggregator) aggregator;
-    other.current.add(this.current.sumThenReset());
+  public LongAccumulation accumulateLong(long value) {
+    return LongAccumulation.create(value);
   }
 
-  @Override
-  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
-    return LongPoint.create(startEpochNanos, epochNanos, labels, current.sum());
-  }
+  static final class Handle extends AggregatorHandle<LongAccumulation> {
+    private final LongAdder current = new LongAdder();
 
-  @Override
-  public void doRecordLong(long value) {
-    current.add(value);
+    @Override
+    protected LongAccumulation doAccumulateThenReset() {
+      return LongAccumulation.create(this.current.sumThenReset());
+    }
+
+    @Override
+    public void doRecordLong(long value) {
+      current.add(value);
+    }
   }
 }

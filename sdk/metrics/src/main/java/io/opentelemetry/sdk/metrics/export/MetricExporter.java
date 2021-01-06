@@ -36,6 +36,10 @@ public interface MetricExporter {
    */
   CompletableResultCode flush();
 
-  /** Called when the associated IntervalMetricReader is shutdown. */
-  void shutdown();
+  /**
+   * Called when the associated IntervalMetricReader is shutdown.
+   *
+   * @return a {@link CompletableResultCode} which is completed when shutdown completes.
+   */
+  CompletableResultCode shutdown();
 }

@@ -10,21 +10,24 @@ import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
 import eu.rekawek.toxiproxy.model.ToxicList;
 import eu.rekawek.toxiproxy.model.toxic.Timeout;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporter.otlp.OtlpGrpcSpanExporter;
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
+import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.IOException;
 import java.util.Collections;
@@ -64,7 +67,7 @@ public class OtlpPipelineStressTest {
   public static GenericContainer<?> collectorContainer =
       new GenericContainer<>(
               DockerImageName.parse(
-                  "open-telemetry-docker-dev.bintray.io/java-test-containers:otel-collector-dev"))
+                  "ghcr.io/open-telemetry/java-test-containers:otel-collector-dev"))
           .withNetwork(network)
           .withNetworkAliases("otel-collector")
           .withExposedPorts(OTLP_RECEIVER_PORT)
@@ -89,8 +92,7 @@ public class OtlpPipelineStressTest {
   @Container
   public static GenericContainer<?> toxiproxyContainer =
       new GenericContainer<>(
-              DockerImageName.parse(
-                  "open-telemetry-docker-dev.bintray.io/java-test-containers:toxiproxy"))
+              DockerImageName.parse("ghcr.io/open-telemetry/java-test-containers:toxiproxy"))
           .withNetwork(network)
           .withNetworkAliases("toxiproxy")
           .withExposedPorts(TOXIPROXY_CONTROL_PORT, COLLECTOR_PROXY_PORT)
@@ -100,6 +102,8 @@ public class OtlpPipelineStressTest {
 
   private final InMemoryMetricExporter metricExporter = InMemoryMetricExporter.create();
 
+  private SdkTracerManagement tracerManagement;
+  private OpenTelemetry openTelemetry;
   private IntervalMetricReader intervalMetricReader;
   private Proxy collectorProxy;
   private ToxiproxyClient toxiproxyClient;
@@ -121,14 +125,13 @@ public class OtlpPipelineStressTest {
     }
     collectorProxy.enable();
 
-    intervalMetricReader = setupSdk(metricExporter);
-    addOtlpSpanExporter();
+    setupSdk();
   }
 
   @AfterEach
   void tearDown() throws IOException {
     intervalMetricReader.shutdown();
-    OpenTelemetrySdk.getGlobalTracerManagement().shutdown();
+    tracerManagement.shutdown();
 
     toxiproxyClient.reset();
     collectorProxy.delete();
@@ -192,7 +195,7 @@ public class OtlpPipelineStressTest {
     metricsByName.forEach(
         (name, metricData) -> {
           Stream<LongPoint> longPointStream =
-              metricData.stream().flatMap(md -> md.getPoints().stream()).map(p -> (LongPoint) p);
+              metricData.stream().flatMap(md -> md.getLongSumData().getPoints().stream());
           Map<Labels, List<LongPoint>> pointsByLabelset =
               longPointStream.collect(Collectors.groupingBy(Point::getLabels));
           pointsByLabelset.forEach(
@@ -203,9 +206,9 @@ public class OtlpPipelineStressTest {
         });
   }
 
-  private static void runOnce(Integer numberOfSpans, int numberOfMillisToRunFor)
+  private void runOnce(Integer numberOfSpans, int numberOfMillisToRunFor)
       throws InterruptedException {
-    Tracer tracer = GlobalOpenTelemetry.getTracer("io.opentelemetry.perf");
+    Tracer tracer = openTelemetry.getTracer("io.opentelemetry.perf");
     long start = System.currentTimeMillis();
     int i = 0;
     while (numberOfSpans == null
@@ -233,25 +236,24 @@ public class OtlpPipelineStressTest {
     }
   }
 
-  private static IntervalMetricReader setupSdk(MetricExporter metricExporter) {
-    // this will make sure that a proper service.name attribute is set on all the spans/metrics.
-    // note: this is not something you should generally do in code, but should be provided on the
-    // command-line. This is here to make the example more self-contained.
-    System.setProperty(
-        "otel.resource.attributes", "service.name=PerfTester,service.version=1.0.1-RC-1");
+  private void setupSdk() {
+    Resource resource =
+        Resource.create(
+            Attributes.builder()
+                .put(ResourceAttributes.SERVICE_NAME, "PerfTester")
+                .put(ResourceAttributes.SERVICE_VERSION, "1.0.1-RC-1")
+                .build());
 
     // set up the metric exporter and wire it into the SDK and a timed reader.
+    SdkMeterProvider meterProvider = SdkMeterProvider.builder().setResource(resource).build();
 
-    return IntervalMetricReader.builder()
-        .setMetricExporter(metricExporter)
-        .setMetricProducers(
-            Collections.singleton(
-                ((MeterSdkProvider) GlobalMetricsProvider.get()).getMetricProducer()))
-        .setExportIntervalMillis(1000)
-        .build();
-  }
+    intervalMetricReader =
+        IntervalMetricReader.builder()
+            .setMetricExporter(metricExporter)
+            .setMetricProducers(Collections.singleton(meterProvider.getMetricProducer()))
+            .setExportIntervalMillis(1000)
+            .build();
 
-  private static void addOtlpSpanExporter() {
     // set up the span exporter and wire it into the SDK
     OtlpGrpcSpanExporter spanExporter =
         OtlpGrpcSpanExporter.builder()
@@ -267,6 +269,11 @@ public class OtlpPipelineStressTest {
             //            .setMaxExportBatchSize(1024)
             //            .setScheduleDelayMillis(1000)
             .build();
-    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(spanProcessor);
+
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
+    openTelemetry =
+        OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
+    tracerManagement = tracerProvider;
   }
 }

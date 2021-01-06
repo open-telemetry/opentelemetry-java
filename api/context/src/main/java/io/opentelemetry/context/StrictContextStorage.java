@@ -65,7 +65,7 @@ import java.util.stream.Collectors;
  * > }
  * }</pre>
  */
-public class StrictContextStorage implements ContextStorage {
+public final class StrictContextStorage implements ContextStorage {
 
   /**
    * Returns a new {@link StrictContextStorage} which delegates to the provided {@link

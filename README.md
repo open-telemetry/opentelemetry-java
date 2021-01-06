@@ -1,10 +1,12 @@
 # OpenTelemetry
-[![Gitter chat][gitter-image]][gitter-url]
 ![Continuous Build](https://github.com/open-telemetry/opentelemetry-java/workflows/Continuous%20Build/badge.svg)
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
 
 We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#java-sdk).
+
+We use [GitHub Discussions](https://github.com/open-telemetry/opentelemetry-java/discussions)
+  for support or general questions. Feel free to drop us a line.
 
 ## Overview
 
@@ -14,8 +16,8 @@ project.
 This project contains the following top level components:
 
 * [OpenTelemetry API](api/):
-  * [tracing api](api/trace/src/main/java/io/opentelemetry/api/trace/) includes `Tracer`, `Span` and `SpanContext`.
-  * [baggage api](api/baggage/src/main/java/io/opentelemetry/api/baggage/) defines a collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
+  * [tracing api](api/all/src/main/java/io/opentelemetry/api/trace/) includes `Tracer`, `Span` and `SpanContext`.
+  * [baggage api](api/all/src/main/java/io/opentelemetry/api/baggage/) defines a collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
   * [metrics api](api/metrics/src/main/java/io/opentelemetry/api/metrics/).
   * [context api](api/context/src/main/java/io/opentelemetry/context/).
 * [extensions](extensions/) define additional API extensions, which are not part of the core API.
@@ -58,7 +60,7 @@ Published releases are available on maven central.
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.12.0</version>
+      <version>0.13.1</version>
     </dependency>
   </dependencies>
 ```
@@ -67,7 +69,7 @@ Published releases are available on maven central.
 
 ```groovy
 dependencies {
-	implementation('io.opentelemetry:opentelemetry-api:0.12.0')
+	implementation('io.opentelemetry:opentelemetry-api:0.13.1')
 }
 ```
 
@@ -89,7 +91,7 @@ Snapshots based out the `master` branch are available for `opentelemetry-api`, `
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.13.0-SNAPSHOT</version>
+      <version>0.14.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -102,7 +104,7 @@ repositories {
 }
 
 dependencies {
-	implementation('io.opentelemetry:opentelemetry-api:0.13.0-SNAPSHOT')
+	implementation('io.opentelemetry:opentelemetry-api:0.14.0-SNAPSHOT')
 }
 ```
 
@@ -121,16 +123,16 @@ This is a **current** feature status list:
 
 | Component                   | Version |
 | --------------------------- | ------- |
-| Tracing API                 | v<!--VERSION_STABLE-->0.12.0<!--/VERSION_STABLE-->  |
-| Tracing SDK                 | v<!--VERSION_STABLE-->0.12.0<!--/VERSION_STABLE-->  |
-| Metrics API                 | v<!--VERSION_STABLE-->0.12.0<!--/VERSION_STABLE-->  |
-| Metrics SDK                 | v<!--VERSION_STABLE-->0.12.0<!--/VERSION_STABLE-->  |
-| OTLP Exporter               | v<!--VERSION_STABLE-->0.12.0<!--/VERSION_STABLE-->  |
-| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->0.12.0<!--/VERSION_STABLE-->  |
-| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->0.12.0<!--/VERSION_STABLE-->  |
-| Prometheus Metrics Exporter | v<!--VERSION_STABLE-->0.12.0<!--/VERSION_STABLE-->  |
-| Context Propagation         | v<!--VERSION_STABLE-->0.12.0<!--/VERSION_STABLE-->  |
-| OpenTracing Bridge          | v<!--VERSION_STABLE-->0.12.0<!--/VERSION_STABLE-->  |
+| Tracing API                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Tracing SDK                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Metrics API                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Metrics SDK                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| OTLP Exporter               | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Prometheus Metrics Exporter | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| Context Propagation         | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
+| OpenTracing Bridge          | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
 | OpenCensus Bridge           | N/A     |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
@@ -172,8 +174,6 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 
 [circleci-image]: https://circleci.com/gh/open-telemetry/opentelemetry-java.svg?style=svg 
 [circleci-url]: https://circleci.com/gh/open-telemetry/opentelemetry-java
-[gitter-image]: https://badges.gitter.im/open-telemetry/opentelemetry-java.svg 
-[gitter-url]: https://gitter.im/open-telemetry/opentelemetry-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/master/
 [maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api/badge.svg

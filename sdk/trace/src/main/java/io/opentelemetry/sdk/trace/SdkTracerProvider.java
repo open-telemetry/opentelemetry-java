@@ -11,10 +11,10 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
-import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import java.util.Objects;
+import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -26,24 +26,29 @@ import javax.annotation.Nullable;
  * OpenTelemetry}. However, if you need a custom implementation of the factory, you can create one
  * as needed.
  */
-public class SdkTracerProvider implements TracerProvider, SdkTracerManagement {
+public final class SdkTracerProvider implements TracerProvider, SdkTracerManagement {
   private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "unknown";
   private final TracerSharedState sharedState;
   private final ComponentRegistry<SdkTracer> tracerSdkComponentRegistry;
 
   /**
-   * Returns a new {@link Builder} for {@link SdkTracerProvider}.
+   * Returns a new {@link SdkTracerProviderBuilder} for {@link SdkTracerProvider}.
    *
-   * @return a new {@link Builder} for {@link SdkTracerProvider}.
+   * @return a new {@link SdkTracerProviderBuilder} for {@link SdkTracerProvider}.
    */
-  public static Builder builder() {
-    return new Builder();
+  public static SdkTracerProviderBuilder builder() {
+    return new SdkTracerProviderBuilder();
   }
 
-  private SdkTracerProvider(
-      Clock clock, IdGenerator idsGenerator, Resource resource, TraceConfig traceConfig) {
-    this.sharedState = new TracerSharedState(clock, idsGenerator, resource, traceConfig);
+  SdkTracerProvider(
+      Clock clock,
+      IdGenerator idsGenerator,
+      Resource resource,
+      Supplier<TraceConfig> traceConfigSupplier,
+      List<SpanProcessor> spanProcessors) {
+    this.sharedState =
+        new TracerSharedState(clock, idsGenerator, resource, traceConfigSupplier, spanProcessors);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkTracer(sharedState, instrumentationLibraryInfo));
@@ -70,11 +75,13 @@ public class SdkTracerProvider implements TracerProvider, SdkTracerManagement {
   }
 
   @Override
+  @Deprecated
   public void updateActiveTraceConfig(TraceConfig traceConfig) {
     sharedState.updateActiveTraceConfig(traceConfig);
   }
 
   @Override
+  @Deprecated
   public void addSpanProcessor(SpanProcessor spanProcessor) {
     sharedState.addSpanProcessor(spanProcessor);
   }
@@ -91,76 +98,5 @@ public class SdkTracerProvider implements TracerProvider, SdkTracerManagement {
   @Override
   public CompletableResultCode forceFlush() {
     return sharedState.getActiveSpanProcessor().forceFlush();
-  }
-
-  /**
-   * Builder class for the TraceSdkProvider. Has fully functional default implementations of all
-   * three required interfaces.
-   */
-  public static class Builder {
-
-    private Clock clock = SystemClock.getInstance();
-    private IdGenerator idsGenerator = IdGenerator.random();
-    private Resource resource = Resource.getDefault();
-    private TraceConfig traceConfig = TraceConfig.getDefault();
-
-    /**
-     * Assign a {@link Clock}.
-     *
-     * @param clock The clock to use for all temporal needs.
-     * @return this
-     */
-    public Builder setClock(Clock clock) {
-      Objects.requireNonNull(clock, "clock");
-      this.clock = clock;
-      return this;
-    }
-
-    /**
-     * Assign an {@link IdGenerator}.
-     *
-     * @param idGenerator A generator for trace and span ids. Note: this should be thread-safe and
-     *     as contention free as possible.
-     * @return this
-     */
-    public Builder setIdGenerator(IdGenerator idGenerator) {
-      Objects.requireNonNull(idGenerator, "idGenerator");
-      this.idsGenerator = idGenerator;
-      return this;
-    }
-
-    /**
-     * Assign a {@link Resource} to be attached to all Spans created by Tracers.
-     *
-     * @param resource A Resource implementation.
-     * @return this
-     */
-    public Builder setResource(Resource resource) {
-      Objects.requireNonNull(resource, "resource");
-      this.resource = resource;
-      return this;
-    }
-
-    /**
-     * Assign an initial {@link TraceConfig} that should be used with this SDK.
-     *
-     * @return this
-     */
-    public Builder setTraceConfig(TraceConfig traceConfig) {
-      this.traceConfig = traceConfig;
-      Objects.requireNonNull(traceConfig);
-      return this;
-    }
-
-    /**
-     * Create a new TraceSdkProvider instance.
-     *
-     * @return An initialized TraceSdkProvider.
-     */
-    public SdkTracerProvider build() {
-      return new SdkTracerProvider(clock, idsGenerator, resource, traceConfig);
-    }
-
-    private Builder() {}
   }
 }

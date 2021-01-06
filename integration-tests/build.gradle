@@ -14,14 +14,11 @@ task fatJar(type: Jar) {
 }
 
 dependencies {
-    api project(':opentelemetry-api')
-
-    implementation project(':opentelemetry-sdk'),
-        project(':opentelemetry-exporter-jaeger'),
-        libraries.grpc_protobuf,
-        libraries.protobuf,
-        libraries.protobuf_util,
-        "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation project(':sdk:all'),
+            project(':exporters:jaeger'),
+            libraries.grpc_protobuf,
+            libraries.protobuf,
+            "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     testImplementation 'com.fasterxml.jackson.core:jackson-databind',
             libraries.testcontainers,

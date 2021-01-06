@@ -42,7 +42,7 @@ import org.junit.rules.ExternalResource;
  * >  }
  * }</pre>
  */
-public class OpenTelemetryRule extends ExternalResource {
+public final class OpenTelemetryRule extends ExternalResource {
 
   /**
    * Returns a {@link OpenTelemetryRule} with a default SDK initialized with an in-memory span
@@ -51,8 +51,10 @@ public class OpenTelemetryRule extends ExternalResource {
   public static OpenTelemetryRule create() {
     InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
-    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
-    tracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(spanExporter).build());
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
+            .build();
 
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
@@ -97,7 +99,7 @@ public class OpenTelemetryRule extends ExternalResource {
   }
 
   @Override
-  protected void before() throws Throwable {
+  protected void before() {
     previousGlobalOpenTelemetry = GlobalOpenTelemetry.get();
     GlobalOpenTelemetry.set(openTelemetry);
     clearSpans();

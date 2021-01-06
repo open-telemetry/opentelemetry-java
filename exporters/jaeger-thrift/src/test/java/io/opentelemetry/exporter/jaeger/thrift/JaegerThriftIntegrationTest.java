@@ -7,10 +7,10 @@ package io.opentelemetry.exporter.jaeger.thrift;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
@@ -20,10 +20,9 @@ import okhttp3.Response;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers(disabledWithoutDocker = true)
 class JaegerThriftIntegrationTest {
@@ -33,28 +32,27 @@ class JaegerThriftIntegrationTest {
 
   private static final int QUERY_PORT = 16686;
   private static final int THRIFT_HTTP_PORT = 14268;
-  private static final String JAEGER_VERSION = "1.17";
+  private static final int HEALTH_PORT = 14269;
   private static final String SERVICE_NAME = "E2E-test";
   private static final String JAEGER_URL = "http://localhost";
-  private final Tracer tracer = GlobalOpenTelemetry.getTracer(getClass().getCanonicalName());
 
   @Container
   public static GenericContainer<?> jaegerContainer =
-      new GenericContainer<>(DockerImageName.parse("jaegertracing/all-in-one:" + JAEGER_VERSION))
-          .withExposedPorts(THRIFT_HTTP_PORT, QUERY_PORT)
+      new GenericContainer<>("ghcr.io/open-telemetry/java-test-containers:jaeger")
+          .withExposedPorts(THRIFT_HTTP_PORT, QUERY_PORT, HEALTH_PORT)
           .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
-          .waitingFor(new HttpWaitStrategy().forPath("/"));
+          .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));
 
   @Test
   void testJaegerIntegration() {
-    setupJaegerExporter();
-    imitateWork();
+    OpenTelemetry openTelemetry = initOpenTelemetry();
+    imitateWork(openTelemetry);
     Awaitility.await()
         .atMost(Duration.ofSeconds(30))
         .until(JaegerThriftIntegrationTest::assertJaegerHasATrace);
   }
 
-  private static void setupJaegerExporter() {
+  private static OpenTelemetry initOpenTelemetry() {
     Integer mappedPort = jaegerContainer.getMappedPort(THRIFT_HTTP_PORT);
 
     SpanExporter jaegerExporter =
@@ -62,12 +60,17 @@ class JaegerThriftIntegrationTest {
             .setServiceName(SERVICE_NAME)
             .setEndpoint(JAEGER_URL + ":" + mappedPort + "/api/traces")
             .build();
-    OpenTelemetrySdk.getGlobalTracerManagement()
-        .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
+                .build())
+        .build();
   }
 
-  private void imitateWork() {
-    Span span = this.tracer.spanBuilder("Test span").startSpan();
+  private void imitateWork(OpenTelemetry openTelemetry) {
+    Span span =
+        openTelemetry.getTracer(getClass().getCanonicalName()).spanBuilder("Test span").startSpan();
     span.addEvent("some event");
     try {
       Thread.sleep(1000);

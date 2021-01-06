@@ -1,1 +1,1 @@
-io.opentelemetry.sdk.trace.spi.TracerProviderFactorySdk
+io.opentelemetry.sdk.trace.spi.SdkTracerProviderFactory

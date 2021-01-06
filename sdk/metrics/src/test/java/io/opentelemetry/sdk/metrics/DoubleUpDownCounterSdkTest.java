@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
@@ -34,23 +34,23 @@ class DoubleUpDownCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
-  private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+  private final SdkMeter testSdk =
+      new SdkMeter(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void add_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build().add(1.0, null),
-        "labels");
+    assertThatThrownBy(
+            () -> testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build().add(1.0, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build().bind(null),
-        "labels");
+    assertThatThrownBy(
+            () -> testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -138,39 +138,6 @@ class DoubleUpDownCounterSdkTest {
           .containsExactly(
               DoublePoint.create(startTime, secondCollect, Labels.of("K", "V"), 777.9d),
               DoublePoint.create(startTime, secondCollect, Labels.empty(), 44.5d));
-    } finally {
-      boundCounter.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet() {
-    DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
-    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
-    BoundDoubleUpDownCounter duplicateBoundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
-    try {
-      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-    } finally {
-      boundCounter.unbind();
-      duplicateBoundCounter.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
-    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
-    try {
-      doubleUpDownCounter.collectAll();
-      BoundDoubleUpDownCounter duplicateBoundCounter =
-          doubleUpDownCounter.bind(Labels.of("K", "V"));
-      try {
-        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-      } finally {
-        duplicateBoundCounter.unbind();
-      }
     } finally {
       boundCounter.unbind();
     }

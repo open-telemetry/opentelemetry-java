@@ -5,20 +5,17 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import org.openjdk.jmh.annotations.AuxCounters;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -56,7 +53,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
   @State(Scope.Benchmark)
   public static class BenchmarkState {
     private final MetricProducer metricProducer =
-        ((MeterSdkProvider) GlobalMetricsProvider.get()).getMetricProducer();
+        ((SdkMeterProvider) GlobalMetricsProvider.get()).getMetricProducer();
     private BatchSpanProcessor processor;
     private Tracer tracer;
     private Collection<MetricData> allMetrics;
@@ -66,7 +63,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
       SpanExporter exporter = new DelayingSpanExporter();
       processor = BatchSpanProcessor.builder(exporter).build();
 
-      tracer = GlobalOpenTelemetry.getTracerProvider().get("benchmarkTracer");
+      tracer = SdkTracerProvider.builder().build().get("benchmarkTracer");
     }
 
     @TearDown(Level.Trial)
@@ -116,13 +113,11 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
       String labelValue = String.valueOf(dropped);
       for (MetricData metricData : allMetrics) {
         if (metricData.getName().equals("processedSpans")) {
-          List<Point> points = new ArrayList<>(metricData.getPoints());
-          if (points.isEmpty()) {
+          if (metricData.isEmpty()) {
             return 0;
           } else {
-            // Find latest point with given value of dropped label
-            for (int i = points.size() - 1; i >= 0; i--) {
-              LongPoint point = (LongPoint) points.get(i);
+            Collection<LongPoint> points = metricData.getLongSumData().getPoints();
+            for (LongPoint point : points) {
               if (labelValue.equals(point.getLabels().get("dropped"))) {
                 return point.getValue();
               }

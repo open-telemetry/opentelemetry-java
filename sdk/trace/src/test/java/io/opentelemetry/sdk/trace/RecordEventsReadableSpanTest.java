@@ -14,7 +14,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -182,9 +182,8 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     SpanData spanData = span.toSpanData();
 
-    assertThrows(
-        UnsupportedOperationException.class,
-        () -> spanData.getLinks().add(Link.create(SpanContext.getInvalid())));
+    assertThatThrownBy(() -> spanData.getLinks().add(Link.create(SpanContext.getInvalid())))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -192,9 +191,9 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     SpanData spanData = span.toSpanData();
 
-    assertThrows(
-        UnsupportedOperationException.class,
-        () -> spanData.getEvents().add(Event.create(1000, "test", Attributes.empty())));
+    assertThatThrownBy(
+            () -> spanData.getEvents().add(Event.create(1000, "test", Attributes.empty())))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test

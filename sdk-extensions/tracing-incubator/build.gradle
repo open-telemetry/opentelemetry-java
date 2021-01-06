@@ -1,5 +1,5 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
 
     id "ru.vyarus.animalsniffer"
@@ -11,12 +11,12 @@ description = 'OpenTelemetry SDK Tracing Incubator'
 ext.moduleName = "io.opentelemetry.sdk.extension.trace.incubator"
 
 dependencies {
-    api project(':opentelemetry-api'),
-            project(':opentelemetry-sdk')
+    api project(':api:all'),
+            project(':sdk:all')
 
 
     annotationProcessor libraries.auto_value
-    testImplementation project(':opentelemetry-sdk-testing'),
+    testImplementation project(':sdk:testing'),
             libraries.guava_testlib
 
     signature libraries.android_signature

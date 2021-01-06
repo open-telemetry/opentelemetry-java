@@ -48,9 +48,15 @@ import javax.annotation.concurrent.Immutable;
  * Context context = OpenTelemetry.getPropagators().getTextMapPropagator()
  *   .extract(context, carrier, carrierGetter);
  * }</pre>
+ *
+ * <p>This class is @deprecated and will be removed in 0.14.0. Users should migrate to the
+ * MultiTextMapPropagator in the api.
+ *
+ * @deprecated Use {@link TextMapPropagator#composite}
  */
 @Immutable
-public class TraceMultiPropagator implements TextMapPropagator {
+@Deprecated
+public final class TraceMultiPropagator implements TextMapPropagator {
 
   /** Returns a {@link TraceMultiPropagator} for the given {@code propagators}. */
   public static TextMapPropagator create(TextMapPropagator... propagators) {

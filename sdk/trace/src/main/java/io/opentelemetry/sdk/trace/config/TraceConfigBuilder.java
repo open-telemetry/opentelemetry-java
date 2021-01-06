@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /** Builder for {@link TraceConfig}. */
-public class TraceConfigBuilder extends ConfigBuilder<TraceConfigBuilder> {
+public final class TraceConfigBuilder extends ConfigBuilder<TraceConfigBuilder> {
   private static final String KEY_SAMPLER_PROBABILITY = "otel.config.sampler.probability";
   private static final String KEY_SPAN_ATTRIBUTE_COUNT_LIMIT = "otel.span.attribute.count.limit";
   private static final String KEY_SPAN_EVENT_COUNT_LIMIT = "otel.span.event.count.limit";

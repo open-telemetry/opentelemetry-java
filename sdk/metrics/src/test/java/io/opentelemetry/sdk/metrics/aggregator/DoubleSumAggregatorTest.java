@@ -6,75 +6,58 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.offset;
 
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.accumulation.DoubleAccumulation;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleSumAggregator}. */
 class DoubleSumAggregatorTest {
   @Test
-  void factoryAggregation() {
-    AggregatorFactory factory = DoubleSumAggregator.getFactory();
-    assertThat(factory.getAggregator()).isInstanceOf(DoubleSumAggregator.class);
-  }
-
-  @Test
-  void toPoint() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
-    assertThat(getPoint(aggregator).getValue()).isCloseTo(0, offset(1e-6));
+  void createHandle() {
+    assertThat(DoubleSumAggregator.getInstance().createHandle())
+        .isInstanceOf(DoubleSumAggregator.Handle.class);
   }
 
   @Test
   void multipleRecords() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.1);
-    assertThat(getPoint(aggregator).getValue()).isCloseTo(12.1 * 5, offset(1e-6));
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle =
+        DoubleSumAggregator.getInstance().createHandle();
+    aggregatorHandle.recordDouble(12.1);
+    aggregatorHandle.recordDouble(12.1);
+    aggregatorHandle.recordDouble(12.1);
+    aggregatorHandle.recordDouble(12.1);
+    aggregatorHandle.recordDouble(12.1);
+    assertThat(aggregatorHandle.accumulateThenReset())
+        .isEqualTo(DoubleAccumulation.create(12.1 * 5));
   }
 
   @Test
   void multipleRecords_WithNegatives() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(-23.2);
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.3);
-    aggregator.recordDouble(-11.3);
-    assertThat(getPoint(aggregator).getValue()).isCloseTo(14.1, offset(1e-6));
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle =
+        DoubleSumAggregator.getInstance().createHandle();
+    aggregatorHandle.recordDouble(12);
+    aggregatorHandle.recordDouble(12);
+    aggregatorHandle.recordDouble(-23);
+    aggregatorHandle.recordDouble(12);
+    aggregatorHandle.recordDouble(12);
+    aggregatorHandle.recordDouble(-11);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(14));
   }
 
   @Test
-  void mergeAndReset() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
-    aggregator.recordDouble(13.1);
-    aggregator.recordDouble(12.1);
-    assertThat(getPoint(aggregator).getValue()).isCloseTo(25.2, offset(1e-6));
-    Aggregator mergedAggregator = DoubleSumAggregator.getFactory().getAggregator();
-    aggregator.mergeToAndReset(mergedAggregator);
-    assertThat(getPoint(aggregator).getValue()).isCloseTo(0, offset(1e-6));
-    assertThat(getPoint(mergedAggregator).getValue()).isCloseTo(25.2, offset(1e-6));
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(-25.2);
-    aggregator.mergeToAndReset(mergedAggregator);
-    assertThat(getPoint(aggregator).getValue()).isCloseTo(0, offset(1e-6));
-    assertThat(getPoint(mergedAggregator).getValue()).isCloseTo(12.1, offset(1e-6));
-  }
+  void toAccumulationAndReset() {
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle =
+        DoubleSumAggregator.getInstance().createHandle();
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
-  private static DoublePoint getPoint(Aggregator aggregator) {
-    Point point = aggregator.toPoint(12345, 12358, Labels.of("key", "value"));
-    assertThat(point).isNotNull();
-    assertThat(point.getStartEpochNanos()).isEqualTo(12345);
-    assertThat(point.getEpochNanos()).isEqualTo(12358);
-    assertThat(point.getLabels().size()).isEqualTo(1);
-    assertThat(point.getLabels().get("key")).isEqualTo("value");
-    assertThat(point).isInstanceOf(DoublePoint.class);
-    return (DoublePoint) point;
+    aggregatorHandle.recordDouble(13);
+    aggregatorHandle.recordDouble(12);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(25));
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+
+    aggregatorHandle.recordDouble(12);
+    aggregatorHandle.recordDouble(-25);
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(-13));
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 }

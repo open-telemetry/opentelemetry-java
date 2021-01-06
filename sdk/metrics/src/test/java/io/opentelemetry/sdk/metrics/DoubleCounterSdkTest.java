@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
@@ -33,23 +33,21 @@ class DoubleCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
-  private final MeterSdk testSdk =
-      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+  private final SdkMeter testSdk =
+      new SdkMeter(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
   void add_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.doubleCounterBuilder("testCounter").build().add(1.0, null),
-        "labels");
+    assertThatThrownBy(() -> testSdk.doubleCounterBuilder("testCounter").build().add(1.0, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThrows(
-        NullPointerException.class,
-        () -> testSdk.doubleCounterBuilder("testCounter").build().bind(null),
-        "labels");
+    assertThatThrownBy(() -> testSdk.doubleCounterBuilder("testCounter").build().bind(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("labels");
   }
 
   @Test
@@ -148,48 +146,19 @@ class DoubleCounterSdkTest {
   }
 
   @Test
-  void sameBound_ForSameLabelSet() {
-    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
-    BoundDoubleCounter boundCounter = doubleCounter.bind(Labels.of("K", "V"));
-    BoundDoubleCounter duplicateBoundCounter = doubleCounter.bind(Labels.of("K", "V"));
-    try {
-      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-    } finally {
-      boundCounter.unbind();
-      duplicateBoundCounter.unbind();
-    }
-  }
-
-  @Test
-  void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
-    BoundDoubleCounter boundCounter = doubleCounter.bind(Labels.of("K", "V"));
-    try {
-      doubleCounter.collectAll();
-      BoundDoubleCounter duplicateBoundCounter = doubleCounter.bind(Labels.of("K", "V"));
-      try {
-        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-      } finally {
-        duplicateBoundCounter.unbind();
-      }
-    } finally {
-      boundCounter.unbind();
-    }
-  }
-
-  @Test
   void doubleCounterAdd_Monotonicity() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
 
-    assertThrows(IllegalArgumentException.class, () -> doubleCounter.add(-45.77d, Labels.empty()));
+    assertThatThrownBy(() -> doubleCounter.add(-45.77d, Labels.empty()))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void boundDoubleCounterAdd_Monotonicity() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
 
-    assertThrows(
-        IllegalArgumentException.class, () -> doubleCounter.bind(Labels.empty()).add(-9.3));
+    assertThatThrownBy(() -> doubleCounter.bind(Labels.empty()).add(-9.3))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

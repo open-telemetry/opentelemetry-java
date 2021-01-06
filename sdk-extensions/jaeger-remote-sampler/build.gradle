@@ -1,5 +1,5 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
 
     id "com.google.protobuf"
@@ -10,15 +10,14 @@ description = 'OpenTelemetry - Jaeger Remote sampler'
 ext.moduleName = "io.opentelemetry.sdk.extension.trace.jaeger"
 
 dependencies {
-    api project(':opentelemetry-sdk')
+    api project(':sdk:all')
 
-    implementation project(':opentelemetry-sdk-extension-otproto'),
-            project(':opentelemetry-sdk'),
+    implementation project(':sdk-extensions:otproto'),
+            project(':sdk:all'),
             libraries.grpc_api,
             libraries.grpc_protobuf,
             libraries.grpc_stub,
-            libraries.protobuf,
-            libraries.protobuf_util
+            libraries.protobuf
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}",
             libraries.testcontainers

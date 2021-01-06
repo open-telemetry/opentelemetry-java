@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
+import java.util.function.Supplier;
 
 /**
  * "Management" interface for the Tracing SDK. This interface exposes methods for configuring the
@@ -35,7 +36,10 @@ public interface SdkTracerManagement extends Closeable {
    *
    * @param traceConfig the new active {@code TraceConfig}.
    * @see TraceConfig
+   * @deprecated Use {@link SdkTracerProviderBuilder#setTraceConfig(Supplier)} to register a
+   *     supplier of {@link TraceConfig} if you need to make dynamic updates.
    */
+  @Deprecated
   void updateActiveTraceConfig(TraceConfig traceConfig);
 
   /**
@@ -46,7 +50,10 @@ public interface SdkTracerManagement extends Closeable {
    * io.opentelemetry.sdk.trace.export.SpanExporter#composite(SpanExporter...)}.
    *
    * @param spanProcessor the new {@code SpanProcessor} to be added.
+   * @deprecated Use {@link SdkTracerProvider#addSpanProcessor(SpanProcessor)} when initializing the
+   *     SDK
    */
+  @Deprecated
   void addSpanProcessor(SpanProcessor spanProcessor);
 
   /**
