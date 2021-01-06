@@ -20,10 +20,9 @@ import okhttp3.Response;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers(disabledWithoutDocker = true)
 class JaegerThriftIntegrationTest {
@@ -33,16 +32,16 @@ class JaegerThriftIntegrationTest {
 
   private static final int QUERY_PORT = 16686;
   private static final int THRIFT_HTTP_PORT = 14268;
-  private static final String JAEGER_VERSION = "1.17";
+  private static final int HEALTH_PORT = 14269;
   private static final String SERVICE_NAME = "E2E-test";
   private static final String JAEGER_URL = "http://localhost";
 
   @Container
   public static GenericContainer<?> jaegerContainer =
-      new GenericContainer<>(DockerImageName.parse("jaegertracing/all-in-one:" + JAEGER_VERSION))
-          .withExposedPorts(THRIFT_HTTP_PORT, QUERY_PORT)
+      new GenericContainer<>("ghcr.io/open-telemetry/java-test-containers:jaeger")
+          .withExposedPorts(THRIFT_HTTP_PORT, QUERY_PORT, HEALTH_PORT)
           .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
-          .waitingFor(new HttpWaitStrategy().forPath("/"));
+          .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));
 
   @Test
   void testJaegerIntegration() {

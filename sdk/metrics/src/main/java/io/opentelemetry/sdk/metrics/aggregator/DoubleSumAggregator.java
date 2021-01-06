@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
+import io.opentelemetry.sdk.metrics.accumulation.DoubleAccumulation;
 import java.util.concurrent.atomic.DoubleAdder;
 
 public final class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {

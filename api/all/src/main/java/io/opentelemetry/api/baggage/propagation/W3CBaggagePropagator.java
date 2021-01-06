@@ -40,7 +40,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
     Baggage baggage = Baggage.fromContext(context);
-    if (baggage == null) {
+    if (baggage.isEmpty()) {
       return;
     }
     StringBuilder headerContent = new StringBuilder();

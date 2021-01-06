@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregation;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.accumulation.MinMaxSumCountAccumulation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCountAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCountAggregator;
@@ -46,8 +47,8 @@ final class MinMaxSumCountAggregation extends AbstractAggregation<MinMaxSumCount
       Map<Labels, MinMaxSumCountAccumulation> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    List<MetricData.Point> points =
-        MetricDataUtils.getPointList(accumulationByLabels, startEpochNanos, epochNanos);
+    List<MetricData.DoubleSummaryPoint> points =
+        MetricDataUtils.toDoubleSummaryPointList(accumulationByLabels, startEpochNanos, epochNanos);
     return MetricData.createDoubleSummary(
         resource,
         instrumentationLibraryInfo,

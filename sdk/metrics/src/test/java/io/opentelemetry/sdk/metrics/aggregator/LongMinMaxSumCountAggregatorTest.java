@@ -8,9 +8,9 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
-import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
+import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
+import io.opentelemetry.sdk.metrics.accumulation.MinMaxSumCountAccumulation;
 import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
-import io.opentelemetry.sdk.metrics.aggregation.MinMaxSumCountAccumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.ArrayList;
 import java.util.List;

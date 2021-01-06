@@ -155,10 +155,9 @@ public final class MetricAdapter {
     return AGGREGATION_TEMPORALITY_UNSPECIFIED;
   }
 
-  static List<IntDataPoint> toIntDataPoints(Collection<MetricData.Point> points) {
+  static List<IntDataPoint> toIntDataPoints(Collection<MetricData.LongPoint> points) {
     List<IntDataPoint> result = new ArrayList<>(points.size());
-    for (MetricData.Point point : points) {
-      MetricData.LongPoint longPoint = (MetricData.LongPoint) point;
+    for (MetricData.LongPoint longPoint : points) {
       IntDataPoint.Builder builder =
           IntDataPoint.newBuilder()
               .setStartTimeUnixNano(longPoint.getStartEpochNanos())
@@ -173,16 +172,15 @@ public final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleDataPoint> toDoubleDataPoints(Collection<MetricData.Point> points) {
+  static Collection<DoubleDataPoint> toDoubleDataPoints(Collection<MetricData.DoublePoint> points) {
     List<DoubleDataPoint> result = new ArrayList<>(points.size());
-    for (MetricData.Point point : points) {
-      MetricData.DoublePoint doublePoint = (MetricData.DoublePoint) point;
+    for (MetricData.DoublePoint doublePoint : points) {
       DoubleDataPoint.Builder builder =
           DoubleDataPoint.newBuilder()
-              .setStartTimeUnixNano(point.getStartEpochNanos())
-              .setTimeUnixNano(point.getEpochNanos())
+              .setStartTimeUnixNano(doublePoint.getStartEpochNanos())
+              .setTimeUnixNano(doublePoint.getEpochNanos())
               .setValue(doublePoint.getValue());
-      Collection<StringKeyValue> labels = toProtoLabels(point.getLabels());
+      Collection<StringKeyValue> labels = toProtoLabels(doublePoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
       }
@@ -191,17 +189,17 @@ public final class MetricAdapter {
     return result;
   }
 
-  static List<DoubleHistogramDataPoint> toSummaryDataPoints(Collection<MetricData.Point> points) {
+  static List<DoubleHistogramDataPoint> toSummaryDataPoints(
+      Collection<MetricData.DoubleSummaryPoint> points) {
     List<DoubleHistogramDataPoint> result = new ArrayList<>(points.size());
-    for (MetricData.Point point : points) {
-      MetricData.DoubleSummaryPoint doubleSummaryPoint = (MetricData.DoubleSummaryPoint) point;
+    for (MetricData.DoubleSummaryPoint doubleSummaryPoint : points) {
       DoubleHistogramDataPoint.Builder builder =
           DoubleHistogramDataPoint.newBuilder()
-              .setStartTimeUnixNano(point.getStartEpochNanos())
-              .setTimeUnixNano(point.getEpochNanos())
+              .setStartTimeUnixNano(doubleSummaryPoint.getStartEpochNanos())
+              .setTimeUnixNano(doubleSummaryPoint.getEpochNanos())
               .setCount(doubleSummaryPoint.getCount())
               .setSum(doubleSummaryPoint.getSum());
-      List<StringKeyValue> labels = toProtoLabels(point.getLabels());
+      List<StringKeyValue> labels = toProtoLabels(doubleSummaryPoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
       }

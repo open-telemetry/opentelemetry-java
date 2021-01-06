@@ -232,6 +232,7 @@ subprojects {
                     zipkin_junit                : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
                     archunit                    : 'com.tngtech.archunit:archunit-junit4:0.14.1', //Architectural constraints
                     jqf                         : 'edu.berkeley.cs.jqf:jqf-fuzz:1.6', // fuzz testing
+                    logunit                     : 'io.github.netmikey.logunit:logunit-jul:1.1.0',
 
                     // Tooling
                     android_signature       : 'com.toasttab.android:gummy-bears-api-24:0.3.0:coreLib@signature'
@@ -326,7 +327,8 @@ subprojects {
                     libraries.mockito,
                     libraries.mockito_junit_jupiter,
                     libraries.assertj,
-                    libraries.awaitility
+                    libraries.awaitility,
+                    libraries.logunit
 
             testRuntimeOnly libraries.junit_jupiter_engine,
                     libraries.junit_vintage_engine
@@ -437,9 +439,12 @@ subprojects {
         publishing {
             publications {
                 mavenPublication(MavenPublication) {
-                    version project.name.endsWith('metrics') ? "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
-                            "${major}.${minor}.${patch}-alpha"
-                        } : version
+                    def release = project.findProperty("otel.release")
+                    if (release != null) {
+                        version "${version}".replaceFirst(/^(\d+)\.(\d+).(\d+)/) { _, major, minor, patch ->
+                            "${major}.${minor}.${patch}-${release}"
+                        }
+                    }
                     groupId "io.opentelemetry"
                     afterEvaluate {
                         artifactId = archivesBaseName
@@ -556,7 +561,7 @@ subprojects {
 }
 
 wrapper {
-    gradleVersion = '6.7'
+    gradleVersion = '6.7.1'
 }
 
 allprojects {

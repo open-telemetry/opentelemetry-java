@@ -43,7 +43,6 @@ class LoggingMetricExporterTest {
 
   @Test
   void testExport() {
-
     long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
     Resource resource = Resource.create(Attributes.of(stringKey("host"), "localhost"));
     InstrumentationLibraryInfo instrumentationLibraryInfo =

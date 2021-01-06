@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.accumulation.LongAccumulation;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
@@ -44,6 +45,8 @@ class LastValueAggregationTest {
             100);
     assertThat(metricData).isNotNull();
     assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_GAUGE);
+    assertThat(metricData.getLongGaugeData().getPoints())
+        .containsExactly(MetricData.LongPoint.create(0, 100, Labels.empty(), 10));
   }
 
   @Test

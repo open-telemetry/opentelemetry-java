@@ -3,16 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.aggregation;
+package io.opentelemetry.sdk.metrics.accumulation;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import javax.annotation.concurrent.Immutable;
 
-/**
- * An immutable representation of an accumulated value by {@code Aggregator} or by the {@code
- * AsynchronousInstrument}.
- */
+/** An immutable representation of an accumulated value by an {@code Aggregator}. */
 @Immutable
 public interface Accumulation {
   /**

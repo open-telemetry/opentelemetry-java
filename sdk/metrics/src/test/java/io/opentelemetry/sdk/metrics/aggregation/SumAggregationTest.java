@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.accumulation.DoubleAccumulation;
+import io.opentelemetry.sdk.metrics.accumulation.LongAccumulation;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
@@ -24,8 +26,29 @@ import org.junit.jupiter.api.Test;
 class SumAggregationTest {
 
   @Test
-  void toMetricData() {
-    Aggregation<LongAccumulation> sum = AggregationFactory.sum().create(InstrumentValueType.LONG);
+  void toDoubleMetricData() {
+    Aggregation<DoubleAccumulation> sum = DoubleSumAggregation.INSTANCE;
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle = sum.getAggregator().createHandle();
+    aggregatorHandle.recordDouble(10);
+
+    MetricData metricData =
+        sum.toMetricData(
+            Resource.getDefault(),
+            InstrumentationLibraryInfo.getEmpty(),
+            InstrumentDescriptor.create(
+                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE),
+            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
+            0,
+            100);
+    assertThat(metricData).isNotNull();
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.DOUBLE_SUM);
+    assertThat(metricData.getDoubleSumData().getPoints())
+        .containsExactly(MetricData.DoublePoint.create(0, 100, Labels.empty(), 10));
+  }
+
+  @Test
+  void toLongMetricData() {
+    Aggregation<LongAccumulation> sum = LongSumAggregation.INSTANCE;
     AggregatorHandle<LongAccumulation> aggregatorHandle = sum.getAggregator().createHandle();
     aggregatorHandle.recordLong(10);
 
@@ -34,17 +57,14 @@ class SumAggregationTest {
             Resource.getDefault(),
             InstrumentationLibraryInfo.getEmpty(),
             InstrumentDescriptor.create(
-                "name",
-                "description",
-                "unit",
-                InstrumentType.VALUE_RECORDER,
-                InstrumentValueType.LONG),
+                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG),
             Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             100);
     assertThat(metricData).isNotNull();
     assertThat(metricData.getType()).isEqualTo(MetricData.Type.LONG_SUM);
-    assertThat(metricData.getLongSumData().getPoints()).hasSize(1);
+    assertThat(metricData.getLongSumData().getPoints())
+        .containsExactly(MetricData.LongPoint.create(0, 100, Labels.empty(), 10));
   }
 
   @Test
