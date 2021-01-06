@@ -40,11 +40,6 @@ abstract class ImmutableSamplingResult implements SamplingResult {
     return new AutoValue_ImmutableSamplingResult(decision, attributes);
   }
 
-  static SamplingResult createWithProbability(Decision decision, double probability) {
-    return new AutoValue_ImmutableSamplingResult(
-        decision, Attributes.of(ImmutableSamplingResult.SAMPLING_PROBABILITY, probability));
-  }
-
   private static SamplingResult createWithoutAttributes(Decision decision) {
     return new AutoValue_ImmutableSamplingResult(decision, Attributes.empty());
   }
