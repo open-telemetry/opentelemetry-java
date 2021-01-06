@@ -34,8 +34,8 @@ import javax.annotation.Nullable;
  * @see ContextPropagators
  */
 public final class GlobalOpenTelemetry {
-  // Visible for testing
-  static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
+
+  private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
 
   private static final Object mutex = new Object();
 
