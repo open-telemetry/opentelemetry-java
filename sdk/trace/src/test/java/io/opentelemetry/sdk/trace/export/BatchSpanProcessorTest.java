@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace.export;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.trace.Span;
@@ -32,12 +33,8 @@ import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 class BatchSpanProcessorTest {
 
   private static final String SPAN_NAME_1 = "MySpanName/1";
@@ -45,7 +42,6 @@ class BatchSpanProcessorTest {
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private SdkTracerProvider sdkTracerProvider;
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
-  @Mock private SpanExporter mockServiceHandler;
 
   @AfterEach
   void cleanup() {
@@ -287,18 +283,19 @@ class BatchSpanProcessorTest {
   }
 
   @Test
-  void serviceHandlerThrowsException() {
+  void exporterThrowsException() {
+    SpanExporter mockSpanExporter = mock(SpanExporter.class);
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     doThrow(new IllegalArgumentException("No export for you."))
-        .when(mockServiceHandler)
+        .when(mockSpanExporter)
         .export(ArgumentMatchers.anyList());
     sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(
                         SpanExporter.composite(
-                            Arrays.asList(mockServiceHandler, waitingSpanExporter)))
+                            Arrays.asList(mockSpanExporter, waitingSpanExporter)))
                     .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
                     .build())
             .build();
@@ -443,7 +440,7 @@ class BatchSpanProcessorTest {
     ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
 
     // Force a shutdown, which forces processing of all remaining spans.
-    sdkTracerProvider.shutdown();
+    sdkTracerProvider.shutdown().join(10, TimeUnit.SECONDS);
 
     List<SpanData> exported = waitingSpanExporter.getExported();
     assertThat(exported).containsExactly(span2.toSpanData());
@@ -452,8 +449,9 @@ class BatchSpanProcessorTest {
 
   @Test
   void shutdownPropagatesSuccess() {
-    when(mockServiceHandler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockServiceHandler).build();
+    SpanExporter mockSpanExporter = mock(SpanExporter.class);
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isTrue();
@@ -461,8 +459,9 @@ class BatchSpanProcessorTest {
 
   @Test
   void shutdownPropagatesFailure() {
-    when(mockServiceHandler.shutdown()).thenReturn(CompletableResultCode.ofFailure());
-    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockServiceHandler).build();
+    SpanExporter mockSpanExporter = mock(SpanExporter.class);
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofFailure());
+    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isFalse();
