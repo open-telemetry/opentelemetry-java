@@ -64,6 +64,9 @@ class SdkTracerTest {
   void fallbackSpanName() {
     ReadableSpan readableSpan = (ReadableSpan) tracer.spanBuilder("  ").startSpan();
     assertThat(readableSpan.getName()).isEqualTo(SdkTracer.FALLBACK_SPAN_NAME);
+
+    readableSpan = (ReadableSpan) tracer.spanBuilder(null).startSpan();
+    assertThat(readableSpan.getName()).isEqualTo(SdkTracer.FALLBACK_SPAN_NAME);
   }
 
   @Test
