@@ -61,6 +61,12 @@ class SdkTracerTest {
   }
 
   @Test
+  void fallbackSpanName() {
+    ReadableSpan readableSpan = (ReadableSpan) tracer.spanBuilder("  ").startSpan();
+    assertThat(readableSpan.getName()).isEqualTo(SdkTracer.FALLBACK_SPAN_NAME);
+  }
+
+  @Test
   void stressTest() {
     CountingSpanProcessor spanProcessor = new CountingSpanProcessor();
     SdkTracerProvider sdkTracerProvider =
