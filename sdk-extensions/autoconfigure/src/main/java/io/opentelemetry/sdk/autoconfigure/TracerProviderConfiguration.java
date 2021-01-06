@@ -41,7 +41,6 @@ final class TracerProviderConfiguration {
       SpanExporter exporter = SpanExporterConfiguration.configureExporter(name, config);
       if (exporter != null) {
         spanExporters.add(exporter);
-        exporterNames.remove(name);
       }
     }
 

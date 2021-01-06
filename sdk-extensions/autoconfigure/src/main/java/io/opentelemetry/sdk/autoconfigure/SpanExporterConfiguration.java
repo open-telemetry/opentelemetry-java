@@ -13,9 +13,14 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nullable;
 
 final class SpanExporterConfiguration {
+
+  static final List<String> RECOGNIZED_NAMES =
+      Arrays.asList("otlp", "otlp_span", "jaeger", "zipkin", "logging");
 
   @Nullable
   static SpanExporter configureExporter(String name, ConfigProperties config) {

@@ -8,20 +8,22 @@ package io.opentelemetry.sdk.autoconfigure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junitpioneer.jupiter.SetSystemProperty;
+import org.slf4j.event.Level;
+import org.slf4j.event.LoggingEvent;
 
 // All tests fail due to config errors so never register a global. We can test everything here
 // without separating test sets.
 class ConfigErrorTest {
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(GlobalOpenTelemetry.class);
 
   @Test
   @SetSystemProperty(key = "otel.exporter", value = "otlp_metrics,prometheus")
@@ -108,48 +110,19 @@ class ConfigErrorTest {
   @Test
   @SetSystemProperty(key = "otel.exporter", value = "bar")
   void globalOpenTelemetryWhenError() {
-    Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
-    AtomicReference<LogRecord> logged = new AtomicReference<>();
-    Handler handler =
-        new Handler() {
-          @Override
-          public void publish(LogRecord record) {
-            logged.set(record);
-          }
+    assertThat(GlobalOpenTelemetry.get())
+        .isInstanceOf(OpenTelemetrySdk.class)
+        .extracting("propagators")
+        // Failed to initialize so is no-op
+        .isEqualTo(ContextPropagators.noop());
 
-          @Override
-          public void flush() {}
-
-          @Override
-          public void close() {}
-        };
-    logger.addHandler(handler);
-    boolean previousUseParentHandlers = logger.getUseParentHandlers();
-    logger.setUseParentHandlers(false);
-
-    try {
-      // TODO(anuraaga): Change to check against DefaultOpenTelemetry after API's SPI is removed.
-      assertThat(GlobalOpenTelemetry.get())
-          .isInstanceOf(OpenTelemetrySdk.class)
-          .extracting("propagators")
-          // Failed to initialize so is no-op
-          .isEqualTo(ContextPropagators.noop());
-
-      assertThat(logged)
-          .hasValueSatisfying(
-              record -> {
-                assertThat(record.getLevel()).isEqualTo(Level.SEVERE);
-                assertThat(record.getMessage())
-                    .isEqualTo(
-                        "Error automatically configuring OpenTelemetry SDK. "
-                            + "OpenTelemetry will not be enabled.");
-                assertThat(record.getThrown())
-                    .isInstanceOf(ConfigurationException.class)
-                    .hasMessage("Unrecognized value for otel.exporter: bar");
-              });
-    } finally {
-      logger.removeHandler(handler);
-      logger.setUseParentHandlers(previousUseParentHandlers);
-    }
+    LoggingEvent log =
+        logs.assertContains(
+            "Error automatically configuring OpenTelemetry SDK. "
+                + "OpenTelemetry will not be enabled.");
+    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+    assertThat(log.getThrowable())
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Unrecognized value for otel.exporter: bar");
   }
 }

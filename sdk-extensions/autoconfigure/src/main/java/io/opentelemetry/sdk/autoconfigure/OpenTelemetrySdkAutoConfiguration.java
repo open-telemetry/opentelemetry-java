@@ -36,16 +36,18 @@ public final class OpenTelemetrySdkAutoConfiguration {
     Set<String> exporterNames =
         new LinkedHashSet<>(config.getCommaSeparatedValues("otel.exporter"));
 
+    Set<String> unrecognizedExporters = new LinkedHashSet<>(exporterNames);
+    unrecognizedExporters.removeAll(SpanExporterConfiguration.RECOGNIZED_NAMES);
+    unrecognizedExporters.removeAll(MetricExporterConfiguration.RECOGNIZED_NAMES);
+    if (!unrecognizedExporters.isEmpty()) {
+      throw new ConfigurationException(
+          "Unrecognized value for otel.exporter: " + String.join(",", exporterNames));
+    }
+
     configureMeterProvider(resource, exporterNames, config);
 
     SdkTracerProvider tracerProvider =
         TracerProviderConfiguration.configureTracerProvider(resource, exporterNames, config);
-
-    if (!exporterNames.isEmpty()) {
-      tracerProvider.shutdown();
-      throw new ConfigurationException(
-          "Unrecognized value for otel.exporter: " + String.join(",", exporterNames));
-    }
 
     return OpenTelemetrySdk.builder()
         .setTracerProvider(tracerProvider)
@@ -63,9 +65,6 @@ public final class OpenTelemetrySdkAutoConfiguration {
       metricsConfigured =
           MetricExporterConfiguration.configureExporter(
               exporterName, config, metricsConfigured, meterProvider);
-      if (metricsConfigured) {
-        exporterNames.remove(exporterName);
-      }
     }
   }
 

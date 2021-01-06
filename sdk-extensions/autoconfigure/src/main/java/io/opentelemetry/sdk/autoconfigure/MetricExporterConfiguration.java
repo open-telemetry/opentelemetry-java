@@ -12,9 +12,13 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 final class MetricExporterConfiguration {
+
+  static final List<String> RECOGNIZED_NAMES = Arrays.asList("otlp", "otlp_metrics", "prometheus");
 
   static boolean configureExporter(
       String name,
