@@ -46,10 +46,15 @@ generated, as it was not conformant with the specifications.
 
 - `SdkTracerProvider.updateActiveTraceConfig()` and `SdkTracerProvider.addSpanProcessor()` have been deprecated. The methods
 will be removed in the next release.
+- All existing auto-configuration mechanisms have been deprecated in favor of using the new `io.opentelemetry.sdk.autoconfigure`
+module. The existing ones will be removed in the next release.
 
 #### Enhancements
 
 - The `OtlpGrpcSpanExporter` now supports setting trusted TLS certificates for secure communication with the collector.
+- A new module for supporting auto-configuration of the SDK has been added. The new module, `io.opentelemetry.sdk.autoconfigure` will
+be the new path for auto-configuration of the SDK, including via SPI, environment variables and system properties.
+- The `TraceConfig` class now exposes a `builder()` method directly, so you don't need to get the default then call `toBuilder()` on it.
 
 ### SDK Extensions
 
@@ -57,6 +62,10 @@ will be removed in the next release.
 
 - The ZPages extension now exposes its SpanProcessor implementation. To use it, you will need to add it to your
 SDK implementation directly, rather than it adding itself to the global SDK instance.
+
+#### Deprecations
+- The `AwsXrayIdGenerator` constructor has been deprecated in favor of using a simple `getInstance()` singleton, since
+it has no state.
 
 ### Metrics (alpha)
 
