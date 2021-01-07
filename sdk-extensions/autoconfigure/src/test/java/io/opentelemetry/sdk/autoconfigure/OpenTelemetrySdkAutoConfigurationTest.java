@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
