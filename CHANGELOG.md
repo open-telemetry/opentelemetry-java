@@ -28,6 +28,8 @@
 - Environment variables/system properties that are used to set extra headers for the OTLP exporters have been fixed to now 
 split on commas, rather than semicolons. This has been brought in line with the specification for these environment
 variables. This includes `otel.exporter.otlp.span.headers`, `otel.exporter.otlp.metric.headers`, and `otel.exporter.otlp.headers`.
+- Passing a null span name when creating a span will no longer cause a NullPointerException. Instead, a default span name will be 
+provided in place of the missing name.
 
 #### Breaking Changes
 
