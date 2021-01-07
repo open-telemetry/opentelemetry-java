@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -61,7 +62,7 @@ final class TracerProviderConfiguration {
 
     Long scheduleDelayMillis = config.getLong("otel.bsp.schedule.delay.millis");
     if (scheduleDelayMillis != null) {
-      builder.setScheduleDelayMillis(scheduleDelayMillis);
+      builder.setScheduleDelay(Duration.ofMillis(scheduleDelayMillis));
     }
 
     Integer maxQueue = config.getInt("otel.bsp.max.queue.size");
@@ -76,7 +77,7 @@ final class TracerProviderConfiguration {
 
     Integer timeout = config.getInt("otel.bsp.export.timeout.millis");
     if (timeout != null) {
-      builder.setExporterTimeoutMillis(timeout);
+      builder.setExporterTimeout(Duration.ofMillis(timeout));
     }
 
     return builder.build();
