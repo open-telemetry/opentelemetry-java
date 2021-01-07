@@ -24,8 +24,9 @@ import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.Samplin
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.time.Duration;
-import java.util.concurrent.Callable;
+import org.awaitility.core.ThrowingRunnable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,7 +86,7 @@ class JaegerRemoteSamplerTest {
   }
 
   @Test
-  void connectionWorks() {
+  void connectionWorks() throws Exception {
     ArgumentCaptor<SamplingStrategyParameters> requestCaptor =
         ArgumentCaptor.forClass(Sampling.SamplingStrategyParameters.class);
 
@@ -95,14 +96,14 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .build();
 
-    await().atMost(Duration.ofSeconds(10)).until(samplerIsType(sampler, RateLimitingSampler.class));
+    await()
+        .atMost(Duration.ofSeconds(10))
+        .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
     // verify
     verify(service).getSamplingStrategy(requestCaptor.capture(), ArgumentMatchers.any());
     assertThat(requestCaptor.getValue().getServiceName()).isEqualTo(SERVICE_NAME);
-    assertThat(sampler.getSampler()).isInstanceOf(RateLimitingSampler.class);
-    assertThat(((RateLimitingSampler) sampler.getSampler()).getMaxTracesPerSecond())
-        .isEqualTo(RATE);
+    assertThat(sampler.getDescription()).contains("RateLimitingSampler{999.00}");
   }
 
   @Test
@@ -116,11 +117,20 @@ class JaegerRemoteSamplerTest {
         .isEqualTo("JaegerRemoteSampler{TraceIdRatioBased{0.001000}}");
 
     // wait until the sampling strategy is retrieved before exiting test method
-    await().atMost(Duration.ofSeconds(10)).until(samplerIsType(sampler, RateLimitingSampler.class));
+    await()
+        .atMost(Duration.ofSeconds(10))
+        .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
   }
 
-  static Callable<Boolean> samplerIsType(
+  static ThrowingRunnable samplerIsType(
       final JaegerRemoteSampler sampler, final Class<? extends Sampler> expected) {
-    return () -> sampler.getSampler().getClass().equals(expected);
+    return () -> {
+      assertThat(sampler.getSampler().getClass().getName())
+          .isEqualTo("io.opentelemetry.sdk.trace.samplers.ParentBasedSampler");
+
+      Field field = sampler.getSampler().getClass().getDeclaredField("root");
+      field.setAccessible(true);
+      assertThat(field.get(sampler.getSampler()).getClass()).isEqualTo(expected);
+    };
   }
 }

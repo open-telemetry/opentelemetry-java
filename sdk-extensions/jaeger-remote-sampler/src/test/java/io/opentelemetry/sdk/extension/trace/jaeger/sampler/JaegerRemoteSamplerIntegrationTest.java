@@ -26,7 +26,6 @@ class JaegerRemoteSamplerIntegrationTest {
   private static final int HEALTH_PORT = 14269;
   private static final String SERVICE_NAME = "E2E-test";
   private static final String SERVICE_NAME_RATE_LIMITING = "bar";
-  private static final int RATE = 150;
 
   @Container
   public static GenericContainer<?> jaegerContainer =
@@ -48,8 +47,7 @@ class JaegerRemoteSamplerIntegrationTest {
 
     await()
         .atMost(Duration.ofSeconds(10))
-        .until(samplerIsType(remoteSampler, PerOperationSampler.class));
-    assertThat(remoteSampler.getSampler()).isInstanceOf(PerOperationSampler.class);
+        .untilAsserted(samplerIsType(remoteSampler, PerOperationSampler.class));
     assertThat(remoteSampler.getDescription()).contains("0.33").doesNotContain("150");
   }
 
@@ -65,9 +63,7 @@ class JaegerRemoteSamplerIntegrationTest {
 
     await()
         .atMost(Duration.ofSeconds(10))
-        .until(samplerIsType(remoteSampler, RateLimitingSampler.class));
-    assertThat(remoteSampler.getSampler()).isInstanceOf(RateLimitingSampler.class);
-    assertThat(((RateLimitingSampler) remoteSampler.getSampler()).getMaxTracesPerSecond())
-        .isEqualTo(RATE);
+        .untilAsserted(samplerIsType(remoteSampler, RateLimitingSampler.class));
+    assertThat(remoteSampler.getDescription()).contains("RateLimitingSampler{150.00}");
   }
 }
