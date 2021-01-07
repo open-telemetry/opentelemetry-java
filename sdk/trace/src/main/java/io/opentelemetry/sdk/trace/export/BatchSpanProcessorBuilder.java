@@ -6,12 +6,13 @@
 package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.api.internal.Utils;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Map;
 import java.util.Objects;
 
 /** Builder class for {@link BatchSpanProcessor}. */
-public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProcessorBuilder> {
+@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+public final class BatchSpanProcessorBuilder
+    extends io.opentelemetry.sdk.common.export.ConfigBuilder<BatchSpanProcessorBuilder> {
 
   private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay.millis";
   private static final String KEY_MAX_QUEUE_SIZE = "otel.bsp.max.queue.size";
