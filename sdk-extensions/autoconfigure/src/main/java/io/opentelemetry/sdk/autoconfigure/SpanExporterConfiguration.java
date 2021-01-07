@@ -13,9 +13,9 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 final class SpanExporterConfiguration {
@@ -66,7 +66,7 @@ final class SpanExporterConfiguration {
 
     Long timeoutMillis = config.getLong("otel.exporter.otlp.timeout");
     if (timeoutMillis != null) {
-      builder.setTimeout(timeoutMillis, TimeUnit.MILLISECONDS);
+      builder.setTimeout(Duration.ofMillis(timeoutMillis));
     }
 
     return builder.build();
