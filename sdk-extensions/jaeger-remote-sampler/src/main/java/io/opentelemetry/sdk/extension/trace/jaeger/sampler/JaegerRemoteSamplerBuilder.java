@@ -118,7 +118,7 @@ public class JaegerRemoteSamplerBuilder {
    *
    * @return the remote sampler instance.
    */
-  public JaegerRemoteSampler build() {
+  public Sampler build() {
     if (channel == null) {
       channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
     }
