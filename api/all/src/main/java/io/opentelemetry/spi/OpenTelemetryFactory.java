@@ -14,7 +14,12 @@ import io.opentelemetry.api.OpenTelemetry;
  *
  * <p>A specific implementation can be selected by setting the system property {@code
  * io.opentelemetry.spi.OpenTelemetryFactory} with the value of the fully qualified class name.
+ *
+ * @deprecated Use {@link io.opentelemetry.api.DefaultOpenTelemetry#builder} to initialize
+ *     OpenTelemetry with a custom provider, or {@code OpenTelemetrySdk#builder} or {@code
+ *     opentelemetry-sdk-extension-autoconfigure} to configure the default SDK.
  */
+@Deprecated
 public interface OpenTelemetryFactory {
 
   /** Returns a new {@link OpenTelemetry} instance. */
