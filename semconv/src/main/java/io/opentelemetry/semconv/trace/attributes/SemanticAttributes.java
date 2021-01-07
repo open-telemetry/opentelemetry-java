@@ -141,6 +141,15 @@ public final class SemanticAttributes {
   /** The execution environment ID as a string. */
   public static final AttributeKey<String> FAAS_INSTANCE = stringKey("faas.instance");
 
+  /**
+   * The amount of memory available to the serverless function in MiB.
+   *
+   * <p>Note: It&#39;s recommended to set this attribute in since e.g. too little memory can easily
+   * stop a Java AWS Lambda function from working correctly. On AWS Lambda, the environment variable
+   * `AWS_LAMBDA_FUNCTION_MEMORY_SIZE` provides this information.
+   */
+  public static final AttributeKey<Long> FAAS_MAX_MEMORY = longKey("faas.max_memory");
+
   /** Unique host ID. For Cloud, this must be the instance_id assigned by the cloud provider. */
   public static final AttributeKey<String> HOST_ID = stringKey("host.id");
 
@@ -970,7 +979,7 @@ public final class SemanticAttributes {
     /** Cloudscape. */
     public static final String CLOUDSCAPE = "cloudscape";
     /** HyperSQL DataBase. */
-    public static final String HSQLSB = "hsqlsb";
+    public static final String HSQLDB = "hsqldb";
     /** Progress Database. */
     public static final String PROGRESS = "progress";
     /** SAP MaxDB. */
@@ -1037,6 +1046,8 @@ public final class SemanticAttributes {
     public static final String DYNAMODB = "dynamodb";
     /** Neo4j. */
     public static final String NEO4J = "neo4j";
+    /** Apache Geode. */
+    public static final String GEODE = "geode";
 
     private DbSystemValues() {}
   }
