@@ -42,8 +42,12 @@ generated, as it was not conformant with the specifications.
 
 #### Deprecations
 
--  `SdkTracerProvider.updateActiveTraceConfig()` and `SdkTracerProvider.addSpanProcessor()` have been deprecated. The methods
+- `SdkTracerProvider.updateActiveTraceConfig()` and `SdkTracerProvider.addSpanProcessor()` have been deprecated. The methods
 will be removed in the next release.
+
+#### Enhancements
+
+- The `OtlpGrpcSpanExporter` now supports setting trusted TLS certificates for secure communication with the collector.
 
 ### SDK Extensions
 
