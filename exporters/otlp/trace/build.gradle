@@ -3,14 +3,24 @@ plugins {
     id "maven-publish"
 
     id "me.champeau.gradle.jmh"
+    id "org.unbroken-dome.test-sets"
     id "ru.vyarus.animalsniffer"
 }
 
 description = 'OpenTelemetry Protocol Trace Exporter'
 ext.moduleName = "io.opentelemetry.exporter.otlp.trace"
 
+testSets {
+    testGrpcNetty
+    testGrpcNettyShaded
+    testGrpcOkhttp
+}
+
 dependencies {
     api project(':sdk:trace')
+
+    compileOnly "io.grpc:grpc-netty"
+    compileOnly "io.grpc:grpc-netty-shaded"
 
     implementation project(':sdk-extensions:otproto'),
             libraries.grpc_api,
@@ -19,11 +29,25 @@ dependencies {
             libraries.protobuf
 
     testImplementation project(':sdk:testing'),
-            'com.linecorp.armeria:armeria-grpc',
-            'com.linecorp.armeria:armeria-junit5',
             "io.grpc:grpc-testing:${grpcVersion}"
 
-    testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    testGrpcNettyImplementation 'com.linecorp.armeria:armeria-grpc',
+            'com.linecorp.armeria:armeria-junit5'
+
+    testGrpcNettyShadedImplementation 'com.linecorp.armeria:armeria-grpc',
+            'com.linecorp.armeria:armeria-junit5'
+
+    testGrpcOkhttpImplementation 'com.linecorp.armeria:armeria-grpc',
+            'com.linecorp.armeria:armeria-junit5'
+
+    testGrpcNettyRuntimeOnly "io.grpc:grpc-netty:${grpcVersion}",
+            libraries.slf4jsimple
+
+    testGrpcNettyShadedRuntimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}",
+            libraries.slf4jsimple
+
+    testGrpcOkhttpRuntimeOnly "io.grpc:grpc-okhttp:${grpcVersion}",
+            libraries.slf4jsimple
 
     jmh project(':sdk:testing')
 

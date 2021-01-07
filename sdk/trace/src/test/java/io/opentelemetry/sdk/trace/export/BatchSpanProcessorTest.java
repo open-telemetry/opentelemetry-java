@@ -8,16 +8,20 @@ package io.opentelemetry.sdk.trace.export;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,12 +36,8 @@ import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 class BatchSpanProcessorTest {
 
   private static final String SPAN_NAME_1 = "MySpanName/1";
@@ -45,7 +45,6 @@ class BatchSpanProcessorTest {
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private SdkTracerProvider sdkTracerProvider;
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
-  @Mock private SpanExporter mockServiceHandler;
 
   @AfterEach
   void cleanup() {
@@ -53,16 +52,6 @@ class BatchSpanProcessorTest {
       sdkTracerProvider.shutdown();
     }
   }
-
-  // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
-  /*
-  private ReadableSpan createNotSampledRecordingEventsEndedSpan(String spanName) {
-    io.opentelemetry.trace.Span span =
-        tracer.spanBuilder(spanName).setSampler(Samplers.neverSample()).startSpanWithSampler();
-    span.end();
-    return (ReadableSpan) span;
-  }
-  */
 
   private ReadableSpan createEndedSpan(String spanName) {
     Tracer tracer = sdkTracerProvider.get(getClass().getName());
@@ -287,18 +276,19 @@ class BatchSpanProcessorTest {
   }
 
   @Test
-  void serviceHandlerThrowsException() {
+  void exporterThrowsException() {
+    SpanExporter mockSpanExporter = mock(SpanExporter.class);
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     doThrow(new IllegalArgumentException("No export for you."))
-        .when(mockServiceHandler)
+        .when(mockSpanExporter)
         .export(ArgumentMatchers.anyList());
     sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(
                         SpanExporter.composite(
-                            Arrays.asList(mockServiceHandler, waitingSpanExporter)))
+                            Arrays.asList(mockSpanExporter, waitingSpanExporter)))
                     .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
                     .build())
             .build();
@@ -381,7 +371,7 @@ class BatchSpanProcessorTest {
     sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_1).startSpan().end();
     sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_2).startSpan().end();
     traceConfig.set(traceConfig.get().toBuilder().setSampler(Sampler.alwaysOn()).build());
-    ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
+    ReadableSpan span = createEndedSpan(SPAN_NAME_2);
     // Spans are recorded and exported in the same order as they are ended, we test that a non
     // sampled span is not exported by creating and ending a sampled span after a non sampled span
     // and checking that the first exported span is the sampled span (the non sampled did not get
@@ -389,40 +379,49 @@ class BatchSpanProcessorTest {
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     // Need to check this because otherwise the variable span1 is unused, other option is to not
     // have a span1 variable.
-    assertThat(exported).containsExactly(span2.toSpanData());
-  }
-
-  @Test
-  void exportNotSampledSpans_recordingEvents() {
-    // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
-    /*
-    sdkTracerProvider.addSpanProcessor(
-        BatchSpanProcessor.builder(waitingSpanExporter)
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-            .reportOnlySampled(false)
-            .build());
-
-    ReadableSpan span = createNotSampledRecordingEventsEndedSpan(SPAN_NAME_1);
-    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
     assertThat(exported).containsExactly(span.toSpanData());
-    */
   }
 
   @Test
-  void exportNotSampledSpans_reportOnlySampled() {
-    // TODO(bdrutu): Fix this when Sampler return RECORD_ONLY option.
-    /*
-    sdkTracerProvider.addSpanProcessor(
-        BatchSpanProcessor.builder(waitingSpanExporter)
-            .reportOnlySampled(true)
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-            .build());
+  void exportNotSampledSpans_recordOnly() {
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
+    AtomicReference<TraceConfig> traceConfig =
+        new AtomicReference<>(
+            TraceConfig.getDefault().toBuilder()
+                .setSampler(
+                    new Sampler() {
+                      @Override
+                      public SamplingResult shouldSample(
+                          Context parentContext,
+                          String traceId,
+                          String name,
+                          Span.Kind spanKind,
+                          Attributes attributes,
+                          List<SpanData.Link> parentLinks) {
+                        return SamplingResult.create(SamplingResult.Decision.RECORD_ONLY);
+                      }
 
-    createNotSampledRecordingEventsEndedSpan(SPAN_NAME_1);
-    ReadableSpan sampledSpan = createSampledEndedSpan(SPAN_NAME_2);
-    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(sampledSpan.toSpanData());
-    */
+                      @Override
+                      public String getDescription() {
+                        return null;
+                      }
+                    })
+                .build());
+    sdkTracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(waitingSpanExporter)
+                    .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+                    .setExportOnlySampled(true)
+                    .build())
+            .setTraceConfig(traceConfig::get)
+            .build();
+
+    createEndedSpan(SPAN_NAME_2);
+
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).isEmpty();
   }
 
   @Test
@@ -443,7 +442,7 @@ class BatchSpanProcessorTest {
     ReadableSpan span2 = createEndedSpan(SPAN_NAME_2);
 
     // Force a shutdown, which forces processing of all remaining spans.
-    sdkTracerProvider.shutdown();
+    sdkTracerProvider.shutdown().join(10, TimeUnit.SECONDS);
 
     List<SpanData> exported = waitingSpanExporter.getExported();
     assertThat(exported).containsExactly(span2.toSpanData());
@@ -452,8 +451,9 @@ class BatchSpanProcessorTest {
 
   @Test
   void shutdownPropagatesSuccess() {
-    when(mockServiceHandler.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockServiceHandler).build();
+    SpanExporter mockSpanExporter = mock(SpanExporter.class);
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isTrue();
@@ -461,8 +461,9 @@ class BatchSpanProcessorTest {
 
   @Test
   void shutdownPropagatesFailure() {
-    when(mockServiceHandler.shutdown()).thenReturn(CompletableResultCode.ofFailure());
-    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockServiceHandler).build();
+    SpanExporter mockSpanExporter = mock(SpanExporter.class);
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofFailure());
+    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isFalse();

@@ -176,8 +176,6 @@ class TraceIdRatioBasedSamplerTest {
             Attributes.empty(),
             Collections.emptyList());
     assertThat(samplingResult1.getDecision()).isEqualTo(SamplingResult.Decision.DROP);
-    assertThat(samplingResult1.getAttributes())
-        .isEqualTo(Attributes.of(ImmutableSamplingResult.SAMPLING_PROBABILITY, 0.0001));
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     String sampledTraceId =
@@ -209,8 +207,6 @@ class TraceIdRatioBasedSamplerTest {
             Attributes.empty(),
             Collections.emptyList());
     assertThat(samplingResult2.getDecision()).isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
-    assertThat(samplingResult1.getAttributes())
-        .isEqualTo(Attributes.of(ImmutableSamplingResult.SAMPLING_PROBABILITY, 0.0001));
   }
 
   // Applies the given sampler to NUM_SAMPLE_TRIES random traceId.

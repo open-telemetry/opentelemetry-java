@@ -1,0 +1,15 @@
+plugins {
+    id "java-library"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry Semantic Conventions'
+ext.moduleName = "io.opentelemetry.semconv"
+
+dependencies {
+    api project(':api:all')
+
+    signature libraries.android_signature
+}
