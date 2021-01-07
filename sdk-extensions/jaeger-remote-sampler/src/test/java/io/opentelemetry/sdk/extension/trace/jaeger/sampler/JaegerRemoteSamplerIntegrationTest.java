@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSa
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import io.grpc.ManagedChannelBuilder;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.BindMode;
@@ -38,11 +37,9 @@ class JaegerRemoteSamplerIntegrationTest {
 
   @Test
   void remoteSampling_perOperation() {
-    String jaegerHost =
-        String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
     final JaegerRemoteSampler remoteSampler =
         JaegerRemoteSampler.builder()
-            .setChannel(ManagedChannelBuilder.forTarget(jaegerHost).usePlaintext().build())
+            .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
             .setServiceName(SERVICE_NAME)
             .build();
 
@@ -55,11 +52,9 @@ class JaegerRemoteSamplerIntegrationTest {
 
   @Test
   void remoteSampling_rateLimiting() {
-    String jaegerHost =
-        String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
     final JaegerRemoteSampler remoteSampler =
         JaegerRemoteSampler.builder()
-            .setChannel(ManagedChannelBuilder.forTarget(jaegerHost).usePlaintext().build())
+            .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
             .setServiceName(SERVICE_NAME_RATE_LIMITING)
             .build();
 
