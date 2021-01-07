@@ -77,7 +77,7 @@ public class JaegerRemoteSamplerBuilder {
   }
 
   /**
-   * Sets the initial sampler that is used before sampling configuration is obtained. If not set,
+   * Sets the initial sampler that is used before sampling configuration is obtained. If unset,
    * defaults to a parent-based ratio-based sampler with a ratio of 0.001.
    */
   public JaegerRemoteSamplerBuilder setInitialSampler(Sampler initialSampler) {
