@@ -85,6 +85,11 @@ public abstract class TraceConfig {
     return DEFAULT;
   }
 
+  /** Returns a new {@link TraceConfigBuilder} to construct a {@link TraceConfig}. */
+  public static TraceConfigBuilder builder() {
+    return new TraceConfigBuilder();
+  }
+
   static TraceConfig create(
       Sampler sampler,
       int maxNumAttributes,
