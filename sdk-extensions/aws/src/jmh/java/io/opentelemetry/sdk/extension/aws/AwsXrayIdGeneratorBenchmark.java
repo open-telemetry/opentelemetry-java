@@ -19,7 +19,7 @@ import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark)
 public class AwsXrayIdGeneratorBenchmark {
-  private final AwsXrayIdGenerator idGenerator = new AwsXrayIdGenerator();
+  private final AwsXrayIdGenerator idGenerator = AwsXrayIdGenerator.getInstance();
 
   @Benchmark
   @Measurement(iterations = 15, time = 1)
