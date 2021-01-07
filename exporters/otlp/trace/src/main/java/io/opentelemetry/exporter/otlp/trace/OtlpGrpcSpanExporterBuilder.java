@@ -6,6 +6,8 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 import com.google.common.base.Splitter;
 import io.grpc.ManagedChannel;
@@ -17,13 +19,18 @@ import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extension.otproto.CommonProperties;
 import java.io.ByteArrayInputStream;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
 
 /** Builder utility for this exporter. */
 public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpanExporterBuilder> {
+
+  private static final String DEFAULT_ENDPOINT = "localhost:4317";
+  private static final long DEFAULT_TIMEOUT_SECS = 10;
 
   private static final String KEY_TIMEOUT = "otel.exporter.otlp.span.timeout";
   private static final String KEY_ENDPOINT = "otel.exporter.otlp.span.endpoint";
@@ -31,8 +38,8 @@ public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpa
   private static final String KEY_HEADERS = "otel.exporter.otlp.span.headers";
 
   private ManagedChannel channel;
-  private long deadlineMs = OtlpGrpcSpanExporter.DEFAULT_DEADLINE_MS; // 10 seconds
-  private String endpoint = OtlpGrpcSpanExporter.DEFAULT_ENDPOINT;
+  private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
+  private String endpoint = DEFAULT_ENDPOINT;
   private boolean useTls = false;
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
@@ -50,14 +57,35 @@ public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpa
   }
 
   /**
+   * Sets the maximum time to wait for the collector to process an exported batch of spans. If
+   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   */
+  public OtlpGrpcSpanExporterBuilder setTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    timeoutNanos = unit.toNanos(timeout);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time to wait for the collector to process an exported batch of spans. If
+   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   */
+  public OtlpGrpcSpanExporterBuilder setTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  /**
    * Sets the max waiting time for the collector to process each span batch. Optional.
    *
    * @param deadlineMs the max waiting time
    * @return this builder's instance
+   * @deprecated Use {@link #setTimeout(long, TimeUnit)}
    */
+  @Deprecated
   public OtlpGrpcSpanExporterBuilder setDeadlineMs(long deadlineMs) {
-    this.deadlineMs = deadlineMs;
-    return this;
+    return setTimeout(Duration.ofMillis(deadlineMs));
   }
 
   /**
@@ -176,7 +204,7 @@ public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpa
 
       channel = managedChannelBuilder.build();
     }
-    return new OtlpGrpcSpanExporter(channel, deadlineMs);
+    return new OtlpGrpcSpanExporter(channel, timeoutNanos);
   }
 
   OtlpGrpcSpanExporterBuilder() {}
@@ -197,7 +225,7 @@ public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpa
       value = getLongProperty(CommonProperties.KEY_TIMEOUT, configMap);
     }
     if (value != null) {
-      this.setDeadlineMs(value);
+      this.setTimeout(Duration.ofMillis(value));
     }
 
     String endpointValue = getStringProperty(KEY_ENDPOINT, configMap);

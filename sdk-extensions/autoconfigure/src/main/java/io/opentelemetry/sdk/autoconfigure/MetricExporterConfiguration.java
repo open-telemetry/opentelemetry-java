@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -69,9 +70,9 @@ final class MetricExporterConfiguration {
 
     config.getCommaSeparatedMap("otel.exporter.otlp.headers").forEach(builder::addHeader);
 
-    Long deadlineMs = config.getLong("otel.exporter.otlp.timeout");
-    if (deadlineMs != null) {
-      builder.setDeadlineMs(deadlineMs);
+    Long timeoutMillis = config.getLong("otel.exporter.otlp.timeout");
+    if (timeoutMillis != null) {
+      builder.setTimeout(Duration.ofMillis(timeoutMillis));
     }
 
     OtlpGrpcMetricExporter exporter = builder.build();
