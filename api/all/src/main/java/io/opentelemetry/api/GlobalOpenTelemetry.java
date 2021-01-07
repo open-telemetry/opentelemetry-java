@@ -10,6 +10,10 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.spi.OpenTelemetryFactory;
 import io.opentelemetry.spi.trace.TracerProviderFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -30,7 +34,11 @@ import javax.annotation.Nullable;
  * @see ContextPropagators
  */
 public final class GlobalOpenTelemetry {
+
+  private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
+
   private static final Object mutex = new Object();
+
   @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
 
   private GlobalOpenTelemetry() {}
@@ -48,6 +56,13 @@ public final class GlobalOpenTelemetry {
     if (globalOpenTelemetry == null) {
       synchronized (mutex) {
         if (globalOpenTelemetry == null) {
+
+          OpenTelemetry autoConfigured = maybeAutoConfigure();
+          if (autoConfigured != null) {
+            set(autoConfigured);
+            return autoConfigured;
+          }
+
           OpenTelemetryFactory openTelemetryFactory = Utils.loadSpi(OpenTelemetryFactory.class);
           if (openTelemetryFactory != null) {
             set(openTelemetryFactory.create());
@@ -114,5 +129,32 @@ public final class GlobalOpenTelemetry {
    */
   public static ContextPropagators getPropagators() {
     return get().getPropagators();
+  }
+
+  @Nullable
+  private static OpenTelemetry maybeAutoConfigure() {
+    final Class<?> openTelemetrySdkAutoConfiguration;
+    try {
+      openTelemetrySdkAutoConfiguration =
+          Class.forName("io.opentelemetry.sdk.autoconfigure.OpenTelemetrySdkAutoConfiguration");
+    } catch (ClassNotFoundException e) {
+      return null;
+    }
+
+    try {
+      Method initialize = openTelemetrySdkAutoConfiguration.getMethod("initialize");
+      return (OpenTelemetry) initialize.invoke(null);
+    } catch (NoSuchMethodException | IllegalAccessException e) {
+      throw new IllegalStateException(
+          "OpenTelemetrySdkAutoConfiguration detected on classpath "
+              + "but could not invoke initialize method. This is a bug in OpenTelemetry.",
+          e);
+    } catch (InvocationTargetException t) {
+      logger.log(
+          Level.SEVERE,
+          "Error automatically configuring OpenTelemetry SDK. OpenTelemetry will not be enabled.",
+          t.getTargetException());
+      return null;
+    }
   }
 }
