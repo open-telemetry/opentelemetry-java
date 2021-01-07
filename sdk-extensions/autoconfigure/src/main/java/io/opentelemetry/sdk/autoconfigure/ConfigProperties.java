@@ -25,7 +25,6 @@ class ConfigProperties {
   }
 
   // Visible for testing
-  @SuppressWarnings({"unchecked", "rawtypes"})
   static ConfigProperties createForTest(Map<String, String> properties) {
     return new ConfigProperties(properties, Collections.emptyMap());
   }
