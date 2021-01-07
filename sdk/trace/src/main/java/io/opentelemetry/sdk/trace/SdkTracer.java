@@ -11,6 +11,8 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 
 /** {@link SdkTracer} is SDK implementation of {@link Tracer}. */
 final class SdkTracer implements Tracer {
+  static final String FALLBACK_SPAN_NAME = "<unspecified span name>";
+
   private final TracerSharedState sharedState;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
@@ -21,6 +23,9 @@ final class SdkTracer implements Tracer {
 
   @Override
   public SpanBuilder spanBuilder(String spanName) {
+    if (spanName == null || spanName.trim().isEmpty()) {
+      spanName = FALLBACK_SPAN_NAME;
+    }
     if (sharedState.isStopped()) {
       return Tracer.getDefault().spanBuilder(spanName);
     }
