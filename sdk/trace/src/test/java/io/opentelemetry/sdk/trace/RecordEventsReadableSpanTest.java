@@ -532,9 +532,7 @@ class RecordEventsReadableSpanTest {
   void droppingAttributes() {
     final int maxNumberOfAttributes = 8;
     TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder()
-            .setMaxNumberOfAttributes(maxNumberOfAttributes)
-            .build();
+        TraceConfig.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
     RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
@@ -569,9 +567,7 @@ class RecordEventsReadableSpanTest {
   void droppingAndAddingAttributes() {
     final int maxNumberOfAttributes = 8;
     TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder()
-            .setMaxNumberOfAttributes(maxNumberOfAttributes)
-            .build();
+        TraceConfig.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
     RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
@@ -605,8 +601,7 @@ class RecordEventsReadableSpanTest {
   @Test
   void droppingEvents() {
     final int maxNumberOfEvents = 8;
-    TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder().setMaxNumberOfEvents(maxNumberOfEvents).build();
+    TraceConfig traceConfig = TraceConfig.builder().setMaxNumberOfEvents(maxNumberOfEvents).build();
     RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfEvents; i++) {
