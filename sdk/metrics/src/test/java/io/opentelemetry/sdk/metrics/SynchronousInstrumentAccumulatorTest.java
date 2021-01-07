@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -35,7 +35,7 @@ public class SynchronousInstrumentAccumulatorTest {
                 DESCRIPTOR,
                 providerSharedState,
                 meterSharedState,
-                AggregationFactory.count().create(DESCRIPTOR.getValueType())));
+                AggregatorFactory.count().create(DESCRIPTOR.getValueType())));
     AggregatorHandle<?> aggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     AggregatorHandle<?> duplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     try {
