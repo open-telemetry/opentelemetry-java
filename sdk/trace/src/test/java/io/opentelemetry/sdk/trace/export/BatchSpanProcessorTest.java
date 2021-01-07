@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -96,6 +97,32 @@ class BatchSpanProcessorTest {
             TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
     assertThat(config.getExportOnlySampled())
         .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_EXPORT_ONLY_SAMPLED);
+  }
+
+  @Test
+  void invalidConfig() {
+    SpanExporter exporter = mock(SpanExporter.class);
+    assertThatThrownBy(
+            () -> BatchSpanProcessor.builder(exporter).setScheduleDelay(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("delay must be non-negative");
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setScheduleDelay(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setScheduleDelay(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("delay");
+    assertThatThrownBy(
+            () ->
+                BatchSpanProcessor.builder(exporter).setExporterTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setExporterTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setExporterTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
   }
 
   @Test
