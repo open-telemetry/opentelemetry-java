@@ -55,6 +55,8 @@ module. The existing ones will be removed in the next release.
 - A new module for supporting auto-configuration of the SDK has been added. The new module, `io.opentelemetry.sdk.autoconfigure` will
 be the new path for auto-configuration of the SDK, including via SPI, environment variables and system properties.
 - The `TraceConfig` class now exposes a `builder()` method directly, so you don't need to get the default then call `toBuilder()` on it.
+- The OTLP protobuf definitions were updated to the latest released version: `0.7.0`. 
+Both the `Span` and (alpha) `Metric` exporters were updated to match.
 
 ### SDK Extensions
 
