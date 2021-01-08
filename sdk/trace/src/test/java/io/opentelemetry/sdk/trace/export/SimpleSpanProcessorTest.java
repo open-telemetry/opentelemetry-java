@@ -141,8 +141,7 @@ class SimpleSpanProcessorTest {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     AtomicReference<TraceConfig> traceConfig =
-        new AtomicReference<>(
-            TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build());
+        new AtomicReference<>(TraceConfig.builder().setSampler(Sampler.alwaysOff()).build());
     SdkTracerProvider sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(

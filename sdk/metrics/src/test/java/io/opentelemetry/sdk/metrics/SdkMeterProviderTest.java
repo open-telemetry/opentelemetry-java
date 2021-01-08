@@ -18,7 +18,7 @@ import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.LongValueRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
@@ -148,7 +148,7 @@ public class SdkMeterProviderTest {
     registerViewForAllTypes(
         testMeterProvider,
         AggregationConfiguration.create(
-            AggregationFactory.count(), MetricData.AggregationTemporality.CUMULATIVE));
+            AggregatorFactory.count(), MetricData.AggregationTemporality.CUMULATIVE));
     LongCounter longCounter = testSdk.longCounterBuilder("testLongCounter").build();
     longCounter.add(10, Labels.empty());
     LongUpDownCounter longUpDownCounter =
@@ -347,7 +347,7 @@ public class SdkMeterProviderTest {
     registerViewForAllTypes(
         testMeterProvider,
         AggregationConfiguration.create(
-            AggregationFactory.count(), MetricData.AggregationTemporality.CUMULATIVE));
+            AggregatorFactory.count(), MetricData.AggregationTemporality.CUMULATIVE));
     testSdk
         .longSumObserverBuilder("testLongSumObserver")
         .setUpdater(longResult -> longResult.observe(10, Labels.empty()))

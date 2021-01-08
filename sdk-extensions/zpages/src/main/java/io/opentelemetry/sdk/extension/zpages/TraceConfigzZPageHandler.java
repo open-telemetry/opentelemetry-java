@@ -427,7 +427,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       }
       configSupplier.setActiveTraceConfig(newConfigBuilder.build());
     } else if (action.equals(QUERY_STRING_ACTION_DEFAULT)) {
-      TraceConfig defaultConfig = TraceConfig.getDefault().toBuilder().build();
+      TraceConfig defaultConfig = TraceConfig.builder().build();
       configSupplier.setActiveTraceConfig(defaultConfig);
     }
   }

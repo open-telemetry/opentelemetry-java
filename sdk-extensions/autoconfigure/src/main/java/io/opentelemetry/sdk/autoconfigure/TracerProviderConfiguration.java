@@ -85,7 +85,7 @@ final class TracerProviderConfiguration {
 
   // Visible for testing
   static TraceConfig configureTraceConfig(ConfigProperties config) {
-    TraceConfigBuilder builder = TraceConfig.getDefault().toBuilder();
+    TraceConfigBuilder builder = TraceConfig.builder();
 
     String sampler = config.getString("otel.trace.sampler");
     if (sampler != null) {

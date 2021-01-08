@@ -26,7 +26,7 @@ final class SynchronousInstrumentAccumulator<T extends Accumulation> {
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
     this.instrumentProcessor = instrumentProcessor;
-    this.aggregator = instrumentProcessor.getAggregation().getAggregator();
+    this.aggregator = instrumentProcessor.getAggregator();
   }
 
   AggregatorHandle<?> bind(Labels labels) {

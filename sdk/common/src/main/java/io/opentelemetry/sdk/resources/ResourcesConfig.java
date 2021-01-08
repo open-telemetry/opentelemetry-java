@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.resources;
 import static java.util.Objects.requireNonNull;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -78,7 +77,8 @@ public abstract class ResourcesConfig {
 
   /** Builder for {@link ResourcesConfig}. */
   @AutoValue.Builder
-  abstract static class Builder extends ConfigBuilder<Builder> {
+  @SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+  abstract static class Builder extends io.opentelemetry.sdk.common.export.ConfigBuilder<Builder> {
 
     private static final String OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS =
         "otel.java.disabled.resource_providers";

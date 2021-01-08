@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.extension.zpages;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -131,7 +130,9 @@ final class TracezSpanProcessor implements SpanProcessor {
   }
 
   /** Builder class for {@link TracezSpanProcessor}. */
-  public static final class Builder extends ConfigBuilder<Builder> {
+  @SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+  public static final class Builder
+      extends io.opentelemetry.sdk.common.export.ConfigBuilder<Builder> {
 
     private static final String KEY_SAMPLED = "otel.zpages.export.sampled";
     private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;

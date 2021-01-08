@@ -8,11 +8,17 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import io.opentelemetry.sdk.metrics.accumulation.MinMaxSumCountAccumulation;
-import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
@@ -57,6 +63,30 @@ class LongMinMaxSumCountAggregatorTest {
     assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+  }
+
+  @Test
+  void toMetricData() {
+    Aggregator<MinMaxSumCountAccumulation> minMaxSumCount =
+        LongMinMaxSumCountAggregator.getInstance();
+    AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle = minMaxSumCount.createHandle();
+    aggregatorHandle.recordLong(10);
+
+    MetricData metricData =
+        minMaxSumCount.toMetricData(
+            Resource.getDefault(),
+            InstrumentationLibraryInfo.getEmpty(),
+            InstrumentDescriptor.create(
+                "name",
+                "description",
+                "unit",
+                InstrumentType.VALUE_RECORDER,
+                InstrumentValueType.LONG),
+            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
+            0,
+            100);
+    assertThat(metricData).isNotNull();
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.SUMMARY);
   }
 
   @Test
@@ -123,7 +153,7 @@ class LongMinMaxSumCountAggregatorTest {
           return;
         }
         accumulation =
-            AggregationFactory.minMaxSumCount()
+            AggregatorFactory.minMaxSumCount()
                 .create(InstrumentValueType.LONG)
                 .merge(accumulation, other);
       } finally {

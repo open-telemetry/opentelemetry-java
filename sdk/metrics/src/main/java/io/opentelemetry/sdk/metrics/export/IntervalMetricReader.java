@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.export;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.ArrayList;
@@ -88,7 +87,9 @@ public final class IntervalMetricReader {
   }
 
   /** Builder for {@link IntervalMetricReader}. */
-  public static final class Builder extends ConfigBuilder<Builder> {
+  @SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+  public static final class Builder
+      extends io.opentelemetry.sdk.common.export.ConfigBuilder<Builder> {
     private final InternalState.Builder optionsBuilder;
     private static final String KEY_EXPORT_INTERVAL = "otel.imr.export.interval";
 

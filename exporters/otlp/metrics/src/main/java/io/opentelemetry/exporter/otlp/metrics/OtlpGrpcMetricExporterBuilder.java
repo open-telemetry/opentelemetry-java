@@ -12,15 +12,15 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extension.otproto.CommonProperties;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Builder utility for this exporter. */
+@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
 public final class OtlpGrpcMetricExporterBuilder
-    extends ConfigBuilder<OtlpGrpcMetricExporterBuilder> {
+    extends io.opentelemetry.sdk.common.export.ConfigBuilder<OtlpGrpcMetricExporterBuilder> {
   private static final String KEY_TIMEOUT = "otel.exporter.otlp.metric.timeout";
   private static final String KEY_ENDPOINT = "otel.exporter.otlp.metric.endpoint";
   private static final String KEY_INSECURE = "otel.exporter.otlp.metric.insecure";

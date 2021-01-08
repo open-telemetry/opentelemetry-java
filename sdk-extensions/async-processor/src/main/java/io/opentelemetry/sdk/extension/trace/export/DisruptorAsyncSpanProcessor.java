@@ -9,7 +9,6 @@ import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.WaitStrategy;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -103,7 +102,9 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
   }
 
   /** Builder class for {@link DisruptorAsyncSpanProcessor}. */
-  public static final class Builder extends ConfigBuilder<Builder> {
+  @SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+  public static final class Builder
+      extends io.opentelemetry.sdk.common.export.ConfigBuilder<Builder> {
 
     private static final String KEY_DISRUPTOR_BUFFER_SIZE = "otel.disruptor.buffer.size";
     private static final String KEY_BLOCKING = "otel.disruptor.blocking";

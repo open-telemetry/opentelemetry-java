@@ -27,7 +27,7 @@ final class AsynchronousInstrumentAccumulator {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    Aggregator<T> aggregator = instrumentProcessor.getAggregation().getAggregator();
+    Aggregator<T> aggregator = instrumentProcessor.getAggregator();
     AsynchronousInstrument.DoubleResult result =
         (value, labels) -> instrumentProcessor.batch(labels, aggregator.accumulateDouble(value));
 
@@ -43,7 +43,7 @@ final class AsynchronousInstrumentAccumulator {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    Aggregator<T> aggregator = instrumentProcessor.getAggregation().getAggregator();
+    Aggregator<T> aggregator = instrumentProcessor.getAggregator();
     AsynchronousInstrument.LongResult result =
         (value, labels) -> instrumentProcessor.batch(labels, aggregator.accumulateLong(value));
 

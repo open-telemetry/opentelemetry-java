@@ -8,13 +8,14 @@ package io.opentelemetry.sdk.trace.export;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /** Builder class for {@link BatchSpanProcessor}. */
-public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProcessorBuilder> {
+@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+public final class BatchSpanProcessorBuilder
+    extends io.opentelemetry.sdk.common.export.ConfigBuilder<BatchSpanProcessorBuilder> {
 
   private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay.millis";
   private static final String KEY_MAX_QUEUE_SIZE = "otel.bsp.max.queue.size";
