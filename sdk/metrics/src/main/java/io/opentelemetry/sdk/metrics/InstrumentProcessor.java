@@ -11,12 +11,12 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * An {@code InstrumentProcessor} represents an internal instance of an {@code Accumulator} for a
@@ -37,41 +37,28 @@ final class InstrumentProcessor<T> {
   private final boolean delta;
 
   /**
-   * Create a InstrumentAccumulator that uses the "cumulative" Temporality and uses all labels for
-   * aggregation. "Cumulative" means that all metrics that are generated will be considered for the
-   * lifetime of the Instrument being aggregated.
-   */
-  static <T> InstrumentProcessor<T> getCumulativeAllLabels(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      Aggregator<T> aggregator) {
-    return new InstrumentProcessor<>(
-        descriptor,
-        aggregator,
-        meterProviderSharedState.getResource(),
-        meterSharedState.getInstrumentationLibraryInfo(),
-        meterProviderSharedState.getClock(),
-        /* delta= */ false);
-  }
-
-  /**
-   * Create a InstrumentAccumulator that uses the "delta" Temporality and uses all labels for
-   * aggregation. "Delta" means that all metrics that are generated are only for the most recent
+   * Create a new {@link InstrumentProcessor} for use in metric recording aggregation.
+   *
+   * <p>"Delta" temporality means that all metrics that are generated are only for the most recent
    * collection interval.
+   *
+   * <p>"Cumulative" temporality means that all metrics that are generated will be considered for
+   * the lifetime of the Instrument being aggregated.
    */
-  static <T> InstrumentProcessor<T> getDeltaAllLabels(
-      InstrumentDescriptor descriptor,
+  static <T> InstrumentProcessor<T> createProcessor(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Aggregator<T> aggregator) {
+      InstrumentDescriptor descriptor,
+      AggregationConfiguration configuration) {
+    Aggregator<T> aggregator =
+        configuration.getAggregatorFactory().create(descriptor.getValueType());
     return new InstrumentProcessor<>(
         descriptor,
         aggregator,
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
         meterProviderSharedState.getClock(),
-        /* delta= */ true);
+        isDelta(configuration.getTemporality()));
   }
 
   private InstrumentProcessor(
@@ -140,65 +127,17 @@ final class InstrumentProcessor<T> {
     return metricData == null ? Collections.emptyList() : Collections.singletonList(metricData);
   }
 
+  private static boolean isDelta(MetricData.AggregationTemporality temporality) {
+    switch (temporality) {
+      case CUMULATIVE:
+        return false;
+      case DELTA:
+        return true;
+    }
+    throw new IllegalStateException("unsupported Temporality: " + temporality);
+  }
+
   Aggregator<T> getAggregator() {
     return this.aggregator;
-  }
-
-  /**
-   * Returns whether this batcher generate "delta" style metrics. The alternative is "cumulative".
-   */
-  boolean generatesDeltas() {
-    return delta;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    InstrumentProcessor<T> allLabels = (InstrumentProcessor<T>) o;
-
-    if (startEpochNanos != allLabels.startEpochNanos) {
-      return false;
-    }
-    if (delta != allLabels.delta) {
-      return false;
-    }
-    if (!Objects.equals(descriptor, allLabels.descriptor)) {
-      return false;
-    }
-    if (!Objects.equals(aggregator, allLabels.aggregator)) {
-      return false;
-    }
-    if (!Objects.equals(resource, allLabels.resource)) {
-      return false;
-    }
-    if (!Objects.equals(instrumentationLibraryInfo, allLabels.instrumentationLibraryInfo)) {
-      return false;
-    }
-    if (!Objects.equals(clock, allLabels.clock)) {
-      return false;
-    }
-    return Objects.equals(accumulationMap, allLabels.accumulationMap);
-  }
-
-  @Override
-  public int hashCode() {
-    int result = descriptor != null ? descriptor.hashCode() : 0;
-    result = 31 * result + (aggregator != null ? aggregator.hashCode() : 0);
-    result = 31 * result + (resource != null ? resource.hashCode() : 0);
-    result =
-        31 * result
-            + (instrumentationLibraryInfo != null ? instrumentationLibraryInfo.hashCode() : 0);
-    result = 31 * result + (clock != null ? clock.hashCode() : 0);
-    result = 31 * result + (accumulationMap != null ? accumulationMap.hashCode() : 0);
-    result = 31 * result + (int) (startEpochNanos ^ (startEpochNanos >>> 32));
-    result = 31 * result + (delta ? 1 : 0);
-    return result;
   }
 }
