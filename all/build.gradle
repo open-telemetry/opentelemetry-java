@@ -5,6 +5,18 @@ plugins {
 description = "OpenTelemetry All"
 ext.moduleName = "io.opentelemetry.all"
 
+// We don't compile much here, just some API boundary tests. This project is mostly for
+// aggregating jacoco reports and it doesn't work if this isn't at least as high as the
+// highest supported Java version in any of our projects. Most of our projects target
+// Java 8, except for jfr-events.
+tasks.withType(JavaCompile) {
+    it.options.release = 11
+}
+
+tasks.testJava8 {
+    enabled = false
+}
+
 dependencies {
     rootProject.subprojects.each { subproject ->
         // Generate aggregate coverage report for published modules that enable jacoco.
