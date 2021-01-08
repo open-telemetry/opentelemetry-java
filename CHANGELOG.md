@@ -2,6 +2,18 @@
 
 ## Unreleased:
 
+### General
+
+- Several more modules have been updated to have `-alpha` appended on their versions:
+    - `opentelemetry-sdk-extension-jfr-events`
+    - `opentelemetry-sdk-extension-async-processor`
+    - `opentelemetry-sdk-extension-logging`
+    - `opentelemetry-sdk-extension-zpages`
+    - `opentelemetry-sdk-exporter-prometheus`
+    - `opentelemetry-sdk-exporter-tracing-incubator`
+    - `opentelemetry-opentracing-shim`
+    - `opentelemetry-opencensus-shim`
+
 ### API
 
 #### Breaking Changes
@@ -20,6 +32,13 @@
 
 - The SemanticAttributes class has been moved to a new module: `opentelemetry-semconv` and repackaged into a new package:
 `io.opentelemetry.semconv.trace.attributes`. The old `SemanticAttributes` class will be removed in the next release.
+- The SPI interfaces for OpenTelemetry have been deprecated. We are moving to a new auto-configuration approach with the 
+new SDK auto-configuration module: `io.opentelemetry.sdk.autoconfigure`. This module should be considered the officially
+supported auto-configuration library moving forward.
+
+#### Enhancements
+
+- The SemanticAttributes have been updated to the latest version of the specification, as of January 7th, 2021.
 
 ### SDK
 
@@ -64,10 +83,16 @@ Both the `Span` and (alpha) `Metric` exporters were updated to match.
 
 - The ZPages extension now exposes its SpanProcessor implementation. To use it, you will need to add it to your
 SDK implementation directly, rather than it adding itself to the global SDK instance.
+- The JaegerRemoteSampler builder patterns have been changed and updated to more closely match the rest
+of the builders in the project.
 
 #### Deprecations
 - The `AwsXrayIdGenerator` constructor has been deprecated in favor of using a simple `getInstance()` singleton, since
 it has no state.
+  
+#### Bugfixes
+
+- The JaegerRemoteSampler now uses the ParentBased sampler as the basis for any sampling that is done.
 
 ### Metrics (alpha)
 
