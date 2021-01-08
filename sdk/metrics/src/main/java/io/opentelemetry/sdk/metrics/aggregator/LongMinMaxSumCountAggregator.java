@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.accumulation.MinMaxSumCountAccumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;

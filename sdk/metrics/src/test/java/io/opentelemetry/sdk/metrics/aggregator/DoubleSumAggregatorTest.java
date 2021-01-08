@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.accumulation.DoubleAccumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -28,51 +27,47 @@ class DoubleSumAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle =
-        DoubleSumAggregator.getInstance().createHandle();
+    AggregatorHandle<Double> aggregatorHandle = DoubleSumAggregator.getInstance().createHandle();
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset())
-        .isEqualTo(DoubleAccumulation.create(12.1 * 5));
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12.1 * 5);
   }
 
   @Test
   void multipleRecords_WithNegatives() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle =
-        DoubleSumAggregator.getInstance().createHandle();
+    AggregatorHandle<Double> aggregatorHandle = DoubleSumAggregator.getInstance().createHandle();
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-23);
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-11);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(14));
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(14);
   }
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle =
-        DoubleSumAggregator.getInstance().createHandle();
+    AggregatorHandle<Double> aggregatorHandle = DoubleSumAggregator.getInstance().createHandle();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordDouble(13);
     aggregatorHandle.recordDouble(12);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(25));
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(25);
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-25);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(DoubleAccumulation.create(-13));
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(-13);
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 
   @Test
   void toMetricData() {
-    Aggregator<DoubleAccumulation> sum = DoubleSumAggregator.getInstance();
-    AggregatorHandle<DoubleAccumulation> aggregatorHandle = sum.createHandle();
+    Aggregator<Double> sum = DoubleSumAggregator.getInstance();
+    AggregatorHandle<Double> aggregatorHandle = sum.createHandle();
     aggregatorHandle.recordDouble(10);
 
     MetricData metricData =

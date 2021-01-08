@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import javax.annotation.concurrent.Immutable;
 
@@ -61,5 +60,5 @@ public interface AggregatorFactory {
    * @param instrumentValueType the type of recorded values for the {@code Instrument}.
    * @return a new {@link Aggregator}.
    */
-  <T extends Accumulation> Aggregator<T> create(InstrumentValueType instrumentValueType);
+  <T> Aggregator<T> create(InstrumentValueType instrumentValueType);
 }

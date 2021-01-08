@@ -10,8 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
-import io.opentelemetry.sdk.metrics.accumulation.MinMaxSumCountAccumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -143,9 +141,9 @@ class DoubleMinMaxSumCountAggregatorTest {
 
     @GuardedBy("lock")
     @Nullable
-    private Accumulation accumulation;
+    private MinMaxSumCountAccumulation accumulation;
 
-    void process(@Nullable Accumulation other) {
+    void process(@Nullable MinMaxSumCountAccumulation other) {
       if (other == null) {
         return;
       }
@@ -155,10 +153,7 @@ class DoubleMinMaxSumCountAggregatorTest {
           accumulation = other;
           return;
         }
-        accumulation =
-            AggregatorFactory.minMaxSumCount()
-                .create(InstrumentValueType.DOUBLE)
-                .merge(accumulation, other);
+        accumulation = DoubleMinMaxSumCountAggregator.getInstance().merge(accumulation, other);
       } finally {
         lock.writeLock().unlock();
       }

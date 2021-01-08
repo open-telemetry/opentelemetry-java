@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -25,10 +24,9 @@ import java.util.Objects;
  * batches together {@code Aggregator}s for the similar sets of labels.
  *
  * <p>An entire collection cycle must be protected by a lock. A collection cycle is defined by
- * multiple calls to {@link #batch(Labels, Accumulation)} followed by one {@link
- * #completeCollectionCycle()};
+ * multiple calls to {@code #batch(...)} followed by one {@link #completeCollectionCycle()};
  */
-final class InstrumentProcessor<T extends Accumulation> {
+final class InstrumentProcessor<T> {
   private final InstrumentDescriptor descriptor;
   private final Aggregator<T> aggregator;
   private final Resource resource;
@@ -43,7 +41,7 @@ final class InstrumentProcessor<T extends Accumulation> {
    * aggregation. "Cumulative" means that all metrics that are generated will be considered for the
    * lifetime of the Instrument being aggregated.
    */
-  static <T extends Accumulation> InstrumentProcessor<T> getCumulativeAllLabels(
+  static <T> InstrumentProcessor<T> getCumulativeAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
@@ -62,7 +60,7 @@ final class InstrumentProcessor<T extends Accumulation> {
    * aggregation. "Delta" means that all metrics that are generated are only for the most recent
    * collection interval.
    */
-  static <T extends Accumulation> InstrumentProcessor<T> getDeltaAllLabels(
+  static <T> InstrumentProcessor<T> getDeltaAllLabels(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
@@ -98,7 +96,7 @@ final class InstrumentProcessor<T extends Accumulation> {
    * the {@link Labels} and merge aggregations together.
    *
    * @param labelSet the {@link Labels} associated with this {@code Aggregator}.
-   * @param accumulation the {@link Accumulation} produced by this instrument.
+   * @param accumulation the accumulation produced by this instrument.
    */
   void batch(Labels labelSet, T accumulation) {
     T currentAccumulation = accumulationMap.get(labelSet);
