@@ -46,15 +46,7 @@ public final class JaegerRemoteSampler implements Sampler {
     ScheduledExecutorService scheduledExecutorService =
         Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
     scheduledExecutorService.scheduleAtFixedRate(
-        this::updateSampler, 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
-  }
-
-  private void updateSampler() {
-    try {
-      getAndUpdateSampler();
-    } catch (Exception e) { // keep the timer thread alive
-      logger.log(Level.WARNING, "Failed to update sampler", e);
-    }
+        this::getAndUpdateSampler, 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
   }
 
   @Override
@@ -69,10 +61,14 @@ public final class JaegerRemoteSampler implements Sampler {
   }
 
   private void getAndUpdateSampler() {
-    SamplingStrategyParameters params =
-        SamplingStrategyParameters.newBuilder().setServiceName(this.serviceName).build();
-    SamplingStrategyResponse response = stub.getSamplingStrategy(params);
-    this.sampler = updateSampler(response);
+    try {
+      SamplingStrategyParameters params =
+          SamplingStrategyParameters.newBuilder().setServiceName(this.serviceName).build();
+      SamplingStrategyResponse response = stub.getSamplingStrategy(params);
+      this.sampler = updateSampler(response);
+    } catch (Exception e) { // keep the timer thread alive
+      logger.log(Level.WARNING, "Failed to update sampler", e);
+    }
   }
 
   private static Sampler updateSampler(SamplingStrategyResponse response) {
