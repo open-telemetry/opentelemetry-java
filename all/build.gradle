@@ -13,6 +13,10 @@ tasks.withType(JavaCompile) {
     it.options.release = 11
 }
 
+tasks.testJava8 {
+    enabled = false
+}
+
 dependencies {
     rootProject.subprojects.each { subproject ->
         // Generate aggregate coverage report for published modules that enable jacoco.
