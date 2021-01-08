@@ -21,11 +21,12 @@ final class SynchronousInstrumentAccumulator<T> {
   private final Aggregator<T> aggregator;
   private final InstrumentProcessor<T> instrumentProcessor;
 
-  SynchronousInstrumentAccumulator(InstrumentProcessor<T> instrumentProcessor) {
+  SynchronousInstrumentAccumulator(
+      Aggregator<T> aggregator, InstrumentProcessor<T> instrumentProcessor) {
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
+    this.aggregator = aggregator;
     this.instrumentProcessor = instrumentProcessor;
-    this.aggregator = instrumentProcessor.getAggregator();
   }
 
   AggregatorHandle<?> bind(Labels labels) {
@@ -59,7 +60,7 @@ final class SynchronousInstrumentAccumulator<T> {
    * Collects records from all the entries (labelSet, Bound) that changed since the last collect()
    * call.
    */
-  public final List<MetricData> collectAll() {
+  List<MetricData> collectAll() {
     collectLock.lock();
     try {
       for (Map.Entry<Labels, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {

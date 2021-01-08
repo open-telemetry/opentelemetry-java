@@ -33,6 +33,7 @@ public class SynchronousInstrumentAccumulatorTest {
   void sameAggregator_ForSameLabelSet() {
     SynchronousInstrumentAccumulator<?> accumulator =
         new SynchronousInstrumentAccumulator<>(
+            AggregatorFactory.count().create(DESCRIPTOR.getValueType()),
             InstrumentProcessor.createProcessor(
                 providerSharedState,
                 meterSharedState,

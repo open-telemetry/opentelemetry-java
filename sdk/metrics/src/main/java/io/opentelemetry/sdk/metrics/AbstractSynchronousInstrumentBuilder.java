@@ -40,6 +40,7 @@ abstract class AbstractSynchronousInstrumentBuilder<
     AggregationConfiguration configuration =
         meterProviderSharedState.getViewRegistry().findView(descriptor);
     return new SynchronousInstrumentAccumulator<>(
+        configuration.getAggregatorFactory().create(descriptor.getValueType()),
         InstrumentProcessor.createProcessor(
             meterProviderSharedState, meterSharedState, descriptor, configuration));
   }

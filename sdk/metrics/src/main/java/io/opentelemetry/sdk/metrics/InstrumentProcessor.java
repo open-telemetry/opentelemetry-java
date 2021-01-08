@@ -136,8 +136,4 @@ final class InstrumentProcessor<T> {
     }
     throw new IllegalStateException("unsupported Temporality: " + temporality);
   }
-
-  Aggregator<T> getAggregator() {
-    return this.aggregator;
-  }
 }

@@ -47,6 +47,7 @@ abstract class AbstractDoubleAsynchronousInstrumentBuilder<B extends AbstractIns
             instrumentFactory.apply(
                 descriptor,
                 AsynchronousInstrumentAccumulator.doubleAsynchronousAccumulator(
+                    configuration.getAggregatorFactory().create(descriptor.getValueType()),
                     InstrumentProcessor.createProcessor(
                         meterProviderSharedState, meterSharedState, descriptor, configuration),
                     updater)));
