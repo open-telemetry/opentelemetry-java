@@ -7,10 +7,11 @@ package io.opentelemetry.sdk.trace.spi;
 
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.spi.trace.TracerProviderFactory;
 
-/** SDK implementation of the {@link TracerProviderFactory} for SPI. */
-public final class SdkTracerProviderFactory implements TracerProviderFactory {
+/** SDK implementation of tracing. */
+@SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
+public final class SdkTracerProviderFactory
+    implements io.opentelemetry.spi.trace.TracerProviderFactory {
 
   @Override
   public TracerProvider create() {
