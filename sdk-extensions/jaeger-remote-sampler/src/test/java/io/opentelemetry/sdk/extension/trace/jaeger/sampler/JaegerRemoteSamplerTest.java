@@ -27,9 +27,9 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.time.Duration;
-import org.awaitility.core.ThrowingRunnable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.awaitility.core.ThrowingRunnable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -155,7 +155,9 @@ class JaegerRemoteSamplerTest {
             .build();
 
     // wait until the sampling strategy is retrieved before exiting test method
-    await().atMost(Duration.ofSeconds(10)).untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+    await()
+        .atMost(Duration.ofSeconds(10))
+        .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
     Thread.sleep(500);
 
@@ -172,7 +174,9 @@ class JaegerRemoteSamplerTest {
             .build();
 
     // wait until the sampling strategy is retrieved before exiting test method
-    await().atMost(Duration.ofSeconds(10)).untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
+    await()
+        .atMost(Duration.ofSeconds(10))
+        .untilAsserted(samplerIsType(sampler, RateLimitingSampler.class));
 
     Thread.sleep(500);
 
