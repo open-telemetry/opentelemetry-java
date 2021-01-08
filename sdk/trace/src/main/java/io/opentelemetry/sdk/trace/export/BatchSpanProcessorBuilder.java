@@ -141,7 +141,7 @@ public final class BatchSpanProcessorBuilder
   }
 
   /**
-   * Sets the maximum time an exporter will be allowed to run before being cancelled. If unset,
+   * Sets the maximum time an export will be allowed to run before being cancelled. If unset,
    * defaults to {@value DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
    */
   public BatchSpanProcessorBuilder setExporterTimeout(long timeout, TimeUnit unit) {
@@ -152,7 +152,7 @@ public final class BatchSpanProcessorBuilder
   }
 
   /**
-   * Sets the maximum time an exporter will be allowed to run before being cancelled. If unset,
+   * Sets the maximum time an export will be allowed to run before being cancelled. If unset,
    * defaults to {@value DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
    */
   public BatchSpanProcessorBuilder setExporterTimeout(Duration timeout) {
