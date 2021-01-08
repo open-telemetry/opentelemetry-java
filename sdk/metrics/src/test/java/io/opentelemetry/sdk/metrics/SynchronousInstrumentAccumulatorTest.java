@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 
 public class SynchronousInstrumentAccumulatorTest {
@@ -40,7 +41,7 @@ public class SynchronousInstrumentAccumulatorTest {
     AggregatorHandle<?> duplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     try {
       assertThat(duplicateAggregatorHandle).isSameAs(aggregatorHandle);
-      accumulator.collectAll();
+      accumulator.collectAll(new ArrayList<>());
       AggregatorHandle<?> anotherDuplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
       try {
         assertThat(anotherDuplicateAggregatorHandle).isSameAs(aggregatorHandle);
