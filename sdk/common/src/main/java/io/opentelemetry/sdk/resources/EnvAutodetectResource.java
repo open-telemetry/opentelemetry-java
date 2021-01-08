@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.resources;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -51,7 +50,8 @@ final class EnvAutodetectResource {
   }
 
   /** Builder utility for this EnvAutodetectResource. */
-  protected static class Builder extends ConfigBuilder<Builder> {
+  @SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+  protected static class Builder extends io.opentelemetry.sdk.common.export.ConfigBuilder<Builder> {
     private static final String OTEL_RESOURCE_ATTRIBUTES_KEY = "otel.resource.attributes";
     private String envAttributes;
 

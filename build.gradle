@@ -117,6 +117,10 @@ subprojects {
             it.options.errorprone.disable("AutoValueImmutableFields")
             // "-Xep:AutoValueImmutableFields:OFF"
 
+            // Fully qualified names may be necessary when deprecating a class to avoid
+            // deprecation warning.
+            it.options.errorprone.disable("UnnecessarilyFullyQualified")
+
             it.options.encoding = "UTF-8"
 
             // Ignore warnings for protobuf and jmh generated files.

@@ -41,7 +41,7 @@ class JavaVersionSpecific {
 
   static {
     if (CURRENT.getClass() != JavaVersionSpecific.class) {
-      logger.log(Level.FINE, "Using the APIs optimized for: {}", CURRENT.name());
+      logger.log(Level.FINE, "Using the APIs optimized for: {0}", CURRENT.name());
     }
   }
 

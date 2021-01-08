@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.zipkin;
 
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Map;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
@@ -14,7 +13,9 @@ import zipkin2.reporter.Sender;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 
 /** Builder class for {@link ZipkinSpanExporter}. */
-public final class ZipkinSpanExporterBuilder extends ConfigBuilder<ZipkinSpanExporterBuilder> {
+@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+public final class ZipkinSpanExporterBuilder
+    extends io.opentelemetry.sdk.common.export.ConfigBuilder<ZipkinSpanExporterBuilder> {
   private static final String KEY_SERVICE_NAME = "otel.exporter.zipkin.service.name";
   private static final String KEY_ENDPOINT = "otel.exporter.zipkin.endpoint";
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;

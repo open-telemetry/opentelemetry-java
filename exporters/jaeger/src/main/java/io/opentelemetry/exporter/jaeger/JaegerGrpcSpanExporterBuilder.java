@@ -7,12 +7,12 @@ package io.opentelemetry.exporter.jaeger;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Map;
 
 /** Builder utility for this exporter. */
+@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
 public final class JaegerGrpcSpanExporterBuilder
-    extends ConfigBuilder<JaegerGrpcSpanExporterBuilder> {
+    extends io.opentelemetry.sdk.common.export.ConfigBuilder<JaegerGrpcSpanExporterBuilder> {
   private static final String KEY_SERVICE_NAME = "otel.exporter.jaeger.service.name";
   private static final String KEY_ENDPOINT = "otel.exporter.jaeger.endpoint";
 

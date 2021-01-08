@@ -44,7 +44,7 @@ public final class TraceProtoUtils {
    */
   public static TraceConfig traceConfigFromProto(
       io.opentelemetry.proto.trace.v1.TraceConfig traceConfigProto) {
-    return TraceConfig.getDefault().toBuilder()
+    return TraceConfig.builder()
         .setSampler(fromProtoSampler(traceConfigProto))
         .setMaxNumberOfAttributes((int) traceConfigProto.getMaxNumberOfAttributes())
         .setMaxNumberOfEvents((int) traceConfigProto.getMaxNumberOfTimedEvents())
