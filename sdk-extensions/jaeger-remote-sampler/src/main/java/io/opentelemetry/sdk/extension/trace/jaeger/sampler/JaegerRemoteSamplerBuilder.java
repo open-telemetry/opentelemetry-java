@@ -87,38 +87,11 @@ public class JaegerRemoteSamplerBuilder {
   }
 
   /**
-   * Sets the polling interval. Optional.
-   *
-   * @param pollingIntervalMs the polling interval in Ms.
-   * @return this.
-   * @deprecated Use {@link #setPollingInterval(int, TimeUnit)}
-   */
-  @Deprecated
-  public JaegerRemoteSamplerBuilder withPollingInterval(int pollingIntervalMs) {
-    this.pollingIntervalMillis = pollingIntervalMs;
-    return this;
-  }
-
-  /**
-   * Sets the initial sampler that is used before sampling configuration is obtained from the
-   * server. By default probabilistic sampler with is used with probability 0.001. Optional.
-   *
-   * @param initialSampler the initial sampler to use.
-   * @return this.
-   * @deprecated Use {@link #setInitialSampler(Sampler)}
-   */
-  @Deprecated
-  public JaegerRemoteSamplerBuilder withInitialSampler(Sampler initialSampler) {
-    this.initialSampler = initialSampler;
-    return this;
-  }
-
-  /**
    * Builds the {@link JaegerRemoteSampler}.
    *
    * @return the remote sampler instance.
    */
-  public Sampler build() {
+  public JaegerRemoteSampler build() {
     if (channel == null) {
       channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
     }

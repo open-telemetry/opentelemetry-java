@@ -38,11 +38,10 @@ class JaegerRemoteSamplerIntegrationTest {
   @Test
   void remoteSampling_perOperation() {
     final JaegerRemoteSampler remoteSampler =
-        (JaegerRemoteSampler)
-            JaegerRemoteSampler.builder()
-                .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
-                .setServiceName(SERVICE_NAME)
-                .build();
+        JaegerRemoteSampler.builder()
+            .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
+            .setServiceName(SERVICE_NAME)
+            .build();
 
     await()
         .atMost(Duration.ofSeconds(10))
@@ -54,11 +53,10 @@ class JaegerRemoteSamplerIntegrationTest {
   @Test
   void remoteSampling_rateLimiting() {
     final JaegerRemoteSampler remoteSampler =
-        (JaegerRemoteSampler)
-            JaegerRemoteSampler.builder()
-                .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
-                .setServiceName(SERVICE_NAME_RATE_LIMITING)
-                .build();
+        JaegerRemoteSampler.builder()
+            .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
+            .setServiceName(SERVICE_NAME_RATE_LIMITING)
+            .build();
 
     await()
         .atMost(Duration.ofSeconds(10))

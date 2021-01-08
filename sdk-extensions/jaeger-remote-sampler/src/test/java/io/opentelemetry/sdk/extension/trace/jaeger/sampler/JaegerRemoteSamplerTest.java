@@ -96,11 +96,10 @@ class JaegerRemoteSamplerTest {
         ArgumentCaptor.forClass(Sampling.SamplingStrategyParameters.class);
 
     JaegerRemoteSampler sampler =
-        (JaegerRemoteSampler)
-            JaegerRemoteSampler.builder()
-                .setChannel(inProcessChannel)
-                .setServiceName(SERVICE_NAME)
-                .build();
+        JaegerRemoteSampler.builder()
+            .setChannel(inProcessChannel)
+            .setServiceName(SERVICE_NAME)
+            .build();
 
     await().atMost(Duration.ofSeconds(10)).until(samplerIsType(sampler, RateLimitingSampler.class));
 
@@ -118,11 +117,10 @@ class JaegerRemoteSamplerTest {
   @Test
   void description() {
     JaegerRemoteSampler sampler =
-        (JaegerRemoteSampler)
-            JaegerRemoteSampler.builder()
-                .setChannel(inProcessChannel)
-                .setServiceName(SERVICE_NAME)
-                .build();
+        JaegerRemoteSampler.builder()
+            .setChannel(inProcessChannel)
+            .setServiceName(SERVICE_NAME)
+            .build();
     assertThat(sampler.getDescription())
         .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
 
@@ -136,24 +134,22 @@ class JaegerRemoteSamplerTest {
   @Test
   void initialSampler() {
     JaegerRemoteSampler sampler =
-        (JaegerRemoteSampler)
-            JaegerRemoteSampler.builder()
-                .setChannel(inProcessChannel)
-                .setServiceName(SERVICE_NAME)
-                .setInitialSampler(Sampler.alwaysOn())
-                .build();
+        JaegerRemoteSampler.builder()
+            .setChannel(inProcessChannel)
+            .setServiceName(SERVICE_NAME)
+            .setInitialSampler(Sampler.alwaysOn())
+            .build();
     assertThat(sampler.getDescription()).startsWith("JaegerRemoteSampler{AlwaysOnSampler}");
   }
 
   @Test
   void pollingInterval() throws Exception {
     JaegerRemoteSampler sampler =
-        (JaegerRemoteSampler)
-            JaegerRemoteSampler.builder()
-                .setChannel(inProcessChannel)
-                .setServiceName(SERVICE_NAME)
-                .setPollingInterval(1, TimeUnit.MILLISECONDS)
-                .build();
+        JaegerRemoteSampler.builder()
+            .setChannel(inProcessChannel)
+            .setServiceName(SERVICE_NAME)
+            .setPollingInterval(1, TimeUnit.MILLISECONDS)
+            .build();
 
     // wait until the sampling strategy is retrieved before exiting test method
     await().atMost(Duration.ofSeconds(10)).until(samplerIsType(sampler, RateLimitingSampler.class));
@@ -166,12 +162,11 @@ class JaegerRemoteSamplerTest {
   @Test
   void pollingInterval_duration() throws Exception {
     JaegerRemoteSampler sampler =
-        (JaegerRemoteSampler)
-            JaegerRemoteSampler.builder()
-                .setChannel(inProcessChannel)
-                .setServiceName(SERVICE_NAME)
-                .setPollingInterval(Duration.ofMillis(1))
-                .build();
+        JaegerRemoteSampler.builder()
+            .setChannel(inProcessChannel)
+            .setServiceName(SERVICE_NAME)
+            .setPollingInterval(Duration.ofMillis(1))
+            .build();
 
     // wait until the sampling strategy is retrieved before exiting test method
     await().atMost(Duration.ofSeconds(10)).until(samplerIsType(sampler, RateLimitingSampler.class));
