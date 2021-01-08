@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.accumulation.LongAccumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -28,33 +27,30 @@ class CountAggregatorTest {
 
   @Test
   void toPoint() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle =
-        CountAggregator.getInstance().createHandle();
+    AggregatorHandle<Long> aggregatorHandle = CountAggregator.getInstance().createHandle();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 
   @Test
   void recordLongOperations() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle =
-        CountAggregator.getInstance().createHandle();
+    AggregatorHandle<Long> aggregatorHandle = CountAggregator.getInstance().createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(2));
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(2);
   }
 
   @Test
   void recordDoubleOperations() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle =
-        CountAggregator.getInstance().createHandle();
+    AggregatorHandle<Long> aggregatorHandle = CountAggregator.getInstance().createHandle();
     aggregatorHandle.recordDouble(12.3);
     aggregatorHandle.recordDouble(12.3);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(LongAccumulation.create(2));
+    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(2);
   }
 
   @Test
   void toMetricData() {
-    Aggregator<LongAccumulation> count = CountAggregator.getInstance();
-    AggregatorHandle<LongAccumulation> aggregatorHandle = count.createHandle();
+    Aggregator<Long> count = CountAggregator.getInstance();
+    AggregatorHandle<Long> aggregatorHandle = count.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =

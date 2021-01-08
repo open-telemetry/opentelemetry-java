@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -84,7 +83,7 @@ final class ViewRegistry {
   }
 
   /** Create a new {@link InstrumentProcessor} for use in metric recording aggregation. */
-  <T extends Accumulation> InstrumentProcessor<T> createBatcher(
+  <T> InstrumentProcessor<T> createBatcher(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {

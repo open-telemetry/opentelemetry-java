@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.accumulation.LongAccumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -24,7 +23,7 @@ import javax.annotation.Nullable;
  * problem because LastValueAggregator is currently only available for Observers which record all
  * values once.
  */
-public final class LongLastValueAggregator implements Aggregator<LongAccumulation> {
+public final class LongLastValueAggregator implements Aggregator<Long> {
   @Nullable private static final Long DEFAULT_VALUE = null;
   private static final LongLastValueAggregator INSTANCE = new LongLastValueAggregator();
 
@@ -33,24 +32,24 @@ public final class LongLastValueAggregator implements Aggregator<LongAccumulatio
    *
    * @return the instance of this {@link Aggregator}.
    */
-  public static Aggregator<LongAccumulation> getInstance() {
+  public static Aggregator<Long> getInstance() {
     return INSTANCE;
   }
 
   private LongLastValueAggregator() {}
 
   @Override
-  public AggregatorHandle<LongAccumulation> createHandle() {
+  public AggregatorHandle<Long> createHandle() {
     return new Handle();
   }
 
   @Override
-  public LongAccumulation accumulateLong(long value) {
-    return LongAccumulation.create(value);
+  public Long accumulateLong(long value) {
+    return value;
   }
 
   @Override
-  public LongAccumulation merge(LongAccumulation a1, LongAccumulation a2) {
+  public Long merge(Long a1, Long a2) {
     // TODO: Define the order between accumulation.
     return a2;
   }
@@ -60,7 +59,7 @@ public final class LongLastValueAggregator implements Aggregator<LongAccumulatio
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, LongAccumulation> accumulationByLabels,
+      Map<Labels, Long> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
     List<MetricData.LongPoint> points =
@@ -88,12 +87,12 @@ public final class LongLastValueAggregator implements Aggregator<LongAccumulatio
     return null;
   }
 
-  static final class Handle extends AggregatorHandle<LongAccumulation> {
+  static final class Handle extends AggregatorHandle<Long> {
     private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
     @Override
-    protected LongAccumulation doAccumulateThenReset() {
-      return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
+    protected Long doAccumulateThenReset() {
+      return this.current.getAndSet(DEFAULT_VALUE);
     }
 
     @Override

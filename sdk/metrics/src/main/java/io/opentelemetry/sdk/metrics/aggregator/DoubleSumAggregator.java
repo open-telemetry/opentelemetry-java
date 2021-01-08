@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.accumulation.DoubleAccumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -16,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
 
-public final class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {
+public final class DoubleSumAggregator implements Aggregator<Double> {
   private static final DoubleSumAggregator INSTANCE = new DoubleSumAggregator();
 
   /**
@@ -24,25 +23,25 @@ public final class DoubleSumAggregator implements Aggregator<DoubleAccumulation>
    *
    * @return the instance of this {@link Aggregator}.
    */
-  public static Aggregator<DoubleAccumulation> getInstance() {
+  public static Aggregator<Double> getInstance() {
     return INSTANCE;
   }
 
   private DoubleSumAggregator() {}
 
   @Override
-  public AggregatorHandle<DoubleAccumulation> createHandle() {
+  public AggregatorHandle<Double> createHandle() {
     return new Handle();
   }
 
   @Override
-  public DoubleAccumulation accumulateDouble(double value) {
-    return DoubleAccumulation.create(value);
+  public Double accumulateDouble(double value) {
+    return value;
   }
 
   @Override
-  public final DoubleAccumulation merge(DoubleAccumulation a1, DoubleAccumulation a2) {
-    return DoubleAccumulation.create(a1.getValue() + a2.getValue());
+  public final Double merge(Double a1, Double a2) {
+    return a1 + a2;
   }
 
   @Override
@@ -50,7 +49,7 @@ public final class DoubleSumAggregator implements Aggregator<DoubleAccumulation>
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, DoubleAccumulation> accumulationByLabels,
+      Map<Labels, Double> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
     List<MetricData.DoublePoint> points =
@@ -62,12 +61,12 @@ public final class DoubleSumAggregator implements Aggregator<DoubleAccumulation>
         resource, instrumentationLibraryInfo, descriptor, points, isMonotonic);
   }
 
-  static final class Handle extends AggregatorHandle<DoubleAccumulation> {
+  static final class Handle extends AggregatorHandle<Double> {
     private final DoubleAdder current = new DoubleAdder();
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset() {
-      return DoubleAccumulation.create(this.current.sumThenReset());
+    protected Double doAccumulateThenReset() {
+      return this.current.sumThenReset();
     }
 
     @Override

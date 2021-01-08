@@ -5,13 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class ImmutableAggregatorFactory<L extends Accumulation, D extends Accumulation>
-    implements AggregatorFactory {
+final class ImmutableAggregatorFactory<L, D> implements AggregatorFactory {
   static final AggregatorFactory SUM =
       new ImmutableAggregatorFactory<>(
           LongSumAggregator.getInstance(), DoubleSumAggregator.getInstance());
@@ -38,7 +36,7 @@ final class ImmutableAggregatorFactory<L extends Accumulation, D extends Accumul
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends Accumulation> Aggregator<T> create(InstrumentValueType instrumentValueType) {
+  public <T> Aggregator<T> create(InstrumentValueType instrumentValueType) {
     switch (instrumentValueType) {
       case LONG:
         return (Aggregator<T>) longAggregator;

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.accumulation.DoubleAccumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -26,7 +25,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * values once.
  */
 @ThreadSafe
-public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumulation> {
+public final class DoubleLastValueAggregator implements Aggregator<Double> {
   private static final DoubleLastValueAggregator INSTANCE = new DoubleLastValueAggregator();
 
   /**
@@ -41,17 +40,17 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
   private DoubleLastValueAggregator() {}
 
   @Override
-  public AggregatorHandle<DoubleAccumulation> createHandle() {
+  public AggregatorHandle<Double> createHandle() {
     return new Handle();
   }
 
   @Override
-  public DoubleAccumulation accumulateDouble(double value) {
-    return DoubleAccumulation.create(value);
+  public Double accumulateDouble(double value) {
+    return value;
   }
 
   @Override
-  public DoubleAccumulation merge(DoubleAccumulation a1, DoubleAccumulation a2) {
+  public Double merge(Double a1, Double a2) {
     // TODO: Define the order between accumulation.
     return a2;
   }
@@ -61,7 +60,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      Map<Labels, DoubleAccumulation> accumulationByLabels,
+      Map<Labels, Double> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
     List<MetricData.DoublePoint> points =
@@ -89,15 +88,15 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
     return null;
   }
 
-  static final class Handle extends AggregatorHandle<DoubleAccumulation> {
+  static final class Handle extends AggregatorHandle<Double> {
     @Nullable private static final Double DEFAULT_VALUE = null;
     private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
 
     private Handle() {}
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset() {
-      return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE));
+    protected Double doAccumulateThenReset() {
+      return this.current.getAndSet(DEFAULT_VALUE);
     }
 
     @Override

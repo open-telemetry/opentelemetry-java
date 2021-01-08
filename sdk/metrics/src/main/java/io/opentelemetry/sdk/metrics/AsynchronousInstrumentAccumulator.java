@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.AsynchronousInstrument;
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
@@ -19,7 +18,7 @@ final class AsynchronousInstrumentAccumulator {
   private final InstrumentProcessor<?> instrumentProcessor;
   private final Runnable metricUpdater;
 
-  static <T extends Accumulation> AsynchronousInstrumentAccumulator doubleAsynchronousAccumulator(
+  static <T> AsynchronousInstrumentAccumulator doubleAsynchronousAccumulator(
       InstrumentProcessor<T> instrumentProcessor,
       @Nullable Consumer<AsynchronousInstrument.DoubleResult> metricUpdater) {
     // TODO: Decide what to do with null updater.
@@ -35,7 +34,7 @@ final class AsynchronousInstrumentAccumulator {
         instrumentProcessor, () -> metricUpdater.accept(result));
   }
 
-  static <T extends Accumulation> AsynchronousInstrumentAccumulator longAsynchronousAccumulator(
+  static <T> AsynchronousInstrumentAccumulator longAsynchronousAccumulator(
       InstrumentProcessor<T> instrumentProcessor,
       @Nullable Consumer<AsynchronousInstrument.LongResult> metricUpdater) {
     // TODO: Decide what to do with null updater.
