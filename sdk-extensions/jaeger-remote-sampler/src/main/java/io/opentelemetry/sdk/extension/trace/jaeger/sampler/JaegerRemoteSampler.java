@@ -34,7 +34,8 @@ public final class JaegerRemoteSampler implements Sampler {
 
   private final String serviceName;
   private final SamplingManagerBlockingStub stub;
-  private Sampler sampler;
+
+  private volatile Sampler sampler;
 
   @SuppressWarnings("FutureReturnValueIgnored")
   JaegerRemoteSampler(
@@ -45,20 +46,7 @@ public final class JaegerRemoteSampler implements Sampler {
     ScheduledExecutorService scheduledExecutorService =
         Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
     scheduledExecutorService.scheduleAtFixedRate(
-        updateSampleRunnable(), 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
-  }
-
-  private Runnable updateSampleRunnable() {
-    return new Runnable() {
-      @Override
-      public void run() {
-        try {
-          getAndUpdateSampler();
-        } catch (Exception e) { // keep the timer thread alive
-          logger.log(Level.WARNING, "Failed to update sampler", e);
-        }
-      }
-    };
+        this::getAndUpdateSampler, 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
   }
 
   @Override
@@ -73,25 +61,32 @@ public final class JaegerRemoteSampler implements Sampler {
   }
 
   private void getAndUpdateSampler() {
-    SamplingStrategyParameters params =
-        SamplingStrategyParameters.newBuilder().setServiceName(this.serviceName).build();
-    SamplingStrategyResponse response = stub.getSamplingStrategy(params);
-    this.sampler = updateSampler(response);
+    try {
+      SamplingStrategyParameters params =
+          SamplingStrategyParameters.newBuilder().setServiceName(this.serviceName).build();
+      SamplingStrategyResponse response = stub.getSamplingStrategy(params);
+      this.sampler = updateSampler(response);
+    } catch (Exception e) { // keep the timer thread alive
+      logger.log(Level.WARNING, "Failed to update sampler", e);
+    }
   }
 
   private static Sampler updateSampler(SamplingStrategyResponse response) {
     PerOperationSamplingStrategies operationSampling = response.getOperationSampling();
-    if (operationSampling != null && operationSampling.getPerOperationStrategiesList().size() > 0) {
+    if (operationSampling.getPerOperationStrategiesList().size() > 0) {
       Sampler defaultSampler =
           Sampler.traceIdRatioBased(operationSampling.getDefaultSamplingProbability());
-      return new PerOperationSampler(
-          defaultSampler, operationSampling.getPerOperationStrategiesList());
+      return Sampler.parentBased(
+          new PerOperationSampler(
+              defaultSampler, operationSampling.getPerOperationStrategiesList()));
     }
     switch (response.getStrategyType()) {
       case PROBABILISTIC:
-        return Sampler.traceIdRatioBased(response.getProbabilisticSampling().getSamplingRate());
+        return Sampler.parentBased(
+            Sampler.traceIdRatioBased(response.getProbabilisticSampling().getSamplingRate()));
       case RATE_LIMITING:
-        return new RateLimitingSampler(response.getRateLimitingSampling().getMaxTracesPerSecond());
+        return Sampler.parentBased(
+            new RateLimitingSampler(response.getRateLimitingSampling().getMaxTracesPerSecond()));
       case UNRECOGNIZED:
         throw new AssertionError("unrecognized sampler type");
     }
