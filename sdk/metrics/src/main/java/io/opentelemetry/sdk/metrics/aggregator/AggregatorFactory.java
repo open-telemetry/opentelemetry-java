@@ -3,23 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.aggregation;
+package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import javax.annotation.concurrent.Immutable;
 
-/** Factory class for {@link AggregatorHandle}. */
+/** Factory class for {@link Aggregator}. */
 @Immutable
-public interface AggregationFactory {
+public interface AggregatorFactory {
   /**
    * Returns an {@code AggregationFactory} that calculates sum of recorded measurements.
    *
    * @return an {@code AggregationFactory} that calculates sum of recorded measurements.
    */
-  static AggregationFactory sum() {
-    return ImmutableAggregationFactory.SUM;
+  static AggregatorFactory sum() {
+    return ImmutableAggregatorFactory.SUM;
   }
 
   /**
@@ -29,8 +28,8 @@ public interface AggregationFactory {
    * @return an {@code AggregationFactory} that calculates count of recorded measurements (the
    *     number of recorded * measurements).
    */
-  static AggregationFactory count() {
-    return ImmutableAggregationFactory.COUNT;
+  static AggregatorFactory count() {
+    return ImmutableAggregatorFactory.COUNT;
   }
 
   /**
@@ -40,8 +39,8 @@ public interface AggregationFactory {
    * @return an {@code AggregationFactory} that calculates the last value of all recorded
    *     measurements.
    */
-  static AggregationFactory lastValue() {
-    return ImmutableAggregationFactory.LAST_VALUE;
+  static AggregatorFactory lastValue() {
+    return ImmutableAggregatorFactory.LAST_VALUE;
   }
 
   /**
@@ -52,15 +51,15 @@ public interface AggregationFactory {
    * @return an {@code AggregationFactory} that calculates a simple summary of all recorded
    *     measurements.
    */
-  static AggregationFactory minMaxSumCount() {
-    return ImmutableAggregationFactory.MIN_MAX_SUM_COUNT;
+  static AggregatorFactory minMaxSumCount() {
+    return ImmutableAggregatorFactory.MIN_MAX_SUM_COUNT;
   }
 
   /**
-   * Returns a new {@link Aggregation}.
+   * Returns a new {@link Aggregator}.
    *
    * @param instrumentValueType the type of recorded values for the {@code Instrument}.
-   * @return a new {@link Aggregation}.
+   * @return a new {@link Aggregator}.
    */
-  <T extends Accumulation> Aggregation<T> create(InstrumentValueType instrumentValueType);
+  <T extends Accumulation> Aggregator<T> create(InstrumentValueType instrumentValueType);
 }

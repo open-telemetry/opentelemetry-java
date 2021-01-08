@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
-import io.opentelemetry.sdk.metrics.aggregation.Aggregation;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -30,7 +30,7 @@ import java.util.Objects;
  */
 final class InstrumentProcessor<T extends Accumulation> {
   private final InstrumentDescriptor descriptor;
-  private final Aggregation<T> aggregation;
+  private final Aggregator<T> aggregator;
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final Clock clock;
@@ -47,10 +47,10 @@ final class InstrumentProcessor<T extends Accumulation> {
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Aggregation<T> aggregation) {
+      Aggregator<T> aggregator) {
     return new InstrumentProcessor<>(
         descriptor,
-        aggregation,
+        aggregator,
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
         meterProviderSharedState.getClock(),
@@ -66,10 +66,10 @@ final class InstrumentProcessor<T extends Accumulation> {
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      Aggregation<T> aggregation) {
+      Aggregator<T> aggregator) {
     return new InstrumentProcessor<>(
         descriptor,
-        aggregation,
+        aggregator,
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
         meterProviderSharedState.getClock(),
@@ -78,13 +78,13 @@ final class InstrumentProcessor<T extends Accumulation> {
 
   private InstrumentProcessor(
       InstrumentDescriptor descriptor,
-      Aggregation<T> aggregation,
+      Aggregator<T> aggregator,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Clock clock,
       boolean delta) {
     this.descriptor = descriptor;
-    this.aggregation = aggregation;
+    this.aggregator = aggregator;
     this.resource = resource;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.clock = clock;
@@ -106,7 +106,7 @@ final class InstrumentProcessor<T extends Accumulation> {
       accumulationMap.put(labelSet, accumulation);
       return;
     }
-    accumulationMap.put(labelSet, aggregation.merge(currentAccumulation, accumulation));
+    accumulationMap.put(labelSet, aggregator.merge(currentAccumulation, accumulation));
   }
 
   /**
@@ -126,7 +126,7 @@ final class InstrumentProcessor<T extends Accumulation> {
     }
 
     MetricData metricData =
-        aggregation.toMetricData(
+        aggregator.toMetricData(
             resource,
             instrumentationLibraryInfo,
             descriptor,
@@ -142,8 +142,8 @@ final class InstrumentProcessor<T extends Accumulation> {
     return metricData == null ? Collections.emptyList() : Collections.singletonList(metricData);
   }
 
-  Aggregation<T> getAggregation() {
-    return this.aggregation;
+  Aggregator<T> getAggregator() {
+    return this.aggregator;
   }
 
   /**
@@ -174,7 +174,7 @@ final class InstrumentProcessor<T extends Accumulation> {
     if (!Objects.equals(descriptor, allLabels.descriptor)) {
       return false;
     }
-    if (!Objects.equals(aggregation, allLabels.aggregation)) {
+    if (!Objects.equals(aggregator, allLabels.aggregator)) {
       return false;
     }
     if (!Objects.equals(resource, allLabels.resource)) {
@@ -192,7 +192,7 @@ final class InstrumentProcessor<T extends Accumulation> {
   @Override
   public int hashCode() {
     int result = descriptor != null ? descriptor.hashCode() : 0;
-    result = 31 * result + (aggregation != null ? aggregation.hashCode() : 0);
+    result = 31 * result + (aggregator != null ? aggregator.hashCode() : 0);
     result = 31 * result + (resource != null ? resource.hashCode() : 0);
     result =
         31 * result

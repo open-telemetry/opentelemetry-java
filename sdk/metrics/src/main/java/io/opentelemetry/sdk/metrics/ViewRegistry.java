@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
-import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -40,16 +40,16 @@ final class ViewRegistry {
       new LinkedHashMap<>();
   private static final AggregationConfiguration CUMULATIVE_SUM =
       AggregationConfiguration.create(
-          AggregationFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE);
+          AggregatorFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_SUMMARY =
       AggregationConfiguration.create(
-          AggregationFactory.minMaxSumCount(), MetricData.AggregationTemporality.DELTA);
+          AggregatorFactory.minMaxSumCount(), MetricData.AggregationTemporality.DELTA);
   private static final AggregationConfiguration CUMULATIVE_LAST_VALUE =
       AggregationConfiguration.create(
-          AggregationFactory.lastValue(), MetricData.AggregationTemporality.CUMULATIVE);
+          AggregatorFactory.lastValue(), MetricData.AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_LAST_VALUE =
       AggregationConfiguration.create(
-          AggregationFactory.lastValue(), MetricData.AggregationTemporality.DELTA);
+          AggregatorFactory.lastValue(), MetricData.AggregationTemporality.DELTA);
 
   private final ReentrantLock collectLock = new ReentrantLock();
   private volatile EnumMap<InstrumentType, LinkedHashMap<Pattern, AggregationConfiguration>>
@@ -96,13 +96,13 @@ final class ViewRegistry {
             descriptor,
             meterProviderSharedState,
             meterSharedState,
-            specification.getAggregationFactory().create(descriptor.getValueType()));
+            specification.getAggregatorFactory().create(descriptor.getValueType()));
       case DELTA:
         return InstrumentProcessor.getDeltaAllLabels(
             descriptor,
             meterProviderSharedState,
             meterSharedState,
-            specification.getAggregationFactory().create(descriptor.getValueType()));
+            specification.getAggregatorFactory().create(descriptor.getValueType()));
     }
     throw new IllegalStateException("unsupported Temporality: " + specification.getTemporality());
   }
