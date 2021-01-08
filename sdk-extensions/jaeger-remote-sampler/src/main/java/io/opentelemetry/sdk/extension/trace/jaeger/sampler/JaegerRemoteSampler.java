@@ -46,10 +46,10 @@ public final class JaegerRemoteSampler implements Sampler {
     ScheduledExecutorService scheduledExecutorService =
         Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
     scheduledExecutorService.scheduleAtFixedRate(
-        this::updateSampleRunnable, 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
+        this::updateSampler, 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
   }
 
-  private void updateSampleRunnable() {
+  private void updateSampler() {
     try {
       getAndUpdateSampler();
     } catch (Exception e) { // keep the timer thread alive
