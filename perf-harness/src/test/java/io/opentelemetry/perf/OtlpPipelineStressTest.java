@@ -261,7 +261,7 @@ public class OtlpPipelineStressTest {
                 toxiproxyContainer.getHost()
                     + ":"
                     + toxiproxyContainer.getMappedPort(COLLECTOR_PROXY_PORT))
-            //            .setDeadlineMs(1000)
+            //            .setTimeout(Duration.ofSecs(1))
             .build();
 
     SdkTracerProvider tracerProvider =
@@ -271,7 +271,7 @@ public class OtlpPipelineStressTest {
                 BatchSettings.builder()
                     //            .setMaxQueueSize(1000)
                     //            .setMaxExportBatchSize(1024)
-                    //            .setScheduleDelayMillis(1000)
+                    //            .setScheduleDelay(Duration.ofSecs(1))
                     .build())
             .build();
     openTelemetry =
