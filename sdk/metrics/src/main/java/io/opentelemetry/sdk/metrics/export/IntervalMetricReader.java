@@ -6,16 +6,13 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -68,101 +65,28 @@ public final class IntervalMetricReader {
   }
 
   /**
-   * Returns a new {@link Builder} for {@link IntervalMetricReader}.
+   * Returns a new {@link IntervalMetricReaderBuilder} for {@link IntervalMetricReader}.
    *
-   * @return a new {@link Builder} for {@link IntervalMetricReader}.
+   * @return a new {@link IntervalMetricReaderBuilder} for {@link IntervalMetricReader}.
    */
-  public static Builder builder() {
-    return new Builder(InternalState.builder());
+  public static IntervalMetricReaderBuilder builder() {
+    return new IntervalMetricReaderBuilder(InternalState.builder());
   }
 
   /**
-   * Returns a new {@link Builder} for {@link IntervalMetricReader} reading the configuration values
-   * from the environment and from system properties. System properties override values defined in
-   * the environment. If a configuration value is missing, it uses the default value.
+   * Returns a new {@link IntervalMetricReaderBuilder} for {@link IntervalMetricReader} reading the
+   * configuration values from the environment and from system properties. System properties
+   * override values defined in the environment. If a configuration value is missing, it uses the
+   * default value.
    *
-   * @return a new {@link Builder} for {@link IntervalMetricReader}.
+   * @return a new {@link IntervalMetricReaderBuilder} for {@link IntervalMetricReader}.
    */
-  public static Builder builderFromDefaultSources() {
+  public static IntervalMetricReaderBuilder builderFromDefaultSources() {
     return builder().readEnvironmentVariables().readSystemProperties();
   }
 
-  /** Builder for {@link IntervalMetricReader}. */
-  public static final class Builder extends ConfigBuilder<Builder> {
-    private final InternalState.Builder optionsBuilder;
-    private static final String KEY_EXPORT_INTERVAL = "otel.imr.export.interval";
-
-    private Builder(InternalState.Builder optionsBuilder) {
-      this.optionsBuilder = optionsBuilder;
-    }
-
-    /**
-     * Sets the export interval.
-     *
-     * @param exportIntervalMillis the export interval between pushes to the exporter.
-     * @return this.
-     */
-    public Builder setExportIntervalMillis(long exportIntervalMillis) {
-      optionsBuilder.setExportIntervalMillis(exportIntervalMillis);
-      return this;
-    }
-
-    /**
-     * Sets the exporter to be called when export metrics.
-     *
-     * @param metricExporter the {@link MetricExporter} to be called when export metrics.
-     * @return this.
-     */
-    public Builder setMetricExporter(MetricExporter metricExporter) {
-      optionsBuilder.setMetricExporter(metricExporter);
-      return this;
-    }
-
-    /**
-     * Sets a collection of {@link MetricProducer} from where the metrics should be read.
-     *
-     * @param metricProducers a collection of {@link MetricProducer} from where the metrics should
-     *     be read.
-     * @return this.
-     */
-    public Builder setMetricProducers(Collection<MetricProducer> metricProducers) {
-      optionsBuilder.setMetricProducers(metricProducers);
-      return this;
-    }
-
-    /**
-     * Builds a new {@link IntervalMetricReader} with current settings.
-     *
-     * @return a {@code IntervalMetricReader}.
-     */
-    public IntervalMetricReader build() {
-      InternalState internalState = optionsBuilder.build();
-      Utils.checkArgument(
-          internalState.getExportIntervalMillis() > 0, "Export interval must be positive");
-
-      return new IntervalMetricReader(internalState);
-    }
-
-    /**
-     * Sets the configuration values from the given configuration map for only the available keys.
-     *
-     * @param configMap {@link Map} holding the configuration values.
-     * @return this.
-     */
-    @Override
-    protected Builder fromConfigMap(
-        Map<String, String> configMap, NamingConvention namingConvention) {
-      configMap = namingConvention.normalize(configMap);
-      Long value = getLongProperty(KEY_EXPORT_INTERVAL, configMap);
-      if (value != null) {
-        this.setExportIntervalMillis(value);
-      }
-      return this;
-    }
-  }
-
   @SuppressWarnings("FutureReturnValueIgnored")
-  private IntervalMetricReader(InternalState internalState) {
+  IntervalMetricReader(InternalState internalState) {
     this.exporter = new Exporter(internalState);
     this.scheduler =
         Executors.newScheduledThreadPool(1, new DaemonThreadFactory("IntervalMetricReader"));

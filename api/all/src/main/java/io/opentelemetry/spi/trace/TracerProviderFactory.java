@@ -18,8 +18,12 @@ import javax.annotation.concurrent.ThreadSafe;
  * io.opentelemetry.trace.spi.TracerProviderFactory} with value of fully qualified class name.
  *
  * @see OpenTelemetry
+ * @deprecated Use {@link io.opentelemetry.api.DefaultOpenTelemetry#builder} to initialize
+ *     OpenTelemetry with a custom provider, or {@code OpenTelemetrySdk#builder} or {@code
+ *     opentelemetry-sdk-extension-autoconfigure} to configure the default SDK.
  */
 @ThreadSafe
+@Deprecated
 public interface TracerProviderFactory {
 
   /**

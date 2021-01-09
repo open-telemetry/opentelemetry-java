@@ -37,10 +37,7 @@ public class SpanAttributeTruncateBenchmark {
   public final void setup() {
     Tracer tracer =
         SdkTracerProvider.builder()
-            .setTraceConfig(
-                TraceConfig.getDefault().toBuilder()
-                    .setMaxLengthOfAttributeValues(maxLength)
-                    .build())
+            .setTraceConfig(TraceConfig.builder().setMaxLengthOfAttributeValues(maxLength).build())
             .build()
             .get("benchmarkTracer");
     sdkSpanBuilder =

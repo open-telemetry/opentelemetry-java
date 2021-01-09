@@ -10,6 +10,7 @@ import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
+import io.opentelemetry.sdk.metrics.export.IntervalMetricReaderBuilder;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
@@ -77,7 +78,7 @@ final class MetricExporterConfiguration {
 
     OtlpGrpcMetricExporter exporter = builder.build();
 
-    IntervalMetricReader.Builder readerBuilder =
+    IntervalMetricReaderBuilder readerBuilder =
         IntervalMetricReader.builder()
             .setMetricProducers(Collections.singleton(meterProvider.getMetricProducer()))
             .setMetricExporter(exporter);

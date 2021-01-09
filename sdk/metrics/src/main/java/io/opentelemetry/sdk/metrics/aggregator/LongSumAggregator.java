@@ -5,10 +5,17 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.accumulation.LongAccumulation;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
-public final class LongSumAggregator implements Aggregator<LongAccumulation> {
+public final class LongSumAggregator implements Aggregator<Long> {
   private static final LongSumAggregator INSTANCE = new LongSumAggregator();
 
   /**
@@ -16,28 +23,50 @@ public final class LongSumAggregator implements Aggregator<LongAccumulation> {
    *
    * @return the instance of this {@link Aggregator}.
    */
-  public static Aggregator<LongAccumulation> getInstance() {
+  public static Aggregator<Long> getInstance() {
     return INSTANCE;
   }
 
   private LongSumAggregator() {}
 
   @Override
-  public AggregatorHandle<LongAccumulation> createHandle() {
+  public AggregatorHandle<Long> createHandle() {
     return new Handle();
   }
 
   @Override
-  public LongAccumulation accumulateLong(long value) {
-    return LongAccumulation.create(value);
+  public Long accumulateLong(long value) {
+    return value;
   }
 
-  static final class Handle extends AggregatorHandle<LongAccumulation> {
+  @Override
+  public Long merge(Long a1, Long a2) {
+    return a1 + a2;
+  }
+
+  @Override
+  public MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor,
+      Map<Labels, Long> accumulationByLabels,
+      long startEpochNanos,
+      long epochNanos) {
+    List<MetricData.LongPoint> points =
+        MetricDataUtils.toLongPointList(accumulationByLabels, startEpochNanos, epochNanos);
+    boolean isMonotonic =
+        descriptor.getType() == InstrumentType.COUNTER
+            || descriptor.getType() == InstrumentType.SUM_OBSERVER;
+    return MetricDataUtils.toLongSumMetricData(
+        resource, instrumentationLibraryInfo, descriptor, points, isMonotonic);
+  }
+
+  static final class Handle extends AggregatorHandle<Long> {
     private final LongAdder current = new LongAdder();
 
     @Override
-    protected LongAccumulation doAccumulateThenReset() {
-      return LongAccumulation.create(this.current.sumThenReset());
+    protected Long doAccumulateThenReset() {
+      return this.current.sumThenReset();
     }
 
     @Override

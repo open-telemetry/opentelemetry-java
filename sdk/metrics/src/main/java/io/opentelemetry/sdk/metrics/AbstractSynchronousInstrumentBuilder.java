@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import java.util.function.BiFunction;
 
 abstract class AbstractSynchronousInstrumentBuilder<
@@ -36,9 +37,11 @@ abstract class AbstractSynchronousInstrumentBuilder<
   }
 
   private SynchronousInstrumentAccumulator<?> buildAccumulator(InstrumentDescriptor descriptor) {
+    AggregationConfiguration configuration =
+        meterProviderSharedState.getViewRegistry().findView(descriptor);
     return new SynchronousInstrumentAccumulator<>(
-        meterProviderSharedState
-            .getViewRegistry()
-            .createBatcher(meterProviderSharedState, meterSharedState, descriptor));
+        configuration.getAggregatorFactory().create(descriptor.getValueType()),
+        InstrumentProcessor.createProcessor(
+            meterProviderSharedState, meterSharedState, descriptor, configuration));
   }
 }

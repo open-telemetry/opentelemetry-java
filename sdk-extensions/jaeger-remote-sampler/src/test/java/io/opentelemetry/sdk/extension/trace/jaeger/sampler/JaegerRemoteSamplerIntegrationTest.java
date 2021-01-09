@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSa
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import io.grpc.ManagedChannelBuilder;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.BindMode;
@@ -26,7 +25,6 @@ class JaegerRemoteSamplerIntegrationTest {
   private static final int HEALTH_PORT = 14269;
   private static final String SERVICE_NAME = "E2E-test";
   private static final String SERVICE_NAME_RATE_LIMITING = "bar";
-  private static final int RATE = 150;
 
   @Container
   public static GenericContainer<?> jaegerContainer =
@@ -38,36 +36,29 @@ class JaegerRemoteSamplerIntegrationTest {
 
   @Test
   void remoteSampling_perOperation() {
-    String jaegerHost =
-        String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
     final JaegerRemoteSampler remoteSampler =
         JaegerRemoteSampler.builder()
-            .setChannel(ManagedChannelBuilder.forTarget(jaegerHost).usePlaintext().build())
+            .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
             .setServiceName(SERVICE_NAME)
             .build();
 
     await()
         .atMost(Duration.ofSeconds(10))
-        .until(samplerIsType(remoteSampler, PerOperationSampler.class));
-    assertThat(remoteSampler.getSampler()).isInstanceOf(PerOperationSampler.class);
+        .untilAsserted(samplerIsType(remoteSampler, PerOperationSampler.class));
     assertThat(remoteSampler.getDescription()).contains("0.33").doesNotContain("150");
   }
 
   @Test
   void remoteSampling_rateLimiting() {
-    String jaegerHost =
-        String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
     final JaegerRemoteSampler remoteSampler =
         JaegerRemoteSampler.builder()
-            .setChannel(ManagedChannelBuilder.forTarget(jaegerHost).usePlaintext().build())
+            .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
             .setServiceName(SERVICE_NAME_RATE_LIMITING)
             .build();
 
     await()
         .atMost(Duration.ofSeconds(10))
-        .until(samplerIsType(remoteSampler, RateLimitingSampler.class));
-    assertThat(remoteSampler.getSampler()).isInstanceOf(RateLimitingSampler.class);
-    assertThat(((RateLimitingSampler) remoteSampler.getSampler()).getMaxTracesPerSecond())
-        .isEqualTo(RATE);
+        .untilAsserted(samplerIsType(remoteSampler, RateLimitingSampler.class));
+    assertThat(remoteSampler.getDescription()).contains("RateLimitingSampler{150.00}");
   }
 }

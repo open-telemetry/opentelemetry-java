@@ -3,13 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.aggregation;
+package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.accumulation.DoubleAccumulation;
-import io.opentelemetry.sdk.metrics.accumulation.LongAccumulation;
-import io.opentelemetry.sdk.metrics.accumulation.MinMaxSumCountAccumulation;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -53,30 +50,22 @@ final class MetricDataUtils {
   }
 
   static List<MetricData.LongPoint> toLongPointList(
-      Map<Labels, LongAccumulation> accumulationMap, long startEpochNanos, long epochNanos) {
+      Map<Labels, Long> accumulationMap, long startEpochNanos, long epochNanos) {
     List<MetricData.LongPoint> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
-        (labels, accumulation) -> {
-          MetricData.LongPoint point = accumulation.toPoint(startEpochNanos, epochNanos, labels);
-          if (point == null) {
-            return;
-          }
-          points.add(point);
-        });
+        (labels, accumulation) ->
+            points.add(
+                MetricData.LongPoint.create(startEpochNanos, epochNanos, labels, accumulation)));
     return points;
   }
 
   static List<MetricData.DoublePoint> toDoublePointList(
-      Map<Labels, DoubleAccumulation> accumulationMap, long startEpochNanos, long epochNanos) {
+      Map<Labels, Double> accumulationMap, long startEpochNanos, long epochNanos) {
     List<MetricData.DoublePoint> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
-        (labels, accumulation) -> {
-          MetricData.DoublePoint point = accumulation.toPoint(startEpochNanos, epochNanos, labels);
-          if (point == null) {
-            return;
-          }
-          points.add(point);
-        });
+        (labels, accumulation) ->
+            points.add(
+                MetricData.DoublePoint.create(startEpochNanos, epochNanos, labels, accumulation)));
     return points;
   }
 
@@ -86,14 +75,8 @@ final class MetricDataUtils {
       long epochNanos) {
     List<MetricData.DoubleSummaryPoint> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
-        (labels, aggregator) -> {
-          MetricData.DoubleSummaryPoint point =
-              aggregator.toPoint(startEpochNanos, epochNanos, labels);
-          if (point == null) {
-            return;
-          }
-          points.add(point);
-        });
+        (labels, aggregator) ->
+            points.add(aggregator.toPoint(startEpochNanos, epochNanos, labels)));
     return points;
   }
 }

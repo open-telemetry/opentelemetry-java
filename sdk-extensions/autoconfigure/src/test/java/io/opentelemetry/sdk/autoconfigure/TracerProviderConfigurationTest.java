@@ -79,7 +79,9 @@ class TracerProviderConfigurationTest {
                 assertThat(worker)
                     .extracting("scheduleDelayNanos")
                     .isEqualTo(TimeUnit.MILLISECONDS.toNanos(5000));
-                assertThat(worker).extracting("exporterTimeoutMillis").isEqualTo(30000);
+                assertThat(worker)
+                    .extracting("exporterTimeoutNanos")
+                    .isEqualTo(TimeUnit.MILLISECONDS.toNanos(30000));
                 assertThat(worker).extracting("maxExportBatchSize").isEqualTo(512);
                 assertThat(worker)
                     .extracting("queue")
@@ -113,7 +115,9 @@ class TracerProviderConfigurationTest {
                 assertThat(worker)
                     .extracting("scheduleDelayNanos")
                     .isEqualTo(TimeUnit.MILLISECONDS.toNanos(100000));
-                assertThat(worker).extracting("exporterTimeoutMillis").isEqualTo(4);
+                assertThat(worker)
+                    .extracting("exporterTimeoutNanos")
+                    .isEqualTo(TimeUnit.MILLISECONDS.toNanos(4));
                 assertThat(worker).extracting("maxExportBatchSize").isEqualTo(3);
                 assertThat(worker)
                     .extracting("queue")

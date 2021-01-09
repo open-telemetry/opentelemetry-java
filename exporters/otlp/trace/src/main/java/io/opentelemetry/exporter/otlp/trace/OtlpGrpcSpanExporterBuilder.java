@@ -16,7 +16,6 @@ import io.grpc.Metadata;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extension.otproto.CommonProperties;
 import java.io.ByteArrayInputStream;
 import java.time.Duration;
@@ -27,7 +26,9 @@ import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
 
 /** Builder utility for this exporter. */
-public final class OtlpGrpcSpanExporterBuilder extends ConfigBuilder<OtlpGrpcSpanExporterBuilder> {
+@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+public final class OtlpGrpcSpanExporterBuilder
+    extends io.opentelemetry.sdk.common.export.ConfigBuilder<OtlpGrpcSpanExporterBuilder> {
 
   private static final String DEFAULT_ENDPOINT = "localhost:4317";
   private static final long DEFAULT_TIMEOUT_SECS = 10;

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import java.util.Map;
 import java.util.Objects;
 
@@ -15,7 +14,9 @@ import java.util.Objects;
  * @deprecated Use {@link SimpleSpanProcessor#create(SpanExporter)}
  */
 @Deprecated
-public final class SimpleSpanProcessorBuilder extends ConfigBuilder<SimpleSpanProcessorBuilder> {
+@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+public final class SimpleSpanProcessorBuilder
+    extends io.opentelemetry.sdk.common.export.ConfigBuilder<SimpleSpanProcessorBuilder> {
 
   private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
 

@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -16,17 +15,18 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-final class SynchronousInstrumentAccumulator<T extends Accumulation> {
+final class SynchronousInstrumentAccumulator<T> {
   private final ConcurrentHashMap<Labels, AggregatorHandle<T>> aggregatorLabels;
   private final ReentrantLock collectLock;
   private final Aggregator<T> aggregator;
   private final InstrumentProcessor<T> instrumentProcessor;
 
-  SynchronousInstrumentAccumulator(InstrumentProcessor<T> instrumentProcessor) {
+  SynchronousInstrumentAccumulator(
+      Aggregator<T> aggregator, InstrumentProcessor<T> instrumentProcessor) {
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
+    this.aggregator = aggregator;
     this.instrumentProcessor = instrumentProcessor;
-    this.aggregator = instrumentProcessor.getAggregation().getAggregator();
   }
 
   AggregatorHandle<?> bind(Labels labels) {
@@ -60,7 +60,7 @@ final class SynchronousInstrumentAccumulator<T extends Accumulation> {
    * Collects records from all the entries (labelSet, Bound) that changed since the last collect()
    * call.
    */
-  public final List<MetricData> collectAll() {
+  List<MetricData> collectAll() {
     collectLock.lock();
     try {
       for (Map.Entry<Labels, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {

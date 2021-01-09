@@ -14,7 +14,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extension.otproto.CommonProperties;
 import java.time.Duration;
 import java.util.List;
@@ -23,8 +22,9 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** Builder utility for this exporter. */
+@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
 public final class OtlpGrpcMetricExporterBuilder
-    extends ConfigBuilder<OtlpGrpcMetricExporterBuilder> {
+    extends io.opentelemetry.sdk.common.export.ConfigBuilder<OtlpGrpcMetricExporterBuilder> {
 
   private static final String DEFAULT_ENDPOINT = "localhost:4317";
   private static final long DEFAULT_TIMEOUT_SECS = 10;

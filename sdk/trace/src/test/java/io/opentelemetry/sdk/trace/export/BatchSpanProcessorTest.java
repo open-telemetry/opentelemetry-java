@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -38,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentMatchers;
 
+@SuppressWarnings("PreferJavaTimeOverload")
 class BatchSpanProcessorTest {
 
   private static final String SPAN_NAME_1 = "MySpanName/1";
@@ -71,10 +73,10 @@ class BatchSpanProcessorTest {
     BatchSpanProcessorBuilder config =
         BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
             .readProperties(options);
-    assertThat(config.getScheduleDelayMillis()).isEqualTo(12);
+    assertThat(config.getScheduleDelayNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(12));
     assertThat(config.getMaxQueueSize()).isEqualTo(34);
     assertThat(config.getMaxExportBatchSize()).isEqualTo(56);
-    assertThat(config.getExporterTimeoutMillis()).isEqualTo(78);
+    assertThat(config.getExporterTimeoutNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(78));
     assertThat(config.getExportOnlySampled()).isEqualTo(false);
   }
 
@@ -83,16 +85,44 @@ class BatchSpanProcessorTest {
     BatchSpanProcessorBuilder config =
         BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
             .readProperties(new Properties());
-    assertThat(config.getScheduleDelayMillis())
-        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_SCHEDULE_DELAY_MILLIS);
+    assertThat(config.getScheduleDelayNanos())
+        .isEqualTo(
+            TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_SCHEDULE_DELAY_MILLIS));
     assertThat(config.getMaxQueueSize())
         .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_QUEUE_SIZE);
     assertThat(config.getMaxExportBatchSize())
         .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
-    assertThat(config.getExporterTimeoutMillis())
-        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS);
+    assertThat(config.getExporterTimeoutNanos())
+        .isEqualTo(
+            TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
     assertThat(config.getExportOnlySampled())
         .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_EXPORT_ONLY_SAMPLED);
+  }
+
+  @Test
+  void invalidConfig() {
+    SpanExporter exporter = mock(SpanExporter.class);
+    assertThatThrownBy(
+            () -> BatchSpanProcessor.builder(exporter).setScheduleDelay(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("delay must be non-negative");
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setScheduleDelay(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setScheduleDelay(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("delay");
+    assertThatThrownBy(
+            () ->
+                BatchSpanProcessor.builder(exporter).setExporterTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setExporterTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setExporterTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
   }
 
   @Test
@@ -112,7 +142,7 @@ class BatchSpanProcessorTest {
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+                    .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .build();
 
@@ -132,7 +162,7 @@ class BatchSpanProcessorTest {
                 BatchSpanProcessor.builder(spanExporter)
                     .setMaxQueueSize(6)
                     .setMaxExportBatchSize(2)
-                    .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+                    .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .build();
 
@@ -168,7 +198,7 @@ class BatchSpanProcessorTest {
             // Force flush should send all spans, make sure the number of spans we check here is
             // not divisible by the batch size.
             .setMaxExportBatchSize(49)
-            .setScheduleDelayMillis(10_000) // 10s
+            .setScheduleDelay(10, TimeUnit.SECONDS)
             .build();
 
     sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
@@ -197,7 +227,7 @@ class BatchSpanProcessorTest {
                 BatchSpanProcessor.builder(
                         SpanExporter.composite(
                             Arrays.asList(waitingSpanExporter, waitingSpanExporter2)))
-                    .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+                    .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .build();
 
@@ -220,7 +250,7 @@ class BatchSpanProcessorTest {
                 BatchSpanProcessor.builder(
                         SpanExporter.composite(
                             Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
-                    .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+                    .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .setMaxQueueSize(maxQueuedSpans)
                     .setMaxExportBatchSize(maxQueuedSpans / 2)
                     .build())
@@ -289,7 +319,7 @@ class BatchSpanProcessorTest {
                 BatchSpanProcessor.builder(
                         SpanExporter.composite(
                             Arrays.asList(mockSpanExporter, waitingSpanExporter)))
-                    .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+                    .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .build();
     ReadableSpan span1 = createEndedSpan(SPAN_NAME_1);
@@ -337,8 +367,8 @@ class BatchSpanProcessorTest {
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setExporterTimeoutMillis(exporterTimeoutMillis)
-                    .setScheduleDelayMillis(1)
+                    .setExporterTimeout(exporterTimeoutMillis, TimeUnit.MILLISECONDS)
+                    .setScheduleDelay(1, TimeUnit.MILLISECONDS)
                     .setMaxQueueSize(1)
                     .build())
             .build();
@@ -357,13 +387,12 @@ class BatchSpanProcessorTest {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     AtomicReference<TraceConfig> traceConfig =
-        new AtomicReference<>(
-            TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build());
+        new AtomicReference<>(TraceConfig.builder().setSampler(Sampler.alwaysOff()).build());
     sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+                    .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .setTraceConfig(traceConfig::get)
             .build();
@@ -388,7 +417,7 @@ class BatchSpanProcessorTest {
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     AtomicReference<TraceConfig> traceConfig =
         new AtomicReference<>(
-            TraceConfig.getDefault().toBuilder()
+            TraceConfig.builder()
                 .setSampler(
                     new Sampler() {
                       @Override
@@ -412,16 +441,24 @@ class BatchSpanProcessorTest {
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+                    .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .setExportOnlySampled(true)
                     .build())
             .setTraceConfig(traceConfig::get)
             .build();
 
-    createEndedSpan(SPAN_NAME_2);
+    createEndedSpan(SPAN_NAME_1);
+    traceConfig.set(traceConfig.get().toBuilder().setSampler(Sampler.alwaysOn()).build());
+    ReadableSpan span = createEndedSpan(SPAN_NAME_2);
 
+    // Spans are recorded and exported in the same order as they are ended, we test that a non
+    // exported span is not exported by creating and ending a sampled span after a non sampled span
+    // and checking that the first exported span is the sampled span (the non sampled did not get
+    // exported).
     List<SpanData> exported = waitingSpanExporter.waitForExport();
-    assertThat(exported).isEmpty();
+    // Need to check this because otherwise the variable span1 is unused, other option is to not
+    // have a span1 variable.
+    assertThat(exported).containsExactly(span.toSpanData());
   }
 
   @Test
@@ -435,7 +472,7 @@ class BatchSpanProcessorTest {
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setScheduleDelayMillis(10_000)
+                    .setScheduleDelay(10_000, TimeUnit.MILLISECONDS)
                     .build())
             .build();
 

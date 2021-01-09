@@ -187,8 +187,7 @@ class OpenTelemetrySdkTest {
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
-                .setTraceConfig(
-                    TraceConfig.getDefault().toBuilder().setSampler(mock(Sampler.class)).build())
+                .setTraceConfig(TraceConfig.builder().setSampler(mock(Sampler.class)).build())
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
         .build();
@@ -197,8 +196,7 @@ class OpenTelemetrySdkTest {
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
-                .setTraceConfig(
-                    TraceConfig.getDefault().toBuilder().setSampler(mock(Sampler.class)).build())
+                .setTraceConfig(TraceConfig.builder().setSampler(mock(Sampler.class)).build())
                 .setIdGenerator(mock(IdGenerator.class))
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))

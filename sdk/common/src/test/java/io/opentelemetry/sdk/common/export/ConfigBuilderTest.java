@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.common.export;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
-import io.opentelemetry.sdk.common.export.ConfigBuilder.NamingConvention;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,16 +17,19 @@ import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.junitpioneer.jupiter.SetSystemProperty;
 
 /** Tests for {@link io.opentelemetry.sdk.common.export.ConfigBuilder}. */
+@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
 public class ConfigBuilderTest {
 
   @Test
   void normalize() {
     Map<String, String> dotValues =
-        NamingConvention.DOT.normalize(Collections.singletonMap("Test.Config.Key", "value"));
+        ConfigBuilder.NamingConvention.DOT.normalize(
+            Collections.singletonMap("Test.Config.Key", "value"));
     assertThat(dotValues).containsEntry("test.config.key", "value");
 
     Map<String, String> envValue =
-        NamingConvention.ENV_VAR.normalize(Collections.singletonMap("TEST_CONFIG_KEY", "value"));
+        ConfigBuilder.NamingConvention.ENV_VAR.normalize(
+            Collections.singletonMap("TEST_CONFIG_KEY", "value"));
     assertThat(envValue).containsEntry("test.config.key", "value");
   }
 
@@ -113,18 +115,22 @@ public class ConfigBuilderTest {
 
   @Test
   void testNormalize_dot() {
-    assertThat(NamingConvention.DOT.normalize("lower.case")).isEqualTo("lower.case");
-    assertThat(NamingConvention.DOT.normalize("lower_case")).isEqualTo("lower_case");
-    assertThat(NamingConvention.DOT.normalize("loWer.cAsE")).isEqualTo("lower.case");
-    assertThat(NamingConvention.DOT.normalize("loWer_cAsE")).isEqualTo("lower_case");
+    assertThat(ConfigBuilder.NamingConvention.DOT.normalize("lower.case")).isEqualTo("lower.case");
+    assertThat(ConfigBuilder.NamingConvention.DOT.normalize("lower_case")).isEqualTo("lower_case");
+    assertThat(ConfigBuilder.NamingConvention.DOT.normalize("loWer.cAsE")).isEqualTo("lower.case");
+    assertThat(ConfigBuilder.NamingConvention.DOT.normalize("loWer_cAsE")).isEqualTo("lower_case");
   }
 
   @Test
   void testNormalize_env() {
-    assertThat(NamingConvention.ENV_VAR.normalize("lower.case")).isEqualTo("lower.case");
-    assertThat(NamingConvention.ENV_VAR.normalize("lower_case")).isEqualTo("lower.case");
-    assertThat(NamingConvention.ENV_VAR.normalize("loWer.cAsE")).isEqualTo("lower.case");
-    assertThat(NamingConvention.ENV_VAR.normalize("loWer_cAsE")).isEqualTo("lower.case");
+    assertThat(ConfigBuilder.NamingConvention.ENV_VAR.normalize("lower.case"))
+        .isEqualTo("lower.case");
+    assertThat(ConfigBuilder.NamingConvention.ENV_VAR.normalize("lower_case"))
+        .isEqualTo("lower.case");
+    assertThat(ConfigBuilder.NamingConvention.ENV_VAR.normalize("loWer.cAsE"))
+        .isEqualTo("lower.case");
+    assertThat(ConfigBuilder.NamingConvention.ENV_VAR.normalize("loWer_cAsE"))
+        .isEqualTo("lower.case");
   }
 
   @Test
@@ -134,7 +140,7 @@ public class ConfigBuilderTest {
     map.put("lower_case", "2");
     map.put("loWer.cAsE", "3");
     map.put("loWer_cAsE", "4");
-    Map<String, String> normalized = NamingConvention.DOT.normalize(map);
+    Map<String, String> normalized = ConfigBuilder.NamingConvention.DOT.normalize(map);
     assertThat(normalized.size()).isEqualTo(2);
     assertThat(normalized).containsOnly(entry("lower.case", "3"), entry("lower_case", "4"));
   }
@@ -146,7 +152,7 @@ public class ConfigBuilderTest {
     map.put("lower_case", "2");
     map.put("loWer.cAsE", "3");
     map.put("loWer_cAsE", "4");
-    Map<String, String> normalized = NamingConvention.ENV_VAR.normalize(map);
+    Map<String, String> normalized = ConfigBuilder.NamingConvention.ENV_VAR.normalize(map);
     assertThat(normalized.size()).isEqualTo(1);
     assertThat(normalized).containsExactly(entry("lower.case", "3"));
   }
@@ -217,7 +223,8 @@ public class ConfigBuilderTest {
     assertThat(ConfigBuilder.getStringProperty("no-key", map)).isNull();
   }
 
-  private static final class ConfigTester extends ConfigBuilder<Map<String, String>> {
+  private static final class ConfigTester
+      extends io.opentelemetry.sdk.common.export.ConfigBuilder<Map<String, String>> {
 
     public static NamingConvention getNamingDot() {
       return NamingConvention.DOT;

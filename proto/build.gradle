@@ -45,9 +45,9 @@ protobuf {
     }
 }
 
-def protoVersion = "0.6.0"
+def protoVersion = "0.7.0"
 // To generate checksum, download the file and run "shasum -a 256 ~/path/to/vfoo.zip"
-def protoChecksum = "a40003d50a565c989283d6b5b93b6189c28378387b715bdd54bf4600bb9c17c1"
+def protoChecksum = "0b581c654b2360485b99c2de3731dd59275b0fe7b91d78e7f6c5efd5997f4c82"
 def protoArchivePath = "$buildDir/archives/opentelemetry-proto-${protoVersion}.zip"
 
 def downloadProtoArchive = tasks.register("downloadProtoArchive", Download) {

@@ -5,41 +5,73 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.accumulation.LongAccumulation;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-public final class CountAggregator implements Aggregator<LongAccumulation> {
-  private static final Aggregator<LongAccumulation> INSTANCE = new CountAggregator();
+public final class CountAggregator implements Aggregator<Long> {
+  private static final Aggregator<Long> INSTANCE = new CountAggregator();
 
   /**
    * Returns the instance of this {@link Aggregator}.
    *
    * @return the instance of this {@link Aggregator}.
    */
-  public static Aggregator<LongAccumulation> getInstance() {
+  public static Aggregator<Long> getInstance() {
     return INSTANCE;
   }
 
   private CountAggregator() {}
 
   @Override
-  public AggregatorHandle<LongAccumulation> createHandle() {
+  public AggregatorHandle<Long> createHandle() {
     return new Handle();
   }
 
   @Override
-  public LongAccumulation accumulateDouble(double value) {
-    return LongAccumulation.create(1);
+  public Long accumulateDouble(double value) {
+    return 1L;
   }
 
   @Override
-  public LongAccumulation accumulateLong(long value) {
-    return LongAccumulation.create(1);
+  public Long accumulateLong(long value) {
+    return 1L;
   }
 
-  static final class Handle extends AggregatorHandle<LongAccumulation> {
+  @Override
+  public Long merge(Long a1, Long a2) {
+    return a1 + a2;
+  }
+
+  @Override
+  public MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor,
+      Map<Labels, Long> accumulationByLabels,
+      long startEpochNanos,
+      long epochNanos) {
+    List<MetricData.LongPoint> points =
+        MetricDataUtils.toLongPointList(accumulationByLabels, startEpochNanos, epochNanos);
+
+    return MetricData.createLongSum(
+        resource,
+        instrumentationLibraryInfo,
+        descriptor.getName(),
+        descriptor.getDescription(),
+        "1",
+        MetricData.LongSumData.create(
+            /* isMonotonic= */ true, MetricData.AggregationTemporality.CUMULATIVE, points));
+  }
+
+  static final class Handle extends AggregatorHandle<Long> {
     private final LongAdder current = new LongAdder();
 
     private Handle() {}
@@ -55,8 +87,8 @@ public final class CountAggregator implements Aggregator<LongAccumulation> {
     }
 
     @Override
-    protected LongAccumulation doAccumulateThenReset() {
-      return LongAccumulation.create(current.sumThenReset());
+    protected Long doAccumulateThenReset() {
+      return current.sumThenReset();
     }
   }
 }

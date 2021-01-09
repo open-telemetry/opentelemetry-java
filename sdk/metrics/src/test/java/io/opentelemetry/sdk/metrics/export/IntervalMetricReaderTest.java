@@ -64,7 +64,7 @@ class IntervalMetricReaderTest {
   void configTest() {
     Properties options = new Properties();
     options.put("otel.imr.export.interval", "12");
-    IntervalMetricReader.Builder config =
+    IntervalMetricReaderBuilder config =
         IntervalMetricReader.builder()
             .readProperties(options)
             .setMetricProducers(Arrays.asList(metricProducer))
