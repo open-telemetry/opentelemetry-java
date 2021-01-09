@@ -50,8 +50,7 @@ final class InstrumentProcessor<T> {
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor,
       AggregationConfiguration configuration) {
-    Aggregator<T> aggregator =
-        configuration.getAggregatorFactory().create(descriptor.getValueType());
+    Aggregator<T> aggregator = configuration.getAggregatorFactory().create(descriptor);
     return new InstrumentProcessor<>(
         descriptor,
         aggregator,

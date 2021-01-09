@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -36,8 +36,8 @@ final class ImmutableAggregatorFactory<L, D> implements AggregatorFactory {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T> Aggregator<T> create(InstrumentValueType instrumentValueType) {
-    switch (instrumentValueType) {
+  public <T> Aggregator<T> create(InstrumentDescriptor descriptor) {
+    switch (descriptor.getValueType()) {
       case LONG:
         return (Aggregator<T>) longAggregator;
       case DOUBLE:

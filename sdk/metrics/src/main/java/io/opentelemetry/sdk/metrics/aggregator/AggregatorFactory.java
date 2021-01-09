@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import javax.annotation.concurrent.Immutable;
 
 /** Factory class for {@link Aggregator}. */
@@ -57,8 +57,8 @@ public interface AggregatorFactory {
   /**
    * Returns a new {@link Aggregator}.
    *
-   * @param instrumentValueType the type of recorded values for the {@code Instrument}.
+   * @param descriptor the descriptor of the {@code Instrument} that will record values.
    * @return a new {@link Aggregator}.
    */
-  <T> Aggregator<T> create(InstrumentValueType instrumentValueType);
+  <T> Aggregator<T> create(InstrumentDescriptor descriptor);
 }
