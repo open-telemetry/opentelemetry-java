@@ -43,7 +43,7 @@ public abstract class BatchSettings {
 
   /**
    * The delay interval between two consecutive exports. The actual interval may be shorter if the
-   * batch size is getting larger than {@code maxQueuedSpans / 2}. * @return
+   * batch size is getting larger than {@code maxQueuedSpans / 2}.
    */
   public abstract long getScheduleDelayNanos();
 

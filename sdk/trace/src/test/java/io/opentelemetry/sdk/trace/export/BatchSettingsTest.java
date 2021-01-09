@@ -14,6 +14,18 @@ import org.junit.jupiter.api.Test;
 class BatchSettingsTest {
 
   @Test
+  void defaults() {
+    BatchSettings settings = BatchSettings.builder().build();
+    assertThat(settings.getScheduleDelayNanos())
+        .isEqualTo(TimeUnit.SECONDS.toNanos(BatchSettingsBuilder.DEFAULT_SCHEDULE_DELAY_SECS));
+    assertThat(settings.getExporterTimeoutNanos())
+        .isEqualTo(TimeUnit.SECONDS.toNanos(BatchSettingsBuilder.DEFAULT_EXPORT_TIMEOUT_SECS));
+    assertThat(settings.getMaxQueueSize()).isEqualTo(BatchSettingsBuilder.DEFAULT_MAX_QUEUE_SIZE);
+    assertThat(settings.getMaxExportBatchSize())
+        .isEqualTo(BatchSettingsBuilder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
+  }
+
+  @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void buildSettings() {
     BatchSettings settings =
