@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -63,9 +64,9 @@ final class SpanExporterConfiguration {
 
     config.getCommaSeparatedMap("otel.exporter.otlp.headers").forEach(builder::addHeader);
 
-    Long deadlineMs = config.getLong("otel.exporter.otlp.timeout");
-    if (deadlineMs != null) {
-      builder.setDeadlineMs(deadlineMs);
+    Long timeoutMillis = config.getLong("otel.exporter.otlp.timeout");
+    if (timeoutMillis != null) {
+      builder.setTimeout(Duration.ofMillis(timeoutMillis));
     }
 
     return builder.build();

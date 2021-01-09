@@ -57,25 +57,36 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
-  public static final String DEFAULT_ENDPOINT = "localhost:4317";
-  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(10);
+  /**
+   * Default endpoint.
+   *
+   * @deprecated Will be removed without replacement
+   */
+  @Deprecated public static final String DEFAULT_ENDPOINT = "localhost:4317";
+
+  /**
+   * Default timeout.
+   *
+   * @deprecated Will be removed without replacement
+   */
+  @Deprecated public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(10);
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
 
   private final MetricsServiceFutureStub metricsService;
   private final ManagedChannel managedChannel;
-  private final long deadlineMs;
+  private final long timeoutNanos;
 
   /**
    * Creates a new OTLP gRPC Metric Reporter with the given name, using the given channel.
    *
    * @param channel the channel to use when communicating with the OpenTelemetry Collector.
-   * @param deadlineMs max waiting time for the collector to process each metric batch. When set to
-   *     0 or to a negative value, the exporter will wait indefinitely.
+   * @param timeoutNanos max waiting time for the collector to process each metric batch. When set
+   *     to 0 or to a negative value, the exporter will wait indefinitely.
    */
-  OtlpGrpcMetricExporter(ManagedChannel channel, long deadlineMs) {
+  OtlpGrpcMetricExporter(ManagedChannel channel, long timeoutNanos) {
     this.managedChannel = channel;
-    this.deadlineMs = deadlineMs;
+    this.timeoutNanos = timeoutNanos;
     metricsService = MetricsServiceGrpc.newFutureStub(channel);
   }
 
@@ -94,8 +105,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
     final CompletableResultCode result = new CompletableResultCode();
     MetricsServiceFutureStub exporter;
-    if (deadlineMs > 0) {
-      exporter = metricsService.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
+    if (timeoutNanos > 0) {
+      exporter = metricsService.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
     } else {
       exporter = metricsService;
     }

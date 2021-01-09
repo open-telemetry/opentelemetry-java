@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.metrics;
 import static com.google.common.base.Charsets.US_ASCII;
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
@@ -29,6 +30,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +68,20 @@ class OtlpGrpcMetricExporterTest {
   }
 
   @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void invalidConfig() {
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
+  }
+
+  @Test
   void configTest() {
     Properties options = new Properties();
     options.put("otel.exporter.otlp.metric.timeout", "12");
@@ -73,7 +89,7 @@ class OtlpGrpcMetricExporterTest {
     options.put("otel.exporter.otlp.headers", "test_1=1,test_2=2");
     OtlpGrpcMetricExporterBuilder config = OtlpGrpcMetricExporter.builder().readProperties(options);
     assertThat(config).extracting("useTls").isEqualTo(false);
-    assertThat(config).extracting("deadlineMs").isEqualTo(12L);
+    assertThat(config).extracting("timeoutNanos").isEqualTo(TimeUnit.MILLISECONDS.toNanos(12));
     assertThat(config)
         .extracting("metadata")
         .extracting("namesAndValues")
@@ -123,11 +139,10 @@ class OtlpGrpcMetricExporterTest {
 
   @Test
   void testExport_DeadlineSetPerExport() throws Exception {
-    int deadlineMs = 1500;
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder()
             .setChannel(inProcessChannel)
-            .setDeadlineMs(deadlineMs)
+            .setTimeout(Duration.ofMillis(1500))
             .build();
 
     try {

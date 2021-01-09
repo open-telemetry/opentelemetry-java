@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
 import com.google.common.io.Closer;
@@ -26,6 +27,7 @@ import io.opentelemetry.sdk.extension.otproto.SpanAdapter;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -64,6 +66,20 @@ class OtlpGrpcSpanExporterTest {
   }
 
   @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void invalidConfig() {
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
+  }
+
+  @Test
   void testExport() {
     SpanData span = generateFakeSpan();
     OtlpGrpcSpanExporter exporter =
@@ -96,11 +112,10 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   void testExport_DeadlineSetPerExport() throws InterruptedException {
-    int deadlineMs = 1500;
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.builder()
             .setChannel(inProcessChannel)
-            .setDeadlineMs(deadlineMs)
+            .setTimeout(Duration.ofMillis(1500))
             .build();
 
     try {
