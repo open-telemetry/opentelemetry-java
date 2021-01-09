@@ -19,6 +19,7 @@ final class AsynchronousInstrumentAccumulator {
   private final Runnable metricUpdater;
 
   static <T> AsynchronousInstrumentAccumulator doubleAsynchronousAccumulator(
+      Aggregator<T> aggregator,
       InstrumentProcessor<T> instrumentProcessor,
       @Nullable Consumer<AsynchronousInstrument.DoubleResult> metricUpdater) {
     // TODO: Decide what to do with null updater.
@@ -26,7 +27,6 @@ final class AsynchronousInstrumentAccumulator {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    Aggregator<T> aggregator = instrumentProcessor.getAggregator();
     AsynchronousInstrument.DoubleResult result =
         (value, labels) -> instrumentProcessor.batch(labels, aggregator.accumulateDouble(value));
 
@@ -35,6 +35,7 @@ final class AsynchronousInstrumentAccumulator {
   }
 
   static <T> AsynchronousInstrumentAccumulator longAsynchronousAccumulator(
+      Aggregator<T> aggregator,
       InstrumentProcessor<T> instrumentProcessor,
       @Nullable Consumer<AsynchronousInstrument.LongResult> metricUpdater) {
     // TODO: Decide what to do with null updater.
@@ -42,7 +43,6 @@ final class AsynchronousInstrumentAccumulator {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    Aggregator<T> aggregator = instrumentProcessor.getAggregator();
     AsynchronousInstrument.LongResult result =
         (value, labels) -> instrumentProcessor.batch(labels, aggregator.accumulateLong(value));
 
@@ -56,7 +56,7 @@ final class AsynchronousInstrumentAccumulator {
     this.metricUpdater = metricUpdater;
   }
 
-  public List<MetricData> collectAll() {
+  List<MetricData> collectAll() {
     collectLock.lock();
     try {
       metricUpdater.run();
