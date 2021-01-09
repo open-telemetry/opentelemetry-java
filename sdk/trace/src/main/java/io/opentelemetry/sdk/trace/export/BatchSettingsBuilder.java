@@ -6,48 +6,67 @@
 package io.opentelemetry.sdk.trace.export;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.Objects.requireNonNull;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /** Builder for a {@link BatchSettings}. */
 public final class BatchSettingsBuilder {
 
   // Visible for testing
-  static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
+  static final long DEFAULT_SCHEDULE_DELAY_SECS = 5;
   // Visible for testing
   static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
   // Visible for testing
   static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   // Visible for testing
-  static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+  static final int DEFAULT_EXPORT_TIMEOUT_SECS = 30;
   // Visible for testing
 
-  private long scheduleDelayMillis = DEFAULT_SCHEDULE_DELAY_MILLIS;
+  private long scheduleDelayNanos = TimeUnit.SECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_SECS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
-  private int exporterTimeoutMillis = DEFAULT_EXPORT_TIMEOUT_MILLIS;
+  private long exporterTimeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_SECS);
 
   /**
-   * Sets the delay interval between two consecutive exports. The actual interval may be shorter if
-   * the batch size is getting larger than {@code maxQueuedSpans / 2}.
-   *
-   * <p>Default value is {@value DEFAULT_SCHEDULE_DELAY_MILLIS}ms.
+   * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
+   * DEFAULT_SCHEDULE_DELAY_SECS}s.
    */
-  public BatchSettingsBuilder setScheduleDelay(long scheduleDelay, TimeUnit unit) {
-    checkArgument(scheduleDelay > 0, "scheduleDelay must be positive");
-    this.scheduleDelayMillis = unit.toMillis(scheduleDelay);
+  public BatchSettingsBuilder setScheduleDelay(long delay, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(delay >= 0, "delay must be non-negative");
+    scheduleDelayNanos = unit.toNanos(delay);
     return this;
   }
 
   /**
-   * Sets the maximum time an exporter will be allowed to run before being cancelled.
-   *
-   * <p>Default value is {@value DEFAULT_EXPORT_TIMEOUT_MILLIS}ms
+   * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
+   * DEFAULT_SCHEDULE_DELAY_SECS}s.
    */
-  public BatchSettingsBuilder setExporterTimeout(int exporterTimeout, TimeUnit unit) {
-    checkArgument(exporterTimeout > 0, "exporterTimeout must be positive");
-    this.exporterTimeoutMillis = (int) unit.toMillis(exporterTimeout);
+  public BatchSettingsBuilder setScheduleDelay(Duration delay) {
+    requireNonNull(delay, "delay");
+    return setScheduleDelay(delay.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  /**
+   * Sets the maximum time an export will be allowed to run before being cancelled. If unset,
+   * defaults to {@value DEFAULT_EXPORT_TIMEOUT_SECS}s.
+   */
+  public BatchSettingsBuilder setExporterTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    exporterTimeoutNanos = unit.toNanos(timeout);
     return this;
+  }
+
+  /**
+   * Sets the maximum time an export will be allowed to run before being cancelled. If unset,
+   * defaults to {@value DEFAULT_EXPORT_TIMEOUT_SECS}s.
+   */
+  public BatchSettingsBuilder setExporterTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setExporterTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   /**
@@ -82,7 +101,7 @@ public final class BatchSettingsBuilder {
         maxExportBatchSize <= maxQueueSize,
         "maxExportBatchSize must be less than or equal to maxQueueSize");
     return BatchSettings.create(
-        scheduleDelayMillis, exporterTimeoutMillis, maxQueueSize, maxExportBatchSize);
+        scheduleDelayNanos, exporterTimeoutNanos, maxQueueSize, maxExportBatchSize);
   }
 
   BatchSettingsBuilder() {}

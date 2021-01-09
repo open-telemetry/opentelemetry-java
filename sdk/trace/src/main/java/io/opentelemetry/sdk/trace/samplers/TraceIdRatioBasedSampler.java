@@ -46,9 +46,8 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
     return new AutoValue_TraceIdRatioBasedSampler(
         ratio,
         idUpperBound,
-        ImmutableSamplingResult.createWithProbability(
-            SamplingResult.Decision.RECORD_AND_SAMPLE, ratio),
-        ImmutableSamplingResult.createWithProbability(SamplingResult.Decision.DROP, ratio));
+        SamplingResult.create(SamplingResult.Decision.RECORD_AND_SAMPLE),
+        SamplingResult.create(SamplingResult.Decision.DROP));
   }
 
   abstract double getRatio();

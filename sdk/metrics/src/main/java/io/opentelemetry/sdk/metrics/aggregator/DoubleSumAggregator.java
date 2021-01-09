@@ -5,43 +5,73 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.aggregation.DoubleAccumulation;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
 
-public final class DoubleSumAggregator extends Aggregator<DoubleAccumulation> {
-  private static final AggregatorFactory<DoubleAccumulation> AGGREGATOR_FACTORY =
-      new AggregatorFactory<DoubleAccumulation>() {
-        @Override
-        public Aggregator<DoubleAccumulation> getAggregator() {
-          return new DoubleSumAggregator();
-        }
+public final class DoubleSumAggregator implements Aggregator<Double> {
+  private static final DoubleSumAggregator INSTANCE = new DoubleSumAggregator();
 
-        @Override
-        public DoubleAccumulation accumulateDouble(double value) {
-          return DoubleAccumulation.create(value);
-        }
-      };
-
-  private final DoubleAdder current = new DoubleAdder();
+  /**
+   * Returns the instance of this {@link Aggregator}.
+   *
+   * @return the instance of this {@link Aggregator}.
+   */
+  public static Aggregator<Double> getInstance() {
+    return INSTANCE;
+  }
 
   private DoubleSumAggregator() {}
 
-  /**
-   * Returns an {@link AggregatorFactory} that produces {@link DoubleSumAggregator} instances.
-   *
-   * @return an {@link AggregatorFactory} that produces {@link DoubleSumAggregator} instances.
-   */
-  public static AggregatorFactory<DoubleAccumulation> getFactory() {
-    return AGGREGATOR_FACTORY;
+  @Override
+  public AggregatorHandle<Double> createHandle() {
+    return new Handle();
   }
 
   @Override
-  protected DoubleAccumulation doAccumulateThenReset() {
-    return DoubleAccumulation.create(this.current.sumThenReset());
+  public Double accumulateDouble(double value) {
+    return value;
   }
 
   @Override
-  protected void doRecordDouble(double value) {
-    current.add(value);
+  public final Double merge(Double a1, Double a2) {
+    return a1 + a2;
+  }
+
+  @Override
+  public MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor,
+      Map<Labels, Double> accumulationByLabels,
+      long startEpochNanos,
+      long epochNanos) {
+    List<MetricData.DoublePoint> points =
+        MetricDataUtils.toDoublePointList(accumulationByLabels, startEpochNanos, epochNanos);
+    boolean isMonotonic =
+        descriptor.getType() == InstrumentType.COUNTER
+            || descriptor.getType() == InstrumentType.SUM_OBSERVER;
+    return MetricDataUtils.toDoubleSumMetricData(
+        resource, instrumentationLibraryInfo, descriptor, points, isMonotonic);
+  }
+
+  static final class Handle extends AggregatorHandle<Double> {
+    private final DoubleAdder current = new DoubleAdder();
+
+    @Override
+    protected Double doAccumulateThenReset() {
+      return this.current.sumThenReset();
+    }
+
+    @Override
+    protected void doRecordDouble(double value) {
+      current.add(value);
+    }
   }
 }

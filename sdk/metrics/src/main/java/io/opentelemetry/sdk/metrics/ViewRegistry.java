@@ -5,8 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
-import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -18,46 +17,36 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
-// notes:
-//  specify by pieces of the descriptor.
-//    instrument type √
-//    instrument name  (regex) √
-//    instrument value type (?)
-//    constant labels (?)
-//    units (?)
-
-// what you can choose:
-//   aggregation √
-//   delta vs. cumulative √
-//   all labels vs. a list of labels
-
 /**
  * Central location for Views to be registered. Registration of a view should eventually be done via
  * the {@link SdkMeterProvider}.
+ *
+ * <p>This class uses copy-on-write for the registered views to ensure that reading threads get
+ * never blocked.
  */
 final class ViewRegistry {
   private static final LinkedHashMap<Pattern, AggregationConfiguration> EMPTY_CONFIG =
       new LinkedHashMap<>();
   private static final AggregationConfiguration CUMULATIVE_SUM =
       AggregationConfiguration.create(
-          AggregationFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE);
+          AggregatorFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_SUMMARY =
       AggregationConfiguration.create(
-          AggregationFactory.minMaxSumCount(), MetricData.AggregationTemporality.DELTA);
+          AggregatorFactory.minMaxSumCount(), MetricData.AggregationTemporality.DELTA);
   private static final AggregationConfiguration CUMULATIVE_LAST_VALUE =
       AggregationConfiguration.create(
-          AggregationFactory.lastValue(), MetricData.AggregationTemporality.CUMULATIVE);
+          AggregatorFactory.lastValue(), MetricData.AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_LAST_VALUE =
       AggregationConfiguration.create(
-          AggregationFactory.lastValue(), MetricData.AggregationTemporality.DELTA);
+          AggregatorFactory.lastValue(), MetricData.AggregationTemporality.DELTA);
 
-  private final ReentrantLock collectLock = new ReentrantLock();
+  // The lock is used to ensure only one updated to the configuration happens at any moment.
+  private final ReentrantLock lock = new ReentrantLock();
   private volatile EnumMap<InstrumentType, LinkedHashMap<Pattern, AggregationConfiguration>>
       configuration;
 
   ViewRegistry() {
     this.configuration = new EnumMap<>(InstrumentType.class);
-
     configuration.put(InstrumentType.COUNTER, EMPTY_CONFIG);
     configuration.put(InstrumentType.UP_DOWN_COUNTER, EMPTY_CONFIG);
     configuration.put(InstrumentType.VALUE_RECORDER, EMPTY_CONFIG);
@@ -67,7 +56,7 @@ final class ViewRegistry {
   }
 
   void registerView(InstrumentSelector selector, AggregationConfiguration specification) {
-    collectLock.lock();
+    lock.lock();
     try {
       EnumMap<InstrumentType, LinkedHashMap<Pattern, AggregationConfiguration>> newConfiguration =
           new EnumMap<>(configuration);
@@ -79,40 +68,14 @@ final class ViewRegistry {
               newConfiguration.get(selector.getInstrumentType())));
       configuration = newConfiguration;
     } finally {
-      collectLock.unlock();
+      lock.unlock();
     }
   }
 
-  /** Create a new {@link InstrumentProcessor} for use in metric recording aggregation. */
-  <T extends Accumulation> InstrumentProcessor<T> createBatcher(
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      InstrumentDescriptor descriptor) {
-
-    AggregationConfiguration specification = chooseAggregation(descriptor);
-    switch (specification.getTemporality()) {
-      case CUMULATIVE:
-        return InstrumentProcessor.getCumulativeAllLabels(
-            descriptor,
-            meterProviderSharedState,
-            meterSharedState,
-            specification.getAggregationFactory().create(descriptor.getValueType()));
-      case DELTA:
-        return InstrumentProcessor.getDeltaAllLabels(
-            descriptor,
-            meterProviderSharedState,
-            meterSharedState,
-            specification.getAggregationFactory().create(descriptor.getValueType()));
-    }
-    throw new IllegalStateException("unsupported Temporality: " + specification.getTemporality());
-  }
-
-  // Visible for tests.
-  AggregationConfiguration chooseAggregation(InstrumentDescriptor descriptor) {
+  AggregationConfiguration findView(InstrumentDescriptor descriptor) {
     LinkedHashMap<Pattern, AggregationConfiguration> configPerType =
         configuration.get(descriptor.getType());
     for (Map.Entry<Pattern, AggregationConfiguration> entry : configPerType.entrySet()) {
-      // if it matches everything, return it right away...
       if (entry.getKey().matcher(descriptor.getName()).matches()) {
         return entry.getValue();
       }

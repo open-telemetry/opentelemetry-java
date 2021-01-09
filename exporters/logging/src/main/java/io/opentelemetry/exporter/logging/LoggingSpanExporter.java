@@ -15,8 +15,7 @@ import java.util.logging.Logger;
 
 /** A Span Exporter that logs every span at INFO level using java.util.logging. */
 public final class LoggingSpanExporter implements SpanExporter {
-  // Visible for testing
-  static final Logger logger = Logger.getLogger(LoggingSpanExporter.class.getName());
+  private static final Logger logger = Logger.getLogger(LoggingSpanExporter.class.getName());
 
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {

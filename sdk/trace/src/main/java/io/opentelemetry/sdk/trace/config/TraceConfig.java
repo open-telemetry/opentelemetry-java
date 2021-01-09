@@ -7,18 +7,16 @@ package io.opentelemetry.sdk.trace.config;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * Class that holds global trace parameters.
  *
- * <p>Note: To update the TraceConfig associated with a {@link SdkTracerManagement}, you should use
- * the {@link #toBuilder()} method on the TraceConfig currently assigned to the provider, make the
- * changes desired to the {@link TraceConfigBuilder} instance, then use the {@link
- * SdkTracerManagement#updateActiveTraceConfig(TraceConfig)} with the resulting TraceConfig
- * instance.
+ * <p>Note: To allow dynamic updates of {@link TraceConfig} you should register a {@link
+ * java.util.function.Supplier} with {@link
+ * io.opentelemetry.sdk.trace.SdkTracerProviderBuilder#setTraceConfig(java.util.function.Supplier)}
+ * which supplies dynamic configs when queried.
  *
  * <p>Configuration options for {@link TraceConfig} can be read from system properties, environment
  * variables, or {@link java.util.Properties} objects.
@@ -85,6 +83,11 @@ public abstract class TraceConfig {
    */
   public static TraceConfig getDefault() {
     return DEFAULT;
+  }
+
+  /** Returns a new {@link TraceConfigBuilder} to construct a {@link TraceConfig}. */
+  public static TraceConfigBuilder builder() {
+    return new TraceConfigBuilder();
   }
 
   static TraceConfig create(

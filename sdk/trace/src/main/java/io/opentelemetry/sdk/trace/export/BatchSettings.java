@@ -33,22 +33,22 @@ public abstract class BatchSettings {
   }
 
   static BatchSettings create(
-      long scheduleDelayMillis,
-      int exporterTimeoutMillis,
+      long scheduleDelayNanos,
+      long exporterTimeoutNanos,
       int maxQueueSize,
       int maxExportBatchSize) {
     return new AutoValue_BatchSettings(
-        scheduleDelayMillis, exporterTimeoutMillis, maxQueueSize, maxExportBatchSize);
+        scheduleDelayNanos, exporterTimeoutNanos, maxQueueSize, maxExportBatchSize);
   }
 
   /**
    * The delay interval between two consecutive exports. The actual interval may be shorter if the
    * batch size is getting larger than {@code maxQueuedSpans / 2}. * @return
    */
-  public abstract long getScheduleDelayMillis();
+  public abstract long getScheduleDelayNanos();
 
   /** The maximum time an exporter will be allowed to run before being cancelled. */
-  public abstract int getExporterTimeoutMillis();
+  public abstract long getExporterTimeoutNanos();
 
   /** The maximum number of Spans that are kept in the queue before start dropping. */
   public abstract int getMaxQueueSize();

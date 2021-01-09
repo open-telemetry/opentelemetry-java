@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.function.Supplier;
 
 /**
  * "Management" interface for the Tracing SDK. This interface exposes methods for configuring the
@@ -34,7 +35,10 @@ public interface SdkTracerManagement {
    *
    * @param traceConfig the new active {@code TraceConfig}.
    * @see TraceConfig
+   * @deprecated Use {@link SdkTracerProviderBuilder#setTraceConfig(Supplier)} to register a
+   *     supplier of {@link TraceConfig} if you need to make dynamic updates.
    */
+  @Deprecated
   void updateActiveTraceConfig(TraceConfig traceConfig);
 
   /**
@@ -45,7 +49,10 @@ public interface SdkTracerManagement {
    * io.opentelemetry.sdk.trace.export.SpanExporter#composite(SpanExporter...)}.
    *
    * @param spanProcessor the new {@code SpanProcessor} to be added.
+   * @deprecated Use {@link SdkTracerProvider#addSpanProcessor(SpanProcessor)} when initializing the
+   *     SDK
    */
+  @Deprecated
   void addSpanProcessor(SpanProcessor spanProcessor);
 
   /**
@@ -60,8 +67,11 @@ public interface SdkTracerManagement {
    * <p>After this is called, further attempts at re-using or reconfiguring this instance will
    * result in undefined behavior. It should be considered a terminal operation for the SDK
    * implementation.
+   *
+   * @return a {@link CompletableResultCode} which is completed when all the span processors have
+   *     been shut down.
    */
-  void shutdown();
+  CompletableResultCode shutdown();
 
   /**
    * Requests the active span processor to process all span events that have not yet been processed

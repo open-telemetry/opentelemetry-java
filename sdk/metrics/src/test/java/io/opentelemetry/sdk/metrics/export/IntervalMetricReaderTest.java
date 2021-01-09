@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,17 +37,17 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class IntervalMetricReaderTest {
-  private static final List<Point> LONG_POINT_LIST =
+  private static final List<LongPoint> LONG_POINT_LIST =
       Collections.singletonList(LongPoint.create(1000, 3000, Labels.empty(), 1234567));
 
   private static final MetricData METRIC_DATA =
-      MetricData.createDoubleSum(
+      MetricData.createLongSum(
           Resource.getEmpty(),
           InstrumentationLibraryInfo.create("IntervalMetricReaderTest", null),
           "my metric",
           "my metric description",
           "us",
-          MetricData.DoubleSumData.create(
+          MetricData.LongSumData.create(
               /* isMonotonic= */ true,
               MetricData.AggregationTemporality.CUMULATIVE,
               LONG_POINT_LIST));
@@ -65,7 +64,7 @@ class IntervalMetricReaderTest {
   void configTest() {
     Properties options = new Properties();
     options.put("otel.imr.export.interval", "12");
-    IntervalMetricReader.Builder config =
+    IntervalMetricReaderBuilder config =
         IntervalMetricReader.builder()
             .readProperties(options)
             .setMetricProducers(Arrays.asList(metricProducer))

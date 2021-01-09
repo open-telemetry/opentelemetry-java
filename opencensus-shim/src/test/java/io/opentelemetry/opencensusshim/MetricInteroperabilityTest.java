@@ -121,8 +121,8 @@ public class MetricInteroperabilityTest {
     assertThat(metric.getDescription()).isEqualTo("double sum");
     assertThat(metric.getUnit()).isEqualTo("ms");
     assertThat(metric.getType()).isEqualTo(MetricData.Type.DOUBLE_SUM);
-    assertThat(metric.getPoints().size()).isEqualTo(1);
-    point = metric.getPoints().iterator().next();
+    assertThat(metric.getDoubleSumData().getPoints().size()).isEqualTo(1);
+    point = metric.getDoubleSumData().getPoints().iterator().next();
     assertThat(((DoublePoint) point).getValue()).isEqualTo(60);
     assertThat(point.getLabels().size()).isEqualTo(0);
 
@@ -131,8 +131,8 @@ public class MetricInteroperabilityTest {
     assertThat(metric.getDescription()).isEqualTo("double gauge");
     assertThat(metric.getUnit()).isEqualTo("ms");
     assertThat(metric.getType()).isEqualTo(MetricData.Type.DOUBLE_GAUGE);
-    assertThat(metric.getPoints().size()).isEqualTo(1);
-    point = metric.getPoints().iterator().next();
+    assertThat(metric.getDoubleGaugeData().getPoints().size()).isEqualTo(1);
+    point = metric.getDoubleGaugeData().getPoints().iterator().next();
     assertThat(((DoublePoint) point).getValue()).isEqualTo(60);
     assertThat(point.getLabels().size()).isEqualTo(0);
   }

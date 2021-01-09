@@ -5,10 +5,12 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.api.internal.Utils;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.Objects.requireNonNull;
+
+import java.time.Duration;
 import java.util.Map;
-import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Builder class for {@link BatchSpanProcessor}.
@@ -17,7 +19,8 @@ import java.util.Objects;
  *     io.opentelemetry.sdk.trace.SdkTracerProviderBuilder#addExporter(SpanExporter, BatchSettings)}
  */
 @Deprecated
-public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProcessorBuilder> {
+public final class BatchSpanProcessorBuilder
+    extends io.opentelemetry.sdk.common.export.ConfigBuilder<BatchSpanProcessorBuilder> {
 
   private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay.millis";
   private static final String KEY_MAX_QUEUE_SIZE = "otel.bsp.max.queue.size";
@@ -37,14 +40,14 @@ public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProc
   static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
 
   private final SpanExporter spanExporter;
-  private long scheduleDelayMillis = DEFAULT_SCHEDULE_DELAY_MILLIS;
+  private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
-  private int exporterTimeoutMillis = DEFAULT_EXPORT_TIMEOUT_MILLIS;
+  private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
   private boolean exportOnlySampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
   BatchSpanProcessorBuilder(SpanExporter spanExporter) {
-    this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
+    this.spanExporter = requireNonNull(spanExporter, "spanExporter");
   }
 
   /**
@@ -59,7 +62,7 @@ public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProc
     configMap = namingConvention.normalize(configMap);
     Long longValue = getLongProperty(KEY_SCHEDULE_DELAY_MILLIS, configMap);
     if (longValue != null) {
-      this.setScheduleDelayMillis(longValue);
+      this.setScheduleDelay(Duration.ofMillis(longValue));
     }
     Integer intValue = getIntProperty(KEY_MAX_QUEUE_SIZE, configMap);
     if (intValue != null) {
@@ -71,7 +74,7 @@ public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProc
     }
     intValue = getIntProperty(KEY_EXPORT_TIMEOUT_MILLIS, configMap);
     if (intValue != null) {
-      this.setExporterTimeoutMillis(intValue);
+      this.setExporterTimeout(Duration.ofMillis(intValue));
     }
     Boolean boolValue = getBooleanProperty(KEY_SAMPLED, configMap);
     if (boolValue != null) {
@@ -102,6 +105,26 @@ public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProc
   }
 
   /**
+   * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
+   * DEFAULT_SCHEDULE_DELAY_MILLIS}ms.
+   */
+  public BatchSpanProcessorBuilder setScheduleDelay(long delay, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(delay >= 0, "delay must be non-negative");
+    scheduleDelayNanos = unit.toNanos(delay);
+    return this;
+  }
+
+  /**
+   * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
+   * DEFAULT_SCHEDULE_DELAY_MILLIS}ms.
+   */
+  public BatchSpanProcessorBuilder setScheduleDelay(Duration delay) {
+    requireNonNull(delay, "delay");
+    return setScheduleDelay(delay.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  /**
    * Sets the delay interval between two consecutive exports. The actual interval may be shorter if
    * the batch size is getting larger than {@code maxQueuedSpans / 2}.
    *
@@ -110,15 +133,36 @@ public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProc
    * @param scheduleDelayMillis the delay interval between two consecutive exports.
    * @return this.
    * @see BatchSpanProcessorBuilder#DEFAULT_SCHEDULE_DELAY_MILLIS
+   * @deprecated Use {@link #setScheduleDelay(long, TimeUnit)}
    */
+  @Deprecated
   public BatchSpanProcessorBuilder setScheduleDelayMillis(long scheduleDelayMillis) {
-    this.scheduleDelayMillis = scheduleDelayMillis;
-    return this;
+    return setScheduleDelay(Duration.ofMillis(scheduleDelayMillis));
   }
 
   // Visible for testing
-  long getScheduleDelayMillis() {
-    return scheduleDelayMillis;
+  long getScheduleDelayNanos() {
+    return scheduleDelayNanos;
+  }
+
+  /**
+   * Sets the maximum time an export will be allowed to run before being cancelled. If unset,
+   * defaults to {@value DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
+   */
+  public BatchSpanProcessorBuilder setExporterTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    exporterTimeoutNanos = unit.toNanos(timeout);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time an export will be allowed to run before being cancelled. If unset,
+   * defaults to {@value DEFAULT_EXPORT_TIMEOUT_MILLIS}ms.
+   */
+  public BatchSpanProcessorBuilder setExporterTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setExporterTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   /**
@@ -129,15 +173,16 @@ public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProc
    * @param exporterTimeoutMillis the timeout for exports in milliseconds.
    * @return this
    * @see BatchSpanProcessorBuilder#DEFAULT_EXPORT_TIMEOUT_MILLIS
+   * @deprecated Use {@link #setExporterTimeout(long, TimeUnit)}
    */
+  @Deprecated
   public BatchSpanProcessorBuilder setExporterTimeoutMillis(int exporterTimeoutMillis) {
-    this.exporterTimeoutMillis = exporterTimeoutMillis;
-    return this;
+    return setExporterTimeout(Duration.ofMillis(exporterTimeoutMillis));
   }
 
   // Visible for testing
-  int getExporterTimeoutMillis() {
-    return exporterTimeoutMillis;
+  long getExporterTimeoutNanos() {
+    return exporterTimeoutNanos;
   }
 
   /**
@@ -174,7 +219,7 @@ public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProc
    * @see BatchSpanProcessorBuilder#DEFAULT_MAX_EXPORT_BATCH_SIZE
    */
   public BatchSpanProcessorBuilder setMaxExportBatchSize(int maxExportBatchSize) {
-    Utils.checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
+    checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
     this.maxExportBatchSize = maxExportBatchSize;
     return this;
   }
@@ -195,9 +240,9 @@ public final class BatchSpanProcessorBuilder extends ConfigBuilder<BatchSpanProc
     return new BatchSpanProcessor(
         spanExporter,
         exportOnlySampled,
-        scheduleDelayMillis,
+        scheduleDelayNanos,
         maxQueueSize,
         maxExportBatchSize,
-        exporterTimeoutMillis);
+        exporterTimeoutNanos);
   }
 }

@@ -12,7 +12,6 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.logging.LogProcessor;
 import io.opentelemetry.sdk.logging.data.LogRecord;
@@ -219,7 +218,8 @@ public final class BatchLogProcessor implements LogProcessor {
     }
   }
 
-  public static class Builder extends ConfigBuilder<Builder> {
+  @SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+  public static class Builder extends io.opentelemetry.sdk.common.export.ConfigBuilder<Builder> {
     private static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 200;
     private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
     private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;

@@ -67,7 +67,7 @@ public class OtlpPipelineStressTest {
   public static GenericContainer<?> collectorContainer =
       new GenericContainer<>(
               DockerImageName.parse(
-                  "open-telemetry-docker-dev.bintray.io/java-test-containers:otel-collector-dev"))
+                  "ghcr.io/open-telemetry/java-test-containers:otel-collector-dev"))
           .withNetwork(network)
           .withNetworkAliases("otel-collector")
           .withExposedPorts(OTLP_RECEIVER_PORT)
@@ -92,8 +92,7 @@ public class OtlpPipelineStressTest {
   @Container
   public static GenericContainer<?> toxiproxyContainer =
       new GenericContainer<>(
-              DockerImageName.parse(
-                  "open-telemetry-docker-dev.bintray.io/java-test-containers:toxiproxy"))
+              DockerImageName.parse("ghcr.io/open-telemetry/java-test-containers:toxiproxy"))
           .withNetwork(network)
           .withNetworkAliases("toxiproxy")
           .withExposedPorts(TOXIPROXY_CONTROL_PORT, COLLECTOR_PROXY_PORT)
@@ -196,7 +195,7 @@ public class OtlpPipelineStressTest {
     metricsByName.forEach(
         (name, metricData) -> {
           Stream<LongPoint> longPointStream =
-              metricData.stream().flatMap(md -> md.getPoints().stream()).map(p -> (LongPoint) p);
+              metricData.stream().flatMap(md -> md.getLongSumData().getPoints().stream());
           Map<Labels, List<LongPoint>> pointsByLabelset =
               longPointStream.collect(Collectors.groupingBy(Point::getLabels));
           pointsByLabelset.forEach(
@@ -275,7 +274,8 @@ public class OtlpPipelineStressTest {
                     //            .setScheduleDelayMillis(1000)
                     .build())
             .build();
-    openTelemetry = OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
+    openTelemetry =
+        OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
     tracerManagement = tracerProvider;
   }
 }

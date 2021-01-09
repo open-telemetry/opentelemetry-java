@@ -23,7 +23,7 @@ class AwsXRayIdGeneratorTest {
 
   @Test
   void shouldGenerateValidIds() {
-    AwsXrayIdGenerator generator = new AwsXrayIdGenerator();
+    AwsXrayIdGenerator generator = AwsXrayIdGenerator.getInstance();
     for (int i = 0; i < 1000; i++) {
       String traceId = generator.generateTraceId();
       assertThat(TraceId.isValid(traceId)).isTrue();
@@ -34,7 +34,7 @@ class AwsXRayIdGeneratorTest {
 
   @Test
   void shouldGenerateTraceIdsWithTimestampsWithAllowedXrayTimeRange() {
-    AwsXrayIdGenerator generator = new AwsXrayIdGenerator();
+    AwsXrayIdGenerator generator = AwsXrayIdGenerator.getInstance();
     for (int i = 0; i < 1000; i++) {
       String traceId = generator.generateTraceId();
       long unixSeconds = Long.valueOf(traceId.subSequence(0, 8).toString(), 16);
@@ -49,7 +49,7 @@ class AwsXRayIdGeneratorTest {
   @Test
   void shouldGenerateUniqueIdsInMultithreadedEnvironment()
       throws BrokenBarrierException, InterruptedException {
-    AwsXrayIdGenerator generator = new AwsXrayIdGenerator();
+    AwsXrayIdGenerator generator = AwsXrayIdGenerator.getInstance();
     Set<String> traceIds = new CopyOnWriteArraySet<>();
     Set<String> spanIds = new CopyOnWriteArraySet<>();
     int threads = 8;

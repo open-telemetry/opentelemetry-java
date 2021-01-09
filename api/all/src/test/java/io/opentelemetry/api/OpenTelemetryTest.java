@@ -14,7 +14,6 @@ import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.spi.trace.TracerProviderFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,6 +24,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
 class OpenTelemetryTest {
 
   @BeforeAll
@@ -35,7 +35,7 @@ class OpenTelemetryTest {
   @AfterEach
   void after() {
     GlobalOpenTelemetry.reset();
-    System.clearProperty(TracerProviderFactory.class.getName());
+    System.clearProperty(io.opentelemetry.spi.trace.TracerProviderFactory.class.getName());
   }
 
   @Test
@@ -66,7 +66,7 @@ class OpenTelemetryTest {
   void testTracerLoadArbitrary() throws IOException {
     File serviceFile =
         createService(
-            TracerProviderFactory.class,
+            io.opentelemetry.spi.trace.TracerProviderFactory.class,
             FirstTracerProviderFactory.class,
             SecondTracerProviderFactory.class);
     try {
@@ -85,11 +85,12 @@ class OpenTelemetryTest {
   void testTracerSystemProperty() throws IOException {
     File serviceFile =
         createService(
-            TracerProviderFactory.class,
+            io.opentelemetry.spi.trace.TracerProviderFactory.class,
             FirstTracerProviderFactory.class,
             SecondTracerProviderFactory.class);
     System.setProperty(
-        TracerProviderFactory.class.getName(), SecondTracerProviderFactory.class.getName());
+        io.opentelemetry.spi.trace.TracerProviderFactory.class.getName(),
+        SecondTracerProviderFactory.class.getName());
     try {
       assertThat(GlobalOpenTelemetry.getTracerProvider().get(""))
           .isInstanceOf(SecondTracerProviderFactory.class);
@@ -100,7 +101,8 @@ class OpenTelemetryTest {
 
   @Test
   void testTracerNotFound() {
-    System.setProperty(TracerProviderFactory.class.getName(), "io.does.not.exists");
+    System.setProperty(
+        io.opentelemetry.spi.trace.TracerProviderFactory.class.getName(), "io.does.not.exists");
     assertThatThrownBy(() -> GlobalOpenTelemetry.getTracer("testTracer"))
         .isInstanceOf(IllegalStateException.class);
   }
@@ -169,7 +171,7 @@ class OpenTelemetryTest {
   }
 
   public static class FirstTracerProviderFactory
-      implements Tracer, TracerProvider, TracerProviderFactory {
+      implements Tracer, TracerProvider, io.opentelemetry.spi.trace.TracerProviderFactory {
 
     @Override
     public Tracer get(String instrumentationName) {

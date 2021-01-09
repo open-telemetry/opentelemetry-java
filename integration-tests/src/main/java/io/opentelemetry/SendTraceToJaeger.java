@@ -42,7 +42,7 @@ public class SendTraceToJaeger {
             SdkTracerProvider.builder()
                 .addExporter(jaegerExporter, BatchSettings.noBatching())
                 .build())
-        .build();
+        .buildAndRegisterGlobal();
   }
 
   private static void myWonderfulUseCase(OpenTelemetry openTelemetry) {

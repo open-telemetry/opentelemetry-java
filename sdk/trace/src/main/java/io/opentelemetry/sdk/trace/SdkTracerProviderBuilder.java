@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.BatchSettings;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -124,8 +125,8 @@ public final class SdkTracerProviderBuilder {
     } else {
       exporterSpanProcessors.add(
           io.opentelemetry.sdk.trace.export.BatchSpanProcessor.builder(exporter)
-              .setScheduleDelayMillis(batchSettings.getScheduleDelayMillis())
-              .setExporterTimeoutMillis(batchSettings.getExporterTimeoutMillis())
+              .setScheduleDelay(Duration.ofNanos(batchSettings.getScheduleDelayNanos()))
+              .setExporterTimeout(Duration.ofNanos(batchSettings.getExporterTimeoutNanos()))
               .setMaxQueueSize(batchSettings.getMaxQueueSize())
               .setMaxExportBatchSize(batchSettings.getMaxExportBatchSize())
               .build());

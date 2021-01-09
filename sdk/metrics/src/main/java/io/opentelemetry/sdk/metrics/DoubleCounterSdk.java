@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.DoubleCounter;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -21,14 +21,14 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
 
   @Override
   public void add(double increment, Labels labels) {
-    Aggregator<?> aggregator = acquireHandle(labels);
+    AggregatorHandle<?> aggregatorHandle = acquireHandle(labels);
     try {
       if (increment < 0) {
         throw new IllegalArgumentException("Counters can only increase");
       }
-      aggregator.recordDouble(increment);
+      aggregatorHandle.recordDouble(increment);
     } finally {
-      aggregator.release();
+      aggregatorHandle.release();
     }
   }
 
@@ -43,10 +43,10 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
   }
 
   static final class BoundInstrument implements DoubleCounter.BoundDoubleCounter {
-    private final Aggregator<?> aggregator;
+    private final AggregatorHandle<?> aggregatorHandle;
 
-    BoundInstrument(Aggregator<?> aggregator) {
-      this.aggregator = aggregator;
+    BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
+      this.aggregatorHandle = aggregatorHandle;
     }
 
     @Override
@@ -54,12 +54,12 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
       if (increment < 0) {
         throw new IllegalArgumentException("Counters can only increase");
       }
-      aggregator.recordDouble(increment);
+      aggregatorHandle.recordDouble(increment);
     }
 
     @Override
     public void unbind() {
-      aggregator.release();
+      aggregatorHandle.release();
     }
   }
 

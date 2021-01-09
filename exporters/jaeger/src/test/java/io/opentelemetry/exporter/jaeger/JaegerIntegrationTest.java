@@ -22,7 +22,7 @@ import okhttp3.Response;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -34,14 +34,15 @@ class JaegerIntegrationTest {
 
   private static final int QUERY_PORT = 16686;
   private static final int COLLECTOR_PORT = 14250;
+  private static final int HEALTH_PORT = 14269;
   private static final String SERVICE_NAME = "E2E-test";
   private static final String JAEGER_URL = "http://localhost";
 
   @Container
   public static GenericContainer<?> jaegerContainer =
-      new GenericContainer<>("open-telemetry-docker-dev.bintray.io/java-test-containers:jaeger")
-          .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
-          .waitingFor(new HttpWaitStrategy().forPath("/"));
+      new GenericContainer<>("ghcr.io/open-telemetry/java-test-containers:jaeger")
+          .withExposedPorts(COLLECTOR_PORT, QUERY_PORT, HEALTH_PORT)
+          .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));
 
   @Test
   void testJaegerIntegration() {

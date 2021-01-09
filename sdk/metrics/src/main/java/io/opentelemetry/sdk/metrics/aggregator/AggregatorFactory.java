@@ -5,42 +5,60 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import javax.annotation.concurrent.Immutable;
 
 /** Factory class for {@link Aggregator}. */
 @Immutable
-public abstract class AggregatorFactory<T extends Accumulation> {
+public interface AggregatorFactory {
+  /**
+   * Returns an {@code AggregationFactory} that calculates sum of recorded measurements.
+   *
+   * @return an {@code AggregationFactory} that calculates sum of recorded measurements.
+   */
+  static AggregatorFactory sum() {
+    return ImmutableAggregatorFactory.SUM;
+  }
 
   /**
-   * Returns a new {@link Aggregator}. This MUST by used by the synchronous to aggregate recorded
-   * measurements during the collection cycle.
+   * Returns an {@code AggregationFactory} that calculates count of recorded measurements (the
+   * number of recorded measurements).
    *
+   * @return an {@code AggregationFactory} that calculates count of recorded measurements (the
+   *     number of recorded * measurements).
+   */
+  static AggregatorFactory count() {
+    return ImmutableAggregatorFactory.COUNT;
+  }
+
+  /**
+   * Returns an {@code AggregationFactory} that calculates the last value of all recorded
+   * measurements.
+   *
+   * @return an {@code AggregationFactory} that calculates the last value of all recorded
+   *     measurements.
+   */
+  static AggregatorFactory lastValue() {
+    return ImmutableAggregatorFactory.LAST_VALUE;
+  }
+
+  /**
+   * Returns an {@code AggregationFactory} that calculates a simple summary of all recorded
+   * measurements. The summary consists of the count of measurements, the sum of all measurements,
+   * the maximum value recorded and the minimum value recorded.
+   *
+   * @return an {@code AggregationFactory} that calculates a simple summary of all recorded
+   *     measurements.
+   */
+  static AggregatorFactory minMaxSumCount() {
+    return ImmutableAggregatorFactory.MIN_MAX_SUM_COUNT;
+  }
+
+  /**
+   * Returns a new {@link Aggregator}.
+   *
+   * @param instrumentValueType the type of recorded values for the {@code Instrument}.
    * @return a new {@link Aggregator}.
    */
-  public abstract Aggregator<T> getAggregator();
-
-  /**
-   * Returns a new {@code Accumulation} for the given value. This MUST be used by the asynchronous
-   * instruments to create {@code Accumulation} that are passed to the processor.
-   *
-   * @param value the given value to be used to create the {@code Accumulation}.
-   * @return a new {@code Accumulation} for the given value.
-   */
-  public T accumulateLong(long value) {
-    throw new UnsupportedOperationException(
-        "This aggregator does not support recording long values.");
-  }
-
-  /**
-   * Returns a new {@code Accumulation} for the given value. This MUST be used by the asynchronous
-   * instruments to create {@code Accumulation} that are passed to the processor.
-   *
-   * @param value the given value to be used to create the {@code Accumulation}.
-   * @return a new {@code Accumulation} for the given value.
-   */
-  public T accumulateDouble(double value) {
-    throw new UnsupportedOperationException(
-        "This aggregator does not support recording double values.");
-  }
+  <T> Aggregator<T> create(InstrumentValueType instrumentValueType);
 }

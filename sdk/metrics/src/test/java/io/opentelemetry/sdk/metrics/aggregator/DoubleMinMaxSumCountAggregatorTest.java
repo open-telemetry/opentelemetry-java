@@ -8,11 +8,15 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
-import io.opentelemetry.sdk.metrics.aggregation.Accumulation;
-import io.opentelemetry.sdk.metrics.aggregation.AggregationFactory;
-import io.opentelemetry.sdk.metrics.aggregation.MinMaxSumCountAccumulation;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
@@ -22,51 +26,74 @@ import org.junit.jupiter.api.Test;
 
 class DoubleMinMaxSumCountAggregatorTest {
   @Test
-  void factoryAggregation() {
-    AggregatorFactory<MinMaxSumCountAccumulation> factory =
-        DoubleMinMaxSumCountAggregator.getFactory();
-    assertThat(factory.getAggregator()).isInstanceOf(DoubleMinMaxSumCountAggregator.class);
+  void createHandle() {
+    assertThat(DoubleMinMaxSumCountAggregator.getInstance().createHandle())
+        .isInstanceOf(DoubleMinMaxSumCountAggregator.Handle.class);
   }
 
   @Test
   void testRecordings() {
-    Aggregator<MinMaxSumCountAccumulation> aggregator =
-        DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
+    AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
+        DoubleMinMaxSumCountAggregator.getInstance().createHandle();
 
-    aggregator.recordDouble(100);
-    assertThat(aggregator.accumulateThenReset())
+    aggregatorHandle.recordDouble(100);
+    assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
 
-    aggregator.recordDouble(200);
-    assertThat(aggregator.accumulateThenReset())
+    aggregatorHandle.recordDouble(200);
+    assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 200, 200, 200));
 
-    aggregator.recordDouble(-75);
-    assertThat(aggregator.accumulateThenReset())
+    aggregatorHandle.recordDouble(-75);
+    assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, -75, -75, -75));
   }
 
   @Test
   void toAccumulationAndReset() {
-    Aggregator<MinMaxSumCountAccumulation> aggregator =
-        DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
-    assertThat(aggregator.accumulateThenReset()).isNull();
+    AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
+        DoubleMinMaxSumCountAggregator.getInstance().createHandle();
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
-    aggregator.recordDouble(100);
-    assertThat(aggregator.accumulateThenReset())
+    aggregatorHandle.recordDouble(100);
+    assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
-    assertThat(aggregator.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
-    aggregator.recordDouble(100);
-    assertThat(aggregator.accumulateThenReset())
+    aggregatorHandle.recordDouble(100);
+    assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
-    assertThat(aggregator.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+  }
+
+  @Test
+  void toMetricData() {
+    Aggregator<MinMaxSumCountAccumulation> minMaxSumCount =
+        DoubleMinMaxSumCountAggregator.getInstance();
+    AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle = minMaxSumCount.createHandle();
+    aggregatorHandle.recordDouble(10);
+
+    MetricData metricData =
+        minMaxSumCount.toMetricData(
+            Resource.getDefault(),
+            InstrumentationLibraryInfo.getEmpty(),
+            InstrumentDescriptor.create(
+                "name",
+                "description",
+                "unit",
+                InstrumentType.VALUE_RECORDER,
+                InstrumentValueType.LONG),
+            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
+            0,
+            100);
+    assertThat(metricData).isNotNull();
+    assertThat(metricData.getType()).isEqualTo(MetricData.Type.SUMMARY);
   }
 
   @Test
   void testMultithreadedUpdates() throws Exception {
-    final Aggregator<MinMaxSumCountAccumulation> aggregator =
-        DoubleMinMaxSumCountAggregator.getFactory().getAggregator();
+    final AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle =
+        DoubleMinMaxSumCountAggregator.getInstance().createHandle();
     final Summary summarizer = new Summary();
     int numberOfThreads = 10;
     final double[] updates = new double[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
@@ -85,9 +112,9 @@ class DoubleMinMaxSumCountAggregatorTest {
                   throw new RuntimeException(e);
                 }
                 for (int j = 0; j < numberOfUpdates; j++) {
-                  aggregator.recordDouble(update);
+                  aggregatorHandle.recordDouble(update);
                   if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                    summarizer.process(aggregator.accumulateThenReset());
+                    summarizer.process(aggregatorHandle.accumulateThenReset());
                   }
                 }
               });
@@ -102,7 +129,7 @@ class DoubleMinMaxSumCountAggregatorTest {
       worker.join();
     }
     // make sure everything gets merged when all the aggregation is done.
-    summarizer.process(aggregator.accumulateThenReset());
+    summarizer.process(aggregatorHandle.accumulateThenReset());
 
     assertThat(summarizer.accumulation)
         .isEqualTo(
@@ -114,9 +141,9 @@ class DoubleMinMaxSumCountAggregatorTest {
 
     @GuardedBy("lock")
     @Nullable
-    private Accumulation accumulation;
+    private MinMaxSumCountAccumulation accumulation;
 
-    void process(@Nullable Accumulation other) {
+    void process(@Nullable MinMaxSumCountAccumulation other) {
       if (other == null) {
         return;
       }
@@ -126,10 +153,7 @@ class DoubleMinMaxSumCountAggregatorTest {
           accumulation = other;
           return;
         }
-        accumulation =
-            AggregationFactory.minMaxSumCount()
-                .create(InstrumentValueType.DOUBLE)
-                .merge(accumulation, other);
+        accumulation = DoubleMinMaxSumCountAggregator.getInstance().merge(accumulation, other);
       } finally {
         lock.writeLock().unlock();
       }

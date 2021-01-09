@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  *
  * <p>All spans reported by the SDK implementation are first added to a synchronized queue (with a
  * {@code maxQueueSize} maximum size, if queue is full spans are dropped). Spans are exported either
- * when there are {@code maxExportBatchSize} pending spans or {@code scheduleDelayMillis} has passed
+ * when there are {@code maxExportBatchSize} pending spans or {@code scheduleDelayNanos} has passed
  * since the last export finished.
  *
  * <p>This batch {@link SpanProcessor} can cause high contention in a very high traffic service.
@@ -95,16 +95,16 @@ public final class BatchSpanProcessor implements SpanProcessor {
   BatchSpanProcessor(
       SpanExporter spanExporter,
       boolean sampled,
-      long scheduleDelayMillis,
+      long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
-      int exporterTimeoutMillis) {
+      long exporterTimeoutNanos) {
     this.worker =
         new Worker(
             spanExporter,
-            scheduleDelayMillis,
+            scheduleDelayNanos,
             maxExportBatchSize,
-            exporterTimeoutMillis,
+            exporterTimeoutNanos,
             new ArrayBlockingQueue<>(maxQueueSize));
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
@@ -156,7 +156,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final SpanExporter spanExporter;
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
-    private final int exporterTimeoutMillis;
+    private final long exporterTimeoutNanos;
 
     private long nextExportTime;
 
@@ -168,14 +168,14 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private Worker(
         SpanExporter spanExporter,
-        long scheduleDelayMillis,
+        long scheduleDelayNanos,
         int maxExportBatchSize,
-        int exporterTimeoutMillis,
+        long exporterTimeoutNanos,
         BlockingQueue<ReadableSpan> queue) {
       this.spanExporter = spanExporter;
-      this.scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(scheduleDelayMillis);
+      this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
-      this.exporterTimeoutMillis = exporterTimeoutMillis;
+      this.exporterTimeoutNanos = exporterTimeoutNanos;
       this.queue = queue;
       Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.sdk.trace");
       meter
@@ -292,7 +292,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
       try {
         final CompletableResultCode result = spanExporter.export(batch);
-        result.join(exporterTimeoutMillis, TimeUnit.MILLISECONDS);
+        result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         if (result.isSuccess()) {
           exportedSpans.add(batch.size());
         } else {

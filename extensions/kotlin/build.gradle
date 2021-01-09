@@ -16,7 +16,7 @@ dependencies {
     api project(':api:all')
 
     api("org.jetbrains.kotlin:kotlin-stdlib-common")
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
 
     testImplementation project(':sdk:testing')
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")

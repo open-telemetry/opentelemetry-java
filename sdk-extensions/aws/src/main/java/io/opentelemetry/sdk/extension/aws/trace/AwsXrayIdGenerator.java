@@ -22,7 +22,14 @@ import java.util.concurrent.TimeUnit;
  */
 public final class AwsXrayIdGenerator implements IdGenerator {
 
+  private static final AwsXrayIdGenerator INSTANCE = new AwsXrayIdGenerator();
+
   private static final IdGenerator RANDOM_ID_GENERATOR = IdGenerator.random();
+
+  /** Returns a singleton instance of {@link AwsXrayIdGenerator}. */
+  public static AwsXrayIdGenerator getInstance() {
+    return INSTANCE;
+  }
 
   @Override
   public String generateSpanId() {
@@ -43,4 +50,12 @@ public final class AwsXrayIdGenerator implements IdGenerator {
 
     return TraceId.fromLongs(timestampSecs << 32 | hiRandom, lowRandom);
   }
+
+  /**
+   * Constructs a new {@link AwsXrayIdGenerator}.
+   *
+   * @deprecated Use {@link #getInstance()}
+   */
+  @Deprecated
+  public AwsXrayIdGenerator() {}
 }

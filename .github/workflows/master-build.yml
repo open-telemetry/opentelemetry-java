@@ -49,7 +49,7 @@ jobs:
           path: all/build/reports/jacoco/test/html
   publish-snapshots:
     name: Publish snapshots to JFrog
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.event_name == 'push' && github.repository == 'open-telemetry/opentelemetry-java' }}
     needs: build
     runs-on: ubuntu-latest
     steps:
