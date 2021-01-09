@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.jaeger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
@@ -265,6 +266,20 @@ class JaegerGrpcSpanExporterTest {
         JaegerGrpcSpanExporter.builder().readProperties(options).build();
     assertThat(exporter.getProcessBuilder().getServiceName()).isEqualTo(serviceName);
     assertThat(exporter.getManagedChannel().authority()).isEqualTo(endpoint);
+  }
+
+  @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void invalidConfig() {
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
   }
 
   static class MockCollectorService extends CollectorServiceGrpc.CollectorServiceImplBase {
