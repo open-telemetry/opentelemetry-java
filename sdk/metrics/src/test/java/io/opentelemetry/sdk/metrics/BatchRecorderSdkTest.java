@@ -68,7 +68,7 @@ class BatchRecorderSdkTest {
         .put(doubleValueRecorder, 13.1d);
 
     // until record() is called, nothing should be recorded.
-    Collection<MetricData> preRecord = testSdk.collectAll();
+    Collection<MetricData> preRecord = testSdk.collectAll(testClock.now());
     preRecord.forEach(metricData -> assertThat(metricData.isEmpty()).isTrue());
 
     batchRecorder.record();
@@ -105,7 +105,7 @@ class BatchRecorderSdkTest {
       LongValueRecorderSdk longValueRecorder,
       Labels labelSet,
       boolean shouldHaveDeltas) {
-    assertThat(doubleCounter.collectAll())
+    assertThat(doubleCounter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -118,7 +118,7 @@ class BatchRecorderSdkTest {
                     MetricData.AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         DoublePoint.create(testClock.now(), testClock.now(), labelSet, 24.2d)))));
-    assertThat(longCounter.collectAll())
+    assertThat(longCounter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -131,7 +131,7 @@ class BatchRecorderSdkTest {
                     MetricData.AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         LongPoint.create(testClock.now(), testClock.now(), labelSet, 12)))));
-    assertThat(doubleUpDownCounter.collectAll())
+    assertThat(doubleUpDownCounter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -144,7 +144,7 @@ class BatchRecorderSdkTest {
                     MetricData.AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         DoublePoint.create(testClock.now(), testClock.now(), labelSet, -12.1d)))));
-    assertThat(longUpDownCounter.collectAll())
+    assertThat(longUpDownCounter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -159,7 +159,7 @@ class BatchRecorderSdkTest {
                         LongPoint.create(testClock.now(), testClock.now(), labelSet, -12)))));
 
     if (shouldHaveDeltas) {
-      assertThat(doubleValueRecorder.collectAll())
+      assertThat(doubleValueRecorder.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createDoubleSummary(
                   RESOURCE,
@@ -179,11 +179,11 @@ class BatchRecorderSdkTest {
                                   MetricData.ValueAtPercentile.create(0.0, 13.1),
                                   MetricData.ValueAtPercentile.create(100.0, 13.1)))))));
     } else {
-      assertThat(doubleValueRecorder.collectAll()).isEmpty();
+      assertThat(doubleValueRecorder.collectAll(testClock.now())).isEmpty();
     }
 
     if (shouldHaveDeltas) {
-      assertThat(longValueRecorder.collectAll())
+      assertThat(longValueRecorder.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createDoubleSummary(
                   RESOURCE,
@@ -203,7 +203,7 @@ class BatchRecorderSdkTest {
                                   MetricData.ValueAtPercentile.create(0.0, 13),
                                   MetricData.ValueAtPercentile.create(100.0, 13)))))));
     } else {
-      assertThat(longValueRecorder.collectAll()).isEmpty();
+      assertThat(longValueRecorder.collectAll(testClock.now())).isEmpty();
     }
   }
 }

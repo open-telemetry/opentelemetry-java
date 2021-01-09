@@ -128,7 +128,7 @@ class AbstractInstrumentBuilderTest {
     }
 
     @Override
-    List<MetricData> collectAll() {
+    List<MetricData> collectAll(long epochNanos) {
       return Collections.emptyList();
     }
   }

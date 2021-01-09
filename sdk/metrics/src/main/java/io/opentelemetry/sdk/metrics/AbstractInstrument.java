@@ -31,7 +31,7 @@ abstract class AbstractInstrument implements Instrument {
   /**
    * Collects records from all the entries (labelSet, Bound) that changed since the previous call.
    */
-  abstract List<MetricData> collectAll();
+  abstract List<MetricData> collectAll(long epochNanos);
 
   @Override
   public boolean equals(Object o) {

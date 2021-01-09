@@ -44,7 +44,7 @@ public class SynchronousInstrumentAccumulatorTest {
     AggregatorHandle<?> duplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     try {
       assertThat(duplicateAggregatorHandle).isSameAs(aggregatorHandle);
-      accumulator.collectAll();
+      accumulator.collectAll(providerSharedState.getClock().now());
       AggregatorHandle<?> anotherDuplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
       try {
         assertThat(anotherDuplicateAggregatorHandle).isSameAs(aggregatorHandle);

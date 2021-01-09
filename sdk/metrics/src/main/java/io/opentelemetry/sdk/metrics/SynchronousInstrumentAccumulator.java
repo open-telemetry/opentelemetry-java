@@ -60,7 +60,7 @@ final class SynchronousInstrumentAccumulator<T> {
    * Collects records from all the entries (labelSet, Bound) that changed since the last collect()
    * call.
    */
-  List<MetricData> collectAll() {
+  List<MetricData> collectAll(long epochNanos) {
     collectLock.lock();
     try {
       for (Map.Entry<Labels, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {
@@ -76,7 +76,7 @@ final class SynchronousInstrumentAccumulator<T> {
         }
         instrumentProcessor.batch(entry.getKey(), accumulation);
       }
-      return instrumentProcessor.completeCollectionCycle();
+      return instrumentProcessor.completeCollectionCycle(epochNanos);
     } finally {
       collectLock.unlock();
     }

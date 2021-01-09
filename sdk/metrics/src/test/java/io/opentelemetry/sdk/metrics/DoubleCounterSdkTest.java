@@ -58,7 +58,7 @@ class DoubleCounterSdkTest {
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
-    List<MetricData> metricDataList = doubleCounter.collectAll();
+    List<MetricData> metricDataList = doubleCounter.collectAll(testClock.now());
     assertThat(metricDataList).isEmpty();
   }
 
@@ -72,7 +72,7 @@ class DoubleCounterSdkTest {
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     doubleCounter.add(12.1d, Labels.empty());
-    List<MetricData> metricDataList = doubleCounter.collectAll();
+    List<MetricData> metricDataList = doubleCounter.collectAll(testClock.now());
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
@@ -97,10 +97,10 @@ class DoubleCounterSdkTest {
     doubleCounter.add(12.1d, Labels.empty());
     doubleCounter1.add(12.1d);
 
-    assertThat(doubleCounter.collectAll().get(0))
+    assertThat(doubleCounter.collectAll(testClock.now()).get(0))
         .usingRecursiveComparison(
             RecursiveComparisonConfiguration.builder().withIgnoredFields("name").build())
-        .isEqualTo(doubleCounter1.collectAll().get(0));
+        .isEqualTo(doubleCounter1.collectAll(testClock.now()).get(0));
   }
 
   @Test
@@ -118,28 +118,26 @@ class DoubleCounterSdkTest {
       boundCounter.add(321.5d);
       doubleCounter.add(111.1d, Labels.of("K", "V"));
 
-      long firstCollect = testClock.now();
-      List<MetricData> metricDataList = doubleCounter.collectAll();
+      List<MetricData> metricDataList = doubleCounter.collectAll(testClock.now());
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
       assertThat(metricData.getDoubleSumData().getPoints())
           .containsExactly(
-              DoublePoint.create(startTime, firstCollect, Labels.of("K", "V"), 555.9d),
-              DoublePoint.create(startTime, firstCollect, Labels.empty(), 33.5d));
+              DoublePoint.create(startTime, testClock.now(), Labels.of("K", "V"), 555.9d),
+              DoublePoint.create(startTime, testClock.now(), Labels.empty(), 33.5d));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(222d);
       doubleCounter.add(11d, Labels.empty());
 
-      long secondCollect = testClock.now();
-      metricDataList = doubleCounter.collectAll();
+      metricDataList = doubleCounter.collectAll(testClock.now());
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
       assertThat(metricData.getDoubleSumData().getPoints())
           .containsExactly(
-              DoublePoint.create(startTime, secondCollect, Labels.of("K", "V"), 777.9d),
-              DoublePoint.create(startTime, secondCollect, Labels.empty(), 44.5d));
+              DoublePoint.create(startTime, testClock.now(), Labels.of("K", "V"), 777.9d),
+              DoublePoint.create(startTime, testClock.now(), Labels.empty(), 44.5d));
     } finally {
       boundCounter.unbind();
     }
@@ -178,7 +176,7 @@ class DoubleCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleCounter.collectAll();
+    List<MetricData> metricDataList = doubleCounter.collectAll(testClock.now());
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getDoubleSumData().getPoints())
         .containsExactly(
@@ -207,7 +205,7 @@ class DoubleCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleCounter.collectAll();
+    List<MetricData> metricDataList = doubleCounter.collectAll(testClock.now());
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getDoubleSumData().getPoints())
         .containsExactly(

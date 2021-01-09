@@ -40,7 +40,7 @@ public final class SdkMeterProvider implements MeterProvider {
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
-    this.metricProducer = new MetricProducerSdk(this.registry);
+    this.metricProducer = new MetricProducerSdk(this.registry, this.sharedState);
   }
 
   @Override
@@ -113,9 +113,12 @@ public final class SdkMeterProvider implements MeterProvider {
 
   private static final class MetricProducerSdk implements MetricProducer {
     private final ComponentRegistry<SdkMeter> registry;
+    private final MeterProviderSharedState sharedState;
 
-    private MetricProducerSdk(ComponentRegistry<SdkMeter> registry) {
+    private MetricProducerSdk(
+        ComponentRegistry<SdkMeter> registry, MeterProviderSharedState sharedState) {
       this.registry = registry;
+      this.sharedState = sharedState;
     }
 
     @Override
@@ -123,7 +126,7 @@ public final class SdkMeterProvider implements MeterProvider {
       Collection<SdkMeter> meters = registry.getComponents();
       List<MetricData> result = new ArrayList<>(meters.size());
       for (SdkMeter meter : meters) {
-        result.addAll(meter.collectAll());
+        result.addAll(meter.collectAll(sharedState.getClock().now()));
       }
       return Collections.unmodifiableCollection(result);
     }
