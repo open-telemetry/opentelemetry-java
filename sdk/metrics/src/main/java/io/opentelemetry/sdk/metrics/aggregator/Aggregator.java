@@ -24,10 +24,6 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface Aggregator<T> {
-
-  // TODO: Move all getInstance methods here as static methods and make the implementations package
-  //  protected.
-
   /**
    * Returns a new {@link AggregatorHandle}. This MUST by used by the synchronous to aggregate
    * recorded measurements during the collection cycle.
