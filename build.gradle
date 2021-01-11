@@ -591,6 +591,7 @@ allprojects {
                     .replaceAll("(implementation.*io\\.opentelemetry:.*:)(\\d+\\.\\d+\\.\\d+)(?!-SNAPSHOT)(.*)", "\$1${version}\$3")
                     .replaceAll("(implementation.*io\\.opentelemetry:.*:)(\\d+\\.\\d+\\.\\d+-SNAPSHOT)(.*)", "\$1${nextSnapshot}\$3")
                     .replaceAll("<!--VERSION_STABLE-->.*<!--/VERSION_STABLE-->", "<!--VERSION_STABLE-->${version}<!--/VERSION_STABLE-->")
+                    .replaceAll("<!--VERSION_UNSTABLE-->.*<!--/VERSION_UNSTABLE-->", "<!--VERSION_UNSTABLE-->${version}-alpha<!--/VERSION_UNSTABLE-->")
             readme.text = updatedText
         }
     }
