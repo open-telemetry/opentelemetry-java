@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -24,14 +23,13 @@ import java.util.Map;
  * batches together {@code Aggregator}s for the similar sets of labels.
  *
  * <p>An entire collection cycle must be protected by a lock. A collection cycle is defined by
- * multiple calls to {@code #batch(...)} followed by one {@link #completeCollectionCycle()};
+ * multiple calls to {@code #batch(...)} followed by one {@code #completeCollectionCycle(...)};
  */
 final class InstrumentProcessor<T> {
   private final InstrumentDescriptor descriptor;
   private final Aggregator<T> aggregator;
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
-  private final Clock clock;
   private Map<Labels, T> accumulationMap;
   private long startEpochNanos;
   private final boolean delta;
@@ -56,7 +54,7 @@ final class InstrumentProcessor<T> {
         aggregator,
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
-        meterProviderSharedState.getClock(),
+        meterProviderSharedState.getStartEpochNanos(),
         isDelta(configuration.getTemporality()));
   }
 
@@ -65,16 +63,15 @@ final class InstrumentProcessor<T> {
       Aggregator<T> aggregator,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      Clock clock,
+      long startEpochNanos,
       boolean delta) {
     this.descriptor = descriptor;
     this.aggregator = aggregator;
     this.resource = resource;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    this.clock = clock;
     this.delta = delta;
     this.accumulationMap = new HashMap<>();
-    startEpochNanos = clock.now();
+    this.startEpochNanos = startEpochNanos;
   }
 
   /**
@@ -103,8 +100,7 @@ final class InstrumentProcessor<T> {
    *
    * @return the list of metrics batched in this Batcher.
    */
-  List<MetricData> completeCollectionCycle() {
-    long epochNanos = clock.now();
+  List<MetricData> completeCollectionCycle(long epochNanos) {
     if (accumulationMap.isEmpty()) {
       return Collections.emptyList();
     }

@@ -61,7 +61,7 @@ class DoubleUpDownCounterSdkTest {
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
-    List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
+    List<MetricData> metricDataList = doubleUpDownCounter.collectAll(testClock.now());
     assertThat(metricDataList).isEmpty();
   }
 
@@ -71,7 +71,7 @@ class DoubleUpDownCounterSdkTest {
         testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
     doubleUpDownCounter.add(12.1d, Labels.empty());
-    List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
+    List<MetricData> metricDataList = doubleUpDownCounter.collectAll(testClock.now());
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
@@ -94,10 +94,10 @@ class DoubleUpDownCounterSdkTest {
     doubleUpDownCounter.add(12.1d, Labels.empty());
     doubleUpDownCounter1.add(12.1d);
 
-    assertThat(doubleUpDownCounter.collectAll().get(0))
+    assertThat(doubleUpDownCounter.collectAll(testClock.now()).get(0))
         .usingRecursiveComparison(
             RecursiveComparisonConfiguration.builder().withIgnoredFields("name").build())
-        .isEqualTo(doubleUpDownCounter1.collectAll().get(0));
+        .isEqualTo(doubleUpDownCounter1.collectAll(testClock.now()).get(0));
   }
 
   @Test
@@ -116,28 +116,26 @@ class DoubleUpDownCounterSdkTest {
       boundCounter.add(321.5d);
       doubleUpDownCounter.add(111.1d, Labels.of("K", "V"));
 
-      long firstCollect = testClock.now();
-      List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
+      List<MetricData> metricDataList = doubleUpDownCounter.collectAll(testClock.now());
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
       assertThat(metricData.getDoubleSumData().getPoints())
           .containsExactly(
-              DoublePoint.create(startTime, firstCollect, Labels.of("K", "V"), 555.9d),
-              DoublePoint.create(startTime, firstCollect, Labels.empty(), 33.5d));
+              DoublePoint.create(startTime, testClock.now(), Labels.of("K", "V"), 555.9d),
+              DoublePoint.create(startTime, testClock.now(), Labels.empty(), 33.5d));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(222d);
       doubleUpDownCounter.add(11d, Labels.empty());
 
-      long secondCollect = testClock.now();
-      metricDataList = doubleUpDownCounter.collectAll();
+      metricDataList = doubleUpDownCounter.collectAll(testClock.now());
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
       assertThat(metricData.getDoubleSumData().getPoints())
           .containsExactly(
-              DoublePoint.create(startTime, secondCollect, Labels.of("K", "V"), 777.9d),
-              DoublePoint.create(startTime, secondCollect, Labels.empty(), 44.5d));
+              DoublePoint.create(startTime, testClock.now(), Labels.of("K", "V"), 777.9d),
+              DoublePoint.create(startTime, testClock.now(), Labels.empty(), 44.5d));
     } finally {
       boundCounter.unbind();
     }
@@ -163,7 +161,7 @@ class DoubleUpDownCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
+    List<MetricData> metricDataList = doubleUpDownCounter.collectAll(testClock.now());
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getDoubleSumData().getPoints())
         .containsExactly(
@@ -194,7 +192,7 @@ class DoubleUpDownCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
+    List<MetricData> metricDataList = doubleUpDownCounter.collectAll(testClock.now());
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getDoubleSumData().getPoints())
         .containsExactly(

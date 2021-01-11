@@ -67,7 +67,7 @@ class LongValueRecorderSdkTest {
     longMeasure.bind(Labels.of("key", "value"));
     testClock.advanceNanos(SECOND_NANOS);
 
-    List<MetricData> metricDataList = longMeasure.collectAll();
+    List<MetricData> metricDataList = longMeasure.collectAll(testClock.now());
     assertThat(metricDataList).isEmpty();
   }
 
@@ -81,7 +81,7 @@ class LongValueRecorderSdkTest {
             .build();
     testClock.advanceNanos(SECOND_NANOS);
     longMeasure.record(12, Labels.empty());
-    List<MetricData> metricDataList = longMeasure.collectAll();
+    List<MetricData> metricDataList = longMeasure.collectAll(testClock.now());
     assertThat(metricDataList)
         .containsExactly(
             MetricData.createDoubleSummary(
@@ -109,10 +109,10 @@ class LongValueRecorderSdkTest {
     longMeasure.record(12, Labels.empty());
     longMeasure1.record(12);
 
-    assertThat(longMeasure.collectAll().get(0))
+    assertThat(longMeasure.collectAll(testClock.now()).get(0))
         .usingRecursiveComparison(
             RecursiveComparisonConfiguration.builder().withIgnoredFields("name").build())
-        .isEqualTo(longMeasure1.collectAll().get(0));
+        .isEqualTo(longMeasure1.collectAll(testClock.now()).get(0));
   }
 
   @Test
@@ -130,17 +130,16 @@ class LongValueRecorderSdkTest {
       boundMeasure.record(321);
       longMeasure.record(-121, Labels.of("K", "V"));
 
-      long firstCollect = testClock.now();
-      List<MetricData> metricDataList = longMeasure.collectAll();
+      List<MetricData> metricDataList = longMeasure.collectAll(testClock.now());
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
       assertThat(metricData.getDoubleSummaryData().getPoints())
           .containsExactlyInAnyOrder(
               DoubleSummaryPoint.create(
-                  startTime, firstCollect, Labels.empty(), 2, -2, valueAtPercentiles(-14, 12)),
+                  startTime, testClock.now(), Labels.empty(), 2, -2, valueAtPercentiles(-14, 12)),
               MetricData.DoubleSummaryPoint.create(
                   startTime,
-                  firstCollect,
+                  testClock.now(),
                   Labels.of("K", "V"),
                   3,
                   323,
@@ -151,22 +150,21 @@ class LongValueRecorderSdkTest {
       boundMeasure.record(222);
       longMeasure.record(17, Labels.empty());
 
-      long secondCollect = testClock.now();
-      metricDataList = longMeasure.collectAll();
+      metricDataList = longMeasure.collectAll(testClock.now());
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
       assertThat(metricData.getDoubleSummaryData().getPoints())
           .containsExactlyInAnyOrder(
               DoubleSummaryPoint.create(
                   startTime + SECOND_NANOS,
-                  secondCollect,
+                  testClock.now(),
                   Labels.empty(),
                   1,
                   17,
                   valueAtPercentiles(17, 17)),
               DoubleSummaryPoint.create(
                   startTime + SECOND_NANOS,
-                  secondCollect,
+                  testClock.now(),
                   Labels.of("K", "V"),
                   1,
                   222,
@@ -199,7 +197,7 @@ class LongValueRecorderSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = longMeasure.collectAll();
+    List<MetricData> metricDataList = longMeasure.collectAll(testClock.now());
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getDoubleSummaryData().getPoints())
         .containsExactly(
@@ -239,7 +237,7 @@ class LongValueRecorderSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = longMeasure.collectAll();
+    List<MetricData> metricDataList = longMeasure.collectAll(testClock.now());
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getDoubleSummaryData().getPoints())
         .containsExactly(

@@ -56,11 +56,11 @@ final class AsynchronousInstrumentAccumulator {
     this.metricUpdater = metricUpdater;
   }
 
-  List<MetricData> collectAll() {
+  List<MetricData> collectAll(long epochNanos) {
     collectLock.lock();
     try {
       metricUpdater.run();
-      return instrumentProcessor.completeCollectionCycle();
+      return instrumentProcessor.completeCollectionCycle(epochNanos);
     } finally {
       collectLock.unlock();
     }

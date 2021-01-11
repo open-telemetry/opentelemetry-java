@@ -66,7 +66,7 @@ class DoubleValueRecorderSdkTest {
     doubleMeasure.bind(Labels.of("key", "value"));
     testClock.advanceNanos(SECOND_NANOS);
 
-    List<MetricData> metricDataList = doubleMeasure.collectAll();
+    List<MetricData> metricDataList = doubleMeasure.collectAll(testClock.now());
     assertThat(metricDataList).isEmpty();
   }
 
@@ -76,7 +76,7 @@ class DoubleValueRecorderSdkTest {
         testSdk.doubleValueRecorderBuilder("testRecorder").build();
     testClock.advanceNanos(SECOND_NANOS);
     doubleMeasure.record(12.1d, Labels.empty());
-    List<MetricData> metricDataList = doubleMeasure.collectAll();
+    List<MetricData> metricDataList = doubleMeasure.collectAll(testClock.now());
     assertThat(metricDataList)
         .containsExactly(
             MetricData.createDoubleSummary(
@@ -106,10 +106,10 @@ class DoubleValueRecorderSdkTest {
     doubleMeasure.record(12.1d, Labels.empty());
     doubleMeasure1.record(12.1d);
 
-    assertThat(doubleMeasure.collectAll().get(0))
+    assertThat(doubleMeasure.collectAll(testClock.now()).get(0))
         .usingRecursiveComparison(
             RecursiveComparisonConfiguration.builder().withIgnoredFields("name").build())
-        .isEqualTo(doubleMeasure1.collectAll().get(0));
+        .isEqualTo(doubleMeasure1.collectAll(testClock.now()).get(0));
   }
 
   @Test
@@ -128,22 +128,21 @@ class DoubleValueRecorderSdkTest {
       boundMeasure.record(321.5d);
       doubleMeasure.record(-121.5d, Labels.of("K", "V"));
 
-      long firstCollect = testClock.now();
-      List<MetricData> metricDataList = doubleMeasure.collectAll();
+      List<MetricData> metricDataList = doubleMeasure.collectAll(testClock.now());
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
       assertThat(metricData.getDoubleSummaryData().getPoints())
           .containsExactlyInAnyOrder(
               MetricData.DoubleSummaryPoint.create(
                   startTime,
-                  firstCollect,
+                  testClock.now(),
                   Labels.empty(),
                   2,
                   -1.0d,
                   valueAtPercentiles(-13.1d, 12.1d)),
               MetricData.DoubleSummaryPoint.create(
                   startTime,
-                  firstCollect,
+                  testClock.now(),
                   Labels.of("K", "V"),
                   3,
                   323.3d,
@@ -154,22 +153,21 @@ class DoubleValueRecorderSdkTest {
       boundMeasure.record(222d);
       doubleMeasure.record(17d, Labels.empty());
 
-      long secondCollect = testClock.now();
-      metricDataList = doubleMeasure.collectAll();
+      metricDataList = doubleMeasure.collectAll(testClock.now());
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
       assertThat(metricData.getDoubleSummaryData().getPoints())
           .containsExactlyInAnyOrder(
               DoubleSummaryPoint.create(
                   startTime + SECOND_NANOS,
-                  secondCollect,
+                  testClock.now(),
                   Labels.empty(),
                   1,
                   17.0d,
                   valueAtPercentiles(17d, 17d)),
               MetricData.DoubleSummaryPoint.create(
                   startTime + SECOND_NANOS,
-                  secondCollect,
+                  testClock.now(),
                   Labels.of("K", "V"),
                   1,
                   222.0d,
@@ -199,7 +197,7 @@ class DoubleValueRecorderSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleMeasure.collectAll();
+    List<MetricData> metricDataList = doubleMeasure.collectAll(testClock.now());
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getDoubleSummaryData().getPoints())
         .containsExactly(
@@ -238,7 +236,7 @@ class DoubleValueRecorderSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleMeasure.collectAll();
+    List<MetricData> metricDataList = doubleMeasure.collectAll(testClock.now());
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getDoubleSummaryData().getPoints())
         .containsExactly(
