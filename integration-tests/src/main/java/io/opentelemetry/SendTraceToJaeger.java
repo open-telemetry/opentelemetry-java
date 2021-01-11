@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import java.time.Duration;
 
 public class SendTraceToJaeger {
   // Jaeger Endpoint URL and PORT
@@ -33,7 +34,7 @@ public class SendTraceToJaeger {
         JaegerGrpcSpanExporter.builder()
             .setServiceName("integration test")
             .setChannel(jaegerChannel)
-            .setDeadlineMs(30000)
+            .setTimeout(Duration.ofSeconds(30))
             .build();
 
     // Set to process the spans by the Jaeger Exporter
