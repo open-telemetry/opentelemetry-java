@@ -121,9 +121,7 @@ final class TracerProviderConfiguration {
         {
           Double ratio = config.getDouble("otel.trace.sampler.arg");
           if (ratio == null) {
-            throw new ConfigurationException(
-                "otel.trace.sampler=traceidratio but otel.trace.sampler.arg is not provided. "
-                    + "Set otel.trace.sampler.arg to a value in the range [0.0, 1.0].");
+            ratio = 1.0d;
           }
           return Sampler.traceIdRatioBased(ratio);
         }
@@ -135,10 +133,7 @@ final class TracerProviderConfiguration {
         {
           Double ratio = config.getDouble("otel.trace.sampler.arg");
           if (ratio == null) {
-            throw new ConfigurationException(
-                "otel.trace.sampler=parentbased_traceidratio but otel.trace.sampler.arg is not "
-                    + "provided. Set otel.trace.sampler.arg to a value in the "
-                    + "range [0.0, 1.0].");
+            ratio = 1.0d;
           }
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
         }
