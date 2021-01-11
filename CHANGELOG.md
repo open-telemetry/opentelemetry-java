@@ -67,6 +67,8 @@ generated, as it was not conformant with the specifications.
 will be removed in the next release.
 - All existing auto-configuration mechanisms have been deprecated in favor of using the new `io.opentelemetry.sdk.autoconfigure`
 module. The existing ones will be removed in the next release.
+- The methods with the term "deadline" has been deprecated in the configuration of the grpc-based exporters (OTLP and Jaeger) in favor
+  of the word "timeout". The deadline-named methods will be removed in the next release.
 
 #### Enhancements
 
@@ -76,6 +78,8 @@ be the new path for auto-configuration of the SDK, including via SPI, environmen
 - The `TraceConfig` class now exposes a `builder()` method directly, so you don't need to get the default then call `toBuilder()` on it.
 - The OTLP protobuf definitions were updated to the latest released version: `0.7.0`. 
 Both the `Span` and (alpha) `Metric` exporters were updated to match.
+- Timeouts in the exporters can now be specified with `java.util.concurrent.TimeUnit` and `java.time.Duration` based configurations,
+rather than requiring milliseconds.
 
 ### SDK Extensions
 
