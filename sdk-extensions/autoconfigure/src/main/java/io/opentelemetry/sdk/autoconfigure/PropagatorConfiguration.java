@@ -13,8 +13,10 @@ import io.opentelemetry.extension.trace.propagation.AwsXrayPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracerPropagator;
+import io.opentelemetry.sdk.autoconfigure.spi.PropagatorProvider;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ServiceLoader;
 
 final class PropagatorConfiguration {
 
@@ -23,6 +25,11 @@ final class PropagatorConfiguration {
     for (String propagatorName : config.getCommaSeparatedValues("otel.propagators")) {
       propagators.add(PropagatorConfiguration.getPropagator(propagatorName));
     }
+
+    for (PropagatorProvider provider : ServiceLoader.load(PropagatorProvider.class)) {
+      propagators.add(provider.get());
+    }
+
     return ContextPropagators.create(TextMapPropagator.composite(propagators));
   }
 

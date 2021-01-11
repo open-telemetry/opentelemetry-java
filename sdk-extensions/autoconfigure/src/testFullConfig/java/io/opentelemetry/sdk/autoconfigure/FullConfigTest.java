@@ -187,6 +187,8 @@ class FullConfigTest {
     keys.add("uberctx-airplane");
     keys.addAll(OtTracerPropagator.getInstance().fields());
     keys.addAll(AwsXrayPropagator.getInstance().fields());
+    // Added by TestPropagatorProvider
+    keys.add("test");
     assertThat(headers).containsOnlyKeys(keys);
 
     GlobalOpenTelemetry.get()
