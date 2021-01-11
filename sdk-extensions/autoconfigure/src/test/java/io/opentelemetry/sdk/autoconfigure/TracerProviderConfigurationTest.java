@@ -167,9 +167,8 @@ class TracerProviderConfigurationTest {
                 ConfigProperties.createForTest(
                     Collections.singletonMap("otel.trace.sampler.arg", "0.5"))))
         .isEqualTo(Sampler.traceIdRatioBased(0.5));
-    assertThatThrownBy(() -> TracerProviderConfiguration.configureSampler("traceidratio", EMPTY))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("otel.trace.sampler.arg is not provided");
+    assertThat(TracerProviderConfiguration.configureSampler("traceidratio", EMPTY))
+        .isEqualTo(Sampler.traceIdRatioBased(1.0d));
     assertThat(TracerProviderConfiguration.configureSampler("parentbased_always_on", EMPTY))
         .isEqualTo(Sampler.parentBased(Sampler.alwaysOn()));
     assertThat(TracerProviderConfiguration.configureSampler("parentbased_always_off", EMPTY))
@@ -180,10 +179,8 @@ class TracerProviderConfigurationTest {
                 ConfigProperties.createForTest(
                     Collections.singletonMap("otel.trace.sampler.arg", "0.4"))))
         .isEqualTo(Sampler.parentBased(Sampler.traceIdRatioBased(0.4)));
-    assertThatThrownBy(
-            () -> TracerProviderConfiguration.configureSampler("parentbased_traceidratio", EMPTY))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("otel.trace.sampler.arg is not provided");
+    assertThat(TracerProviderConfiguration.configureSampler("parentbased_traceidratio", EMPTY))
+        .isEqualTo(Sampler.parentBased(Sampler.traceIdRatioBased(1.0d)));
 
     assertThatThrownBy(() -> TracerProviderConfiguration.configureSampler("catsampler", EMPTY))
         .isInstanceOf(ConfigurationException.class)
