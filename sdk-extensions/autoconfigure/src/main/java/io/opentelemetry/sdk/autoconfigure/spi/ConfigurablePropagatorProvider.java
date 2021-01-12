@@ -20,7 +20,8 @@ public interface ConfigurablePropagatorProvider {
 
   /**
    * Returns the name of this propagator, which can be specified with the {@code otel.propagators}
-   * property to enable it.
+   * property to enable it. If the name is the same as any other defined propagator name, it is
+   * undefined which will be used.
    */
   String getName();
 }
