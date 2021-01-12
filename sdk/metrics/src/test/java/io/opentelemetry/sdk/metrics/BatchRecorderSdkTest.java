@@ -67,7 +67,7 @@ class BatchRecorderSdkTest {
         .put(doubleValueRecorder, 13.1d);
 
     // until record() is called, nothing should be recorded.
-    Collection<MetricData> preRecord = sdkMeter.collectAll(testClock.now());
+    Collection<MetricData> preRecord = sdkMeterProvider.collectAllMetrics();
     preRecord.forEach(metricData -> assertThat(metricData.isEmpty()).isTrue());
 
     batchRecorder.record();

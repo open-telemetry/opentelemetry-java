@@ -57,7 +57,7 @@ class DoubleValueRecorderSdkTest {
         sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
     BoundDoubleValueRecorder bound = doubleRecorder.bind(Labels.of("key", "value"));
     try {
-      assertThat(sdkMeter.collectAll(testClock.now())).isEmpty();
+      assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -74,7 +74,7 @@ class DoubleValueRecorderSdkTest {
     testClock.advanceNanos(SECOND_NANOS);
     doubleRecorder.record(12d, Labels.empty());
     doubleRecorder.record(12d);
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleSummary(
                 RESOURCE,
@@ -108,7 +108,7 @@ class DoubleValueRecorderSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.record(321.5d);
       doubleRecorder.record(-121.5d, Labels.of("K", "V"));
-      assertThat(sdkMeter.collectAll(testClock.now()))
+      assertThat(sdkMeterProvider.collectAllMetrics())
           .containsExactly(
               MetricData.createDoubleSummary(
                   RESOURCE,
@@ -137,7 +137,7 @@ class DoubleValueRecorderSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.record(222d);
       doubleRecorder.record(17d, Labels.empty());
-      assertThat(sdkMeter.collectAll(testClock.now()))
+      assertThat(sdkMeterProvider.collectAllMetrics())
           .containsExactly(
               MetricData.createDoubleSummary(
                   RESOURCE,
@@ -186,7 +186,7 @@ class DoubleValueRecorderSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleSummary(
                 RESOURCE,
@@ -231,7 +231,7 @@ class DoubleValueRecorderSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleSummary(
                 RESOURCE,

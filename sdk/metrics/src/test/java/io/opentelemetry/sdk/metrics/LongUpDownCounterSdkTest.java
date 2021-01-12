@@ -55,7 +55,7 @@ class LongUpDownCounterSdkTest {
         sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.of("foo", "bar"));
     try {
-      assertThat(sdkMeter.collectAll(testClock.now())).isEmpty();
+      assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -72,7 +72,7 @@ class LongUpDownCounterSdkTest {
     testClock.advanceNanos(SECOND_NANOS);
     longUpDownCounter.add(12, Labels.empty());
     longUpDownCounter.add(12);
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -106,7 +106,7 @@ class LongUpDownCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(321);
       longUpDownCounter.add(111, Labels.of("K", "V"));
-      assertThat(sdkMeter.collectAll(testClock.now()))
+      assertThat(sdkMeterProvider.collectAllMetrics())
           .containsExactly(
               MetricData.createLongSum(
                   RESOURCE,
@@ -127,7 +127,7 @@ class LongUpDownCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(222);
       longUpDownCounter.add(11, Labels.empty());
-      assertThat(sdkMeter.collectAll(testClock.now()))
+      assertThat(sdkMeterProvider.collectAllMetrics())
           .containsExactly(
               MetricData.createLongSum(
                   RESOURCE,
@@ -168,7 +168,7 @@ class LongUpDownCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -208,7 +208,7 @@ class LongUpDownCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
