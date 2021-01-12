@@ -34,9 +34,14 @@ public class SdkMeterProviderTest {
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(SdkMeterProviderTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final SdkMeterProvider testMeterProvider =
+  private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter sdkMeter = testMeterProvider.get(SdkMeterProviderTest.class.getName());
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
+
+  @Test
+  void defaultMeterName() {
+    assertThat(sdkMeterProvider.get(null)).isSameAs(sdkMeterProvider.get("unknown"));
+  }
 
   @Test
   void collectAllSyncInstruments() {
@@ -146,7 +151,7 @@ public class SdkMeterProviderTest {
   @Test
   void collectAllSyncInstruments_CustomAggregation() {
     registerViewForAllTypes(
-        testMeterProvider,
+        sdkMeterProvider,
         AggregationConfiguration.create(
             AggregatorFactory.count(), MetricData.AggregationTemporality.CUMULATIVE));
     LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
@@ -345,7 +350,7 @@ public class SdkMeterProviderTest {
   @Test
   void collectAllAsyncInstruments_CustomAggregation() {
     registerViewForAllTypes(
-        testMeterProvider,
+        sdkMeterProvider,
         AggregationConfiguration.create(
             AggregatorFactory.count(), MetricData.AggregationTemporality.CUMULATIVE));
     sdkMeter
