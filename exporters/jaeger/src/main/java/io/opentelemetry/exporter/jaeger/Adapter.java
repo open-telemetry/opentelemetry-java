@@ -9,11 +9,14 @@ import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -60,11 +63,12 @@ final class Adapter {
    * @param span the span to be converted
    * @return the Jaeger span
    */
+  @SuppressWarnings("deprecation") // Remove after TraceProtoUtils made package-private
   static Model.Span toJaeger(SpanData span) {
     Model.Span.Builder target = Model.Span.newBuilder();
 
-    target.setTraceId(TraceProtoUtils.toProtoTraceId(span.getTraceId()));
-    target.setSpanId(TraceProtoUtils.toProtoSpanId(span.getSpanId()));
+    target.setTraceId(ByteString.copyFrom(TraceId.bytesFromHex(span.getTraceId(), 0)));
+    target.setSpanId(ByteString.copyFrom(SpanId.bytesFromHex(span.getSpanId(), 0)));
     target.setOperationName(span.getName());
     Timestamp startTimestamp = Timestamps.fromNanos(span.getStartEpochNanos());
     target.setStartTime(startTimestamp);
@@ -251,9 +255,8 @@ final class Adapter {
   @VisibleForTesting
   static Model.SpanRef toSpanRef(Link link) {
     Model.SpanRef.Builder builder = Model.SpanRef.newBuilder();
-    builder.setTraceId(
-        TraceProtoUtils.toProtoTraceId(link.getSpanContext().getTraceIdAsHexString()));
-    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getSpanContext().getSpanIdAsHexString()));
+    builder.setTraceId(ByteString.copyFrom(link.getSpanContext().getTraceIdBytes()));
+    builder.setSpanId(ByteString.copyFrom(link.getSpanContext().getSpanIdBytes()));
 
     // we can assume that all links are *follows from*
     // https://github.com/open-telemetry/opentelemetry-java/issues/475
