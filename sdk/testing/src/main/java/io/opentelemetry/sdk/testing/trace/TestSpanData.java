@@ -12,7 +12,10 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,9 +62,9 @@ public abstract class TestSpanData implements SpanData {
 
     abstract TestSpanData autoBuild();
 
-    abstract List<Event> getEvents();
+    abstract List<EventData> getEvents();
 
-    abstract List<SpanData.Link> getLinks();
+    abstract List<LinkData> getLinks();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -165,9 +168,9 @@ public abstract class TestSpanData implements SpanData {
      *
      * @param events A List&lt;Event&gt; of events associated with this span.
      * @return this
-     * @see Event
+     * @see EventData
      */
-    public abstract Builder setEvents(List<Event> events);
+    public abstract Builder setEvents(List<EventData> events);
 
     /**
      * Set the status for this span. Must not be null.
@@ -175,7 +178,7 @@ public abstract class TestSpanData implements SpanData {
      * @param status The Status of this span.
      * @return this
      */
-    public abstract Builder setStatus(Status status);
+    public abstract Builder setStatus(StatusData status);
 
     /**
      * Set the kind of span. Must not be null.
@@ -191,7 +194,7 @@ public abstract class TestSpanData implements SpanData {
      * @param links A List&lt;Link&gt;
      * @return this
      */
-    public abstract Builder setLinks(List<SpanData.Link> links);
+    public abstract Builder setLinks(List<LinkData> links);
 
     abstract Builder setInternalHasEnded(boolean hasEnded);
 

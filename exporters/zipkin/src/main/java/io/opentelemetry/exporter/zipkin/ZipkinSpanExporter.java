@@ -15,8 +15,9 @@ import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -127,7 +128,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     Attributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
         (key, value) -> spanBuilder.putTag(key.getKey(), valueToString(key, value)));
-    SpanData.Status status = spanData.getStatus();
+    StatusData status = spanData.getStatus();
 
     // include status code & error.
     if (!status.isUnset()) {
@@ -150,7 +151,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
           KEY_INSTRUMENTATION_LIBRARY_VERSION, instrumentationLibraryInfo.getVersion());
     }
 
-    for (Event annotation : spanData.getEvents()) {
+    for (EventData annotation : spanData.getEvents()) {
       spanBuilder.addAnnotation(toEpochMicros(annotation.getEpochNanos()), annotation.getName());
     }
 

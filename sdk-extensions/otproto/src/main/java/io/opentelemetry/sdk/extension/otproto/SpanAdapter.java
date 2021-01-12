@@ -23,8 +23,10 @@ import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -100,11 +102,11 @@ public final class SpanAdapter {
         .forEach((key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
     builder.setDroppedAttributesCount(
         spanData.getTotalAttributeCount() - spanData.getAttributes().size());
-    for (Event event : spanData.getEvents()) {
+    for (EventData event : spanData.getEvents()) {
       builder.addEvents(toProtoSpanEvent(event));
     }
     builder.setDroppedEventsCount(spanData.getTotalRecordedEvents() - spanData.getEvents().size());
-    for (SpanData.Link link : spanData.getLinks()) {
+    for (LinkData link : spanData.getLinks()) {
       builder.addLinks(toProtoSpanLink(link));
     }
     builder.setDroppedLinksCount(spanData.getTotalRecordedLinks() - spanData.getLinks().size());
@@ -128,7 +130,7 @@ public final class SpanAdapter {
     return SpanKind.UNRECOGNIZED;
   }
 
-  static Span.Event toProtoSpanEvent(Event event) {
+  static Span.Event toProtoSpanEvent(EventData event) {
     final Span.Event.Builder builder = Span.Event.newBuilder();
     builder.setName(event.getName());
     builder.setTimeUnixNano(event.getEpochNanos());
@@ -141,7 +143,7 @@ public final class SpanAdapter {
   }
 
   @SuppressWarnings("deprecation") // Remove after TraceProtoUtils made package-private
-  static Span.Link toProtoSpanLink(SpanData.Link link) {
+  static Span.Link toProtoSpanLink(LinkData link) {
     final Span.Link.Builder builder = Span.Link.newBuilder();
     builder.setTraceId(
         TraceProtoUtils.toProtoTraceId(link.getSpanContext().getTraceIdAsHexString()));
@@ -155,7 +157,7 @@ public final class SpanAdapter {
     return builder.build();
   }
 
-  static Status toStatusProto(SpanData.Status status) {
+  static Status toStatusProto(StatusData status) {
     Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
     Status.DeprecatedStatusCode deprecatedStatusCode = DEPRECATED_STATUS_CODE_OK;
     if (status.getStatusCode() == StatusCode.OK) {

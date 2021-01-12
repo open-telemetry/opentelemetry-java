@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -427,7 +428,7 @@ class BatchSpanProcessorTest {
                           String name,
                           Span.Kind spanKind,
                           Attributes attributes,
-                          List<SpanData.Link> parentLinks) {
+                          List<LinkData> parentLinks) {
                         return SamplingResult.create(SamplingResult.Decision.RECORD_ONLY);
                       }
 

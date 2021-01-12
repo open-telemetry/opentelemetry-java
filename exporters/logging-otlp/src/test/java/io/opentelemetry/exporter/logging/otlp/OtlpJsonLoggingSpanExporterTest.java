@@ -18,7 +18,9 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,13 +42,13 @@ class OtlpJsonLoggingSpanExporterTest {
           .setSpanId(SpanId.fromLong(9876L))
           .setStartEpochNanos(100)
           .setEndEpochNanos(100 + 1000)
-          .setStatus(SpanData.Status.ok())
+          .setStatus(StatusData.ok())
           .setName("testSpan1")
           .setKind(Span.Kind.INTERNAL)
           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
           .setEvents(
               Collections.singletonList(
-                  SpanData.Event.create(
+                  EventData.create(
                       100 + 500,
                       "somethingHappenedHere",
                       Attributes.of(booleanKey("important"), true))))
@@ -64,7 +66,7 @@ class OtlpJsonLoggingSpanExporterTest {
           .setSpanId(SpanId.fromLong(15L))
           .setStartEpochNanos(500)
           .setEndEpochNanos(500 + 1001)
-          .setStatus(SpanData.Status.error())
+          .setStatus(StatusData.error())
           .setName("testSpan2")
           .setKind(Span.Kind.CLIENT)
           .setResource(RESOURCE)

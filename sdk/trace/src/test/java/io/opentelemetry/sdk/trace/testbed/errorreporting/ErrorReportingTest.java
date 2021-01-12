@@ -14,8 +14,8 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.testbed.TestUtils;
 import java.time.Duration;
 import java.util.List;
@@ -103,7 +103,7 @@ public final class ErrorReportingTest {
     assertThat(spans).hasSize(1);
     assertThat(spans.get(0).getStatus().getStatusCode()).isEqualTo(StatusCode.ERROR);
 
-    List<Event> events = spans.get(0).getEvents();
+    List<EventData> events = spans.get(0).getEvents();
     assertThat(events).hasSize(maxRetries);
     assertThat("error").isEqualTo(events.get(0).getName());
   }

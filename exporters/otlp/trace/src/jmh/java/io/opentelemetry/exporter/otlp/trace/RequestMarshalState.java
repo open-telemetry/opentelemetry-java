@@ -16,7 +16,10 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -90,20 +93,20 @@ public class RequestMarshalState {
         .setTotalAttributeCount(2)
         .setEvents(
             Arrays.asList(
-                SpanData.Event.create(12347, "my_event_1", Attributes.empty()),
-                SpanData.Event.create(
+                EventData.create(12347, "my_event_1", Attributes.empty()),
+                EventData.create(
                     12348,
                     "my_event_2",
                     Attributes.of(AttributeKey.longKey("event_attr_key"), 1234L)),
-                SpanData.Event.create(12349, "my_event_3", Attributes.empty())))
+                EventData.create(12349, "my_event_3", Attributes.empty())))
         .setTotalRecordedEvents(4)
         .setLinks(
             Arrays.asList(
-                SpanData.Link.create(SPAN_CONTEXT),
-                SpanData.Link.create(
+                LinkData.create(SPAN_CONTEXT),
+                LinkData.create(
                     SPAN_CONTEXT, Attributes.of(AttributeKey.stringKey("link_attr_key"), "value"))))
         .setTotalRecordedLinks(3)
-        .setStatus(SpanData.Status.ok())
+        .setStatus(StatusData.ok())
         .build();
   }
 }

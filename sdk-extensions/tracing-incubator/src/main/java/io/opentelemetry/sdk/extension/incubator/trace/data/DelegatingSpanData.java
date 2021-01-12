@@ -13,7 +13,10 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.List;
 
 /**
@@ -108,17 +111,17 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public List<Event> getEvents() {
+  public List<EventData> getEvents() {
     return delegate.getEvents();
   }
 
   @Override
-  public List<Link> getLinks() {
+  public List<LinkData> getLinks() {
     return delegate.getLinks();
   }
 
   @Override
-  public Status getStatus() {
+  public StatusData getStatus() {
     return delegate.getStatus();
   }
 

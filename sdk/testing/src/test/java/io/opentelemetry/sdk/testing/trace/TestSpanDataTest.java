@@ -15,10 +15,10 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ class TestSpanDataTest {
     SpanData spanData = createSpanDataWithMutableCollections();
 
     assertThatThrownBy(
-            () -> spanData.getEvents().add(Event.create(1234, "foo", Attributes.empty())))
+            () -> spanData.getEvents().add(EventData.create(1234, "foo", Attributes.empty())))
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
@@ -71,25 +71,25 @@ class TestSpanDataTest {
 
   @Test
   void link_defaultTotalAttributeCountIsZero() {
-    Link link = Link.create(SpanContext.getInvalid());
+    LinkData link = LinkData.create(SpanContext.getInvalid());
     assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   void link_canSetTotalAttributeCount() {
-    Link link = Link.create(SpanContext.getInvalid());
+    LinkData link = LinkData.create(SpanContext.getInvalid());
     assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   void timedEvent_defaultTotalAttributeCountIsZero() {
-    Event event = Event.create(START_EPOCH_NANOS, "foo", Attributes.empty());
+    EventData event = EventData.create(START_EPOCH_NANOS, "foo", Attributes.empty());
     assertThat(event.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   void timedEvent_canSetTotalAttributeCount() {
-    Event event = Event.create(START_EPOCH_NANOS, "foo", Attributes.empty(), 123);
+    EventData event = EventData.create(START_EPOCH_NANOS, "foo", Attributes.empty(), 123);
     assertThat(event.getTotalAttributeCount()).isEqualTo(123);
   }
 
@@ -100,8 +100,8 @@ class TestSpanDataTest {
         .build();
   }
 
-  private static Link emptyLink() {
-    return Link.create(SpanContext.getInvalid());
+  private static LinkData emptyLink() {
+    return LinkData.create(SpanContext.getInvalid());
   }
 
   private static TestSpanData.Builder createBasicSpanBuilder() {
@@ -113,7 +113,7 @@ class TestSpanDataTest {
         .setStartEpochNanos(START_EPOCH_NANOS)
         .setEndEpochNanos(END_EPOCH_NANOS)
         .setKind(Kind.SERVER)
-        .setStatus(Status.ok())
+        .setStatus(StatusData.ok())
         .setTotalRecordedEvents(0)
         .setTotalRecordedLinks(0);
   }

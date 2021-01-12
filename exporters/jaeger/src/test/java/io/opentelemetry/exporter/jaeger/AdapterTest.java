@@ -27,10 +27,10 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -103,7 +103,7 @@ class AdapterTest {
   @Test
   void testJaegerLogs() {
     // prepare
-    Event eventsData = getTimedEvent();
+    EventData eventsData = getTimedEvent();
 
     // test
     Collection<Model.Log> logs = Adapter.toJaegerLogs(Collections.singletonList(eventsData));
@@ -115,7 +115,7 @@ class AdapterTest {
   @Test
   void testJaegerLog() {
     // prepare
-    Event event = getTimedEvent();
+    EventData event = getTimedEvent();
 
     // test
     Model.Log log = Adapter.toJaegerLog(event);
@@ -183,8 +183,8 @@ class AdapterTest {
   @Test
   void testSpanRefs() {
     // prepare
-    Link link =
-        Link.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
+    LinkData link =
+        LinkData.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
     Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
@@ -196,7 +196,7 @@ class AdapterTest {
   @Test
   void testSpanRef() {
     // prepare
-    Link link = Link.create(createSpanContext(TRACE_ID, SPAN_ID));
+    LinkData link = LinkData.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
@@ -220,7 +220,7 @@ class AdapterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.error())
+            .setStatus(StatusData.error())
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
             .build();
@@ -247,7 +247,7 @@ class AdapterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.error())
+            .setStatus(StatusData.error())
             .setAttributes(attributes)
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
@@ -262,23 +262,23 @@ class AdapterTest {
     assertThat(error.getVBool()).isTrue();
   }
 
-  private static Event getTimedEvent() {
+  private static EventData getTimedEvent() {
     return getTimedEvent(-1);
   }
 
-  private static Event getTimedEvent(int totalAttributeCount) {
+  private static EventData getTimedEvent(int totalAttributeCount) {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     Attributes attributes = Attributes.of(stringKey("foo"), "bar");
     if (totalAttributeCount <= 0) {
       totalAttributeCount = attributes.size();
     }
-    return Event.create(epochNanos, "the log message", attributes, totalAttributeCount);
+    return EventData.create(epochNanos, "the log message", attributes, totalAttributeCount);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
     Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
-    Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+    LinkData link = LinkData.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return TestSpanData.builder()
         .setHasEnded(true)
@@ -297,7 +297,7 @@ class AdapterTest {
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
         .setResource(Resource.create(Attributes.empty()))
-        .setStatus(Status.ok())
+        .setStatus(StatusData.ok())
         .build();
   }
 

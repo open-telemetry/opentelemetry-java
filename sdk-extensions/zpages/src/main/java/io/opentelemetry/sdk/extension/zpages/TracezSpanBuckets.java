@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.zpages;
 
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -30,7 +30,7 @@ final class TracezSpanBuckets {
   }
 
   void addToBucket(ReadableSpan span) {
-    SpanData.Status status = span.toSpanData().getStatus();
+    StatusData status = span.toSpanData().getStatus();
     if (status.isOk()) {
       latencyBuckets.get(LatencyBoundary.getBoundary(span.getLatencyNanos())).add(span);
       return;

@@ -33,9 +33,9 @@ import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -66,11 +66,12 @@ class SpanAdapterTest {
                 .setAttributes(Attributes.of(booleanKey("key"), true))
                 .setTotalAttributeCount(2)
                 .setEvents(
-                    Collections.singletonList(Event.create(12347, "my_event", Attributes.empty())))
+                    Collections.singletonList(
+                        EventData.create(12347, "my_event", Attributes.empty())))
                 .setTotalRecordedEvents(3)
-                .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))
+                .setLinks(Collections.singletonList(LinkData.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
-                .setStatus(SpanData.Status.ok())
+                .setStatus(StatusData.ok())
                 .build());
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
@@ -113,27 +114,27 @@ class SpanAdapterTest {
   @Test
   @SuppressWarnings("deprecation") // setDeprecatedCode is deprecated.
   void toProtoStatus() {
-    assertThat(SpanAdapter.toStatusProto(SpanData.Status.unset()))
+    assertThat(SpanAdapter.toStatusProto(StatusData.unset()))
         .isEqualTo(
             Status.newBuilder()
                 .setCode(STATUS_CODE_UNSET)
                 .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
                 .build());
-    assertThat(SpanAdapter.toStatusProto(SpanData.Status.create(StatusCode.ERROR, "ERROR")))
+    assertThat(SpanAdapter.toStatusProto(StatusData.create(StatusCode.ERROR, "ERROR")))
         .isEqualTo(
             Status.newBuilder()
                 .setCode(STATUS_CODE_ERROR)
                 .setDeprecatedCode(DEPRECATED_STATUS_CODE_UNKNOWN_ERROR)
                 .setMessage("ERROR")
                 .build());
-    assertThat(SpanAdapter.toStatusProto(SpanData.Status.create(StatusCode.ERROR, "UNKNOWN")))
+    assertThat(SpanAdapter.toStatusProto(StatusData.create(StatusCode.ERROR, "UNKNOWN")))
         .isEqualTo(
             Status.newBuilder()
                 .setCode(STATUS_CODE_ERROR)
                 .setDeprecatedCode(DEPRECATED_STATUS_CODE_UNKNOWN_ERROR)
                 .setMessage("UNKNOWN")
                 .build());
-    assertThat(SpanAdapter.toStatusProto(SpanData.Status.create(StatusCode.OK, "OK_OVERRIDE")))
+    assertThat(SpanAdapter.toStatusProto(StatusData.create(StatusCode.OK, "OK_OVERRIDE")))
         .isEqualTo(
             Status.newBuilder()
                 .setCode(STATUS_CODE_OK)
@@ -146,7 +147,7 @@ class SpanAdapterTest {
   void toProtoSpanEvent_WithoutAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                Event.create(12345, "test_without_attributes", Attributes.empty())))
+                EventData.create(12345, "test_without_attributes", Attributes.empty())))
         .isEqualTo(
             Span.Event.newBuilder()
                 .setTimeUnixNano(12345)
@@ -158,7 +159,7 @@ class SpanAdapterTest {
   void toProtoSpanEvent_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                Event.create(
+                EventData.create(
                     12345,
                     "test_with_attributes",
                     Attributes.of(stringKey("key_string"), "string"),
@@ -178,7 +179,7 @@ class SpanAdapterTest {
 
   @Test
   void toProtoSpanLink_WithoutAttributes() {
-    assertThat(SpanAdapter.toProtoSpanLink(Link.create(SPAN_CONTEXT)))
+    assertThat(SpanAdapter.toProtoSpanLink(LinkData.create(SPAN_CONTEXT)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
@@ -190,7 +191,7 @@ class SpanAdapterTest {
   void toProtoSpanLink_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanLink(
-                Link.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
+                LinkData.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
