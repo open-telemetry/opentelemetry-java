@@ -82,6 +82,7 @@ public final class SpanAdapter {
     return result;
   }
 
+  @SuppressWarnings("deprecation") // Remove after TraceProtoUtils made package-private
   static Span toProtoSpan(SpanData spanData) {
     final Span.Builder builder = Span.newBuilder();
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(spanData.getTraceId()));
@@ -139,6 +140,7 @@ public final class SpanAdapter {
     return builder.build();
   }
 
+  @SuppressWarnings("deprecation") // Remove after TraceProtoUtils made package-private
   static Span.Link toProtoSpanLink(SpanData.Link link) {
     final Span.Link.Builder builder = Span.Link.newBuilder();
     builder.setTraceId(

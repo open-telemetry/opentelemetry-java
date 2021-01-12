@@ -60,6 +60,7 @@ final class Adapter {
    * @param span the span to be converted
    * @return the Jaeger span
    */
+  @SuppressWarnings("deprecation") // Remove after TraceProtoUtils made package-private
   static Model.Span toJaeger(SpanData span) {
     Model.Span.Builder target = Model.Span.newBuilder();
 
