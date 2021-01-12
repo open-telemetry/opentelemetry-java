@@ -7,15 +7,15 @@ package io.opentelemetry.sdk.metrics.view;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * An AggregationConfiguration describes how an aggregation should be performed. It includes both an
  * {@code Aggregator} which implements what shape of aggregation is created (i.e. histogram, sum,
- * minMaxSumCount, etc), and a {@link MetricData.AggregationTemporality} which describes whether
- * aggregations should be reset with every collection interval, or continue to accumulate across
- * collection intervals.
+ * minMaxSumCount, etc), and a {@link AggregationTemporality} which describes whether aggregations
+ * should be reset with every collection interval, or continue to accumulate across collection
+ * intervals.
  */
 @AutoValue
 @Immutable
@@ -23,8 +23,7 @@ public abstract class AggregationConfiguration {
 
   /** Returns a new configuration with the provided options. */
   public static AggregationConfiguration create(
-      AggregatorFactory aggregatorFactory,
-      MetricData.AggregationTemporality aggregationTemporality) {
+      AggregatorFactory aggregatorFactory, AggregationTemporality aggregationTemporality) {
     return new AutoValue_AggregationConfiguration(aggregatorFactory, aggregationTemporality);
   }
 
@@ -32,8 +31,8 @@ public abstract class AggregationConfiguration {
   public abstract AggregatorFactory getAggregatorFactory();
 
   /**
-   * Returns the {@link MetricData.AggregationTemporality} that should be used for this View (delta
-   * vs. cumulative).
+   * Returns the {@link AggregationTemporality} that should be used for this View (delta vs.
+   * cumulative).
    */
-  public abstract MetricData.AggregationTemporality getTemporality();
+  public abstract AggregationTemporality getTemporality();
 }

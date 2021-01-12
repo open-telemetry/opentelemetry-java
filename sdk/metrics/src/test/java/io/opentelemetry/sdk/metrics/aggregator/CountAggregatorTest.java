@@ -12,6 +12,9 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -74,10 +77,9 @@ class CountAggregatorTest {
                 "name",
                 "description",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        MetricData.LongPoint.create(0, 100, Labels.empty(), 1)))));
+                    AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(LongPoint.create(0, 100, Labels.empty(), 1)))));
   }
 }

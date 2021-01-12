@@ -8,6 +8,9 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -58,7 +61,7 @@ public final class CountAggregator implements Aggregator<Long> {
       Map<Labels, Long> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    List<MetricData.LongPoint> points =
+    List<LongPoint> points =
         MetricDataUtils.toLongPointList(accumulationByLabels, startEpochNanos, epochNanos);
 
     return MetricData.createLongSum(
@@ -67,8 +70,7 @@ public final class CountAggregator implements Aggregator<Long> {
         descriptor.getName(),
         descriptor.getDescription(),
         "1",
-        MetricData.LongSumData.create(
-            /* isMonotonic= */ true, MetricData.AggregationTemporality.CUMULATIVE, points));
+        LongSumData.create(/* isMonotonic= */ true, AggregationTemporality.CUMULATIVE, points));
   }
 
   static final class Handle extends AggregatorHandle<Long> {

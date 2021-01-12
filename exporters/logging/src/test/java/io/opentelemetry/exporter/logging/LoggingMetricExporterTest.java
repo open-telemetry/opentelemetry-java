@@ -11,10 +11,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,9 +60,9 @@ class LoggingMetricExporterTest {
                 "measureOne",
                 "A summarized test measure",
                 "ms",
-                MetricData.DoubleSummaryData.create(
+                DoubleSummaryData.create(
                     Collections.singletonList(
-                        MetricData.DoubleSummaryPoint.create(
+                        DoubleSummaryPoint.create(
                             nowEpochNanos,
                             nowEpochNanos + 245,
                             Labels.of("a", "b", "c", "d"),
@@ -72,9 +77,9 @@ class LoggingMetricExporterTest {
                 "counterOne",
                 "A simple counter",
                 "one",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         LongPoint.create(
                             nowEpochNanos,
@@ -87,9 +92,9 @@ class LoggingMetricExporterTest {
                 "observedValue",
                 "an observer gauge",
                 "kb",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         DoublePoint.create(
                             nowEpochNanos,

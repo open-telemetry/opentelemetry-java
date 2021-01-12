@@ -11,6 +11,9 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
@@ -33,10 +36,10 @@ class OtlpJsonLoggingMetricExporterTest {
           "metric1",
           "metric1 description",
           "m",
-          MetricData.DoubleSumData.create(
+          DoubleSumData.create(
               true,
-              MetricData.AggregationTemporality.CUMULATIVE,
-              Arrays.asList(MetricData.DoublePoint.create(1, 2, Labels.of("cat", "meow"), 4))));
+              AggregationTemporality.CUMULATIVE,
+              Arrays.asList(DoublePoint.create(1, 2, Labels.of("cat", "meow"), 4))));
 
   private static final MetricData METRIC2 =
       MetricData.createDoubleSum(
@@ -45,10 +48,10 @@ class OtlpJsonLoggingMetricExporterTest {
           "metric2",
           "metric2 description",
           "s",
-          MetricData.DoubleSumData.create(
+          DoubleSumData.create(
               true,
-              MetricData.AggregationTemporality.CUMULATIVE,
-              Arrays.asList(MetricData.DoublePoint.create(1, 2, Labels.of("cat", "meow"), 4))));
+              AggregationTemporality.CUMULATIVE,
+              Arrays.asList(DoublePoint.create(1, 2, Labels.of("cat", "meow"), 4))));
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(OtlpJsonLoggingMetricExporter.class);

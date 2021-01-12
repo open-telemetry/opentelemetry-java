@@ -14,9 +14,15 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.BatchRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collection;
@@ -112,9 +118,9 @@ class BatchRecorderSdkTest {
                 "testDoubleCounter",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         DoublePoint.create(testClock.now(), testClock.now(), labelSet, 24.2d)))));
     assertThat(longCounter.collectAll(testClock.now()))
@@ -125,9 +131,9 @@ class BatchRecorderSdkTest {
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         LongPoint.create(testClock.now(), testClock.now(), labelSet, 12)))));
     assertThat(doubleUpDownCounter.collectAll(testClock.now()))
@@ -138,9 +144,9 @@ class BatchRecorderSdkTest {
                 "testDoubleUpDownCounter",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         DoublePoint.create(testClock.now(), testClock.now(), labelSet, -12.1d)))));
     assertThat(longUpDownCounter.collectAll(testClock.now()))
@@ -151,9 +157,9 @@ class BatchRecorderSdkTest {
                 "testLongUpDownCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         LongPoint.create(testClock.now(), testClock.now(), labelSet, -12)))));
 
@@ -166,17 +172,17 @@ class BatchRecorderSdkTest {
                   "testDoubleValueRecorder",
                   "",
                   "1",
-                  MetricData.DoubleSummaryData.create(
+                  DoubleSummaryData.create(
                       Collections.singletonList(
-                          MetricData.DoubleSummaryPoint.create(
+                          DoubleSummaryPoint.create(
                               testClock.now(),
                               testClock.now(),
                               labelSet,
                               1,
                               13.1d,
                               Arrays.asList(
-                                  MetricData.ValueAtPercentile.create(0.0, 13.1),
-                                  MetricData.ValueAtPercentile.create(100.0, 13.1)))))));
+                                  ValueAtPercentile.create(0.0, 13.1),
+                                  ValueAtPercentile.create(100.0, 13.1)))))));
     } else {
       assertThat(doubleValueRecorder.collectAll(testClock.now())).isEmpty();
     }
@@ -190,17 +196,17 @@ class BatchRecorderSdkTest {
                   "testLongValueRecorder",
                   "",
                   "1",
-                  MetricData.DoubleSummaryData.create(
+                  DoubleSummaryData.create(
                       Collections.singletonList(
-                          MetricData.DoubleSummaryPoint.create(
+                          DoubleSummaryPoint.create(
                               testClock.now(),
                               testClock.now(),
                               labelSet,
                               1,
                               13,
                               Arrays.asList(
-                                  MetricData.ValueAtPercentile.create(0.0, 13),
-                                  MetricData.ValueAtPercentile.create(100.0, 13)))))));
+                                  ValueAtPercentile.create(0.0, 13),
+                                  ValueAtPercentile.create(100.0, 13)))))));
     } else {
       assertThat(longValueRecorder.collectAll(testClock.now())).isEmpty();
     }

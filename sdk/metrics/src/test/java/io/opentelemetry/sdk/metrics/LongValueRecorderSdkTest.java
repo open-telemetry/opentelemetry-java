@@ -16,8 +16,10 @@ import io.opentelemetry.api.metrics.LongValueRecorder.BoundLongValueRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,9 +83,9 @@ class LongValueRecorderSdkTest {
                 "testRecorder",
                 "description",
                 "By",
-                MetricData.DoubleSummaryData.create(
+                DoubleSummaryData.create(
                     Collections.singletonList(
-                        MetricData.DoubleSummaryPoint.create(
+                        DoubleSummaryPoint.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
                             Labels.empty(),
@@ -114,16 +116,16 @@ class LongValueRecorderSdkTest {
                   "testRecorder",
                   "",
                   "1",
-                  MetricData.DoubleSummaryData.create(
+                  DoubleSummaryData.create(
                       Arrays.asList(
-                          MetricData.DoubleSummaryPoint.create(
+                          DoubleSummaryPoint.create(
                               startTime,
                               testClock.now(),
                               Labels.of("K", "V"),
                               3,
                               323,
                               valueAtPercentiles(-121, 321)),
-                          MetricData.DoubleSummaryPoint.create(
+                          DoubleSummaryPoint.create(
                               startTime,
                               testClock.now(),
                               Labels.empty(),
@@ -143,16 +145,16 @@ class LongValueRecorderSdkTest {
                   "testRecorder",
                   "",
                   "1",
-                  MetricData.DoubleSummaryData.create(
+                  DoubleSummaryData.create(
                       Arrays.asList(
-                          MetricData.DoubleSummaryPoint.create(
+                          DoubleSummaryPoint.create(
                               startTime + SECOND_NANOS,
                               testClock.now(),
                               Labels.of("K", "V"),
                               1,
                               222,
                               valueAtPercentiles(222, 222)),
-                          MetricData.DoubleSummaryPoint.create(
+                          DoubleSummaryPoint.create(
                               startTime + SECOND_NANOS,
                               testClock.now(),
                               Labels.empty(),
@@ -195,9 +197,9 @@ class LongValueRecorderSdkTest {
                 "testRecorder",
                 "",
                 "1",
-                MetricData.DoubleSummaryData.create(
+                DoubleSummaryData.create(
                     Collections.singletonList(
-                        MetricData.DoubleSummaryPoint.create(
+                        DoubleSummaryPoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of("K", "V"),
@@ -241,30 +243,30 @@ class LongValueRecorderSdkTest {
                 "testRecorder",
                 "",
                 "1",
-                MetricData.DoubleSummaryData.create(
+                DoubleSummaryData.create(
                     Arrays.asList(
-                        MetricData.DoubleSummaryPoint.create(
+                        DoubleSummaryPoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[0], values[0]),
                             2_000,
                             20_000,
                             valueAtPercentiles(9, 11)),
-                        MetricData.DoubleSummaryPoint.create(
+                        DoubleSummaryPoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[1], values[1]),
                             2_000,
                             20_000,
                             valueAtPercentiles(9, 11)),
-                        MetricData.DoubleSummaryPoint.create(
+                        DoubleSummaryPoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[2], values[2]),
                             2_000,
                             20_000,
                             valueAtPercentiles(9, 11)),
-                        MetricData.DoubleSummaryPoint.create(
+                        DoubleSummaryPoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[3], values[3]),

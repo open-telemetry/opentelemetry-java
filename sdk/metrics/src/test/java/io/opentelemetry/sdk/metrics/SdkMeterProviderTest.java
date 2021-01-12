@@ -20,7 +20,17 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.LongGaugeData;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.resources.Resource;
@@ -70,23 +80,22 @@ public class SdkMeterProviderTest {
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 10)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))),
             MetricData.createDoubleSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleCounter",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.DoublePoint.create(
+                        DoublePoint.create(
                             testClock.now(), testClock.now(), Labels.empty(), 10.1)))),
             MetricData.createLongSum(
                 RESOURCE,
@@ -94,23 +103,22 @@ public class SdkMeterProviderTest {
                 "testLongUpDownCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), -10)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), -10)))),
             MetricData.createDoubleSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleUpDownCounter",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.DoublePoint.create(
+                        DoublePoint.create(
                             testClock.now(), testClock.now(), Labels.empty(), -10.1)))),
             MetricData.createDoubleSummary(
                 RESOURCE,
@@ -118,34 +126,34 @@ public class SdkMeterProviderTest {
                 "testLongValueRecorder",
                 "",
                 "1",
-                MetricData.DoubleSummaryData.create(
+                DoubleSummaryData.create(
                     Collections.singletonList(
-                        MetricData.DoubleSummaryPoint.create(
+                        DoubleSummaryPoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.empty(),
                             1,
                             10,
                             Arrays.asList(
-                                MetricData.ValueAtPercentile.create(0, 10),
-                                MetricData.ValueAtPercentile.create(100, 10)))))),
+                                ValueAtPercentile.create(0, 10),
+                                ValueAtPercentile.create(100, 10)))))),
             MetricData.createDoubleSummary(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleValueRecorder",
                 "",
                 "1",
-                MetricData.DoubleSummaryData.create(
+                DoubleSummaryData.create(
                     Collections.singletonList(
-                        MetricData.DoubleSummaryPoint.create(
+                        DoubleSummaryPoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.empty(),
                             1,
                             10.1d,
                             Arrays.asList(
-                                MetricData.ValueAtPercentile.create(0, 10.1d),
-                                MetricData.ValueAtPercentile.create(100, 10.1d)))))));
+                                ValueAtPercentile.create(0, 10.1d),
+                                ValueAtPercentile.create(100, 10.1d)))))));
   }
 
   @Test
@@ -153,7 +161,7 @@ public class SdkMeterProviderTest {
     registerViewForAllTypes(
         sdkMeterProvider,
         AggregationConfiguration.create(
-            AggregatorFactory.count(), MetricData.AggregationTemporality.CUMULATIVE));
+            AggregatorFactory.count(), AggregationTemporality.CUMULATIVE));
     LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
     longCounter.add(10, Labels.empty());
     LongUpDownCounter longUpDownCounter =
@@ -179,72 +187,66 @@ public class SdkMeterProviderTest {
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))),
             MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))),
             MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testLongUpDownCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))),
             MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleUpDownCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))),
             MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testLongValueRecorder",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))),
             MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleValueRecorder",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))));
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))));
   }
 
   @Test
@@ -283,23 +285,22 @@ public class SdkMeterProviderTest {
                 "testLongSumObserver",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 10)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))),
             MetricData.createDoubleSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleSumObserver",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.DoublePoint.create(
+                        DoublePoint.create(
                             testClock.now(), testClock.now(), Labels.empty(), 10.1)))),
             MetricData.createLongSum(
                 RESOURCE,
@@ -307,23 +308,22 @@ public class SdkMeterProviderTest {
                 "testLongUpDownSumObserver",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), -10)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), -10)))),
             MetricData.createDoubleSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleUpDownSumObserver",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.DoublePoint.create(
+                        DoublePoint.create(
                             testClock.now(), testClock.now(), Labels.empty(), -10.1)))),
             MetricData.createLongGauge(
                 RESOURCE,
@@ -331,19 +331,18 @@ public class SdkMeterProviderTest {
                 "testLongValueObserver",
                 "",
                 "1",
-                MetricData.LongGaugeData.create(
+                LongGaugeData.create(
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 10)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))),
             MetricData.createDoubleGauge(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleValueObserver",
                 "",
                 "1",
-                MetricData.DoubleGaugeData.create(
+                DoubleGaugeData.create(
                     Collections.singletonList(
-                        MetricData.DoublePoint.create(
+                        DoublePoint.create(
                             testClock.now(), testClock.now(), Labels.empty(), 10.1)))));
   }
 
@@ -352,7 +351,7 @@ public class SdkMeterProviderTest {
     registerViewForAllTypes(
         sdkMeterProvider,
         AggregationConfiguration.create(
-            AggregatorFactory.count(), MetricData.AggregationTemporality.CUMULATIVE));
+            AggregatorFactory.count(), AggregationTemporality.CUMULATIVE));
     sdkMeter
         .longSumObserverBuilder("testLongSumObserver")
         .setUpdater(longResult -> longResult.observe(10, Labels.empty()))
@@ -387,72 +386,66 @@ public class SdkMeterProviderTest {
                 "testLongSumObserver",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))),
             MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleSumObserver",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))),
             MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testLongUpDownSumObserver",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))),
             MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleUpDownSumObserver",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))),
             MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testLongValueObserver",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))),
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))),
             MetricData.createLongSum(
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 "testDoubleValueObserver",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 1)))));
+                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 1)))));
   }
 
   private static void registerViewForAllTypes(

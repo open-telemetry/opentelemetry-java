@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ public class SynchronousInstrumentAccumulatorTest {
                 meterSharedState,
                 DESCRIPTOR,
                 AggregationConfiguration.create(
-                    AggregatorFactory.count(), MetricData.AggregationTemporality.CUMULATIVE)));
+                    AggregatorFactory.count(), AggregationTemporality.CUMULATIVE)));
     AggregatorHandle<?> aggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     AggregatorHandle<?> duplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     try {

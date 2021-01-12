@@ -12,8 +12,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -66,9 +68,9 @@ class DoubleUpDownSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         DoublePoint.create(
                             testClock.now() - SECOND_NANOS,
@@ -84,9 +86,9 @@ class DoubleUpDownSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         DoublePoint.create(
                             testClock.now() - 2 * SECOND_NANOS,

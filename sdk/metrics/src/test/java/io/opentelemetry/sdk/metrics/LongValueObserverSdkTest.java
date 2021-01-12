@@ -12,8 +12,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.LongGaugeData;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -66,7 +67,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.LongGaugeData.create(
+                LongGaugeData.create(
                     Collections.singletonList(
                         LongPoint.create(
                             testClock.now() - SECOND_NANOS,
@@ -82,7 +83,7 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.LongGaugeData.create(
+                LongGaugeData.create(
                     Collections.singletonList(
                         LongPoint.create(
                             testClock.now() - SECOND_NANOS,
