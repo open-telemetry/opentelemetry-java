@@ -28,12 +28,12 @@ class DoubleUpDownSumObserverSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter testSdk = sdkMeterProvider.get(getClass().getName());
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void collectMetrics_NoCallback() {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
-        testSdk
+        sdkMeter
             .doubleUpDownSumObserverBuilder("testObserver")
             .setDescription("My own DoubleUpDownSumObserver")
             .setUnit("ms")
@@ -44,7 +44,7 @@ class DoubleUpDownSumObserverSdkTest {
   @Test
   void collectMetrics_NoRecords() {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
-        testSdk
+        sdkMeter
             .doubleUpDownSumObserverBuilder("testObserver")
             .setDescription("My own DoubleUpDownSumObserver")
             .setUnit("ms")
@@ -56,7 +56,7 @@ class DoubleUpDownSumObserverSdkTest {
   @Test
   void collectMetrics_WithOneRecord() {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
-        testSdk
+        sdkMeter
             .doubleUpDownSumObserverBuilder("testObserver")
             .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
             .build();

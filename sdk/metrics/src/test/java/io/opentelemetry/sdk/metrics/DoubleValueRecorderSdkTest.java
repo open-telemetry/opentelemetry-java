@@ -34,19 +34,19 @@ class DoubleValueRecorderSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter testSdk = sdkMeterProvider.get(getClass().getName());
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void record_PreventNullLabels() {
     assertThatThrownBy(
-            () -> testSdk.doubleValueRecorderBuilder("testRecorder").build().record(1.0, null))
+            () -> sdkMeter.doubleValueRecorderBuilder("testRecorder").build().record(1.0, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThatThrownBy(() -> testSdk.doubleValueRecorderBuilder("testRecorder").build().bind(null))
+    assertThatThrownBy(() -> sdkMeter.doubleValueRecorderBuilder("testRecorder").build().bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
@@ -54,10 +54,10 @@ class DoubleValueRecorderSdkTest {
   @Test
   void collectMetrics_NoRecords() {
     DoubleValueRecorderSdk doubleRecorder =
-        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+        sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
     BoundDoubleValueRecorder bound = doubleRecorder.bind(Labels.of("key", "value"));
     try {
-      assertThat(testSdk.collectAll(testClock.now())).isEmpty();
+      assertThat(sdkMeter.collectAll(testClock.now())).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -66,7 +66,7 @@ class DoubleValueRecorderSdkTest {
   @Test
   void collectMetrics_WithEmptyLabel() {
     DoubleValueRecorderSdk doubleRecorder =
-        testSdk
+        sdkMeter
             .doubleValueRecorderBuilder("testRecorder")
             .setDescription("description")
             .setUnit("ms")
@@ -74,7 +74,7 @@ class DoubleValueRecorderSdkTest {
     testClock.advanceNanos(SECOND_NANOS);
     doubleRecorder.record(12d, Labels.empty());
     doubleRecorder.record(12d);
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSummary(
                 RESOURCE,
@@ -97,7 +97,7 @@ class DoubleValueRecorderSdkTest {
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleValueRecorderSdk doubleRecorder =
-        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+        sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
     BoundDoubleValueRecorder bound = doubleRecorder.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
@@ -108,7 +108,7 @@ class DoubleValueRecorderSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.record(321.5d);
       doubleRecorder.record(-121.5d, Labels.of("K", "V"));
-      assertThat(testSdk.collectAll(testClock.now()))
+      assertThat(sdkMeter.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createDoubleSummary(
                   RESOURCE,
@@ -137,7 +137,7 @@ class DoubleValueRecorderSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.record(222d);
       doubleRecorder.record(17d, Labels.empty());
-      assertThat(testSdk.collectAll(testClock.now()))
+      assertThat(sdkMeter.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createDoubleSummary(
                   RESOURCE,
@@ -169,7 +169,7 @@ class DoubleValueRecorderSdkTest {
   @Test
   void stressTest() {
     final DoubleValueRecorderSdk doubleRecorder =
-        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+        sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleRecorder).setCollectionIntervalMs(100);
@@ -186,7 +186,7 @@ class DoubleValueRecorderSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSummary(
                 RESOURCE,
@@ -210,7 +210,7 @@ class DoubleValueRecorderSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final DoubleValueRecorderSdk doubleRecorder =
-        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+        sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleRecorder).setCollectionIntervalMs(100);
@@ -231,7 +231,7 @@ class DoubleValueRecorderSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSummary(
                 RESOURCE,

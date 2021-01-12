@@ -32,28 +32,28 @@ class DoubleCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter testSdk = sdkMeterProvider.get(getClass().getName());
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void add_PreventNullLabels() {
-    assertThatThrownBy(() -> testSdk.doubleCounterBuilder("testCounter").build().add(1.0, null))
+    assertThatThrownBy(() -> sdkMeter.doubleCounterBuilder("testCounter").build().add(1.0, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThatThrownBy(() -> testSdk.doubleCounterBuilder("testCounter").build().bind(null))
+    assertThatThrownBy(() -> sdkMeter.doubleCounterBuilder("testCounter").build().bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
+    DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter bound = doubleCounter.bind(Labels.of("foo", "bar"));
     try {
-      assertThat(testSdk.collectAll(testClock.now())).isEmpty();
+      assertThat(sdkMeter.collectAll(testClock.now())).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -62,7 +62,7 @@ class DoubleCounterSdkTest {
   @Test
   void collectMetrics_WithEmptyLabel() {
     DoubleCounterSdk doubleCounter =
-        testSdk
+        sdkMeter
             .doubleCounterBuilder("testCounter")
             .setDescription("description")
             .setUnit("ms")
@@ -72,7 +72,7 @@ class DoubleCounterSdkTest {
     doubleCounter.add(12d);
     // TODO: This is not perfect because we compare double values using direct equal, maybe worth
     //  changing to do a proper comparison for double values, here and everywhere else.
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -94,7 +94,7 @@ class DoubleCounterSdkTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
+    DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter bound = doubleCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
@@ -105,7 +105,7 @@ class DoubleCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(321.5d);
       doubleCounter.add(111.1d, Labels.of("K", "V"));
-      assertThat(testSdk.collectAll(testClock.now()))
+      assertThat(sdkMeter.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createDoubleSum(
                   RESOURCE,
@@ -126,7 +126,7 @@ class DoubleCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(222d);
       doubleCounter.add(11d, Labels.empty());
-      assertThat(testSdk.collectAll(testClock.now()))
+      assertThat(sdkMeter.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createDoubleSum(
                   RESOURCE,
@@ -149,7 +149,7 @@ class DoubleCounterSdkTest {
 
   @Test
   void doubleCounterAdd_Monotonicity() {
-    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
+    DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
 
     assertThatThrownBy(() -> doubleCounter.add(-45.77d, Labels.empty()))
         .isInstanceOf(IllegalArgumentException.class);
@@ -157,7 +157,7 @@ class DoubleCounterSdkTest {
 
   @Test
   void boundDoubleCounterAdd_Monotonicity() {
-    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
+    DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
 
     assertThatThrownBy(() -> doubleCounter.bind(Labels.empty()).add(-9.3))
         .isInstanceOf(IllegalArgumentException.class);
@@ -165,7 +165,7 @@ class DoubleCounterSdkTest {
 
   @Test
   void stressTest() {
-    final DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
+    final DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleCounter).setCollectionIntervalMs(100);
@@ -180,7 +180,7 @@ class DoubleCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -200,7 +200,7 @@ class DoubleCounterSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
+    final DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleCounter).setCollectionIntervalMs(100);
@@ -218,7 +218,7 @@ class DoubleCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,

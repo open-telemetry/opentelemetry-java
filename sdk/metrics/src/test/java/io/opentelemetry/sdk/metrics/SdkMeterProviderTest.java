@@ -36,28 +36,28 @@ public class SdkMeterProviderTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider testMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter testSdk = testMeterProvider.get(SdkMeterProviderTest.class.getName());
+  private final SdkMeter sdkMeter = testMeterProvider.get(SdkMeterProviderTest.class.getName());
 
   @Test
   void collectAllSyncInstruments() {
-    LongCounter longCounter = testSdk.longCounterBuilder("testLongCounter").build();
+    LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
     longCounter.add(10, Labels.empty());
     LongUpDownCounter longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testLongUpDownCounter").build();
+        sdkMeter.longUpDownCounterBuilder("testLongUpDownCounter").build();
     longUpDownCounter.add(-10, Labels.empty());
     LongValueRecorder longValueRecorder =
-        testSdk.longValueRecorderBuilder("testLongValueRecorder").build();
+        sdkMeter.longValueRecorderBuilder("testLongValueRecorder").build();
     longValueRecorder.record(10, Labels.empty());
-    DoubleCounter doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
+    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testDoubleCounter").build();
     doubleCounter.add(10.1, Labels.empty());
     DoubleUpDownCounter doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
+        sdkMeter.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
     doubleUpDownCounter.add(-10.1, Labels.empty());
     DoubleValueRecorder doubleValueRecorder =
-        testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
+        sdkMeter.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
     doubleValueRecorder.record(10.1, Labels.empty());
 
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 RESOURCE,
@@ -149,24 +149,24 @@ public class SdkMeterProviderTest {
         testMeterProvider,
         AggregationConfiguration.create(
             AggregatorFactory.count(), MetricData.AggregationTemporality.CUMULATIVE));
-    LongCounter longCounter = testSdk.longCounterBuilder("testLongCounter").build();
+    LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
     longCounter.add(10, Labels.empty());
     LongUpDownCounter longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testLongUpDownCounter").build();
+        sdkMeter.longUpDownCounterBuilder("testLongUpDownCounter").build();
     longUpDownCounter.add(-10, Labels.empty());
     LongValueRecorder longValueRecorder =
-        testSdk.longValueRecorderBuilder("testLongValueRecorder").build();
+        sdkMeter.longValueRecorderBuilder("testLongValueRecorder").build();
     longValueRecorder.record(10, Labels.empty());
-    DoubleCounter doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
+    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testDoubleCounter").build();
     doubleCounter.add(10.1, Labels.empty());
     DoubleUpDownCounter doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
+        sdkMeter.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
     doubleUpDownCounter.add(-10.1, Labels.empty());
     DoubleValueRecorder doubleValueRecorder =
-        testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
+        sdkMeter.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
     doubleValueRecorder.record(10.1, Labels.empty());
 
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 RESOURCE,
@@ -244,33 +244,33 @@ public class SdkMeterProviderTest {
 
   @Test
   void collectAllAsyncInstruments() {
-    testSdk
+    sdkMeter
         .longSumObserverBuilder("testLongSumObserver")
         .setUpdater(longResult -> longResult.observe(10, Labels.empty()))
         .build();
-    testSdk
+    sdkMeter
         .longUpDownSumObserverBuilder("testLongUpDownSumObserver")
         .setUpdater(longResult -> longResult.observe(-10, Labels.empty()))
         .build();
-    testSdk
+    sdkMeter
         .longValueObserverBuilder("testLongValueObserver")
         .setUpdater(longResult -> longResult.observe(10, Labels.empty()))
         .build();
 
-    testSdk
+    sdkMeter
         .doubleSumObserverBuilder("testDoubleSumObserver")
         .setUpdater(doubleResult -> doubleResult.observe(10.1, Labels.empty()))
         .build();
-    testSdk
+    sdkMeter
         .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver")
         .setUpdater(doubleResult -> doubleResult.observe(-10.1, Labels.empty()))
         .build();
-    testSdk
+    sdkMeter
         .doubleValueObserverBuilder("testDoubleValueObserver")
         .setUpdater(doubleResult -> doubleResult.observe(10.1, Labels.empty()))
         .build();
 
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 RESOURCE,
@@ -348,33 +348,33 @@ public class SdkMeterProviderTest {
         testMeterProvider,
         AggregationConfiguration.create(
             AggregatorFactory.count(), MetricData.AggregationTemporality.CUMULATIVE));
-    testSdk
+    sdkMeter
         .longSumObserverBuilder("testLongSumObserver")
         .setUpdater(longResult -> longResult.observe(10, Labels.empty()))
         .build();
-    testSdk
+    sdkMeter
         .longUpDownSumObserverBuilder("testLongUpDownSumObserver")
         .setUpdater(longResult -> longResult.observe(-10, Labels.empty()))
         .build();
-    testSdk
+    sdkMeter
         .longValueObserverBuilder("testLongValueObserver")
         .setUpdater(longResult -> longResult.observe(10, Labels.empty()))
         .build();
 
-    testSdk
+    sdkMeter
         .doubleSumObserverBuilder("testDoubleSumObserver")
         .setUpdater(doubleResult -> doubleResult.observe(10.1, Labels.empty()))
         .build();
-    testSdk
+    sdkMeter
         .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver")
         .setUpdater(doubleResult -> doubleResult.observe(-10.1, Labels.empty()))
         .build();
-    testSdk
+    sdkMeter
         .doubleValueObserverBuilder("testDoubleValueObserver")
         .setUpdater(doubleResult -> doubleResult.observe(10.1, Labels.empty()))
         .build();
 
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 RESOURCE,

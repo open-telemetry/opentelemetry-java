@@ -28,12 +28,12 @@ class DoubleValueObserverSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter testSdk = sdkMeterProvider.get(getClass().getName());
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void collectMetrics_NoCallback() {
     DoubleValueObserverSdk doubleValueObserver =
-        testSdk
+        sdkMeter
             .doubleValueObserverBuilder("testObserver")
             .setDescription("My own DoubleValueObserver")
             .setUnit("ms")
@@ -44,7 +44,7 @@ class DoubleValueObserverSdkTest {
   @Test
   void collectMetrics_NoRecords() {
     DoubleValueObserverSdk doubleValueObserver =
-        testSdk
+        sdkMeter
             .doubleValueObserverBuilder("testObserver")
             .setDescription("My own DoubleValueObserver")
             .setUnit("ms")
@@ -56,7 +56,7 @@ class DoubleValueObserverSdkTest {
   @Test
   void collectMetrics_WithOneRecord() {
     DoubleValueObserverSdk doubleValueObserver =
-        testSdk
+        sdkMeter
             .doubleValueObserverBuilder("testObserver")
             .setDescription("My own DoubleValueObserver")
             .setUnit("ms")
