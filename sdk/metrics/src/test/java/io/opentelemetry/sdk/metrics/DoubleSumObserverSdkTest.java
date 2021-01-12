@@ -32,38 +32,35 @@ class DoubleSumObserverSdkTest {
 
   @Test
   void collectMetrics_NoCallback() {
-    DoubleSumObserverSdk doubleSumObserver =
-        sdkMeter
-            .doubleSumObserverBuilder("testObserver")
-            .setDescription("My own DoubleSumObserver")
-            .setUnit("ms")
-            .build();
-    assertThat(doubleSumObserver.collectAll(testClock.now())).isEmpty();
+    sdkMeter
+        .doubleSumObserverBuilder("testObserver")
+        .setDescription("My own DoubleSumObserver")
+        .setUnit("ms")
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleSumObserverSdk doubleSumObserver =
-        sdkMeter
-            .doubleSumObserverBuilder("testObserver")
-            .setDescription("My own DoubleSumObserver")
-            .setUnit("ms")
-            .setUpdater(result -> {})
-            .build();
-    assertThat(doubleSumObserver.collectAll(testClock.now())).isEmpty();
+    sdkMeter
+        .doubleSumObserverBuilder("testObserver")
+        .setDescription("My own DoubleSumObserver")
+        .setUnit("ms")
+        .setUpdater(result -> {})
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_WithOneRecord() {
-    DoubleSumObserverSdk doubleSumObserver =
-        sdkMeter
-            .doubleSumObserverBuilder("testObserver")
-            .setDescription("My own DoubleSumObserver")
-            .setUnit("ms")
-            .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
-            .build();
+    sdkMeter
+        .doubleSumObserverBuilder("testObserver")
+        .setDescription("My own DoubleSumObserver")
+        .setUnit("ms")
+        .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
+        .build();
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleSumObserver.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -81,7 +78,7 @@ class DoubleSumObserverSdkTest {
                             Labels.of("k", "v"),
                             12.1d)))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleSumObserver.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
