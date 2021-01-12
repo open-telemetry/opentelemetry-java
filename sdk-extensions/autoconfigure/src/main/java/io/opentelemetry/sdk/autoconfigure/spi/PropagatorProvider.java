@@ -11,9 +11,11 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 /**
  * A service provider interface (SPI) for providing additional propagators to the autoconfigured
  * SDK. The {@link TextMapPropagator} returned from any found {@link PropagatorProvider} will be
- * available as part of {@link OpenTelemetry#getPropagators()}. This should generally only be used
- * for custom propagators - for any propagator supported by OpenTelemetry, it is recommended to use
- * the {@code otel.propagators} property instead.
+ * available as part of {@link OpenTelemetry#getPropagators()}. Any provided propagators will be
+ * enabled in addition to any specified by the {@code otel.propagators} property.
+ *
+ * <p>This should generally only be used for custom propagators - for any propagator supported by
+ * OpenTelemetry, it is recommended to use the {@code otel.propagators} property instead.
  */
 public interface PropagatorProvider {
   /** Returns a {@link TextMapPropagator} to register to OpenTelemetry. */

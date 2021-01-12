@@ -14,14 +14,14 @@ import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracerPropagator;
 import io.opentelemetry.sdk.autoconfigure.spi.PropagatorProvider;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 final class PropagatorConfiguration {
 
   static ContextPropagators configurePropagators(ConfigProperties config) {
-    List<TextMapPropagator> propagators = new ArrayList<>();
+    Set<TextMapPropagator> propagators = new LinkedHashSet<>();
     for (String propagatorName : config.getCommaSeparatedValues("otel.propagators")) {
       propagators.add(PropagatorConfiguration.getPropagator(propagatorName));
     }
