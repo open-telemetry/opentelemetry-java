@@ -17,13 +17,11 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleValueRecorderSdk}. */
@@ -57,27 +55,140 @@ class DoubleValueRecorderSdkTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleValueRecorderSdk doubleMeasure =
-        testSdk
-            .doubleValueRecorderBuilder("testRecorder")
-            .setDescription("My very own measure")
-            .setUnit("ms")
-            .build();
-    doubleMeasure.bind(Labels.of("key", "value"));
-    testClock.advanceNanos(SECOND_NANOS);
-
-    List<MetricData> metricDataList = doubleMeasure.collectAll(testClock.now());
-    assertThat(metricDataList).isEmpty();
+    DoubleValueRecorderSdk doubleRecorder =
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+    BoundDoubleValueRecorder bound = doubleRecorder.bind(Labels.of("key", "value"));
+    try {
+      assertThat(testSdk.collectAll(testClock.now())).isEmpty();
+    } finally {
+      bound.unbind();
+    }
   }
 
   @Test
-  void collectMetrics_WithOneRecord() {
-    DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+  void collectMetrics_WithEmptyLabel() {
+    DoubleValueRecorderSdk doubleRecorder =
+        testSdk
+            .doubleValueRecorderBuilder("testRecorder")
+            .setDescription("description")
+            .setUnit("ms")
+            .build();
     testClock.advanceNanos(SECOND_NANOS);
-    doubleMeasure.record(12.1d, Labels.empty());
-    List<MetricData> metricDataList = doubleMeasure.collectAll(testClock.now());
-    assertThat(metricDataList)
+    doubleRecorder.record(12d, Labels.empty());
+    doubleRecorder.record(12d);
+    assertThat(testSdk.collectAll(testClock.now()))
+        .containsExactly(
+            MetricData.createDoubleSummary(
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                "testRecorder",
+                "description",
+                "ms",
+                MetricData.DoubleSummaryData.create(
+                    Collections.singletonList(
+                        MetricData.DoubleSummaryPoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.empty(),
+                            2,
+                            24d,
+                            valueAtPercentiles(12d, 12d))))));
+  }
+
+  @Test
+  void collectMetrics_WithMultipleCollects() {
+    long startTime = testClock.now();
+    DoubleValueRecorderSdk doubleRecorder =
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+    BoundDoubleValueRecorder bound = doubleRecorder.bind(Labels.of("K", "V"));
+    try {
+      // Do some records using bounds and direct calls and bindings.
+      doubleRecorder.record(12.1d, Labels.empty());
+      bound.record(123.3d);
+      doubleRecorder.record(-13.1d, Labels.empty());
+      // Advancing time here should not matter.
+      testClock.advanceNanos(SECOND_NANOS);
+      bound.record(321.5d);
+      doubleRecorder.record(-121.5d, Labels.of("K", "V"));
+      assertThat(testSdk.collectAll(testClock.now()))
+          .containsExactly(
+              MetricData.createDoubleSummary(
+                  RESOURCE,
+                  INSTRUMENTATION_LIBRARY_INFO,
+                  "testRecorder",
+                  "",
+                  "1",
+                  MetricData.DoubleSummaryData.create(
+                      Arrays.asList(
+                          MetricData.DoubleSummaryPoint.create(
+                              startTime,
+                              testClock.now(),
+                              Labels.of("K", "V"),
+                              3,
+                              323.3d,
+                              valueAtPercentiles(-121.5d, 321.5d)),
+                          MetricData.DoubleSummaryPoint.create(
+                              startTime,
+                              testClock.now(),
+                              Labels.empty(),
+                              2,
+                              -1.0d,
+                              valueAtPercentiles(-13.1d, 12.1d))))));
+
+      // Repeat to prove we don't keep previous values.
+      testClock.advanceNanos(SECOND_NANOS);
+      bound.record(222d);
+      doubleRecorder.record(17d, Labels.empty());
+      assertThat(testSdk.collectAll(testClock.now()))
+          .containsExactly(
+              MetricData.createDoubleSummary(
+                  RESOURCE,
+                  INSTRUMENTATION_LIBRARY_INFO,
+                  "testRecorder",
+                  "",
+                  "1",
+                  MetricData.DoubleSummaryData.create(
+                      Arrays.asList(
+                          MetricData.DoubleSummaryPoint.create(
+                              startTime + SECOND_NANOS,
+                              testClock.now(),
+                              Labels.of("K", "V"),
+                              1,
+                              222.0d,
+                              valueAtPercentiles(222.0, 222.0d)),
+                          MetricData.DoubleSummaryPoint.create(
+                              startTime + SECOND_NANOS,
+                              testClock.now(),
+                              Labels.empty(),
+                              1,
+                              17.0d,
+                              valueAtPercentiles(17d, 17d))))));
+    } finally {
+      bound.unbind();
+    }
+  }
+
+  @Test
+  void stressTest() {
+    final DoubleValueRecorderSdk doubleRecorder =
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+
+    StressTestRunner.Builder stressTestBuilder =
+        StressTestRunner.builder().setInstrument(doubleRecorder).setCollectionIntervalMs(100);
+
+    for (int i = 0; i < 4; i++) {
+      stressTestBuilder.addOperation(
+          StressTestRunner.Operation.create(
+              1_000,
+              2,
+              new DoubleValueRecorderSdkTest.OperationUpdaterDirectCall(doubleRecorder, "K", "V")));
+      stressTestBuilder.addOperation(
+          StressTestRunner.Operation.create(
+              1_000, 2, new OperationUpdaterWithBinding(doubleRecorder.bind(Labels.of("K", "V")))));
+    }
+
+    stressTestBuilder.build().run();
+    assertThat(testSdk.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSummary(
                 RESOURCE,
@@ -87,138 +198,24 @@ class DoubleValueRecorderSdkTest {
                 "1",
                 MetricData.DoubleSummaryData.create(
                     Collections.singletonList(
-                        DoubleSummaryPoint.create(
-                            testClock.now() - SECOND_NANOS,
+                        MetricData.DoubleSummaryPoint.create(
                             testClock.now(),
-                            Labels.empty(),
-                            1,
-                            12.1d,
-                            valueAtPercentiles(12.1d, 12.1d))))));
-  }
-
-  @Test
-  void collectMetrics_WithEmptyLabel() {
-    DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testRecorder").build();
-    DoubleValueRecorderSdk doubleMeasure1 =
-        testSdk.doubleValueRecorderBuilder("testRecorder1").build();
-    testClock.advanceNanos(SECOND_NANOS);
-    doubleMeasure.record(12.1d, Labels.empty());
-    doubleMeasure1.record(12.1d);
-
-    assertThat(doubleMeasure.collectAll(testClock.now()).get(0))
-        .usingRecursiveComparison(
-            RecursiveComparisonConfiguration.builder().withIgnoredFields("name").build())
-        .isEqualTo(doubleMeasure1.collectAll(testClock.now()).get(0));
-  }
-
-  @Test
-  void collectMetrics_WithMultipleCollects() {
-    long startTime = testClock.now();
-    DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testRecorder").build();
-    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
-    try {
-      // Do some records using bounds and direct calls and bindings.
-      doubleMeasure.record(12.1d, Labels.empty());
-      boundMeasure.record(123.3d);
-      doubleMeasure.record(-13.1d, Labels.empty());
-      // Advancing time here should not matter.
-      testClock.advanceNanos(SECOND_NANOS);
-      boundMeasure.record(321.5d);
-      doubleMeasure.record(-121.5d, Labels.of("K", "V"));
-
-      List<MetricData> metricDataList = doubleMeasure.collectAll(testClock.now());
-      assertThat(metricDataList).hasSize(1);
-      MetricData metricData = metricDataList.get(0);
-      assertThat(metricData.getDoubleSummaryData().getPoints())
-          .containsExactlyInAnyOrder(
-              MetricData.DoubleSummaryPoint.create(
-                  startTime,
-                  testClock.now(),
-                  Labels.empty(),
-                  2,
-                  -1.0d,
-                  valueAtPercentiles(-13.1d, 12.1d)),
-              MetricData.DoubleSummaryPoint.create(
-                  startTime,
-                  testClock.now(),
-                  Labels.of("K", "V"),
-                  3,
-                  323.3d,
-                  valueAtPercentiles(-121.5d, 321.5d)));
-
-      // Repeat to prove we don't keep previous values.
-      testClock.advanceNanos(SECOND_NANOS);
-      boundMeasure.record(222d);
-      doubleMeasure.record(17d, Labels.empty());
-
-      metricDataList = doubleMeasure.collectAll(testClock.now());
-      assertThat(metricDataList).hasSize(1);
-      metricData = metricDataList.get(0);
-      assertThat(metricData.getDoubleSummaryData().getPoints())
-          .containsExactlyInAnyOrder(
-              DoubleSummaryPoint.create(
-                  startTime + SECOND_NANOS,
-                  testClock.now(),
-                  Labels.empty(),
-                  1,
-                  17.0d,
-                  valueAtPercentiles(17d, 17d)),
-              MetricData.DoubleSummaryPoint.create(
-                  startTime + SECOND_NANOS,
-                  testClock.now(),
-                  Labels.of("K", "V"),
-                  1,
-                  222.0d,
-                  valueAtPercentiles(222.0, 222.0d)));
-    } finally {
-      boundMeasure.unbind();
-    }
-  }
-
-  @Test
-  void stressTest() {
-    final DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testRecorder").build();
-
-    StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleMeasure).setCollectionIntervalMs(100);
-
-    for (int i = 0; i < 4; i++) {
-      stressTestBuilder.addOperation(
-          StressTestRunner.Operation.create(
-              1_000,
-              2,
-              new DoubleValueRecorderSdkTest.OperationUpdaterDirectCall(doubleMeasure, "K", "V")));
-      stressTestBuilder.addOperation(
-          StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterWithBinding(doubleMeasure.bind(Labels.of("K", "V")))));
-    }
-
-    stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleMeasure.collectAll(testClock.now());
-    assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getDoubleSummaryData().getPoints())
-        .containsExactly(
-            MetricData.DoubleSummaryPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Labels.of("K", "V"),
-                8_000,
-                80_000,
-                valueAtPercentiles(9.0, 11.0)));
+                            testClock.now(),
+                            Labels.of("K", "V"),
+                            8_000,
+                            80_000,
+                            valueAtPercentiles(9.0, 11.0))))));
   }
 
   @Test
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleValueRecorderSdk doubleMeasure =
+    final DoubleValueRecorderSdk doubleRecorder =
         testSdk.doubleValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleMeasure).setCollectionIntervalMs(100);
+        StressTestRunner.builder().setInstrument(doubleRecorder).setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -226,48 +223,54 @@ class DoubleValueRecorderSdkTest {
               2_000,
               1,
               new DoubleValueRecorderSdkTest.OperationUpdaterDirectCall(
-                  doubleMeasure, keys[i], values[i])));
+                  doubleRecorder, keys[i], values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new OperationUpdaterWithBinding(doubleMeasure.bind(Labels.of(keys[i], values[i])))));
+              new OperationUpdaterWithBinding(doubleRecorder.bind(Labels.of(keys[i], values[i])))));
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleMeasure.collectAll(testClock.now());
-    assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getDoubleSummaryData().getPoints())
+    assertThat(testSdk.collectAll(testClock.now()))
         .containsExactly(
-            MetricData.DoubleSummaryPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Labels.of(keys[0], values[0]),
-                4_000,
-                40_000d,
-                valueAtPercentiles(9.0, 11.0)),
-            DoubleSummaryPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Labels.of(keys[1], values[1]),
-                4_000,
-                40_000d,
-                valueAtPercentiles(9.0, 11.0)),
-            MetricData.DoubleSummaryPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Labels.of(keys[2], values[2]),
-                4_000,
-                40_000d,
-                valueAtPercentiles(9.0, 11.0)),
-            MetricData.DoubleSummaryPoint.create(
-                testClock.now(),
-                testClock.now(),
-                Labels.of(keys[3], values[3]),
-                4_000,
-                40_000d,
-                valueAtPercentiles(9.0, 11.0)));
+            MetricData.createDoubleSummary(
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                "testRecorder",
+                "",
+                "1",
+                MetricData.DoubleSummaryData.create(
+                    Arrays.asList(
+                        MetricData.DoubleSummaryPoint.create(
+                            testClock.now(),
+                            testClock.now(),
+                            Labels.of(keys[0], values[0]),
+                            4_000,
+                            40_000d,
+                            valueAtPercentiles(9.0, 11.0)),
+                        MetricData.DoubleSummaryPoint.create(
+                            testClock.now(),
+                            testClock.now(),
+                            Labels.of(keys[1], values[1]),
+                            4_000,
+                            40_000d,
+                            valueAtPercentiles(9.0, 11.0)),
+                        MetricData.DoubleSummaryPoint.create(
+                            testClock.now(),
+                            testClock.now(),
+                            Labels.of(keys[2], values[2]),
+                            4_000,
+                            40_000d,
+                            valueAtPercentiles(9.0, 11.0)),
+                        MetricData.DoubleSummaryPoint.create(
+                            testClock.now(),
+                            testClock.now(),
+                            Labels.of(keys[3], values[3]),
+                            4_000,
+                            40_000d,
+                            valueAtPercentiles(9.0, 11.0))))));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
