@@ -13,20 +13,35 @@ import io.opentelemetry.extension.trace.propagation.AwsXrayPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracerPropagator;
-import java.util.ArrayList;
-import java.util.List;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 final class PropagatorConfiguration {
 
   static ContextPropagators configurePropagators(ConfigProperties config) {
-    List<TextMapPropagator> propagators = new ArrayList<>();
+    Map<String, TextMapPropagator> spiPropagators =
+        StreamSupport.stream(
+                ServiceLoader.load(ConfigurablePropagatorProvider.class).spliterator(), false)
+            .collect(
+                Collectors.toMap(
+                    ConfigurablePropagatorProvider::getName,
+                    ConfigurablePropagatorProvider::getPropagator));
+
+    Set<TextMapPropagator> propagators = new LinkedHashSet<>();
     for (String propagatorName : config.getCommaSeparatedValues("otel.propagators")) {
-      propagators.add(PropagatorConfiguration.getPropagator(propagatorName));
+      propagators.add(getPropagator(propagatorName, spiPropagators));
     }
+
     return ContextPropagators.create(TextMapPropagator.composite(propagators));
   }
 
-  private static TextMapPropagator getPropagator(String name) {
+  private static TextMapPropagator getPropagator(
+      String name, Map<String, TextMapPropagator> spiPropagators) {
     if (name.equals("tracecontext")) {
       return W3CTraceContextPropagator.getInstance();
     }
@@ -52,6 +67,10 @@ final class PropagatorConfiguration {
       case "xray":
         return AwsXrayPropagator.getInstance();
       default:
+        TextMapPropagator spiPropagator = spiPropagators.get(name);
+        if (spiPropagator != null) {
+          return spiPropagator;
+        }
         throw new ConfigurationException("Unrecognized value for otel.propagators: " + name);
     }
   }

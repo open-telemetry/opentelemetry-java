@@ -17,16 +17,8 @@ import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.extension.trace.propagation.AwsXrayPropagator;
@@ -42,9 +34,8 @@ import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import org.junit.jupiter.api.BeforeEach;
@@ -162,32 +153,18 @@ class FullConfigTest {
 
     System.setProperty("otel.exporter.zipkin.endpoint", "http://" + endpoint + "/api/v2/spans");
     OpenTelemetrySdkAutoConfiguration.initialize();
-    Map<String, String> headers = new HashMap<>();
-    GlobalOpenTelemetry.get()
-        .getPropagators()
-        .getTextMapPropagator()
-        .inject(
-            Context.root()
-                .with(
-                    Span.wrap(
-                        SpanContext.create(
-                            TraceId.fromLongs(1, 1),
-                            SpanId.fromLong(2),
-                            TraceFlags.getDefault(),
-                            TraceState.builder().set("cat", "meow").build())))
-                .with(Baggage.builder().put("airplane", "luggage").build()),
-            headers,
-            Map::put);
+    Collection<String> fields =
+        GlobalOpenTelemetry.get().getPropagators().getTextMapPropagator().fields();
     List<String> keys = new ArrayList<>();
     keys.addAll(W3CTraceContextPropagator.getInstance().fields());
     keys.addAll(W3CBaggagePropagator.getInstance().fields());
     keys.addAll(B3Propagator.getInstance().fields());
     keys.addAll(JaegerPropagator.getInstance().fields());
-    // Legacy baggage format.
-    keys.add("uberctx-airplane");
     keys.addAll(OtTracerPropagator.getInstance().fields());
     keys.addAll(AwsXrayPropagator.getInstance().fields());
-    assertThat(headers).containsOnlyKeys(keys);
+    // Added by TestPropagatorProvider
+    keys.add("test");
+    assertThat(fields).containsExactlyInAnyOrderElementsOf(keys);
 
     GlobalOpenTelemetry.get()
         .getTracer("test")
