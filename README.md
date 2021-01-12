@@ -82,7 +82,7 @@ dependency versions in sync.
 
 ```groovy
 dependencies {
-  compile platform("io.opentelemetry:opentelemetry-bom:0.13.1")
+  implementation platform("io.opentelemetry:opentelemetry-bom:0.13.1")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
