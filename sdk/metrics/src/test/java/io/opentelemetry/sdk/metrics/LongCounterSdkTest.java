@@ -17,10 +17,9 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.List;
-import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
+import java.util.Arrays;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongCounterSdk}. */
@@ -52,84 +51,98 @@ class LongCounterSdkTest {
 
   @Test
   void collectMetrics_NoRecords() {
+    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
+    BoundLongCounter bound = longCounter.bind(Labels.of("foo", "bar"));
+    try {
+      assertThat(testSdk.collectAll(testClock.now())).isEmpty();
+    } finally {
+      bound.unbind();
+    }
+  }
+
+  @Test
+  void collectMetrics_WithEmptyLabels() {
     LongCounterSdk longCounter =
         testSdk
             .longCounterBuilder("testCounter")
-            .setDescription("My very own counter")
-            .setUnit("ms")
+            .setDescription("description")
+            .setUnit("By")
             .build();
-    BoundLongCounter bound = longCounter.bind(Labels.of("foo", "bar"));
-    assertThat(longCounter.collectAll(testClock.now())).isEmpty();
-
-    bound.unbind();
-  }
-
-  @Test
-  void collectMetrics_WithOneRecord() {
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
     longCounter.add(12, Labels.empty());
-    List<MetricData> metricDataList = longCounter.collectAll(testClock.now());
-    assertThat(metricDataList).hasSize(1);
-    MetricData metricData = metricDataList.get(0);
-    assertThat(metricData.getResource()).isEqualTo(RESOURCE);
-    assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
-    assertThat(metricData.getLongSumData().getPoints())
+    longCounter.add(12);
+    assertThat(testSdk.collectAll(testClock.now()))
         .containsExactly(
-            LongPoint.create(testClock.now() - SECOND_NANOS, testClock.now(), Labels.empty(), 12));
-  }
-
-  @Test
-  void collectMetrics_WithEmptyLabel() {
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    LongCounterSdk longCounter1 = testSdk.longCounterBuilder("testCounter1").build();
-    testClock.advanceNanos(SECOND_NANOS);
-    longCounter.add(12, Labels.empty());
-    longCounter1.add(12);
-
-    assertThat(longCounter.collectAll(testClock.now()).get(0))
-        .usingRecursiveComparison(
-            RecursiveComparisonConfiguration.builder().withIgnoredFields("name").build())
-        .isEqualTo(longCounter1.collectAll(testClock.now()).get(0));
+            MetricData.createLongSum(
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                "testCounter",
+                "description",
+                "By",
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        MetricData.LongPoint.create(
+                            testClock.now() - SECOND_NANOS,
+                            testClock.now(),
+                            Labels.empty(),
+                            24)))));
   }
 
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(Labels.of("K", "V"));
+    BoundLongCounter bound = longCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
       longCounter.add(12, Labels.empty());
-      boundCounter.add(123);
+      bound.add(123);
       longCounter.add(21, Labels.empty());
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
-      boundCounter.add(321);
+      bound.add(321);
       longCounter.add(111, Labels.of("K", "V"));
-
-      List<MetricData> metricDataList = longCounter.collectAll(testClock.now());
-      assertThat(metricDataList).hasSize(1);
-      MetricData metricData = metricDataList.get(0);
-      assertThat(metricData.getLongSumData().getPoints())
+      assertThat(testSdk.collectAll(testClock.now()))
           .containsExactly(
-              LongPoint.create(startTime, testClock.now(), Labels.of("K", "V"), 555),
-              LongPoint.create(startTime, testClock.now(), Labels.empty(), 33));
+              MetricData.createLongSum(
+                  RESOURCE,
+                  INSTRUMENTATION_LIBRARY_INFO,
+                  "testCounter",
+                  "",
+                  "1",
+                  MetricData.LongSumData.create(
+                      /* isMonotonic= */ true,
+                      MetricData.AggregationTemporality.CUMULATIVE,
+                      Arrays.asList(
+                          MetricData.LongPoint.create(
+                              startTime, testClock.now(), Labels.of("K", "V"), 555),
+                          MetricData.LongPoint.create(
+                              startTime, testClock.now(), Labels.empty(), 33)))));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
-      boundCounter.add(222);
+      bound.add(222);
       longCounter.add(11, Labels.empty());
-
-      metricDataList = longCounter.collectAll(testClock.now());
-      assertThat(metricDataList).hasSize(1);
-      metricData = metricDataList.get(0);
-      assertThat(metricData.getLongSumData().getPoints())
+      assertThat(testSdk.collectAll(testClock.now()))
           .containsExactly(
-              LongPoint.create(startTime, testClock.now(), Labels.of("K", "V"), 777),
-              LongPoint.create(startTime, testClock.now(), Labels.empty(), 44));
+              MetricData.createLongSum(
+                  RESOURCE,
+                  INSTRUMENTATION_LIBRARY_INFO,
+                  "testCounter",
+                  "",
+                  "1",
+                  MetricData.LongSumData.create(
+                      /* isMonotonic= */ true,
+                      MetricData.AggregationTemporality.CUMULATIVE,
+                      Arrays.asList(
+                          MetricData.LongPoint.create(
+                              startTime, testClock.now(), Labels.of("K", "V"), 777),
+                          MetricData.LongPoint.create(
+                              startTime, testClock.now(), Labels.empty(), 44)))));
     } finally {
-      boundCounter.unbind();
+      bound.unbind();
     }
   }
 
@@ -166,11 +179,20 @@ class LongCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = longCounter.collectAll(testClock.now());
-    assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getLongSumData().getPoints())
+    assertThat(testSdk.collectAll(testClock.now()))
         .containsExactly(
-            LongPoint.create(testClock.now(), testClock.now(), Labels.of("K", "V"), 160_000));
+            MetricData.createLongSum(
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                "testCounter",
+                "",
+                "1",
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        MetricData.LongPoint.create(
+                            testClock.now(), testClock.now(), Labels.of("K", "V"), 160_000)))));
   }
 
   @Test
@@ -195,18 +217,38 @@ class LongCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = longCounter.collectAll(testClock.now());
-    assertThat(metricDataList).hasSize(1);
-    assertThat(metricDataList.get(0).getLongSumData().getPoints())
+    assertThat(testSdk.collectAll(testClock.now()))
         .containsExactly(
-            LongPoint.create(
-                testClock.now(), testClock.now(), Labels.of(keys[0], values[0]), 20_000),
-            LongPoint.create(
-                testClock.now(), testClock.now(), Labels.of(keys[1], values[1]), 20_000),
-            LongPoint.create(
-                testClock.now(), testClock.now(), Labels.of(keys[2], values[2]), 20_000),
-            LongPoint.create(
-                testClock.now(), testClock.now(), Labels.of(keys[3], values[3]), 20_000));
+            MetricData.createLongSum(
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                "testCounter",
+                "",
+                "1",
+                MetricData.LongSumData.create(
+                    /* isMonotonic= */ true,
+                    MetricData.AggregationTemporality.CUMULATIVE,
+                    Arrays.asList(
+                        MetricData.LongPoint.create(
+                            testClock.now(),
+                            testClock.now(),
+                            Labels.of(keys[0], values[0]),
+                            20_000),
+                        MetricData.LongPoint.create(
+                            testClock.now(),
+                            testClock.now(),
+                            Labels.of(keys[1], values[1]),
+                            20_000),
+                        MetricData.LongPoint.create(
+                            testClock.now(),
+                            testClock.now(),
+                            Labels.of(keys[2], values[2]),
+                            20_000),
+                        MetricData.LongPoint.create(
+                            testClock.now(),
+                            testClock.now(),
+                            Labels.of(keys[3], values[3]),
+                            20_000)))));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
