@@ -32,12 +32,12 @@ class DoubleUpDownCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter testSdk = sdkMeterProvider.get(getClass().getName());
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void add_PreventNullLabels() {
     assertThatThrownBy(
-            () -> testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build().add(1.0, null))
+            () -> sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build().add(1.0, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
@@ -45,7 +45,7 @@ class DoubleUpDownCounterSdkTest {
   @Test
   void bound_PreventNullLabels() {
     assertThatThrownBy(
-            () -> testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build().bind(null))
+            () -> sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build().bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
@@ -53,10 +53,10 @@ class DoubleUpDownCounterSdkTest {
   @Test
   void collectMetrics_NoRecords() {
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
     BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind(Labels.of("foo", "bar"));
     try {
-      assertThat(testSdk.collectAll(testClock.now())).isEmpty();
+      assertThat(sdkMeter.collectAll(testClock.now())).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -65,7 +65,7 @@ class DoubleUpDownCounterSdkTest {
   @Test
   void collectMetrics_WithEmptyLabel() {
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk
+        sdkMeter
             .doubleUpDownCounterBuilder("testUpDownCounter")
             .setDescription("description")
             .setUnit("ms")
@@ -75,7 +75,7 @@ class DoubleUpDownCounterSdkTest {
     doubleUpDownCounter.add(12d);
     // TODO: This is not perfect because we compare double values using direct equal, maybe worth
     //  changing to do a proper comparison for double values, here and everywhere else.
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -98,7 +98,7 @@ class DoubleUpDownCounterSdkTest {
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
     BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
@@ -109,7 +109,7 @@ class DoubleUpDownCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(321.5d);
       doubleUpDownCounter.add(111.1d, Labels.of("K", "V"));
-      assertThat(testSdk.collectAll(testClock.now()))
+      assertThat(sdkMeter.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createDoubleSum(
                   RESOURCE,
@@ -131,7 +131,7 @@ class DoubleUpDownCounterSdkTest {
       bound.add(222d);
       doubleUpDownCounter.add(11d, Labels.empty());
 
-      assertThat(testSdk.collectAll(testClock.now()))
+      assertThat(sdkMeter.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createDoubleSum(
                   RESOURCE,
@@ -155,7 +155,7 @@ class DoubleUpDownCounterSdkTest {
   @Test
   void stressTest() {
     final DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleUpDownCounter).setCollectionIntervalMs(100);
@@ -172,7 +172,7 @@ class DoubleUpDownCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -193,7 +193,7 @@ class DoubleUpDownCounterSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleUpDownCounter).setCollectionIntervalMs(100);
@@ -212,7 +212,7 @@ class DoubleUpDownCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,

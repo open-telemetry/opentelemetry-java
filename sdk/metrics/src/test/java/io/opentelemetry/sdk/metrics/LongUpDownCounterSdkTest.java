@@ -32,11 +32,11 @@ class LongUpDownCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter testSdk = sdkMeterProvider.get(getClass().getName());
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void add_PreventNullLabels() {
-    assertThatThrownBy(() -> testSdk.longUpDownCounterBuilder("testCounter").build().add(1, null))
+    assertThatThrownBy(() -> sdkMeter.longUpDownCounterBuilder("testCounter").build().add(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
@@ -44,7 +44,7 @@ class LongUpDownCounterSdkTest {
   @Test
   void bound_PreventNullLabels() {
     assertThatThrownBy(
-            () -> testSdk.longUpDownCounterBuilder("testUpDownCounter").build().bind(null))
+            () -> sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build().bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
@@ -52,10 +52,10 @@ class LongUpDownCounterSdkTest {
   @Test
   void collectMetrics_NoRecords() {
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.of("foo", "bar"));
     try {
-      assertThat(testSdk.collectAll(testClock.now())).isEmpty();
+      assertThat(sdkMeter.collectAll(testClock.now())).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -64,7 +64,7 @@ class LongUpDownCounterSdkTest {
   @Test
   void collectMetrics_WithEmptyLabel() {
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk
+        sdkMeter
             .longUpDownCounterBuilder("testUpDownCounter")
             .setDescription("description")
             .setUnit("By")
@@ -72,7 +72,7 @@ class LongUpDownCounterSdkTest {
     testClock.advanceNanos(SECOND_NANOS);
     longUpDownCounter.add(12, Labels.empty());
     longUpDownCounter.add(12);
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -95,7 +95,7 @@ class LongUpDownCounterSdkTest {
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
@@ -106,7 +106,7 @@ class LongUpDownCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(321);
       longUpDownCounter.add(111, Labels.of("K", "V"));
-      assertThat(testSdk.collectAll(testClock.now()))
+      assertThat(sdkMeter.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createLongSum(
                   RESOURCE,
@@ -127,7 +127,7 @@ class LongUpDownCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(222);
       longUpDownCounter.add(11, Labels.empty());
-      assertThat(testSdk.collectAll(testClock.now()))
+      assertThat(sdkMeter.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createLongSum(
                   RESOURCE,
@@ -151,7 +151,7 @@ class LongUpDownCounterSdkTest {
   @Test
   void stressTest() {
     final LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longUpDownCounter).setCollectionIntervalMs(100);
@@ -168,7 +168,7 @@ class LongUpDownCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -189,7 +189,7 @@ class LongUpDownCounterSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longUpDownCounter).setCollectionIntervalMs(100);
@@ -208,7 +208,7 @@ class LongUpDownCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,

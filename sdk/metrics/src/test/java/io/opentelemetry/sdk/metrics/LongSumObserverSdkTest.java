@@ -28,12 +28,12 @@ class LongSumObserverSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter testSdk = sdkMeterProvider.get(getClass().getName());
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void collectMetrics_NoCallback() {
     LongSumObserverSdk longSumObserver =
-        testSdk
+        sdkMeter
             .longSumObserverBuilder("testObserver")
             .setDescription("My own LongSumObserver")
             .setUnit("ms")
@@ -44,7 +44,7 @@ class LongSumObserverSdkTest {
   @Test
   void collectMetrics_NoRecords() {
     LongSumObserverSdk longSumObserver =
-        testSdk
+        sdkMeter
             .longSumObserverBuilder("testObserver")
             .setDescription("My own LongSumObserver")
             .setUnit("ms")
@@ -56,7 +56,7 @@ class LongSumObserverSdkTest {
   @Test
   void collectMetrics_WithOneRecord() {
     LongSumObserverSdk longSumObserver =
-        testSdk
+        sdkMeter
             .longSumObserverBuilder("testObserver")
             .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
             .build();

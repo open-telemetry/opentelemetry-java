@@ -32,28 +32,28 @@ class LongCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter testSdk = sdkMeterProvider.get(getClass().getName());
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void add_PreventNullLabels() {
-    assertThatThrownBy(() -> testSdk.longCounterBuilder("testCounter").build().add(1, null))
+    assertThatThrownBy(() -> sdkMeter.longCounterBuilder("testCounter").build().add(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThatThrownBy(() -> testSdk.longCounterBuilder("testCounter").build().bind(null))
+    assertThatThrownBy(() -> sdkMeter.longCounterBuilder("testCounter").build().bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
+    LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
     BoundLongCounter bound = longCounter.bind(Labels.of("foo", "bar"));
     try {
-      assertThat(testSdk.collectAll(testClock.now())).isEmpty();
+      assertThat(sdkMeter.collectAll(testClock.now())).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -62,7 +62,7 @@ class LongCounterSdkTest {
   @Test
   void collectMetrics_WithEmptyLabels() {
     LongCounterSdk longCounter =
-        testSdk
+        sdkMeter
             .longCounterBuilder("testCounter")
             .setDescription("description")
             .setUnit("By")
@@ -70,7 +70,7 @@ class LongCounterSdkTest {
     testClock.advanceNanos(SECOND_NANOS);
     longCounter.add(12, Labels.empty());
     longCounter.add(12);
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -92,7 +92,7 @@ class LongCounterSdkTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
+    LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
     BoundLongCounter bound = longCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
@@ -103,7 +103,7 @@ class LongCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(321);
       longCounter.add(111, Labels.of("K", "V"));
-      assertThat(testSdk.collectAll(testClock.now()))
+      assertThat(sdkMeter.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createLongSum(
                   RESOURCE,
@@ -124,7 +124,7 @@ class LongCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(222);
       longCounter.add(11, Labels.empty());
-      assertThat(testSdk.collectAll(testClock.now()))
+      assertThat(sdkMeter.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createLongSum(
                   RESOURCE,
@@ -147,7 +147,7 @@ class LongCounterSdkTest {
 
   @Test
   void longCounterAdd_MonotonicityCheck() {
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
+    LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
 
     assertThatThrownBy(() -> longCounter.add(-45, Labels.empty()))
         .isInstanceOf(IllegalArgumentException.class);
@@ -155,7 +155,7 @@ class LongCounterSdkTest {
 
   @Test
   void boundLongCounterAdd_MonotonicityCheck() {
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
+    LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
 
     assertThatThrownBy(() -> longCounter.bind(Labels.empty()).add(-9))
         .isInstanceOf(IllegalArgumentException.class);
@@ -163,7 +163,7 @@ class LongCounterSdkTest {
 
   @Test
   void stressTest() {
-    final LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
+    final LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longCounter).setCollectionIntervalMs(100);
@@ -178,7 +178,7 @@ class LongCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -198,7 +198,7 @@ class LongCounterSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
+    final LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longCounter).setCollectionIntervalMs(100);
@@ -216,7 +216,7 @@ class LongCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(testSdk.collectAll(testClock.now()))
+    assertThat(sdkMeter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,

@@ -32,30 +32,30 @@ class BatchRecorderSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter testSdk = sdkMeterProvider.get(getClass().getName());
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void batchRecorder_badLabelSet() {
-    assertThatThrownBy(() -> testSdk.newBatchRecorder("key").record())
+    assertThatThrownBy(() -> sdkMeter.newBatchRecorder("key").record())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("key/value");
   }
 
   @Test
   void batchRecorder() {
-    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
+    DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testDoubleCounter").build();
+    LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
+        sdkMeter.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testLongUpDownCounter").build();
+        sdkMeter.longUpDownCounterBuilder("testLongUpDownCounter").build();
     DoubleValueRecorderSdk doubleValueRecorder =
-        testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
+        sdkMeter.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
     LongValueRecorderSdk longValueRecorder =
-        testSdk.longValueRecorderBuilder("testLongValueRecorder").build();
+        sdkMeter.longValueRecorderBuilder("testLongValueRecorder").build();
     Labels labelSet = Labels.of("key", "value");
 
-    BatchRecorder batchRecorder = testSdk.newBatchRecorder("key", "value");
+    BatchRecorder batchRecorder = sdkMeter.newBatchRecorder("key", "value");
 
     batchRecorder
         .put(longCounter, 12)
@@ -67,7 +67,7 @@ class BatchRecorderSdkTest {
         .put(doubleValueRecorder, 13.1d);
 
     // until record() is called, nothing should be recorded.
-    Collection<MetricData> preRecord = testSdk.collectAll(testClock.now());
+    Collection<MetricData> preRecord = sdkMeter.collectAll(testClock.now());
     preRecord.forEach(metricData -> assertThat(metricData.isEmpty()).isTrue());
 
     batchRecorder.record();
