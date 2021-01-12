@@ -32,36 +32,33 @@ class LongValueObserverSdkTest {
 
   @Test
   void collectMetrics_NoCallback() {
-    LongValueObserverSdk longValueObserver =
-        sdkMeter
-            .longValueObserverBuilder("testObserver")
-            .setDescription("My own LongValueObserver")
-            .setUnit("ms")
-            .build();
-    assertThat(longValueObserver.collectAll(testClock.now())).isEmpty();
+    sdkMeter
+        .longValueObserverBuilder("testObserver")
+        .setDescription("My own LongValueObserver")
+        .setUnit("ms")
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    LongValueObserverSdk longValueObserver =
-        sdkMeter
-            .longValueObserverBuilder("testObserver")
-            .setDescription("My own LongValueObserver")
-            .setUnit("ms")
-            .setUpdater(result -> {})
-            .build();
-    assertThat(longValueObserver.collectAll(testClock.now())).isEmpty();
+    sdkMeter
+        .longValueObserverBuilder("testObserver")
+        .setDescription("My own LongValueObserver")
+        .setUnit("ms")
+        .setUpdater(result -> {})
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_WithOneRecord() {
-    LongValueObserverSdk longValueObserver =
-        sdkMeter
-            .longValueObserverBuilder("testObserver")
-            .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
-            .build();
+    sdkMeter
+        .longValueObserverBuilder("testObserver")
+        .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
+        .build();
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longValueObserver.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongGauge(
                 RESOURCE,
@@ -77,7 +74,7 @@ class LongValueObserverSdkTest {
                             Labels.of("k", "v"),
                             12)))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longValueObserver.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongGauge(
                 RESOURCE,

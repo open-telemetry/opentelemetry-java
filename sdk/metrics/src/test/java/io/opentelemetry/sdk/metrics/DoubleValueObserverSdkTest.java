@@ -32,38 +32,35 @@ class DoubleValueObserverSdkTest {
 
   @Test
   void collectMetrics_NoCallback() {
-    DoubleValueObserverSdk doubleValueObserver =
-        sdkMeter
-            .doubleValueObserverBuilder("testObserver")
-            .setDescription("My own DoubleValueObserver")
-            .setUnit("ms")
-            .build();
-    assertThat(doubleValueObserver.collectAll(testClock.now())).isEmpty();
+    sdkMeter
+        .doubleValueObserverBuilder("testObserver")
+        .setDescription("My own DoubleValueObserver")
+        .setUnit("ms")
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleValueObserverSdk doubleValueObserver =
-        sdkMeter
-            .doubleValueObserverBuilder("testObserver")
-            .setDescription("My own DoubleValueObserver")
-            .setUnit("ms")
-            .setUpdater(result -> {})
-            .build();
-    assertThat(doubleValueObserver.collectAll(testClock.now())).isEmpty();
+    sdkMeter
+        .doubleValueObserverBuilder("testObserver")
+        .setDescription("My own DoubleValueObserver")
+        .setUnit("ms")
+        .setUpdater(result -> {})
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_WithOneRecord() {
-    DoubleValueObserverSdk doubleValueObserver =
-        sdkMeter
-            .doubleValueObserverBuilder("testObserver")
-            .setDescription("My own DoubleValueObserver")
-            .setUnit("ms")
-            .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
-            .build();
+    sdkMeter
+        .doubleValueObserverBuilder("testObserver")
+        .setDescription("My own DoubleValueObserver")
+        .setUnit("ms")
+        .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
+        .build();
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleValueObserver.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleGauge(
                 RESOURCE,
@@ -79,7 +76,7 @@ class DoubleValueObserverSdkTest {
                             Labels.of("k", "v"),
                             12.1d)))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleValueObserver.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleGauge(
                 RESOURCE,

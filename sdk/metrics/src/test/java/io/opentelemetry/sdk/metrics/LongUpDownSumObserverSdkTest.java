@@ -32,36 +32,33 @@ class LongUpDownSumObserverSdkTest {
 
   @Test
   void collectMetrics_NoCallback() {
-    LongUpDownSumObserverSdk longUpDownSumObserver =
-        sdkMeter
-            .longUpDownSumObserverBuilder("testObserver")
-            .setDescription("My own LongUpDownSumObserver")
-            .setUnit("ms")
-            .build();
-    assertThat(longUpDownSumObserver.collectAll(testClock.now())).isEmpty();
+    sdkMeter
+        .longUpDownSumObserverBuilder("testObserver")
+        .setDescription("My own LongUpDownSumObserver")
+        .setUnit("ms")
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    LongUpDownSumObserverSdk longUpDownSumObserver =
-        sdkMeter
-            .longUpDownSumObserverBuilder("testObserver")
-            .setDescription("My own LongUpDownSumObserver")
-            .setUnit("ms")
-            .setUpdater(result -> {})
-            .build();
-    assertThat(longUpDownSumObserver.collectAll(testClock.now())).isEmpty();
+    sdkMeter
+        .longUpDownSumObserverBuilder("testObserver")
+        .setDescription("My own LongUpDownSumObserver")
+        .setUnit("ms")
+        .setUpdater(result -> {})
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_WithOneRecord() {
-    LongUpDownSumObserverSdk longUpDownSumObserver =
-        sdkMeter
-            .longUpDownSumObserverBuilder("testObserver")
-            .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
-            .build();
+    sdkMeter
+        .longUpDownSumObserverBuilder("testObserver")
+        .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
+        .build();
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longUpDownSumObserver.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -79,7 +76,7 @@ class LongUpDownSumObserverSdkTest {
                             Labels.of("k", "v"),
                             12)))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longUpDownSumObserver.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
