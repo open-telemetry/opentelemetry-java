@@ -95,6 +95,8 @@ of the builders in the project.
 #### Deprecations
 - The `AwsXrayIdGenerator` constructor has been deprecated in favor of using a simple `getInstance()` singleton, since
 it has no state.
+- The `TraceProtoUtils` class in the `opentelemetry-sdk-extension-otproto` module has been deprecated and 
+will be removed in the next release.
   
 #### Bugfixes
 
