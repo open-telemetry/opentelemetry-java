@@ -53,7 +53,7 @@ class LongCounterSdkTest {
     LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
     BoundLongCounter bound = longCounter.bind(Labels.of("foo", "bar"));
     try {
-      assertThat(sdkMeter.collectAll(testClock.now())).isEmpty();
+      assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -70,7 +70,7 @@ class LongCounterSdkTest {
     testClock.advanceNanos(SECOND_NANOS);
     longCounter.add(12, Labels.empty());
     longCounter.add(12);
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -103,7 +103,7 @@ class LongCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(321);
       longCounter.add(111, Labels.of("K", "V"));
-      assertThat(sdkMeter.collectAll(testClock.now()))
+      assertThat(sdkMeterProvider.collectAllMetrics())
           .containsExactly(
               MetricData.createLongSum(
                   RESOURCE,
@@ -124,7 +124,7 @@ class LongCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(222);
       longCounter.add(11, Labels.empty());
-      assertThat(sdkMeter.collectAll(testClock.now()))
+      assertThat(sdkMeterProvider.collectAllMetrics())
           .containsExactly(
               MetricData.createLongSum(
                   RESOURCE,
@@ -178,7 +178,7 @@ class LongCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -216,7 +216,7 @@ class LongCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,

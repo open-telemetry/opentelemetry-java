@@ -56,7 +56,7 @@ class DoubleUpDownCounterSdkTest {
         sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
     BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind(Labels.of("foo", "bar"));
     try {
-      assertThat(sdkMeter.collectAll(testClock.now())).isEmpty();
+      assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -75,7 +75,7 @@ class DoubleUpDownCounterSdkTest {
     doubleUpDownCounter.add(12d);
     // TODO: This is not perfect because we compare double values using direct equal, maybe worth
     //  changing to do a proper comparison for double values, here and everywhere else.
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -109,7 +109,7 @@ class DoubleUpDownCounterSdkTest {
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(321.5d);
       doubleUpDownCounter.add(111.1d, Labels.of("K", "V"));
-      assertThat(sdkMeter.collectAll(testClock.now()))
+      assertThat(sdkMeterProvider.collectAllMetrics())
           .containsExactly(
               MetricData.createDoubleSum(
                   RESOURCE,
@@ -131,7 +131,7 @@ class DoubleUpDownCounterSdkTest {
       bound.add(222d);
       doubleUpDownCounter.add(11d, Labels.empty());
 
-      assertThat(sdkMeter.collectAll(testClock.now()))
+      assertThat(sdkMeterProvider.collectAllMetrics())
           .containsExactly(
               MetricData.createDoubleSum(
                   RESOURCE,
@@ -172,7 +172,7 @@ class DoubleUpDownCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -212,7 +212,7 @@ class DoubleUpDownCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,

@@ -62,7 +62,7 @@ public class SdkMeterProviderTest {
         sdkMeter.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
     doubleValueRecorder.record(10.1, Labels.empty());
 
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 RESOURCE,
@@ -171,7 +171,7 @@ public class SdkMeterProviderTest {
         sdkMeter.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
     doubleValueRecorder.record(10.1, Labels.empty());
 
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 RESOURCE,
@@ -275,7 +275,7 @@ public class SdkMeterProviderTest {
         .setUpdater(doubleResult -> doubleResult.observe(10.1, Labels.empty()))
         .build();
 
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 RESOURCE,
@@ -379,7 +379,7 @@ public class SdkMeterProviderTest {
         .setUpdater(doubleResult -> doubleResult.observe(10.1, Labels.empty()))
         .build();
 
-    assertThat(sdkMeter.collectAll(testClock.now()))
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 RESOURCE,
