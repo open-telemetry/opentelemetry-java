@@ -26,13 +26,17 @@ import javax.annotation.Nullable;
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * OpenTelemetry}.
+ *
+ * <p>WARNING: A MetricProducer is stateful. It will only return changes since the last time it was
+ * accessed. This means that if more than one {@link
+ * io.opentelemetry.sdk.metrics.export.MetricExporter} has a handle to this MetricProducer, the two
+ * exporters will not receive copies of the same metric data to export.
  */
-public final class SdkMeterProvider implements MeterProvider {
+public final class SdkMeterProvider implements MeterProvider, MetricProducer {
 
   private static final Logger LOGGER = Logger.getLogger(SdkMeterProvider.class.getName());
   static final String DEFAULT_METER_NAME = "unknown";
   private final ComponentRegistry<SdkMeter> registry;
-  private final MetricProducer metricProducer;
   private final MeterProviderSharedState sharedState;
 
   SdkMeterProvider(Clock clock, Resource resource) {
@@ -40,7 +44,6 @@ public final class SdkMeterProvider implements MeterProvider {
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
-    this.metricProducer = new MetricProducerSdk(this.registry, this.sharedState);
   }
 
   @Override
@@ -58,20 +61,25 @@ public final class SdkMeterProvider implements MeterProvider {
     return registry.get(instrumentationName, instrumentationVersion);
   }
 
+  @Override
+  public Collection<MetricData> collectAllMetrics() {
+    Collection<SdkMeter> meters = registry.getComponents();
+    List<MetricData> result = new ArrayList<>(meters.size());
+    for (SdkMeter meter : meters) {
+      result.addAll(meter.collectAll(sharedState.getClock().now()));
+    }
+    return Collections.unmodifiableCollection(result);
+  }
+
   /**
    * Returns the {@link MetricProducer} that can be used to retrieve metrics from this {@code
    * MeterSdkProvider}.
    *
-   * <p>WARNING: A MetricProducer is stateful. It will only return changes since the last time it
-   * was accessed. This means that if more than one {@link
-   * io.opentelemetry.sdk.metrics.export.MetricExporter} has a handle to this MetricProducer, the
-   * two exporters will not receive copies of the same metric data to export.
-   *
-   * @return the {@link MetricProducer} that can be used to retrieve metrics from this {@code
-   *     MeterSdkProvider}.
+   * @deprecated use directly the class instance.
    */
+  @Deprecated
   public MetricProducer getMetricProducer() {
-    return metricProducer;
+    return this;
   }
 
   /**
@@ -109,26 +117,5 @@ public final class SdkMeterProvider implements MeterProvider {
    */
   public void registerView(InstrumentSelector selector, AggregationConfiguration specification) {
     sharedState.getViewRegistry().registerView(selector, specification);
-  }
-
-  private static final class MetricProducerSdk implements MetricProducer {
-    private final ComponentRegistry<SdkMeter> registry;
-    private final MeterProviderSharedState sharedState;
-
-    private MetricProducerSdk(
-        ComponentRegistry<SdkMeter> registry, MeterProviderSharedState sharedState) {
-      this.registry = registry;
-      this.sharedState = sharedState;
-    }
-
-    @Override
-    public Collection<MetricData> collectAllMetrics() {
-      Collection<SdkMeter> meters = registry.getComponents();
-      List<MetricData> result = new ArrayList<>(meters.size());
-      for (SdkMeter meter : meters) {
-        result.addAll(meter.collectAll(sharedState.getClock().now()));
-      }
-      return Collections.unmodifiableCollection(result);
-    }
   }
 }

@@ -250,7 +250,7 @@ public class OtlpPipelineStressTest {
     intervalMetricReader =
         IntervalMetricReader.builder()
             .setMetricExporter(metricExporter)
-            .setMetricProducers(Collections.singleton(meterProvider.getMetricProducer()))
+            .setMetricProducers(Collections.singleton(meterProvider))
             .setExportIntervalMillis(1000)
             .build();
 

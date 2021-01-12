@@ -82,7 +82,7 @@ class SdkMeterRegistryTest {
     LongCounterSdk longCounter2 = sdkMeter2.longCounterBuilder("testLongCounter").build();
     longCounter2.add(10, Labels.empty());
 
-    assertThat(meterProvider.getMetricProducer().collectAllMetrics())
+    assertThat(meterProvider.collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 Resource.getEmpty(),
