@@ -8,6 +8,12 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -21,7 +27,7 @@ final class MetricDataUtils {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      List<MetricData.LongPoint> points,
+      List<LongPoint> points,
       boolean isMonotonic) {
     return MetricData.createLongSum(
         resource,
@@ -29,15 +35,14 @@ final class MetricDataUtils {
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getUnit(),
-        MetricData.LongSumData.create(
-            isMonotonic, MetricData.AggregationTemporality.CUMULATIVE, points));
+        LongSumData.create(isMonotonic, AggregationTemporality.CUMULATIVE, points));
   }
 
   static MetricData toDoubleSumMetricData(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      List<MetricData.DoublePoint> points,
+      List<DoublePoint> points,
       boolean isMonotonic) {
     return MetricData.createDoubleSum(
         resource,
@@ -45,35 +50,32 @@ final class MetricDataUtils {
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getUnit(),
-        MetricData.DoubleSumData.create(
-            isMonotonic, MetricData.AggregationTemporality.CUMULATIVE, points));
+        DoubleSumData.create(isMonotonic, AggregationTemporality.CUMULATIVE, points));
   }
 
-  static List<MetricData.LongPoint> toLongPointList(
+  static List<LongPoint> toLongPointList(
       Map<Labels, Long> accumulationMap, long startEpochNanos, long epochNanos) {
-    List<MetricData.LongPoint> points = new ArrayList<>(accumulationMap.size());
+    List<LongPoint> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(
-                MetricData.LongPoint.create(startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(LongPoint.create(startEpochNanos, epochNanos, labels, accumulation)));
     return points;
   }
 
-  static List<MetricData.DoublePoint> toDoublePointList(
+  static List<DoublePoint> toDoublePointList(
       Map<Labels, Double> accumulationMap, long startEpochNanos, long epochNanos) {
-    List<MetricData.DoublePoint> points = new ArrayList<>(accumulationMap.size());
+    List<DoublePoint> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(
-                MetricData.DoublePoint.create(startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(DoublePoint.create(startEpochNanos, epochNanos, labels, accumulation)));
     return points;
   }
 
-  static List<MetricData.DoubleSummaryPoint> toDoubleSummaryPointList(
+  static List<DoubleSummaryPoint> toDoubleSummaryPointList(
       Map<Labels, MinMaxSumCountAccumulation> accumulationMap,
       long startEpochNanos,
       long epochNanos) {
-    List<MetricData.DoubleSummaryPoint> points = new ArrayList<>(accumulationMap.size());
+    List<DoubleSummaryPoint> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, aggregator) ->
             points.add(aggregator.toPoint(startEpochNanos, epochNanos, labels)));

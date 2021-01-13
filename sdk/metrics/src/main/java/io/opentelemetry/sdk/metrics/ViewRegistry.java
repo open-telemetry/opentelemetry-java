@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import java.util.EnumMap;
@@ -28,17 +28,15 @@ final class ViewRegistry {
   private static final LinkedHashMap<Pattern, AggregationConfiguration> EMPTY_CONFIG =
       new LinkedHashMap<>();
   private static final AggregationConfiguration CUMULATIVE_SUM =
-      AggregationConfiguration.create(
-          AggregatorFactory.sum(), MetricData.AggregationTemporality.CUMULATIVE);
+      AggregationConfiguration.create(AggregatorFactory.sum(), AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_SUMMARY =
       AggregationConfiguration.create(
-          AggregatorFactory.minMaxSumCount(), MetricData.AggregationTemporality.DELTA);
+          AggregatorFactory.minMaxSumCount(), AggregationTemporality.DELTA);
   private static final AggregationConfiguration CUMULATIVE_LAST_VALUE =
       AggregationConfiguration.create(
-          AggregatorFactory.lastValue(), MetricData.AggregationTemporality.CUMULATIVE);
+          AggregatorFactory.lastValue(), AggregationTemporality.CUMULATIVE);
   private static final AggregationConfiguration DELTA_LAST_VALUE =
-      AggregationConfiguration.create(
-          AggregatorFactory.lastValue(), MetricData.AggregationTemporality.DELTA);
+      AggregationConfiguration.create(AggregatorFactory.lastValue(), AggregationTemporality.DELTA);
 
   // The lock is used to ensure only one updated to the configuration happens at any moment.
   private final ReentrantLock lock = new ReentrantLock();

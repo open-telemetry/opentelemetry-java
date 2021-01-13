@@ -12,7 +12,18 @@ import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.LongGaugeData;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -30,11 +41,10 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          MetricData.DoubleSumData.create(
+          DoubleSumData.create(
               /* isMonotonic= */ true,
-              MetricData.AggregationTemporality.CUMULATIVE,
-              Collections.singletonList(
-                  MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))));
+              AggregationTemporality.CUMULATIVE,
+              Collections.singletonList(DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -42,11 +52,10 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          MetricData.DoubleSumData.create(
+          DoubleSumData.create(
               /* isMonotonic= */ false,
-              MetricData.AggregationTemporality.CUMULATIVE,
-              Collections.singletonList(
-                  MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))));
+              AggregationTemporality.CUMULATIVE,
+              Collections.singletonList(DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))));
   private static final MetricData MONOTONIC_DELTA_DOUBLE_SUM =
       MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -54,11 +63,10 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          MetricData.DoubleSumData.create(
+          DoubleSumData.create(
               /* isMonotonic= */ true,
-              MetricData.AggregationTemporality.DELTA,
-              Collections.singletonList(
-                  MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))));
+              AggregationTemporality.DELTA,
+              Collections.singletonList(DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))));
   private static final MetricData NON_MONOTONIC_DELTA_DOUBLE_SUM =
       MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -66,11 +74,10 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          MetricData.DoubleSumData.create(
+          DoubleSumData.create(
               /* isMonotonic= */ false,
-              MetricData.AggregationTemporality.DELTA,
-              Collections.singletonList(
-                  MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))));
+              AggregationTemporality.DELTA,
+              Collections.singletonList(DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))));
   private static final MetricData MONOTONIC_CUMULATIVE_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -78,11 +85,10 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          MetricData.LongSumData.create(
+          LongSumData.create(
               /* isMonotonic= */ true,
-              MetricData.AggregationTemporality.CUMULATIVE,
-              Collections.singletonList(
-                  MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))));
+              AggregationTemporality.CUMULATIVE,
+              Collections.singletonList(LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -90,11 +96,10 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          MetricData.LongSumData.create(
+          LongSumData.create(
               /* isMonotonic= */ false,
-              MetricData.AggregationTemporality.CUMULATIVE,
-              Collections.singletonList(
-                  MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))));
+              AggregationTemporality.CUMULATIVE,
+              Collections.singletonList(LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))));
   private static final MetricData MONOTONIC_DELTA_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -102,11 +107,10 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          MetricData.LongSumData.create(
+          LongSumData.create(
               /* isMonotonic= */ true,
-              MetricData.AggregationTemporality.DELTA,
-              Collections.singletonList(
-                  MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))));
+              AggregationTemporality.DELTA,
+              Collections.singletonList(LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))));
   private static final MetricData NON_MONOTONIC_DELTA_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -114,11 +118,10 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          MetricData.LongSumData.create(
+          LongSumData.create(
               /* isMonotonic= */ false,
-              MetricData.AggregationTemporality.DELTA,
-              Collections.singletonList(
-                  MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))));
+              AggregationTemporality.DELTA,
+              Collections.singletonList(LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))));
 
   private static final MetricData DOUBLE_GAUGE =
       MetricData.createDoubleGauge(
@@ -127,9 +130,8 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          MetricData.DoubleGaugeData.create(
-              Collections.singletonList(
-                  MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))));
+          DoubleGaugeData.create(
+              Collections.singletonList(DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))));
   private static final MetricData LONG_GAUGE =
       MetricData.createLongGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -137,9 +139,8 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          MetricData.LongGaugeData.create(
-              Collections.singletonList(
-                  MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))));
+          LongGaugeData.create(
+              Collections.singletonList(LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))));
   private static final MetricData SUMMARY =
       MetricData.createDoubleSummary(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -147,9 +148,9 @@ class MetricAdapterTest {
           "instrument.name",
           "description",
           "1",
-          MetricData.DoubleSummaryData.create(
+          DoubleSummaryData.create(
               Collections.singletonList(
-                  MetricData.DoubleSummaryPoint.create(
+                  DoubleSummaryPoint.create(
                       123, 456, Labels.of("kp", "vp"), 5, 7, Collections.emptyList()))));
 
   @Test
@@ -203,16 +204,16 @@ class MetricAdapterTest {
   @Test
   void toSamples_LongPoints() {
     assertThat(
-            MetricAdapter.toSamples("full_name", MetricData.Type.LONG_SUM, Collections.emptyList()))
+            MetricAdapter.toSamples("full_name", MetricDataType.LONG_SUM, Collections.emptyList()))
         .isEmpty();
 
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                MetricData.Type.LONG_SUM,
+                MetricDataType.LONG_SUM,
                 ImmutableList.of(
-                    MetricData.LongPoint.create(123, 456, Labels.empty(), 5),
-                    MetricData.LongPoint.create(321, 654, Labels.of("kp", "vp"), 7))))
+                    LongPoint.create(123, 456, Labels.empty(), 5),
+                    LongPoint.create(321, 654, Labels.of("kp", "vp"), 7))))
         .containsExactly(
             new Sample("full_name", Collections.emptyList(), Collections.emptyList(), 5),
             new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 7));
@@ -220,10 +221,10 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                MetricData.Type.LONG_GAUGE,
+                MetricDataType.LONG_GAUGE,
                 ImmutableList.of(
-                    MetricData.LongPoint.create(123, 456, Labels.empty(), 5),
-                    MetricData.LongPoint.create(321, 654, Labels.of("kp", "vp"), 7))))
+                    LongPoint.create(123, 456, Labels.empty(), 5),
+                    LongPoint.create(321, 654, Labels.of("kp", "vp"), 7))))
         .containsExactly(
             new Sample("full_name", Collections.emptyList(), Collections.emptyList(), 5),
             new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 7));
@@ -233,25 +234,24 @@ class MetricAdapterTest {
   void toSamples_DoublePoints() {
     assertThat(
             MetricAdapter.toSamples(
-                "full_name", MetricData.Type.DOUBLE_SUM, Collections.emptyList()))
+                "full_name", MetricDataType.DOUBLE_SUM, Collections.emptyList()))
         .isEmpty();
 
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                MetricData.Type.DOUBLE_SUM,
-                Collections.singletonList(
-                    MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))))
+                MetricDataType.DOUBLE_SUM,
+                Collections.singletonList(DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))))
         .containsExactly(
             new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 5));
 
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                MetricData.Type.DOUBLE_GAUGE,
+                MetricDataType.DOUBLE_GAUGE,
                 ImmutableList.of(
-                    MetricData.DoublePoint.create(123, 456, Labels.empty(), 5),
-                    MetricData.DoublePoint.create(321, 654, Labels.of("kp", "vp"), 7))))
+                    DoublePoint.create(123, 456, Labels.empty(), 5),
+                    DoublePoint.create(321, 654, Labels.of("kp", "vp"), 7))))
         .containsExactly(
             new Sample("full_name", Collections.emptyList(), Collections.emptyList(), 5),
             new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 7));
@@ -260,21 +260,21 @@ class MetricAdapterTest {
   @Test
   void toSamples_SummaryPoints() {
     assertThat(
-            MetricAdapter.toSamples("full_name", MetricData.Type.SUMMARY, Collections.emptyList()))
+            MetricAdapter.toSamples("full_name", MetricDataType.SUMMARY, Collections.emptyList()))
         .isEmpty();
 
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                MetricData.Type.SUMMARY,
+                MetricDataType.SUMMARY,
                 ImmutableList.of(
-                    MetricData.DoubleSummaryPoint.create(
+                    DoubleSummaryPoint.create(
                         321,
                         654,
                         Labels.of("kp", "vp"),
                         9,
                         18.3,
-                        ImmutableList.of(MetricData.ValueAtPercentile.create(0.9, 1.1))))))
+                        ImmutableList.of(ValueAtPercentile.create(0.9, 1.1))))))
         .containsExactly(
             new Sample("full_name_count", ImmutableList.of("kp"), ImmutableList.of("vp"), 9),
             new Sample("full_name_sum", ImmutableList.of("kp"), ImmutableList.of("vp"), 18.3),
@@ -287,19 +287,19 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toSamples(
                 "full_name",
-                MetricData.Type.SUMMARY,
+                MetricDataType.SUMMARY,
                 ImmutableList.of(
-                    MetricData.DoubleSummaryPoint.create(
+                    DoubleSummaryPoint.create(
                         123, 456, Labels.empty(), 7, 15.3, Collections.emptyList()),
-                    MetricData.DoubleSummaryPoint.create(
+                    DoubleSummaryPoint.create(
                         321,
                         654,
                         Labels.of("kp", "vp"),
                         9,
                         18.3,
                         ImmutableList.of(
-                            MetricData.ValueAtPercentile.create(0.9, 1.1),
-                            MetricData.ValueAtPercentile.create(0.99, 12.3))))))
+                            ValueAtPercentile.create(0.9, 1.1),
+                            ValueAtPercentile.create(0.99, 12.3))))))
         .containsExactly(
             new Sample("full_name_count", Collections.emptyList(), Collections.emptyList(), 7),
             new Sample("full_name_sum", Collections.emptyList(), Collections.emptyList(), 15.3),

@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.LongGaugeData;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -62,7 +64,7 @@ public final class LongLastValueAggregator implements Aggregator<Long> {
       Map<Labels, Long> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    List<MetricData.LongPoint> points =
+    List<LongPoint> points =
         MetricDataUtils.toLongPointList(accumulationByLabels, startEpochNanos, epochNanos);
 
     switch (descriptor.getType()) {
@@ -79,7 +81,7 @@ public final class LongLastValueAggregator implements Aggregator<Long> {
             descriptor.getName(),
             descriptor.getDescription(),
             descriptor.getUnit(),
-            MetricData.LongGaugeData.create(points));
+            LongGaugeData.create(points));
       case COUNTER:
       case UP_DOWN_COUNTER:
       case VALUE_RECORDER:

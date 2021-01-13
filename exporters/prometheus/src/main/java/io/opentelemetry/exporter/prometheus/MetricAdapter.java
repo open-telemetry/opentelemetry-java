@@ -8,12 +8,16 @@ package io.opentelemetry.exporter.prometheus;
 import static io.prometheus.client.Collector.doubleToGoString;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.data.Point;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
@@ -66,18 +70,16 @@ final class MetricAdapter {
       case DOUBLE_GAUGE:
         return Collector.Type.GAUGE;
       case LONG_SUM:
-        MetricData.LongSumData longSumData = metricData.getLongSumData();
+        LongSumData longSumData = metricData.getLongSumData();
         if (longSumData.isMonotonic()
-            && longSumData.getAggregationTemporality()
-                == MetricData.AggregationTemporality.CUMULATIVE) {
+            && longSumData.getAggregationTemporality() == AggregationTemporality.CUMULATIVE) {
           return Collector.Type.COUNTER;
         }
         return Collector.Type.GAUGE;
       case DOUBLE_SUM:
-        MetricData.DoubleSumData doubleSumData = metricData.getDoubleSumData();
+        DoubleSumData doubleSumData = metricData.getDoubleSumData();
         if (doubleSumData.isMonotonic()
-            && doubleSumData.getAggregationTemporality()
-                == MetricData.AggregationTemporality.CUMULATIVE) {
+            && doubleSumData.getAggregationTemporality() == AggregationTemporality.CUMULATIVE) {
           return Collector.Type.COUNTER;
         }
         return Collector.Type.GAUGE;
@@ -91,7 +93,7 @@ final class MetricAdapter {
 
   // Converts a list of points from MetricData to a list of Prometheus Samples.
   static List<Sample> toSamples(
-      String name, MetricData.Type type, Collection<? extends Point> points) {
+      String name, MetricDataType type, Collection<? extends Point> points) {
     final List<Sample> samples = new ArrayList<>(estimateNumSamples(points.size(), type));
 
     for (Point point : points) {
@@ -166,15 +168,15 @@ final class MetricAdapter {
     }
   }
 
-  private static int estimateNumSamples(int numPoints, MetricData.Type type) {
-    if (type == MetricData.Type.SUMMARY) {
+  private static int estimateNumSamples(int numPoints, MetricDataType type) {
+    if (type == MetricDataType.SUMMARY) {
       // count + sum + estimated 2 percentiles (default MinMaxSumCount aggregator).
       return numPoints * 4;
     }
     return numPoints;
   }
 
-  private static Collection<? extends MetricData.Point> getPoints(MetricData metricData) {
+  private static Collection<? extends Point> getPoints(MetricData metricData) {
     switch (metricData.getType()) {
       case DOUBLE_GAUGE:
         return metricData.getDoubleGaugeData().getPoints();

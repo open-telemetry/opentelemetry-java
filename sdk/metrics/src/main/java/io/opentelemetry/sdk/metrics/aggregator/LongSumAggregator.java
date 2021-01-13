@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -52,7 +53,7 @@ public final class LongSumAggregator implements Aggregator<Long> {
       Map<Labels, Long> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    List<MetricData.LongPoint> points =
+    List<LongPoint> points =
         MetricDataUtils.toLongPointList(accumulationByLabels, startEpochNanos, epochNanos);
     boolean isMonotonic =
         descriptor.getType() == InstrumentType.COUNTER

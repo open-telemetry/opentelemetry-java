@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,7 +88,7 @@ class DoubleMinMaxSumCountAggregatorTest {
             0,
             100);
     assertThat(metricData).isNotNull();
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.SUMMARY);
+    assertThat(metricData.getType()).isEqualTo(MetricDataType.SUMMARY);
   }
 
   @Test

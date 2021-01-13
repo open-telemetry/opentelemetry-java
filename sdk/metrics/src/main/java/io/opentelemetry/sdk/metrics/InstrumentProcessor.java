@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.resources.Resource;
@@ -122,7 +123,7 @@ final class InstrumentProcessor<T> {
     return metricData == null ? Collections.emptyList() : Collections.singletonList(metricData);
   }
 
-  private static boolean isDelta(MetricData.AggregationTemporality temporality) {
+  private static boolean isDelta(AggregationTemporality temporality) {
     switch (temporality) {
       case CUMULATIVE:
         return false;

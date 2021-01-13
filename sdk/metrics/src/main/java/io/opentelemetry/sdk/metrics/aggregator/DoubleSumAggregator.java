@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -52,7 +53,7 @@ public final class DoubleSumAggregator implements Aggregator<Double> {
       Map<Labels, Double> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    List<MetricData.DoublePoint> points =
+    List<DoublePoint> points =
         MetricDataUtils.toDoublePointList(accumulationByLabels, startEpochNanos, epochNanos);
     boolean isMonotonic =
         descriptor.getType() == InstrumentType.COUNTER

@@ -16,6 +16,9 @@ import io.opentelemetry.api.metrics.DoubleCounter.BoundDoubleCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -80,11 +83,11 @@ class DoubleCounterSdkTest {
                 "testCounter",
                 "description",
                 "ms",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.DoublePoint.create(
+                        DoublePoint.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
                             Labels.empty(),
@@ -113,14 +116,13 @@ class DoubleCounterSdkTest {
                   "testCounter",
                   "",
                   "1",
-                  MetricData.DoubleSumData.create(
+                  DoubleSumData.create(
                       /* isMonotonic= */ true,
-                      MetricData.AggregationTemporality.CUMULATIVE,
+                      AggregationTemporality.CUMULATIVE,
                       Arrays.asList(
-                          MetricData.DoublePoint.create(
+                          DoublePoint.create(
                               startTime, testClock.now(), Labels.of("K", "V"), 555.9d),
-                          MetricData.DoublePoint.create(
-                              startTime, testClock.now(), Labels.empty(), 33.5d)))));
+                          DoublePoint.create(startTime, testClock.now(), Labels.empty(), 33.5d)))));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
@@ -134,14 +136,13 @@ class DoubleCounterSdkTest {
                   "testCounter",
                   "",
                   "1",
-                  MetricData.DoubleSumData.create(
+                  DoubleSumData.create(
                       /* isMonotonic= */ true,
-                      MetricData.AggregationTemporality.CUMULATIVE,
+                      AggregationTemporality.CUMULATIVE,
                       Arrays.asList(
-                          MetricData.DoublePoint.create(
+                          DoublePoint.create(
                               startTime, testClock.now(), Labels.of("K", "V"), 777.9d),
-                          MetricData.DoublePoint.create(
-                              startTime, testClock.now(), Labels.empty(), 44.5d)))));
+                          DoublePoint.create(startTime, testClock.now(), Labels.empty(), 44.5d)))));
     } finally {
       bound.unbind();
     }
@@ -188,11 +189,11 @@ class DoubleCounterSdkTest {
                 "testCounter",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.DoublePoint.create(
+                        DoublePoint.create(
                             testClock.now(), testClock.now(), Labels.of("K", "V"), 80_000)))));
   }
 
@@ -226,26 +227,26 @@ class DoubleCounterSdkTest {
                 "testCounter",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Arrays.asList(
-                        MetricData.DoublePoint.create(
+                        DoublePoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[0], values[0]),
                             40_000),
-                        MetricData.DoublePoint.create(
+                        DoublePoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[1], values[1]),
                             40_000),
-                        MetricData.DoublePoint.create(
+                        DoublePoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[2], values[2]),
                             40_000),
-                        MetricData.DoublePoint.create(
+                        DoublePoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[3], values[3]),

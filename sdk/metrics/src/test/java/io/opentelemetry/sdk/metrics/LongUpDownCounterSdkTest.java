@@ -16,6 +16,9 @@ import io.opentelemetry.api.metrics.LongUpDownCounter.BoundLongUpDownCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -80,11 +83,11 @@ class LongUpDownCounterSdkTest {
                 "testUpDownCounter",
                 "description",
                 "By",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
+                        LongPoint.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
                             Labels.empty(),
@@ -114,14 +117,12 @@ class LongUpDownCounterSdkTest {
                   "testUpDownCounter",
                   "",
                   "1",
-                  MetricData.LongSumData.create(
+                  LongSumData.create(
                       /* isMonotonic= */ false,
-                      MetricData.AggregationTemporality.CUMULATIVE,
+                      AggregationTemporality.CUMULATIVE,
                       Arrays.asList(
-                          MetricData.LongPoint.create(
-                              startTime, testClock.now(), Labels.of("K", "V"), 555),
-                          MetricData.LongPoint.create(
-                              startTime, testClock.now(), Labels.empty(), 33)))));
+                          LongPoint.create(startTime, testClock.now(), Labels.of("K", "V"), 555),
+                          LongPoint.create(startTime, testClock.now(), Labels.empty(), 33)))));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
@@ -135,14 +136,12 @@ class LongUpDownCounterSdkTest {
                   "testUpDownCounter",
                   "",
                   "1",
-                  MetricData.LongSumData.create(
+                  LongSumData.create(
                       /* isMonotonic= */ false,
-                      MetricData.AggregationTemporality.CUMULATIVE,
+                      AggregationTemporality.CUMULATIVE,
                       Arrays.asList(
-                          MetricData.LongPoint.create(
-                              startTime, testClock.now(), Labels.of("K", "V"), 777),
-                          MetricData.LongPoint.create(
-                              startTime, testClock.now(), Labels.empty(), 44)))));
+                          LongPoint.create(startTime, testClock.now(), Labels.of("K", "V"), 777),
+                          LongPoint.create(startTime, testClock.now(), Labels.empty(), 44)))));
     } finally {
       bound.unbind();
     }
@@ -176,11 +175,11 @@ class LongUpDownCounterSdkTest {
                 "testUpDownCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        MetricData.LongPoint.create(
+                        LongPoint.create(
                             testClock.now(), testClock.now(), Labels.of("K", "V"), 160_000)))));
   }
 
@@ -216,26 +215,26 @@ class LongUpDownCounterSdkTest {
                 "testUpDownCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Arrays.asList(
-                        MetricData.LongPoint.create(
+                        LongPoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[0], values[0]),
                             20_000),
-                        MetricData.LongPoint.create(
+                        LongPoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[1], values[1]),
                             20_000),
-                        MetricData.LongPoint.create(
+                        LongPoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[2], values[2]),
                             20_000),
-                        MetricData.LongPoint.create(
+                        LongPoint.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[3], values[3]),

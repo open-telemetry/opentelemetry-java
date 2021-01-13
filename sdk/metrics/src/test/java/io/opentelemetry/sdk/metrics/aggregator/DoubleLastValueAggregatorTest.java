@@ -12,6 +12,8 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -78,8 +80,7 @@ class DoubleLastValueAggregatorTest {
                 "name",
                 "description",
                 "unit",
-                MetricData.DoubleGaugeData.create(
-                    Collections.singletonList(
-                        MetricData.DoublePoint.create(0, 100, Labels.empty(), 10)))));
+                DoubleGaugeData.create(
+                    Collections.singletonList(DoublePoint.create(0, 100, Labels.empty(), 10)))));
   }
 }
