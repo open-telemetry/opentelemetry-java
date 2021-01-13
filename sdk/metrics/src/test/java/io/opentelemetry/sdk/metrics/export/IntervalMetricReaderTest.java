@@ -11,8 +11,10 @@ import static org.mockito.Mockito.when;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,10 +49,8 @@ class IntervalMetricReaderTest {
           "my metric",
           "my metric description",
           "us",
-          MetricData.LongSumData.create(
-              /* isMonotonic= */ true,
-              MetricData.AggregationTemporality.CUMULATIVE,
-              LONG_POINT_LIST));
+          LongSumData.create(
+              /* isMonotonic= */ true, AggregationTemporality.CUMULATIVE, LONG_POINT_LIST));
 
   @Mock private MetricProducer metricProducer;
   @Mock private MetricExporter metricExporter;
@@ -64,7 +64,7 @@ class IntervalMetricReaderTest {
   void configTest() {
     Properties options = new Properties();
     options.put("otel.imr.export.interval", "12");
-    IntervalMetricReader.Builder config =
+    IntervalMetricReaderBuilder config =
         IntervalMetricReader.builder()
             .readProperties(options)
             .setMetricProducers(Arrays.asList(metricProducer))

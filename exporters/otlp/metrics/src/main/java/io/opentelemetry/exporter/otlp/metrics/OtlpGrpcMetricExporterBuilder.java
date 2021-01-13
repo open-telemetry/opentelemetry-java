@@ -6,29 +6,37 @@
 package io.opentelemetry.exporter.otlp.metrics;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 import com.google.common.base.Splitter;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.extension.otproto.CommonProperties;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** Builder utility for this exporter. */
+@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
 public final class OtlpGrpcMetricExporterBuilder
-    extends ConfigBuilder<OtlpGrpcMetricExporterBuilder> {
+    extends io.opentelemetry.sdk.common.export.ConfigBuilder<OtlpGrpcMetricExporterBuilder> {
+
+  private static final String DEFAULT_ENDPOINT = "localhost:4317";
+  private static final long DEFAULT_TIMEOUT_SECS = 10;
+
   private static final String KEY_TIMEOUT = "otel.exporter.otlp.metric.timeout";
   private static final String KEY_ENDPOINT = "otel.exporter.otlp.metric.endpoint";
   private static final String KEY_INSECURE = "otel.exporter.otlp.metric.insecure";
   private static final String KEY_HEADERS = "otel.exporter.otlp.metric.headers";
 
   private ManagedChannel channel;
-  private long deadlineMs = OtlpGrpcMetricExporter.DEFAULT_DEADLINE_MS; // 10 seconds
-  private String endpoint = OtlpGrpcMetricExporter.DEFAULT_ENDPOINT;
+  private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
+  private String endpoint = DEFAULT_ENDPOINT;
   private boolean useTls = false;
 
   @Nullable private Metadata metadata;
@@ -46,14 +54,35 @@ public final class OtlpGrpcMetricExporterBuilder
   }
 
   /**
+   * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
+   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   */
+  public OtlpGrpcMetricExporterBuilder setTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    timeoutNanos = unit.toNanos(timeout);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
+   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   */
+  public OtlpGrpcMetricExporterBuilder setTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  }
+
+  /**
    * Sets the max waiting time for the collector to process each metric batch. Optional.
    *
    * @param deadlineMs the max waiting time
    * @return this builder's instance
+   * @deprecated Use {@link #setTimeout(long, TimeUnit)}
    */
+  @Deprecated
   public OtlpGrpcMetricExporterBuilder setDeadlineMs(long deadlineMs) {
-    this.deadlineMs = deadlineMs;
-    return this;
+    return setTimeout(Duration.ofMillis(deadlineMs));
   }
 
   /**
@@ -117,7 +146,7 @@ public final class OtlpGrpcMetricExporterBuilder
 
       channel = managedChannelBuilder.build();
     }
-    return new OtlpGrpcMetricExporter(channel, deadlineMs);
+    return new OtlpGrpcMetricExporter(channel, timeoutNanos);
   }
 
   OtlpGrpcMetricExporterBuilder() {}
@@ -138,7 +167,7 @@ public final class OtlpGrpcMetricExporterBuilder
       value = getLongProperty(CommonProperties.KEY_TIMEOUT, configMap);
     }
     if (value != null) {
-      this.setDeadlineMs(value);
+      this.setTimeout(Duration.ofMillis(value));
     }
 
     String endpointValue = getStringProperty(KEY_ENDPOINT, configMap);

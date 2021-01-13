@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -68,8 +69,7 @@ public class SpanPipelineBenchmark {
 
       String address = collector.getHost() + ":" + collector.getMappedPort(EXPOSED_PORT);
 
-      TraceConfig alwaysOn =
-          TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOn()).build();
+      TraceConfig alwaysOn = TraceConfig.builder().setSampler(Sampler.alwaysOn()).build();
 
       SdkTracerProvider tracerProvider =
           SdkTracerProvider.builder()
@@ -99,7 +99,7 @@ public class SpanPipelineBenchmark {
       return SimpleSpanProcessor.create(
           OtlpGrpcSpanExporter.builder()
               .setEndpoint(collectorAddress)
-              .setDeadlineMs(50000)
+              .setTimeout(Duration.ofSeconds(50))
               .build());
     }
 
@@ -116,7 +116,7 @@ public class SpanPipelineBenchmark {
       return BatchSpanProcessor.builder(
               OtlpGrpcSpanExporter.builder()
                   .setEndpoint(collectorAddress)
-                  .setDeadlineMs(50000)
+                  .setTimeout(Duration.ofSeconds(50))
                   .build())
           .build();
     }

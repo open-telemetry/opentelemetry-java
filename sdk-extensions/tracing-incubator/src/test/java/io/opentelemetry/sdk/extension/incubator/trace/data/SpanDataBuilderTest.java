@@ -13,7 +13,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import org.junit.jupiter.api.Test;
 
 class SpanDataBuilderTest {
@@ -30,7 +30,7 @@ class SpanDataBuilderTest {
           .setStartEpochNanos(0)
           .setEndEpochNanos(100)
           .setKind(Span.Kind.SERVER)
-          .setStatus(Status.error())
+          .setStatus(StatusData.error())
           .setAttributes(Attributes.builder().put("cat", "meow").put("dog", "bark").build())
           .setTotalRecordedEvents(1000)
           .setTotalRecordedLinks(2300)
@@ -45,12 +45,12 @@ class SpanDataBuilderTest {
 
   @Test
   void modifySpanData() {
-    assertThat(TEST_SPAN_DATA.getStatus()).isEqualTo(Status.error());
+    assertThat(TEST_SPAN_DATA.getStatus()).isEqualTo(StatusData.error());
     SpanData modified =
         SpanDataBuilder.builder(TEST_SPAN_DATA)
-            .setStatus(Status.create(StatusCode.ERROR, "ABORTED"))
+            .setStatus(StatusData.create(StatusCode.ERROR, "ABORTED"))
             .build();
-    assertThat(modified.getStatus()).isEqualTo(Status.create(StatusCode.ERROR, "ABORTED"));
+    assertThat(modified.getStatus()).isEqualTo(StatusData.create(StatusCode.ERROR, "ABORTED"));
   }
 
   @Test
@@ -63,7 +63,7 @@ class SpanDataBuilderTest {
             SpanDataBuilder.builder(TEST_SPAN_DATA).build())
         .addEqualityGroup(
             SpanDataBuilder.builder(TEST_SPAN_DATA)
-                .setStatus(Status.create(StatusCode.ERROR, "ABORTED"))
+                .setStatus(StatusData.create(StatusCode.ERROR, "ABORTED"))
                 .build());
     tester.testEquals();
   }

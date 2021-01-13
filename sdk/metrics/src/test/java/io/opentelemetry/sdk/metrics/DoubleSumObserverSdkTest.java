@@ -12,8 +12,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -24,48 +26,43 @@ class DoubleSumObserverSdkTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(
-          "io.opentelemetry.sdk.metrics.DoubleSumObserverSdkTest", null);
+      InstrumentationLibraryInfo.create(DoubleSumObserverSdkTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final MeterProviderSharedState meterProviderSharedState =
-      MeterProviderSharedState.create(testClock, RESOURCE);
-  private final SdkMeter testSdk =
-      new SdkMeter(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+  private final SdkMeterProvider sdkMeterProvider =
+      SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void collectMetrics_NoCallback() {
-    DoubleSumObserverSdk doubleSumObserver =
-        testSdk
-            .doubleSumObserverBuilder("testObserver")
-            .setDescription("My own DoubleSumObserver")
-            .setUnit("ms")
-            .build();
-    assertThat(doubleSumObserver.collectAll()).isEmpty();
+    sdkMeter
+        .doubleSumObserverBuilder("testObserver")
+        .setDescription("My own DoubleSumObserver")
+        .setUnit("ms")
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleSumObserverSdk doubleSumObserver =
-        testSdk
-            .doubleSumObserverBuilder("testObserver")
-            .setDescription("My own DoubleSumObserver")
-            .setUnit("ms")
-            .setUpdater(result -> {})
-            .build();
-    assertThat(doubleSumObserver.collectAll()).isEmpty();
+    sdkMeter
+        .doubleSumObserverBuilder("testObserver")
+        .setDescription("My own DoubleSumObserver")
+        .setUnit("ms")
+        .setUpdater(result -> {})
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_WithOneRecord() {
-    DoubleSumObserverSdk doubleSumObserver =
-        testSdk
-            .doubleSumObserverBuilder("testObserver")
-            .setDescription("My own DoubleSumObserver")
-            .setUnit("ms")
-            .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
-            .build();
+    sdkMeter
+        .doubleSumObserverBuilder("testObserver")
+        .setDescription("My own DoubleSumObserver")
+        .setUnit("ms")
+        .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
+        .build();
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleSumObserver.collectAll())
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -73,9 +70,9 @@ class DoubleSumObserverSdkTest {
                 "testObserver",
                 "My own DoubleSumObserver",
                 "ms",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         DoublePoint.create(
                             testClock.now() - SECOND_NANOS,
@@ -83,7 +80,7 @@ class DoubleSumObserverSdkTest {
                             Labels.of("k", "v"),
                             12.1d)))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleSumObserver.collectAll())
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -91,9 +88,9 @@ class DoubleSumObserverSdkTest {
                 "testObserver",
                 "My own DoubleSumObserver",
                 "ms",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         DoublePoint.create(
                             testClock.now() - 2 * SECOND_NANOS,

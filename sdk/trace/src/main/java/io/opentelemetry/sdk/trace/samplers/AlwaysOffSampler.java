@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.trace.samplers;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -24,7 +24,7 @@ enum AlwaysOffSampler implements Sampler {
       String name,
       Kind spanKind,
       Attributes attributes,
-      List<Link> parentLinks) {
+      List<LinkData> parentLinks) {
     return ImmutableSamplingResult.EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
   }
 

@@ -12,7 +12,10 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -31,9 +34,9 @@ import javax.annotation.concurrent.Immutable;
 abstract class SpanWrapper implements SpanData {
   abstract RecordEventsReadableSpan delegate();
 
-  abstract List<SpanData.Link> resolvedLinks();
+  abstract List<LinkData> resolvedLinks();
 
-  abstract List<SpanData.Event> resolvedEvents();
+  abstract List<EventData> resolvedEvents();
 
   abstract Attributes attributes();
 
@@ -41,7 +44,7 @@ abstract class SpanWrapper implements SpanData {
 
   abstract int totalRecordedEvents();
 
-  abstract Status status();
+  abstract StatusData status();
 
   abstract String name();
 
@@ -55,12 +58,12 @@ abstract class SpanWrapper implements SpanData {
    */
   static SpanWrapper create(
       RecordEventsReadableSpan delegate,
-      List<SpanData.Link> links,
-      List<Event> events,
+      List<LinkData> links,
+      List<EventData> events,
       Attributes attributes,
       int totalAttributeCount,
       int totalRecordedEvents,
-      Status status,
+      StatusData status,
       String name,
       long endEpochNanos,
       boolean hasEnded) {
@@ -133,17 +136,17 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public List<Event> getEvents() {
+  public List<EventData> getEvents() {
     return resolvedEvents();
   }
 
   @Override
-  public List<SpanData.Link> getLinks() {
+  public List<LinkData> getLinks() {
     return resolvedLinks();
   }
 
   @Override
-  public Status getStatus() {
+  public StatusData getStatus() {
     return status();
   }
 

@@ -14,9 +14,15 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.BatchRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,35 +34,34 @@ class BatchRecorderSdkTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.BatchRecorderSdkTest", null);
+      InstrumentationLibraryInfo.create(BatchRecorderSdkTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final MeterProviderSharedState meterProviderSharedState =
-      MeterProviderSharedState.create(testClock, RESOURCE);
-  private final SdkMeter testSdk =
-      new SdkMeter(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+  private final SdkMeterProvider sdkMeterProvider =
+      SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void batchRecorder_badLabelSet() {
-    assertThatThrownBy(() -> testSdk.newBatchRecorder("key").record())
+    assertThatThrownBy(() -> sdkMeter.newBatchRecorder("key").record())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("key/value");
   }
 
   @Test
   void batchRecorder() {
-    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
+    DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testDoubleCounter").build();
+    LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
+        sdkMeter.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testLongUpDownCounter").build();
+        sdkMeter.longUpDownCounterBuilder("testLongUpDownCounter").build();
     DoubleValueRecorderSdk doubleValueRecorder =
-        testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
+        sdkMeter.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
     LongValueRecorderSdk longValueRecorder =
-        testSdk.longValueRecorderBuilder("testLongValueRecorder").build();
+        sdkMeter.longValueRecorderBuilder("testLongValueRecorder").build();
     Labels labelSet = Labels.of("key", "value");
 
-    BatchRecorder batchRecorder = testSdk.newBatchRecorder("key", "value");
+    BatchRecorder batchRecorder = sdkMeter.newBatchRecorder("key", "value");
 
     batchRecorder
         .put(longCounter, 12)
@@ -68,7 +73,7 @@ class BatchRecorderSdkTest {
         .put(doubleValueRecorder, 13.1d);
 
     // until record() is called, nothing should be recorded.
-    Collection<MetricData> preRecord = testSdk.collectAll();
+    Collection<MetricData> preRecord = sdkMeterProvider.collectAllMetrics();
     preRecord.forEach(metricData -> assertThat(metricData.isEmpty()).isTrue());
 
     batchRecorder.record();
@@ -105,7 +110,7 @@ class BatchRecorderSdkTest {
       LongValueRecorderSdk longValueRecorder,
       Labels labelSet,
       boolean shouldHaveDeltas) {
-    assertThat(doubleCounter.collectAll())
+    assertThat(doubleCounter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -113,12 +118,12 @@ class BatchRecorderSdkTest {
                 "testDoubleCounter",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         DoublePoint.create(testClock.now(), testClock.now(), labelSet, 24.2d)))));
-    assertThat(longCounter.collectAll())
+    assertThat(longCounter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -126,12 +131,12 @@ class BatchRecorderSdkTest {
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         LongPoint.create(testClock.now(), testClock.now(), labelSet, 12)))));
-    assertThat(doubleUpDownCounter.collectAll())
+    assertThat(doubleUpDownCounter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSum(
                 RESOURCE,
@@ -139,12 +144,12 @@ class BatchRecorderSdkTest {
                 "testDoubleUpDownCounter",
                 "",
                 "1",
-                MetricData.DoubleSumData.create(
+                DoubleSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         DoublePoint.create(testClock.now(), testClock.now(), labelSet, -12.1d)))));
-    assertThat(longUpDownCounter.collectAll())
+    assertThat(longUpDownCounter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -152,14 +157,14 @@ class BatchRecorderSdkTest {
                 "testLongUpDownCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         LongPoint.create(testClock.now(), testClock.now(), labelSet, -12)))));
 
     if (shouldHaveDeltas) {
-      assertThat(doubleValueRecorder.collectAll())
+      assertThat(doubleValueRecorder.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createDoubleSummary(
                   RESOURCE,
@@ -167,23 +172,23 @@ class BatchRecorderSdkTest {
                   "testDoubleValueRecorder",
                   "",
                   "1",
-                  MetricData.DoubleSummaryData.create(
+                  DoubleSummaryData.create(
                       Collections.singletonList(
-                          MetricData.DoubleSummaryPoint.create(
+                          DoubleSummaryPoint.create(
                               testClock.now(),
                               testClock.now(),
                               labelSet,
                               1,
                               13.1d,
                               Arrays.asList(
-                                  MetricData.ValueAtPercentile.create(0.0, 13.1),
-                                  MetricData.ValueAtPercentile.create(100.0, 13.1)))))));
+                                  ValueAtPercentile.create(0.0, 13.1),
+                                  ValueAtPercentile.create(100.0, 13.1)))))));
     } else {
-      assertThat(doubleValueRecorder.collectAll()).isEmpty();
+      assertThat(doubleValueRecorder.collectAll(testClock.now())).isEmpty();
     }
 
     if (shouldHaveDeltas) {
-      assertThat(longValueRecorder.collectAll())
+      assertThat(longValueRecorder.collectAll(testClock.now()))
           .containsExactly(
               MetricData.createDoubleSummary(
                   RESOURCE,
@@ -191,19 +196,19 @@ class BatchRecorderSdkTest {
                   "testLongValueRecorder",
                   "",
                   "1",
-                  MetricData.DoubleSummaryData.create(
+                  DoubleSummaryData.create(
                       Collections.singletonList(
-                          MetricData.DoubleSummaryPoint.create(
+                          DoubleSummaryPoint.create(
                               testClock.now(),
                               testClock.now(),
                               labelSet,
                               1,
                               13,
                               Arrays.asList(
-                                  MetricData.ValueAtPercentile.create(0.0, 13),
-                                  MetricData.ValueAtPercentile.create(100.0, 13)))))));
+                                  ValueAtPercentile.create(0.0, 13),
+                                  ValueAtPercentile.create(100.0, 13)))))));
     } else {
-      assertThat(longValueRecorder.collectAll()).isEmpty();
+      assertThat(longValueRecorder.collectAll(testClock.now())).isEmpty();
     }
   }
 }

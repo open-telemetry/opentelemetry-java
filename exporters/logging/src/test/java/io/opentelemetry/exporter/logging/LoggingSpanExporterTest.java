@@ -18,9 +18,9 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -44,13 +44,13 @@ class LoggingSpanExporterTest {
           .setSpanId(SpanId.fromLong(9876L))
           .setStartEpochNanos(100)
           .setEndEpochNanos(100 + 1000)
-          .setStatus(Status.ok())
+          .setStatus(StatusData.ok())
           .setName("testSpan1")
           .setKind(Kind.INTERNAL)
           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
           .setEvents(
               Collections.singletonList(
-                  Event.create(
+                  EventData.create(
                       100 + 500,
                       "somethingHappenedHere",
                       Attributes.of(booleanKey("important"), true))))
@@ -65,7 +65,7 @@ class LoggingSpanExporterTest {
           .setSpanId(SpanId.fromLong(15L))
           .setStartEpochNanos(500)
           .setEndEpochNanos(500 + 1001)
-          .setStatus(Status.error())
+          .setStatus(StatusData.error())
           .setName("testSpan2")
           .setKind(Kind.CLIENT)
           .build();
@@ -110,12 +110,12 @@ class LoggingSpanExporterTest {
             .setSpanId(SpanId.fromLong(9876L))
             .setStartEpochNanos(epochNanos)
             .setEndEpochNanos(epochNanos + 1000)
-            .setStatus(Status.ok())
+            .setStatus(StatusData.ok())
             .setName("testSpan")
             .setKind(Kind.INTERNAL)
             .setEvents(
                 Collections.singletonList(
-                    Event.create(
+                    EventData.create(
                         epochNanos + 500,
                         "somethingHappenedHere",
                         Attributes.of(booleanKey("important"), true))))

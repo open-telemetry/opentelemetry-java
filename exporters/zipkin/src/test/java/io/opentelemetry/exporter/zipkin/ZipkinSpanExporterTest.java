@@ -26,14 +26,15 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,10 +64,10 @@ class ZipkinSpanExporterTest {
   private static final String SPAN_ID = "9cc1e3049173be09";
   private static final String PARENT_SPAN_ID = "8b03ab423da481c5";
   private static final Attributes attributes = Attributes.empty();
-  private static final List<Event> annotations =
+  private static final List<EventData> annotations =
       ImmutableList.of(
-          Event.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
-          Event.create(1505855799_459486280L, "SENT", Attributes.empty()));
+          EventData.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
+          EventData.create(1505855799_459486280L, "SENT", Attributes.empty()));
 
   @Test
   void generateSpan_remoteParent() {
@@ -222,7 +223,7 @@ class ZipkinSpanExporterTest {
         buildStandardSpan()
             .setAttributes(attributeMap)
             .setKind(Kind.CLIENT)
-            .setStatus(SpanData.Status.error())
+            .setStatus(StatusData.error())
             .build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
@@ -243,7 +244,7 @@ class ZipkinSpanExporterTest {
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(SpanData.Status.create(StatusCode.ERROR, errorMessage))
+            .setStatus(StatusData.create(StatusCode.ERROR, errorMessage))
             .setAttributes(attributeMap)
             .build();
 
@@ -262,7 +263,7 @@ class ZipkinSpanExporterTest {
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(SpanData.Status.create(StatusCode.ERROR, null))
+            .setStatus(StatusData.create(StatusCode.ERROR, null))
             .setAttributes(attributeMap)
             .build();
 
@@ -281,7 +282,7 @@ class ZipkinSpanExporterTest {
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(SpanData.Status.create(StatusCode.UNSET, null))
+            .setStatus(StatusData.create(StatusCode.UNSET, null))
             .setAttributes(attributeMap)
             .build();
 
@@ -371,7 +372,7 @@ class ZipkinSpanExporterTest {
             SpanContext.create(
                 TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
         .setSampled(true)
-        .setStatus(SpanData.Status.ok())
+        .setStatus(StatusData.ok())
         .setKind(Kind.SERVER)
         .setName("Recv.helloworld.Greeter.SayHello")
         .setStartEpochNanos(1505855794_194009601L)

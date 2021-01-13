@@ -13,8 +13,10 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -82,7 +84,7 @@ class SdkMeterRegistryTest {
     LongCounterSdk longCounter2 = sdkMeter2.longCounterBuilder("testLongCounter").build();
     longCounter2.add(10, Labels.empty());
 
-    assertThat(meterProvider.getMetricProducer().collectAllMetrics())
+    assertThat(meterProvider.collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 Resource.getEmpty(),
@@ -90,9 +92,9 @@ class SdkMeterRegistryTest {
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))),
             MetricData.createLongSum(
@@ -101,9 +103,9 @@ class SdkMeterRegistryTest {
                 "testLongCounter",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ true,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
                         LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))));
   }

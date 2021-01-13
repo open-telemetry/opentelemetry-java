@@ -24,7 +24,16 @@ import io.opentelemetry.proto.metrics.v1.IntSum;
 import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.LongGaugeData;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -98,7 +107,7 @@ public final class MetricAdapter {
 
     switch (metricData.getType()) {
       case LONG_SUM:
-        MetricData.LongSumData longSumData = metricData.getLongSumData();
+        LongSumData longSumData = metricData.getLongSumData();
         builder.setIntSum(
             IntSum.newBuilder()
                 .setIsMonotonic(longSumData.isMonotonic())
@@ -108,7 +117,7 @@ public final class MetricAdapter {
                 .build());
         break;
       case DOUBLE_SUM:
-        MetricData.DoubleSumData doubleSumData = metricData.getDoubleSumData();
+        DoubleSumData doubleSumData = metricData.getDoubleSumData();
         builder.setDoubleSum(
             DoubleSum.newBuilder()
                 .setIsMonotonic(doubleSumData.isMonotonic())
@@ -118,7 +127,7 @@ public final class MetricAdapter {
                 .build());
         break;
       case SUMMARY:
-        MetricData.DoubleSummaryData doubleSummaryData = metricData.getDoubleSummaryData();
+        DoubleSummaryData doubleSummaryData = metricData.getDoubleSummaryData();
         builder.setDoubleHistogram(
             DoubleHistogram.newBuilder()
                 // TODO: This is a bug, but preserve the logic and fix it later.
@@ -127,14 +136,14 @@ public final class MetricAdapter {
                 .build());
         break;
       case LONG_GAUGE:
-        MetricData.LongGaugeData longGaugeData = metricData.getLongGaugeData();
+        LongGaugeData longGaugeData = metricData.getLongGaugeData();
         builder.setIntGauge(
             IntGauge.newBuilder()
                 .addAllDataPoints(toIntDataPoints(longGaugeData.getPoints()))
                 .build());
         break;
       case DOUBLE_GAUGE:
-        MetricData.DoubleGaugeData doubleGaugeData = metricData.getDoubleGaugeData();
+        DoubleGaugeData doubleGaugeData = metricData.getDoubleGaugeData();
         builder.setDoubleGauge(
             DoubleGauge.newBuilder()
                 .addAllDataPoints(toDoubleDataPoints(doubleGaugeData.getPoints()))
@@ -145,7 +154,7 @@ public final class MetricAdapter {
   }
 
   private static AggregationTemporality mapToTemporality(
-      MetricData.AggregationTemporality temporality) {
+      io.opentelemetry.sdk.metrics.data.AggregationTemporality temporality) {
     switch (temporality) {
       case CUMULATIVE:
         return AGGREGATION_TEMPORALITY_CUMULATIVE;
@@ -155,9 +164,9 @@ public final class MetricAdapter {
     return AGGREGATION_TEMPORALITY_UNSPECIFIED;
   }
 
-  static List<IntDataPoint> toIntDataPoints(Collection<MetricData.LongPoint> points) {
+  static List<IntDataPoint> toIntDataPoints(Collection<LongPoint> points) {
     List<IntDataPoint> result = new ArrayList<>(points.size());
-    for (MetricData.LongPoint longPoint : points) {
+    for (LongPoint longPoint : points) {
       IntDataPoint.Builder builder =
           IntDataPoint.newBuilder()
               .setStartTimeUnixNano(longPoint.getStartEpochNanos())
@@ -172,9 +181,9 @@ public final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleDataPoint> toDoubleDataPoints(Collection<MetricData.DoublePoint> points) {
+  static Collection<DoubleDataPoint> toDoubleDataPoints(Collection<DoublePoint> points) {
     List<DoubleDataPoint> result = new ArrayList<>(points.size());
-    for (MetricData.DoublePoint doublePoint : points) {
+    for (DoublePoint doublePoint : points) {
       DoubleDataPoint.Builder builder =
           DoubleDataPoint.newBuilder()
               .setStartTimeUnixNano(doublePoint.getStartEpochNanos())
@@ -189,10 +198,9 @@ public final class MetricAdapter {
     return result;
   }
 
-  static List<DoubleHistogramDataPoint> toSummaryDataPoints(
-      Collection<MetricData.DoubleSummaryPoint> points) {
+  static List<DoubleHistogramDataPoint> toSummaryDataPoints(Collection<DoubleSummaryPoint> points) {
     List<DoubleHistogramDataPoint> result = new ArrayList<>(points.size());
-    for (MetricData.DoubleSummaryPoint doubleSummaryPoint : points) {
+    for (DoubleSummaryPoint doubleSummaryPoint : points) {
       DoubleHistogramDataPoint.Builder builder =
           DoubleHistogramDataPoint.newBuilder()
               .setStartTimeUnixNano(doubleSummaryPoint.getStartEpochNanos())
@@ -216,10 +224,9 @@ public final class MetricAdapter {
   // TODO: Consider to pass the Builder and directly add values.
   @SuppressWarnings("MixedMutabilityReturnType")
   static void addBucketValues(
-      List<MetricData.ValueAtPercentile> valueAtPercentiles,
-      DoubleHistogramDataPoint.Builder builder) {
+      List<ValueAtPercentile> valueAtPercentiles, DoubleHistogramDataPoint.Builder builder) {
 
-    for (MetricData.ValueAtPercentile valueAtPercentile : valueAtPercentiles) {
+    for (ValueAtPercentile valueAtPercentile : valueAtPercentiles) {
       // TODO(jkwatson): Value of histogram should be long?
       builder.addBucketCounts((long) valueAtPercentile.getValue());
       builder.addExplicitBounds(valueAtPercentile.getPercentile());

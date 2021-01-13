@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.OperationSamplingStrategy;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.LinkedHashMap;
@@ -41,7 +41,7 @@ class PerOperationSampler implements Sampler {
       String name,
       Kind spanKind,
       Attributes attributes,
-      List<Link> parentLinks) {
+      List<LinkData> parentLinks) {
     Sampler sampler = this.perOperationSampler.get(name);
     if (sampler == null) {
       sampler = this.defaultSampler;

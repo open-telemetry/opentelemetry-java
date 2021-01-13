@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link B3Propagator}. */
+@SuppressWarnings("deprecation") // Remove after StringUtils is made package-private
 class B3PropagatorTest {
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();

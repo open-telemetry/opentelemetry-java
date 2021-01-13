@@ -9,13 +9,14 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Map;
 import java.util.Properties;
 
 /** Builder for {@link TraceConfig}. */
-public final class TraceConfigBuilder extends ConfigBuilder<TraceConfigBuilder> {
+@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
+public final class TraceConfigBuilder
+    extends io.opentelemetry.sdk.common.export.ConfigBuilder<TraceConfigBuilder> {
   private static final String KEY_SAMPLER_PROBABILITY = "otel.config.sampler.probability";
   private static final String KEY_SPAN_ATTRIBUTE_COUNT_LIMIT = "otel.span.attribute.count.limit";
   private static final String KEY_SPAN_EVENT_COUNT_LIMIT = "otel.span.event.count.limit";

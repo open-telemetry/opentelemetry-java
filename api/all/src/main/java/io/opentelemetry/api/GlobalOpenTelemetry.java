@@ -8,18 +8,15 @@ package io.opentelemetry.api;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.spi.OpenTelemetryFactory;
-import io.opentelemetry.spi.trace.TracerProviderFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
  * A global singleton for the entrypoint to telemetry functionality for tracing, metrics and
  * baggage.
- *
- * <p>The global singleton can be retrieved by {@link #get()}. The default for the returned {@link
- * OpenTelemetry}, if none has been set via {@link #set(OpenTelemetry)}, will be created with any
- * {@link OpenTelemetryFactory}, or {@link TracerProviderFactory} found on the classpath, or
- * otherwise will be default, with no-op behavior.
  *
  * <p>If using the OpenTelemetry SDK, you may want to instantiate the {@link OpenTelemetry} to
  * provide configuration, for example of {@code Resource} or {@code Sampler}. See {@code
@@ -29,17 +26,19 @@ import javax.annotation.Nullable;
  * @see TracerProvider
  * @see ContextPropagators
  */
+@SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
 public final class GlobalOpenTelemetry {
+
+  private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
+
   private static final Object mutex = new Object();
+
   @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
 
   private GlobalOpenTelemetry() {}
 
   /**
-   * Returns the registered global {@link OpenTelemetry}. If no call to {@link #set(OpenTelemetry)}
-   * has been made so far, a default {@link OpenTelemetry} composed of functionality any {@link
-   * OpenTelemetryFactory}, or {@link TracerProviderFactory} found on the classpath, or otherwise
-   * will be default, with no-op behavior.
+   * Returns the registered global {@link OpenTelemetry}.
    *
    * @throws IllegalStateException if a provider has been specified by system property using the
    *     interface FQCN but the specified provider cannot be found.
@@ -48,7 +47,15 @@ public final class GlobalOpenTelemetry {
     if (globalOpenTelemetry == null) {
       synchronized (mutex) {
         if (globalOpenTelemetry == null) {
-          OpenTelemetryFactory openTelemetryFactory = Utils.loadSpi(OpenTelemetryFactory.class);
+
+          OpenTelemetry autoConfigured = maybeAutoConfigure();
+          if (autoConfigured != null) {
+            set(autoConfigured);
+            return autoConfigured;
+          }
+
+          io.opentelemetry.spi.OpenTelemetryFactory openTelemetryFactory =
+              Utils.loadSpi(io.opentelemetry.spi.OpenTelemetryFactory.class);
           if (openTelemetryFactory != null) {
             set(openTelemetryFactory.create());
           } else {
@@ -114,5 +121,32 @@ public final class GlobalOpenTelemetry {
    */
   public static ContextPropagators getPropagators() {
     return get().getPropagators();
+  }
+
+  @Nullable
+  private static OpenTelemetry maybeAutoConfigure() {
+    final Class<?> openTelemetrySdkAutoConfiguration;
+    try {
+      openTelemetrySdkAutoConfiguration =
+          Class.forName("io.opentelemetry.sdk.autoconfigure.OpenTelemetrySdkAutoConfiguration");
+    } catch (ClassNotFoundException e) {
+      return null;
+    }
+
+    try {
+      Method initialize = openTelemetrySdkAutoConfiguration.getMethod("initialize");
+      return (OpenTelemetry) initialize.invoke(null);
+    } catch (NoSuchMethodException | IllegalAccessException e) {
+      throw new IllegalStateException(
+          "OpenTelemetrySdkAutoConfiguration detected on classpath "
+              + "but could not invoke initialize method. This is a bug in OpenTelemetry.",
+          e);
+    } catch (InvocationTargetException t) {
+      logger.log(
+          Level.SEVERE,
+          "Error automatically configuring OpenTelemetry SDK. OpenTelemetry will not be enabled.",
+          t.getTargetException());
+      return null;
+    }
   }
 }

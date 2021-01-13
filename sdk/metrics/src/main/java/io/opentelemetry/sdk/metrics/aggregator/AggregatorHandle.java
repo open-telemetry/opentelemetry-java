@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -24,7 +23,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * of the bits are used for reference (usage) counting.
  */
 @ThreadSafe
-public abstract class AggregatorHandle<T extends Accumulation> {
+public abstract class AggregatorHandle<T> {
   // Atomically counts the number of references (usages) while also keeping a state of
   // mapped/unmapped into a registry map.
   private final AtomicLong refCountMapped;
@@ -72,8 +71,8 @@ public abstract class AggregatorHandle<T extends Accumulation> {
   }
 
   /**
-   * Returns the current value into as {@link Accumulation} and resets the current value in this
-   * {@code Aggregator}.
+   * Returns the current value into as {@link T} and resets the current value in this {@code
+   * Aggregator}.
    */
   @Nullable
   public final T accumulateThenReset() {

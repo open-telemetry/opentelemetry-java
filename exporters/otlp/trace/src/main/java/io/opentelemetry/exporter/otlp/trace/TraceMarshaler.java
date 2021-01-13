@@ -26,7 +26,10 @@ import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -330,14 +333,14 @@ final class TraceMarshaler {
     private final AttributeMarshaler[] attributeMarshalers;
     private final int droppedAttributesCount;
 
-    private static SpanEventMarshaler[] create(List<SpanData.Event> events) {
+    private static SpanEventMarshaler[] create(List<EventData> events) {
       if (events.isEmpty()) {
         return EMPTY;
       }
 
       SpanEventMarshaler[] result = new SpanEventMarshaler[events.size()];
       int pos = 0;
-      for (SpanData.Event event : events) {
+      for (EventData event : events) {
         result[pos++] =
             new SpanEventMarshaler(
                 event.getEpochNanos(),
@@ -396,14 +399,14 @@ final class TraceMarshaler {
     private final AttributeMarshaler[] attributeMarshalers;
     private final int droppedAttributesCount;
 
-    private static SpanLinkMarshaler[] create(List<SpanData.Link> links) {
+    private static SpanLinkMarshaler[] create(List<LinkData> links) {
       if (links.isEmpty()) {
         return EMPTY;
       }
 
       SpanLinkMarshaler[] result = new SpanLinkMarshaler[links.size()];
       int pos = 0;
-      for (SpanData.Link link : links) {
+      for (LinkData link : links) {
         result[pos++] =
             new SpanLinkMarshaler(
                 link.getSpanContext().getTraceIdBytes(),
@@ -461,7 +464,7 @@ final class TraceMarshaler {
     private final Status.DeprecatedStatusCode deprecatedStatusCode;
     private final byte[] description;
 
-    static SpanStatusMarshaler create(SpanData.Status status) {
+    static SpanStatusMarshaler create(StatusData status) {
       Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
       Status.DeprecatedStatusCode deprecatedStatusCode = DEPRECATED_STATUS_CODE_OK;
       if (status.getStatusCode() == StatusCode.OK) {

@@ -39,6 +39,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
@@ -216,7 +217,7 @@ class TraceInteroperabilityTest {
     assertThat(spanData3.getLinks().get(0).getSpanContext().getSpanIdAsHexString())
         .isEqualTo(parentLinkSpan.getContext().getSpanId().toLowerBase16());
     assertThat(spanData3.getKind()).isEqualTo(Span.Kind.SERVER);
-    assertThat(spanData3.getStatus()).isEqualTo(SpanData.Status.ok());
+    assertThat(spanData3.getStatus()).isEqualTo(StatusData.ok());
     assertThat(spanData3.getAttributes().get(AttributeKey.doubleKey("testKey"))).isEqualTo(2.5);
     assertThat(spanData3.getAttributes().get(AttributeKey.booleanKey("testKey2"))).isEqualTo(false);
     assertThat(spanData3.getAttributes().get(AttributeKey.longKey("testKey3"))).isEqualTo(3);

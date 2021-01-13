@@ -20,11 +20,17 @@ import io.opencensus.metrics.export.TimeSeries;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.common.LabelsBuilder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.LongGaugeData;
+import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,7 +93,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
           }
         }
         Labels labels = labelsBuilder.build();
-        List<MetricData.Point> points = new ArrayList<>();
+        List<io.opentelemetry.sdk.metrics.data.Point> points = new ArrayList<>();
         MetricDescriptor.Type type = null;
         for (Point point : timeSeries.getPoints()) {
           type = mapAndAddPoint(unsupportedTypes, metric, labels, points, point);
@@ -113,7 +119,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
       Set<MetricDescriptor.Type> unsupportedTypes,
       Metric metric,
       Labels labels,
-      List<MetricData.Point> points,
+      List<io.opentelemetry.sdk.metrics.data.Point> points,
       Point point) {
     long timestampNanos =
         TimeUnit.SECONDS.toNanos(point.getTimestamp().getSeconds())
@@ -143,7 +149,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
   }
 
   @Nonnull
-  private static MetricData.DoubleSummaryPoint mapSummaryPoint(
+  private static DoubleSummaryPoint mapSummaryPoint(
       Labels labels, Point point, long timestampNanos) {
     return DoubleSummaryPoint.create(
         timestampNanos,
@@ -198,7 +204,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
   private static MetricData toMetricData(
       MetricDescriptor.Type type,
       MetricDescriptor metricDescriptor,
-      List<? extends MetricData.Point> points) {
+      List<? extends io.opentelemetry.sdk.metrics.data.Point> points) {
     if (metricDescriptor.getType() == null) {
       return null;
     }
@@ -210,7 +216,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             metricDescriptor.getName(),
             metricDescriptor.getDescription(),
             metricDescriptor.getUnit(),
-            MetricData.LongGaugeData.create((List<LongPoint>) points));
+            LongGaugeData.create((List<LongPoint>) points));
 
       case GAUGE_DOUBLE:
         return MetricData.createDoubleGauge(
@@ -219,7 +225,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             metricDescriptor.getName(),
             metricDescriptor.getDescription(),
             metricDescriptor.getUnit(),
-            MetricData.DoubleGaugeData.create((List<DoublePoint>) points));
+            DoubleGaugeData.create((List<DoublePoint>) points));
 
       case CUMULATIVE_INT64:
         return MetricData.createLongSum(
@@ -228,8 +234,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             metricDescriptor.getName(),
             metricDescriptor.getDescription(),
             metricDescriptor.getUnit(),
-            MetricData.LongSumData.create(
-                true, MetricData.AggregationTemporality.CUMULATIVE, (List<LongPoint>) points));
+            LongSumData.create(true, AggregationTemporality.CUMULATIVE, (List<LongPoint>) points));
       case CUMULATIVE_DOUBLE:
         return MetricData.createDoubleSum(
             Resource.getDefault(),
@@ -237,8 +242,8 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             metricDescriptor.getName(),
             metricDescriptor.getDescription(),
             metricDescriptor.getUnit(),
-            MetricData.DoubleSumData.create(
-                true, MetricData.AggregationTemporality.CUMULATIVE, (List<DoublePoint>) points));
+            DoubleSumData.create(
+                true, AggregationTemporality.CUMULATIVE, (List<DoublePoint>) points));
       case SUMMARY:
         return MetricData.createDoubleSummary(
             Resource.getDefault(),
@@ -246,7 +251,7 @@ public class OpenTelemetryMetricsExporter extends MetricExporter {
             metricDescriptor.getName(),
             metricDescriptor.getDescription(),
             metricDescriptor.getUnit(),
-            MetricData.DoubleSummaryData.create((List<DoubleSummaryPoint>) points));
+            DoubleSummaryData.create((List<DoubleSummaryPoint>) points));
       default:
         return null;
     }

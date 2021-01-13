@@ -9,6 +9,7 @@ import io.opentelemetry.api.metrics.AsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -38,15 +39,17 @@ abstract class AbstractLongAsynchronousInstrumentBuilder<B extends AbstractInstr
   final <I extends AbstractInstrument> I buildInstrument(
       BiFunction<InstrumentDescriptor, AsynchronousInstrumentAccumulator, I> instrumentFactory) {
     InstrumentDescriptor descriptor = buildDescriptor();
+    AggregationConfiguration configuration =
+        meterProviderSharedState.getViewRegistry().findView(descriptor);
     return meterSharedState
         .getInstrumentRegistry()
         .register(
             instrumentFactory.apply(
                 descriptor,
                 AsynchronousInstrumentAccumulator.longAsynchronousAccumulator(
-                    meterProviderSharedState
-                        .getViewRegistry()
-                        .createBatcher(meterProviderSharedState, meterSharedState, descriptor),
+                    configuration.getAggregatorFactory().create(descriptor),
+                    InstrumentProcessor.createProcessor(
+                        meterProviderSharedState, meterSharedState, descriptor, configuration),
                     updater)));
   }
 }

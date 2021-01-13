@@ -16,7 +16,7 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.IdGenerator;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ class TraceIdRatioBasedSamplerTest {
               Span.wrap(
                   SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState)));
   private final Context invalidParentContext = Context.root().with(Span.getInvalid());
-  private final SpanData.Link sampledParentLink = SpanData.Link.create(sampledSpanContext);
+  private final LinkData sampledParentLink = LinkData.create(sampledSpanContext);
 
   @Test
   void alwaysSample() {
@@ -176,8 +176,6 @@ class TraceIdRatioBasedSamplerTest {
             Attributes.empty(),
             Collections.emptyList());
     assertThat(samplingResult1.getDecision()).isEqualTo(SamplingResult.Decision.DROP);
-    assertThat(samplingResult1.getAttributes())
-        .isEqualTo(Attributes.of(ImmutableSamplingResult.SAMPLING_PROBABILITY, 0.0001));
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     String sampledTraceId =
@@ -209,13 +207,11 @@ class TraceIdRatioBasedSamplerTest {
             Attributes.empty(),
             Collections.emptyList());
     assertThat(samplingResult2.getDecision()).isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
-    assertThat(samplingResult1.getAttributes())
-        .isEqualTo(Attributes.of(ImmutableSamplingResult.SAMPLING_PROBABILITY, 0.0001));
   }
 
   // Applies the given sampler to NUM_SAMPLE_TRIES random traceId.
   private static void assertSamplerSamplesWithProbability(
-      Sampler sampler, Context parent, List<SpanData.Link> parentLinks, double probability) {
+      Sampler sampler, Context parent, List<LinkData> parentLinks, double probability) {
     int count = 0; // Count of spans with sampling enabled
     for (int i = 0; i < NUM_SAMPLE_TRIES; i++) {
       if (sampler

@@ -32,8 +32,8 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.time.Instant;
@@ -100,8 +100,7 @@ class SdkSpanBuilderTest {
   @Test
   void truncateLink() {
     final int maxNumberOfLinks = 8;
-    TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(maxNumberOfLinks).build();
+    TraceConfig traceConfig = TraceConfig.builder().setMaxNumberOfLinks(maxNumberOfLinks).build();
     TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
@@ -111,10 +110,10 @@ class SdkSpanBuilderTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       SpanData spanData = span.toSpanData();
-      List<SpanData.Link> links = spanData.getLinks();
+      List<LinkData> links = spanData.getLinks();
       assertThat(links).hasSize(maxNumberOfLinks);
       for (int i = 0; i < maxNumberOfLinks; i++) {
-        assertThat(links.get(i)).isEqualTo(Link.create(sampledSpanContext));
+        assertThat(links.get(i)).isEqualTo(LinkData.create(sampledSpanContext));
         assertThat(spanData.getTotalRecordedLinks()).isEqualTo(2 * maxNumberOfLinks);
       }
     } finally {
@@ -124,8 +123,7 @@ class SdkSpanBuilderTest {
 
   @Test
   void truncateLinkAttributes() {
-    TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributesPerLink(1).build();
+    TraceConfig traceConfig = TraceConfig.builder().setMaxNumberOfAttributesPerLink(1).build();
     TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
@@ -139,7 +137,7 @@ class SdkSpanBuilderTest {
     try {
       assertThat(span.toSpanData().getLinks())
           .containsExactly(
-              Link.create(sampledSpanContext, Attributes.of(stringKey("key0"), "str"), 3));
+              LinkData.create(sampledSpanContext, Attributes.of(stringKey("key0"), "str"), 3));
     } finally {
       span.end();
     }
@@ -152,7 +150,7 @@ class SdkSpanBuilderTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.toSpanData().getLinks())
-          .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));
+          .containsExactly(LinkData.create(sampledSpanContext, Attributes.empty()));
       // Use a different sampledSpanContext to ensure no logic that avoids duplicate links makes
       // this test to pass.
       spanBuilder.addLink(
@@ -162,7 +160,7 @@ class SdkSpanBuilderTest {
               TraceFlags.getSampled(),
               TraceState.getDefault()));
       assertThat(span.toSpanData().getLinks())
-          .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));
+          .containsExactly(LinkData.create(sampledSpanContext, Attributes.empty()));
     } finally {
       span.end();
     }
@@ -351,7 +349,7 @@ class SdkSpanBuilderTest {
   void droppingAttributes() {
     final int maxNumberOfAttrs = 8;
     TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributes(maxNumberOfAttrs).build();
+        TraceConfig.builder().setMaxNumberOfAttributes(maxNumberOfAttrs).build();
     TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
@@ -372,8 +370,7 @@ class SdkSpanBuilderTest {
 
   @Test
   public void tooLargeAttributeValuesAreTruncated() {
-    TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder().setMaxLengthOfAttributeValues(10).build();
+    TraceConfig traceConfig = TraceConfig.builder().setMaxLengthOfAttributeValues(10).build();
     TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
@@ -420,20 +417,35 @@ class SdkSpanBuilderTest {
   @Test
   void addAttributes_OnlyViaSampler() {
     TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder().setSampler(Sampler.traceIdRatioBased(1)).build();
+        TraceConfig.builder()
+            .setSampler(
+                new Sampler() {
+                  @Override
+                  public SamplingResult shouldSample(
+                      Context parentContext,
+                      String traceId,
+                      String name,
+                      Kind spanKind,
+                      Attributes attributes,
+                      List<LinkData> parentLinks) {
+                    return SamplingResult.create(
+                        SamplingResult.Decision.RECORD_AND_SAMPLE,
+                        Attributes.builder().put("cat", "meow").build());
+                  }
+
+                  @Override
+                  public String getDescription() {
+                    return "test";
+                  }
+                })
+            .build();
     TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
-    try {
-      assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
-      // TODO(anuraaga): Don't inline once spec is finalized and key is made public.
-      assertThat(
-              span.toSpanData().getAttributes().get(AttributeKey.doubleKey("sampling.probability")))
-          .isEqualTo(1);
-    } finally {
-      span.end();
-    }
+    span.end();
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
+    assertThat(span.toSpanData().getAttributes().get(stringKey("cat"))).isEqualTo("meow");
   }
 
   @Test
@@ -473,8 +485,7 @@ class SdkSpanBuilderTest {
   void sampler() {
     Span span =
         SdkTracerProvider.builder()
-            .setTraceConfig(
-                TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build())
+            .setTraceConfig(TraceConfig.builder().setSampler(Sampler.alwaysOff()).build())
             .build()
             .get("test")
             .spanBuilder(SPAN_NAME)
@@ -494,7 +505,7 @@ class SdkSpanBuilderTest {
         (RecordEventsReadableSpan)
             SdkTracerProvider.builder()
                 .setTraceConfig(
-                    TraceConfig.getDefault().toBuilder()
+                    TraceConfig.builder()
                         .setSampler(
                             new Sampler() {
                               @Override
@@ -504,7 +515,7 @@ class SdkSpanBuilderTest {
                                   String name,
                                   Kind spanKind,
                                   Attributes attributes,
-                                  List<Link> parentLinks) {
+                                  List<LinkData> parentLinks) {
                                 return new SamplingResult() {
                                   @Override
                                   public Decision getDecision() {
@@ -547,7 +558,7 @@ class SdkSpanBuilderTest {
         (RecordEventsReadableSpan)
             SdkTracerProvider.builder()
                 .setTraceConfig(
-                    TraceConfig.getDefault().toBuilder()
+                    TraceConfig.builder()
                         .setSampler(
                             new Sampler() {
                               @Override
@@ -557,7 +568,7 @@ class SdkSpanBuilderTest {
                                   String name,
                                   Kind spanKind,
                                   Attributes attributes,
-                                  List<Link> parentLinks) {
+                                  List<LinkData> parentLinks) {
                                 return new SamplingResult() {
                                   @Override
                                   public Decision getDecision() {
@@ -605,8 +616,7 @@ class SdkSpanBuilderTest {
   void sampledViaParentLinks() {
     Span span =
         SdkTracerProvider.builder()
-            .setTraceConfig(
-                TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build())
+            .setTraceConfig(TraceConfig.builder().setSampler(Sampler.alwaysOff()).build())
             .build()
             .get("test")
             .spanBuilder(SPAN_NAME)
@@ -908,13 +918,14 @@ class SdkSpanBuilderTest {
                 + "name=span_name, kind=INTERNAL, "
                 + "attributes=AttributesMap\\{data=\\{http.status_code=500, "
                 + "http.url=https://opentelemetry.io}, capacity=1000, totalAddedValues=2}, "
-                + "status=ImmutableStatus\\{statusCode=ERROR, description=error}, "
+                + "status=ImmutableStatusData\\{statusCode=ERROR, description=error}, "
                 + "totalRecordedEvents=0, totalRecordedLinks=0, startEpochNanos=[0-9]+, "
                 + "endEpochNanos=[0-9]+}, resolvedLinks=\\[], resolvedEvents=\\[], "
                 + "attributes=AttributesMap\\{data=\\{http.status_code=500, "
                 + "http.url=https://opentelemetry.io}, capacity=1000, totalAddedValues=2}, "
                 + "totalAttributeCount=2, totalRecordedEvents=0, "
-                + "status=ImmutableStatus\\{statusCode=ERROR, description=error}, name=span_name, "
+                + "status=ImmutableStatusData\\{"
+                + "statusCode=ERROR, description=error}, name=span_name, "
                 + "endEpochNanos=[0-9]+, internalHasEnded=true}");
   }
 }

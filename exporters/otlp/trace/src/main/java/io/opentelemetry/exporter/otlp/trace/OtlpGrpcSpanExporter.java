@@ -63,8 +63,19 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
 
-  public static final String DEFAULT_ENDPOINT = "localhost:4317";
-  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(10);
+  /**
+   * Default endpoint.
+   *
+   * @deprecated Will be removed without replacement
+   */
+  @Deprecated public static final String DEFAULT_ENDPOINT = "localhost:4317";
+
+  /**
+   * Default timeout.
+   *
+   * @deprecated Will be removed without replacement
+   */
+  @Deprecated public static final long DEFAULT_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(10);
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
   private static final String EXPORTER_NAME = OtlpGrpcSpanExporter.class.getSimpleName();
@@ -78,7 +89,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private final TraceServiceFutureStub traceService;
 
   private final ManagedChannel managedChannel;
-  private final long deadlineMs;
+  private final long timeoutNanos;
   private final LongCounter.BoundLongCounter spansSeen;
   private final LongCounter.BoundLongCounter spansExportedSuccess;
   private final LongCounter.BoundLongCounter spansExportedFailure;
@@ -87,10 +98,10 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    * Creates a new OTLP gRPC Span Reporter with the given name, using the given channel.
    *
    * @param channel the channel to use when communicating with the OpenTelemetry Collector.
-   * @param deadlineMs max waiting time for the collector to process each span batch. When set to 0
-   *     or to a negative value, the exporter will wait indefinitely.
+   * @param timeoutNanos max waiting time for the collector to process each span batch. When set to
+   *     0 or to a negative value, the exporter will wait indefinitely.
    */
-  OtlpGrpcSpanExporter(ManagedChannel channel, long deadlineMs) {
+  OtlpGrpcSpanExporter(ManagedChannel channel, long timeoutNanos) {
     Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.exporters.otlp");
     this.spansSeen =
         meter.longCounterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
@@ -98,7 +109,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     this.spansExportedSuccess = spansExportedCounter.bind(EXPORT_SUCCESS_LABELS);
     this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_LABELS);
     this.managedChannel = channel;
-    this.deadlineMs = deadlineMs;
+    this.timeoutNanos = timeoutNanos;
 
     this.traceService = TraceServiceGrpc.newFutureStub(channel);
   }
@@ -120,8 +131,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     final CompletableResultCode result = new CompletableResultCode();
 
     TraceServiceFutureStub exporter;
-    if (deadlineMs > 0) {
-      exporter = traceService.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
+    if (timeoutNanos > 0) {
+      exporter = traceService.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
     } else {
       exporter = traceService;
     }
@@ -193,7 +204,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   }
 
   // Visible for testing
-  long getDeadlineMs() {
-    return deadlineMs;
+  long getTimeoutNanos() {
+    return timeoutNanos;
   }
 }

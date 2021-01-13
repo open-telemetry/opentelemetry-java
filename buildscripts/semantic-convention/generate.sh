@@ -3,9 +3,9 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../../"
 # freeze the spec version to make SemanticAttributes generation reproducible
-# this hash was obtained by calling `git rev-parse master` on 14th Dec 2020
+# this hash was obtained by calling `git rev-parse master` on 2021/01/07
 # we can't use a version tag here because otel-spec releases are very rare
-SPEC_VERSION=7fb1f01e6a4d9a6b8b7f8780385809136179fd45
+SPEC_VERSION=d01d110b41b384e3d90169ec8d66d07f8b5963cd
 
 cd ${SCRIPT_DIR}
 
@@ -22,13 +22,13 @@ cd ${SCRIPT_DIR}
 docker run --rm \
   -v ${SCRIPT_DIR}/opentelemetry-specification/semantic_conventions:/source \
   -v ${SCRIPT_DIR}/templates:/templates \
-  -v ${ROOT_DIR}/api/trace/src/main/java/io/opentelemetry/api/trace/attributes/:/output \
+  -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/semconv/trace/attributes/:/output \
   otel/semconvgen \
   -f /source code \
   --template /templates/SemanticAttributes.java.j2 \
   --output /output/SemanticAttributes.java \
   -Dclass=SemanticAttributes \
-  -Dpkg=io.opentelemetry.api.trace.attributes
+  -Dpkg=io.opentelemetry.semconv.trace.attributes
 
 cd "$ROOT_DIR"
 ./gradlew spotlessApply

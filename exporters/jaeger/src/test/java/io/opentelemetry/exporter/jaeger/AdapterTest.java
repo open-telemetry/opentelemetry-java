@@ -20,16 +20,17 @@ import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
-import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -72,9 +73,9 @@ class AdapterTest {
 
     // test
     Model.Span jaegerSpan = Adapter.toJaeger(span);
-    assertThat(jaegerSpan.getTraceId())
-        .isEqualTo(TraceProtoUtils.toProtoTraceId(span.getTraceId()));
-    assertThat(jaegerSpan.getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(span.getSpanId()));
+    assertThat(TraceId.bytesToHex(jaegerSpan.getTraceId().toByteArray()))
+        .isEqualTo(span.getTraceId());
+    assertThat(SpanId.bytesToHex(jaegerSpan.getSpanId().toByteArray())).isEqualTo(span.getSpanId());
     assertThat(jaegerSpan.getOperationName()).isEqualTo("GET /api/endpoint");
     assertThat(jaegerSpan.getStartTime()).isEqualTo(Timestamps.fromMillis(startMs));
     assertThat(Durations.toMillis(jaegerSpan.getDuration())).isEqualTo(duration);
@@ -102,7 +103,7 @@ class AdapterTest {
   @Test
   void testJaegerLogs() {
     // prepare
-    Event eventsData = getTimedEvent();
+    EventData eventsData = getTimedEvent();
 
     // test
     Collection<Model.Log> logs = Adapter.toJaegerLogs(Collections.singletonList(eventsData));
@@ -114,7 +115,7 @@ class AdapterTest {
   @Test
   void testJaegerLog() {
     // prepare
-    Event event = getTimedEvent();
+    EventData event = getTimedEvent();
 
     // test
     Model.Log log = Adapter.toJaegerLog(event);
@@ -182,8 +183,8 @@ class AdapterTest {
   @Test
   void testSpanRefs() {
     // prepare
-    Link link =
-        Link.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
+    LinkData link =
+        LinkData.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
     Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
@@ -195,14 +196,14 @@ class AdapterTest {
   @Test
   void testSpanRef() {
     // prepare
-    Link link = Link.create(createSpanContext(TRACE_ID, SPAN_ID));
+    LinkData link = LinkData.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
 
     // verify
-    assertThat(spanRef.getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(SPAN_ID));
-    assertThat(spanRef.getTraceId()).isEqualTo(TraceProtoUtils.toProtoTraceId(TRACE_ID));
+    assertThat(SpanId.bytesToHex(spanRef.getSpanId().toByteArray())).isEqualTo(SPAN_ID);
+    assertThat(TraceId.bytesToHex(spanRef.getTraceId().toByteArray())).isEqualTo(TRACE_ID);
     assertThat(spanRef.getRefType()).isEqualTo(Model.SpanRefType.FOLLOWS_FROM);
   }
 
@@ -219,7 +220,7 @@ class AdapterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.error())
+            .setStatus(StatusData.error())
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
             .build();
@@ -246,7 +247,7 @@ class AdapterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.error())
+            .setStatus(StatusData.error())
             .setAttributes(attributes)
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
@@ -261,23 +262,23 @@ class AdapterTest {
     assertThat(error.getVBool()).isTrue();
   }
 
-  private static Event getTimedEvent() {
+  private static EventData getTimedEvent() {
     return getTimedEvent(-1);
   }
 
-  private static Event getTimedEvent(int totalAttributeCount) {
+  private static EventData getTimedEvent(int totalAttributeCount) {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     Attributes attributes = Attributes.of(stringKey("foo"), "bar");
     if (totalAttributeCount <= 0) {
       totalAttributeCount = attributes.size();
     }
-    return Event.create(epochNanos, "the log message", attributes, totalAttributeCount);
+    return EventData.create(epochNanos, "the log message", attributes, totalAttributeCount);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
     Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
-    Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+    LinkData link = LinkData.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return TestSpanData.builder()
         .setHasEnded(true)
@@ -296,7 +297,7 @@ class AdapterTest {
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
         .setResource(Resource.create(Attributes.empty()))
-        .setStatus(Status.ok())
+        .setStatus(StatusData.ok())
         .build();
   }
 
@@ -318,8 +319,8 @@ class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.FOLLOWS_FROM.equals(spanRef.getRefType())) {
-        assertThat(spanRef.getTraceId()).isEqualTo(TraceProtoUtils.toProtoTraceId(LINK_TRACE_ID));
-        assertThat(spanRef.getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(LINK_SPAN_ID));
+        assertThat(TraceId.bytesToHex(spanRef.getTraceId().toByteArray())).isEqualTo(LINK_TRACE_ID);
+        assertThat(SpanId.bytesToHex(spanRef.getSpanId().toByteArray())).isEqualTo(LINK_SPAN_ID);
         found = true;
       }
     }
@@ -330,8 +331,8 @@ class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.CHILD_OF.equals(spanRef.getRefType())) {
-        assertThat(spanRef.getTraceId()).isEqualTo(TraceProtoUtils.toProtoTraceId(TRACE_ID));
-        assertThat(spanRef.getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(PARENT_SPAN_ID));
+        assertThat(TraceId.bytesToHex(spanRef.getTraceId().toByteArray())).isEqualTo(TRACE_ID);
+        assertThat(SpanId.bytesToHex(spanRef.getSpanId().toByteArray())).isEqualTo(PARENT_SPAN_ID);
         found = true;
       }
     }

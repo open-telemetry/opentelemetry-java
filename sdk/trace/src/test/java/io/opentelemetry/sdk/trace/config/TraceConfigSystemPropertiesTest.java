@@ -33,10 +33,7 @@ public class TraceConfigSystemPropertiesTest {
     System.setProperty("otel.config.max.event.attrs", "7");
     System.setProperty("otel.config.max.link.attrs", "11");
     TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder()
-            .readEnvironmentVariables()
-            .readSystemProperties()
-            .build();
+        TraceConfig.builder().readEnvironmentVariables().readSystemProperties().build();
     // this is not a useful assertion. How can we do better?
     assertThat(traceConfig.getSampler())
         .isEqualTo(Sampler.parentBased(Sampler.traceIdRatioBased(0.3)));
@@ -50,42 +47,42 @@ public class TraceConfigSystemPropertiesTest {
   @Test
   void updateTraceConfig_InvalidSamplerProbability() {
     System.setProperty("otel.config.sampler.probability", "-1");
-    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().readSystemProperties().build())
+    assertThatThrownBy(() -> TraceConfig.builder().readSystemProperties().build())
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfAttributes() {
     System.setProperty("otel.span.attribute.count.limit", "-5");
-    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().readSystemProperties().build())
+    assertThatThrownBy(() -> TraceConfig.builder().readSystemProperties().build())
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfEvents() {
     System.setProperty("otel.span.event.count.limit", "-6");
-    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().readSystemProperties().build())
+    assertThatThrownBy(() -> TraceConfig.builder().readSystemProperties().build())
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfLinks() {
     System.setProperty("otel.span.link.count.limit", "-9");
-    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().readSystemProperties().build())
+    assertThatThrownBy(() -> TraceConfig.builder().readSystemProperties().build())
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfAttributesPerEvent() {
     System.setProperty("otel.config.max.event.attrs", "-7");
-    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().readSystemProperties().build())
+    assertThatThrownBy(() -> TraceConfig.builder().readSystemProperties().build())
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void updateTraceConfig_NonPositiveMaxNumberOfAttributesPerLink() {
     System.setProperty("otel.config.max.link.attrs", "-10");
-    assertThatThrownBy(() -> TraceConfig.getDefault().toBuilder().readSystemProperties().build())
+    assertThatThrownBy(() -> TraceConfig.builder().readSystemProperties().build())
         .isInstanceOf(IllegalArgumentException.class);
   }
 }

@@ -6,13 +6,13 @@
 package io.opentelemetry.sdk;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.spi.OpenTelemetryFactory;
 
 /**
  * Factory SPI implementation to register a {@link OpenTelemetrySdk} as the default {@link
  * OpenTelemetry}.
  */
-public final class OpenTelemetrySdkFactory implements OpenTelemetryFactory {
+@SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
+public final class OpenTelemetrySdkFactory implements io.opentelemetry.spi.OpenTelemetryFactory {
   @Override
   public OpenTelemetry create() {
     return OpenTelemetrySdk.builder().build();

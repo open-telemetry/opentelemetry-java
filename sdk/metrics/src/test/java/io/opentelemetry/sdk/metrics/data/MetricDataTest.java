@@ -9,10 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,12 +26,11 @@ class MetricDataTest {
   private static final ValueAtPercentile MAXIMUM_VALUE =
       ValueAtPercentile.create(100.0, DOUBLE_VALUE);
   private static final LongPoint LONG_POINT =
-      MetricData.LongPoint.create(
-          START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), LONG_VALUE);
+      LongPoint.create(START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), LONG_VALUE);
   private static final DoublePoint DOUBLE_POINT =
       DoublePoint.create(START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), DOUBLE_VALUE);
   private static final DoubleSummaryPoint SUMMARY_POINT =
-      MetricData.DoubleSummaryPoint.create(
+      DoubleSummaryPoint.create(
           START_EPOCH_NANOS,
           EPOCH_NANOS,
           Labels.of("key", "value"),
@@ -54,11 +49,11 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.DoubleGaugeData.create(Collections.emptyList()));
+            DoubleGaugeData.create(Collections.emptyList()));
     assertThat(metricData.getName()).isEqualTo("metric_name");
     assertThat(metricData.getDescription()).isEqualTo("metric_description");
     assertThat(metricData.getUnit()).isEqualTo("ms");
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.DOUBLE_GAUGE);
+    assertThat(metricData.getType()).isEqualTo(MetricDataType.DOUBLE_GAUGE);
     assertThat(metricData.getResource()).isEqualTo(Resource.getEmpty());
     assertThat(metricData.getInstrumentationLibraryInfo())
         .isEqualTo(InstrumentationLibraryInfo.getEmpty());
@@ -79,7 +74,7 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.LongGaugeData.create(Collections.singletonList(LONG_POINT)));
+            LongGaugeData.create(Collections.singletonList(LONG_POINT)));
     assertThat(metricData.isEmpty()).isFalse();
     assertThat(metricData.getLongGaugeData().getPoints()).containsExactly(LONG_POINT);
     metricData =
@@ -89,9 +84,9 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.LongSumData.create(
+            LongSumData.create(
                 /* isMonotonic= */ false,
-                MetricData.AggregationTemporality.CUMULATIVE,
+                AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(LONG_POINT)));
     assertThat(metricData.isEmpty()).isFalse();
     assertThat(metricData.getLongSumData().getPoints()).containsExactly(LONG_POINT);
@@ -111,7 +106,7 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.DoubleGaugeData.create(Collections.singletonList(DOUBLE_POINT)));
+            DoubleGaugeData.create(Collections.singletonList(DOUBLE_POINT)));
     assertThat(metricData.isEmpty()).isFalse();
     assertThat(metricData.getDoubleGaugeData().getPoints()).containsExactly(DOUBLE_POINT);
     metricData =
@@ -121,9 +116,9 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.DoubleSumData.create(
+            DoubleSumData.create(
                 /* isMonotonic= */ false,
-                MetricData.AggregationTemporality.CUMULATIVE,
+                AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(DOUBLE_POINT)));
     assertThat(metricData.isEmpty()).isFalse();
     assertThat(metricData.getDoubleSumData().getPoints()).containsExactly(DOUBLE_POINT);
@@ -146,7 +141,7 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.DoubleSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
+            DoubleSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
     assertThat(metricData.getDoubleSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
   }
 
@@ -159,7 +154,7 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.DoubleSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
+            DoubleSummaryData.create(Collections.singletonList(SUMMARY_POINT)));
     assertThat(metricData.getDoubleGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
@@ -173,7 +168,7 @@ class MetricDataTest {
             "metric_name",
             "metric_description",
             "ms",
-            MetricData.DoubleGaugeData.create(Collections.singletonList(DOUBLE_POINT)));
+            DoubleGaugeData.create(Collections.singletonList(DOUBLE_POINT)));
     assertThat(metricData.getDoubleGaugeData().getPoints()).containsExactly(DOUBLE_POINT);
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();

@@ -9,9 +9,9 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.spi.trace.TracerProviderFactory;
 
 /** Builder class for {@link DefaultOpenTelemetry}. */
+@SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
 public final class DefaultOpenTelemetryBuilder {
   private ContextPropagators propagators = ContextPropagators.noop();
   private TracerProvider tracerProvider;
@@ -55,7 +55,8 @@ public final class DefaultOpenTelemetryBuilder {
   public OpenTelemetry build() {
     TracerProvider tracerProvider = this.tracerProvider;
     if (tracerProvider == null) {
-      TracerProviderFactory tracerProviderFactory = Utils.loadSpi(TracerProviderFactory.class);
+      io.opentelemetry.spi.trace.TracerProviderFactory tracerProviderFactory =
+          Utils.loadSpi(io.opentelemetry.spi.trace.TracerProviderFactory.class);
       if (tracerProviderFactory != null) {
         tracerProvider = tracerProviderFactory.create();
       } else {

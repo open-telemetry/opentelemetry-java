@@ -12,7 +12,10 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -215,7 +218,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   }
 
   /** Asserts the span has the given events. */
-  public SpanDataAssert hasEvents(Iterable<SpanData.Event> events) {
+  public SpanDataAssert hasEvents(Iterable<EventData> events) {
     isNotNull();
     assertThat(actual.getEvents())
         .withFailMessage(
@@ -226,19 +229,19 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   }
 
   /** Asserts the span has the given events. */
-  public SpanDataAssert hasEvents(SpanData.Event... events) {
+  public SpanDataAssert hasEvents(EventData... events) {
     return hasEvents(Arrays.asList(events));
   }
 
   /** Asserts the span has events satisfying the given condition. */
-  public SpanDataAssert hasEventsSatisfying(Consumer<List<? extends SpanData.Event>> condition) {
+  public SpanDataAssert hasEventsSatisfying(Consumer<List<? extends EventData>> condition) {
     isNotNull();
     assertThat(actual.getEvents()).satisfies(condition);
     return this;
   }
 
   /** Asserts the span has the given links. */
-  public SpanDataAssert hasLinks(Iterable<SpanData.Link> links) {
+  public SpanDataAssert hasLinks(Iterable<LinkData> links) {
     isNotNull();
     assertThat(actual.getLinks())
         .withFailMessage(
@@ -249,19 +252,19 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   }
 
   /** Asserts the span has the given links. */
-  public SpanDataAssert hasLinks(SpanData.Link... links) {
+  public SpanDataAssert hasLinks(LinkData... links) {
     return hasLinks(Arrays.asList(links));
   }
 
   /** Asserts the span has events satisfying the given condition. */
-  public SpanDataAssert hasLinksSatisfying(Consumer<List<? extends SpanData.Link>> condition) {
+  public SpanDataAssert hasLinksSatisfying(Consumer<List<? extends LinkData>> condition) {
     isNotNull();
     assertThat(actual.getLinks()).satisfies(condition);
     return this;
   }
 
-  /** Asserts the span has the given {@link SpanData.Status}. */
-  public SpanDataAssert hasStatus(SpanData.Status status) {
+  /** Asserts the span has the given {@link StatusData}. */
+  public SpanDataAssert hasStatus(StatusData status) {
     isNotNull();
     if (!actual.getStatus().equals(status)) {
       failWithActualExpectedAndMessage(

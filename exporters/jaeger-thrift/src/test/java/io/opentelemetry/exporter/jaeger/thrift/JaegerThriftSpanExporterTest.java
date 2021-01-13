@@ -24,7 +24,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -70,7 +70,7 @@ class JaegerThriftSpanExporterTest {
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(Status.ok())
+            .setStatus(StatusData.ok())
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
@@ -132,7 +132,7 @@ class JaegerThriftSpanExporterTest {
             .setName("GET /api/endpoint/1")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(Status.ok())
+            .setStatus(StatusData.ok())
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
@@ -153,7 +153,7 @@ class JaegerThriftSpanExporterTest {
             .setName("GET /api/endpoint/2")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(Status.ok())
+            .setStatus(StatusData.ok())
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)

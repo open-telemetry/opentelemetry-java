@@ -10,7 +10,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
 import java.time.Instant;
@@ -332,9 +331,9 @@ public interface Span extends ImplicitContextKeyed {
   /**
    * Records information about the {@link Throwable} to the {@link Span}.
    *
-   * <p>Note that {@link SemanticAttributes#EXCEPTION_ESCAPED} cannot be determined by this
-   * function. You should record this attribute manually using {@link #recordException(Throwable,
-   * Attributes)} if you know that an exception is escaping.
+   * <p>Note that the EXCEPTION_ESCAPED value from the Semantic Conventions cannot be determined by
+   * this function. You should record this attribute manually using {@link
+   * #recordException(Throwable, Attributes)} if you know that an exception is escaping.
    *
    * @param exception the {@link Throwable} to record.
    * @return this.

@@ -21,8 +21,8 @@ abstract class AbstractSynchronousInstrument extends AbstractInstrument {
   }
 
   @Override
-  final List<MetricData> collectAll() {
-    return accumulator.collectAll();
+  final List<MetricData> collectAll(long epochNanos) {
+    return accumulator.collectAll(epochNanos);
   }
 
   AggregatorHandle<?> acquireHandle(Labels labels) {

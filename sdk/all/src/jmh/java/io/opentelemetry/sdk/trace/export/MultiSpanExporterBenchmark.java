@@ -11,6 +11,7 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -72,7 +73,7 @@ public class MultiSpanExporterBenchmark {
               .setName("noop")
               .setKind(Span.Kind.CLIENT)
               .setStartEpochNanos(1)
-              .setStatus(SpanData.Status.ok())
+              .setStatus(StatusData.ok())
               .setEndEpochNanos(2)
               .setHasEnded(true)
               .build();

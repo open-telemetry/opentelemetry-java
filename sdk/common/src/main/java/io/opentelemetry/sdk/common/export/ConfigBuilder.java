@@ -21,7 +21,10 @@ import javax.annotation.Nullable;
  * <p>{@code Foo.Builder extends ConfigBuilder<Foo.Builder>}
  *
  * @param <T> the type of the implementation.
+ * @deprecated Define an implementation of {@code SdkTracerProviderConfigurer} from the
+ *     opentelemetry-sdk-extension-autoconfigure module to allow autoconfiguration of your type.
  */
+@Deprecated
 public abstract class ConfigBuilder<T> {
 
   // Visible for testing
