@@ -72,17 +72,6 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
   }
 
   /**
-   * Returns the {@link MetricProducer} that can be used to retrieve metrics from this {@code
-   * MeterSdkProvider}.
-   *
-   * @deprecated use directly the class instance.
-   */
-  @Deprecated
-  public MetricProducer getMetricProducer() {
-    return this;
-  }
-
-  /**
    * Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
    *
    * @return a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
