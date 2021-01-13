@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.Closeable;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -97,6 +98,6 @@ public interface SdkTracerManagement extends Closeable {
    */
   @Override
   default void close() {
-    shutdown();
+    shutdown().join(10, TimeUnit.SECONDS);
   }
 }
