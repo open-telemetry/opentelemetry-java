@@ -33,15 +33,17 @@ public class ExampleConfiguration {
             .build();
 
     // Set to process the spans by the Zipkin Exporter
-    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
-        .setTracerProvider(SdkTracerProvider.builder()
-            .addSpanProcessor(SimpleSpanProcessor.create(zipkinExporter))
-            .build())
-        .buildAndRegisterGlobal();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .addSpanProcessor(SimpleSpanProcessor.create(zipkinExporter))
+                    .build())
+            .buildAndRegisterGlobal();
 
-    //add a shutdown hook to shut down the SDK
-    Runtime.getRuntime().addShutdownHook(
-        new Thread(() -> openTelemetry.getTracerManagement().shutdown()));
+    // add a shutdown hook to shut down the SDK
+    Runtime.getRuntime()
+        .addShutdownHook(new Thread(() -> openTelemetry.getTracerManagement().shutdown()));
 
     // return the configured instance so it can be used for instrumentation.
     return openTelemetry;
