@@ -26,26 +26,6 @@ class ConfigErrorTest {
   LogCapturer logs = LogCapturer.create().captureForType(GlobalOpenTelemetry.class);
 
   @Test
-  @SetSystemProperty(key = "otel.exporter", value = "otlp_metrics,prometheus")
-  void multipleMetricExportersPrometheusThrows() {
-    assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage(
-            "Multiple metrics exporters configured. "
-                + "Only one metrics exporter can be configured at a time.");
-  }
-
-  @Test
-  @SetSystemProperty(key = "otel.exporter", value = "prometheus,otlp_metrics")
-  void multipleMetricExportersOtlpThrows() {
-    assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage(
-            "Multiple metrics exporters configured. "
-                + "Only one metrics exporter can be configured at a time.");
-  }
-
-  @Test
   @SetSystemProperty(key = "otel.propagators", value = "cat")
   void invalidPropagator() {
     assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
@@ -55,31 +35,11 @@ class ConfigErrorTest {
 
   @Test
   @SetSystemProperty(key = "otel.trace.sampler", value = "traceidratio")
-  void missingTraceIdRatio() {
-    assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage(
-            "otel.trace.sampler=traceidratio but otel.trace.sampler.arg is not provided. "
-                + "Set otel.trace.sampler.arg to a value in the range [0.0, 1.0].");
-  }
-
-  @Test
-  @SetSystemProperty(key = "otel.trace.sampler", value = "traceidratio")
   @SetSystemProperty(key = "otel.trace.sampler.arg", value = "bar")
   void invalidTraceIdRatio() {
     assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property otel.trace.sampler.arg=bar. Must be a double.");
-  }
-
-  @Test
-  @SetSystemProperty(key = "otel.trace.sampler", value = "parentbased_traceidratio")
-  void missingTraceIdRatioWithParent() {
-    assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage(
-            "otel.trace.sampler=parentbased_traceidratio but otel.trace.sampler.arg is "
-                + "not provided. Set otel.trace.sampler.arg to a value in the range [0.0, 1.0].");
   }
 
   @Test
@@ -100,15 +60,8 @@ class ConfigErrorTest {
   }
 
   @Test
-  @SetSystemProperty(key = "otel.exporter", value = "otlp,cat,dog")
-  void invalidExporter() {
-    assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized value for otel.exporter: cat,dog");
-  }
-
-  @Test
-  @SetSystemProperty(key = "otel.exporter", value = "bar")
+  @SetSystemProperty(key = "otel.trace.sampler", value = "traceidratio")
+  @SetSystemProperty(key = "otel.trace.sampler.arg", value = "bar")
   void globalOpenTelemetryWhenError() {
     assertThat(GlobalOpenTelemetry.get())
         .isInstanceOf(OpenTelemetrySdk.class)
@@ -121,8 +74,6 @@ class ConfigErrorTest {
             "Error automatically configuring OpenTelemetry SDK. "
                 + "OpenTelemetry will not be enabled.");
     assertThat(log.getLevel()).isEqualTo(Level.ERROR);
-    assertThat(log.getThrowable())
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized value for otel.exporter: bar");
+    assertThat(log.getThrowable()).isInstanceOf(ConfigurationException.class);
   }
 }

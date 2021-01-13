@@ -14,13 +14,9 @@ import io.opentelemetry.sdk.metrics.export.IntervalMetricReaderBuilder;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 final class MetricExporterConfiguration {
-
-  static final List<String> RECOGNIZED_NAMES = Arrays.asList("otlp", "otlp_metrics", "prometheus");
 
   static void configureExporter(
       String name, ConfigProperties config, SdkMeterProvider meterProvider) {
