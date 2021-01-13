@@ -104,7 +104,7 @@ final class Adapter {
               .setVStr(span.getStatus().getDescription()));
     }
 
-    if (!span.getStatus().isUnset()) {
+    if (span.getStatus().getStatusCode() != StatusCode.UNSET) {
       tags.add(
           new Tag(KEY_SPAN_STATUS_CODE, TagType.STRING)
               .setVStr(span.getStatus().getStatusCode().name()));

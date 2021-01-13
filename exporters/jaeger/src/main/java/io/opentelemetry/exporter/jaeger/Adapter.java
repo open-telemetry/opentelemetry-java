@@ -104,7 +104,7 @@ final class Adapter {
               .build());
     }
 
-    if (!span.getStatus().isUnset()) {
+    if (span.getStatus().getStatusCode() != StatusCode.UNSET) {
       target.addTags(
           Model.KeyValue.newBuilder()
               .setKey(KEY_SPAN_STATUS_CODE)
