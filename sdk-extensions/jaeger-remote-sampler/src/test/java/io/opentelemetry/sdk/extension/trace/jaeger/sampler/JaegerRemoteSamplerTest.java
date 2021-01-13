@@ -138,7 +138,7 @@ class JaegerRemoteSamplerTest {
   void initialSampler() {
     JaegerRemoteSampler sampler =
         JaegerRemoteSampler.builder()
-            .setChannel(inProcessChannel)
+            .setEndpoint("example.com")
             .setServiceName(SERVICE_NAME)
             .setInitialSampler(Sampler.alwaysOn())
             .build();
