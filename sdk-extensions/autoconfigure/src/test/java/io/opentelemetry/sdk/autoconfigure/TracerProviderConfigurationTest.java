@@ -47,7 +47,7 @@ class TracerProviderConfigurationTest {
     // are verified in other test sets like testFullConfig.
     SdkTracerProvider tracerProvider =
         TracerProviderConfiguration.configureTracerProvider(
-            resource, Collections.emptySet(), ConfigProperties.createForTest(properties));
+            resource, ConfigProperties.createForTest(properties));
     try {
       assertThat(tracerProvider.getActiveTraceConfig().getSampler()).isEqualTo(Sampler.alwaysOff());
 
@@ -68,8 +68,7 @@ class TracerProviderConfigurationTest {
   @Test
   void configureSpanProcessor_empty() {
     BatchSpanProcessor processor =
-        TracerProviderConfiguration.configureSpanProcessor(
-            EMPTY, Collections.singletonList(exporter));
+        TracerProviderConfiguration.configureSpanProcessor(EMPTY, exporter);
 
     try {
       assertThat(processor)
@@ -105,7 +104,7 @@ class TracerProviderConfigurationTest {
 
     BatchSpanProcessor processor =
         TracerProviderConfiguration.configureSpanProcessor(
-            ConfigProperties.createForTest(properties), Collections.singletonList(exporter));
+            ConfigProperties.createForTest(properties), exporter);
 
     try {
       assertThat(processor)

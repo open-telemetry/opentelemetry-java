@@ -12,7 +12,9 @@ ext.moduleName = "io.opentelemetry.sdk.autoconfigure"
 testSets {
     testConfigError
     testFullConfig
+    testJaeger
     testPrometheus
+    testZipkin
 }
 
 dependencies {
@@ -43,6 +45,10 @@ dependencies {
     testFullConfigImplementation libraries.prometheus_client_httpserver
     testFullConfigImplementation project(':exporters:zipkin')
 
+    testJaegerImplementation project(':exporters:jaeger')
+
+    testZipkinImplementation project(':exporters:zipkin')
+
     testConfigErrorImplementation project(':extensions:trace-propagators')
     testConfigErrorImplementation project(':exporters:jaeger')
     testConfigErrorImplementation project(':exporters:logging')
@@ -59,7 +65,8 @@ dependencies {
 
 testFullConfig {
     environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
-    environment("OTEL_EXPORTER", "otlp,jaeger,zipkin")
+    environment("OTEL_TRACE_EXPORTER", "otlp")
+    environment("OTEL_METRICS_EXPORTER", "otlp")
     environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottracer,xray,test")
     environment("OTEL_BSP_SCHEDULE_DELAY_MILLIS", "10")
     environment("OTEL_IMR_EXPORT_INTERVAL", "10")
@@ -68,7 +75,19 @@ testFullConfig {
     environment("OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT", "2")
 }
 
+testJaeger {
+    environment("OTEL_TRACE_EXPORTER", "jaeger")
+    environment("OTEL_BSP_SCHEDULE_DELAY_MILLIS", "10")
+}
+
+testZipkin {
+    environment("OTEL_TRACE_EXPORTER", "zipkin")
+    environment("OTEL_BSP_SCHEDULE_DELAY_MILLIS", "10")
+}
+
 testPrometheus {
-    environment("OTEL_EXPORTER", "prometheus")
+    environment("OTEL_METRICS_EXPORTER", "prometheus")
     environment("OTEL_IMR_EXPORT_INTERVAL", "10")
 }
+
+check.dependsOn(testConfigError, testFullConfig, testJaeger, testPrometheus, testZipkin)

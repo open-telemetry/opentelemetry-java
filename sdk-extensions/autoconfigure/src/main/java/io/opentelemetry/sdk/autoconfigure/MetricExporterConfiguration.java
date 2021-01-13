@@ -14,39 +14,22 @@ import io.opentelemetry.sdk.metrics.export.IntervalMetricReaderBuilder;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 final class MetricExporterConfiguration {
 
-  static final List<String> RECOGNIZED_NAMES = Arrays.asList("otlp", "otlp_metrics", "prometheus");
-
-  static boolean configureExporter(
-      String name,
-      ConfigProperties config,
-      boolean metricsAlreadyRegistered,
-      SdkMeterProvider meterProvider) {
+  static void configureExporter(
+      String name, ConfigProperties config, SdkMeterProvider meterProvider) {
     switch (name) {
       case "otlp":
       case "otlp_metrics":
-        if (metricsAlreadyRegistered) {
-          throw new ConfigurationException(
-              "Multiple metrics exporters configured. Only one metrics exporter can be "
-                  + "configured at a time.");
-        }
         configureOtlpMetrics(config, meterProvider);
-        return true;
+        return;
       case "prometheus":
-        if (metricsAlreadyRegistered) {
-          throw new ConfigurationException(
-              "Multiple metrics exporters configured. Only one metrics exporter can be "
-                  + "configured at a time.");
-        }
         configurePrometheusMetrics(config, meterProvider);
-        return true;
+        return;
       default:
-        return false;
+        return;
     }
   }
 
