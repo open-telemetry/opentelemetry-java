@@ -91,7 +91,7 @@ public class BatchSpanProcessorBenchmark {
     processor.shutdown().join(10, TimeUnit.SECONDS);
   }
 
-  /** Export spans through {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor}. */
+  /** Export spans through {@link BatchSpanProcessor}. */
   @Benchmark
   @Fork(1)
   @Threads(5)
