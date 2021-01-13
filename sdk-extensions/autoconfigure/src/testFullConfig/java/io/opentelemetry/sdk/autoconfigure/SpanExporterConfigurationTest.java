@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class SpanExporterConfigurationTest {
@@ -29,7 +30,10 @@ class SpanExporterConfigurationTest {
       assertThat(exporter)
           .isInstanceOfSatisfying(
               OtlpGrpcSpanExporter.class,
-              otlp -> assertThat(otlp).extracting("deadlineMs").isEqualTo(10L));
+              otlp ->
+                  assertThat(otlp)
+                      .extracting("timeoutNanos")
+                      .isEqualTo(TimeUnit.MILLISECONDS.toNanos(10L)));
     } finally {
       exporter.shutdown();
     }

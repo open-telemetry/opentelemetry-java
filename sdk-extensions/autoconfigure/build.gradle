@@ -86,6 +86,8 @@ testZipkin {
 }
 
 testPrometheus {
-    environment("OTEL_EXPORTER", "prometheus")
+    environment("OTEL_METRICS_EXPORTER", "prometheus")
     environment("OTEL_IMR_EXPORT_INTERVAL", "10")
 }
+
+test.dependsOn(testFullConfig, testJaeger, testZipkin, testPrometheus)
