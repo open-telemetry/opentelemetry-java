@@ -7,12 +7,14 @@ package io.opentelemetry.sdk.metrics;
 
 import com.google.errorprone.annotations.Immutable;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.BoundDoubleCounter;
+import io.opentelemetry.api.metrics.BoundDoubleValueRecorder;
+import io.opentelemetry.api.metrics.BoundLongCounter;
+import io.opentelemetry.api.metrics.BoundLongValueRecorder;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleValueRecorder;
-import io.opentelemetry.api.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongValueRecorder;
-import io.opentelemetry.api.metrics.LongValueRecorder.BoundLongValueRecorder;
 import io.opentelemetry.api.metrics.Meter;
 
 /**
@@ -26,7 +28,7 @@ public enum MetricsTestOperationBuilder {
       meter -> {
         return new Operation() {
           final LongCounter metric = meter.longCounterBuilder("long_counter").build();
-          final LongCounter.BoundLongCounter boundMetric =
+          final BoundLongCounter boundMetric =
               meter
                   .longCounterBuilder("bound_long_counter")
                   .build()
@@ -47,7 +49,7 @@ public enum MetricsTestOperationBuilder {
       meter -> {
         return new Operation() {
           final DoubleCounter metric = meter.doubleCounterBuilder("double_counter").build();
-          final DoubleCounter.BoundDoubleCounter boundMetric =
+          final BoundDoubleCounter boundMetric =
               meter
                   .doubleCounterBuilder("bound_double_counter")
                   .build()

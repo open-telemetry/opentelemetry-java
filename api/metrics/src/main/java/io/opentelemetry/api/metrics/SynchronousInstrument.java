@@ -6,7 +6,6 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.metrics.SynchronousInstrument.BoundInstrument;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -19,7 +18,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @param <B> the specific type of Bound Instrument this instrument can provide.
  */
 @ThreadSafe
-public interface SynchronousInstrument<B extends BoundInstrument> extends Instrument {
+public interface SynchronousInstrument<B extends BoundSynchronousInstrument> extends Instrument {
   /**
    * Returns a {@code Bound Instrument} associated with the specified labels. Multiples requests
    * with the same set of labels may return the same {@code Bound Instrument} instance.
@@ -32,20 +31,4 @@ public interface SynchronousInstrument<B extends BoundInstrument> extends Instru
    * @throws NullPointerException if {@code labelValues} is null.
    */
   B bind(Labels labels);
-
-  interface BoundInstrument {
-    /**
-     * Unbinds the current {@code Bound} from the Instrument.
-     *
-     * <p>After this method returns the current instance {@code Bound} is considered invalid (not
-     * being managed by the instrument).
-     */
-    void unbind();
-  }
-
-  /** Builder class for {@link SynchronousInstrument}. */
-  interface Builder extends Instrument.Builder {
-    @Override
-    SynchronousInstrument<?> build();
-  }
 }

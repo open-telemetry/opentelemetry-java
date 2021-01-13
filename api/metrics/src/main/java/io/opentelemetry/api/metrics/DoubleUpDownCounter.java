@@ -6,7 +6,6 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.metrics.DoubleUpDownCounter.BoundDoubleUpDownCounter;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -64,32 +63,4 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
 
   @Override
   BoundDoubleUpDownCounter bind(Labels labels);
-
-  /** A {@code Bound Instrument} for a {@link DoubleUpDownCounter}. */
-  @ThreadSafe
-  interface BoundDoubleUpDownCounter extends BoundInstrument {
-    /**
-     * Adds the given {@code increment} to the current value.
-     *
-     * <p>The value added is associated with the current {@code Context}.
-     *
-     * @param increment the value to add.
-     */
-    void add(double increment);
-
-    @Override
-    void unbind();
-  }
-
-  /** Builder class for {@link DoubleUpDownCounter}. */
-  interface Builder extends SynchronousInstrument.Builder {
-    @Override
-    Builder setDescription(String description);
-
-    @Override
-    Builder setUnit(String unit);
-
-    @Override
-    DoubleUpDownCounter build();
-  }
 }
