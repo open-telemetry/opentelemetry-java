@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.BoundLongValueRecorder;
 import io.opentelemetry.api.metrics.LongValueRecorder;
+import io.opentelemetry.api.metrics.LongValueRecorderBuilder;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -60,7 +62,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument
 
   static final class Builder
       extends AbstractSynchronousInstrumentBuilder<LongValueRecorderSdk.Builder>
-      implements LongValueRecorder.Builder {
+      implements LongValueRecorderBuilder {
 
     Builder(
         String name,

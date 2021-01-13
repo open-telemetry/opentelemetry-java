@@ -43,7 +43,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  DoubleCounter.Builder doubleCounterBuilder(String name);
+  DoubleCounterBuilder doubleCounterBuilder(String name);
 
   /**
    * Returns a builder for a {@link LongCounter}.
@@ -55,7 +55,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  LongCounter.Builder longCounterBuilder(String name);
+  LongCounterBuilder longCounterBuilder(String name);
 
   /**
    * Returns a builder for a {@link DoubleUpDownCounter}.
@@ -67,7 +67,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  DoubleUpDownCounter.Builder doubleUpDownCounterBuilder(String name);
+  DoubleUpDownCounterBuilder doubleUpDownCounterBuilder(String name);
 
   /**
    * Returns a builder for a {@link LongUpDownCounter}.
@@ -79,7 +79,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  LongUpDownCounter.Builder longUpDownCounterBuilder(String name);
+  LongUpDownCounterBuilder longUpDownCounterBuilder(String name);
 
   /**
    * Returns a new builder for a {@link DoubleValueRecorder}.
@@ -91,7 +91,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  DoubleValueRecorder.Builder doubleValueRecorderBuilder(String name);
+  DoubleValueRecorderBuilder doubleValueRecorderBuilder(String name);
 
   /**
    * Returns a new builder for a {@link LongValueRecorder}.
@@ -103,7 +103,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  LongValueRecorder.Builder longValueRecorderBuilder(String name);
+  LongValueRecorderBuilder longValueRecorderBuilder(String name);
 
   /**
    * Returns a new builder for a {@link DoubleSumObserver}.
@@ -115,7 +115,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  DoubleSumObserver.Builder doubleSumObserverBuilder(String name);
+  DoubleSumObserverBuilder doubleSumObserverBuilder(String name);
 
   /**
    * Returns a new builder for a {@link LongSumObserver}.
@@ -127,7 +127,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  LongSumObserver.Builder longSumObserverBuilder(String name);
+  LongSumObserverBuilder longSumObserverBuilder(String name);
 
   /**
    * Returns a new builder for a {@link DoubleUpDownSumObserver}.
@@ -139,7 +139,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  DoubleUpDownSumObserver.Builder doubleUpDownSumObserverBuilder(String name);
+  DoubleUpDownSumObserverBuilder doubleUpDownSumObserverBuilder(String name);
 
   /**
    * Returns a new builder for a {@link LongUpDownSumObserver}.
@@ -151,7 +151,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  LongUpDownSumObserver.Builder longUpDownSumObserverBuilder(String name);
+  LongUpDownSumObserverBuilder longUpDownSumObserverBuilder(String name);
 
   /**
    * Returns a new builder for a {@link DoubleValueObserver}.
@@ -163,7 +163,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  DoubleValueObserver.Builder doubleValueObserverBuilder(String name);
+  DoubleValueObserverBuilder doubleValueObserverBuilder(String name);
 
   /**
    * Returns a new builder for a {@link LongValueObserver}.
@@ -175,7 +175,7 @@ public interface Meter {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    */
-  LongValueObserver.Builder longValueObserverBuilder(String name);
+  LongValueObserverBuilder longValueObserverBuilder(String name);
 
   /**
    * Utility method that allows users to atomically record measurements to a set of Instruments with

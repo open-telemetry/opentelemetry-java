@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -90,9 +91,9 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
   private final ManagedChannel managedChannel;
   private final long timeoutNanos;
-  private final LongCounter.BoundLongCounter spansSeen;
-  private final LongCounter.BoundLongCounter spansExportedSuccess;
-  private final LongCounter.BoundLongCounter spansExportedFailure;
+  private final BoundLongCounter spansSeen;
+  private final BoundLongCounter spansExportedSuccess;
+  private final BoundLongCounter spansExportedFailure;
 
   /**
    * Creates a new OTLP gRPC Span Reporter with the given name, using the given channel.

@@ -11,8 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
@@ -250,7 +250,7 @@ class LongCounterSdkTest {
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
-    private final LongCounter.BoundLongCounter boundLongCounter;
+    private final BoundLongCounter boundLongCounter;
 
     private OperationUpdaterWithBinding(BoundLongCounter boundLongCounter) {
       this.boundLongCounter = boundLongCounter;

@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.internal.StringUtils;
-import io.opentelemetry.api.metrics.DoubleCounter.BoundDoubleCounter;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 

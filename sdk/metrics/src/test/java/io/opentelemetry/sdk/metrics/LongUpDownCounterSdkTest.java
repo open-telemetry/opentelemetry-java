@@ -11,8 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
-import io.opentelemetry.api.metrics.LongUpDownCounter.BoundLongUpDownCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;

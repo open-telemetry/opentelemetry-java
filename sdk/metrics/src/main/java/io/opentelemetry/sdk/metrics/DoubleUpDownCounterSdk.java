@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.BoundDoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
+import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -60,7 +62,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
 
   static final class Builder
       extends AbstractSynchronousInstrumentBuilder<DoubleUpDownCounterSdk.Builder>
-      implements DoubleUpDownCounter.Builder {
+      implements DoubleUpDownCounterBuilder {
 
     Builder(
         String name,

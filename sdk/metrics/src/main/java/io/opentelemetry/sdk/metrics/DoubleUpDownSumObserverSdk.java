@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.DoubleUpDownSumObserver;
+import io.opentelemetry.api.metrics.DoubleUpDownSumObserverBuilder;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -20,7 +21,7 @@ final class DoubleUpDownSumObserverSdk extends AbstractAsynchronousInstrument
 
   static final class Builder
       extends AbstractDoubleAsynchronousInstrumentBuilder<DoubleUpDownSumObserverSdk.Builder>
-      implements DoubleUpDownSumObserver.Builder {
+      implements DoubleUpDownSumObserverBuilder {
 
     Builder(
         String name,

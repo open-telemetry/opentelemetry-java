@@ -11,8 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.BoundDoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounter;
-import io.opentelemetry.api.metrics.DoubleCounter.BoundDoubleCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
@@ -254,7 +254,7 @@ class DoubleCounterSdkTest {
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
-    private final DoubleCounter.BoundDoubleCounter boundDoubleCounter;
+    private final BoundDoubleCounter boundDoubleCounter;
 
     private OperationUpdaterWithBinding(BoundDoubleCounter boundDoubleCounter) {
       this.boundDoubleCounter = boundDoubleCounter;
