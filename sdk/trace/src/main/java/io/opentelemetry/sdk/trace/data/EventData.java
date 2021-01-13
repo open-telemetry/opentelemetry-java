@@ -16,7 +16,7 @@ public interface EventData {
    * @param epochNanos epoch timestamp in nanos of the {@link EventData}.
    * @param name the name of the {@link EventData}.
    * @param attributes the attributes of the {@link EventData}.
-   * @return a new immutable {@link EventData<T>}
+   * @return a new immutable {@link EventData}
    */
   static EventData create(long epochNanos, String name, Attributes attributes) {
     return ImmutableEventData.create(epochNanos, name, attributes);
@@ -29,7 +29,7 @@ public interface EventData {
    * @param name the name of the {@link EventData}.
    * @param attributes the attributes of the {@link EventData}.
    * @param totalAttributeCount the total number of attributes for this {@code} Event.
-   * @return a new immutable {@link EventData<T>}
+   * @return a new immutable {@link EventData}
    */
   static EventData create(
       long epochNanos, String name, Attributes attributes, int totalAttributeCount) {
