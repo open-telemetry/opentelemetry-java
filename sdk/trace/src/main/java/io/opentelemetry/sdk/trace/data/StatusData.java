@@ -76,8 +76,8 @@ public interface StatusData {
       case OK:
         return true;
       case ERROR:
-      default:
         return false;
     }
+    return false;
   }
 }

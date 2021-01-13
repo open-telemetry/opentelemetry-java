@@ -25,6 +25,13 @@ class ImmutableStatusDataTest {
   }
 
   @Test
+  void isOk() {
+    assertThat(StatusData.ok().isOk()).isTrue();
+    assertThat(StatusData.unset().isOk()).isTrue();
+    assertThat(StatusData.error().isOk()).isFalse();
+  }
+
+  @Test
   void generateCodeToStatus() {
     StatusCode[] codes = StatusCode.values();
     assertThat(ImmutableStatusData.codeToStatus).hasSize(codes.length);
