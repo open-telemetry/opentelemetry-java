@@ -16,19 +16,34 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * {@link Resource} represents a resource, which capture identifying information about the entities
  * for which signals (stats or traces) are reported.
+ *
+ * <p>To disable any {@link ResourceProvider} found on the classpath from being recognized, set the
+ * fully qualified class names of the {@link ResourceProvider} implementations as a comma separated
+ * list to the system property {@code -Dotel.java.disabled.resource_providers} or the {@code
+ * OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS} environment variable.
  */
 @Immutable
 @AutoValue
 public abstract class Resource {
+
+  private static final String OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_PROPERTY_KEY =
+      "otel.java.disabled.resource_providers";
+
+  private static final String OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_ENV_KEY =
+      "OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS";
+
   private static final int MAX_LENGTH = 255;
   private static final String ERROR_MESSAGE_INVALID_CHARS =
       " should be a ASCII string with a length greater than 0 and not exceed "
@@ -72,13 +87,21 @@ public abstract class Resource {
   }
 
   private static Resource readResourceFromProviders() {
-    ResourcesConfig resourcesConfig =
-        ResourcesConfig.builder().readEnvironmentVariables().readSystemProperties().build();
+    String disabledResourceProvidersConfig =
+        System.getenv(OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_ENV_KEY);
+    if (disabledResourceProvidersConfig == null) {
+      disabledResourceProvidersConfig =
+          System.getProperty(OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_PROPERTY_KEY, "");
+    }
+    Set<String> disabledResourceProviders =
+        Arrays.stream(disabledResourceProvidersConfig.split(","))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .collect(Collectors.toSet());
+
     Resource result = Resource.EMPTY;
     for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
-      if (resourcesConfig
-          .getDisabledResourceProviders()
-          .contains(resourceProvider.getClass().getName())) {
+      if (disabledResourceProviders.contains(resourceProvider.getClass().getName())) {
         continue;
       }
       result = result.merge(resourceProvider.create());
