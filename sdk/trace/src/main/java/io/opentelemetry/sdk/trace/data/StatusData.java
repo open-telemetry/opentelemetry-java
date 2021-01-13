@@ -69,15 +69,10 @@ public interface StatusData {
    * overridden to be ok by an operator.
    *
    * @return {@code true} if this {@code Status} is OK or UNSET.
+   * @deprecated Compare {@link #getStatusCode()} with {@link StatusCode#ERROR}
    */
+  @Deprecated
   default boolean isOk() {
-    switch (getStatusCode()) {
-      case UNSET:
-      case OK:
-        return true;
-      case ERROR:
-        return false;
-    }
-    return false;
+    return isUnset() || StatusCode.OK == getStatusCode();
   }
 }

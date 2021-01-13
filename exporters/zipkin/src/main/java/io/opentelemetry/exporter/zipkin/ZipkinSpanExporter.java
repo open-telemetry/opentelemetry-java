@@ -136,7 +136,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       spanBuilder.putTag(OTEL_STATUS_CODE, status.getStatusCode().toString());
 
       // add the error tag, if it isn't already in the source span.
-      if (!status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
+      if (status.getStatusCode() == StatusCode.ERROR && spanAttributes.get(STATUS_ERROR) == null) {
         spanBuilder.putTag(STATUS_ERROR.getKey(), nullToEmpty(status.getDescription()));
       }
     }
