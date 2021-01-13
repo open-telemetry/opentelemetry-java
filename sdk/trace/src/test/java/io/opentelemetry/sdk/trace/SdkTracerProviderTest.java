@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,15 +111,6 @@ class SdkTracerProviderTest {
         InstrumentationLibraryInfo.create("theName", "theVersion");
     Tracer tracer = tracerFactory.get(expected.getName(), expected.getVersion());
     assertThat(((SdkTracer) tracer).getInstrumentationLibraryInfo()).isEqualTo(expected);
-  }
-
-  @Test
-  @SuppressWarnings("deprecation") // Testing the deprecated method
-  void updateActiveTraceConfig() {
-    assertThat(tracerFactory.getActiveTraceConfig()).isEqualTo(TraceConfig.getDefault());
-    TraceConfig newConfig = TraceConfig.builder().setSampler(Sampler.alwaysOff()).build();
-    tracerFactory.updateActiveTraceConfig(newConfig);
-    assertThat(tracerFactory.getActiveTraceConfig()).isEqualTo(newConfig);
   }
 
   @Test
