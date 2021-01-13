@@ -17,8 +17,8 @@ tasks['updateVersionInDocs'].configure {
 
         def readmeText = readme.text
         def updatedText = readmeText
-                .replaceAll("<version>\\d+\\.\\d+\\.\\d+</version>", "<version>${version}-alpha</version>")
-                .replaceAll("(implementation.*io\\.opentelemetry:.*:)(\\d+\\.\\d+\\.\\d+)(?!-SNAPSHOT)(.*)", "\$1${version}-alpha\$3")
+                .replaceAll("<version>.*</version>", "<version>${version}-alpha</version>")
+                .replaceAll("(implementation.*io\\.opentelemetry:.*:)(\\d+\\.\\d+\\.\\d+)(?!-alpha)(?!-SNAPSHOT)(.*)", "\$1${version}-alpha\$3")
         readme.text = updatedText
     }
 }
