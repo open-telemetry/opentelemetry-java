@@ -14,7 +14,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 @SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
 public final class DefaultOpenTelemetryBuilder {
   private ContextPropagators propagators = ContextPropagators.noop();
-  private TracerProvider tracerProvider;
+  private TracerProvider tracerProvider = TracerProvider.getDefault();
 
   /**
    * Package protected to disallow direct initialization.
@@ -53,17 +53,6 @@ public final class DefaultOpenTelemetryBuilder {
    * @return a new {@link OpenTelemetry}.
    */
   public OpenTelemetry build() {
-    TracerProvider tracerProvider = this.tracerProvider;
-    if (tracerProvider == null) {
-      io.opentelemetry.spi.trace.TracerProviderFactory tracerProviderFactory =
-          Utils.loadSpi(io.opentelemetry.spi.trace.TracerProviderFactory.class);
-      if (tracerProviderFactory != null) {
-        tracerProvider = tracerProviderFactory.create();
-      } else {
-        tracerProvider = TracerProvider.getDefault();
-      }
-    }
-
     return new DefaultOpenTelemetry(tracerProvider, propagators);
   }
 }

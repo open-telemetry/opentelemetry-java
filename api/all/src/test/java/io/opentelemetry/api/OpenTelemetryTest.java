@@ -6,20 +6,12 @@
 package io.opentelemetry.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.net.URL;
-import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,7 +27,6 @@ class OpenTelemetryTest {
   @AfterEach
   void after() {
     GlobalOpenTelemetry.reset();
-    System.clearProperty(io.opentelemetry.spi.trace.TracerProviderFactory.class.getName());
   }
 
   @Test
@@ -60,51 +51,6 @@ class OpenTelemetryTest {
     assertThat(openTelemetry).isNotNull();
     assertThat(openTelemetry.getTracerProvider()).isSameAs(tracerProvider);
     assertThat(openTelemetry.getPropagators()).isSameAs(contextPropagators);
-  }
-
-  @Test
-  void testTracerLoadArbitrary() throws IOException {
-    File serviceFile =
-        createService(
-            io.opentelemetry.spi.trace.TracerProviderFactory.class,
-            FirstTracerProviderFactory.class,
-            SecondTracerProviderFactory.class);
-    try {
-      assertThat(
-              (GlobalOpenTelemetry.getTracerProvider().get("")
-                      instanceof FirstTracerProviderFactory)
-                  || (GlobalOpenTelemetry.getTracerProvider().get("")
-                      instanceof SecondTracerProviderFactory))
-          .isTrue();
-    } finally {
-      assertThat(serviceFile.delete()).isTrue();
-    }
-  }
-
-  @Test
-  void testTracerSystemProperty() throws IOException {
-    File serviceFile =
-        createService(
-            io.opentelemetry.spi.trace.TracerProviderFactory.class,
-            FirstTracerProviderFactory.class,
-            SecondTracerProviderFactory.class);
-    System.setProperty(
-        io.opentelemetry.spi.trace.TracerProviderFactory.class.getName(),
-        SecondTracerProviderFactory.class.getName());
-    try {
-      assertThat(GlobalOpenTelemetry.getTracerProvider().get(""))
-          .isInstanceOf(SecondTracerProviderFactory.class);
-    } finally {
-      assertThat(serviceFile.delete()).isTrue();
-    }
-  }
-
-  @Test
-  void testTracerNotFound() {
-    System.setProperty(
-        io.opentelemetry.spi.trace.TracerProviderFactory.class.getName(), "io.does.not.exists");
-    assertThatThrownBy(() -> GlobalOpenTelemetry.getTracer("testTracer"))
-        .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
@@ -135,63 +81,5 @@ class OpenTelemetryTest {
 
     assertThat(otel1.getPropagators()).isSameAs(propagators1);
     assertThat(otel2.getPropagators()).isSameAs(propagators2);
-  }
-
-  private static File createService(Class<?> service, Class<?>... impls) throws IOException {
-    URL location = OpenTelemetryTest.class.getProtectionDomain().getCodeSource().getLocation();
-    File file = new File(location.getPath() + "META-INF/services/" + service.getName());
-    file.getParentFile().mkdirs();
-
-    @SuppressWarnings("DefaultCharset")
-    Writer output = new FileWriter(file);
-    for (Class<?> impl : impls) {
-      output.write(impl.getName());
-      output.write(System.getProperty("line.separator"));
-    }
-    output.close();
-    return file;
-  }
-
-  public static class SecondTracerProviderFactory extends FirstTracerProviderFactory {
-
-    @Override
-    public Tracer get(String instrumentationName) {
-      return new SecondTracerProviderFactory();
-    }
-
-    @Override
-    public Tracer get(String instrumentationName, String instrumentationVersion) {
-      return get(instrumentationName);
-    }
-
-    @Override
-    public TracerProvider create() {
-      return new SecondTracerProviderFactory();
-    }
-  }
-
-  public static class FirstTracerProviderFactory
-      implements Tracer, TracerProvider, io.opentelemetry.spi.trace.TracerProviderFactory {
-
-    @Override
-    public Tracer get(String instrumentationName) {
-      return new FirstTracerProviderFactory();
-    }
-
-    @Override
-    public Tracer get(String instrumentationName, String instrumentationVersion) {
-      return get(instrumentationName);
-    }
-
-    @Nullable
-    @Override
-    public SpanBuilder spanBuilder(String spanName) {
-      return null;
-    }
-
-    @Override
-    public TracerProvider create() {
-      return new FirstTracerProviderFactory();
-    }
   }
 }

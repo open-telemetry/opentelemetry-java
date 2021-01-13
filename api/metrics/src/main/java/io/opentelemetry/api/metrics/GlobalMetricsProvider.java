@@ -5,10 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
-import io.opentelemetry.spi.metrics.MeterProviderFactory;
-import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nullable;
 
 /**
  * IMPORTANT: This is a temporary class, and solution for the metrics package until it will be
@@ -26,13 +23,7 @@ public class GlobalMetricsProvider {
     if (meterProvider == null) {
       synchronized (mutex) {
         if (globalMeterProvider.get() == null) {
-          MeterProviderFactory meterProviderFactory = loadSpi();
-          if (meterProviderFactory != null) {
-            meterProvider = meterProviderFactory.create();
-          } else {
-            meterProvider = MeterProvider.getDefault();
-          }
-          globalMeterProvider.compareAndSet(null, meterProvider);
+          return MeterProvider.getDefault();
         }
       }
     }
@@ -76,28 +67,5 @@ public class GlobalMetricsProvider {
    */
   public static Meter getMeter(String instrumentationName, String instrumentationVersion) {
     return get().get(instrumentationName, instrumentationVersion);
-  }
-
-  /**
-   * Load provider class via {@link ServiceLoader}. A specific provider class can be requested via
-   * setting a system property with FQCN.
-   *
-   * @return a provider or null if not found
-   * @throws IllegalStateException if a specified provider is not found
-   */
-  @Nullable
-  private static MeterProviderFactory loadSpi() {
-    String specifiedProvider = System.getProperty(MeterProviderFactory.class.getName());
-    ServiceLoader<MeterProviderFactory> providers = ServiceLoader.load(MeterProviderFactory.class);
-    for (MeterProviderFactory provider : providers) {
-      if (specifiedProvider == null || specifiedProvider.equals(provider.getClass().getName())) {
-        return provider;
-      }
-    }
-    if (specifiedProvider != null) {
-      throw new IllegalStateException(
-          String.format("Service provider %s not found", specifiedProvider));
-    }
-    return null;
   }
 }

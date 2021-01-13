@@ -29,6 +29,8 @@ import javax.annotation.Nullable;
 @SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
 public final class GlobalOpenTelemetry {
 
+  private static final OpenTelemetry NOOP = DefaultOpenTelemetry.builder().build();
+
   private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
 
   private static final Object mutex = new Object();
@@ -54,13 +56,7 @@ public final class GlobalOpenTelemetry {
             return autoConfigured;
           }
 
-          io.opentelemetry.spi.OpenTelemetryFactory openTelemetryFactory =
-              Utils.loadSpi(io.opentelemetry.spi.OpenTelemetryFactory.class);
-          if (openTelemetryFactory != null) {
-            set(openTelemetryFactory.create());
-          } else {
-            set(DefaultOpenTelemetry.builder().build());
-          }
+          return NOOP;
         }
       }
     }
