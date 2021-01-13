@@ -35,6 +35,11 @@ public interface AggregatorFactory {
    * Returns an {@code AggregationFactory} that calculates the last value of all recorded
    * measurements.
    *
+   * <p>Limitation: The current implementation does not store a time when the value was recorded, so
+   * merging multiple LastValueAggregators will not preserve the ordering of records. This is not a
+   * problem because LastValueAggregator is currently only available for Observers which record all
+   * values once.
+   *
    * @return an {@code AggregationFactory} that calculates the last value of all recorded
    *     measurements.
    */

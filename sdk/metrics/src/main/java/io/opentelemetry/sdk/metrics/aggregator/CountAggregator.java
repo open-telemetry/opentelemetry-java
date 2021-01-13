@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.LongAdder;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-public final class CountAggregator implements Aggregator<Long> {
+final class CountAggregator implements Aggregator<Long> {
   private static final Aggregator<Long> INSTANCE = new CountAggregator();
 
   /**
@@ -27,7 +27,7 @@ public final class CountAggregator implements Aggregator<Long> {
    *
    * @return the instance of this {@link Aggregator}.
    */
-  public static Aggregator<Long> getInstance() {
+  static Aggregator<Long> getInstance() {
     return INSTANCE;
   }
 

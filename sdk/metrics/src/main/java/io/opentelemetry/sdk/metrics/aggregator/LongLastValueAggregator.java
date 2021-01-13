@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
  * problem because LastValueAggregator is currently only available for Observers which record all
  * values once.
  */
-public final class LongLastValueAggregator implements Aggregator<Long> {
+final class LongLastValueAggregator implements Aggregator<Long> {
   @Nullable private static final Long DEFAULT_VALUE = null;
   private static final LongLastValueAggregator INSTANCE = new LongLastValueAggregator();
 
@@ -34,7 +34,7 @@ public final class LongLastValueAggregator implements Aggregator<Long> {
    *
    * @return the instance of this {@link Aggregator}.
    */
-  public static Aggregator<Long> getInstance() {
+  static Aggregator<Long> getInstance() {
     return INSTANCE;
   }
 

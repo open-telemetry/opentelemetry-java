@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
 
-public final class DoubleSumAggregator implements Aggregator<Double> {
+final class DoubleSumAggregator implements Aggregator<Double> {
   private static final DoubleSumAggregator INSTANCE = new DoubleSumAggregator();
 
   /**
@@ -24,7 +24,7 @@ public final class DoubleSumAggregator implements Aggregator<Double> {
    *
    * @return the instance of this {@link Aggregator}.
    */
-  public static Aggregator<Double> getInstance() {
+  static Aggregator<Double> getInstance() {
     return INSTANCE;
   }
 

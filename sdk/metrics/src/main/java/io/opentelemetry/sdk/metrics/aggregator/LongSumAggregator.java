@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
-public final class LongSumAggregator implements Aggregator<Long> {
+final class LongSumAggregator implements Aggregator<Long> {
   private static final LongSumAggregator INSTANCE = new LongSumAggregator();
 
   /**
@@ -24,7 +24,7 @@ public final class LongSumAggregator implements Aggregator<Long> {
    *
    * @return the instance of this {@link Aggregator}.
    */
-  public static Aggregator<Long> getInstance() {
+  static Aggregator<Long> getInstance() {
     return INSTANCE;
   }
 
