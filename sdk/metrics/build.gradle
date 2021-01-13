@@ -22,7 +22,7 @@ dependencies {
     testImplementation libraries.guava
     testImplementation project(':sdk:testing')
     testImplementation libraries.junit_pioneer
-
+    
     signature libraries.android_signature
 }
 

@@ -128,7 +128,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
     }
   }
 
-  /** Export spans through {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor}. */
+  /** Export spans through {@link BatchSpanProcessor}. */
   @Benchmark
   @Fork(1)
   @Threads(5)

@@ -23,28 +23,7 @@ dependencies {
 
     testImplementation project(':sdk:testing')
     testImplementation libraries.junit_pioneer
-
-    jmh project(':sdk:metrics')
-    jmh(project(':sdk:testing')) {
-        // JMH doesn't handle dependencies that are duplicated between the main and jmh
-        // configurations properly, but luckily here it's simple enough to just exclude transitive
-        // dependencies.
-        transitive = false
-    }
-    jmh(project(':exporters:otlp:trace')) {
-        // The opentelemetry-exporter-otlp-trace depends on this project itself. So don't pull in
-        // the transitive dependencies.
-        transitive = false
-    }
-    // explicitly adding the opentelemetry-exporter-otlp dependencies
-    jmh(project(':sdk-extensions:otproto')) { transitive = false }
-    jmh(project(':proto'))
-    jmh("io.grpc:grpc-api")
-    jmh("io.grpc:grpc-netty-shaded")
-    jmh("org.testcontainers:testcontainers:1.15.1") // testContainer for OTLP collector
-
-    jmh libraries.guava
-
+    
     signature libraries.android_signature
 }
 
