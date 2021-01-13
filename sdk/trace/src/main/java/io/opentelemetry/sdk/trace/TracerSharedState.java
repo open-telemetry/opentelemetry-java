@@ -9,7 +9,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -22,17 +21,12 @@ final class TracerSharedState {
   private final IdGenerator idGenerator;
   private final Resource resource;
 
-  // Reads and writes are atomic for reference variables. Use volatile to ensure that these
-  // operations are visible on other CPUs as well.
-  private volatile Supplier<TraceConfig> traceConfigSupplier;
-  private volatile SpanProcessor activeSpanProcessor;
+  private final Supplier<TraceConfig> traceConfigSupplier;
+  private final SpanProcessor activeSpanProcessor;
 
   @GuardedBy("lock")
   @Nullable
   private volatile CompletableResultCode shutdownResult = null;
-
-  @GuardedBy("lock")
-  private final List<SpanProcessor> registeredSpanProcessors;
 
   TracerSharedState(
       Clock clock,
@@ -44,8 +38,7 @@ final class TracerSharedState {
     this.idGenerator = idGenerator;
     this.resource = resource;
     this.traceConfigSupplier = traceConfigSupplier;
-    this.registeredSpanProcessors = new ArrayList<>(spanProcessors);
-    activeSpanProcessor = SpanProcessor.composite(registeredSpanProcessors);
+    activeSpanProcessor = SpanProcessor.composite(spanProcessors);
   }
 
   Clock getClock() {
@@ -70,33 +63,12 @@ final class TracerSharedState {
   }
 
   /**
-   * Updates the active {@link TraceConfig}.
-   *
-   * @param traceConfig the new active {@code TraceConfig}.
-   */
-  void updateActiveTraceConfig(TraceConfig traceConfig) {
-    traceConfigSupplier = () -> traceConfig;
-  }
-
-  /**
    * Returns the active {@code SpanProcessor}.
    *
    * @return the active {@code SpanProcessor}.
    */
   SpanProcessor getActiveSpanProcessor() {
     return activeSpanProcessor;
-  }
-
-  /**
-   * Adds a new {@code SpanProcessor}.
-   *
-   * @param spanProcessor the new {@code SpanProcessor} to be added.
-   */
-  void addSpanProcessor(SpanProcessor spanProcessor) {
-    synchronized (lock) {
-      registeredSpanProcessors.add(spanProcessor);
-      activeSpanProcessor = SpanProcessor.composite(registeredSpanProcessors);
-    }
   }
 
   /**
