@@ -12,6 +12,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
@@ -131,11 +132,11 @@ public final class ZipkinSpanExporter implements SpanExporter {
     StatusData status = spanData.getStatus();
 
     // include status code & error.
-    if (!status.isUnset()) {
+    if (status.getStatusCode() != StatusCode.UNSET) {
       spanBuilder.putTag(OTEL_STATUS_CODE, status.getStatusCode().toString());
 
       // add the error tag, if it isn't already in the source span.
-      if (!status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
+      if (status.getStatusCode() == StatusCode.ERROR && spanAttributes.get(STATUS_ERROR) == null) {
         spanBuilder.putTag(STATUS_ERROR.getKey(), nullToEmpty(status.getDescription()));
       }
     }

@@ -31,7 +31,7 @@ final class TracezSpanBuckets {
 
   void addToBucket(ReadableSpan span) {
     StatusData status = span.toSpanData().getStatus();
-    if (status.isOk()) {
+    if (status.getStatusCode() != StatusCode.ERROR) {
       latencyBuckets.get(LatencyBoundary.getBoundary(span.getLatencyNanos())).add(span);
       return;
     }

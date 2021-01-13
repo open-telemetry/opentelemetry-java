@@ -56,8 +56,10 @@ public interface StatusData {
    * Returns {@code true} if this {@code Status} is UNSET, i.e., not an error.
    *
    * @return {@code true} if this {@code Status} is UNSET.
+   * @deprecated Compare {@link #getStatusCode()} with {@link StatusCode#UNSET}
    */
   // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
+  @Deprecated
   default boolean isUnset() {
     return StatusCode.UNSET == getStatusCode();
   }
@@ -67,8 +69,9 @@ public interface StatusData {
    * overridden to be ok by an operator.
    *
    * @return {@code true} if this {@code Status} is OK or UNSET.
+   * @deprecated Compare {@link #getStatusCode()} with {@link StatusCode#ERROR}
    */
-  // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
+  @Deprecated
   default boolean isOk() {
     return isUnset() || StatusCode.OK == getStatusCode();
   }
