@@ -7,14 +7,10 @@ package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.api.internal.Utils;
 import java.util.Collection;
-import java.util.Map;
 
 /** Builder for {@link IntervalMetricReader}. */
-@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
-public final class IntervalMetricReaderBuilder
-    extends io.opentelemetry.sdk.common.export.ConfigBuilder<IntervalMetricReaderBuilder> {
+public final class IntervalMetricReaderBuilder {
   private final IntervalMetricReader.InternalState.Builder optionsBuilder;
-  private static final String KEY_EXPORT_INTERVAL = "otel.imr.export.interval";
 
   IntervalMetricReaderBuilder(IntervalMetricReader.InternalState.Builder optionsBuilder) {
     this.optionsBuilder = optionsBuilder;
@@ -66,22 +62,5 @@ public final class IntervalMetricReaderBuilder
         internalState.getExportIntervalMillis() > 0, "Export interval must be positive");
 
     return new IntervalMetricReader(internalState);
-  }
-
-  /**
-   * Sets the configuration values from the given configuration map for only the available keys.
-   *
-   * @param configMap {@link Map} holding the configuration values.
-   * @return this.
-   */
-  @Override
-  protected IntervalMetricReaderBuilder fromConfigMap(
-      Map<String, String> configMap, NamingConvention namingConvention) {
-    configMap = namingConvention.normalize(configMap);
-    Long value = getLongProperty(KEY_EXPORT_INTERVAL, configMap);
-    if (value != null) {
-      this.setExportIntervalMillis(value);
-    }
-    return this;
   }
 }

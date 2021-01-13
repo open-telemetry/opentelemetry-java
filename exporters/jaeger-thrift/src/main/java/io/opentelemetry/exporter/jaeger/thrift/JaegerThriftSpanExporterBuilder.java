@@ -7,15 +7,9 @@ package io.opentelemetry.exporter.jaeger.thrift;
 
 import io.jaegertracing.thrift.internal.senders.HttpSender;
 import io.jaegertracing.thrift.internal.senders.ThriftSender;
-import java.util.Map;
 
 /** Builder utility for this exporter. */
-@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
-public final class JaegerThriftSpanExporterBuilder
-    extends io.opentelemetry.sdk.common.export.ConfigBuilder<JaegerThriftSpanExporterBuilder> {
-
-  private static final String KEY_SERVICE_NAME = "otel.exporter.jaeger.service.name";
-  private static final String KEY_ENDPOINT = "otel.exporter.jaeger.endpoint";
+public final class JaegerThriftSpanExporterBuilder {
 
   private String serviceName = JaegerThriftSpanExporter.DEFAULT_SERVICE_NAME;
   private String endpoint = JaegerThriftSpanExporter.DEFAULT_ENDPOINT;
@@ -54,27 +48,6 @@ public final class JaegerThriftSpanExporterBuilder
    */
   public JaegerThriftSpanExporterBuilder setEndpoint(String endpoint) {
     this.endpoint = endpoint;
-    return this;
-  }
-
-  /**
-   * Sets the configuration values from the given configuration map for only the available keys.
-   *
-   * @param configMap {@link Map} holding the configuration values.
-   * @return this.
-   */
-  @Override
-  protected JaegerThriftSpanExporterBuilder fromConfigMap(
-      Map<String, String> configMap, NamingConvention namingConvention) {
-    configMap = namingConvention.normalize(configMap);
-    String stringValue = getStringProperty(KEY_SERVICE_NAME, configMap);
-    if (stringValue != null) {
-      this.setServiceName(stringValue);
-    }
-    stringValue = getStringProperty(KEY_ENDPOINT, configMap);
-    if (stringValue != null) {
-      this.setEndpoint(stringValue);
-    }
     return this;
   }
 

@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -64,28 +63,9 @@ class BatchSpanProcessorTest {
   }
 
   @Test
-  void configTest() {
-    Properties options = new Properties();
-    options.put("otel.bsp.schedule.delay.millis", "12");
-    options.put("otel.bsp.max.queue.size", "34");
-    options.put("otel.bsp.max.export.batch.size", "56");
-    options.put("otel.bsp.export.timeout.millis", "78");
-    options.put("otel.bsp.export.sampled", "false");
-    BatchSpanProcessorBuilder config =
-        BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
-            .readProperties(options);
-    assertThat(config.getScheduleDelayNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(12));
-    assertThat(config.getMaxQueueSize()).isEqualTo(34);
-    assertThat(config.getMaxExportBatchSize()).isEqualTo(56);
-    assertThat(config.getExporterTimeoutNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(78));
-    assertThat(config.getExportOnlySampled()).isEqualTo(false);
-  }
-
-  @Test
   void configTest_EmptyOptions() {
     BatchSpanProcessorBuilder config =
-        BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()))
-            .readProperties(new Properties());
+        BatchSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()));
     assertThat(config.getScheduleDelayNanos())
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_SCHEDULE_DELAY_MILLIS));

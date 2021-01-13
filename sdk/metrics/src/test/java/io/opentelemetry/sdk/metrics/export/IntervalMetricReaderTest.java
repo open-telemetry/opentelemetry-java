@@ -17,11 +17,9 @@ import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -58,21 +56,6 @@ class IntervalMetricReaderTest {
   @BeforeEach
   void setup() {
     when(metricProducer.collectAllMetrics()).thenReturn(Collections.singletonList(METRIC_DATA));
-  }
-
-  @Test
-  void configTest() {
-    Properties options = new Properties();
-    options.put("otel.imr.export.interval", "12");
-    IntervalMetricReaderBuilder config =
-        IntervalMetricReader.builder()
-            .readProperties(options)
-            .setMetricProducers(Arrays.asList(metricProducer))
-            .setMetricExporter(metricExporter);
-    assertThat(config)
-        .extracting("optionsBuilder")
-        .extracting("exportIntervalMillis")
-        .isEqualTo(12L);
   }
 
   @Test

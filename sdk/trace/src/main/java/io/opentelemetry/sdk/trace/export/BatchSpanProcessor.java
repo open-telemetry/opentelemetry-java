@@ -37,30 +37,6 @@ import java.util.logging.Logger;
  *
  * <p>This batch {@link SpanProcessor} can cause high contention in a very high traffic service.
  * TODO: Add a link to the SpanProcessor that uses Disruptor as alternative with low contention.
- *
- * <p>Configuration options for {@link BatchSpanProcessor} can be read from system properties,
- * environment variables, or {@link java.util.Properties} objects.
- *
- * <p>For system properties and {@link java.util.Properties} objects, {@link BatchSpanProcessor}
- * will look for the following names:
- *
- * <ul>
- *   <li>{@code otel.bsp.schedule.delay}: sets the delay interval between two consecutive exports.
- *   <li>{@code otel.bsp.max.queue}: sets the maximum queue size.
- *   <li>{@code otel.bsp.max.export.batch}: sets the maximum batch size.
- *   <li>{@code otel.bsp.export.timeout}: sets the maximum allowed time to export data.
- *   <li>{@code otel.bsp.export.sampled}: sets whether only sampled spans should be exported.
- * </ul>
- *
- * <p>For environment variables, {@link BatchSpanProcessor} will look for the following names:
- *
- * <ul>
- *   <li>{@code OTEL_BSP_SCHEDULE_DELAY}: sets the delay interval between two consecutive exports.
- *   <li>{@code OTEL_BSP_MAX_QUEUE}: sets the maximum queue size.
- *   <li>{@code OTEL_BSP_MAX_EXPORT_BATCH}: sets the maximum batch size.
- *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT}: sets the maximum allowed time to export data.
- *   <li>{@code OTEL_BSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
- * </ul>
  */
 public final class BatchSpanProcessor implements SpanProcessor {
 

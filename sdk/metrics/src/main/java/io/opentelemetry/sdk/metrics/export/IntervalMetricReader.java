@@ -25,22 +25,6 @@ import javax.annotation.concurrent.Immutable;
  * Wraps a list of {@link MetricProducer}s and automatically reads and exports the metrics every
  * export interval. Metrics may also be dropped when it becomes time to export again, and there is
  * an export in progress.
- *
- * <p>Configuration options for {@link IntervalMetricReader} can be read from system properties,
- * environment variables, or {@link java.util.Properties} objects.
- *
- * <p>For system properties and {@link java.util.Properties} objects, {@link IntervalMetricReader}
- * will look for the following names:
- *
- * <ul>
- *   <li>{@code otel.imr.export.interval}: sets the export interval between pushes to the exporter.
- * </ul>
- *
- * <p>For environment variables, {@link IntervalMetricReader} will look for the following names:
- *
- * <ul>
- *   <li>{@code OTEL_IMR_EXPORT_INTERVAL}: sets the export interval between pushes to the exporter.
- * </ul>
  */
 public final class IntervalMetricReader {
   private static final Logger logger = Logger.getLogger(IntervalMetricReader.class.getName());
@@ -80,9 +64,11 @@ public final class IntervalMetricReader {
    * default value.
    *
    * @return a new {@link IntervalMetricReaderBuilder} for {@link IntervalMetricReader}.
+   * @deprecated Use {@link #builder()}
    */
+  @Deprecated
   public static IntervalMetricReaderBuilder builderFromDefaultSources() {
-    return builder().readEnvironmentVariables().readSystemProperties();
+    return builder();
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
