@@ -22,7 +22,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -102,7 +102,7 @@ class OtlpGrpcSpanExporterTest {
                             .setKind(Span.Kind.CLIENT)
                             .setStartEpochNanos(1)
                             .setEndEpochNanos(2)
-                            .setStatus(SpanData.Status.ok())
+                            .setStatus(StatusData.ok())
                             .setHasEnded(true)
                             .build()))
                 .join(10, TimeUnit.SECONDS)

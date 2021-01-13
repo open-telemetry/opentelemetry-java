@@ -13,8 +13,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -108,7 +108,7 @@ public final class ErrorReportingTest {
     assertThat(spans).hasSize(1);
     assertThat(StatusCode.ERROR).isEqualTo(spans.get(0).getStatus().getStatusCode());
 
-    List<Event> events = spans.get(0).getEvents();
+    List<EventData> events = spans.get(0).getEvents();
     assertThat(events).hasSize(maxRetries);
     assertThat(Tags.ERROR.getKey()).isEqualTo(events.get(0).getName());
     /* TODO: Handle actual objects being passed to log/events. */

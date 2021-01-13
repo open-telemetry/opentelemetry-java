@@ -17,7 +17,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Collection;
 import java.util.Properties;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class TracezSpanProcessorTest {
           TraceFlags.getSampled(),
           TraceState.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
-  private static final Status SPAN_STATUS = Status.error();
+  private static final StatusData SPAN_STATUS = StatusData.error();
 
   private static void assertSpanCacheSizes(
       TracezSpanProcessor spanProcessor, int runningSpanCacheSize, int completedSpanCacheSize) {

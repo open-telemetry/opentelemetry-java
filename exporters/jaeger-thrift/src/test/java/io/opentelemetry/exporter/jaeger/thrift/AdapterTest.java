@@ -30,10 +30,10 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -106,7 +106,7 @@ class AdapterTest {
   @Test
   void testJaegerLogs() {
     // prepare
-    Event eventsData = getTimedEvent();
+    EventData eventsData = getTimedEvent();
 
     // test
     Collection<Log> logs = Adapter.toJaegerLogs(Collections.singletonList(eventsData));
@@ -118,7 +118,7 @@ class AdapterTest {
   @Test
   void testJaegerLog() {
     // prepare
-    Event event = getTimedEvent();
+    EventData event = getTimedEvent();
 
     // test
     Log log = Adapter.toJaegerLog(event);
@@ -134,7 +134,7 @@ class AdapterTest {
 
   @Test
   void jaegerLog_droppedAttributes() {
-    Event event = getTimedEvent(3);
+    EventData event = getTimedEvent(3);
 
     // test
     Log log = Adapter.toJaegerLog(event);
@@ -171,8 +171,8 @@ class AdapterTest {
   @Test
   void testSpanRefs() {
     // prepare
-    Link link =
-        Link.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
+    LinkData link =
+        LinkData.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
     Collection<SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
@@ -184,7 +184,7 @@ class AdapterTest {
   @Test
   void testSpanRef() {
     // prepare
-    Link link = Link.create(createSpanContext(TRACE_ID, SPAN_ID));
+    LinkData link = LinkData.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     SpanRef spanRef = Adapter.toSpanRef(link);
@@ -209,7 +209,7 @@ class AdapterTest {
             .setStartEpochNanos(MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.error())
+            .setStatus(StatusData.error())
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
             .build();
@@ -236,7 +236,7 @@ class AdapterTest {
             .setStartEpochNanos(MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
-            .setStatus(Status.error())
+            .setStatus(StatusData.error())
             .setAttributes(attributes)
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
@@ -248,23 +248,23 @@ class AdapterTest {
     assertThat(getValue(jaegerSpan.getTags(), "error").isVBool()).isTrue();
   }
 
-  private static Event getTimedEvent() {
+  private static EventData getTimedEvent() {
     return getTimedEvent(-1);
   }
 
-  private static Event getTimedEvent(int totalAttributeCount) {
+  private static EventData getTimedEvent(int totalAttributeCount) {
     long epochNanos = MILLISECONDS.toNanos(System.currentTimeMillis());
     Attributes attributes = Attributes.of(stringKey("foo"), "bar");
     if (totalAttributeCount <= 0) {
       totalAttributeCount = attributes.size();
     }
-    return Event.create(epochNanos, "the log message", attributes, totalAttributeCount);
+    return EventData.create(epochNanos, "the log message", attributes, totalAttributeCount);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
     Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
-    Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+    LinkData link = LinkData.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return TestSpanData.builder()
         .setHasEnded(true)
@@ -283,7 +283,7 @@ class AdapterTest {
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
         .setResource(Resource.create(Attributes.empty()))
-        .setStatus(Status.create(StatusCode.OK, "ok!"))
+        .setStatus(StatusData.create(StatusCode.OK, "ok!"))
         .build();
   }
 

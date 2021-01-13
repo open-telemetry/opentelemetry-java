@@ -12,7 +12,10 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -146,13 +149,13 @@ public abstract class SpanDataBuilder implements SpanData {
 
     public abstract Builder setAttributes(Attributes attributes);
 
-    public abstract Builder setEvents(List<Event> events);
+    public abstract Builder setEvents(List<EventData> events);
 
-    public abstract Builder setStatus(Status status);
+    public abstract Builder setStatus(StatusData status);
 
     public abstract Builder setKind(Kind kind);
 
-    public abstract Builder setLinks(List<Link> links);
+    public abstract Builder setLinks(List<LinkData> links);
 
     abstract Builder setInternalHasEnded(boolean hasEnded);
 

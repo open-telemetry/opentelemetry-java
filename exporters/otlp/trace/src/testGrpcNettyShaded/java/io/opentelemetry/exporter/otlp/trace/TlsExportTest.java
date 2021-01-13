@@ -20,7 +20,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -77,7 +77,7 @@ class TlsExportTest {
                             .setKind(Span.Kind.CLIENT)
                             .setStartEpochNanos(1)
                             .setEndEpochNanos(2)
-                            .setStatus(SpanData.Status.ok())
+                            .setStatus(StatusData.ok())
                             .setHasEnded(true)
                             .build()))
                 .join(10, TimeUnit.SECONDS)
@@ -103,7 +103,7 @@ class TlsExportTest {
                             .setKind(Span.Kind.CLIENT)
                             .setStartEpochNanos(1)
                             .setEndEpochNanos(2)
-                            .setStatus(SpanData.Status.ok())
+                            .setStatus(StatusData.ok())
                             .setHasEnded(true)
                             .build()))
                 .join(10, TimeUnit.SECONDS)

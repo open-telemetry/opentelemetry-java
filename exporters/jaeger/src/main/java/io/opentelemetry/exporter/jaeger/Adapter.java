@@ -19,9 +19,9 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -134,29 +134,29 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link Event}s into a collection of Jaeger's {@link Model.Log}.
+   * Converts {@link EventData}s into a collection of Jaeger's {@link Model.Log}.
    *
    * @param timeEvents the timed events to be converted
    * @return a collection of Jaeger logs
-   * @see #toJaegerLog(Event)
+   * @see #toJaegerLog(EventData)
    */
   @VisibleForTesting
-  static Collection<Model.Log> toJaegerLogs(List<Event> timeEvents) {
+  static Collection<Model.Log> toJaegerLogs(List<EventData> timeEvents) {
     List<Model.Log> logs = new ArrayList<>(timeEvents.size());
-    for (Event e : timeEvents) {
+    for (EventData e : timeEvents) {
       logs.add(toJaegerLog(e));
     }
     return logs;
   }
 
   /**
-   * Converts a {@link Event} into Jaeger's {@link Model.Log}.
+   * Converts a {@link EventData} into Jaeger's {@link Model.Log}.
    *
    * @param event the timed event to be converted
    * @return a Jaeger log
    */
   @VisibleForTesting
-  static Model.Log toJaegerLog(Event event) {
+  static Model.Log toJaegerLog(EventData event) {
     Model.Log.Builder builder = Model.Log.newBuilder();
     builder.setTimestamp(Timestamps.fromNanos(event.getEpochNanos()));
 
@@ -232,28 +232,28 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link Link}s into a collection of Jaeger's {@link Model.SpanRef}.
+   * Converts {@link LinkData}s into a collection of Jaeger's {@link Model.SpanRef}.
    *
    * @param links the span's links property to be converted
    * @return a collection of Jaeger span references
    */
   @VisibleForTesting
-  static Collection<Model.SpanRef> toSpanRefs(List<Link> links) {
+  static Collection<Model.SpanRef> toSpanRefs(List<LinkData> links) {
     List<Model.SpanRef> spanRefs = new ArrayList<>(links.size());
-    for (Link link : links) {
+    for (LinkData link : links) {
       spanRefs.add(toSpanRef(link));
     }
     return spanRefs;
   }
 
   /**
-   * Converts a single {@link Link} into a Jaeger's {@link Model.SpanRef}.
+   * Converts a single {@link LinkData} into a Jaeger's {@link Model.SpanRef}.
    *
    * @param link the OpenTelemetry link to be converted
    * @return the Jaeger span reference
    */
   @VisibleForTesting
-  static Model.SpanRef toSpanRef(Link link) {
+  static Model.SpanRef toSpanRef(LinkData link) {
     Model.SpanRef.Builder builder = Model.SpanRef.newBuilder();
     builder.setTraceId(ByteString.copyFrom(link.getSpanContext().getTraceIdBytes()));
     builder.setSpanId(ByteString.copyFrom(link.getSpanContext().getSpanIdBytes()));

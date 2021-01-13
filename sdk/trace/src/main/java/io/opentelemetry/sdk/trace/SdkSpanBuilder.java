@@ -25,8 +25,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +48,7 @@ final class SdkSpanBuilder implements SpanBuilder {
   @Nullable private Context parent;
   private Kind spanKind = Kind.INTERNAL;
   @Nullable private AttributesMap attributes;
-  @Nullable private List<Link> links;
+  @Nullable private List<LinkData> links;
   private int totalNumberOfLinksAdded = 0;
   private long startEpochNanos = 0;
   private boolean isRootSpan;
@@ -94,7 +93,7 @@ final class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder addLink(SpanContext spanContext) {
-    addLink(Link.create(spanContext));
+    addLink(LinkData.create(spanContext));
     return this;
   }
 
@@ -102,7 +101,7 @@ final class SdkSpanBuilder implements SpanBuilder {
   public SpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
     int totalAttributeCount = attributes.size();
     addLink(
-        Link.create(
+        LinkData.create(
             spanContext,
             RecordEventsReadableSpan.copyAndLimitAttributes(
                 attributes, traceConfig.getMaxNumberOfAttributesPerLink()),
@@ -110,7 +109,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     return this;
   }
 
-  private void addLink(Link link) {
+  private void addLink(LinkData link) {
     Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     if (links == null) {
@@ -186,7 +185,7 @@ final class SdkSpanBuilder implements SpanBuilder {
       // New child span.
       traceId = parentSpanContext.getTraceIdAsHexString();
     }
-    List<SpanData.Link> immutableLinks =
+    List<LinkData> immutableLinks =
         links == null ? Collections.emptyList() : Collections.unmodifiableList(links);
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.

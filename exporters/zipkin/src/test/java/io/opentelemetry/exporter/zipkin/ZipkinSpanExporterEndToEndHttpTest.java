@@ -15,8 +15,9 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -44,10 +45,10 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final long RECEIVED_TIMESTAMP_NANOS = 1505855799_433901068L;
   private static final long SENT_TIMESTAMP_NANOS = 1505855799_459486280L;
   private static final Attributes attributes = Attributes.empty();
-  private static final List<Event> annotations =
+  private static final List<EventData> annotations =
       ImmutableList.of(
-          Event.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
-          Event.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
+          EventData.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
+          EventData.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
@@ -146,7 +147,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
             SpanContext.create(
                 TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
         .setSampled(true)
-        .setStatus(SpanData.Status.ok())
+        .setStatus(StatusData.ok())
         .setKind(Kind.SERVER)
         .setName(SPAN_NAME)
         .setStartEpochNanos(START_EPOCH_NANOS)

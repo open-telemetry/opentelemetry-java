@@ -14,7 +14,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.Collections;
 import java.util.List;
@@ -103,7 +103,7 @@ class InMemorySpanExporterTest {
         .setName("span")
         .setKind(Kind.SERVER)
         .setStartEpochNanos(100_000_000_100L)
-        .setStatus(Status.ok())
+        .setStatus(StatusData.ok())
         .setEndEpochNanos(200_000_000_200L)
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)

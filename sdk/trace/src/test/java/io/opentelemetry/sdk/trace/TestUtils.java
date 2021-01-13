@@ -13,7 +13,7 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +45,7 @@ public final class TestUtils {
         .setName("span")
         .setKind(Kind.SERVER)
         .setStartEpochNanos(TimeUnit.SECONDS.toNanos(100) + 100)
-        .setStatus(Status.ok())
+        .setStatus(StatusData.ok())
         .setEndEpochNanos(TimeUnit.SECONDS.toNanos(200) + 200)
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)

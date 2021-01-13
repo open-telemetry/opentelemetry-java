@@ -8,8 +8,9 @@ package io.opentelemetry.sdk.extension.zpages;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
@@ -307,11 +308,11 @@ final class TracezZPageHandler extends ZPageHandler {
     int lastEntryDayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
 
     long lastEpochNanos = span.getStartEpochNanos();
-    List<Event> timedEvents =
+    List<EventData> timedEvents =
         span.getEvents().stream()
-            .sorted(Comparator.comparingLong(Event::getEpochNanos))
+            .sorted(Comparator.comparingLong(EventData::getEpochNanos))
             .collect(Collectors.toList());
-    for (Event event : timedEvents) {
+    for (EventData event : timedEvents) {
       calendar.setTimeInMillis(TimeUnit.NANOSECONDS.toMillis(event.getEpochNanos()));
       formatter.format(
           "<tr style=\"background-color: %s;\">", zebraStripe ? ZEBRA_STRIPE_COLOR : "#fff");
@@ -327,7 +328,7 @@ final class TracezZPageHandler extends ZPageHandler {
         "<tr style=\"background-color: %s;\"><td></td><td class=\"border-left-dark\">"
             + "</td><td class=\"border-left-dark\"><pre class=\"no-margin wrap-text\">",
         zebraStripe ? ZEBRA_STRIPE_COLOR : "#fff");
-    SpanData.Status status = span.getStatus();
+    StatusData status = span.getStatus();
     if (status != null) {
       formatter.format("%s | ", escapeHtml(status.toString()));
     }
@@ -339,7 +340,7 @@ final class TracezZPageHandler extends ZPageHandler {
   private static void emitSingleEvent(
       PrintStream out,
       Formatter formatter,
-      Event event,
+      EventData event,
       Calendar calendar,
       int lastEntryDayOfYear,
       long lastEpochNanos) {
@@ -404,7 +405,7 @@ final class TracezZPageHandler extends ZPageHandler {
     return stringBuilder.toString();
   }
 
-  private static String renderEvent(Event event) {
+  private static String renderEvent(EventData event) {
     StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append(event.getName());
     if (!event.getAttributes().isEmpty()) {

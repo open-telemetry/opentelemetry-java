@@ -11,7 +11,7 @@ import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -98,7 +98,7 @@ public interface Sampler {
       String name,
       Kind spanKind,
       Attributes attributes,
-      List<Link> parentLinks);
+      List<LinkData> parentLinks);
 
   /**
    * Returns the description of this {@code Sampler}. This may be displayed on debug pages or in the

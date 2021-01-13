@@ -16,8 +16,10 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -49,7 +51,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
   // List of recorded links to parent and child spans.
-  private final List<SpanData.Link> links;
+  private final List<LinkData> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
   // The kind of the span.
@@ -73,14 +75,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private AttributesMap attributes;
   // List of recorded events.
   @GuardedBy("lock")
-  private final List<Event> events;
+  private final List<EventData> events;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
   // The status of the span.
   @GuardedBy("lock")
   @Nullable
-  private SpanData.Status status = SpanData.Status.unset();
+  private StatusData status = StatusData.unset();
   // The end time of the span.
   @GuardedBy("lock")
   private long endEpochNanos;
@@ -99,7 +101,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       Clock clock,
       Resource resource,
       @Nullable AttributesMap attributes,
-      List<SpanData.Link> links,
+      List<LinkData> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;
@@ -147,7 +149,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       Clock clock,
       Resource resource,
       AttributesMap attributes,
-      List<SpanData.Link> links,
+      List<LinkData> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     RecordEventsReadableSpan span =
@@ -275,7 +277,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return this;
     }
-    addTimedEvent(Event.create(clock.now(), name, Attributes.empty(), 0));
+    addTimedEvent(EventData.create(clock.now(), name, Attributes.empty(), 0));
     return this;
   }
 
@@ -284,7 +286,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return this;
     }
-    addTimedEvent(Event.create(unit.toNanos(timestamp), name, Attributes.empty(), 0));
+    addTimedEvent(EventData.create(unit.toNanos(timestamp), name, Attributes.empty(), 0));
     return this;
   }
 
@@ -295,7 +297,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        Event.create(
+        EventData.create(
             clock.now(),
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
@@ -310,7 +312,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        Event.create(
+        EventData.create(
             unit.toNanos(timestamp),
             name,
             copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
@@ -336,7 +338,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return result.build();
   }
 
-  private void addTimedEvent(Event timedEvent) {
+  private void addTimedEvent(EventData timedEvent) {
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
@@ -359,7 +361,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return this;
       }
-      this.status = SpanData.Status.create(statusCode, description);
+      this.status = StatusData.create(statusCode, description);
     }
     return this;
   }
@@ -446,7 +448,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
-  private SpanData.Status getSpanDataStatus() {
+  private StatusData getSpanDataStatus() {
     synchronized (lock) {
       return status;
     }
@@ -474,7 +476,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @GuardedBy("lock")
-  private List<Event> getImmutableTimedEvents() {
+  private List<EventData> getImmutableTimedEvents() {
     if (events.isEmpty()) {
       return Collections.emptyList();
     }

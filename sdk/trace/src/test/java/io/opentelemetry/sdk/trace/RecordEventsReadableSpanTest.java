@@ -30,10 +30,10 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -76,7 +76,7 @@ class RecordEventsReadableSpanTest {
       InstrumentationLibraryInfo.create("theName", null);
   private final Map<AttributeKey, Object> attributes = new HashMap<>();
   private Attributes expectedAttributes;
-  private final Link link = Link.create(spanContext);
+  private final LinkData link = LinkData.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
 
   private TestClock testClock;
@@ -111,7 +111,7 @@ class RecordEventsReadableSpanTest {
         SPAN_NAME,
         START_EPOCH_NANOS,
         START_EPOCH_NANOS,
-        Status.unset(),
+        StatusData.unset(),
         /*hasEnded=*/ true);
   }
 
@@ -132,8 +132,8 @@ class RecordEventsReadableSpanTest {
       assertThat(span.hasEnded()).isFalse();
       spanDoWork(span, null, null);
       SpanData spanData = span.toSpanData();
-      Event event =
-          Event.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+      EventData event =
+          EventData.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
       verifySpanData(
           spanData,
           expectedAttributes,
@@ -142,7 +142,7 @@ class RecordEventsReadableSpanTest {
           SPAN_NEW_NAME,
           START_EPOCH_NANOS,
           0,
-          Status.unset(),
+          StatusData.unset(),
           /*hasEnded=*/ false);
       assertThat(span.hasEnded()).isFalse();
       assertThat(span.isRecording()).isTrue();
@@ -163,8 +163,8 @@ class RecordEventsReadableSpanTest {
     }
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     SpanData spanData = span.toSpanData();
-    Event event =
-        Event.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+    EventData event =
+        EventData.create(START_EPOCH_NANOS + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
     verifySpanData(
         spanData,
         expectedAttributes,
@@ -173,7 +173,7 @@ class RecordEventsReadableSpanTest {
         SPAN_NEW_NAME,
         START_EPOCH_NANOS,
         testClock.now(),
-        Status.create(StatusCode.ERROR, "CANCELLED"),
+        StatusData.create(StatusCode.ERROR, "CANCELLED"),
         /*hasEnded=*/ true);
   }
 
@@ -182,7 +182,7 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     SpanData spanData = span.toSpanData();
 
-    assertThatThrownBy(() -> spanData.getLinks().add(Link.create(SpanContext.getInvalid())))
+    assertThatThrownBy(() -> spanData.getLinks().add(LinkData.create(SpanContext.getInvalid())))
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
@@ -192,7 +192,7 @@ class RecordEventsReadableSpanTest {
     SpanData spanData = span.toSpanData();
 
     assertThatThrownBy(
-            () -> spanData.getEvents().add(Event.create(1000, "test", Attributes.empty())))
+            () -> spanData.getEvents().add(EventData.create(1000, "test", Attributes.empty())))
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
@@ -257,15 +257,15 @@ class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.unset());
+      assertThat(span.toSpanData().getStatus()).isEqualTo(StatusData.unset());
       span.setStatus(StatusCode.ERROR, "CANCELLED");
       assertThat(span.toSpanData().getStatus())
-          .isEqualTo(Status.create(StatusCode.ERROR, "CANCELLED"));
+          .isEqualTo(StatusData.create(StatusCode.ERROR, "CANCELLED"));
     } finally {
       span.end();
     }
     assertThat(span.toSpanData().getStatus())
-        .isEqualTo(Status.create(StatusCode.ERROR, "CANCELLED"));
+        .isEqualTo(StatusData.create(StatusCode.ERROR, "CANCELLED"));
   }
 
   @Test
@@ -479,7 +479,7 @@ class RecordEventsReadableSpanTest {
     } finally {
       span.end();
     }
-    List<Event> events = span.toSpanData().getEvents();
+    List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(6);
     assertThat(events.get(0))
         .satisfies(
@@ -612,8 +612,9 @@ class RecordEventsReadableSpanTest {
 
       assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
       for (int i = 0; i < maxNumberOfEvents; i++) {
-        Event expectedEvent =
-            Event.create(START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+        EventData expectedEvent =
+            EventData.create(
+                START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
         assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
         assertThat(spanData.getTotalRecordedEvents()).isEqualTo(2 * maxNumberOfEvents);
       }
@@ -623,8 +624,9 @@ class RecordEventsReadableSpanTest {
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
-      Event expectedEvent =
-          Event.create(START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+      EventData expectedEvent =
+          EventData.create(
+              START_EPOCH_NANOS + i * NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
       assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
     }
   }
@@ -643,9 +645,9 @@ class RecordEventsReadableSpanTest {
 
     span.recordException(exception);
 
-    List<Event> events = span.toSpanData().getEvents();
+    List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
-    Event event = events.get(0);
+    EventData event = events.get(0);
     assertThat(event.getName()).isEqualTo("exception");
     assertThat(event.getEpochNanos()).isEqualTo(timestamp);
     assertThat(event.getAttributes())
@@ -664,9 +666,9 @@ class RecordEventsReadableSpanTest {
 
     span.recordException(exception);
 
-    List<Event> events = span.toSpanData().getEvents();
+    List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
-    Event event = events.get(0);
+    EventData event = events.get(0);
     assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_MESSAGE)).isNull();
   }
 
@@ -679,9 +681,9 @@ class RecordEventsReadableSpanTest {
 
     span.recordException(exception);
 
-    List<Event> events = span.toSpanData().getEvents();
+    List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
-    Event event = events.get(0);
+    EventData event = events.get(0);
     assertThat(event.getAttributes().get(SemanticAttributes.EXCEPTION_TYPE))
         .isEqualTo("io.opentelemetry.sdk.trace.RecordEventsReadableSpanTest.InnerClassException");
   }
@@ -706,9 +708,9 @@ class RecordEventsReadableSpanTest {
             stringKey("exception.message"),
             "this is a precedence attribute"));
 
-    List<Event> events = span.toSpanData().getEvents();
+    List<EventData> events = span.toSpanData().getEvents();
     assertThat(events).hasSize(1);
-    Event event = events.get(0);
+    EventData event = events.get(0);
     assertThat(event.getName()).isEqualTo("exception");
     assertThat(event.getEpochNanos()).isEqualTo(timestamp);
     assertThat(event.getAttributes())
@@ -744,7 +746,7 @@ class RecordEventsReadableSpanTest {
     // Ignored the bad calls
     SpanData data = span.toSpanData();
     assertThat(data.getAttributes().isEmpty()).isTrue();
-    assertThat(data.getStatus()).isEqualTo(Status.unset());
+    assertThat(data.getStatus()).isEqualTo(StatusData.unset());
     assertThat(data.getName()).isEqualTo(SPAN_NAME);
   }
 
@@ -785,7 +787,7 @@ class RecordEventsReadableSpanTest {
       TraceConfig config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
-      List<Link> links) {
+      List<LinkData> links) {
 
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
@@ -828,12 +830,12 @@ class RecordEventsReadableSpanTest {
   private void verifySpanData(
       SpanData spanData,
       final Attributes attributes,
-      List<Event> eventData,
-      List<Link> links,
+      List<EventData> eventData,
+      List<LinkData> links,
       String spanName,
       long startEpochNanos,
       long endEpochNanos,
-      Status status,
+      StatusData status,
       boolean hasEnded) {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
@@ -873,7 +875,7 @@ class RecordEventsReadableSpanTest {
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
         SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
-    Link link1 = Link.create(context, TestUtils.generateRandomAttributes());
+    LinkData link1 = LinkData.create(context, TestUtils.generateRandomAttributes());
 
     RecordEventsReadableSpan readableSpan =
         RecordEventsReadableSpan.startSpan(
@@ -906,10 +908,11 @@ class RecordEventsReadableSpanTest {
     readableSpan.end();
     long endEpochNanos = clock.now();
 
-    List<Event> events =
+    List<EventData> events =
         Arrays.asList(
-            Event.create(firstEventEpochNanos, "event1", event1Attributes, event1Attributes.size()),
-            Event.create(
+            EventData.create(
+                firstEventEpochNanos, "event1", event1Attributes, event1Attributes.size()),
+            EventData.create(
                 secondEventTimeNanos, "event2", event2Attributes, event2Attributes.size()));
 
     SpanData result = readableSpan.toSpanData();
@@ -921,7 +924,7 @@ class RecordEventsReadableSpanTest {
         name,
         startEpochNanos,
         endEpochNanos,
-        Status.unset(),
+        StatusData.unset(),
         /* hasEnded= */ true);
     assertThat(result.getTotalRecordedLinks()).isEqualTo(1);
     assertThat(result.isSampled()).isEqualTo(false);
