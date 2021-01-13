@@ -18,39 +18,39 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 public interface LinkData {
 
   /**
-   * Returns a new immutable {@code Link}.
+   * Returns a new immutable {@link LinkData}.
    *
-   * @param spanContext the {@code SpanContext} of this {@code Link}.
-   * @return a new immutable {@code Event<T>}
+   * @param spanContext the {@link SpanContext} of this {@link LinkData}.
+   * @return a new immutable {@link LinkData}
    */
   static LinkData create(SpanContext spanContext) {
     return ImmutableLinkData.create(spanContext);
   }
 
   /**
-   * Returns a new immutable {@code Link}.
+   * Returns a new immutable {@link LinkData}.
    *
-   * @param spanContext the {@code SpanContext} of this {@code Link}.
-   * @param attributes the attributes of this {@code Link}.
-   * @return a new immutable {@code Event<T>}
+   * @param spanContext the {@link SpanContext} of this {@link LinkData}.
+   * @param attributes the attributes of this {@link LinkData}.
+   * @return a new immutable {@link LinkData}
    */
   static LinkData create(SpanContext spanContext, Attributes attributes) {
     return ImmutableLinkData.create(spanContext, attributes);
   }
 
   /**
-   * Returns a new immutable {@code Link}.
+   * Returns a new immutable {@link LinkData}.
    *
-   * @param spanContext the {@code SpanContext} of this {@code Link}.
-   * @param attributes the attributes of this {@code Link}.
-   * @param totalAttributeCount the total number of attributed for this {@code Link}.
-   * @return a new immutable {@code Event<T>}
+   * @param spanContext the {@link SpanContext} of this {@link LinkData}.
+   * @param attributes the attributes of this {@link LinkData}.
+   * @param totalAttributeCount the total number of attributed for this {@link LinkData}.
+   * @return a new immutable {@link LinkData}
    */
   static LinkData create(SpanContext spanContext, Attributes attributes, int totalAttributeCount) {
     return ImmutableLinkData.create(spanContext, attributes, totalAttributeCount);
   }
 
-  /** Returns the {@code SpanContext} of the span this {@link LinkData} refers to. */
+  /** Returns the {@link SpanContext} of the span this {@link LinkData} refers to. */
   SpanContext getSpanContext();
 
   /**

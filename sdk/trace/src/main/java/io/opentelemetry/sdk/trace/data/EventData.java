@@ -11,25 +11,25 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 public interface EventData {
 
   /**
-   * Returns a new immutable {@code Event}.
+   * Returns a new immutable {@link EventData}.
    *
-   * @param epochNanos epoch timestamp in nanos of the {@code Event}.
-   * @param name the name of the {@code Event}.
-   * @param attributes the attributes of the {@code Event}.
-   * @return a new immutable {@code Event<T>}
+   * @param epochNanos epoch timestamp in nanos of the {@link EventData}.
+   * @param name the name of the {@link EventData}.
+   * @param attributes the attributes of the {@link EventData}.
+   * @return a new immutable {@link EventData<T>}
    */
   static EventData create(long epochNanos, String name, Attributes attributes) {
     return ImmutableEventData.create(epochNanos, name, attributes);
   }
 
   /**
-   * Returns a new immutable {@code Event}.
+   * Returns a new immutable {@link EventData}.
    *
-   * @param epochNanos epoch timestamp in nanos of the {@code Event}.
-   * @param name the name of the {@code Event}.
-   * @param attributes the attributes of the {@code Event}.
+   * @param epochNanos epoch timestamp in nanos of the {@link EventData}.
+   * @param name the name of the {@link EventData}.
+   * @param attributes the attributes of the {@link EventData}.
    * @param totalAttributeCount the total number of attributes for this {@code} Event.
-   * @return a new immutable {@code Event<T>}
+   * @return a new immutable {@link EventData<T>}
    */
   static EventData create(
       long epochNanos, String name, Attributes attributes, int totalAttributeCount) {
@@ -37,16 +37,16 @@ public interface EventData {
   }
 
   /**
-   * Return the name of the {@code Event}.
+   * Return the name of the {@link EventData}.
    *
-   * @return the name of the {@code Event}.
+   * @return the name of the {@link EventData}.
    */
   String getName();
 
   /**
-   * Return the attributes of the {@code Event}.
+   * Return the attributes of the {@link EventData}.
    *
-   * @return the attributes of the {@code Event}.
+   * @return the attributes of the {@link EventData}.
    */
   Attributes getAttributes();
 

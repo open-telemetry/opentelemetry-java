@@ -151,10 +151,9 @@ public interface SpanData {
   int getTotalRecordedEvents();
 
   /**
-   * The total number of {@link ImmutableLinkData} links that were recorded on this span. This
-   * number may be larger than the number of links that are attached to this span, if the total
-   * number recorded was greater than the configured maximum value. See: {@link
-   * TraceConfig#getMaxNumberOfLinks()}
+   * The total number of {@link LinkData} links that were recorded on this span. This number may be
+   * larger than the number of links that are attached to this span, if the total number recorded
+   * was greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfLinks()}
    *
    * @return The total number of links recorded on this span.
    */
