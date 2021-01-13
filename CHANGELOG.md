@@ -69,6 +69,8 @@ will be removed in the next release.
 module. The existing ones will be removed in the next release.
 - The methods with the term "deadline" has been deprecated in the configuration of the grpc-based exporters (OTLP and Jaeger) in favor
   of the word "timeout". The deadline-named methods will be removed in the next release.
+- The `StringUtils` class in the `opentelemetry-extension-trace-propagators` extension module has been deprecated 
+and will be made non-public in the next release.
 
 #### Enhancements
 
@@ -93,6 +95,8 @@ of the builders in the project.
 #### Deprecations
 - The `AwsXrayIdGenerator` constructor has been deprecated in favor of using a simple `getInstance()` singleton, since
 it has no state.
+- The `TraceProtoUtils` class in the `opentelemetry-sdk-extension-otproto` module has been deprecated and 
+will be removed in the next release.
   
 #### Bugfixes
 
