@@ -12,9 +12,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * Auto-configuration for the OpenTelemetry SDK. As an alternative to programmatically configuring
@@ -33,21 +30,10 @@ public final class OpenTelemetrySdkAutoConfiguration {
 
     Resource resource = configureResource(config);
 
-    Set<String> exporterNames =
-        new LinkedHashSet<>(config.getCommaSeparatedValues("otel.exporter"));
-
-    Set<String> unrecognizedExporters = new LinkedHashSet<>(exporterNames);
-    unrecognizedExporters.removeAll(SpanExporterConfiguration.RECOGNIZED_NAMES);
-    unrecognizedExporters.removeAll(MetricExporterConfiguration.RECOGNIZED_NAMES);
-    if (!unrecognizedExporters.isEmpty()) {
-      throw new ConfigurationException(
-          "Unrecognized value for otel.exporter: " + String.join(",", exporterNames));
-    }
-
-    configureMeterProvider(resource, exporterNames, config);
+    configureMeterProvider(resource, config);
 
     SdkTracerProvider tracerProvider =
-        TracerProviderConfiguration.configureTracerProvider(resource, exporterNames, config);
+        TracerProviderConfiguration.configureTracerProvider(resource, config);
 
     return OpenTelemetrySdk.builder()
         .setTracerProvider(tracerProvider)
@@ -55,16 +41,13 @@ public final class OpenTelemetrySdkAutoConfiguration {
         .build();
   }
 
-  private static void configureMeterProvider(
-      Resource resource, Set<String> exporterNames, ConfigProperties config) {
+  private static void configureMeterProvider(Resource resource, ConfigProperties config) {
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().setResource(resource).buildAndRegisterGlobal();
 
-    boolean metricsConfigured = false;
-    for (String exporterName : new ArrayList<>(exporterNames)) {
-      metricsConfigured =
-          MetricExporterConfiguration.configureExporter(
-              exporterName, config, metricsConfigured, meterProvider);
+    String exporterName = config.getString("otel.metrics.exporter");
+    if (exporterName != null) {
+      MetricExporterConfiguration.configureExporter(exporterName, config, meterProvider);
     }
   }
 

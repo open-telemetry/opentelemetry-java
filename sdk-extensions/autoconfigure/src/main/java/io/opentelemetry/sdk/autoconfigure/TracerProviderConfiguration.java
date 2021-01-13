@@ -16,15 +16,11 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ServiceLoader;
-import java.util.Set;
 
 final class TracerProviderConfiguration {
 
-  static SdkTracerProvider configureTracerProvider(
-      Resource resource, Set<String> exporterNames, ConfigProperties config) {
+  static SdkTracerProvider configureTracerProvider(Resource resource, ConfigProperties config) {
     SdkTracerProviderBuilder tracerProviderBuilder =
         SdkTracerProvider.builder()
             .setResource(resource)
@@ -37,16 +33,12 @@ final class TracerProviderConfiguration {
       configurer.configure(tracerProviderBuilder);
     }
 
-    List<SpanExporter> spanExporters = new ArrayList<>();
-    for (String name : new ArrayList<>(exporterNames)) {
-      SpanExporter exporter = SpanExporterConfiguration.configureExporter(name, config);
+    String exporterName = config.getString("otel.trace.exporter");
+    if (exporterName != null) {
+      SpanExporter exporter = SpanExporterConfiguration.configureExporter(exporterName, config);
       if (exporter != null) {
-        spanExporters.add(exporter);
+        tracerProviderBuilder.addSpanProcessor(configureSpanProcessor(config, exporter));
       }
-    }
-
-    if (!spanExporters.isEmpty()) {
-      tracerProviderBuilder.addSpanProcessor(configureSpanProcessor(config, spanExporters));
     }
 
     SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
@@ -55,9 +47,7 @@ final class TracerProviderConfiguration {
   }
 
   // VisibleForTesting
-  static BatchSpanProcessor configureSpanProcessor(
-      ConfigProperties config, List<SpanExporter> exporters) {
-    SpanExporter exporter = SpanExporter.composite(exporters);
+  static BatchSpanProcessor configureSpanProcessor(ConfigProperties config, SpanExporter exporter) {
     BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(exporter);
 
     Long scheduleDelayMillis = config.getLong("otel.bsp.schedule.delay.millis");

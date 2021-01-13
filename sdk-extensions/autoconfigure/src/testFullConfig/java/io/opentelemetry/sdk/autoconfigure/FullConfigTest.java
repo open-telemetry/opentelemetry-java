@@ -8,8 +8,6 @@ package io.opentelemetry.sdk.autoconfigure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import com.linecorp.armeria.common.HttpResponse;
-import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.RequestHeaders;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
@@ -19,8 +17,6 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.extension.trace.propagation.AwsXrayPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
@@ -45,13 +41,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @SuppressWarnings("InterruptedExceptionSwallowed")
 class FullConfigTest {
 
-  private static final BlockingQueue<Collector.PostSpansRequest> jaegerRequests =
-      new LinkedBlockingDeque<>();
   private static final BlockingQueue<ExportTraceServiceRequest> otlpTraceRequests =
       new LinkedBlockingDeque<>();
   private static final BlockingQueue<ExportMetricsServiceRequest> otlpMetricsRequests =
       new LinkedBlockingDeque<>();
-  private static final BlockingQueue<String> zipkinJsonRequests = new LinkedBlockingDeque<>();
 
   @RegisterExtension
   public static final ServerExtension server =
@@ -105,32 +98,8 @@ class FullConfigTest {
                           responseObserver.onCompleted();
                         }
                       })
-                  // Jaeger
-                  .addService(
-                      new CollectorServiceGrpc.CollectorServiceImplBase() {
-                        @Override
-                        public void postSpans(
-                            Collector.PostSpansRequest request,
-                            StreamObserver<Collector.PostSpansResponse> responseObserver) {
-                          jaegerRequests.add(request);
-                          responseObserver.onNext(Collector.PostSpansResponse.getDefaultInstance());
-                          responseObserver.onCompleted();
-                        }
-                      })
                   .useBlockingTaskExecutor(true)
                   .build());
-
-          // Zipkin
-          sb.service(
-              "/api/v2/spans",
-              (ctx, req) ->
-                  HttpResponse.from(
-                      req.aggregate()
-                          .thenApply(
-                              aggRes -> {
-                                zipkinJsonRequests.add(aggRes.contentUtf8());
-                                return HttpResponse.of(HttpStatus.OK);
-                              })));
         }
       };
 
@@ -138,8 +107,6 @@ class FullConfigTest {
   void setUp() {
     otlpTraceRequests.clear();
     otlpMetricsRequests.clear();
-    jaegerRequests.clear();
-    zipkinJsonRequests.clear();
   }
 
   @Test
@@ -177,9 +144,7 @@ class FullConfigTest {
     await()
         .untilAsserted(
             () -> {
-              assertThat(jaegerRequests).hasSize(1);
               assertThat(otlpTraceRequests).hasSize(1);
-              assertThat(zipkinJsonRequests).hasSize(1);
 
               // Not well defined how many metric exports would have happened by now, check that
               // any
