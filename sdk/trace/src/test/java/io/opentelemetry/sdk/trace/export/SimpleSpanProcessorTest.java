@@ -66,6 +66,7 @@ class SimpleSpanProcessorTest {
   @BeforeEach
   void setUp() {
     simpleSampledSpansProcessor = SimpleSpanProcessor.create(spanExporter);
+    when(spanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @Test
@@ -209,6 +210,12 @@ class SimpleSpanProcessorTest {
   @Test
   void shutdown() {
     simpleSampledSpansProcessor.shutdown();
+    verify(spanExporter).shutdown();
+  }
+
+  @Test
+  void close() {
+    simpleSampledSpansProcessor.close();
     verify(spanExporter).shutdown();
   }
 

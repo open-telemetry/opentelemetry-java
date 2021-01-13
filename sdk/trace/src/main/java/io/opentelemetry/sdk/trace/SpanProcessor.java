@@ -8,15 +8,17 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * SpanProcessor is the interface {@code TracerSdk} uses to allow synchronous hooks for when a
  * {@code Span} is started or when a {@code Span} is ended.
  */
-public interface SpanProcessor {
+public interface SpanProcessor extends Closeable {
 
   /**
    * Returns a {@link SpanProcessor} which simply delegates all processing to the {@code processors}
@@ -98,5 +100,14 @@ public interface SpanProcessor {
    */
   default CompletableResultCode forceFlush() {
     return CompletableResultCode.ofSuccess();
+  }
+
+  /**
+   * Closes this {@link SpanProcessor} after processing any remaining spans, releasing any
+   * resources.
+   */
+  @Override
+  default void close() {
+    shutdown().join(10, TimeUnit.SECONDS);
   }
 }
