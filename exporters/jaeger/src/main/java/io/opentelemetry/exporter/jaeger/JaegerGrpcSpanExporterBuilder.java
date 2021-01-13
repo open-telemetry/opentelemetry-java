@@ -11,16 +11,10 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.time.Duration;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /** Builder utility for this exporter. */
-@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
-public final class JaegerGrpcSpanExporterBuilder
-    extends io.opentelemetry.sdk.common.export.ConfigBuilder<JaegerGrpcSpanExporterBuilder> {
-  private static final String KEY_SERVICE_NAME = "otel.exporter.jaeger.service.name";
-  private static final String KEY_ENDPOINT = "otel.exporter.jaeger.endpoint";
-
+public final class JaegerGrpcSpanExporterBuilder {
   private static final String DEFAULT_ENDPOINT = "localhost:14250";
   private static final String DEFAULT_SERVICE_NAME = "unknown";
   private static final long DEFAULT_TIMEOUT_SECS = 10;
@@ -82,39 +76,6 @@ public final class JaegerGrpcSpanExporterBuilder
   public JaegerGrpcSpanExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
-  }
-
-  /**
-   * Sets the max waiting time for the collector to process each span batch. Optional.
-   *
-   * @param deadlineMs the max waiting time in millis.
-   * @return this.
-   * @deprecated Use {@link #setTimeout(long, TimeUnit)}
-   */
-  @Deprecated
-  public JaegerGrpcSpanExporterBuilder setDeadlineMs(long deadlineMs) {
-    return setTimeout(Duration.ofMillis(deadlineMs));
-  }
-
-  /**
-   * Sets the configuration values from the given configuration map for only the available keys.
-   *
-   * @param configMap {@link Map} holding the configuration values.
-   * @return this.
-   */
-  @Override
-  protected JaegerGrpcSpanExporterBuilder fromConfigMap(
-      Map<String, String> configMap, NamingConvention namingConvention) {
-    configMap = namingConvention.normalize(configMap);
-    String stringValue = getStringProperty(KEY_SERVICE_NAME, configMap);
-    if (stringValue != null) {
-      this.setServiceName(stringValue);
-    }
-    stringValue = getStringProperty(KEY_ENDPOINT, configMap);
-    if (stringValue != null) {
-      this.setEndpoint(stringValue);
-    }
-    return this;
   }
 
   /**

@@ -38,7 +38,6 @@ import java.net.InetAddress;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -256,19 +255,6 @@ class JaegerGrpcSpanExporterTest {
 
   private static Optional<Model.KeyValue> getTagValue(List<Model.KeyValue> tags, String tagKey) {
     return tags.stream().filter(kv -> kv.getKey().equals(tagKey)).findFirst();
-  }
-
-  @Test
-  void configTest() {
-    Properties options = new Properties();
-    String serviceName = "myGreatService";
-    String endpoint = "127.0.0.1:9090";
-    options.put("otel.exporter.jaeger.service.name", serviceName);
-    options.put("otel.exporter.jaeger.endpoint", endpoint);
-    JaegerGrpcSpanExporter exporter =
-        JaegerGrpcSpanExporter.builder().readProperties(options).build();
-    assertThat(exporter.getProcessBuilder().getServiceName()).isEqualTo(serviceName);
-    assertThat(exporter.getManagedChannel().authority()).isEqualTo(endpoint);
   }
 
   @Test

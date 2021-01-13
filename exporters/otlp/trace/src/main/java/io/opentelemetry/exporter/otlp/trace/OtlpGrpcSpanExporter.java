@@ -29,53 +29,9 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * Exports spans using OTLP via gRPC, using OpenTelemetry's protobuf model.
- *
- * <p>Configuration options for {@link OtlpGrpcSpanExporter} can be read from system properties,
- * environment variables, or {@link java.util.Properties} objects.
- *
- * <p>For system properties and {@link java.util.Properties} objects, {@link OtlpGrpcSpanExporter}
- * will look for the following names:
- *
- * <ul>
- *   <li>{@code otel.exporter.otlp.span.timeout}: to set the max waiting time allowed to send each
- *       span batch.
- *   <li>{@code otel.exporter.otlp.span.endpoint}: to set the endpoint to connect to.
- *   <li>{@code otel.exporter.otlp.span.insecure}: whether to enable client transport security for
- *       the connection.
- *   <li>{@code otel.exporter.otlp.span.headers}: the headers associated with the requests.
- * </ul>
- *
- * <p>For environment variables, {@link OtlpGrpcSpanExporter} will look for the following names:
- *
- * <ul>
- *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_TIMEOUT}: to set the max waiting time allowed to send each
- *       span batch.
- *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_ENDPOINT}: to set the endpoint to connect to.
- *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_INSECURE}: whether to enable client transport security for
- *       the connection.
- *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_HEADERS}: the headers associated with the requests.
- * </ul>
- *
- * <p>In both cases, if a property is missing, the name without "span" is used to resolve the value.
- */
+/** Exports spans using OTLP via gRPC, using OpenTelemetry's protobuf model. */
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
-
-  /**
-   * Default endpoint.
-   *
-   * @deprecated Will be removed without replacement
-   */
-  @Deprecated public static final String DEFAULT_ENDPOINT = "localhost:4317";
-
-  /**
-   * Default timeout.
-   *
-   * @deprecated Will be removed without replacement
-   */
-  @Deprecated public static final long DEFAULT_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(10);
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
   private static final String EXPORTER_NAME = OtlpGrpcSpanExporter.class.getSimpleName();
@@ -185,7 +141,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    * @return a new {@link OtlpGrpcSpanExporter} instance.
    */
   public static OtlpGrpcSpanExporter getDefault() {
-    return builder().readEnvironmentVariables().readSystemProperties().build();
+    return builder().build();
   }
 
   /**
