@@ -7,7 +7,9 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import java.util.concurrent.TimeUnit;
 
 public class JaegerExample {
 
@@ -31,15 +33,16 @@ public class JaegerExample {
         JaegerGrpcSpanExporter.builder()
             .setServiceName("otel-jaeger-example")
             .setChannel(jaegerChannel)
-            .setDeadlineMs(30000)
+            .setTimeout(30, TimeUnit.SECONDS)
             .build();
 
     // Set to process the spans by the Jaeger Exporter
-    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
-    openTelemetry
-        .getTracerManagement()
-        .addSpanProcessor(SimpleSpanProcessor.builder(jaegerExporter).build());
-    return openTelemetry;
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
+                .build())
+        .build();
   }
 
   private void myWonderfulUseCase() {
