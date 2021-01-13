@@ -90,7 +90,7 @@ class OtlpGrpcSpanExporterTest {
             });
     OtlpGrpcSpanExporter exporter = builder.build();
 
-    assertThat(exporter.getTimeoutNanos()).isEqualTo(5124);
+    assertThat(exporter.getTimeoutNanos()).isEqualTo(TimeUnit.MILLISECONDS.toNanos(5124));
     assertThat(
             exporter
                 .export(

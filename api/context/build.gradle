@@ -42,3 +42,13 @@ dependencies {
 tasks.named("strictContextEnabledTest").configure {
     jvmArgs "-Dio.opentelemetry.context.enableStrictContext=true"
 }
+
+check.dependsOn(
+        grpcInOtelTest,
+        otelInGrpcTest,
+        braveInOtelTest,
+        otelInBraveTest,
+        otelAsBraveTest,
+        storageWrappersTest,
+        strictContextEnabledTest
+)

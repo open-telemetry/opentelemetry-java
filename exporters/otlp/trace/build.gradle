@@ -53,3 +53,5 @@ dependencies {
 
     signature libraries.android_signature
 }
+
+check.dependsOn(testGrpcNetty, testGrpcNettyShaded, testGrpcOkhttp)
