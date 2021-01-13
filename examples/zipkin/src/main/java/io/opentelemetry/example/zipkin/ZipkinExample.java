@@ -57,9 +57,6 @@ public class ZipkinExample {
     ZipkinExample example = new ZipkinExample(tracerProvider);
     example.myWonderfulUseCase();
 
-    // shutdown example
-    ExampleConfiguration.shutdownTheSdk();
-
     System.out.println("Bye");
   }
 }
