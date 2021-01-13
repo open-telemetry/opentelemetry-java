@@ -83,14 +83,3 @@ jobs:
           SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
           SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
       - run: git push
-      - name: Checkout master
-        uses: actions/checkout@v2
-      - uses: burrunan/gradle-cache-action@v1.6
-        with:
-          job-id: jdk11
-          remote-build-cache-proxy-enabled: false
-          arguments: updateVersionInDocs --stacktrace -Prelease.version=${{ github.event.inputs.version }}
-      - name: Commit README changes
-        run: |
-          git commit -am "README update for patch release ${{ github.event.inputs.version }}"
-          git push
