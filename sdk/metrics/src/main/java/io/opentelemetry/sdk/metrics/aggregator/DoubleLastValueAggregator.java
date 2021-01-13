@@ -27,7 +27,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * values once.
  */
 @ThreadSafe
-public final class DoubleLastValueAggregator implements Aggregator<Double> {
+final class DoubleLastValueAggregator implements Aggregator<Double> {
   private static final DoubleLastValueAggregator INSTANCE = new DoubleLastValueAggregator();
 
   /**
@@ -35,7 +35,7 @@ public final class DoubleLastValueAggregator implements Aggregator<Double> {
    *
    * @return the instance of this {@link Aggregator}.
    */
-  public static DoubleLastValueAggregator getInstance() {
+  static DoubleLastValueAggregator getInstance() {
     return INSTANCE;
   }
 
