@@ -90,4 +90,4 @@ testPrometheus {
     environment("OTEL_IMR_EXPORT_INTERVAL", "10")
 }
 
-test.dependsOn(testFullConfig, testJaeger, testZipkin, testPrometheus)
+check.dependsOn(testFullConfig, testJaeger, testZipkin, testPrometheus)
