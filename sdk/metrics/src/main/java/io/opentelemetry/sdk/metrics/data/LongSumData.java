@@ -11,9 +11,9 @@ import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
-public abstract class LongSumData implements SumData<LongPoint> {
+public abstract class LongSumData implements SumData<LongPointData> {
   public static LongSumData create(
-      boolean isMonotonic, AggregationTemporality temporality, Collection<LongPoint> points) {
+      boolean isMonotonic, AggregationTemporality temporality, Collection<LongPointData> points) {
     return new AutoValue_LongSumData(points, isMonotonic, temporality);
   }
 

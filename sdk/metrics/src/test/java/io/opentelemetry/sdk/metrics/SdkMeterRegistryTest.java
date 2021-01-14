@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -96,7 +96,8 @@ class SdkMeterRegistryTest {
                     /* isMonotonic= */ true,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))),
+                        LongPointData.create(
+                            testClock.now(), testClock.now(), Labels.empty(), 10)))),
             MetricData.createLongSum(
                 Resource.getEmpty(),
                 sdkMeter2.getInstrumentationLibraryInfo(),
@@ -107,7 +108,8 @@ class SdkMeterRegistryTest {
                     /* isMonotonic= */ true,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10)))));
+                        LongPointData.create(
+                            testClock.now(), testClock.now(), Labels.empty(), 10)))));
   }
 
   @Test

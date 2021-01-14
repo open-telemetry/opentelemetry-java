@@ -10,7 +10,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
@@ -61,7 +61,7 @@ final class LongMinMaxSumCountAggregator implements Aggregator<MinMaxSumCountAcc
       Map<Labels, MinMaxSumCountAccumulation> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    List<DoubleSummaryPoint> points =
+    List<DoubleSummaryPointData> points =
         MetricDataUtils.toDoubleSummaryPointList(accumulationByLabels, startEpochNanos, epochNanos);
     return MetricData.createDoubleSummary(
         resource,

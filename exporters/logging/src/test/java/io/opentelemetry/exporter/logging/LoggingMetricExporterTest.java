@@ -12,11 +12,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
@@ -62,7 +62,7 @@ class LoggingMetricExporterTest {
                 "ms",
                 DoubleSummaryData.create(
                     Collections.singletonList(
-                        DoubleSummaryPoint.create(
+                        DoubleSummaryPointData.create(
                             nowEpochNanos,
                             nowEpochNanos + 245,
                             Labels.of("a", "b", "c", "d"),
@@ -81,7 +81,7 @@ class LoggingMetricExporterTest {
                     true,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        LongPoint.create(
+                        LongPointData.create(
                             nowEpochNanos,
                             nowEpochNanos + 245,
                             Labels.of("z", "y", "x", "w"),
@@ -96,7 +96,7 @@ class LoggingMetricExporterTest {
                     true,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        DoublePoint.create(
+                        DoublePointData.create(
                             nowEpochNanos,
                             nowEpochNanos + 245,
                             Labels.of("1", "2", "3", "4"),

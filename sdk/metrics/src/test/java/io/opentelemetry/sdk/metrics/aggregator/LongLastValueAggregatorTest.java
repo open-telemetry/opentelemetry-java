@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -79,6 +79,6 @@ class LongLastValueAggregatorTest {
                 "description",
                 "unit",
                 LongGaugeData.create(
-                    Collections.singletonList(LongPoint.create(0, 100, Labels.empty(), 10)))));
+                    Collections.singletonList(LongPointData.create(0, 100, Labels.empty(), 10)))));
   }
 }

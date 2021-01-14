@@ -25,12 +25,12 @@ import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
@@ -164,9 +164,9 @@ public final class MetricAdapter {
     return AGGREGATION_TEMPORALITY_UNSPECIFIED;
   }
 
-  static List<IntDataPoint> toIntDataPoints(Collection<LongPoint> points) {
+  static List<IntDataPoint> toIntDataPoints(Collection<LongPointData> points) {
     List<IntDataPoint> result = new ArrayList<>(points.size());
-    for (LongPoint longPoint : points) {
+    for (LongPointData longPoint : points) {
       IntDataPoint.Builder builder =
           IntDataPoint.newBuilder()
               .setStartTimeUnixNano(longPoint.getStartEpochNanos())
@@ -181,9 +181,9 @@ public final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleDataPoint> toDoubleDataPoints(Collection<DoublePoint> points) {
+  static Collection<DoubleDataPoint> toDoubleDataPoints(Collection<DoublePointData> points) {
     List<DoubleDataPoint> result = new ArrayList<>(points.size());
-    for (DoublePoint doublePoint : points) {
+    for (DoublePointData doublePoint : points) {
       DoubleDataPoint.Builder builder =
           DoubleDataPoint.newBuilder()
               .setStartTimeUnixNano(doublePoint.getStartEpochNanos())
@@ -198,9 +198,10 @@ public final class MetricAdapter {
     return result;
   }
 
-  static List<DoubleHistogramDataPoint> toSummaryDataPoints(Collection<DoubleSummaryPoint> points) {
+  static List<DoubleHistogramDataPoint> toSummaryDataPoints(
+      Collection<DoubleSummaryPointData> points) {
     List<DoubleHistogramDataPoint> result = new ArrayList<>(points.size());
-    for (DoubleSummaryPoint doubleSummaryPoint : points) {
+    for (DoubleSummaryPointData doubleSummaryPoint : points) {
       DoubleHistogramDataPoint.Builder builder =
           DoubleHistogramDataPoint.newBuilder()
               .setStartTimeUnixNano(doubleSummaryPoint.getStartEpochNanos())

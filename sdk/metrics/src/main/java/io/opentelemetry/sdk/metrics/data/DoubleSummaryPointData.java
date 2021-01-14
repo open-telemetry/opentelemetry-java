@@ -16,19 +16,19 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class DoubleSummaryPoint implements Point {
-  public static DoubleSummaryPoint create(
+public abstract class DoubleSummaryPointData implements PointData {
+  public static DoubleSummaryPointData create(
       long startEpochNanos,
       long epochNanos,
       Labels labels,
       long count,
       double sum,
       List<ValueAtPercentile> percentileValues) {
-    return new AutoValue_DoubleSummaryPoint(
+    return new AutoValue_DoubleSummaryPointData(
         startEpochNanos, epochNanos, labels, count, sum, percentileValues);
   }
 
-  DoubleSummaryPoint() {}
+  DoubleSummaryPointData() {}
 
   /**
    * The number of values that are being summarized.

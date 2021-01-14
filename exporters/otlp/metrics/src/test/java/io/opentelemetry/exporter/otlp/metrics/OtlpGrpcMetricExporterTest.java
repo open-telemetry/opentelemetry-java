@@ -25,7 +25,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.extension.otproto.MetricAdapter;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -252,7 +252,8 @@ class OtlpGrpcMetricExporterTest {
         LongSumData.create(
             /* isMonotonic= */ true,
             AggregationTemporality.CUMULATIVE,
-            Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5))));
+            Collections.singletonList(
+                LongPointData.create(startNs, endNs, Labels.of("k", "v"), 5))));
   }
 
   private static final class FakeCollector extends MetricsServiceGrpc.MetricsServiceImplBase {

@@ -14,9 +14,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
@@ -69,7 +69,8 @@ class PrometheusCollectorTest {
             LongSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
-                Collections.singletonList(LongPoint.create(123, 456, Labels.of("kp", "vp"), 5)))),
+                Collections.singletonList(
+                    LongPointData.create(123, 456, Labels.of("kp", "vp"), 5)))),
         MetricData.createDoubleSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("http", "version"),
@@ -80,6 +81,6 @@ class PrometheusCollectorTest {
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    DoublePoint.create(123, 456, Labels.of("kp", "vp"), 3.5)))));
+                    DoublePointData.create(123, 456, Labels.of("kp", "vp"), 3.5)))));
   }
 }

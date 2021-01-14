@@ -9,10 +9,10 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -27,7 +27,7 @@ final class MetricDataUtils {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      List<LongPoint> points,
+      List<LongPointData> points,
       boolean isMonotonic) {
     return MetricData.createLongSum(
         resource,
@@ -42,7 +42,7 @@ final class MetricDataUtils {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      List<DoublePoint> points,
+      List<DoublePointData> points,
       boolean isMonotonic) {
     return MetricData.createDoubleSum(
         resource,
@@ -53,29 +53,29 @@ final class MetricDataUtils {
         DoubleSumData.create(isMonotonic, AggregationTemporality.CUMULATIVE, points));
   }
 
-  static List<LongPoint> toLongPointList(
+  static List<LongPointData> toLongPointList(
       Map<Labels, Long> accumulationMap, long startEpochNanos, long epochNanos) {
-    List<LongPoint> points = new ArrayList<>(accumulationMap.size());
+    List<LongPointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(LongPoint.create(startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(LongPointData.create(startEpochNanos, epochNanos, labels, accumulation)));
     return points;
   }
 
-  static List<DoublePoint> toDoublePointList(
+  static List<DoublePointData> toDoublePointList(
       Map<Labels, Double> accumulationMap, long startEpochNanos, long epochNanos) {
-    List<DoublePoint> points = new ArrayList<>(accumulationMap.size());
+    List<DoublePointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(DoublePoint.create(startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(DoublePointData.create(startEpochNanos, epochNanos, labels, accumulation)));
     return points;
   }
 
-  static List<DoubleSummaryPoint> toDoubleSummaryPointList(
+  static List<DoubleSummaryPointData> toDoubleSummaryPointList(
       Map<Labels, MinMaxSumCountAccumulation> accumulationMap,
       long startEpochNanos,
       long epochNanos) {
-    List<DoubleSummaryPoint> points = new ArrayList<>(accumulationMap.size());
+    List<DoubleSummaryPointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, aggregator) ->
             points.add(aggregator.toPoint(startEpochNanos, epochNanos, labels)));

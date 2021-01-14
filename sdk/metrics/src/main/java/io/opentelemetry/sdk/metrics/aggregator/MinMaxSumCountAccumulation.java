@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import java.util.Arrays;
 import javax.annotation.concurrent.Immutable;
@@ -58,8 +58,8 @@ abstract class MinMaxSumCountAccumulation {
    */
   abstract double getMax();
 
-  final DoubleSummaryPoint toPoint(long startEpochNanos, long epochNanos, Labels labels) {
-    return DoubleSummaryPoint.create(
+  final DoubleSummaryPointData toPoint(long startEpochNanos, long epochNanos, Labels labels) {
+    return DoubleSummaryPointData.create(
         startEpochNanos,
         epochNanos,
         labels,

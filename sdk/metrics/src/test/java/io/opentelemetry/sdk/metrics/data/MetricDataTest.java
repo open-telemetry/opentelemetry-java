@@ -25,12 +25,13 @@ class MetricDataTest {
       ValueAtPercentile.create(0.0, DOUBLE_VALUE);
   private static final ValueAtPercentile MAXIMUM_VALUE =
       ValueAtPercentile.create(100.0, DOUBLE_VALUE);
-  private static final LongPoint LONG_POINT =
-      LongPoint.create(START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), LONG_VALUE);
-  private static final DoublePoint DOUBLE_POINT =
-      DoublePoint.create(START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), DOUBLE_VALUE);
-  private static final DoubleSummaryPoint SUMMARY_POINT =
-      DoubleSummaryPoint.create(
+  private static final LongPointData LONG_POINT =
+      LongPointData.create(START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), LONG_VALUE);
+  private static final DoublePointData DOUBLE_POINT =
+      DoublePointData.create(
+          START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), DOUBLE_VALUE);
+  private static final DoubleSummaryPointData SUMMARY_POINT =
+      DoubleSummaryPointData.create(
           START_EPOCH_NANOS,
           EPOCH_NANOS,
           Labels.of("key", "value"),

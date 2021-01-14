@@ -17,9 +17,9 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class LongPoint implements Point {
+public abstract class LongPointData implements PointData {
 
-  LongPoint() {}
+  LongPointData() {}
 
   /**
    * Returns the value of the data point.
@@ -28,7 +28,8 @@ public abstract class LongPoint implements Point {
    */
   public abstract long getValue();
 
-  public static LongPoint create(long startEpochNanos, long epochNanos, Labels labels, long value) {
-    return new AutoValue_LongPoint(startEpochNanos, epochNanos, labels, value);
+  public static LongPointData create(
+      long startEpochNanos, long epochNanos, Labels labels, long value) {
+    return new AutoValue_LongPointData(startEpochNanos, epochNanos, labels, value);
   }
 }

@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.Labels;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-public interface Point {
+public interface PointData {
   /**
    * Returns the start epoch timestamp in nanos of this {@code Instrument}, usually the time when
    * the metric was created or an aggregation was enabled.

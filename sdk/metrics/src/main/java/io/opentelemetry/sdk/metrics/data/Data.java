@@ -9,11 +9,11 @@ import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-interface Data<T extends Point> {
+interface Data<T extends PointData> {
   /**
-   * Returns the data {@link Point}s for this metric.
+   * Returns the data {@link PointData}s for this metric.
    *
-   * @return the data {@link Point}s for this metric, or empty {@code Collection} if no points.
+   * @return the data {@link PointData}s for this metric, or empty {@code Collection} if no points.
    */
   Collection<T> getPoints();
 }

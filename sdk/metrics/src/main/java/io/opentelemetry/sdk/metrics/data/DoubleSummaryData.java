@@ -11,13 +11,13 @@ import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
-public abstract class DoubleSummaryData implements Data<DoubleSummaryPoint> {
+public abstract class DoubleSummaryData implements Data<DoubleSummaryPointData> {
   DoubleSummaryData() {}
 
-  public static DoubleSummaryData create(Collection<DoubleSummaryPoint> points) {
+  public static DoubleSummaryData create(Collection<DoubleSummaryPointData> points) {
     return new AutoValue_DoubleSummaryData(points);
   }
 
   @Override
-  public abstract Collection<DoubleSummaryPoint> getPoints();
+  public abstract Collection<DoubleSummaryPointData> getPoints();
 }

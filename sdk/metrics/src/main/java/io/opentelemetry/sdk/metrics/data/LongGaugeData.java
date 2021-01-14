@@ -11,13 +11,13 @@ import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
-public abstract class LongGaugeData implements Data<LongPoint> {
-  public static LongGaugeData create(Collection<LongPoint> points) {
+public abstract class LongGaugeData implements Data<LongPointData> {
+  public static LongGaugeData create(Collection<LongPointData> points) {
     return new AutoValue_LongGaugeData(points);
   }
 
   LongGaugeData() {}
 
   @Override
-  public abstract Collection<LongPoint> getPoints();
+  public abstract Collection<LongPointData> getPoints();
 }

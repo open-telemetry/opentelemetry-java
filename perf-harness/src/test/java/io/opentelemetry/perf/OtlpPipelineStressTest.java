@@ -19,9 +19,9 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.Point;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
@@ -194,10 +194,10 @@ public class OtlpPipelineStressTest {
         finishedMetricItems.stream().collect(Collectors.groupingBy(MetricData::getName));
     metricsByName.forEach(
         (name, metricData) -> {
-          Stream<LongPoint> longPointStream =
+          Stream<LongPointData> longPointStream =
               metricData.stream().flatMap(md -> md.getLongSumData().getPoints().stream());
-          Map<Labels, List<LongPoint>> pointsByLabelset =
-              longPointStream.collect(Collectors.groupingBy(Point::getLabels));
+          Map<Labels, List<LongPointData>> pointsByLabelset =
+              longPointStream.collect(Collectors.groupingBy(PointData::getLabels));
           pointsByLabelset.forEach(
               (labels, longPoints) -> {
                 long total = longPoints.get(longPoints.size() - 1).getValue();

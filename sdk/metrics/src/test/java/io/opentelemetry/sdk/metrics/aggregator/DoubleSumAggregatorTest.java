@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -93,6 +93,7 @@ class DoubleSumAggregatorTest {
                 DoubleSumData.create(
                     /* isMonotonic= */ true,
                     AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(DoublePoint.create(0, 100, Labels.empty(), 10)))));
+                    Collections.singletonList(
+                        DoublePointData.create(0, 100, Labels.empty(), 10)))));
   }
 }
