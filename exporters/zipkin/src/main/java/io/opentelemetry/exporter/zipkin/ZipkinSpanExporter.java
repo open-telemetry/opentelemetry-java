@@ -39,24 +39,6 @@ import zipkin2.reporter.Sender;
 /**
  * This class was based on the OpenCensus zipkin exporter code at
  * https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin
- *
- * <p>Configuration options for {@link ZipkinSpanExporter} can be read from system properties,
- * environment variables, or {@link java.util.Properties} objects.
- *
- * <p>For system properties and {@link java.util.Properties} objects, {@link ZipkinSpanExporter}
- * will look for the following names:
- *
- * <ul>
- *   <li>{@code otel.exporter.zipkin.service.name}: to set the service name.
- *   <li>{@code otel.exporter.zipkin.endpoint}: to set the endpoint URL.
- * </ul>
- *
- * <p>For environment variables, {@link ZipkinSpanExporter} will look for the following names:
- *
- * <ul>
- *   <li>{@code OTEL_EXPORTER_ZIPKIN_SERVICE_NAME}: to set the service name.
- *   <li>{@code OTEL_EXPORTER_ZIPKIN_ENDPOINT}: to set the endpoint URL.
- * </ul>
  */
 public final class ZipkinSpanExporter implements SpanExporter {
   public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";

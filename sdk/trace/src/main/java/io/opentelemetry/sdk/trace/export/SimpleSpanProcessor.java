@@ -24,22 +24,6 @@ import java.util.logging.Logger;
  * SpanData} and passes it directly to the configured exporter. This processor should only be used
  * where the exporter(s) are able to handle multiple exports simultaneously, as there is no back
  * pressure consideration here.
- *
- * <p>Configuration options for {@link SimpleSpanProcessor} can be read from system properties,
- * environment variables, or {@link java.util.Properties} objects.
- *
- * <p>For system properties and {@link java.util.Properties} objects, {@link SimpleSpanProcessor}
- * will look for the following names:
- *
- * <ul>
- *   <li>{@code otel.ssp.export.sampled}: sets whether only sampled spans should be exported.
- * </ul>
- *
- * <p>For environment variables, {@link SimpleSpanProcessor} will look for the following names:
- *
- * <ul>
- *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
- * </ul>
  */
 public final class SimpleSpanProcessor implements SpanProcessor {
 
@@ -56,19 +40,6 @@ public final class SimpleSpanProcessor implements SpanProcessor {
   public static SpanProcessor create(SpanExporter exporter) {
     requireNonNull(exporter, "exporter");
     return new SimpleSpanProcessor(exporter, /* sampled= */ true);
-  }
-
-  /**
-   * Returns a new Builder for {@link SimpleSpanProcessor}.
-   *
-   * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
-   * @return a new {@link SimpleSpanProcessor}.
-   * @throws NullPointerException if the {@code spanExporter} is {@code null}.
-   * @deprecated Use {@link SimpleSpanProcessor#create(SpanExporter)}
-   */
-  @Deprecated
-  public static SimpleSpanProcessorBuilder builder(SpanExporter spanExporter) {
-    return new SimpleSpanProcessorBuilder(spanExporter);
   }
 
   SimpleSpanProcessor(SpanExporter spanExporter, boolean sampled) {

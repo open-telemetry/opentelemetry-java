@@ -37,35 +37,9 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Exports spans to Jaeger via gRPC, using Jaeger's protobuf model. */
 @ThreadSafe
 public final class JaegerGrpcSpanExporter implements SpanExporter {
-  /**
-   * Default host name.
-   *
-   * @deprecated Will be removed without replacement
-   */
-  @Deprecated public static final String DEFAULT_HOST_NAME = "unknown";
-
-  /**
-   * Default endpoint.
-   *
-   * @deprecated Will be removed without replacement
-   */
-  @Deprecated public static final String DEFAULT_ENDPOINT = "localhost:14250";
-
-  /**
-   * Default service name.
-   *
-   * @deprecated Will be removed without replacement
-   */
-  @Deprecated public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
-
-  /**
-   * Default deadline.
-   *
-   * @deprecated Will be removed without replacement
-   */
-  @Deprecated public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(10);
 
   private static final Logger logger = Logger.getLogger(JaegerGrpcSpanExporter.class.getName());
+  private static final String DEFAULT_HOST_NAME = "unknown";
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
   private static final String HOSTNAME_KEY = "hostname";

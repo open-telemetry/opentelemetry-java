@@ -30,7 +30,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -226,15 +225,5 @@ class JaegerThriftSpanExporterTest {
 
     verify(thriftSender).send(expectedProcess2, Collections.singletonList(expectedSpan2));
     verify(thriftSender).send(expectedProcess1, Collections.singletonList(expectedSpan1));
-  }
-
-  @Test
-  void configTest() {
-    Properties options = new Properties();
-    String serviceName = "myGreatService";
-    options.put("otel.exporter.jaeger.service.name", serviceName);
-    JaegerThriftSpanExporter exporter =
-        JaegerThriftSpanExporter.builder().readProperties(options).build();
-    assertThat(exporter.getProcess().getServiceName()).isEqualTo(serviceName);
   }
 }

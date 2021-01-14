@@ -9,19 +9,10 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /** Builder class for {@link BatchSpanProcessor}. */
-@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
-public final class BatchSpanProcessorBuilder
-    extends io.opentelemetry.sdk.common.export.ConfigBuilder<BatchSpanProcessorBuilder> {
-
-  private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay.millis";
-  private static final String KEY_MAX_QUEUE_SIZE = "otel.bsp.max.queue.size";
-  private static final String KEY_MAX_EXPORT_BATCH_SIZE = "otel.bsp.max.export.batch.size";
-  private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.bsp.export.timeout.millis";
-  private static final String KEY_SAMPLED = "otel.bsp.export.sampled";
+public final class BatchSpanProcessorBuilder {
 
   // Visible for testing
   static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
@@ -43,39 +34,6 @@ public final class BatchSpanProcessorBuilder
 
   BatchSpanProcessorBuilder(SpanExporter spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
-  }
-
-  /**
-   * Sets the configuration values from the given configuration map for only the available keys.
-   *
-   * @param configMap {@link Map} holding the configuration values.
-   * @return this.
-   */
-  @Override
-  protected BatchSpanProcessorBuilder fromConfigMap(
-      Map<String, String> configMap, NamingConvention namingConvention) {
-    configMap = namingConvention.normalize(configMap);
-    Long longValue = getLongProperty(KEY_SCHEDULE_DELAY_MILLIS, configMap);
-    if (longValue != null) {
-      this.setScheduleDelay(Duration.ofMillis(longValue));
-    }
-    Integer intValue = getIntProperty(KEY_MAX_QUEUE_SIZE, configMap);
-    if (intValue != null) {
-      this.setMaxQueueSize(intValue);
-    }
-    intValue = getIntProperty(KEY_MAX_EXPORT_BATCH_SIZE, configMap);
-    if (intValue != null) {
-      this.setMaxExportBatchSize(intValue);
-    }
-    intValue = getIntProperty(KEY_EXPORT_TIMEOUT_MILLIS, configMap);
-    if (intValue != null) {
-      this.setExporterTimeout(Duration.ofMillis(intValue));
-    }
-    Boolean boolValue = getBooleanProperty(KEY_SAMPLED, configMap);
-    if (boolValue != null) {
-      this.setExportOnlySampled(boolValue);
-    }
-    return this;
   }
 
   // TODO: Consider to add support for constant Attributes and/or Resource.

@@ -10,21 +10,9 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import java.util.Map;
-import java.util.Properties;
 
 /** Builder for {@link TraceConfig}. */
-@SuppressWarnings("deprecation") // Remove after ConfigBuilder is deleted
-public final class TraceConfigBuilder
-    extends io.opentelemetry.sdk.common.export.ConfigBuilder<TraceConfigBuilder> {
-  private static final String KEY_SAMPLER_PROBABILITY = "otel.config.sampler.probability";
-  private static final String KEY_SPAN_ATTRIBUTE_COUNT_LIMIT = "otel.span.attribute.count.limit";
-  private static final String KEY_SPAN_EVENT_COUNT_LIMIT = "otel.span.event.count.limit";
-  private static final String KEY_SPAN_LINK_COUNT_LIMIT = "otel.span.link.count.limit";
-  private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = "otel.config.max.event.attrs";
-  private static final String KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = "otel.config.max.link.attrs";
-  private static final String KEY_SPAN_ATTRIBUTE_MAX_VALUE_LENGTH = "otel.config.max.attr.length";
-
+public final class TraceConfigBuilder {
   private static final Sampler DEFAULT_SAMPLER = Sampler.parentBased(Sampler.alwaysOn());
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 1000;
   private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 1000;
@@ -42,79 +30,6 @@ public final class TraceConfigBuilder
   private int maxAttributeLength = DEFAULT_MAX_ATTRIBUTE_LENGTH;
 
   TraceConfigBuilder() {}
-
-  /**
-   * Sets the configuration values from the given configuration map for only the available keys.
-   *
-   * @param configMap {@link Map} holding the configuration values.
-   * @return this
-   */
-  // Visible for testing
-  @Override
-  protected TraceConfigBuilder fromConfigMap(
-      Map<String, String> configMap, NamingConvention namingConvention) {
-    configMap = namingConvention.normalize(configMap);
-    Double doubleValue = getDoubleProperty(KEY_SAMPLER_PROBABILITY, configMap);
-    if (doubleValue != null) {
-      this.setTraceIdRatioBased(doubleValue);
-    }
-    Integer intValue = getIntProperty(KEY_SPAN_ATTRIBUTE_COUNT_LIMIT, configMap);
-    if (intValue != null) {
-      this.setMaxNumberOfAttributes(intValue);
-    }
-    intValue = getIntProperty(KEY_SPAN_EVENT_COUNT_LIMIT, configMap);
-    if (intValue != null) {
-      this.setMaxNumberOfEvents(intValue);
-    }
-    intValue = getIntProperty(KEY_SPAN_LINK_COUNT_LIMIT, configMap);
-    if (intValue != null) {
-      this.setMaxNumberOfLinks(intValue);
-    }
-    intValue = getIntProperty(KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT, configMap);
-    if (intValue != null) {
-      this.setMaxNumberOfAttributesPerEvent(intValue);
-    }
-    intValue = getIntProperty(KEY_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK, configMap);
-    if (intValue != null) {
-      this.setMaxNumberOfAttributesPerLink(intValue);
-    }
-    intValue = getIntProperty(KEY_SPAN_ATTRIBUTE_MAX_VALUE_LENGTH, configMap);
-    if (intValue != null) {
-      this.setMaxLengthOfAttributeValues(intValue);
-    }
-    return this;
-  }
-
-  /**
-   * * Sets the configuration values from the given properties object for only the available keys.
-   *
-   * @param properties {@link Properties} holding the configuration values.
-   * @return this
-   */
-  @Override
-  public TraceConfigBuilder readProperties(Properties properties) {
-    return super.readProperties(properties);
-  }
-
-  /**
-   * * Sets the configuration values from environment variables for only the available keys.
-   *
-   * @return this.
-   */
-  @Override
-  public TraceConfigBuilder readEnvironmentVariables() {
-    return super.readEnvironmentVariables();
-  }
-
-  /**
-   * * Sets the configuration values from system properties for only the available keys.
-   *
-   * @return this.
-   */
-  @Override
-  public TraceConfigBuilder readSystemProperties() {
-    return super.readSystemProperties();
-  }
 
   /**
    * Sets the global default {@code Sampler}. It must be not {@code null} otherwise {@link #build()}

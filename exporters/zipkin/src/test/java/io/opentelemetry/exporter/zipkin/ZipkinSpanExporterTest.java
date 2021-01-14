@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -400,17 +399,5 @@ class ZipkinSpanExporterTest {
         .localEndpoint(localEndpoint)
         .addAnnotation(1505855799000000L + 433901068L / 1000, "RECEIVED")
         .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT");
-  }
-
-  @Test
-  void configTest() {
-    Properties options = new Properties();
-    String serviceName = "myGreatService";
-    String endpoint = "http://127.0.0.1:9090";
-    options.put("otel.exporter.zipkin.service.name", serviceName);
-    options.put("otel.exporter.zipkin.endpoint", endpoint);
-    ZipkinSpanExporterBuilder config = ZipkinSpanExporter.builder().readProperties(options);
-    assertThat(config).extracting("serviceName").isEqualTo(serviceName);
-    assertThat(config).extracting("endpoint").isEqualTo(endpoint);
   }
 }

@@ -19,7 +19,6 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Collection;
-import java.util.Properties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -96,44 +95,5 @@ class TracezSpanProcessorTest {
     spanProcessor.onStart(Context.root(), readWriteSpan);
     spanProcessor.onEnd(readableSpan);
     assertSpanCacheSizes(spanProcessor, 0, 0);
-  }
-
-  @Test
-  void build_sampledFlagTrue_notInCache() {
-    /* Initialize a TraceZSpanProcessor that only looks at sampled spans */
-    Properties properties = new Properties();
-    properties.setProperty("otel.zpages.export.sampled", "true");
-    TracezSpanProcessor spanProcessor =
-        TracezSpanProcessor.builder().readProperties(properties).build();
-
-    /* Return a non-sampled span, which should not be added to the completed cache */
-    when(readWriteSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
-    spanProcessor.onStart(Context.root(), readWriteSpan);
-    assertSpanCacheSizes(spanProcessor, 1, 0);
-    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
-    spanProcessor.onEnd(readableSpan);
-    assertSpanCacheSizes(spanProcessor, 0, 0);
-  }
-
-  @Test
-  void build_sampledFlagFalse_inCache() {
-    /* Initialize a TraceZSpanProcessor that looks at all spans */
-    Properties properties = new Properties();
-    properties.setProperty("otel.zpages.export.sampled", "false");
-    TracezSpanProcessor spanProcessor =
-        TracezSpanProcessor.builder().readProperties(properties).build();
-
-    /* Return a non-sampled span, which should be added to the caches */
-    when(readWriteSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
-    spanProcessor.onStart(Context.root(), readWriteSpan);
-
-    assertSpanCacheSizes(spanProcessor, 1, 0);
-
-    when(readableSpan.getName()).thenReturn(SPAN_NAME);
-    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
-    when(readableSpan.toSpanData()).thenReturn(spanData);
-    when(spanData.getStatus()).thenReturn(SPAN_STATUS);
-    spanProcessor.onEnd(readableSpan);
-    assertSpanCacheSizes(spanProcessor, 0, 1);
   }
 }

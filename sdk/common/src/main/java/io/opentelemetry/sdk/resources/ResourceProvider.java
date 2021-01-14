@@ -16,8 +16,6 @@ import io.opentelemetry.api.common.Attributes;
  *
  * <p>Resources specified via system properties or environment variables will take precedence over
  * any value supplied via {@code ResourceProvider}.
- *
- * @see EnvAutodetectResource
  */
 public abstract class ResourceProvider {
 
