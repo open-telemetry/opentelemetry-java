@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junitpioneer.jupiter.SetSystemProperty;
@@ -64,7 +64,7 @@ class ConfigErrorTest {
   @SetSystemProperty(key = "otel.trace.sampler.arg", value = "bar")
   void globalOpenTelemetryWhenError() {
     assertThat(GlobalOpenTelemetry.get())
-        .isInstanceOf(OpenTelemetrySdk.class)
+        .isInstanceOf(OpenTelemetry.class)
         .extracting("propagators")
         // Failed to initialize so is no-op
         .isEqualTo(ContextPropagators.noop());
