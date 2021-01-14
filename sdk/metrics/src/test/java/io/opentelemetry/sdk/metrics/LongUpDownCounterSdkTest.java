@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -87,7 +87,7 @@ class LongUpDownCounterSdkTest {
                     /* isMonotonic= */ false,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
                             Labels.empty(),
@@ -121,8 +121,9 @@ class LongUpDownCounterSdkTest {
                       /* isMonotonic= */ false,
                       AggregationTemporality.CUMULATIVE,
                       Arrays.asList(
-                          LongPoint.create(startTime, testClock.now(), Labels.of("K", "V"), 555),
-                          LongPoint.create(startTime, testClock.now(), Labels.empty(), 33)))));
+                          LongPointData.create(
+                              startTime, testClock.now(), Labels.of("K", "V"), 555),
+                          LongPointData.create(startTime, testClock.now(), Labels.empty(), 33)))));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
@@ -140,8 +141,9 @@ class LongUpDownCounterSdkTest {
                       /* isMonotonic= */ false,
                       AggregationTemporality.CUMULATIVE,
                       Arrays.asList(
-                          LongPoint.create(startTime, testClock.now(), Labels.of("K", "V"), 777),
-                          LongPoint.create(startTime, testClock.now(), Labels.empty(), 44)))));
+                          LongPointData.create(
+                              startTime, testClock.now(), Labels.of("K", "V"), 777),
+                          LongPointData.create(startTime, testClock.now(), Labels.empty(), 44)))));
     } finally {
       bound.unbind();
     }
@@ -179,7 +181,7 @@ class LongUpDownCounterSdkTest {
                     /* isMonotonic= */ false,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now(), testClock.now(), Labels.of("K", "V"), 160_000)))));
   }
 
@@ -219,22 +221,22 @@ class LongUpDownCounterSdkTest {
                     /* isMonotonic= */ false,
                     AggregationTemporality.CUMULATIVE,
                     Arrays.asList(
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[0], values[0]),
                             20_000),
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[1], values[1]),
                             20_000),
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[2], values[2]),
                             20_000),
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[3], values[3]),

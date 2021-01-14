@@ -15,13 +15,13 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class DoublePoint implements Point {
-  public static DoublePoint create(
+public abstract class DoublePointData implements PointData {
+  public static DoublePointData create(
       long startEpochNanos, long epochNanos, Labels labels, double value) {
-    return new AutoValue_DoublePoint(startEpochNanos, epochNanos, labels, value);
+    return new AutoValue_DoublePointData(startEpochNanos, epochNanos, labels, value);
   }
 
-  DoublePoint() {}
+  DoublePointData() {}
 
   /**
    * Returns the value of the data point.

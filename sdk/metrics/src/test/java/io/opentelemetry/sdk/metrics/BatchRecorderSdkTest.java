@@ -15,11 +15,11 @@ import io.opentelemetry.api.metrics.BatchRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPoint;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
@@ -122,7 +122,8 @@ class BatchRecorderSdkTest {
                     /* isMonotonic= */ true,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        DoublePoint.create(testClock.now(), testClock.now(), labelSet, 24.2d)))));
+                        DoublePointData.create(
+                            testClock.now(), testClock.now(), labelSet, 24.2d)))));
     assertThat(longCounter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
@@ -135,7 +136,7 @@ class BatchRecorderSdkTest {
                     /* isMonotonic= */ true,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        LongPoint.create(testClock.now(), testClock.now(), labelSet, 12)))));
+                        LongPointData.create(testClock.now(), testClock.now(), labelSet, 12)))));
     assertThat(doubleUpDownCounter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createDoubleSum(
@@ -148,7 +149,8 @@ class BatchRecorderSdkTest {
                     /* isMonotonic= */ false,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        DoublePoint.create(testClock.now(), testClock.now(), labelSet, -12.1d)))));
+                        DoublePointData.create(
+                            testClock.now(), testClock.now(), labelSet, -12.1d)))));
     assertThat(longUpDownCounter.collectAll(testClock.now()))
         .containsExactly(
             MetricData.createLongSum(
@@ -161,7 +163,7 @@ class BatchRecorderSdkTest {
                     /* isMonotonic= */ false,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        LongPoint.create(testClock.now(), testClock.now(), labelSet, -12)))));
+                        LongPointData.create(testClock.now(), testClock.now(), labelSet, -12)))));
 
     if (shouldHaveDeltas) {
       assertThat(doubleValueRecorder.collectAll(testClock.now()))
@@ -174,7 +176,7 @@ class BatchRecorderSdkTest {
                   "1",
                   DoubleSummaryData.create(
                       Collections.singletonList(
-                          DoubleSummaryPoint.create(
+                          DoubleSummaryPointData.create(
                               testClock.now(),
                               testClock.now(),
                               labelSet,
@@ -198,7 +200,7 @@ class BatchRecorderSdkTest {
                   "1",
                   DoubleSummaryData.create(
                       Collections.singletonList(
-                          DoubleSummaryPoint.create(
+                          DoubleSummaryPointData.create(
                               testClock.now(),
                               testClock.now(),
                               labelSet,

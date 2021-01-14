@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -90,7 +90,7 @@ class DoubleUpDownCounterSdkTest {
                     /* isMonotonic= */ false,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        DoublePoint.create(
+                        DoublePointData.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
                             Labels.empty(),
@@ -124,9 +124,10 @@ class DoubleUpDownCounterSdkTest {
                       /* isMonotonic= */ false,
                       AggregationTemporality.CUMULATIVE,
                       Arrays.asList(
-                          DoublePoint.create(
+                          DoublePointData.create(
                               startTime, testClock.now(), Labels.of("K", "V"), 555.9d),
-                          DoublePoint.create(startTime, testClock.now(), Labels.empty(), 33.5d)))));
+                          DoublePointData.create(
+                              startTime, testClock.now(), Labels.empty(), 33.5d)))));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
@@ -145,9 +146,10 @@ class DoubleUpDownCounterSdkTest {
                       /* isMonotonic= */ false,
                       AggregationTemporality.CUMULATIVE,
                       Arrays.asList(
-                          DoublePoint.create(
+                          DoublePointData.create(
                               startTime, testClock.now(), Labels.of("K", "V"), 777.9d),
-                          DoublePoint.create(startTime, testClock.now(), Labels.empty(), 44.5d)))));
+                          DoublePointData.create(
+                              startTime, testClock.now(), Labels.empty(), 44.5d)))));
     } finally {
       bound.unbind();
     }
@@ -185,7 +187,7 @@ class DoubleUpDownCounterSdkTest {
                     /* isMonotonic= */ false,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        DoublePoint.create(
+                        DoublePointData.create(
                             testClock.now(), testClock.now(), Labels.of("K", "V"), 80_000)))));
   }
 
@@ -225,22 +227,22 @@ class DoubleUpDownCounterSdkTest {
                     /* isMonotonic= */ false,
                     AggregationTemporality.CUMULATIVE,
                     Arrays.asList(
-                        DoublePoint.create(
+                        DoublePointData.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[0], values[0]),
                             40_000),
-                        DoublePoint.create(
+                        DoublePointData.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[1], values[1]),
                             40_000),
-                        DoublePoint.create(
+                        DoublePointData.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[2], values[2]),
                             40_000),
-                        DoublePoint.create(
+                        DoublePointData.create(
                             testClock.now(),
                             testClock.now(),
                             Labels.of(keys[3], values[3]),

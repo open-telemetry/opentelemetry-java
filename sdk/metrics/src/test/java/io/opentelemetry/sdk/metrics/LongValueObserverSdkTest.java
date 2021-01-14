@@ -13,7 +13,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -69,7 +69,7 @@ class LongValueObserverSdkTest {
                 "1",
                 LongGaugeData.create(
                     Collections.singletonList(
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
                             Labels.of("k", "v"),
@@ -85,7 +85,7 @@ class LongValueObserverSdkTest {
                 "1",
                 LongGaugeData.create(
                     Collections.singletonList(
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
                             Labels.of("k", "v"),

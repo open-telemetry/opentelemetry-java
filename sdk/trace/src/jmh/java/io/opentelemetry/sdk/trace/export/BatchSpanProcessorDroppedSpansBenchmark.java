@@ -9,7 +9,7 @@ import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -115,8 +115,8 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
           if (metricData.isEmpty()) {
             return 0;
           } else {
-            Collection<LongPoint> points = metricData.getLongSumData().getPoints();
-            for (LongPoint point : points) {
+            Collection<LongPointData> points = metricData.getLongSumData().getPoints();
+            for (LongPointData point : points) {
               if (labelValue.equals(point.getLabels().get("dropped"))) {
                 return point.getValue();
               }

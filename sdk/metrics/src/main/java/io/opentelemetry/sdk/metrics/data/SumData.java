@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.data;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-interface SumData<T extends Point> extends Data<T> {
+interface SumData<T extends PointData> extends Data<T> {
   /**
    * Returns "true" if the sum is monotonic.
    *

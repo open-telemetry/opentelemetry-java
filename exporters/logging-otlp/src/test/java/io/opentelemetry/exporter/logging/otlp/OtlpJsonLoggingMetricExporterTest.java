@@ -12,7 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
@@ -39,7 +39,7 @@ class OtlpJsonLoggingMetricExporterTest {
           DoubleSumData.create(
               true,
               AggregationTemporality.CUMULATIVE,
-              Arrays.asList(DoublePoint.create(1, 2, Labels.of("cat", "meow"), 4))));
+              Arrays.asList(DoublePointData.create(1, 2, Labels.of("cat", "meow"), 4))));
 
   private static final MetricData METRIC2 =
       MetricData.createDoubleSum(
@@ -51,7 +51,7 @@ class OtlpJsonLoggingMetricExporterTest {
           DoubleSumData.create(
               true,
               AggregationTemporality.CUMULATIVE,
-              Arrays.asList(DoublePoint.create(1, 2, Labels.of("cat", "meow"), 4))));
+              Arrays.asList(DoublePointData.create(1, 2, Labels.of("cat", "meow"), 4))));
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(OtlpJsonLoggingMetricExporter.class);

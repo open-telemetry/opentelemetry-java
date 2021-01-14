@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPoint;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -95,6 +95,6 @@ class LongSumAggregatorTest {
                 LongSumData.create(
                     /* isMonotonic= */ true,
                     AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(LongPoint.create(0, 100, Labels.empty(), 10)))));
+                    Collections.singletonList(LongPointData.create(0, 100, Labels.empty(), 10)))));
   }
 }

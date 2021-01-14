@@ -13,7 +13,7 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -72,7 +72,7 @@ class DoubleUpDownSumObserverSdkTest {
                     /* isMonotonic= */ false,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        DoublePoint.create(
+                        DoublePointData.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
                             Labels.of("k", "v"),
@@ -90,7 +90,7 @@ class DoubleUpDownSumObserverSdkTest {
                     /* isMonotonic= */ false,
                     AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        DoublePoint.create(
+                        DoublePointData.create(
                             testClock.now() - 2 * SECOND_NANOS,
                             testClock.now(),
                             Labels.of("k", "v"),

@@ -11,13 +11,13 @@ import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
-public abstract class DoubleGaugeData implements Data<DoublePoint> {
-  public static DoubleGaugeData create(Collection<DoublePoint> points) {
+public abstract class DoubleGaugeData implements Data<DoublePointData> {
+  public static DoubleGaugeData create(Collection<DoublePointData> points) {
     return new AutoValue_DoubleGaugeData(points);
   }
 
   DoubleGaugeData() {}
 
   @Override
-  public abstract Collection<DoublePoint> getPoints();
+  public abstract Collection<DoublePointData> getPoints();
 }
