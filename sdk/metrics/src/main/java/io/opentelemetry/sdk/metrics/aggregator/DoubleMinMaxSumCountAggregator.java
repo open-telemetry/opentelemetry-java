@@ -10,10 +10,8 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.concurrent.ThreadSafe;
@@ -62,15 +60,15 @@ final class DoubleMinMaxSumCountAggregator implements Aggregator<MinMaxSumCountA
       Map<Labels, MinMaxSumCountAccumulation> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    List<DoubleSummaryPointData> points =
-        MetricDataUtils.toDoubleSummaryPointList(accumulationByLabels, startEpochNanos, epochNanos);
     return MetricData.createDoubleSummary(
         resource,
         instrumentationLibraryInfo,
         descriptor.getName(),
         descriptor.getDescription(),
         descriptor.getUnit(),
-        DoubleSummaryData.create(points));
+        DoubleSummaryData.create(
+            MetricDataUtils.toDoubleSummaryPointList(
+                accumulationByLabels, startEpochNanos, epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<MinMaxSumCountAccumulation> {

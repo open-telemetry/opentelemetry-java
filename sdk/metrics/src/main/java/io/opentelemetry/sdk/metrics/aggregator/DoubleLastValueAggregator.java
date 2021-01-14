@@ -8,11 +8,11 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
@@ -65,16 +65,31 @@ final class DoubleLastValueAggregator implements Aggregator<Double> {
       Map<Labels, Double> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    List<DoublePointData> points =
-        MetricDataUtils.toDoublePointList(accumulationByLabels, startEpochNanos, epochNanos);
-
     switch (descriptor.getType()) {
       case SUM_OBSERVER:
-        return MetricDataUtils.toDoubleSumMetricData(
-            resource, instrumentationLibraryInfo, descriptor, points, /* isMonotonic= */ true);
+        return MetricData.createDoubleSum(
+            resource,
+            instrumentationLibraryInfo,
+            descriptor.getName(),
+            descriptor.getDescription(),
+            descriptor.getUnit(),
+            DoubleSumData.create(
+                /* isMonotonic= */ true,
+                AggregationTemporality.CUMULATIVE,
+                MetricDataUtils.toDoublePointList(
+                    accumulationByLabels, startEpochNanos, epochNanos)));
       case UP_DOWN_SUM_OBSERVER:
-        return MetricDataUtils.toDoubleSumMetricData(
-            resource, instrumentationLibraryInfo, descriptor, points, /* isMonotonic= */ false);
+        return MetricData.createDoubleSum(
+            resource,
+            instrumentationLibraryInfo,
+            descriptor.getName(),
+            descriptor.getDescription(),
+            descriptor.getUnit(),
+            DoubleSumData.create(
+                /* isMonotonic= */ false,
+                AggregationTemporality.CUMULATIVE,
+                MetricDataUtils.toDoublePointList(
+                    accumulationByLabels, startEpochNanos, epochNanos)));
       case VALUE_OBSERVER:
         return MetricData.createDoubleGauge(
             resource,
@@ -82,7 +97,9 @@ final class DoubleLastValueAggregator implements Aggregator<Double> {
             descriptor.getName(),
             descriptor.getDescription(),
             descriptor.getUnit(),
-            DoubleGaugeData.create(points));
+            DoubleGaugeData.create(
+                MetricDataUtils.toDoublePointList(
+                    accumulationByLabels, startEpochNanos, epochNanos)));
       case COUNTER:
       case UP_DOWN_COUNTER:
       case VALUE_RECORDER:
