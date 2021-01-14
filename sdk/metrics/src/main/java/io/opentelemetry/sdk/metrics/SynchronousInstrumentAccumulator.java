@@ -8,7 +8,9 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -20,6 +22,27 @@ final class SynchronousInstrumentAccumulator<T> {
   private final ReentrantLock collectLock;
   private final Aggregator<T> aggregator;
   private final InstrumentProcessor<T> instrumentProcessor;
+
+  static <T> SynchronousInstrumentAccumulator<T> create(
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      InstrumentDescriptor descriptor) {
+    AggregationConfiguration configuration =
+        meterProviderSharedState.getViewRegistry().findView(descriptor);
+    Aggregator<T> aggregator =
+        configuration
+            .getAggregatorFactory()
+            .create(
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                descriptor);
+    return new SynchronousInstrumentAccumulator<>(
+        aggregator,
+        InstrumentProcessor.create(
+            aggregator,
+            meterProviderSharedState.getStartEpochNanos(),
+            configuration.getTemporality()));
+  }
 
   SynchronousInstrumentAccumulator(
       Aggregator<T> aggregator, InstrumentProcessor<T> instrumentProcessor) {

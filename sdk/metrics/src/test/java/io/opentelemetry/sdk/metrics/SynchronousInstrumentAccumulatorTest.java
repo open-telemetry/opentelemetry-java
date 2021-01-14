@@ -35,7 +35,7 @@ public class SynchronousInstrumentAccumulatorTest {
     SynchronousInstrumentAccumulator<?> accumulator =
         new SynchronousInstrumentAccumulator<>(
             aggregator,
-            InstrumentProcessor.createProcessor(
+            InstrumentProcessor.create(
                 aggregator, testClock.now(), AggregationTemporality.CUMULATIVE));
     AggregatorHandle<?> aggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     AggregatorHandle<?> duplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
