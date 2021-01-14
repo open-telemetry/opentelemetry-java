@@ -6,52 +6,15 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 final class MetricDataUtils {
   private MetricDataUtils() {}
-
-  static MetricData toLongSumMetricData(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
-      List<LongPointData> points,
-      boolean isMonotonic) {
-    return MetricData.createLongSum(
-        resource,
-        instrumentationLibraryInfo,
-        descriptor.getName(),
-        descriptor.getDescription(),
-        descriptor.getUnit(),
-        LongSumData.create(isMonotonic, AggregationTemporality.CUMULATIVE, points));
-  }
-
-  static MetricData toDoubleSumMetricData(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
-      List<DoublePointData> points,
-      boolean isMonotonic) {
-    return MetricData.createDoubleSum(
-        resource,
-        instrumentationLibraryInfo,
-        descriptor.getName(),
-        descriptor.getDescription(),
-        descriptor.getUnit(),
-        DoubleSumData.create(isMonotonic, AggregationTemporality.CUMULATIVE, points));
-  }
 
   static List<LongPointData> toLongPointList(
       Map<Labels, Long> accumulationMap, long startEpochNanos, long epochNanos) {

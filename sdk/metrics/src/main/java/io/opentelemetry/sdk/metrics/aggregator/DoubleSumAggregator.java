@@ -9,10 +9,10 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
 
@@ -53,13 +53,19 @@ final class DoubleSumAggregator implements Aggregator<Double> {
       Map<Labels, Double> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    List<DoublePointData> points =
-        MetricDataUtils.toDoublePointList(accumulationByLabels, startEpochNanos, epochNanos);
     boolean isMonotonic =
         descriptor.getType() == InstrumentType.COUNTER
             || descriptor.getType() == InstrumentType.SUM_OBSERVER;
-    return MetricDataUtils.toDoubleSumMetricData(
-        resource, instrumentationLibraryInfo, descriptor, points, isMonotonic);
+    return MetricData.createDoubleSum(
+        resource,
+        instrumentationLibraryInfo,
+        descriptor.getName(),
+        descriptor.getDescription(),
+        descriptor.getUnit(),
+        DoubleSumData.create(
+            isMonotonic,
+            AggregationTemporality.CUMULATIVE,
+            MetricDataUtils.toDoublePointList(accumulationByLabels, startEpochNanos, epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<Double> {

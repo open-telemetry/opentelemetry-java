@@ -9,10 +9,10 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -53,13 +53,19 @@ final class LongSumAggregator implements Aggregator<Long> {
       Map<Labels, Long> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
-    List<LongPointData> points =
-        MetricDataUtils.toLongPointList(accumulationByLabels, startEpochNanos, epochNanos);
     boolean isMonotonic =
         descriptor.getType() == InstrumentType.COUNTER
             || descriptor.getType() == InstrumentType.SUM_OBSERVER;
-    return MetricDataUtils.toLongSumMetricData(
-        resource, instrumentationLibraryInfo, descriptor, points, isMonotonic);
+    return MetricData.createLongSum(
+        resource,
+        instrumentationLibraryInfo,
+        descriptor.getName(),
+        descriptor.getDescription(),
+        descriptor.getUnit(),
+        LongSumData.create(
+            isMonotonic,
+            AggregationTemporality.CUMULATIVE,
+            MetricDataUtils.toLongPointList(accumulationByLabels, startEpochNanos, epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<Long> {
