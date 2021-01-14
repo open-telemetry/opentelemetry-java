@@ -7,9 +7,11 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
 class AggregatorFactoryTest {
@@ -18,22 +20,26 @@ class AggregatorFactoryTest {
     AggregatorFactory count = AggregatorFactory.count();
     assertThat(
             count.create(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.getEmpty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG)))
-        .isInstanceOf(CountAggregator.getInstance().getClass());
+        .isInstanceOf(CountAggregator.class);
     assertThat(
             count.create(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.getEmpty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE)))
-        .isInstanceOf(CountAggregator.getInstance().getClass());
+        .isInstanceOf(CountAggregator.class);
   }
 
   @Test
@@ -41,22 +47,26 @@ class AggregatorFactoryTest {
     AggregatorFactory lastValue = AggregatorFactory.lastValue();
     assertThat(
             lastValue.create(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.getEmpty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG)))
-        .isInstanceOf(LongLastValueAggregator.getInstance().getClass());
+        .isInstanceOf(LongLastValueAggregator.class);
     assertThat(
             lastValue.create(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.getEmpty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE)))
-        .isInstanceOf(DoubleLastValueAggregator.getInstance().getClass());
+        .isInstanceOf(DoubleLastValueAggregator.class);
   }
 
   @Test
@@ -64,22 +74,26 @@ class AggregatorFactoryTest {
     AggregatorFactory minMaxSumCount = AggregatorFactory.minMaxSumCount();
     assertThat(
             minMaxSumCount.create(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.getEmpty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG)))
-        .isInstanceOf(LongMinMaxSumCountAggregator.getInstance().getClass());
+        .isInstanceOf(LongMinMaxSumCountAggregator.class);
     assertThat(
             minMaxSumCount.create(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.getEmpty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE)))
-        .isInstanceOf(DoubleMinMaxSumCountAggregator.getInstance().getClass());
+        .isInstanceOf(DoubleMinMaxSumCountAggregator.class);
   }
 
   @Test
@@ -87,21 +101,25 @@ class AggregatorFactoryTest {
     AggregatorFactory sum = AggregatorFactory.sum();
     assertThat(
             sum.create(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.getEmpty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG)))
-        .isInstanceOf(LongSumAggregator.getInstance().getClass());
+        .isInstanceOf(LongSumAggregator.class);
     assertThat(
             sum.create(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.getEmpty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE)))
-        .isInstanceOf(DoubleSumAggregator.getInstance().getClass());
+        .isInstanceOf(DoubleSumAggregator.class);
   }
 }

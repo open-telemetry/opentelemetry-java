@@ -22,15 +22,21 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleSumAggregator}. */
 class DoubleSumAggregatorTest {
+  private static final DoubleSumAggregator aggregator =
+      new DoubleSumAggregator(
+          Resource.getDefault(),
+          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentDescriptor.create(
+              "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE));
+
   @Test
   void createHandle() {
-    assertThat(DoubleSumAggregator.getInstance().createHandle())
-        .isInstanceOf(DoubleSumAggregator.Handle.class);
+    assertThat(aggregator.createHandle()).isInstanceOf(DoubleSumAggregator.Handle.class);
   }
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<Double> aggregatorHandle = DoubleSumAggregator.getInstance().createHandle();
+    AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
@@ -41,7 +47,7 @@ class DoubleSumAggregatorTest {
 
   @Test
   void multipleRecords_WithNegatives() {
-    AggregatorHandle<Double> aggregatorHandle = DoubleSumAggregator.getInstance().createHandle();
+    AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-23);
@@ -53,7 +59,7 @@ class DoubleSumAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<Double> aggregatorHandle = DoubleSumAggregator.getInstance().createHandle();
+    AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordDouble(13);
@@ -69,16 +75,11 @@ class DoubleSumAggregatorTest {
 
   @Test
   void toMetricData() {
-    Aggregator<Double> sum = DoubleSumAggregator.getInstance();
-    AggregatorHandle<Double> aggregatorHandle = sum.createHandle();
+    AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
 
     MetricData metricData =
-        sum.toMetricData(
-            Resource.getDefault(),
-            InstrumentationLibraryInfo.getEmpty(),
-            InstrumentDescriptor.create(
-                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE),
+        aggregator.toMetricData(
             Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             100);

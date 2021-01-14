@@ -25,20 +25,13 @@ import javax.annotation.Nullable;
  * problem because LastValueAggregator is currently only available for Observers which record all
  * values once.
  */
-final class LongLastValueAggregator implements Aggregator<Long> {
-  @Nullable private static final Long DEFAULT_VALUE = null;
-  private static final LongLastValueAggregator INSTANCE = new LongLastValueAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  static Aggregator<Long> getInstance() {
-    return INSTANCE;
+final class LongLastValueAggregator extends AbstractAggregator<Long> {
+  LongLastValueAggregator(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor) {
+    super(resource, instrumentationLibraryInfo, descriptor);
   }
-
-  private LongLastValueAggregator() {}
 
   @Override
   public AggregatorHandle<Long> createHandle() {
@@ -58,20 +51,15 @@ final class LongLastValueAggregator implements Aggregator<Long> {
 
   @Override
   public MetricData toMetricData(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
-      Map<Labels, Long> accumulationByLabels,
-      long startEpochNanos,
-      long epochNanos) {
-    switch (descriptor.getType()) {
+      Map<Labels, Long> accumulationByLabels, long startEpochNanos, long epochNanos) {
+    switch (getInstrumentDescriptor().getType()) {
       case SUM_OBSERVER:
         return MetricData.createLongSum(
-            resource,
-            instrumentationLibraryInfo,
-            descriptor.getName(),
-            descriptor.getDescription(),
-            descriptor.getUnit(),
+            getResource(),
+            getInstrumentationLibraryInfo(),
+            getInstrumentDescriptor().getName(),
+            getInstrumentDescriptor().getDescription(),
+            getInstrumentDescriptor().getUnit(),
             LongSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
@@ -79,11 +67,11 @@ final class LongLastValueAggregator implements Aggregator<Long> {
                     accumulationByLabels, startEpochNanos, epochNanos)));
       case UP_DOWN_SUM_OBSERVER:
         return MetricData.createLongSum(
-            resource,
-            instrumentationLibraryInfo,
-            descriptor.getName(),
-            descriptor.getDescription(),
-            descriptor.getUnit(),
+            getResource(),
+            getInstrumentationLibraryInfo(),
+            getInstrumentDescriptor().getName(),
+            getInstrumentDescriptor().getDescription(),
+            getInstrumentDescriptor().getUnit(),
             LongSumData.create(
                 /* isMonotonic= */ false,
                 AggregationTemporality.CUMULATIVE,
@@ -91,11 +79,11 @@ final class LongLastValueAggregator implements Aggregator<Long> {
                     accumulationByLabels, startEpochNanos, epochNanos)));
       case VALUE_OBSERVER:
         return MetricData.createLongGauge(
-            resource,
-            instrumentationLibraryInfo,
-            descriptor.getName(),
-            descriptor.getDescription(),
-            descriptor.getUnit(),
+            getResource(),
+            getInstrumentationLibraryInfo(),
+            getInstrumentDescriptor().getName(),
+            getInstrumentDescriptor().getDescription(),
+            getInstrumentDescriptor().getUnit(),
             LongGaugeData.create(
                 MetricDataUtils.toLongPointList(
                     accumulationByLabels, startEpochNanos, epochNanos)));
@@ -107,6 +95,7 @@ final class LongLastValueAggregator implements Aggregator<Long> {
   }
 
   static final class Handle extends AggregatorHandle<Long> {
+    @Nullable private static final Long DEFAULT_VALUE = null;
     private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
     @Override

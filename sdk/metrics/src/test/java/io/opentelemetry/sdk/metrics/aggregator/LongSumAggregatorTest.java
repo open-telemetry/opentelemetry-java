@@ -22,15 +22,21 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongSumAggregator}. */
 class LongSumAggregatorTest {
+  private static final LongSumAggregator aggregator =
+      new LongSumAggregator(
+          Resource.getDefault(),
+          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentDescriptor.create(
+              "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
+
   @Test
   void createHandle() {
-    assertThat(LongSumAggregator.getInstance().createHandle())
-        .isInstanceOf(LongSumAggregator.Handle.class);
+    assertThat(aggregator.createHandle()).isInstanceOf(LongSumAggregator.Handle.class);
   }
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<Long> aggregatorHandle = LongSumAggregator.getInstance().createHandle();
+    AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
@@ -42,7 +48,7 @@ class LongSumAggregatorTest {
 
   @Test
   void multipleRecords_WithNegatives() {
-    AggregatorHandle<Long> aggregatorHandle = LongSumAggregator.getInstance().createHandle();
+    AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(-23);
@@ -55,7 +61,7 @@ class LongSumAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<Long> aggregatorHandle = LongSumAggregator.getInstance().createHandle();
+    AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordLong(13);
@@ -71,16 +77,11 @@ class LongSumAggregatorTest {
 
   @Test
   void toMetricData() {
-    Aggregator<Long> sum = LongSumAggregator.getInstance();
-    AggregatorHandle<Long> aggregatorHandle = sum.createHandle();
+    AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
-        sum.toMetricData(
-            Resource.getDefault(),
-            InstrumentationLibraryInfo.getEmpty(),
-            InstrumentDescriptor.create(
-                "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG),
+        aggregator.toMetricData(
             Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             100);

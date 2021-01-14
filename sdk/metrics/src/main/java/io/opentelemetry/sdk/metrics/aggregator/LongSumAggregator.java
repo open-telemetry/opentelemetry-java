@@ -16,19 +16,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
-final class LongSumAggregator implements Aggregator<Long> {
-  private static final LongSumAggregator INSTANCE = new LongSumAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  static Aggregator<Long> getInstance() {
-    return INSTANCE;
+final class LongSumAggregator extends AbstractAggregator<Long> {
+  LongSumAggregator(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor) {
+    super(resource, instrumentationLibraryInfo, descriptor);
   }
-
-  private LongSumAggregator() {}
 
   @Override
   public AggregatorHandle<Long> createHandle() {
@@ -47,21 +41,16 @@ final class LongSumAggregator implements Aggregator<Long> {
 
   @Override
   public MetricData toMetricData(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
-      Map<Labels, Long> accumulationByLabels,
-      long startEpochNanos,
-      long epochNanos) {
+      Map<Labels, Long> accumulationByLabels, long startEpochNanos, long epochNanos) {
     boolean isMonotonic =
-        descriptor.getType() == InstrumentType.COUNTER
-            || descriptor.getType() == InstrumentType.SUM_OBSERVER;
+        getInstrumentDescriptor().getType() == InstrumentType.COUNTER
+            || getInstrumentDescriptor().getType() == InstrumentType.SUM_OBSERVER;
     return MetricData.createLongSum(
-        resource,
-        instrumentationLibraryInfo,
-        descriptor.getName(),
-        descriptor.getDescription(),
-        descriptor.getUnit(),
+        getResource(),
+        getInstrumentationLibraryInfo(),
+        getInstrumentDescriptor().getName(),
+        getInstrumentDescriptor().getDescription(),
+        getInstrumentDescriptor().getUnit(),
         LongSumData.create(
             isMonotonic,
             AggregationTemporality.CUMULATIVE,

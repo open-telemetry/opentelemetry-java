@@ -17,19 +17,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-final class LongMinMaxSumCountAggregator implements Aggregator<MinMaxSumCountAccumulation> {
-  private static final LongMinMaxSumCountAggregator INSTANCE = new LongMinMaxSumCountAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  static Aggregator<MinMaxSumCountAccumulation> getInstance() {
-    return INSTANCE;
+final class LongMinMaxSumCountAggregator extends AbstractAggregator<MinMaxSumCountAccumulation> {
+  LongMinMaxSumCountAggregator(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor) {
+    super(resource, instrumentationLibraryInfo, descriptor);
   }
-
-  private LongMinMaxSumCountAggregator() {}
 
   @Override
   public AggregatorHandle<MinMaxSumCountAccumulation> createHandle() {
@@ -53,18 +47,15 @@ final class LongMinMaxSumCountAggregator implements Aggregator<MinMaxSumCountAcc
 
   @Override
   public MetricData toMetricData(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
       Map<Labels, MinMaxSumCountAccumulation> accumulationByLabels,
       long startEpochNanos,
       long epochNanos) {
     return MetricData.createDoubleSummary(
-        resource,
-        instrumentationLibraryInfo,
-        descriptor.getName(),
-        descriptor.getDescription(),
-        descriptor.getUnit(),
+        getResource(),
+        getInstrumentationLibraryInfo(),
+        getInstrumentDescriptor().getName(),
+        getInstrumentDescriptor().getDescription(),
+        getInstrumentDescriptor().getUnit(),
         DoubleSummaryData.create(
             MetricDataUtils.toDoubleSummaryPointList(
                 accumulationByLabels, startEpochNanos, epochNanos)));
