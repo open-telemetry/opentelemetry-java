@@ -70,6 +70,7 @@ class DoubleLastValueAggregatorTest {
         aggregator.toMetricData(
             Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
+            10,
             100);
     assertThat(metricData)
         .isEqualTo(

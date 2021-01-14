@@ -16,7 +16,6 @@ import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +25,7 @@ public class SynchronousInstrumentAccumulatorTest {
           "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
   private final TestClock testClock = TestClock.create();
   private final Aggregator<Long> aggregator =
-      AggregatorFactory.count()
+      AggregatorFactory.lastValue()
           .create(
               Resource.getEmpty(), InstrumentationLibraryInfo.create("test", "1.0"), DESCRIPTOR);
 
@@ -34,9 +33,7 @@ public class SynchronousInstrumentAccumulatorTest {
   void sameAggregator_ForSameLabelSet() {
     SynchronousInstrumentAccumulator<?> accumulator =
         new SynchronousInstrumentAccumulator<>(
-            aggregator,
-            InstrumentProcessor.create(
-                aggregator, testClock.now(), AggregationTemporality.CUMULATIVE));
+            aggregator, new InstrumentProcessor<>(aggregator, testClock.now()));
     AggregatorHandle<?> aggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     AggregatorHandle<?> duplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     try {

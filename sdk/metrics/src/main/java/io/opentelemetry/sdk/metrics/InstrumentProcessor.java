@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,29 +23,15 @@ import java.util.Map;
  */
 final class InstrumentProcessor<T> {
   private final Aggregator<T> aggregator;
+  private final long startEpochNanos;
+  private long lastEpochNanos;
   private Map<Labels, T> accumulationMap;
-  private long startEpochNanos;
-  private final boolean delta;
 
-  /**
-   * Create a new {@link InstrumentProcessor} for use in metric recording aggregation.
-   *
-   * <p>"Delta" temporality means that all metrics that are generated are only for the most recent
-   * collection interval.
-   *
-   * <p>"Cumulative" temporality means that all metrics that are generated will be considered for
-   * the lifetime of the Instrument being aggregated.
-   */
-  static <T> InstrumentProcessor<T> create(
-      Aggregator<T> aggregator, long startEpochNanos, AggregationTemporality temporality) {
-    return new InstrumentProcessor<>(aggregator, startEpochNanos, isDelta(temporality));
-  }
-
-  private InstrumentProcessor(Aggregator<T> aggregator, long startEpochNanos, boolean delta) {
+  InstrumentProcessor(Aggregator<T> aggregator, long startEpochNanos) {
     this.aggregator = aggregator;
-    this.delta = delta;
-    this.accumulationMap = new HashMap<>();
     this.startEpochNanos = startEpochNanos;
+    this.lastEpochNanos = startEpochNanos;
+    this.accumulationMap = new HashMap<>();
   }
 
   /**
@@ -80,23 +65,14 @@ final class InstrumentProcessor<T> {
       return Collections.emptyList();
     }
 
-    MetricData metricData = aggregator.toMetricData(accumulationMap, startEpochNanos, epochNanos);
+    MetricData metricData =
+        aggregator.toMetricData(accumulationMap, startEpochNanos, lastEpochNanos, epochNanos);
 
-    if (delta) {
-      startEpochNanos = epochNanos;
+    lastEpochNanos = epochNanos;
+    if (!aggregator.isStateful()) {
       accumulationMap = new HashMap<>();
     }
 
     return metricData == null ? Collections.emptyList() : Collections.singletonList(metricData);
-  }
-
-  private static boolean isDelta(AggregationTemporality temporality) {
-    switch (temporality) {
-      case CUMULATIVE:
-        return false;
-      case DELTA:
-        return true;
-    }
-    throw new IllegalStateException("unsupported Temporality: " + temporality);
   }
 }

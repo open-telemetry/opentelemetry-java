@@ -27,7 +27,8 @@ class LongSumAggregatorTest {
           Resource.getDefault(),
           InstrumentationLibraryInfo.getEmpty(),
           InstrumentDescriptor.create(
-              "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG));
+              "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG),
+          /* stateful= */ true);
 
   @Test
   void createHandle() {
@@ -84,6 +85,7 @@ class LongSumAggregatorTest {
         aggregator.toMetricData(
             Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
+            10,
             100);
     assertThat(metricData)
         .isEqualTo(

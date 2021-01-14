@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -16,12 +15,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
-final class LongSumAggregator extends AbstractAggregator<Long> {
+final class LongSumAggregator extends AbstractSumAggregator<Long> {
   LongSumAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor) {
-    super(resource, instrumentationLibraryInfo, descriptor);
+      InstrumentDescriptor descriptor,
+      boolean stateful) {
+    super(resource, instrumentationLibraryInfo, descriptor, stateful);
   }
 
   @Override
@@ -41,20 +41,26 @@ final class LongSumAggregator extends AbstractAggregator<Long> {
 
   @Override
   public MetricData toMetricData(
-      Map<Labels, Long> accumulationByLabels, long startEpochNanos, long epochNanos) {
-    boolean isMonotonic =
-        getInstrumentDescriptor().getType() == InstrumentType.COUNTER
-            || getInstrumentDescriptor().getType() == InstrumentType.SUM_OBSERVER;
+      Map<Labels, Long> accumulationByLabels,
+      long startEpochNanos,
+      long lastCollectionEpoch,
+      long epochNanos) {
+    InstrumentDescriptor descriptor = getInstrumentDescriptor();
     return MetricData.createLongSum(
         getResource(),
         getInstrumentationLibraryInfo(),
-        getInstrumentDescriptor().getName(),
-        getInstrumentDescriptor().getDescription(),
-        getInstrumentDescriptor().getUnit(),
+        descriptor.getName(),
+        descriptor.getDescription(),
+        descriptor.getUnit(),
         LongSumData.create(
-            isMonotonic,
-            AggregationTemporality.CUMULATIVE,
-            MetricDataUtils.toLongPointList(accumulationByLabels, startEpochNanos, epochNanos)));
+            isMonotonic(),
+            temporality(),
+            MetricDataUtils.toLongPointList(
+                accumulationByLabels,
+                temporality() == AggregationTemporality.CUMULATIVE
+                    ? startEpochNanos
+                    : lastCollectionEpoch,
+                epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<Long> {

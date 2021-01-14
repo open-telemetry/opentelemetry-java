@@ -13,14 +13,22 @@ public abstract class AbstractAggregator<T> implements Aggregator<T> {
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final InstrumentDescriptor instrumentDescriptor;
+  private final boolean stateful;
 
   protected AbstractAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor instrumentDescriptor) {
+      InstrumentDescriptor instrumentDescriptor,
+      boolean stateful) {
     this.resource = resource;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.instrumentDescriptor = instrumentDescriptor;
+    this.stateful = stateful;
+  }
+
+  @Override
+  public boolean isStateful() {
+    return stateful;
   }
 
   protected final Resource getResource() {

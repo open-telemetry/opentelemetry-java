@@ -11,13 +11,14 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
 class AggregatorFactoryTest {
   @Test
   void getCountAggregatorFactory() {
-    AggregatorFactory count = AggregatorFactory.count();
+    AggregatorFactory count = AggregatorFactory.count(AggregationTemporality.CUMULATIVE);
     assertThat(
             count.create(
                 Resource.getDefault(),
@@ -98,7 +99,7 @@ class AggregatorFactoryTest {
 
   @Test
   void getSumAggregatorFactory() {
-    AggregatorFactory sum = AggregatorFactory.sum();
+    AggregatorFactory sum = AggregatorFactory.sum(false);
     assertThat(
             sum.create(
                 Resource.getDefault(),

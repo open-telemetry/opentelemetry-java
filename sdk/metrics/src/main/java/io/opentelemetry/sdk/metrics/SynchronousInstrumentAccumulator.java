@@ -10,14 +10,13 @@ import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-final class SynchronousInstrumentAccumulator<T> {
+final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
   private final ConcurrentHashMap<Labels, AggregatorHandle<T>> aggregatorLabels;
   private final ReentrantLock collectLock;
   private final Aggregator<T> aggregator;
@@ -27,21 +26,11 @@ final class SynchronousInstrumentAccumulator<T> {
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
-    AggregationConfiguration configuration =
-        meterProviderSharedState.getViewRegistry().findView(descriptor);
     Aggregator<T> aggregator =
-        configuration
-            .getAggregatorFactory()
-            .create(
-                meterProviderSharedState.getResource(),
-                meterSharedState.getInstrumentationLibraryInfo(),
-                descriptor);
+        getAggregator(meterProviderSharedState, meterSharedState, descriptor);
     return new SynchronousInstrumentAccumulator<>(
         aggregator,
-        InstrumentProcessor.create(
-            aggregator,
-            meterProviderSharedState.getStartEpochNanos(),
-            configuration.getTemporality()));
+        new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos()));
   }
 
   SynchronousInstrumentAccumulator(
@@ -79,10 +68,7 @@ final class SynchronousInstrumentAccumulator<T> {
     }
   }
 
-  /**
-   * Collects records from all the entries (labelSet, Bound) that changed since the last collect()
-   * call.
-   */
+  @Override
   List<MetricData> collectAll(long epochNanos) {
     collectLock.lock();
     try {
