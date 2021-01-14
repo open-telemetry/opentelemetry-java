@@ -37,7 +37,7 @@ final class InstrumentProcessor<T> {
    * <p>"Cumulative" temporality means that all metrics that are generated will be considered for
    * the lifetime of the Instrument being aggregated.
    */
-  static <T> InstrumentProcessor<T> createProcessor(
+  static <T> InstrumentProcessor<T> create(
       Aggregator<T> aggregator, long startEpochNanos, AggregationTemporality temporality) {
     return new InstrumentProcessor<>(aggregator, startEpochNanos, isDelta(temporality));
   }
