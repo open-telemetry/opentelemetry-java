@@ -6,11 +6,8 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -67,10 +64,6 @@ public interface Aggregator<T> {
   /**
    * Returns the {@link MetricData} that this {@code Aggregation} will produce.
    *
-   * @param resource the Resource associated with the {@code Instrument}.
-   * @param instrumentationLibraryInfo the InstrumentationLibraryInfo associated with the {@code
-   *     Instrument}.
-   * @param descriptor the InstrumentDescriptor of the {@code Instrument}.
    * @param accumulationByLabels the map of Labels to Accumulation.
    * @param startEpochNanos the startEpochNanos for the {@code Point}.
    * @param epochNanos the epochNanos for the {@code Point}.
@@ -78,10 +71,5 @@ public interface Aggregator<T> {
    */
   @Nullable
   MetricData toMetricData(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
-      Map<Labels, T> accumulationByLabels,
-      long startEpochNanos,
-      long epochNanos);
+      Map<Labels, T> accumulationByLabels, long startEpochNanos, long epochNanos);
 }

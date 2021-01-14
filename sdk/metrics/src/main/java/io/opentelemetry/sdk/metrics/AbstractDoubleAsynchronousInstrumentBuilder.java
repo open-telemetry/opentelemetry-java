@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.AsynchronousInstrument;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -36,20 +37,29 @@ abstract class AbstractDoubleAsynchronousInstrumentBuilder<B extends AbstractIns
     return getThis();
   }
 
-  final <I extends AbstractInstrument> I buildInstrument(
+  final <I extends AbstractInstrument, T> I buildInstrument(
       BiFunction<InstrumentDescriptor, AsynchronousInstrumentAccumulator, I> instrumentFactory) {
     InstrumentDescriptor descriptor = buildDescriptor();
     AggregationConfiguration configuration =
         meterProviderSharedState.getViewRegistry().findView(descriptor);
+    Aggregator<T> aggregator =
+        configuration
+            .getAggregatorFactory()
+            .create(
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                descriptor);
     return meterSharedState
         .getInstrumentRegistry()
         .register(
             instrumentFactory.apply(
                 descriptor,
                 AsynchronousInstrumentAccumulator.doubleAsynchronousAccumulator(
-                    configuration.getAggregatorFactory().create(descriptor),
+                    aggregator,
                     InstrumentProcessor.createProcessor(
-                        meterProviderSharedState, meterSharedState, descriptor, configuration),
+                        aggregator,
+                        meterProviderSharedState.getStartEpochNanos(),
+                        configuration.getTemporality()),
                     updater)));
   }
 }

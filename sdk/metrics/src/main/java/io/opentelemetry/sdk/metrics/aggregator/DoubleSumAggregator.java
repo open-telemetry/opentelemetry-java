@@ -16,19 +16,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
 
-final class DoubleSumAggregator implements Aggregator<Double> {
-  private static final DoubleSumAggregator INSTANCE = new DoubleSumAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  static Aggregator<Double> getInstance() {
-    return INSTANCE;
+final class DoubleSumAggregator extends AbstractAggregator<Double> {
+  DoubleSumAggregator(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor) {
+    super(resource, instrumentationLibraryInfo, descriptor);
   }
-
-  private DoubleSumAggregator() {}
 
   @Override
   public AggregatorHandle<Double> createHandle() {
@@ -47,21 +41,16 @@ final class DoubleSumAggregator implements Aggregator<Double> {
 
   @Override
   public MetricData toMetricData(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
-      Map<Labels, Double> accumulationByLabels,
-      long startEpochNanos,
-      long epochNanos) {
+      Map<Labels, Double> accumulationByLabels, long startEpochNanos, long epochNanos) {
     boolean isMonotonic =
-        descriptor.getType() == InstrumentType.COUNTER
-            || descriptor.getType() == InstrumentType.SUM_OBSERVER;
+        getInstrumentDescriptor().getType() == InstrumentType.COUNTER
+            || getInstrumentDescriptor().getType() == InstrumentType.SUM_OBSERVER;
     return MetricData.createDoubleSum(
-        resource,
-        instrumentationLibraryInfo,
-        descriptor.getName(),
-        descriptor.getDescription(),
-        descriptor.getUnit(),
+        getResource(),
+        getInstrumentationLibraryInfo(),
+        getInstrumentDescriptor().getName(),
+        getInstrumentDescriptor().getDescription(),
+        getInstrumentDescriptor().getUnit(),
         DoubleSumData.create(
             isMonotonic,
             AggregationTemporality.CUMULATIVE,

@@ -6,13 +6,9 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -27,10 +23,7 @@ import java.util.Map;
  * multiple calls to {@code #batch(...)} followed by one {@code #completeCollectionCycle(...)};
  */
 final class InstrumentProcessor<T> {
-  private final InstrumentDescriptor descriptor;
   private final Aggregator<T> aggregator;
-  private final Resource resource;
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private Map<Labels, T> accumulationMap;
   private long startEpochNanos;
   private final boolean delta;
@@ -45,31 +38,12 @@ final class InstrumentProcessor<T> {
    * the lifetime of the Instrument being aggregated.
    */
   static <T> InstrumentProcessor<T> createProcessor(
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      InstrumentDescriptor descriptor,
-      AggregationConfiguration configuration) {
-    Aggregator<T> aggregator = configuration.getAggregatorFactory().create(descriptor);
-    return new InstrumentProcessor<>(
-        descriptor,
-        aggregator,
-        meterProviderSharedState.getResource(),
-        meterSharedState.getInstrumentationLibraryInfo(),
-        meterProviderSharedState.getStartEpochNanos(),
-        isDelta(configuration.getTemporality()));
+      Aggregator<T> aggregator, long startEpochNanos, AggregationTemporality temporality) {
+    return new InstrumentProcessor<>(aggregator, startEpochNanos, isDelta(temporality));
   }
 
-  private InstrumentProcessor(
-      InstrumentDescriptor descriptor,
-      Aggregator<T> aggregator,
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      long startEpochNanos,
-      boolean delta) {
-    this.descriptor = descriptor;
+  private InstrumentProcessor(Aggregator<T> aggregator, long startEpochNanos, boolean delta) {
     this.aggregator = aggregator;
-    this.resource = resource;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.delta = delta;
     this.accumulationMap = new HashMap<>();
     this.startEpochNanos = startEpochNanos;
@@ -106,14 +80,7 @@ final class InstrumentProcessor<T> {
       return Collections.emptyList();
     }
 
-    MetricData metricData =
-        aggregator.toMetricData(
-            resource,
-            instrumentationLibraryInfo,
-            descriptor,
-            accumulationMap,
-            startEpochNanos,
-            epochNanos);
+    MetricData metricData = aggregator.toMetricData(accumulationMap, startEpochNanos, epochNanos);
 
     if (delta) {
       startEpochNanos = epochNanos;

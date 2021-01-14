@@ -27,19 +27,13 @@ import javax.annotation.concurrent.ThreadSafe;
  * values once.
  */
 @ThreadSafe
-final class DoubleLastValueAggregator implements Aggregator<Double> {
-  private static final DoubleLastValueAggregator INSTANCE = new DoubleLastValueAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  static DoubleLastValueAggregator getInstance() {
-    return INSTANCE;
+final class DoubleLastValueAggregator extends AbstractAggregator<Double> {
+  DoubleLastValueAggregator(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor) {
+    super(resource, instrumentationLibraryInfo, descriptor);
   }
-
-  private DoubleLastValueAggregator() {}
 
   @Override
   public AggregatorHandle<Double> createHandle() {
@@ -59,20 +53,15 @@ final class DoubleLastValueAggregator implements Aggregator<Double> {
 
   @Override
   public MetricData toMetricData(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
-      Map<Labels, Double> accumulationByLabels,
-      long startEpochNanos,
-      long epochNanos) {
-    switch (descriptor.getType()) {
+      Map<Labels, Double> accumulationByLabels, long startEpochNanos, long epochNanos) {
+    switch (getInstrumentDescriptor().getType()) {
       case SUM_OBSERVER:
         return MetricData.createDoubleSum(
-            resource,
-            instrumentationLibraryInfo,
-            descriptor.getName(),
-            descriptor.getDescription(),
-            descriptor.getUnit(),
+            getResource(),
+            getInstrumentationLibraryInfo(),
+            getInstrumentDescriptor().getName(),
+            getInstrumentDescriptor().getDescription(),
+            getInstrumentDescriptor().getUnit(),
             DoubleSumData.create(
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
@@ -80,11 +69,11 @@ final class DoubleLastValueAggregator implements Aggregator<Double> {
                     accumulationByLabels, startEpochNanos, epochNanos)));
       case UP_DOWN_SUM_OBSERVER:
         return MetricData.createDoubleSum(
-            resource,
-            instrumentationLibraryInfo,
-            descriptor.getName(),
-            descriptor.getDescription(),
-            descriptor.getUnit(),
+            getResource(),
+            getInstrumentationLibraryInfo(),
+            getInstrumentDescriptor().getName(),
+            getInstrumentDescriptor().getDescription(),
+            getInstrumentDescriptor().getUnit(),
             DoubleSumData.create(
                 /* isMonotonic= */ false,
                 AggregationTemporality.CUMULATIVE,
@@ -92,11 +81,11 @@ final class DoubleLastValueAggregator implements Aggregator<Double> {
                     accumulationByLabels, startEpochNanos, epochNanos)));
       case VALUE_OBSERVER:
         return MetricData.createDoubleGauge(
-            resource,
-            instrumentationLibraryInfo,
-            descriptor.getName(),
-            descriptor.getDescription(),
-            descriptor.getUnit(),
+            getResource(),
+            getInstrumentationLibraryInfo(),
+            getInstrumentDescriptor().getName(),
+            getInstrumentDescriptor().getDescription(),
+            getInstrumentDescriptor().getUnit(),
             DoubleGaugeData.create(
                 MetricDataUtils.toDoublePointList(
                     accumulationByLabels, startEpochNanos, epochNanos)));

@@ -5,7 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
 /** Factory class for {@link Aggregator}. */
@@ -17,7 +19,7 @@ public interface AggregatorFactory {
    * @return an {@code AggregationFactory} that calculates sum of recorded measurements.
    */
   static AggregatorFactory sum() {
-    return ImmutableAggregatorFactory.SUM;
+    return SumAggregatorFactory.INSTANCE;
   }
 
   /**
@@ -28,7 +30,7 @@ public interface AggregatorFactory {
    *     number of recorded * measurements).
    */
   static AggregatorFactory count() {
-    return ImmutableAggregatorFactory.COUNT;
+    return CountAggregatorFactory.INSTANCE;
   }
 
   /**
@@ -44,7 +46,7 @@ public interface AggregatorFactory {
    *     measurements.
    */
   static AggregatorFactory lastValue() {
-    return ImmutableAggregatorFactory.LAST_VALUE;
+    return LastValueAggregatorFactory.INSTANCE;
   }
 
   /**
@@ -56,14 +58,21 @@ public interface AggregatorFactory {
    *     measurements.
    */
   static AggregatorFactory minMaxSumCount() {
-    return ImmutableAggregatorFactory.MIN_MAX_SUM_COUNT;
+    return MinMaxSumCountAggregatorFactory.INSTANCE;
   }
 
   /**
    * Returns a new {@link Aggregator}.
    *
-   * @param descriptor the descriptor of the {@code Instrument} that will record values.
+   * @param resource the Resource associated with the {@code Instrument} that will record
+   *     measurements.
+   * @param instrumentationLibraryInfo the InstrumentationLibraryInfo associated with the {@code
+   *     Instrument} that will record measurements.
+   * @param descriptor the descriptor of the {@code Instrument} that will record measurements.
    * @return a new {@link Aggregator}.
    */
-  <T> Aggregator<T> create(InstrumentDescriptor descriptor);
+  <T> Aggregator<T> create(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor);
 }

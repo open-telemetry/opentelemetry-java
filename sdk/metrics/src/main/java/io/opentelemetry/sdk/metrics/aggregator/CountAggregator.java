@@ -17,19 +17,13 @@ import java.util.concurrent.atomic.LongAdder;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-final class CountAggregator implements Aggregator<Long> {
-  private static final Aggregator<Long> INSTANCE = new CountAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  static Aggregator<Long> getInstance() {
-    return INSTANCE;
+final class CountAggregator extends AbstractAggregator<Long> {
+  CountAggregator(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor) {
+    super(resource, instrumentationLibraryInfo, descriptor);
   }
-
-  private CountAggregator() {}
 
   @Override
   public AggregatorHandle<Long> createHandle() {
@@ -53,17 +47,12 @@ final class CountAggregator implements Aggregator<Long> {
 
   @Override
   public MetricData toMetricData(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
-      Map<Labels, Long> accumulationByLabels,
-      long startEpochNanos,
-      long epochNanos) {
+      Map<Labels, Long> accumulationByLabels, long startEpochNanos, long epochNanos) {
     return MetricData.createLongSum(
-        resource,
-        instrumentationLibraryInfo,
-        descriptor.getName(),
-        descriptor.getDescription(),
+        getResource(),
+        getInstrumentationLibraryInfo(),
+        getInstrumentDescriptor().getName(),
+        getInstrumentDescriptor().getDescription(),
         "1",
         LongSumData.create(
             /* isMonotonic= */ true,

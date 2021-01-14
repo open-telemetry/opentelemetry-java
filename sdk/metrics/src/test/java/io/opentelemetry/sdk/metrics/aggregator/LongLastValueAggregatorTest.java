@@ -21,15 +21,25 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongLastValueAggregator}. */
 class LongLastValueAggregatorTest {
+  private static final LongLastValueAggregator aggregator =
+      new LongLastValueAggregator(
+          Resource.getDefault(),
+          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentDescriptor.create(
+              "name",
+              "description",
+              "unit",
+              InstrumentType.VALUE_OBSERVER,
+              InstrumentValueType.LONG));
+
   @Test
   void createHandle() {
-    assertThat(LongLastValueAggregator.getInstance().createHandle())
-        .isInstanceOf(LongLastValueAggregator.Handle.class);
+    assertThat(aggregator.createHandle()).isInstanceOf(LongLastValueAggregator.Handle.class);
   }
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<Long> aggregatorHandle = LongLastValueAggregator.getInstance().createHandle();
+    AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12L);
     aggregatorHandle.recordLong(13);
@@ -39,7 +49,7 @@ class LongLastValueAggregatorTest {
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<Long> aggregatorHandle = LongLastValueAggregator.getInstance().createHandle();
+    AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordLong(13);
@@ -53,20 +63,11 @@ class LongLastValueAggregatorTest {
 
   @Test
   void toMetricData() {
-    Aggregator<Long> lastValue = LongLastValueAggregator.getInstance();
-    AggregatorHandle<Long> aggregatorHandle = lastValue.createHandle();
+    AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
-        lastValue.toMetricData(
-            Resource.getDefault(),
-            InstrumentationLibraryInfo.getEmpty(),
-            InstrumentDescriptor.create(
-                "name",
-                "description",
-                "unit",
-                InstrumentType.VALUE_OBSERVER,
-                InstrumentValueType.LONG),
+        aggregator.toMetricData(
             Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             100);
