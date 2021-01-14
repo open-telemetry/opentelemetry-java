@@ -19,8 +19,10 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Example code for setting up the OTLP exporters.
@@ -35,10 +37,15 @@ public class OtlpExporterExample {
   private static OpenTelemetry initOpenTelemetry() {
     OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.getDefault();
     BatchSpanProcessor spanProcessor =
-        BatchSpanProcessor.builder(spanExporter).setScheduleDelayMillis(100).build();
+        BatchSpanProcessor.builder(spanExporter)
+            .setExporterTimeout(100, TimeUnit.MILLISECONDS)
+            .build();
 
-    OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder().build();
-    openTelemetrySdk.getTracerManagement().addSpanProcessor(spanProcessor);
+    OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
+            .build();
+
     tracerManagement = openTelemetrySdk.getTracerManagement();
     return openTelemetrySdk;
   }
@@ -63,7 +70,7 @@ public class OtlpExporterExample {
     IntervalMetricReader intervalMetricReader =
         IntervalMetricReader.builder()
             .setMetricExporter(metricExporter)
-            .setMetricProducers(Collections.singleton(sdkMeterProvider.getMetricProducer()))
+            .setMetricProducers(Collections.singleton(sdkMeterProvider))
             .setExportIntervalMillis(500)
             .build();
 

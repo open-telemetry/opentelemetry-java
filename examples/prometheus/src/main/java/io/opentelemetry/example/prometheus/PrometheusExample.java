@@ -36,7 +36,7 @@ public class PrometheusExample {
             .build();
 
     PrometheusCollector.builder()
-        .setMetricProducer(((SdkMeterProvider) meterSdkProvider).getMetricProducer())
+        .setMetricProducer(((SdkMeterProvider) meterSdkProvider))
         .buildAndRegister();
 
     server = new HTTPServer(port);
