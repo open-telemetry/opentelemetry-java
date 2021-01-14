@@ -22,9 +22,7 @@ public class ExampleConfiguration {
   // Name of the service
   private static final String SERVICE_NAME = "myExampleService";
 
-  /**
-   * Adds a SimpleSpanProcessor initialized with ZipkinSpanExporter to the TracerSdkProvider
-   */
+  /** Adds a SimpleSpanProcessor initialized with ZipkinSpanExporter to the TracerSdkProvider */
   static OpenTelemetry initializeOpenTelemetry(String ip, int port) {
     String httpUrl = String.format("http://%s:%s", ip, port);
     ZipkinSpanExporter zipkinExporter =

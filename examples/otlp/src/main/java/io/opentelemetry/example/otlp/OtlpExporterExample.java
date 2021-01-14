@@ -53,5 +53,4 @@ public class OtlpExporterExample {
     // sleep for a bit to let everything settle
     Thread.sleep(2000);
   }
-
 }

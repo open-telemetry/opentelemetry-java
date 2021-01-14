@@ -25,15 +25,13 @@ import java.util.concurrent.TimeUnit;
 public class ExampleConfiguration {
 
   /**
-   * Adds a BatchSpanProcessor initialized with OtlpGrpcSpanExporter to the
-   * TracerSdkProvider.
+   * Adds a BatchSpanProcessor initialized with OtlpGrpcSpanExporter to the TracerSdkProvider.
    *
    * @return a ready-to-use {@link OpenTelemetry} instance.
    */
   static OpenTelemetry initOpenTelemetry() {
-    OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.builder()
-        .setTimeout(2, TimeUnit.SECONDS)
-        .build();
+    OtlpGrpcSpanExporter spanExporter =
+        OtlpGrpcSpanExporter.builder().setTimeout(2, TimeUnit.SECONDS).build();
     BatchSpanProcessor spanProcessor =
         BatchSpanProcessor.builder(spanExporter)
             .setScheduleDelay(100, TimeUnit.MILLISECONDS)
@@ -41,10 +39,11 @@ public class ExampleConfiguration {
 
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder()
-            .setTracerProvider(SdkTracerProvider.builder()
-                .addSpanProcessor(spanProcessor)
-                .setResource(Resource.getDefault())
-                .build())
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .addSpanProcessor(spanProcessor)
+                    .setResource(Resource.getDefault())
+                    .build())
             .buildAndRegisterGlobal();
 
     Runtime.getRuntime()
@@ -55,6 +54,7 @@ public class ExampleConfiguration {
 
   /**
    * Initializes a Metrics SDK with a OtlpGrpcMetricExporter and an IntervalMetricReader.
+   *
    * @return a ready-to-use {@link MeterProvider} instance
    */
   static MeterProvider initOpenTelemetryMetrics() {
