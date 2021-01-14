@@ -22,6 +22,7 @@ class ExampleConfiguration {
 
   /**
    * Initialize an OpenTelemetry SDK with a Jaeger exporter and a SimpleSpanProcessor.
+   *
    * @param jaegerHost The host of your Jaeger instance.
    * @param jaegerPort the port of your Jaeger instance.
    * @return A ready-to-use {@link OpenTelemetry} instance.
@@ -39,14 +40,15 @@ class ExampleConfiguration {
             .build();
 
     // Set to process the spans by the Jaeger Exporter
-    OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
-        .setTracerProvider(
-            SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
-                .build())
-        .build();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(
+                SdkTracerProvider.builder()
+                    .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
+                    .build())
+            .build();
 
-    //it's always a good idea to shut down the SDK cleanly at JVM exit.
+    // it's always a good idea to shut down the SDK cleanly at JVM exit.
     Runtime.getRuntime()
         .addShutdownHook(new Thread(() -> openTelemetry.getTracerManagement().shutdown()));
 
