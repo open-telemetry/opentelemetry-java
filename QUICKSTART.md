@@ -29,7 +29,7 @@ out the [OpenTelemetry Website].
 configuration must be provided by **Applications** which should also depend on the
 `opentelemetry-sdk` package, or any other implementation of the OpenTelemetry API. This way,
 libraries will obtain a real implementation only if the user application is configured for it. For
-more details, check out the [Library Guidelines].
+more details, check out the [Library Guidelines]. 
 
 ## Set up
 
@@ -38,19 +38,21 @@ The first step is to get a handle to an instance of the `OpenTelemetry` interfac
 If you are an application developer, you need to configure an instance of the `OpenTelemetrySdk` as
 early as possible in your application. This can be done using the `OpenTelemetrySdk.builder()` method.
 
+If you want to enable auto-configuration, via the standard set of environment variables, system
+properties or pre-build java SPI implementations, you will want to additionally have your project
+depend on the `opentelemetry-sdk-extension-autoconfigure` module.
+
 For example:
 
 ```java
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
-    sdkTracerProvider.addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build());
-    
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+        .addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()))
+        .build();
+
     OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-      .setTracerProvider(sdkTracerProvider)
-      .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-      .build();
-    
-    //optionally set this instance as the global instance:
-    GlobalOpenTelemetry.set(openTelemetry);
+        .setTracerProvider(sdkTracerProvider)
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .buildAndRegisterGlobal();
 ```
 
 As an aside, if you are writing library instrumentation, it is strongly recommended that you provide your users
@@ -358,8 +360,9 @@ For example, a basic configuration instantiates the SDK tracer provider and sets
 traces to a logging stream.
 
 ```java
-    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
-    tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(new LoggingSpanExporter()).build());
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
+      .addSpanProcessor(BatchSpanProcessor.builder(new LoggingSpanExporter()).build())
+      .build();
 ```
 
 ### Sampler
@@ -378,19 +381,14 @@ Additional samplers can be provided by implementing the `io.opentelemetry.sdk.tr
 interface.
 
 ```java
-TraceConfig alwaysOn = TraceConfig.getDefault().toBuilder().setSampler(
-        Sampler.alwaysOn()
-).build();
-TraceConfig alwaysOff = TraceConfig.getDefault().toBuilder().setSampler(
-        Sampler.alwaysOff()
-).build();
-TraceConfig half = TraceConfig.getDefault().toBuilder().setSampler(
-        Sampler.traceIdRatioBased(0.5)
-).build();
-// Configure the sampler to use
-tracerProvider.updateActiveTraceConfig(
-    half
-);
+TraceConfig alwaysOn = TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOn()).build();
+TraceConfig alwaysOff = TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build();
+TraceConfig half = TraceConfig.getDefault().toBuilder().setSampler(Sampler.traceIdRatioBased(0.5)).build();
+
+// You configure the sampler when building the SDK implementation:
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
+      .setTraceConfig(half)
+      .build();
 ```
 
 ### Span Processor
@@ -401,13 +399,13 @@ in bulk. Multiple Span processors can be configured to be active at the same tim
 `MultiSpanProcessor`.
 
 ```java
-    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
-    tracerProvider.addSpanProcessor(
-      MultiSpanProcessor.create(Arrays.asList(
-        SimpleSpanProcessor.builder(new LoggingSpanExporter()).build(),
-        BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
-      ))
-    );
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
+      .addSpanProcessor(
+        MultiSpanProcessor.create(Arrays.asList(
+          SimpleSpanProcessor.create(new LoggingSpanExporter()),
+          BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
+        )))
+    .build();
 ```
 
 ### Exporter
@@ -433,29 +431,16 @@ ManagedChannel jaegerChannel =
     tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(jaegerExporter).build()));
 ```
 
-### TraceConfig
+### Auto Configuration
 
-The `TraceConfig` associated with a Tracer SDK can be updated via system properties, 
-environment variables and builder `set*` methods.  
+To configure the OpenTelemetry SDK based on the standard set of environment variables and system 
+properties, you can use the `opentelemetry-sdk-extension-autoconfigure` module.
 
 ```java
-  // Get TraceConfig Builder
-  TraceConfigBuilder builder = TraceConfig.builder();
-  
-  // Read configuration options from system properties
-  builder.readSystemProperties();
-  
-  // Read configuration options from environment variables
-  builder.readEnvironmentVariables()
-  
-  // Set options via builder.set* methods, e.g.
-  builder.setMaxNumberOfLinks(10);
-  
-  // Use the resulting TraceConfig instance
-  SdkTracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
+  OpenTelemetrySdk sdk = OpenTelemetrySdkAutoConfiguration.initialize();
 ```
 
-Supported system properties and environment variables:
+Some of the supported system properties and environment variables:
 
 | System property                  | Environment variable             | Purpose                                                                                             | 
 |----------------------------------|----------------------------------|-----------------------------------------------------------------------------------------------------|       
