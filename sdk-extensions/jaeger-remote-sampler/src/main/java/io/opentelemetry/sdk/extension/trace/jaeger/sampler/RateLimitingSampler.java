@@ -14,8 +14,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.SystemClock;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
@@ -57,13 +56,13 @@ class RateLimitingSampler implements Sampler {
       String name,
       Kind spanKind,
       Attributes attributes,
-      List<Link> parentLinks) {
+      List<LinkData> parentLinks) {
 
     if (Span.fromContext(parentContext).getSpanContext().isSampled()) {
       return Sampler.alwaysOn()
           .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
-    for (SpanData.Link parentLink : parentLinks) {
+    for (LinkData parentLink : parentLinks) {
       if (parentLink.getSpanContext().isSampled()) {
         return Sampler.alwaysOn()
             .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);

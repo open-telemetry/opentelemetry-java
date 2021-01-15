@@ -16,12 +16,12 @@ project.
 This project contains the following top level components:
 
 * [OpenTelemetry API](api/):
-  * [tracing api](api/all/src/main/java/io/opentelemetry/api/trace/) includes `Tracer`, `Span` and `SpanContext`.
-  * [baggage api](api/all/src/main/java/io/opentelemetry/api/baggage/) defines a collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
-  * [metrics api](api/metrics/src/main/java/io/opentelemetry/api/metrics/).
-  * [context api](api/context/src/main/java/io/opentelemetry/context/).
+  * [stable apis](api/all/src/main/java/io/opentelemetry/api/all/) including `Tracer`, `Span`, `SpanContext`, and `Baggage`
+  * [semantic conventions](semconv/) Generated code for the OpenTelemetry semantic conventions.
+  * [context api](api/context/src/main/java/io/opentelemetry/context/) The OpenTelmetry Context implementation.
+  * [metrics api](api/metrics/src/main/java/io/opentelemetry/api/metrics/) alpha code for the metrics API.
 * [extensions](extensions/) define additional API extensions, which are not part of the core API.
-* [sdk](sdk/) define the reference implementation complying to the OpenTelemetry API.
+* [sdk](sdk/) defines the reference implementation complying to the OpenTelemetry API.
 * [sdk-extensions](sdk-extensions/) define additional SDK extensions, which are not part of the core SDK.
 * [OpenTracing shim](opentracing-shim/) defines a bridge layer from OpenTracing to the OpenTelemetry API.
 * [examples](examples/) on how to use the APIs, SDK, and standard exporters.
@@ -51,49 +51,75 @@ Please refer to the [quick start guide](QUICKSTART.md) on how use the OpenTeleme
 
 ## Published Releases
 
-Published releases are available on maven central.
+Published releases are available on maven central. We strongly recommend using our published BOM to keep all
+dependency versions in sync.
 
 ### Maven
 
 ```xml
+<project>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>0.14.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.13.1</version>
     </dependency>
   </dependencies>
+</project>
 ```
 
 ### Gradle
 
 ```groovy
 dependencies {
-	implementation('io.opentelemetry:opentelemetry-api:0.13.1')
+  implementation platform("io.opentelemetry:opentelemetry-bom:0.14.1")
+  implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
 
 ## Snapshots
 
-Snapshots based out the `master` branch are available for `opentelemetry-api`, `opentelemetry-sdk` and the rest of the artifacts:
+Snapshots based out the `master` branch are available for `opentelemetry-api`, `opentelemetry-sdk` and the rest of the artifacts.
+We strongly recommend using our published BOM to keep all dependency versions in sync.
 
 ### Maven
 
 ```xml
+<project>
   <repositories>
     <repository>
       <id>oss.sonatype.org-snapshot</id>
       <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
     </repository>
   </repositories>
-
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>0.15.0-SNAPSHOT</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.14.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
+</project>
 ```
 
 ### Gradle
@@ -104,7 +130,8 @@ repositories {
 }
 
 dependencies {
-	implementation('io.opentelemetry:opentelemetry-api:0.14.0-SNAPSHOT')
+  implementation platform("io.opentelemetry:opentelemetry-bom:0.15.0-SNAPSHOT")
+  implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
 
@@ -123,17 +150,18 @@ This is a **current** feature status list:
 
 | Component                   | Version |
 | --------------------------- | ------- |
-| Tracing API                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
-| Tracing SDK                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
-| Metrics API                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
-| Metrics SDK                 | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
-| OTLP Exporter               | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
-| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
-| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
-| Prometheus Metrics Exporter | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
-| Context Propagation         | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
-| OpenTracing Bridge          | v<!--VERSION_STABLE-->0.13.1<!--/VERSION_STABLE-->  |
-| OpenCensus Bridge           | N/A     |
+| Tracing API                 | v<!--VERSION_STABLE-->0.14.1<!--/VERSION_STABLE-->  |
+| Tracing SDK                 | v<!--VERSION_STABLE-->0.14.1<!--/VERSION_STABLE-->  |
+| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->0.14.1<!--/VERSION_STABLE-->  |
+| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->0.14.1<!--/VERSION_STABLE-->  |
+| Context Propagation         | v<!--VERSION_STABLE-->0.14.1<!--/VERSION_STABLE-->  |
+| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->0.14.1<!--/VERSION_STABLE-->  |
+| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->0.14.1-alpha<!--/VERSION_UNSTABLE-->  |
+| Metrics API                 | v<!--VERSION_UNSTABLE-->0.14.1-alpha<!--/VERSION_UNSTABLE-->  |
+| Metrics SDK                 | v<!--VERSION_UNSTABLE-->0.14.1-alpha<!--/VERSION_UNSTABLE-->  |
+| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->0.14.1-alpha<!--/VERSION_UNSTABLE-->  |
+| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->0.14.1-alpha<!--/VERSION_UNSTABLE-->  |
+| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->0.14.1-alpha<!--/VERSION_UNSTABLE-->  |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
 for details on upcoming releases. The dates and features described in issues

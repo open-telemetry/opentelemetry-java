@@ -12,8 +12,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -24,46 +26,41 @@ class LongUpDownSumObserverSdkTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(
-          "io.opentelemetry.sdk.metrics.LongUpDownSumObserverSdkTest", null);
+      InstrumentationLibraryInfo.create(LongUpDownSumObserverSdkTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final MeterProviderSharedState meterProviderSharedState =
-      MeterProviderSharedState.create(testClock, RESOURCE);
-  private final SdkMeter testSdk =
-      new SdkMeter(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+  private final SdkMeterProvider sdkMeterProvider =
+      SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void collectMetrics_NoCallback() {
-    LongUpDownSumObserverSdk longUpDownSumObserver =
-        testSdk
-            .longUpDownSumObserverBuilder("testObserver")
-            .setDescription("My own LongUpDownSumObserver")
-            .setUnit("ms")
-            .build();
-    assertThat(longUpDownSumObserver.collectAll()).isEmpty();
+    sdkMeter
+        .longUpDownSumObserverBuilder("testObserver")
+        .setDescription("My own LongUpDownSumObserver")
+        .setUnit("ms")
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    LongUpDownSumObserverSdk longUpDownSumObserver =
-        testSdk
-            .longUpDownSumObserverBuilder("testObserver")
-            .setDescription("My own LongUpDownSumObserver")
-            .setUnit("ms")
-            .setUpdater(result -> {})
-            .build();
-    assertThat(longUpDownSumObserver.collectAll()).isEmpty();
+    sdkMeter
+        .longUpDownSumObserverBuilder("testObserver")
+        .setDescription("My own LongUpDownSumObserver")
+        .setUnit("ms")
+        .setUpdater(result -> {})
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_WithOneRecord() {
-    LongUpDownSumObserverSdk longUpDownSumObserver =
-        testSdk
-            .longUpDownSumObserverBuilder("testObserver")
-            .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
-            .build();
+    sdkMeter
+        .longUpDownSumObserverBuilder("testObserver")
+        .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
+        .build();
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longUpDownSumObserver.collectAll())
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -71,17 +68,17 @@ class LongUpDownSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
                             Labels.of("k", "v"),
                             12)))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longUpDownSumObserver.collectAll())
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongSum(
                 RESOURCE,
@@ -89,11 +86,11 @@ class LongUpDownSumObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.LongSumData.create(
+                LongSumData.create(
                     /* isMonotonic= */ false,
-                    MetricData.AggregationTemporality.CUMULATIVE,
+                    AggregationTemporality.CUMULATIVE,
                     Collections.singletonList(
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now() - 2 * SECOND_NANOS,
                             testClock.now(),
                             Labels.of("k", "v"),

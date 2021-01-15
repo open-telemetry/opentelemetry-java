@@ -9,12 +9,12 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.spi.trace.TracerProviderFactory;
 
 /** Builder class for {@link DefaultOpenTelemetry}. */
+@SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
 public final class DefaultOpenTelemetryBuilder {
   private ContextPropagators propagators = ContextPropagators.noop();
-  private TracerProvider tracerProvider;
+  private TracerProvider tracerProvider = TracerProvider.getDefault();
 
   /**
    * Package protected to disallow direct initialization.
@@ -53,16 +53,6 @@ public final class DefaultOpenTelemetryBuilder {
    * @return a new {@link OpenTelemetry}.
    */
   public OpenTelemetry build() {
-    TracerProvider tracerProvider = this.tracerProvider;
-    if (tracerProvider == null) {
-      TracerProviderFactory tracerProviderFactory = Utils.loadSpi(TracerProviderFactory.class);
-      if (tracerProviderFactory != null) {
-        tracerProvider = tracerProviderFactory.create();
-      } else {
-        tracerProvider = TracerProvider.getDefault();
-      }
-    }
-
     return new DefaultOpenTelemetry(tracerProvider, propagators);
   }
 }

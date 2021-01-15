@@ -9,8 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,10 +34,11 @@ class InMemoryMetricExporterTest {
         "name",
         "description",
         "1",
-        MetricData.LongSumData.create(
+        LongSumData.create(
             /* isMonotonic= */ true,
-            MetricData.AggregationTemporality.CUMULATIVE,
-            Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5))));
+            AggregationTemporality.CUMULATIVE,
+            Collections.singletonList(
+                LongPointData.create(startNs, endNs, Labels.of("k", "v"), 5))));
   }
 
   @Test

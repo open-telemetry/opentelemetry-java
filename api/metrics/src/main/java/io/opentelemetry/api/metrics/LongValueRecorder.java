@@ -6,7 +6,6 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.metrics.LongValueRecorder.BoundLongValueRecorder;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -72,31 +71,4 @@ public interface LongValueRecorder extends SynchronousInstrument<BoundLongValueR
 
   @Override
   BoundLongValueRecorder bind(Labels labels);
-
-  /** A {@code Bound Instrument} for a {@link LongValueRecorder}. */
-  @ThreadSafe
-  interface BoundLongValueRecorder extends SynchronousInstrument.BoundInstrument {
-    /**
-     * Records the given measurement, associated with the current {@code Context}.
-     *
-     * @param value the measurement to record.
-     * @throws IllegalArgumentException if value is negative.
-     */
-    void record(long value);
-
-    @Override
-    void unbind();
-  }
-
-  /** Builder class for {@link LongValueRecorder}. */
-  interface Builder extends SynchronousInstrument.Builder {
-    @Override
-    Builder setDescription(String description);
-
-    @Override
-    Builder setUnit(String unit);
-
-    @Override
-    LongValueRecorder build();
-  }
 }

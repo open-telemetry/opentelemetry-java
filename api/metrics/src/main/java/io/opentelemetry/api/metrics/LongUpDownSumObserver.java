@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.metrics;
 
-import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -47,20 +46,4 @@ import javax.annotation.concurrent.ThreadSafe;
  * }</pre>
  */
 @ThreadSafe
-public interface LongUpDownSumObserver extends AsynchronousInstrument {
-
-  /** Builder class for {@link LongUpDownSumObserver}. */
-  interface Builder extends AsynchronousInstrument.Builder<LongResult> {
-    @Override
-    Builder setDescription(String description);
-
-    @Override
-    Builder setUnit(String unit);
-
-    @Override
-    Builder setUpdater(Consumer<LongResult> updater);
-
-    @Override
-    LongUpDownSumObserver build();
-  }
-}
+public interface LongUpDownSumObserver extends AsynchronousInstrument {}

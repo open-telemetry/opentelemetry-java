@@ -6,7 +6,6 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -61,33 +60,4 @@ public interface LongCounter extends SynchronousInstrument<BoundLongCounter> {
 
   @Override
   BoundLongCounter bind(Labels labels);
-
-  /** A {@code Bound Instrument} for a {@link LongCounter}. */
-  @ThreadSafe
-  interface BoundLongCounter extends SynchronousInstrument.BoundInstrument {
-
-    /**
-     * Adds the given {@code increment} to the current value. The values cannot be negative.
-     *
-     * <p>The value added is associated with the current {@code Context}.
-     *
-     * @param increment the value to add.
-     */
-    void add(long increment);
-
-    @Override
-    void unbind();
-  }
-
-  /** Builder class for {@link LongCounter}. */
-  interface Builder extends SynchronousInstrument.Builder {
-    @Override
-    Builder setDescription(String description);
-
-    @Override
-    Builder setUnit(String unit);
-
-    @Override
-    LongCounter build();
-  }
 }

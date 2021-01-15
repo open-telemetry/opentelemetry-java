@@ -5,7 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import java.util.Map;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -17,11 +21,7 @@ import javax.annotation.concurrent.Immutable;
  * #accumulateLong(long)} will be used when reading values from the instrument callbacks.
  */
 @Immutable
-public interface Aggregator<T extends Accumulation> {
-
-  // TODO: Move all getInstance methods here as static methods and make the implementations package
-  //  protected.
-
+public interface Aggregator<T> {
   /**
    * Returns a new {@link AggregatorHandle}. This MUST by used by the synchronous to aggregate
    * recorded measurements during the collection cycle.
@@ -53,4 +53,23 @@ public interface Aggregator<T extends Accumulation> {
     throw new UnsupportedOperationException(
         "This aggregator does not support recording double values.");
   }
+
+  /**
+   * Returns the result of the merge of the given accumulations.
+   *
+   * @return the result of the merge of the given accumulations.
+   */
+  T merge(T a1, T a2);
+
+  /**
+   * Returns the {@link MetricData} that this {@code Aggregation} will produce.
+   *
+   * @param accumulationByLabels the map of Labels to Accumulation.
+   * @param startEpochNanos the startEpochNanos for the {@code Point}.
+   * @param epochNanos the epochNanos for the {@code Point}.
+   * @return the {@link MetricDataType} that this {@code Aggregation} will produce.
+   */
+  @Nullable
+  MetricData toMetricData(
+      Map<Labels, T> accumulationByLabels, long startEpochNanos, long epochNanos);
 }

@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.BoundDoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -42,7 +44,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
     return new BoundInstrument(acquireHandle(labels));
   }
 
-  static final class BoundInstrument implements DoubleCounter.BoundDoubleCounter {
+  static final class BoundInstrument implements BoundDoubleCounter {
     private final AggregatorHandle<?> aggregatorHandle;
 
     BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
@@ -64,7 +66,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
   }
 
   static final class Builder extends AbstractSynchronousInstrumentBuilder<DoubleCounterSdk.Builder>
-      implements DoubleCounter.Builder {
+      implements DoubleCounterBuilder {
 
     Builder(
         String name,

@@ -28,7 +28,7 @@ services:
       - "13133:13133" # health_check extension
       - "55678"       # OpenCensus receiver
       - "55681:55679" # zpages extension
-      - "55680:55680" # otlp receiver
+      - "4317:4317"   # otlp receiver
     depends_on:
       - jaeger-all-in-one
       - zipkin-all-in-one

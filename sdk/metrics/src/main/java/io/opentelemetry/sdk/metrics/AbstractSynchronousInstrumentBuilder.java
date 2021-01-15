@@ -32,13 +32,10 @@ abstract class AbstractSynchronousInstrumentBuilder<
     InstrumentDescriptor descriptor = buildDescriptor();
     return meterSharedState
         .getInstrumentRegistry()
-        .register(instrumentFactory.apply(descriptor, buildAccumulator(descriptor)));
-  }
-
-  private SynchronousInstrumentAccumulator<?> buildAccumulator(InstrumentDescriptor descriptor) {
-    return new SynchronousInstrumentAccumulator<>(
-        meterProviderSharedState
-            .getViewRegistry()
-            .createBatcher(meterProviderSharedState, meterSharedState, descriptor));
+        .register(
+            instrumentFactory.apply(
+                descriptor,
+                SynchronousInstrumentAccumulator.create(
+                    meterProviderSharedState, meterSharedState, descriptor)));
   }
 }

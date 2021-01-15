@@ -6,12 +6,12 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 // Represents the shared state/config between all Tracers created by the same TracerProvider.
@@ -21,14 +21,12 @@ final class TracerSharedState {
   private final IdGenerator idGenerator;
   private final Resource resource;
 
-  // Reads and writes are atomic for reference variables. Use volatile to ensure that these
-  // operations are visible on other CPUs as well.
-  private volatile Supplier<TraceConfig> traceConfigSupplier;
-  private volatile SpanProcessor activeSpanProcessor = NoopSpanProcessor.getInstance();
-  private volatile boolean isStopped = false;
+  private final Supplier<TraceConfig> traceConfigSupplier;
+  private final SpanProcessor activeSpanProcessor;
 
   @GuardedBy("lock")
-  private final List<SpanProcessor> registeredSpanProcessors;
+  @Nullable
+  private volatile CompletableResultCode shutdownResult = null;
 
   TracerSharedState(
       Clock clock,
@@ -40,8 +38,7 @@ final class TracerSharedState {
     this.idGenerator = idGenerator;
     this.resource = resource;
     this.traceConfigSupplier = traceConfigSupplier;
-    this.registeredSpanProcessors = new ArrayList<>(spanProcessors);
-    activeSpanProcessor = SpanProcessor.composite(registeredSpanProcessors);
+    activeSpanProcessor = SpanProcessor.composite(spanProcessors);
   }
 
   Clock getClock() {
@@ -66,15 +63,6 @@ final class TracerSharedState {
   }
 
   /**
-   * Updates the active {@link TraceConfig}.
-   *
-   * @param traceConfig the new active {@code TraceConfig}.
-   */
-  void updateActiveTraceConfig(TraceConfig traceConfig) {
-    traceConfigSupplier = () -> traceConfig;
-  }
-
-  /**
    * Returns the active {@code SpanProcessor}.
    *
    * @return the active {@code SpanProcessor}.
@@ -84,36 +72,29 @@ final class TracerSharedState {
   }
 
   /**
-   * Adds a new {@code SpanProcessor}.
-   *
-   * @param spanProcessor the new {@code SpanProcessor} to be added.
-   */
-  void addSpanProcessor(SpanProcessor spanProcessor) {
-    synchronized (lock) {
-      registeredSpanProcessors.add(spanProcessor);
-      activeSpanProcessor = SpanProcessor.composite(registeredSpanProcessors);
-    }
-  }
-
-  /**
    * Returns {@code true} if tracing is stopped.
    *
    * @return {@code true} if tracing is stopped.
    */
   boolean isStopped() {
-    return isStopped;
+    synchronized (lock) {
+      return shutdownResult != null && shutdownResult.isSuccess();
+    }
   }
 
   /**
    * Stops tracing, including shutting down processors and set to {@code true} {@link #isStopped()}.
+   *
+   * @return a {@link CompletableResultCode} that will be completed when the span processor is shut
+   *     down.
    */
-  void stop() {
+  CompletableResultCode shutdown() {
     synchronized (lock) {
-      if (isStopped) {
-        return;
+      if (shutdownResult != null) {
+        return shutdownResult;
       }
-      activeSpanProcessor.shutdown().join(10, TimeUnit.SECONDS);
-      isStopped = true;
+      shutdownResult = activeSpanProcessor.shutdown();
+      return shutdownResult;
     }
   }
 }

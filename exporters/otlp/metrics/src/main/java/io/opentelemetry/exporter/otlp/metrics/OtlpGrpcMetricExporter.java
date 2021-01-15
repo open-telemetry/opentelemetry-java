@@ -24,58 +24,26 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * Exports metrics using OTLP via gRPC, using OpenTelemetry's protobuf model.
- *
- * <p>Configuration options for {@link OtlpGrpcMetricExporter} can be read from system properties,
- * environment variables, or {@link java.util.Properties} objects.
- *
- * <p>For system properties and {@link java.util.Properties} objects, {@link OtlpGrpcMetricExporter}
- * will look for the following names:
- *
- * <ul>
- *   <li>{@code otel.exporter.otlp.metric.timeout}: to set the max waiting time allowed to send each
- *       span batch.
- *   <li>{@code otel.exporter.otlp.metric.endpoint}: to set the endpoint to connect to.
- *   <li>{@code otel.exporter.otlp.metric.insecure}: whether to enable client transport security for
- *       the connection.
- *   <li>{@code otel.exporter.otlp.metric.headers}: the headers associated with the requests.
- * </ul>
- *
- * <p>For environment variables, {@link OtlpGrpcMetricExporter} will look for the following names:
- *
- * <ul>
- *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_TIMEOUT}: to set the max waiting time allowed to send each
- *       span batch.
- *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_ENDPOINT}: to set the endpoint to connect to.
- *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_INSECURE}: whether to enable client transport security for
- *       the connection.
- *   <li>{@code OTEL_EXPORTER_OTLP_METRIC_HEADERS}: the headers associated with the requests.
- * </ul>
- *
- * <p>In both cases, if a property is missing, the name without "span" is used to resolve the value.
- */
+/** Exports metrics using OTLP via gRPC, using OpenTelemetry's protobuf model. */
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
-  public static final String DEFAULT_ENDPOINT = "localhost:4317";
-  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(10);
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
 
   private final MetricsServiceFutureStub metricsService;
   private final ManagedChannel managedChannel;
-  private final long deadlineMs;
+  private final long timeoutNanos;
 
   /**
    * Creates a new OTLP gRPC Metric Reporter with the given name, using the given channel.
    *
    * @param channel the channel to use when communicating with the OpenTelemetry Collector.
-   * @param deadlineMs max waiting time for the collector to process each metric batch. When set to
-   *     0 or to a negative value, the exporter will wait indefinitely.
+   * @param timeoutNanos max waiting time for the collector to process each metric batch. When set
+   *     to 0 or to a negative value, the exporter will wait indefinitely.
    */
-  OtlpGrpcMetricExporter(ManagedChannel channel, long deadlineMs) {
+  OtlpGrpcMetricExporter(ManagedChannel channel, long timeoutNanos) {
     this.managedChannel = channel;
-    this.deadlineMs = deadlineMs;
+    this.timeoutNanos = timeoutNanos;
     metricsService = MetricsServiceGrpc.newFutureStub(channel);
   }
 
@@ -94,8 +62,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
     final CompletableResultCode result = new CompletableResultCode();
     MetricsServiceFutureStub exporter;
-    if (deadlineMs > 0) {
-      exporter = metricsService.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
+    if (timeoutNanos > 0) {
+      exporter = metricsService.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
     } else {
       exporter = metricsService;
     }
@@ -145,7 +113,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @return a new {@link OtlpGrpcMetricExporter} instance.
    */
   public static OtlpGrpcMetricExporter getDefault() {
-    return builder().readEnvironmentVariables().readSystemProperties().build();
+    return builder().build();
   }
 
   /**

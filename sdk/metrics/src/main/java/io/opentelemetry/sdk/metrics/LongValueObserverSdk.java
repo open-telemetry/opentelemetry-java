@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.LongValueObserver;
+import io.opentelemetry.api.metrics.LongValueObserverBuilder;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -20,7 +21,7 @@ final class LongValueObserverSdk extends AbstractAsynchronousInstrument
 
   static final class Builder
       extends AbstractLongAsynchronousInstrumentBuilder<LongValueObserverSdk.Builder>
-      implements LongValueObserver.Builder {
+      implements LongValueObserverBuilder {
 
     Builder(
         String name,

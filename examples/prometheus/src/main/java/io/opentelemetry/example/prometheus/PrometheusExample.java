@@ -1,12 +1,10 @@
 package io.opentelemetry.example.prometheus;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
@@ -20,34 +18,20 @@ import java.util.concurrent.ThreadLocalRandom;
  * interval.
  */
 public class PrometheusExample {
-
-  private final MeterProvider meterSdkProvider = GlobalMetricsProvider.get();
-  private final Meter meter = meterSdkProvider.get("PrometheusExample", "0.13.1");
-  private final HTTPServer server;
   private long incomingMessageCount;
 
-  public PrometheusExample(int port) throws IOException {
-    LongValueObserver observer =
-        meter
-            .longValueObserverBuilder("incoming.messages")
-            .setDescription("No of incoming messages awaiting processing")
-            .setUnit("message")
-            .setUpdater(result -> result.observe(incomingMessageCount, Labels.empty()))
-            .build();
-
-    PrometheusCollector.builder()
-        .setMetricProducer(((SdkMeterProvider) meterSdkProvider).getMetricProducer())
-        .buildAndRegister();
-
-    server = new HTTPServer(port);
-  }
-
-  void shutdown() {
-    server.stop();
+  public PrometheusExample(MeterProvider meterProvider) {
+    Meter meter = meterProvider.get("PrometheusExample", "0.13.1");
+    meter
+        .longValueObserverBuilder("incoming.messages")
+        .setDescription("No of incoming messages awaiting processing")
+        .setUnit("message")
+        .setUpdater(result -> result.observe(incomingMessageCount, Labels.empty()))
+        .build();
   }
 
   void simulate() {
-    for (int i = 300; i > 0; i--) {
+    for (int i = 10; i > 0; i--) {
       try {
         System.out.println(
             i + " Iterations to go, current incomingMessageCount is:  " + incomingMessageCount);
@@ -60,20 +44,24 @@ public class PrometheusExample {
   }
 
   public static void main(String[] args) throws IOException {
-
-    int port = 0;
+    int prometheusPort = 0;
     try {
-      port = Integer.parseInt(args[0]);
+      prometheusPort = Integer.parseInt(args[0]);
     } catch (Exception e) {
       System.out.println("Port not set, or is invalid. Exiting");
       System.exit(1);
     }
 
-    PrometheusExample prometheusExample = new PrometheusExample(port);
+    // it is important to initialize the OpenTelemetry SDK as early as possible in your process.
+    MeterProvider meterProvider = ExampleConfiguration.initializeOpenTelemetry(prometheusPort);
+
+    PrometheusExample prometheusExample = new PrometheusExample(meterProvider);
 
     prometheusExample.simulate();
-    prometheusExample.shutdown();
 
     System.out.println("Exiting");
+
+    // clean up the prometheus endpoint
+    ExampleConfiguration.shutdownPrometheusEndpoint();
   }
 }

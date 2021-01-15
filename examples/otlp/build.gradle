@@ -6,9 +6,14 @@ description = 'OpenTelemetry Example for OTLP Exporters'
 ext.moduleName = "io.opentelemetry.examples.otlp"
 
 dependencies {
-    compile("io.opentelemetry:opentelemetry-api")
-    compile("io.opentelemetry:opentelemetry-sdk")
-    compile("io.opentelemetry:opentelemetry-exporter-otlp")
-    compile("io.opentelemetry:opentelemetry-exporter-otlp-metrics:0.13.1-alpha")
-    compile "io.grpc:grpc-netty-shaded"
+    implementation("io.opentelemetry:opentelemetry-api")
+    implementation("io.opentelemetry:opentelemetry-sdk")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+    //pull in the autoconfigure extension so we parse the `otel.resource.attributes` system property used in the example.
+    implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
+
+    implementation("io.opentelemetry:opentelemetry-api-metrics:${openTelemetryVersion}-alpha")
+    implementation("io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}-alpha")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp-metrics:${openTelemetryVersion}-alpha")
+    implementation "io.grpc:grpc-netty-shaded"
 }

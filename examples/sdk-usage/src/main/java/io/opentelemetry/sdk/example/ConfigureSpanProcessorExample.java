@@ -9,9 +9,11 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import java.util.concurrent.TimeUnit;
 
 /** This example shows how to instantiate different Span Processors. */
 public class ConfigureSpanProcessorExample {
@@ -53,8 +55,11 @@ public class ConfigureSpanProcessorExample {
 
     // Configure the simple spans processor. This span processor exports span immediately after they
     // are ended.
-    SimpleSpanProcessor simpleSpansProcessor = SimpleSpanProcessor.builder(exporter).build();
-    tracerManagement.addSpanProcessor(simpleSpansProcessor);
+    SpanProcessor simpleSpansProcessor = SimpleSpanProcessor.create(exporter);
+    OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder().addSpanProcessor(simpleSpansProcessor).build())
+        .build();
 
     // Configure the batch spans processor. This span processor exports span in batches.
     BatchSpanProcessor batchSpansProcessor =
@@ -62,17 +67,22 @@ public class ConfigureSpanProcessorExample {
             .setExportOnlySampled(true) // send to the exporter only spans that have been sampled
             .setMaxExportBatchSize(512) // set the maximum batch size to use
             .setMaxQueueSize(2048) // set the queue size. This must be >= the export batch size
-            .setExporterTimeoutMillis(
-                30_000) // set the max amount of time an export can run before getting
+            .setExporterTimeout(
+                30, TimeUnit.SECONDS) // set the max amount of time an export can run before getting
             // interrupted
-            .setScheduleDelayMillis(5000) // set time between two different exports
+            .setScheduleDelay(5, TimeUnit.SECONDS) // set time between two different exports
             .build();
-    tracerManagement.addSpanProcessor(batchSpansProcessor);
+    OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder().addSpanProcessor(batchSpansProcessor).build())
+        .build();
 
     // Configure the composite span processor. A Composite SpanProcessor accepts a list of Span
     // Processors.
     SpanProcessor multiSpanProcessor =
         SpanProcessor.composite(simpleSpansProcessor, batchSpansProcessor);
-    tracerManagement.addSpanProcessor(multiSpanProcessor);
+    OpenTelemetrySdk.builder()
+        .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(multiSpanProcessor).build())
+        .build();
   }
 }

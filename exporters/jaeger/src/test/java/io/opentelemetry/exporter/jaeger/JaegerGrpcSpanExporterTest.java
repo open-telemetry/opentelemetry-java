@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.jaeger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
@@ -22,21 +23,21 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,7 +94,7 @@ class JaegerGrpcSpanExporterTest {
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(Status.ok())
+            .setStatus(StatusData.ok())
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
@@ -116,7 +117,7 @@ class JaegerGrpcSpanExporterTest {
 
     Model.Batch batch = requestCaptor.getValue().getBatch();
     assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint");
-    assertThat(batch.getSpans(0).getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(SPAN_ID));
+    assertThat(SpanId.bytesToHex(batch.getSpans(0).getSpanId().toByteArray())).isEqualTo(SPAN_ID);
 
     assertThat(
             getTagValue(batch.getProcess().getTagsList(), "resource-attr-key")
@@ -140,7 +141,7 @@ class JaegerGrpcSpanExporterTest {
             .setName("GET /api/endpoint/1")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(Status.ok())
+            .setStatus(StatusData.ok())
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
@@ -161,7 +162,7 @@ class JaegerGrpcSpanExporterTest {
             .setName("GET /api/endpoint/2")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(Status.ok())
+            .setStatus(StatusData.ok())
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
@@ -196,12 +197,13 @@ class JaegerGrpcSpanExporterTest {
       if (processTag.isPresent()) {
         assertThat(processTag2.isPresent()).isFalse();
         assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint/1");
-        assertThat(batch.getSpans(0).getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(SPAN_ID));
+        assertThat(SpanId.bytesToHex(batch.getSpans(0).getSpanId().toByteArray()))
+            .isEqualTo(SPAN_ID);
         assertThat(processTag.get().getVStr()).isEqualTo("resource-attr-value-1");
       } else if (processTag2.isPresent()) {
         assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint/2");
-        assertThat(batch.getSpans(0).getSpanId())
-            .isEqualTo(TraceProtoUtils.toProtoSpanId(SPAN_ID_2));
+        assertThat(SpanId.bytesToHex(batch.getSpans(0).getSpanId().toByteArray()))
+            .isEqualTo(SPAN_ID_2);
         assertThat(processTag2.get().getVStr()).isEqualTo("resource-attr-value-2");
       } else {
         fail("No process tag resource-attr-key-1 or resource-attr-key-2");
@@ -211,7 +213,8 @@ class JaegerGrpcSpanExporterTest {
 
   private static void verifyBatch(Model.Batch batch) throws Exception {
     assertThat(batch.getSpansCount()).isEqualTo(1);
-    assertThat(batch.getSpans(0).getTraceId()).isEqualTo(TraceProtoUtils.toProtoTraceId(TRACE_ID));
+    assertThat(TraceId.bytesToHex(batch.getSpans(0).getTraceId().toByteArray()))
+        .isEqualTo(TRACE_ID);
     assertThat(batch.getProcess().getServiceName()).isEqualTo("test");
     assertThat(batch.getProcess().getTagsCount()).isEqualTo(4);
 
@@ -255,16 +258,17 @@ class JaegerGrpcSpanExporterTest {
   }
 
   @Test
-  void configTest() {
-    Properties options = new Properties();
-    String serviceName = "myGreatService";
-    String endpoint = "127.0.0.1:9090";
-    options.put("otel.exporter.jaeger.service.name", serviceName);
-    options.put("otel.exporter.jaeger.endpoint", endpoint);
-    JaegerGrpcSpanExporter exporter =
-        JaegerGrpcSpanExporter.builder().readProperties(options).build();
-    assertThat(exporter.getProcessBuilder().getServiceName()).isEqualTo(serviceName);
-    assertThat(exporter.getManagedChannel().authority()).isEqualTo(endpoint);
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void invalidConfig() {
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
   }
 
   static class MockCollectorService extends CollectorServiceGrpc.CollectorServiceImplBase {

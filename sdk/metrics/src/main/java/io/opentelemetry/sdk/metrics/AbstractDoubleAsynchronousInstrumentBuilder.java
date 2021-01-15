@@ -44,9 +44,6 @@ abstract class AbstractDoubleAsynchronousInstrumentBuilder<B extends AbstractIns
             instrumentFactory.apply(
                 descriptor,
                 AsynchronousInstrumentAccumulator.doubleAsynchronousAccumulator(
-                    meterProviderSharedState
-                        .getViewRegistry()
-                        .createBatcher(meterProviderSharedState, meterSharedState, descriptor),
-                    updater)));
+                    meterProviderSharedState, meterSharedState, descriptor, updater)));
   }
 }

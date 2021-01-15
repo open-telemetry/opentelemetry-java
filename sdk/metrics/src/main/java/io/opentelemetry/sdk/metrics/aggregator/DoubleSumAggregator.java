@@ -5,39 +5,64 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.sdk.metrics.accumulation.DoubleAccumulation;
+import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.Resource;
+import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
 
-public final class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {
-  private static final DoubleSumAggregator INSTANCE = new DoubleSumAggregator();
-
-  /**
-   * Returns the instance of this {@link Aggregator}.
-   *
-   * @return the instance of this {@link Aggregator}.
-   */
-  public static Aggregator<DoubleAccumulation> getInstance() {
-    return INSTANCE;
+final class DoubleSumAggregator extends AbstractAggregator<Double> {
+  DoubleSumAggregator(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor) {
+    super(resource, instrumentationLibraryInfo, descriptor);
   }
 
-  private DoubleSumAggregator() {}
-
   @Override
-  public AggregatorHandle<DoubleAccumulation> createHandle() {
+  public AggregatorHandle<Double> createHandle() {
     return new Handle();
   }
 
   @Override
-  public DoubleAccumulation accumulateDouble(double value) {
-    return DoubleAccumulation.create(value);
+  public Double accumulateDouble(double value) {
+    return value;
   }
 
-  static final class Handle extends AggregatorHandle<DoubleAccumulation> {
+  @Override
+  public final Double merge(Double a1, Double a2) {
+    return a1 + a2;
+  }
+
+  @Override
+  public MetricData toMetricData(
+      Map<Labels, Double> accumulationByLabels, long startEpochNanos, long epochNanos) {
+    boolean isMonotonic =
+        getInstrumentDescriptor().getType() == InstrumentType.COUNTER
+            || getInstrumentDescriptor().getType() == InstrumentType.SUM_OBSERVER;
+    return MetricData.createDoubleSum(
+        getResource(),
+        getInstrumentationLibraryInfo(),
+        getInstrumentDescriptor().getName(),
+        getInstrumentDescriptor().getDescription(),
+        getInstrumentDescriptor().getUnit(),
+        DoubleSumData.create(
+            isMonotonic,
+            AggregationTemporality.CUMULATIVE,
+            MetricDataUtils.toDoublePointList(accumulationByLabels, startEpochNanos, epochNanos)));
+  }
+
+  static final class Handle extends AggregatorHandle<Double> {
     private final DoubleAdder current = new DoubleAdder();
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset() {
-      return DoubleAccumulation.create(this.current.sumThenReset());
+    protected Double doAccumulateThenReset() {
+      return this.current.sumThenReset();
     }
 
     @Override

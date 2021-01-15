@@ -5,8 +5,6 @@
 
 package io.opentelemetry.exporter.zipkin;
 
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
-import java.util.Map;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.SpanBytesEncoder;
@@ -14,9 +12,7 @@ import zipkin2.reporter.Sender;
 import zipkin2.reporter.okhttp3.OkHttpSender;
 
 /** Builder class for {@link ZipkinSpanExporter}. */
-public final class ZipkinSpanExporterBuilder extends ConfigBuilder<ZipkinSpanExporterBuilder> {
-  private static final String KEY_SERVICE_NAME = "otel.exporter.zipkin.service.name";
-  private static final String KEY_ENDPOINT = "otel.exporter.zipkin.endpoint";
+public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
   private Sender sender;
   private String serviceName = ZipkinSpanExporter.DEFAULT_SERVICE_NAME;
@@ -83,27 +79,6 @@ public final class ZipkinSpanExporterBuilder extends ConfigBuilder<ZipkinSpanExp
    */
   public ZipkinSpanExporterBuilder setEndpoint(String endpoint) {
     this.endpoint = endpoint;
-    return this;
-  }
-
-  /**
-   * Sets the configuration values from the given configuration map for only the available keys.
-   *
-   * @param configMap {@link Map} holding the configuration values.
-   * @return this.
-   */
-  @Override
-  protected ZipkinSpanExporterBuilder fromConfigMap(
-      Map<String, String> configMap, NamingConvention namingConvention) {
-    configMap = namingConvention.normalize(configMap);
-    String stringValue = getStringProperty(KEY_SERVICE_NAME, configMap);
-    if (stringValue != null) {
-      this.setServiceName(stringValue);
-    }
-    stringValue = getStringProperty(KEY_ENDPOINT, configMap);
-    if (stringValue != null) {
-      this.setEndpoint(stringValue);
-    }
     return this;
   }
 

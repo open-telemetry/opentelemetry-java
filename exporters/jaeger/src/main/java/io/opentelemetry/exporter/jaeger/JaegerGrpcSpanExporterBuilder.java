@@ -5,21 +5,24 @@
 
 package io.opentelemetry.exporter.jaeger;
 
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.Objects.requireNonNull;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
-import java.util.Map;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 /** Builder utility for this exporter. */
-public final class JaegerGrpcSpanExporterBuilder
-    extends ConfigBuilder<JaegerGrpcSpanExporterBuilder> {
-  private static final String KEY_SERVICE_NAME = "otel.exporter.jaeger.service.name";
-  private static final String KEY_ENDPOINT = "otel.exporter.jaeger.endpoint";
+public final class JaegerGrpcSpanExporterBuilder {
+  private static final String DEFAULT_ENDPOINT = "localhost:14250";
+  private static final String DEFAULT_SERVICE_NAME = "unknown";
+  private static final long DEFAULT_TIMEOUT_SECS = 10;
 
-  private String serviceName = JaegerGrpcSpanExporter.DEFAULT_SERVICE_NAME;
-  private String endpoint = JaegerGrpcSpanExporter.DEFAULT_ENDPOINT;
+  private String serviceName = DEFAULT_SERVICE_NAME;
+  private String endpoint = DEFAULT_ENDPOINT;
   private ManagedChannel channel;
-  private long deadlineMs = JaegerGrpcSpanExporter.DEFAULT_DEADLINE_MS; // 10 seconds
+  private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
 
   /**
    * Sets the service name to be used by this exporter. Required.
@@ -56,35 +59,23 @@ public final class JaegerGrpcSpanExporterBuilder
   }
 
   /**
-   * Sets the max waiting time for the collector to process each span batch. Optional.
-   *
-   * @param deadlineMs the max waiting time in millis.
-   * @return this.
+   * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
+   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
    */
-  public JaegerGrpcSpanExporterBuilder setDeadlineMs(long deadlineMs) {
-    this.deadlineMs = deadlineMs;
+  public JaegerGrpcSpanExporterBuilder setTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    timeoutNanos = unit.toNanos(timeout);
     return this;
   }
 
   /**
-   * Sets the configuration values from the given configuration map for only the available keys.
-   *
-   * @param configMap {@link Map} holding the configuration values.
-   * @return this.
+   * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
+   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
    */
-  @Override
-  protected JaegerGrpcSpanExporterBuilder fromConfigMap(
-      Map<String, String> configMap, NamingConvention namingConvention) {
-    configMap = namingConvention.normalize(configMap);
-    String stringValue = getStringProperty(KEY_SERVICE_NAME, configMap);
-    if (stringValue != null) {
-      this.setServiceName(stringValue);
-    }
-    stringValue = getStringProperty(KEY_ENDPOINT, configMap);
-    if (stringValue != null) {
-      this.setEndpoint(stringValue);
-    }
-    return this;
+  public JaegerGrpcSpanExporterBuilder setTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   /**
@@ -96,7 +87,7 @@ public final class JaegerGrpcSpanExporterBuilder
     if (channel == null) {
       channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
     }
-    return new JaegerGrpcSpanExporter(serviceName, channel, deadlineMs);
+    return new JaegerGrpcSpanExporter(serviceName, channel, timeoutNanos);
   }
 
   JaegerGrpcSpanExporterBuilder() {}

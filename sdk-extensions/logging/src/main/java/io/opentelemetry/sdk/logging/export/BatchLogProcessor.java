@@ -7,17 +7,15 @@ package io.opentelemetry.sdk.logging.export;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.internal.Utils;
+import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.logging.LogProcessor;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -219,16 +217,11 @@ public final class BatchLogProcessor implements LogProcessor {
     }
   }
 
-  public static class Builder extends ConfigBuilder<Builder> {
+  public static class Builder {
     private static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 200;
     private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
     private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
     private static final long DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
-
-    private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.log.schedule.delay";
-    private static final String KEY_MAX_QUEUE_SIZE = "otel.log.max.queue";
-    private static final String KEY_MAX_EXPORT_BATCH_SIZE = "otel.log.max.export.batch";
-    private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.log.export.timeout";
 
     private final LogExporter logExporter;
     private long scheduleDelayMillis = DEFAULT_SCHEDULE_DELAY_MILLIS;
@@ -331,29 +324,6 @@ public final class BatchLogProcessor implements LogProcessor {
 
     public int getMaxExportBatchSize() {
       return maxExportBatchSize;
-    }
-
-    @Override
-    protected Builder fromConfigMap(
-        Map<String, String> configMap, NamingConvention namingConvention) {
-      configMap = namingConvention.normalize(configMap);
-      Long longValue = getLongProperty(KEY_SCHEDULE_DELAY_MILLIS, configMap);
-      if (longValue != null) {
-        this.setScheduleDelayMillis(longValue);
-      }
-      Integer intValue = getIntProperty(KEY_MAX_QUEUE_SIZE, configMap);
-      if (intValue != null) {
-        this.setMaxQueueSize(intValue);
-      }
-      intValue = getIntProperty(KEY_MAX_EXPORT_BATCH_SIZE, configMap);
-      if (intValue != null) {
-        this.setMaxExportBatchSize(intValue);
-      }
-      intValue = getIntProperty(KEY_EXPORT_TIMEOUT_MILLIS, configMap);
-      if (intValue != null) {
-        this.setExporterTimeoutMillis(intValue);
-      }
-      return this;
     }
   }
 }

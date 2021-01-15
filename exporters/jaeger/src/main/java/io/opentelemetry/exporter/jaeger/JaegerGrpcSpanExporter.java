@@ -37,12 +37,9 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Exports spans to Jaeger via gRPC, using Jaeger's protobuf model. */
 @ThreadSafe
 public final class JaegerGrpcSpanExporter implements SpanExporter {
-  public static final String DEFAULT_HOST_NAME = "unknown";
-  public static final String DEFAULT_ENDPOINT = "localhost:14250";
-  public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
-  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(10);
 
   private static final Logger logger = Logger.getLogger(JaegerGrpcSpanExporter.class.getName());
+  private static final String DEFAULT_HOST_NAME = "unknown";
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
   private static final String HOSTNAME_KEY = "hostname";
@@ -52,17 +49,17 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
 
   private final Model.Process.Builder processBuilder;
   private final ManagedChannel managedChannel;
-  private final long deadlineMs;
+  private final long timeoutNanos;
 
   /**
    * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.
    *
    * @param serviceName this service's name.
    * @param channel the channel to use when communicating with the Jaeger Collector.
-   * @param deadlineMs max waiting time for the collector to process each span batch. When set to 0
-   *     or to a negative value, the exporter will wait indefinitely.
+   * @param timeoutNanos max waiting time for the collector to process each span batch. When set to
+   *     0 or to a negative value, the exporter will wait indefinitely.
    */
-  JaegerGrpcSpanExporter(String serviceName, ManagedChannel channel, long deadlineMs) {
+  JaegerGrpcSpanExporter(String serviceName, ManagedChannel channel, long timeoutNanos) {
     String hostname;
     String ipv4;
 
@@ -98,7 +95,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
 
     this.managedChannel = channel;
     this.stub = CollectorServiceGrpc.newFutureStub(channel);
-    this.deadlineMs = deadlineMs;
+    this.timeoutNanos = timeoutNanos;
   }
 
   /**
@@ -110,8 +107,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     CollectorServiceGrpc.CollectorServiceFutureStub stub = this.stub;
-    if (deadlineMs > 0) {
-      stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
+    if (timeoutNanos > 0) {
+      stub = stub.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
     }
 
     List<Collector.PostSpansRequest> requests = new ArrayList<>();

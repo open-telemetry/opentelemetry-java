@@ -19,7 +19,9 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,17 +50,17 @@ class OpenTelemetryAssertionsTest {
           .put("scores", 0L, 1L)
           .put("coins", 0.01, 0.05, 0.1)
           .build();
-  private static final List<SpanData.Event> EVENTS =
+  private static final List<EventData> EVENTS =
       Arrays.asList(
-          SpanData.Event.create(10, "event", Attributes.empty()),
-          SpanData.Event.create(
+          EventData.create(10, "event", Attributes.empty()),
+          EventData.create(
               20, "event2", Attributes.builder().put("cookie monster", "yum").build()));
-  private static final List<SpanData.Link> LINKS =
+  private static final List<LinkData> LINKS =
       Arrays.asList(
-          SpanData.Link.create(
+          LinkData.create(
               SpanContext.create(
                   TRACE_ID, SPAN_ID1, TraceFlags.getDefault(), TraceState.getDefault())),
-          SpanData.Link.create(
+          LinkData.create(
               SpanContext.create(TRACE_ID, SPAN_ID2, TraceFlags.getSampled(), TRACE_STATE),
               Attributes.empty(),
               100));
@@ -84,7 +86,7 @@ class OpenTelemetryAssertionsTest {
             .setAttributes(ATTRIBUTES)
             .setEvents(EVENTS)
             .setLinks(LINKS)
-            .setStatus(SpanData.Status.ok())
+            .setStatus(StatusData.ok())
             .setEndEpochNanos(200)
             .setHasEnded(true)
             .setTotalRecordedEvents(300)
@@ -129,12 +131,12 @@ class OpenTelemetryAssertionsTest {
                     .containsEntry("coins", 0.01, 0.05, 0.1)
                     .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1)))
         .hasEvents(EVENTS)
-        .hasEvents(EVENTS.toArray(new SpanData.Event[0]))
+        .hasEvents(EVENTS.toArray(new EventData[0]))
         .hasEventsSatisfying(events -> assertThat(events).hasSize(EVENTS.size()))
         .hasLinks(LINKS)
-        .hasLinks(LINKS.toArray(new SpanData.Link[0]))
+        .hasLinks(LINKS.toArray(new LinkData[0]))
         .hasLinksSatisfying(links -> assertThat(links).hasSize(LINKS.size()))
-        .hasStatus(SpanData.Status.ok())
+        .hasStatus(StatusData.ok())
         .endsAt(200)
         .endsAt(200, TimeUnit.NANOSECONDS)
         .endsAt(Instant.ofEpochSecond(0, 200))
@@ -189,7 +191,7 @@ class OpenTelemetryAssertionsTest {
     assertThatThrownBy(
             () -> assertThat(SPAN1).hasLinksSatisfying(links -> assertThat(links).isEmpty()))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(() -> assertThat(SPAN1).hasStatus(SpanData.Status.error()))
+    assertThatThrownBy(() -> assertThat(SPAN1).hasStatus(StatusData.error()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).endsAt(10)).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).endsAt(10, TimeUnit.NANOSECONDS))

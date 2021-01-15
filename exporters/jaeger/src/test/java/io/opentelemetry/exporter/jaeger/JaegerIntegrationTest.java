@@ -62,7 +62,7 @@ class JaegerIntegrationTest {
         JaegerGrpcSpanExporter.builder()
             .setServiceName(SERVICE_NAME)
             .setChannel(jaegerChannel)
-            .setDeadlineMs(30000)
+            .setTimeout(Duration.ofSeconds(30))
             .build();
     return OpenTelemetrySdk.builder()
         .setTracerProvider(

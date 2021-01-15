@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.Arrays;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
@@ -256,19 +255,5 @@ class DisruptorAsyncSpanProcessorTest {
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnExportedForceFlushSpans()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
-  }
-
-  @Test
-  void configTest() {
-    Properties options = new Properties();
-    options.put("otel.disruptor.blocking", "false");
-    options.put("otel.disruptor.buffer.size", "1234");
-    options.put("otel.disruptor.num.retries", "56");
-    options.put("otel.disruptor.sleeping.time", "78");
-    IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
-    DisruptorAsyncSpanProcessor.Builder config =
-        DisruptorAsyncSpanProcessor.builder(incrementSpanProcessor).readProperties(options);
-    assertThat(config).extracting("blocking").isEqualTo(false);
-    assertThat(config).extracting("bufferSize").isEqualTo(1234);
   }
 }

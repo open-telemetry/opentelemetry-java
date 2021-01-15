@@ -94,12 +94,12 @@ final class SdkMeter implements Meter {
   }
 
   /** Collects all the metric recordings that changed since the previous call. */
-  Collection<MetricData> collectAll() {
+  Collection<MetricData> collectAll(long epochNanos) {
     InstrumentRegistry instrumentRegistry = meterSharedState.getInstrumentRegistry();
     Collection<AbstractInstrument> instruments = instrumentRegistry.getInstruments();
     List<MetricData> result = new ArrayList<>(instruments.size());
     for (AbstractInstrument instrument : instruments) {
-      result.addAll(instrument.collectAll());
+      result.addAll(instrument.collectAll(epochNanos));
     }
     return result;
   }

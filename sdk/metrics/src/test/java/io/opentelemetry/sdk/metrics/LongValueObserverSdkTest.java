@@ -12,8 +12,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.LongGaugeData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -24,46 +25,41 @@ class LongValueObserverSdkTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(
-          "io.opentelemetry.sdk.metrics.LongValueObserverSdkTest", null);
+      InstrumentationLibraryInfo.create(LongValueObserverSdkTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final MeterProviderSharedState meterProviderSharedState =
-      MeterProviderSharedState.create(testClock, RESOURCE);
-  private final SdkMeter testSdk =
-      new SdkMeter(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+  private final SdkMeterProvider sdkMeterProvider =
+      SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
+  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void collectMetrics_NoCallback() {
-    LongValueObserverSdk longValueObserver =
-        testSdk
-            .longValueObserverBuilder("testObserver")
-            .setDescription("My own LongValueObserver")
-            .setUnit("ms")
-            .build();
-    assertThat(longValueObserver.collectAll()).isEmpty();
+    sdkMeter
+        .longValueObserverBuilder("testObserver")
+        .setDescription("My own LongValueObserver")
+        .setUnit("ms")
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    LongValueObserverSdk longValueObserver =
-        testSdk
-            .longValueObserverBuilder("testObserver")
-            .setDescription("My own LongValueObserver")
-            .setUnit("ms")
-            .setUpdater(result -> {})
-            .build();
-    assertThat(longValueObserver.collectAll()).isEmpty();
+    sdkMeter
+        .longValueObserverBuilder("testObserver")
+        .setDescription("My own LongValueObserver")
+        .setUnit("ms")
+        .setUpdater(result -> {})
+        .build();
+    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
   @Test
   void collectMetrics_WithOneRecord() {
-    LongValueObserverSdk longValueObserver =
-        testSdk
-            .longValueObserverBuilder("testObserver")
-            .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
-            .build();
+    sdkMeter
+        .longValueObserverBuilder("testObserver")
+        .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
+        .build();
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longValueObserver.collectAll())
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongGauge(
                 RESOURCE,
@@ -71,15 +67,15 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.LongGaugeData.create(
+                LongGaugeData.create(
                     Collections.singletonList(
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
                             Labels.of("k", "v"),
                             12)))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longValueObserver.collectAll())
+    assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
             MetricData.createLongGauge(
                 RESOURCE,
@@ -87,9 +83,9 @@ class LongValueObserverSdkTest {
                 "testObserver",
                 "",
                 "1",
-                MetricData.LongGaugeData.create(
+                LongGaugeData.create(
                     Collections.singletonList(
-                        LongPoint.create(
+                        LongPointData.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
                             Labels.of("k", "v"),

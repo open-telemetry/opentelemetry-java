@@ -19,9 +19,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -104,7 +104,7 @@ final class Adapter {
               .setVStr(span.getStatus().getDescription()));
     }
 
-    if (!span.getStatus().isUnset()) {
+    if (span.getStatus().getStatusCode() != StatusCode.UNSET) {
       tags.add(
           new Tag(KEY_SPAN_STATUS_CODE, TagType.STRING)
               .setVStr(span.getStatus().getStatusCode().name()));
@@ -129,25 +129,25 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link Event}s into a collection of Jaeger's {@link Log}.
+   * Converts {@link EventData}s into a collection of Jaeger's {@link Log}.
    *
    * @param timedEvents the timed events to be converted
    * @return a collection of Jaeger logs
-   * @see #toJaegerLog(Event)
+   * @see #toJaegerLog(EventData)
    */
   // VisibleForTesting
-  static List<Log> toJaegerLogs(List<Event> timedEvents) {
+  static List<Log> toJaegerLogs(List<EventData> timedEvents) {
     return timedEvents.stream().map(Adapter::toJaegerLog).collect(Collectors.toList());
   }
 
   /**
-   * Converts a {@link Event} into Jaeger's {@link Log}.
+   * Converts a {@link EventData} into Jaeger's {@link Log}.
    *
    * @param event the timed event to be converted
    * @return a Jaeger log
    */
   // VisibleForTesting
-  static Log toJaegerLog(Event event) {
+  static Log toJaegerLog(EventData event) {
     Log result = new Log();
     result.setTimestamp(TimeUnit.NANOSECONDS.toMicros(event.getEpochNanos()));
     result.addToFields(new Tag(KEY_LOG_EVENT, TagType.STRING).setVStr(event.getName()));
@@ -202,28 +202,28 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link Link}s into a collection of Jaeger's {@link SpanRef}.
+   * Converts {@link LinkData}s into a collection of Jaeger's {@link SpanRef}.
    *
    * @param links the span's links property to be converted
    * @return a collection of Jaeger span references
    */
   // VisibleForTesting
-  static List<SpanRef> toSpanRefs(List<Link> links) {
+  static List<SpanRef> toSpanRefs(List<LinkData> links) {
     List<SpanRef> spanRefs = new ArrayList<>(links.size());
-    for (Link link : links) {
+    for (LinkData link : links) {
       spanRefs.add(toSpanRef(link));
     }
     return spanRefs;
   }
 
   /**
-   * Converts a single {@link Link} into a Jaeger's {@link SpanRef}.
+   * Converts a single {@link LinkData} into a Jaeger's {@link SpanRef}.
    *
    * @param link the OpenTelemetry link to be converted
    * @return the Jaeger span reference
    */
   // VisibleForTesting
-  static SpanRef toSpanRef(Link link) {
+  static SpanRef toSpanRef(LinkData link) {
     // we can assume that all links are *follows from*
     // https://github.com/open-telemetry/opentelemetry-java/issues/475
     // https://github.com/open-telemetry/opentelemetry-java/pull/481/files#r312577862

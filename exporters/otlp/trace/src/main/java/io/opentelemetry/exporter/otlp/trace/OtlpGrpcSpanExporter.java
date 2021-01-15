@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -29,42 +30,9 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * Exports spans using OTLP via gRPC, using OpenTelemetry's protobuf model.
- *
- * <p>Configuration options for {@link OtlpGrpcSpanExporter} can be read from system properties,
- * environment variables, or {@link java.util.Properties} objects.
- *
- * <p>For system properties and {@link java.util.Properties} objects, {@link OtlpGrpcSpanExporter}
- * will look for the following names:
- *
- * <ul>
- *   <li>{@code otel.exporter.otlp.span.timeout}: to set the max waiting time allowed to send each
- *       span batch.
- *   <li>{@code otel.exporter.otlp.span.endpoint}: to set the endpoint to connect to.
- *   <li>{@code otel.exporter.otlp.span.insecure}: whether to enable client transport security for
- *       the connection.
- *   <li>{@code otel.exporter.otlp.span.headers}: the headers associated with the requests.
- * </ul>
- *
- * <p>For environment variables, {@link OtlpGrpcSpanExporter} will look for the following names:
- *
- * <ul>
- *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_TIMEOUT}: to set the max waiting time allowed to send each
- *       span batch.
- *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_ENDPOINT}: to set the endpoint to connect to.
- *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_INSECURE}: whether to enable client transport security for
- *       the connection.
- *   <li>{@code OTEL_EXPORTER_OTLP_SPAN_HEADERS}: the headers associated with the requests.
- * </ul>
- *
- * <p>In both cases, if a property is missing, the name without "span" is used to resolve the value.
- */
+/** Exports spans using OTLP via gRPC, using OpenTelemetry's protobuf model. */
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
-
-  public static final String DEFAULT_ENDPOINT = "localhost:4317";
-  public static final long DEFAULT_DEADLINE_MS = TimeUnit.SECONDS.toMillis(10);
 
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
   private static final String EXPORTER_NAME = OtlpGrpcSpanExporter.class.getSimpleName();
@@ -78,19 +46,19 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private final TraceServiceFutureStub traceService;
 
   private final ManagedChannel managedChannel;
-  private final long deadlineMs;
-  private final LongCounter.BoundLongCounter spansSeen;
-  private final LongCounter.BoundLongCounter spansExportedSuccess;
-  private final LongCounter.BoundLongCounter spansExportedFailure;
+  private final long timeoutNanos;
+  private final BoundLongCounter spansSeen;
+  private final BoundLongCounter spansExportedSuccess;
+  private final BoundLongCounter spansExportedFailure;
 
   /**
    * Creates a new OTLP gRPC Span Reporter with the given name, using the given channel.
    *
    * @param channel the channel to use when communicating with the OpenTelemetry Collector.
-   * @param deadlineMs max waiting time for the collector to process each span batch. When set to 0
-   *     or to a negative value, the exporter will wait indefinitely.
+   * @param timeoutNanos max waiting time for the collector to process each span batch. When set to
+   *     0 or to a negative value, the exporter will wait indefinitely.
    */
-  OtlpGrpcSpanExporter(ManagedChannel channel, long deadlineMs) {
+  OtlpGrpcSpanExporter(ManagedChannel channel, long timeoutNanos) {
     Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.exporters.otlp");
     this.spansSeen =
         meter.longCounterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
@@ -98,7 +66,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     this.spansExportedSuccess = spansExportedCounter.bind(EXPORT_SUCCESS_LABELS);
     this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_LABELS);
     this.managedChannel = channel;
-    this.deadlineMs = deadlineMs;
+    this.timeoutNanos = timeoutNanos;
 
     this.traceService = TraceServiceGrpc.newFutureStub(channel);
   }
@@ -120,8 +88,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     final CompletableResultCode result = new CompletableResultCode();
 
     TraceServiceFutureStub exporter;
-    if (deadlineMs > 0) {
-      exporter = traceService.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
+    if (timeoutNanos > 0) {
+      exporter = traceService.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
     } else {
       exporter = traceService;
     }
@@ -174,7 +142,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    * @return a new {@link OtlpGrpcSpanExporter} instance.
    */
   public static OtlpGrpcSpanExporter getDefault() {
-    return builder().readEnvironmentVariables().readSystemProperties().build();
+    return builder().build();
   }
 
   /**
@@ -193,7 +161,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   }
 
   // Visible for testing
-  long getDeadlineMs() {
-    return deadlineMs;
+  long getTimeoutNanos() {
+    return timeoutNanos;
   }
 }

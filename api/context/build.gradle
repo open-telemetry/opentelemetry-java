@@ -28,9 +28,9 @@ dependencies {
     grpcInOtelTestImplementation libraries.grpc_context
     otelInGrpcTestImplementation libraries.grpc_context
 
-    braveInOtelTestImplementation "io.zipkin.brave:brave:5.13.1"
-    otelAsBraveTestImplementation "io.zipkin.brave:brave:5.13.1"
-    otelInBraveTestImplementation "io.zipkin.brave:brave:5.13.1"
+    braveInOtelTestImplementation libraries.brave
+    otelAsBraveTestImplementation libraries.brave
+    otelInBraveTestImplementation libraries.brave
 
     testImplementation libraries.awaitility
     testImplementation libraries.guava
@@ -42,3 +42,13 @@ dependencies {
 tasks.named("strictContextEnabledTest").configure {
     jvmArgs "-Dio.opentelemetry.context.enableStrictContext=true"
 }
+
+check.dependsOn(
+        grpcInOtelTest,
+        otelInGrpcTest,
+        braveInOtelTest,
+        otelInBraveTest,
+        otelAsBraveTest,
+        storageWrappersTest,
+        strictContextEnabledTest
+)

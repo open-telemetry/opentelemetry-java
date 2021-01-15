@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -115,16 +114,6 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // Testing the deprecated method
-  void updateActiveTraceConfig() {
-    assertThat(tracerFactory.getActiveTraceConfig()).isEqualTo(TraceConfig.getDefault());
-    TraceConfig newConfig =
-        TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build();
-    tracerFactory.updateActiveTraceConfig(newConfig);
-    assertThat(tracerFactory.getActiveTraceConfig()).isEqualTo(newConfig);
-  }
-
-  @Test
   void build_traceConfig() {
     TraceConfig initialTraceConfig = mock(TraceConfig.class);
     SdkTracerProvider sdkTracerProvider =
@@ -136,6 +125,12 @@ class SdkTracerProviderTest {
   @Test
   void shutdown() {
     tracerFactory.shutdown();
+    Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
+  }
+
+  @Test
+  void close() {
+    tracerFactory.close();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
   }
 

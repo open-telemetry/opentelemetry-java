@@ -6,7 +6,6 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Labels;
-import java.util.function.Consumer;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -20,21 +19,6 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface AsynchronousInstrument extends Instrument {
-  /** Builder class for {@link AsynchronousInstrument}. */
-  interface Builder<R> extends Instrument.Builder {
-    /**
-     * Sets a consumer that gets executed every collection interval.
-     *
-     * <p>Evaluation is deferred until needed, if this {@code AsynchronousInstrument} metric is not
-     * exported then it will never be called.
-     *
-     * @param updater the consumer to be executed before export.
-     */
-    Builder<R> setUpdater(Consumer<R> updater);
-
-    @Override
-    AsynchronousInstrument build();
-  }
 
   /** The result pass to the updater. */
   interface LongResult {

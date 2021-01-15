@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.LongUpDownSumObserver;
+import io.opentelemetry.api.metrics.LongUpDownSumObserverBuilder;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -20,7 +21,7 @@ final class LongUpDownSumObserverSdk extends AbstractAsynchronousInstrument
 
   static final class Builder
       extends AbstractLongAsynchronousInstrumentBuilder<LongUpDownSumObserverSdk.Builder>
-      implements LongUpDownSumObserver.Builder {
+      implements LongUpDownSumObserverBuilder {
 
     Builder(
         String name,

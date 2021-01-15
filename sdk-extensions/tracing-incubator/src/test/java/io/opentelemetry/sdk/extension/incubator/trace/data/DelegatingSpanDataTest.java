@@ -15,10 +15,10 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -113,7 +113,7 @@ class DelegatingSpanDataTest {
         .setStartEpochNanos(100)
         .setEndEpochNanos(200)
         .setKind(Kind.SERVER)
-        .setStatus(Status.ok())
+        .setStatus(StatusData.ok())
         .setTotalRecordedEvents(0)
         .setTotalRecordedLinks(0);
   }

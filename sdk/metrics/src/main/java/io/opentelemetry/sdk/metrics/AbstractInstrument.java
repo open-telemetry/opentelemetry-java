@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.metrics.Instrument;
+import io.opentelemetry.api.metrics.InstrumentBuilder;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -31,7 +32,7 @@ abstract class AbstractInstrument implements Instrument {
   /**
    * Collects records from all the entries (labelSet, Bound) that changed since the previous call.
    */
-  abstract List<MetricData> collectAll();
+  abstract List<MetricData> collectAll(long epochNanos);
 
   @Override
   public boolean equals(Object o) {
@@ -53,7 +54,7 @@ abstract class AbstractInstrument implements Instrument {
   }
 
   abstract static class Builder<B extends AbstractInstrument.Builder<?>>
-      implements Instrument.Builder {
+      implements InstrumentBuilder {
     /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
         "Name should be a ASCII string with a length no greater than "
             + StringUtils.METRIC_NAME_MAX_LENGTH

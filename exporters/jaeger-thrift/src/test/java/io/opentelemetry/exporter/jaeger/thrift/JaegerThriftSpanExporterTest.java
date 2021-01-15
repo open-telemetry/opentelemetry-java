@@ -24,13 +24,12 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +69,7 @@ class JaegerThriftSpanExporterTest {
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(Status.ok())
+            .setStatus(StatusData.ok())
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
@@ -132,7 +131,7 @@ class JaegerThriftSpanExporterTest {
             .setName("GET /api/endpoint/1")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(Status.ok())
+            .setStatus(StatusData.ok())
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
@@ -153,7 +152,7 @@ class JaegerThriftSpanExporterTest {
             .setName("GET /api/endpoint/2")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-            .setStatus(Status.ok())
+            .setStatus(StatusData.ok())
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
@@ -226,15 +225,5 @@ class JaegerThriftSpanExporterTest {
 
     verify(thriftSender).send(expectedProcess2, Collections.singletonList(expectedSpan2));
     verify(thriftSender).send(expectedProcess1, Collections.singletonList(expectedSpan1));
-  }
-
-  @Test
-  void configTest() {
-    Properties options = new Properties();
-    String serviceName = "myGreatService";
-    options.put("otel.exporter.jaeger.service.name", serviceName);
-    JaegerThriftSpanExporter exporter =
-        JaegerThriftSpanExporter.builder().readProperties(options).build();
-    assertThat(exporter.getProcess().getServiceName()).isEqualTo(serviceName);
   }
 }

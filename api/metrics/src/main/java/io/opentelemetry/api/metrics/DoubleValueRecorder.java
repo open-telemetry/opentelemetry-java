@@ -6,7 +6,6 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -72,31 +71,4 @@ public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleVa
 
   @Override
   BoundDoubleValueRecorder bind(Labels labels);
-
-  /** A {@code Bound Instrument} for a {@link DoubleValueRecorder}. */
-  @ThreadSafe
-  interface BoundDoubleValueRecorder extends SynchronousInstrument.BoundInstrument {
-    /**
-     * Records the given measurement, associated with the current {@code Context}.
-     *
-     * @param value the measurement to record.
-     * @throws IllegalArgumentException if value is negative.
-     */
-    void record(double value);
-
-    @Override
-    void unbind();
-  }
-
-  /** Builder class for {@link DoubleValueRecorder}. */
-  interface Builder extends SynchronousInstrument.Builder {
-    @Override
-    Builder setDescription(String description);
-
-    @Override
-    Builder setUnit(String unit);
-
-    @Override
-    DoubleValueRecorder build();
-  }
 }

@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.util.concurrent.AtomicDouble;
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
@@ -91,13 +90,13 @@ public class AggregatorHandleTest {
     assertThat(testAggregator.recordedDouble.get()).isEqualTo(0);
   }
 
-  private static class TestAggregatorHandle extends AggregatorHandle<Accumulation> {
+  private static class TestAggregatorHandle extends AggregatorHandle<Void> {
     final AtomicLong recordedLong = new AtomicLong();
     final AtomicDouble recordedDouble = new AtomicDouble();
 
     @Nullable
     @Override
-    protected Accumulation doAccumulateThenReset() {
+    protected Void doAccumulateThenReset() {
       recordedLong.set(0);
       recordedDouble.set(0);
       return null;

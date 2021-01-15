@@ -8,12 +8,16 @@ package io.opentelemetry.exporter.prometheus;
 import static io.prometheus.client.Collector.doubleToGoString;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoublePointData;
+import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
@@ -66,18 +70,16 @@ final class MetricAdapter {
       case DOUBLE_GAUGE:
         return Collector.Type.GAUGE;
       case LONG_SUM:
-        MetricData.LongSumData longSumData = metricData.getLongSumData();
+        LongSumData longSumData = metricData.getLongSumData();
         if (longSumData.isMonotonic()
-            && longSumData.getAggregationTemporality()
-                == MetricData.AggregationTemporality.CUMULATIVE) {
+            && longSumData.getAggregationTemporality() == AggregationTemporality.CUMULATIVE) {
           return Collector.Type.COUNTER;
         }
         return Collector.Type.GAUGE;
       case DOUBLE_SUM:
-        MetricData.DoubleSumData doubleSumData = metricData.getDoubleSumData();
+        DoubleSumData doubleSumData = metricData.getDoubleSumData();
         if (doubleSumData.isMonotonic()
-            && doubleSumData.getAggregationTemporality()
-                == MetricData.AggregationTemporality.CUMULATIVE) {
+            && doubleSumData.getAggregationTemporality() == AggregationTemporality.CUMULATIVE) {
           return Collector.Type.COUNTER;
         }
         return Collector.Type.GAUGE;
@@ -91,13 +93,13 @@ final class MetricAdapter {
 
   // Converts a list of points from MetricData to a list of Prometheus Samples.
   static List<Sample> toSamples(
-      String name, MetricData.Type type, Collection<? extends Point> points) {
+      String name, MetricDataType type, Collection<? extends PointData> points) {
     final List<Sample> samples = new ArrayList<>(estimateNumSamples(points.size(), type));
 
-    for (Point point : points) {
+    for (PointData pointData : points) {
       List<String> labelNames = Collections.emptyList();
       List<String> labelValues = Collections.emptyList();
-      Labels labels = point.getLabels();
+      Labels labels = pointData.getLabels();
       if (labels.size() != 0) {
         labelNames = new ArrayList<>(labels.size());
         labelValues = new ArrayList<>(labels.size());
@@ -108,16 +110,17 @@ final class MetricAdapter {
       switch (type) {
         case DOUBLE_SUM:
         case DOUBLE_GAUGE:
-          DoublePoint doublePoint = (DoublePoint) point;
+          DoublePointData doublePoint = (DoublePointData) pointData;
           samples.add(new Sample(name, labelNames, labelValues, doublePoint.getValue()));
           break;
         case LONG_SUM:
         case LONG_GAUGE:
-          LongPoint longPoint = (LongPoint) point;
+          LongPointData longPoint = (LongPointData) pointData;
           samples.add(new Sample(name, labelNames, labelValues, longPoint.getValue()));
           break;
         case SUMMARY:
-          addSummarySamples((DoubleSummaryPoint) point, name, labelNames, labelValues, samples);
+          addSummarySamples(
+              (DoubleSummaryPointData) pointData, name, labelNames, labelValues, samples);
           break;
       }
     }
@@ -142,7 +145,7 @@ final class MetricAdapter {
   }
 
   private static void addSummarySamples(
-      DoubleSummaryPoint doubleSummaryPoint,
+      DoubleSummaryPointData doubleSummaryPoint,
       String name,
       List<String> labelNames,
       List<String> labelValues,
@@ -166,15 +169,15 @@ final class MetricAdapter {
     }
   }
 
-  private static int estimateNumSamples(int numPoints, MetricData.Type type) {
-    if (type == MetricData.Type.SUMMARY) {
+  private static int estimateNumSamples(int numPoints, MetricDataType type) {
+    if (type == MetricDataType.SUMMARY) {
       // count + sum + estimated 2 percentiles (default MinMaxSumCount aggregator).
       return numPoints * 4;
     }
     return numPoints;
   }
 
-  private static Collection<? extends MetricData.Point> getPoints(MetricData metricData) {
+  private static Collection<? extends PointData> getPoints(MetricData metricData) {
     switch (metricData.getType()) {
       case DOUBLE_GAUGE:
         return metricData.getDoubleGaugeData().getPoints();

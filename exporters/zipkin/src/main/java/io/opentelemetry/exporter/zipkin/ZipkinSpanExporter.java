@@ -12,11 +12,13 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -37,24 +39,6 @@ import zipkin2.reporter.Sender;
 /**
  * This class was based on the OpenCensus zipkin exporter code at
  * https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin
- *
- * <p>Configuration options for {@link ZipkinSpanExporter} can be read from system properties,
- * environment variables, or {@link java.util.Properties} objects.
- *
- * <p>For system properties and {@link java.util.Properties} objects, {@link ZipkinSpanExporter}
- * will look for the following names:
- *
- * <ul>
- *   <li>{@code otel.exporter.zipkin.service.name}: to set the service name.
- *   <li>{@code otel.exporter.zipkin.endpoint}: to set the endpoint URL.
- * </ul>
- *
- * <p>For environment variables, {@link ZipkinSpanExporter} will look for the following names:
- *
- * <ul>
- *   <li>{@code OTEL_EXPORTER_ZIPKIN_SERVICE_NAME}: to set the service name.
- *   <li>{@code OTEL_EXPORTER_ZIPKIN_ENDPOINT}: to set the endpoint URL.
- * </ul>
  */
 public final class ZipkinSpanExporter implements SpanExporter {
   public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
@@ -127,14 +111,14 @@ public final class ZipkinSpanExporter implements SpanExporter {
     Attributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
         (key, value) -> spanBuilder.putTag(key.getKey(), valueToString(key, value)));
-    SpanData.Status status = spanData.getStatus();
+    StatusData status = spanData.getStatus();
 
     // include status code & error.
-    if (!status.isUnset()) {
+    if (status.getStatusCode() != StatusCode.UNSET) {
       spanBuilder.putTag(OTEL_STATUS_CODE, status.getStatusCode().toString());
 
       // add the error tag, if it isn't already in the source span.
-      if (!status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
+      if (status.getStatusCode() == StatusCode.ERROR && spanAttributes.get(STATUS_ERROR) == null) {
         spanBuilder.putTag(STATUS_ERROR.getKey(), nullToEmpty(status.getDescription()));
       }
     }
@@ -150,7 +134,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
           KEY_INSTRUMENTATION_LIBRARY_VERSION, instrumentationLibraryInfo.getVersion());
     }
 
-    for (Event annotation : spanData.getEvents()) {
+    for (EventData annotation : spanData.getEvents()) {
       spanBuilder.addAnnotation(toEpochMicros(annotation.getEpochNanos()), annotation.getName());
     }
 

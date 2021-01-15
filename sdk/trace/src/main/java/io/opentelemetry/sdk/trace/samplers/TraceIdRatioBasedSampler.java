@@ -10,7 +10,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -46,9 +46,8 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
     return new AutoValue_TraceIdRatioBasedSampler(
         ratio,
         idUpperBound,
-        ImmutableSamplingResult.createWithProbability(
-            SamplingResult.Decision.RECORD_AND_SAMPLE, ratio),
-        ImmutableSamplingResult.createWithProbability(SamplingResult.Decision.DROP, ratio));
+        SamplingResult.create(SamplingResult.Decision.RECORD_AND_SAMPLE),
+        SamplingResult.create(SamplingResult.Decision.DROP));
   }
 
   abstract double getRatio();
@@ -66,7 +65,7 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
       String name,
       Kind spanKind,
       Attributes attributes,
-      List<Link> parentLinks) {
+      List<LinkData> parentLinks) {
     // Always sample if we are within probability range. This is true even for child spans (that
     // may have had a different sampling samplingResult made) to allow for different sampling
     // policies,

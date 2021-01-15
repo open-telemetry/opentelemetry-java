@@ -30,84 +30,84 @@ final class DefaultMeter implements Meter {
   }
 
   @Override
-  public DoubleCounter.Builder doubleCounterBuilder(String name) {
+  public DoubleCounterBuilder doubleCounterBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleCounter.NoopBuilder();
   }
 
   @Override
-  public LongCounter.Builder longCounterBuilder(String name) {
+  public LongCounterBuilder longCounterBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongCounter.NoopBuilder();
   }
 
   @Override
-  public DoubleUpDownCounter.Builder doubleUpDownCounterBuilder(String name) {
+  public DoubleUpDownCounterBuilder doubleUpDownCounterBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleUpDownCounter.NoopBuilder();
   }
 
   @Override
-  public LongUpDownCounter.Builder longUpDownCounterBuilder(String name) {
+  public LongUpDownCounterBuilder longUpDownCounterBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongUpDownCounter.NoopBuilder();
   }
 
   @Override
-  public DoubleValueRecorder.Builder doubleValueRecorderBuilder(String name) {
+  public DoubleValueRecorderBuilder doubleValueRecorderBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleValueRecorder.NoopBuilder();
   }
 
   @Override
-  public LongValueRecorder.Builder longValueRecorderBuilder(String name) {
+  public LongValueRecorderBuilder longValueRecorderBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongValueRecorder.NoopBuilder();
   }
 
   @Override
-  public DoubleSumObserver.Builder doubleSumObserverBuilder(String name) {
+  public DoubleSumObserverBuilder doubleSumObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleSumObserver.NoopBuilder();
   }
 
   @Override
-  public LongSumObserver.Builder longSumObserverBuilder(String name) {
+  public LongSumObserverBuilder longSumObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongSumObserver.NoopBuilder();
   }
 
   @Override
-  public DoubleUpDownSumObserver.Builder doubleUpDownSumObserverBuilder(String name) {
+  public DoubleUpDownSumObserverBuilder doubleUpDownSumObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleUpDownSumObserver.NoopBuilder();
   }
 
   @Override
-  public LongUpDownSumObserver.Builder longUpDownSumObserverBuilder(String name) {
+  public LongUpDownSumObserverBuilder longUpDownSumObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongUpDownSumObserver.NoopBuilder();
   }
 
   @Override
-  public DoubleValueObserver.Builder doubleValueObserverBuilder(String name) {
+  public DoubleValueObserverBuilder doubleValueObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleValueObserver.NoopBuilder();
   }
 
   @Override
-  public LongValueObserver.Builder longValueObserverBuilder(String name) {
+  public LongValueObserverBuilder longValueObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongValueObserver.NoopBuilder();
@@ -158,7 +158,7 @@ final class DefaultMeter implements Meter {
     }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements DoubleCounterBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -209,7 +209,7 @@ final class DefaultMeter implements Meter {
     }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements LongCounterBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -257,7 +257,7 @@ final class DefaultMeter implements Meter {
     }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements DoubleUpDownCounterBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -305,7 +305,7 @@ final class DefaultMeter implements Meter {
     }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements LongUpDownCounterBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -353,7 +353,7 @@ final class DefaultMeter implements Meter {
     }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements DoubleValueRecorderBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -401,7 +401,7 @@ final class DefaultMeter implements Meter {
     }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements LongValueRecorderBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -422,7 +422,7 @@ final class DefaultMeter implements Meter {
     private NoopDoubleSumObserver() {}
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements DoubleSumObserverBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -430,7 +430,7 @@ final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setUpdater(Consumer<DoubleResult> updater) {
+      public DoubleSumObserverBuilder setUpdater(Consumer<DoubleResult> updater) {
         Objects.requireNonNull(updater, "callback");
         return this;
       }
@@ -449,7 +449,7 @@ final class DefaultMeter implements Meter {
     private NoopLongSumObserver() {}
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements LongSumObserverBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -476,7 +476,7 @@ final class DefaultMeter implements Meter {
     private NoopDoubleUpDownSumObserver() {}
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements DoubleUpDownSumObserverBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -484,7 +484,7 @@ final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setUpdater(Consumer<DoubleResult> updater) {
+      public DoubleUpDownSumObserverBuilder setUpdater(Consumer<DoubleResult> updater) {
         Objects.requireNonNull(updater, "callback");
         return this;
       }
@@ -503,7 +503,7 @@ final class DefaultMeter implements Meter {
     private NoopLongUpDownSumObserver() {}
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements LongUpDownSumObserverBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -511,7 +511,7 @@ final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setUpdater(Consumer<LongResult> updater) {
+      public LongUpDownSumObserverBuilder setUpdater(Consumer<LongResult> updater) {
         Objects.requireNonNull(updater, "callback");
         return this;
       }
@@ -530,7 +530,7 @@ final class DefaultMeter implements Meter {
     private NoopDoubleValueObserver() {}
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements DoubleValueObserverBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -538,7 +538,7 @@ final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setUpdater(Consumer<DoubleResult> updater) {
+      public DoubleValueObserverBuilder setUpdater(Consumer<DoubleResult> updater) {
         Objects.requireNonNull(updater, "callback");
         return this;
       }
@@ -557,7 +557,7 @@ final class DefaultMeter implements Meter {
     private NoopLongValueObserver() {}
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
-        implements Builder {
+        implements LongValueObserverBuilder {
 
       @Override
       protected NoopBuilder getThis() {
@@ -565,7 +565,7 @@ final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setUpdater(Consumer<LongResult> updater) {
+      public LongValueObserverBuilder setUpdater(Consumer<LongResult> updater) {
         Objects.requireNonNull(updater, "callback");
         return this;
       }
@@ -625,7 +625,7 @@ final class DefaultMeter implements Meter {
 
   private abstract static class NoopAbstractInstrumentBuilder<
           B extends NoopAbstractInstrumentBuilder<B>>
-      implements Instrument.Builder {
+      implements InstrumentBuilder {
 
     @Override
     public B setDescription(String description) {

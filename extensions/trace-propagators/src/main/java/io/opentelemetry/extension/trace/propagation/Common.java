@@ -19,6 +19,7 @@ import javax.annotation.concurrent.Immutable;
  * B3Propagator.
  */
 @Immutable
+@SuppressWarnings("deprecation") // Remove after StringUtils is made package-private
 final class Common {
   private static final Logger logger = Logger.getLogger(Common.class.getName());
 

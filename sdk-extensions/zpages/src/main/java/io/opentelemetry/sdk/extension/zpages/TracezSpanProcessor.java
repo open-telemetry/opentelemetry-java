@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.extension.zpages;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
@@ -18,25 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.concurrent.ThreadSafe;
 
-/**
- * A {@link SpanProcessor} implementation for the traceZ zPage.
- *
- * <p>Configuration options for {@link TracezSpanProcessor} can be read from system properties,
- * environment variables, or {@link java.util.Properties} objects.
- *
- * <p>For system properties and {@link java.util.Properties} objects, {@link TracezSpanProcessor}
- * will look for the following names:
- *
- * <ul>
- *   <li>{@code otel.zpages.export.sampled}: sets whether only sampled spans should be exported.
- * </ul>
- *
- * <p>For environment variables, {@link TracezSpanProcessor} will look for the following names:
- *
- * <ul>
- *   <li>{@code OTEL_ZPAGES_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
- * </ul>
- */
+/** A {@link SpanProcessor} implementation for the traceZ zPage. */
 @ThreadSafe
 final class TracezSpanProcessor implements SpanProcessor {
   private final ConcurrentMap<String, ReadableSpan> runningSpanCache;
@@ -131,36 +112,12 @@ final class TracezSpanProcessor implements SpanProcessor {
   }
 
   /** Builder class for {@link TracezSpanProcessor}. */
-  public static final class Builder extends ConfigBuilder<Builder> {
+  public static final class Builder {
 
-    private static final String KEY_SAMPLED = "otel.zpages.export.sampled";
     private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
     private boolean sampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
     private Builder() {}
-
-    /**
-     * Sets the configuration values from the given configuration map for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.zpages.export.sampled}: to set whether only sampled spans should be
-     *       exported.
-     * </ul>
-     *
-     * @param configMap {@link Map} holding the configuration values.
-     * @return this.
-     */
-    @Override
-    protected Builder fromConfigMap(
-        Map<String, String> configMap, NamingConvention namingConvention) {
-      configMap = namingConvention.normalize(configMap);
-      Boolean boolValue = getBooleanProperty(KEY_SAMPLED, configMap);
-      if (boolValue != null) {
-        return this.setExportOnlySampled(boolValue);
-      }
-      return this;
-    }
 
     /**
      * Sets whether only sampled spans should be exported.

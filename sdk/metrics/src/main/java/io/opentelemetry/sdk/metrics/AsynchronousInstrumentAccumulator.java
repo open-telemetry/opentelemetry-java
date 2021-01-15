@@ -6,9 +6,10 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.AsynchronousInstrument;
-import io.opentelemetry.sdk.metrics.accumulation.Accumulation;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -19,15 +20,30 @@ final class AsynchronousInstrumentAccumulator {
   private final InstrumentProcessor<?> instrumentProcessor;
   private final Runnable metricUpdater;
 
-  static <T extends Accumulation> AsynchronousInstrumentAccumulator doubleAsynchronousAccumulator(
-      InstrumentProcessor<T> instrumentProcessor,
+  static <T> AsynchronousInstrumentAccumulator doubleAsynchronousAccumulator(
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      InstrumentDescriptor descriptor,
       @Nullable Consumer<AsynchronousInstrument.DoubleResult> metricUpdater) {
+    AggregationConfiguration configuration =
+        meterProviderSharedState.getViewRegistry().findView(descriptor);
+    Aggregator<T> aggregator =
+        configuration
+            .getAggregatorFactory()
+            .create(
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                descriptor);
+    InstrumentProcessor<T> instrumentProcessor =
+        InstrumentProcessor.create(
+            aggregator,
+            meterProviderSharedState.getStartEpochNanos(),
+            configuration.getTemporality());
     // TODO: Decide what to do with null updater.
     if (metricUpdater == null) {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    Aggregator<T> aggregator = instrumentProcessor.getAggregation().getAggregator();
     AsynchronousInstrument.DoubleResult result =
         (value, labels) -> instrumentProcessor.batch(labels, aggregator.accumulateDouble(value));
 
@@ -35,15 +51,30 @@ final class AsynchronousInstrumentAccumulator {
         instrumentProcessor, () -> metricUpdater.accept(result));
   }
 
-  static <T extends Accumulation> AsynchronousInstrumentAccumulator longAsynchronousAccumulator(
-      InstrumentProcessor<T> instrumentProcessor,
+  static <T> AsynchronousInstrumentAccumulator longAsynchronousAccumulator(
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      InstrumentDescriptor descriptor,
       @Nullable Consumer<AsynchronousInstrument.LongResult> metricUpdater) {
+    AggregationConfiguration configuration =
+        meterProviderSharedState.getViewRegistry().findView(descriptor);
+    Aggregator<T> aggregator =
+        configuration
+            .getAggregatorFactory()
+            .create(
+                meterProviderSharedState.getResource(),
+                meterSharedState.getInstrumentationLibraryInfo(),
+                descriptor);
+    InstrumentProcessor<T> instrumentProcessor =
+        InstrumentProcessor.create(
+            aggregator,
+            meterProviderSharedState.getStartEpochNanos(),
+            configuration.getTemporality());
     // TODO: Decide what to do with null updater.
     if (metricUpdater == null) {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    Aggregator<T> aggregator = instrumentProcessor.getAggregation().getAggregator();
     AsynchronousInstrument.LongResult result =
         (value, labels) -> instrumentProcessor.batch(labels, aggregator.accumulateLong(value));
 
@@ -57,11 +88,11 @@ final class AsynchronousInstrumentAccumulator {
     this.metricUpdater = metricUpdater;
   }
 
-  public List<MetricData> collectAll() {
+  List<MetricData> collectAll(long epochNanos) {
     collectLock.lock();
     try {
       metricUpdater.run();
-      return instrumentProcessor.completeCollectionCycle();
+      return instrumentProcessor.completeCollectionCycle(epochNanos);
     } finally {
       collectLock.unlock();
     }
