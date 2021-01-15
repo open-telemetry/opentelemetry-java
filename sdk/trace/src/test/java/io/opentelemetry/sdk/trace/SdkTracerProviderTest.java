@@ -45,9 +45,6 @@ class SdkTracerProviderTest {
 
   @Test
   void builder_defaultResource() {
-    Resource resource = mock(Resource.class);
-    when(resource.getAttributes()).thenReturn(Attributes.empty());
-
     Resource resourceWithDefaults = Resource.getDefault();
 
     SdkTracerProvider tracerProvider =
