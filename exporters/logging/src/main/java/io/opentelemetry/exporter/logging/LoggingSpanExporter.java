@@ -23,8 +23,9 @@ public final class LoggingSpanExporter implements SpanExporter {
     StringBuilder sb = new StringBuilder(60);
     for (SpanData span : spans) {
       sb.setLength(0);
-      sb.append(span.getName())
-          .append(" ")
+      sb.append("'")
+          .append(span.getName())
+          .append("' : ")
           .append(span.getTraceId())
           .append(" ")
           .append(span.getSpanId())

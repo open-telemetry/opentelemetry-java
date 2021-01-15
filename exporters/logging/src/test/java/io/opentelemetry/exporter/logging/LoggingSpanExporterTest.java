@@ -94,10 +94,10 @@ class LoggingSpanExporterTest {
         .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
     assertThat(logs.getEvents().get(0).getMessage())
         .isEqualTo(
-            "testSpan1 00000000000004d20000000000001a85 0000000000002694 "
+            "'testSpan1' : 00000000000004d20000000000001a85 0000000000002694 "
                 + "{animal=\"cat\", lives=9}");
     assertThat(logs.getEvents().get(1).getMessage())
-        .isEqualTo("testSpan2 0000000000000014000000000000001e 000000000000000f {}");
+        .isEqualTo("'testSpan2' : 0000000000000014000000000000001e 000000000000000f {}");
   }
 
   @Test
