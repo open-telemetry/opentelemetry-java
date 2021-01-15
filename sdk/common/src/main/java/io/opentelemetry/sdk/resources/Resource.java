@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.resources;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_LANGUAGE;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_NAME;
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_VERSION;
+import static io.opentelemetry.sdk.resources.ResourceAttributes.SERVICE_NAME;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
@@ -52,8 +53,14 @@ public abstract class Resource {
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
   private static final Resource EMPTY = create(Attributes.empty());
-
   private static final Resource TELEMETRY_SDK;
+
+  /**
+   * The MANDATORY Resource instance contains the mandatory attributes that must be used if they are
+   * not provided by the Resource that is given to an SDK signal provider.
+   */
+  public static final Resource MANDATORY =
+      create(Attributes.of(SERVICE_NAME, "unknown_service:java"));
 
   static {
     TELEMETRY_SDK =
@@ -65,7 +72,8 @@ public abstract class Resource {
                 .build());
   }
 
-  private static final Resource DEFAULT = TELEMETRY_SDK.merge(readResourceFromProviders());
+  private static final Resource DEFAULT =
+      MANDATORY.merge(TELEMETRY_SDK.merge(readResourceFromProviders()));
 
   @Nullable
   private static String readVersion() {

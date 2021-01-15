@@ -44,17 +44,15 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  void builder_fallbackServiceName() {
+  void builder_defaultResource() {
     Resource resource = mock(Resource.class);
     when(resource.getAttributes()).thenReturn(Attributes.empty());
 
-    Resource resourceWithDefaults =
-        Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "unknown_service:java"));
+    Resource resourceWithDefaults = Resource.getDefault();
 
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .setClock(mock(Clock.class))
-            .setResource(resource)
             .setIdGenerator(mock(IdGenerator.class))
             .setTraceConfig(mock(TraceConfig.class))
             .build();

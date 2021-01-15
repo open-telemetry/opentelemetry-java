@@ -71,9 +71,6 @@ public final class SdkMeterProviderBuilder {
    * @see GlobalMetricsProvider
    */
   public SdkMeterProvider build() {
-    Resource resourceWithFallbacks =
-        Resource.create(
-            FALLBACK_MANDATORY_ATTRIBUTES.toBuilder().putAll(resource.getAttributes()).build());
-    return new SdkMeterProvider(clock, resourceWithFallbacks);
+    return new SdkMeterProvider(clock, resource);
   }
 }

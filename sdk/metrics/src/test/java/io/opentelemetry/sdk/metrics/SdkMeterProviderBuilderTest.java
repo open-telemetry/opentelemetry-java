@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
 class SdkMeterProviderBuilderTest {
@@ -20,5 +21,14 @@ class SdkMeterProviderBuilderTest {
     } finally {
       GlobalMetricsProvider.set(null);
     }
+  }
+
+  @Test
+  void defaultResource() {
+    SdkMeterProvider meterProvider = SdkMeterProvider.builder().build();
+
+    assertThat(meterProvider)
+        .extracting("sharedState")
+        .hasFieldOrPropertyWithValue("resource", Resource.getDefault());
   }
 }
