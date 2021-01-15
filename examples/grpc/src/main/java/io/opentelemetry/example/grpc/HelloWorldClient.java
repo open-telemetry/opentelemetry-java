@@ -20,15 +20,9 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporter.logging.LoggingSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,14 +34,18 @@ public class HelloWorldClient {
   private final Integer serverPort;
   private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
-  private static final OpenTelemetry openTelemetry = initOpenTelemetry();
+  // it is important to initialize the OpenTelemetry SDK as early as possible in your application's
+  // lifecycle.
+  private static final OpenTelemetry openTelemetry = ExampleConfiguration.initOpenTelemetry();
 
-  // OTel API
-  private Tracer tracer = openTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
+  // OTel Tracing API
+  private final Tracer tracer =
+      openTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");
   // Share context via text headers
-  private TextMapPropagator textFormat = openTelemetry.getPropagators().getTextMapPropagator();
+  private final TextMapPropagator textFormat =
+      openTelemetry.getPropagators().getTextMapPropagator();
   // Inject context into the gRPC request metadata
-  private TextMapPropagator.Setter<Metadata> setter =
+  private final TextMapPropagator.Setter<Metadata> setter =
       (carrier, key, value) ->
           carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
 
@@ -116,20 +114,6 @@ public class HelloWorldClient {
     }
   }
 
-  private static OpenTelemetry initOpenTelemetry() {
-    // install the W3C Trace Context propagator
-    // Get the tracer management instance
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
-    // Set to process the the spans by the LogExporter
-    LoggingSpanExporter exporter = new LoggingSpanExporter();
-    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
-
-    return OpenTelemetrySdk.builder()
-        .setTracerProvider(sdkTracerProvider)
-        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-        .build();
-  }
-
   /**
    * Greet server. If provided, the first element of {@code args} is the name to use in the
    * greeting.
@@ -138,12 +122,14 @@ public class HelloWorldClient {
     // Access a service running on the local machine on port 50051
     HelloWorldClient client = new HelloWorldClient("localhost", 50051);
     try {
-      String user = "world";
+      String user = "World";
       // Use the arg as the name to greet if provided
       if (args.length > 0) {
         user = args[0];
       }
-      client.greet(user);
+      for (int i = 0; i < 10; i++) {
+        client.greet(user + " " + i);
+      }
     } finally {
       client.shutdown();
     }
