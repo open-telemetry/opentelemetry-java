@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
 import java.io.IOException;
 import java.util.ServiceLoader;
@@ -33,7 +33,7 @@ class BeanstalkResourceTest {
         .isEqualTo(
             Attributes.of(
                 ResourceAttributes.CLOUD_PROVIDER, "aws",
-                ResourceAttributes.SERVICE_INSTANCE, "4",
+                ResourceAttributes.SERVICE_INSTANCE_ID, "4",
                 ResourceAttributes.SERVICE_VERSION, "2",
                 ResourceAttributes.SERVICE_NAMESPACE, "HttpSubscriber-env"));
   }

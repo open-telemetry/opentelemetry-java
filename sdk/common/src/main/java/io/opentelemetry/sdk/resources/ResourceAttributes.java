@@ -13,10 +13,12 @@ import io.opentelemetry.api.common.AttributeKey;
 /**
  * Provides constants for resource semantic conventions defined by the OpenTelemetry specification.
  *
+ * @deprecated Please use the generated class in the `opentelemetry-semconv` module.
  * @see <a
  *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/resource/semantic_conventions/README.md">Resource
  *     Conventions</a>
  */
+@Deprecated
 public final class ResourceAttributes {
 
   /** The operating system type, such as {@code "WINDOWS"}, {@code "DARWIN"}, {@code "LINUX"}. */

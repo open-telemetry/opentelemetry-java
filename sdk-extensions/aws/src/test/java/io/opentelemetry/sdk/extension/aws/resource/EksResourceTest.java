@@ -15,8 +15,8 @@ import static org.mockito.Mockito.when;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
 import java.io.IOException;
 import java.util.ServiceLoader;
@@ -62,7 +62,7 @@ public class EksResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                ResourceAttributes.K8S_CLUSTER, "my-cluster",
+                ResourceAttributes.K8S_CLUSTER_NAME, "my-cluster",
                 ResourceAttributes.CONTAINER_ID, "0123456789A"));
   }
 

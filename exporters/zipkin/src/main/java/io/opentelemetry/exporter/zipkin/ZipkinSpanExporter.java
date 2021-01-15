@@ -15,11 +15,11 @@ import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -47,7 +47,6 @@ public final class ZipkinSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
   static final String OTEL_STATUS_CODE = "otel.status_code";
-  static final String OTEL_STATUS_DESCRIPTION = "otel.status_description";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
 
   static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";

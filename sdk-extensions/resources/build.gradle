@@ -10,6 +10,7 @@ ext.moduleName = "io.opentelemetry.sdk.extension.resources"
 
 dependencies {
     api project(':sdk:common')
+    api project(':semconv')
 
     testImplementation libraries.junit_pioneer
 

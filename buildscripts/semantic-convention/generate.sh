@@ -20,7 +20,7 @@ git reset --hard FETCH_HEAD
 cd ${SCRIPT_DIR}
 
 docker run --rm \
-  -v ${SCRIPT_DIR}/opentelemetry-specification/semantic_conventions:/source \
+  -v ${SCRIPT_DIR}/opentelemetry-specification/semantic_conventions/trace:/source \
   -v ${SCRIPT_DIR}/templates:/templates \
   -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/semconv/trace/attributes/:/output \
   otel/semconvgen \
@@ -29,6 +29,17 @@ docker run --rm \
   --output /output/SemanticAttributes.java \
   -Dclass=SemanticAttributes \
   -Dpkg=io.opentelemetry.semconv.trace.attributes
+
+docker run --rm \
+  -v ${SCRIPT_DIR}/opentelemetry-specification/semantic_conventions/resource:/source \
+  -v ${SCRIPT_DIR}/templates:/templates \
+  -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/semconv/resource/attributes/:/output \
+  otel/semconvgen \
+  -f /source code \
+  --template /templates/ResourceAttributes.java.j2 \
+  --output /output/ResourceAttributes.java \
+  -Dclass=ResourceAttributes \
+  -Dpkg=io.opentelemetry.semconv.resource.attributes
 
 cd "$ROOT_DIR"
 ./gradlew spotlessApply

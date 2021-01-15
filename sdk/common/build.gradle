@@ -11,6 +11,7 @@ ext.propertiesDir = "build/generated/properties/io/opentelemetry/sdk/common"
 
 dependencies {
     api project(':api:all')
+    api project(':semconv')
 
     annotationProcessor libraries.auto_value
 
