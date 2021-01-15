@@ -11,16 +11,13 @@ import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import org.junit.jupiter.api.Test;
 
 class ViewRegistryTest {
   @Test
   void selection_onType() {
-    AggregationConfiguration configuration =
-        AggregationConfiguration.create(AggregatorFactory.sum(), AggregationTemporality.DELTA);
+    AggregatorFactory factory = AggregatorFactory.lastValue();
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -28,26 +25,23 @@ class ViewRegistryTest {
             .setInstrumentType(InstrumentType.COUNTER)
             .setInstrumentNameRegex(".*")
             .build(),
-        configuration);
+        factory);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(configuration);
-    // this one hasn't been configured, so it gets the default still..
+        .isEqualTo(factory);
+    // this one hasn't been configured, so it gets the default still.
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(
-            AggregationConfiguration.create(
-                AggregatorFactory.sum(), AggregationTemporality.CUMULATIVE));
+        .isSameAs(ViewRegistry.CUMULATIVE_SUM);
   }
 
   @Test
   void selection_onName() {
-    AggregationConfiguration configuration =
-        AggregationConfiguration.create(AggregatorFactory.sum(), AggregationTemporality.DELTA);
+    AggregatorFactory factory = AggregatorFactory.lastValue();
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -55,28 +49,24 @@ class ViewRegistryTest {
             .setInstrumentType(InstrumentType.COUNTER)
             .setInstrumentNameRegex("overridden")
             .build(),
-        configuration);
+        factory);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(configuration);
-    // this one hasn't been configured, so it gets the default still..
+        .isSameAs(factory);
+    // this one hasn't been configured, so it gets the default still.
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(
-            AggregationConfiguration.create(
-                AggregatorFactory.sum(), AggregationTemporality.CUMULATIVE));
+        .isSameAs(ViewRegistry.CUMULATIVE_SUM);
   }
 
   @Test
   void selection_LastAddedViewWins() {
-    AggregationConfiguration configuration1 =
-        AggregationConfiguration.create(AggregatorFactory.sum(), AggregationTemporality.DELTA);
-    AggregationConfiguration configuration2 =
-        AggregationConfiguration.create(AggregatorFactory.count(), AggregationTemporality.DELTA);
+    AggregatorFactory factory1 = AggregatorFactory.lastValue();
+    AggregatorFactory factory2 = AggregatorFactory.minMaxSumCount();
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -84,30 +74,29 @@ class ViewRegistryTest {
             .setInstrumentType(InstrumentType.COUNTER)
             .setInstrumentNameRegex(".*")
             .build(),
-        configuration1);
+        factory1);
     viewRegistry.registerView(
         InstrumentSelector.builder()
             .setInstrumentType(InstrumentType.COUNTER)
             .setInstrumentNameRegex("overridden")
             .build(),
-        configuration2);
+        factory2);
 
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(configuration2);
+        .isEqualTo(factory2);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(configuration1);
+        .isEqualTo(factory1);
   }
 
   @Test
   void selection_regex() {
-    AggregationConfiguration configuration1 =
-        AggregationConfiguration.create(AggregatorFactory.sum(), AggregationTemporality.DELTA);
+    AggregatorFactory factory = AggregatorFactory.lastValue();
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -115,26 +104,24 @@ class ViewRegistryTest {
             .setInstrumentNameRegex("overrid(es|den)")
             .setInstrumentType(InstrumentType.COUNTER)
             .build(),
-        configuration1);
+        factory);
 
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(configuration1);
+        .isEqualTo(factory);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "overrides", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(configuration1);
+        .isEqualTo(factory);
     // this one hasn't been configured, so it gets the default still..
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(
-            AggregationConfiguration.create(
-                AggregatorFactory.sum(), AggregationTemporality.CUMULATIVE));
+        .isSameAs(ViewRegistry.CUMULATIVE_SUM);
   }
 
   @Test
@@ -144,43 +131,31 @@ class ViewRegistryTest {
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(
-            AggregationConfiguration.create(
-                AggregatorFactory.sum(), AggregationTemporality.CUMULATIVE));
+        .isSameAs(ViewRegistry.CUMULATIVE_SUM);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(
-            AggregationConfiguration.create(
-                AggregatorFactory.sum(), AggregationTemporality.CUMULATIVE));
+        .isSameAs(ViewRegistry.CUMULATIVE_SUM);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG)))
-        .isEqualTo(
-            AggregationConfiguration.create(
-                AggregatorFactory.minMaxSumCount(), AggregationTemporality.DELTA));
+        .isSameAs(ViewRegistry.SUMMARY);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.SUM_OBSERVER, InstrumentValueType.LONG)))
-        .isEqualTo(
-            AggregationConfiguration.create(
-                AggregatorFactory.lastValue(), AggregationTemporality.CUMULATIVE));
+        .isSameAs(ViewRegistry.CUMULATIVE_SUM);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.VALUE_OBSERVER, InstrumentValueType.LONG)))
-        .isEqualTo(
-            AggregationConfiguration.create(
-                AggregatorFactory.lastValue(), AggregationTemporality.DELTA));
+        .isSameAs(ViewRegistry.LAST_VALUE);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG)))
-        .isEqualTo(
-            AggregationConfiguration.create(
-                AggregatorFactory.lastValue(), AggregationTemporality.CUMULATIVE));
+        .isSameAs(ViewRegistry.CUMULATIVE_SUM);
   }
 }

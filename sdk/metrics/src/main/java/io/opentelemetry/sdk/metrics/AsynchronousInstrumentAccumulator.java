@@ -9,13 +9,12 @@ import io.opentelemetry.api.metrics.AsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
-final class AsynchronousInstrumentAccumulator {
+final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
   private final ReentrantLock collectLock = new ReentrantLock();
   private final InstrumentProcessor<?> instrumentProcessor;
   private final Runnable metricUpdater;
@@ -25,20 +24,10 @@ final class AsynchronousInstrumentAccumulator {
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor,
       @Nullable Consumer<AsynchronousInstrument.DoubleResult> metricUpdater) {
-    AggregationConfiguration configuration =
-        meterProviderSharedState.getViewRegistry().findView(descriptor);
     Aggregator<T> aggregator =
-        configuration
-            .getAggregatorFactory()
-            .create(
-                meterProviderSharedState.getResource(),
-                meterSharedState.getInstrumentationLibraryInfo(),
-                descriptor);
+        getAggregator(meterProviderSharedState, meterSharedState, descriptor);
     InstrumentProcessor<T> instrumentProcessor =
-        InstrumentProcessor.create(
-            aggregator,
-            meterProviderSharedState.getStartEpochNanos(),
-            configuration.getTemporality());
+        new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos());
     // TODO: Decide what to do with null updater.
     if (metricUpdater == null) {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
@@ -56,20 +45,10 @@ final class AsynchronousInstrumentAccumulator {
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor,
       @Nullable Consumer<AsynchronousInstrument.LongResult> metricUpdater) {
-    AggregationConfiguration configuration =
-        meterProviderSharedState.getViewRegistry().findView(descriptor);
     Aggregator<T> aggregator =
-        configuration
-            .getAggregatorFactory()
-            .create(
-                meterProviderSharedState.getResource(),
-                meterSharedState.getInstrumentationLibraryInfo(),
-                descriptor);
+        getAggregator(meterProviderSharedState, meterSharedState, descriptor);
     InstrumentProcessor<T> instrumentProcessor =
-        InstrumentProcessor.create(
-            aggregator,
-            meterProviderSharedState.getStartEpochNanos(),
-            configuration.getTemporality());
+        new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos());
     // TODO: Decide what to do with null updater.
     if (metricUpdater == null) {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
@@ -88,6 +67,7 @@ final class AsynchronousInstrumentAccumulator {
     this.metricUpdater = metricUpdater;
   }
 
+  @Override
   List<MetricData> collectAll(long epochNanos) {
     collectLock.lock();
     try {

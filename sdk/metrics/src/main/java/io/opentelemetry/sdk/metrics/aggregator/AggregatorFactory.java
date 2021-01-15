@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
@@ -16,31 +17,43 @@ public interface AggregatorFactory {
   /**
    * Returns an {@code AggregationFactory} that calculates sum of recorded measurements.
    *
+   * <p>This factory produces {@link Aggregator} that will always produce Sum metrics, the
+   * monotonicity is determined based on the instrument type (for Counter and SumObserver will be
+   * monotonic, otherwise not).
+   *
+   * @param alwaysCumulative configures to always produce {@link AggregationTemporality#CUMULATIVE}
+   *     if {@code true} OR {@link AggregationTemporality#DELTA} for all types except SumObserver
+   *     and UpDownSumObserver which will always produce {@link AggregationTemporality#CUMULATIVE}.
    * @return an {@code AggregationFactory} that calculates sum of recorded measurements.
    */
-  static AggregatorFactory sum() {
-    return SumAggregatorFactory.INSTANCE;
+  static AggregatorFactory sum(boolean alwaysCumulative) {
+    return new SumAggregatorFactory(alwaysCumulative);
   }
 
   /**
    * Returns an {@code AggregationFactory} that calculates count of recorded measurements (the
    * number of recorded measurements).
    *
+   * <p>This factory produces {@link Aggregator} that will always produce monotonic Sum metrics
+   * independent of the instrument type. The sum represents the number of measurements recorded.
+   *
+   * @param temporality configures what temporality to be produced for the Sum metrics.
    * @return an {@code AggregationFactory} that calculates count of recorded measurements (the
    *     number of recorded * measurements).
    */
-  static AggregatorFactory count() {
-    return CountAggregatorFactory.INSTANCE;
+  static AggregatorFactory count(AggregationTemporality temporality) {
+    return new CountAggregatorFactory(temporality);
   }
 
   /**
    * Returns an {@code AggregationFactory} that calculates the last value of all recorded
    * measurements.
    *
+   * <p>This factory produces {@link Aggregator} that will always produce gauge metrics independent
+   * of the instrument type.
+   *
    * <p>Limitation: The current implementation does not store a time when the value was recorded, so
-   * merging multiple LastValueAggregators will not preserve the ordering of records. This is not a
-   * problem because LastValueAggregator is currently only available for Observers which record all
-   * values once.
+   * merging multiple LastValueAggregators will not preserve the ordering of records.
    *
    * @return an {@code AggregationFactory} that calculates the last value of all recorded
    *     measurements.
@@ -53,6 +66,9 @@ public interface AggregatorFactory {
    * Returns an {@code AggregationFactory} that calculates a simple summary of all recorded
    * measurements. The summary consists of the count of measurements, the sum of all measurements,
    * the maximum value recorded and the minimum value recorded.
+   *
+   * <p>This factory produces {@link Aggregator} that will always produce double summary metrics
+   * independent of the instrument type.
    *
    * @return an {@code AggregationFactory} that calculates a simple summary of all recorded
    *     measurements.

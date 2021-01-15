@@ -62,6 +62,14 @@ public interface Aggregator<T> {
   T merge(T a1, T a2);
 
   /**
+   * Returns {@code true} if the processor needs to keep the previous collected state in order to
+   * compute the desired metric.
+   *
+   * @return {@code true} if the processor needs to keep the previous collected state.
+   */
+  boolean isStateful();
+
+  /**
    * Returns the {@link MetricData} that this {@code Aggregation} will produce.
    *
    * @param accumulationByLabels the map of Labels to Accumulation.
@@ -71,5 +79,8 @@ public interface Aggregator<T> {
    */
   @Nullable
   MetricData toMetricData(
-      Map<Labels, T> accumulationByLabels, long startEpochNanos, long epochNanos);
+      Map<Labels, T> accumulationByLabels,
+      long startEpochNanos,
+      long lastCollectionEpoch,
+      long epochNanos);
 }

@@ -69,11 +69,7 @@ class LongValueObserverSdkTest {
                 "1",
                 LongGaugeData.create(
                     Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Labels.of("k", "v"),
-                            12)))));
+                        LongPointData.create(0, testClock.now(), Labels.of("k", "v"), 12)))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
@@ -85,10 +81,6 @@ class LongValueObserverSdkTest {
                 "1",
                 LongGaugeData.create(
                     Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Labels.of("k", "v"),
-                            12)))));
+                        LongPointData.create(0, testClock.now(), Labels.of("k", "v"), 12)))));
   }
 }

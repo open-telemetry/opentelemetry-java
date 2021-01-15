@@ -71,11 +71,7 @@ class DoubleValueObserverSdkTest {
                 "ms",
                 DoubleGaugeData.create(
                     Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Labels.of("k", "v"),
-                            12.1d)))));
+                        DoublePointData.create(0, testClock.now(), Labels.of("k", "v"), 12.1d)))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
@@ -87,10 +83,6 @@ class DoubleValueObserverSdkTest {
                 "ms",
                 DoubleGaugeData.create(
                     Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Labels.of("k", "v"),
-                            12.1d)))));
+                        DoublePointData.create(0, testClock.now(), Labels.of("k", "v"), 12.1d)))));
   }
 }

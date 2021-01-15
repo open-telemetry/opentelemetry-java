@@ -81,6 +81,7 @@ class LongMinMaxSumCountAggregatorTest {
         aggregator.toMetricData(
             Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
+            10,
             100);
     assertThat(metricData).isNotNull();
     assertThat(metricData.getType()).isEqualTo(MetricDataType.SUMMARY);

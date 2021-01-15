@@ -27,7 +27,8 @@ class DoubleSumAggregatorTest {
           Resource.getDefault(),
           InstrumentationLibraryInfo.getEmpty(),
           InstrumentDescriptor.create(
-              "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE));
+              "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE),
+          /* stateful= */ true);
 
   @Test
   void createHandle() {
@@ -82,6 +83,7 @@ class DoubleSumAggregatorTest {
         aggregator.toMetricData(
             Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
+            10,
             100);
     assertThat(metricData)
         .isEqualTo(

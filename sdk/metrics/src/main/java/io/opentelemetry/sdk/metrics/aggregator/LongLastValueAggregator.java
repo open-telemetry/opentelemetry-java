@@ -8,9 +8,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
@@ -30,7 +28,7 @@ final class LongLastValueAggregator extends AbstractAggregator<Long> {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor) {
-    super(resource, instrumentationLibraryInfo, descriptor);
+    super(resource, instrumentationLibraryInfo, descriptor, /* stateful= */ false);
   }
 
   @Override
@@ -51,47 +49,17 @@ final class LongLastValueAggregator extends AbstractAggregator<Long> {
 
   @Override
   public MetricData toMetricData(
-      Map<Labels, Long> accumulationByLabels, long startEpochNanos, long epochNanos) {
-    switch (getInstrumentDescriptor().getType()) {
-      case SUM_OBSERVER:
-        return MetricData.createLongSum(
-            getResource(),
-            getInstrumentationLibraryInfo(),
-            getInstrumentDescriptor().getName(),
-            getInstrumentDescriptor().getDescription(),
-            getInstrumentDescriptor().getUnit(),
-            LongSumData.create(
-                /* isMonotonic= */ true,
-                AggregationTemporality.CUMULATIVE,
-                MetricDataUtils.toLongPointList(
-                    accumulationByLabels, startEpochNanos, epochNanos)));
-      case UP_DOWN_SUM_OBSERVER:
-        return MetricData.createLongSum(
-            getResource(),
-            getInstrumentationLibraryInfo(),
-            getInstrumentDescriptor().getName(),
-            getInstrumentDescriptor().getDescription(),
-            getInstrumentDescriptor().getUnit(),
-            LongSumData.create(
-                /* isMonotonic= */ false,
-                AggregationTemporality.CUMULATIVE,
-                MetricDataUtils.toLongPointList(
-                    accumulationByLabels, startEpochNanos, epochNanos)));
-      case VALUE_OBSERVER:
-        return MetricData.createLongGauge(
-            getResource(),
-            getInstrumentationLibraryInfo(),
-            getInstrumentDescriptor().getName(),
-            getInstrumentDescriptor().getDescription(),
-            getInstrumentDescriptor().getUnit(),
-            LongGaugeData.create(
-                MetricDataUtils.toLongPointList(
-                    accumulationByLabels, startEpochNanos, epochNanos)));
-      case COUNTER:
-      case UP_DOWN_COUNTER:
-      case VALUE_RECORDER:
-    }
-    return null;
+      Map<Labels, Long> accumulationByLabels,
+      long startEpochNanos,
+      long lastCollectionEpoch,
+      long epochNanos) {
+    return MetricData.createLongGauge(
+        getResource(),
+        getInstrumentationLibraryInfo(),
+        getInstrumentDescriptor().getName(),
+        getInstrumentDescriptor().getDescription(),
+        getInstrumentDescriptor().getUnit(),
+        LongGaugeData.create(MetricDataUtils.toLongPointList(accumulationByLabels, 0, epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<Long> {
