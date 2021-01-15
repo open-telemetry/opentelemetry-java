@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,6 +79,17 @@ class OtlpGrpcMetricExporterTest {
     assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("endpoint");
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint("😺://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must be a URL: 😺://localhost")
+        .hasCauseInstanceOf(URISyntaxException.class);
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint("ftp://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid scheme, must be http or https: ftp://localhost");
   }
 
   @Test

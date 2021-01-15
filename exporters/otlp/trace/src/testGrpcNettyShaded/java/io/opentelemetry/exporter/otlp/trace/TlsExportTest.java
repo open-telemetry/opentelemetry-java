@@ -62,8 +62,7 @@ class TlsExportTest {
   void testTlsExport() throws Exception {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.builder()
-            .setEndpoint("localhost:" + server.httpsPort())
-            .setUseTls(true)
+            .setEndpoint("https://localhost:" + server.httpsPort())
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
             .build();
     assertThat(
@@ -89,8 +88,7 @@ class TlsExportTest {
   void testTlsExport_untrusted() throws Exception {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.builder()
-            .setEndpoint("localhost:" + server.httpsPort())
-            .setUseTls(true)
+            .setEndpoint("https://localhost:" + server.httpsPort())
             .build();
     assertThat(
             exporter

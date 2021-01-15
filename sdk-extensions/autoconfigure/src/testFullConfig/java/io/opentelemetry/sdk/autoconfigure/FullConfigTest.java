@@ -111,14 +111,10 @@ class FullConfigTest {
 
   @Test
   void configures() throws Exception {
-    String endpoint = "localhost:" + server.httpPort();
+    String endpoint = "http://localhost:" + server.httpPort();
     System.setProperty("otel.exporter.otlp.endpoint", endpoint);
-    System.setProperty("otel.exporter.otlp.insecure", "true");
     System.setProperty("otel.exporter.otlp.timeout", "10000");
 
-    System.setProperty("otel.exporter.jaeger.endpoint", endpoint);
-
-    System.setProperty("otel.exporter.zipkin.endpoint", "http://" + endpoint + "/api/v2/spans");
     OpenTelemetrySdkAutoConfiguration.initialize();
     Collection<String> fields =
         GlobalOpenTelemetry.get().getPropagators().getTextMapPropagator().fields();

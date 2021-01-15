@@ -52,11 +52,6 @@ final class SpanExporterConfiguration {
       builder.setEndpoint(endpoint);
     }
 
-    boolean insecure = config.getBoolean("otel.exporter.otlp.insecure");
-    if (!insecure) {
-      builder.setUseTls(true);
-    }
-
     config.getCommaSeparatedMap("otel.exporter.otlp.headers").forEach(builder::addHeader);
 
     Long timeoutMillis = config.getLong("otel.exporter.otlp.timeout");
