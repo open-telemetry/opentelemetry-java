@@ -105,6 +105,7 @@ public final class {{class}} {
   {% endif %}
   {%- endfor %}
 
+  {%- if class == "SemanticAttributes" %}
   // Manually defined and not YET in the YAML
   /**
    * The name of an event describing an exception.
@@ -113,6 +114,7 @@ public final class {{class}} {
    * io.opentelemetry.api.trace.Span#recordException(Throwable)} should be used.
    */
   public static final String EXCEPTION_EVENT_NAME = "exception";
+  {% endif %}
 
   private {{class}}() {}
 }

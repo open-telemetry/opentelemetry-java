@@ -36,7 +36,7 @@ docker run --rm \
   -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/semconv/resource/attributes/:/output \
   otel/semconvgen \
   -f /source code \
-  --template /templates/ResourceAttributes.java.j2 \
+  --template /templates/SemanticAttributes.java.j2 \
   --output /output/ResourceAttributes.java \
   -Dclass=ResourceAttributes \
   -Dpkg=io.opentelemetry.semconv.resource.attributes

@@ -13,7 +13,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import java.util.List;
 
 // DO NOT EDIT, this is an Auto-generated file from
-// buildscripts/semantic-convention/templates/ResourceAttributes.java.j2
+// buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class ResourceAttributes {
 
   /** Name of the cloud provider. */
