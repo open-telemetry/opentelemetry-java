@@ -20,16 +20,31 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-class TlsExportTest {
+class ExportTest {
+
+  private static final List<SpanData> SPANS =
+      Collections.singletonList(
+          TestSpanData.builder()
+              .setTraceId(TraceId.getInvalid())
+              .setSpanId(SpanId.getInvalid())
+              .setName("name")
+              .setKind(Span.Kind.CLIENT)
+              .setStartEpochNanos(1)
+              .setEndEpochNanos(2)
+              .setStatus(StatusData.ok())
+              .setHasEnded(true)
+              .build());
 
   @RegisterExtension
   @Order(1)
@@ -54,9 +69,27 @@ class TlsExportTest {
                         }
                       })
                   .build());
+          sb.http(0);
+          sb.https(0);
           sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
         }
       };
+
+  @Test
+  void plainTextExport() {
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.builder().setEndpoint("http://localhost:" + server.httpPort()).build();
+    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
+  void authorityWithAuth() {
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.builder()
+            .setEndpoint("http://foo:bar@localhost:" + server.httpPort())
+            .build();
+    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
 
   @Test
   void testTlsExport() throws Exception {
@@ -65,48 +98,16 @@ class TlsExportTest {
             .setEndpoint("https://localhost:" + server.httpsPort())
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
             .build();
-    assertThat(
-            exporter
-                .export(
-                    Arrays.asList(
-                        TestSpanData.builder()
-                            .setTraceId(TraceId.getInvalid())
-                            .setSpanId(SpanId.getInvalid())
-                            .setName("name")
-                            .setKind(Span.Kind.CLIENT)
-                            .setStartEpochNanos(1)
-                            .setEndEpochNanos(2)
-                            .setStatus(StatusData.ok())
-                            .setHasEnded(true)
-                            .build()))
-                .join(10, TimeUnit.SECONDS)
-                .isSuccess())
-        .isTrue();
+    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
   }
 
   @Test
-  void testTlsExport_untrusted() throws Exception {
+  void testTlsExport_untrusted() {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.builder()
             .setEndpoint("https://localhost:" + server.httpsPort())
             .build();
-    assertThat(
-            exporter
-                .export(
-                    Arrays.asList(
-                        TestSpanData.builder()
-                            .setTraceId(TraceId.getInvalid())
-                            .setSpanId(SpanId.getInvalid())
-                            .setName("name")
-                            .setKind(Span.Kind.CLIENT)
-                            .setStartEpochNanos(1)
-                            .setEndEpochNanos(2)
-                            .setStatus(StatusData.ok())
-                            .setHasEnded(true)
-                            .build()))
-                .join(10, TimeUnit.SECONDS)
-                .isSuccess())
-        .isFalse();
+    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
   }
 
   @Test
