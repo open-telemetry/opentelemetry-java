@@ -33,12 +33,22 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     return new OpenTelemetrySdkBuilder();
   }
 
-  /** Returns the global {@link OpenTelemetrySdk}. */
+  /**
+   * Returns the global {@link OpenTelemetrySdk}.
+   *
+   * @deprecated Will be removed without replacement
+   */
+  @Deprecated
   public static OpenTelemetrySdk get() {
     return (OpenTelemetrySdk) GlobalOpenTelemetry.get();
   }
 
-  /** Returns the global {@link io.opentelemetry.sdk.trace.SdkTracerManagement}. */
+  /**
+   * Returns the global {@link io.opentelemetry.sdk.trace.SdkTracerManagement}.
+   *
+   * @deprecated Will be removed without replacement
+   */
+  @Deprecated
   public static io.opentelemetry.sdk.trace.SdkTracerManagement getGlobalTracerManagement() {
     TracerProvider tracerProvider = GlobalOpenTelemetry.get().getTracerProvider();
     if (!(tracerProvider instanceof ObfuscatedTracerProvider)) {

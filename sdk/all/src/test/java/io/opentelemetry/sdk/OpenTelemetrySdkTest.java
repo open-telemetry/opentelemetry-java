@@ -6,8 +6,6 @@
 package io.opentelemetry.sdk;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.mock;
 
@@ -49,20 +47,9 @@ class OpenTelemetrySdkTest {
   void testRegisterGlobal() {
     OpenTelemetrySdk sdk = OpenTelemetrySdk.builder().buildAndRegisterGlobal();
     assertThat(sdk).isSameAs(GlobalOpenTelemetry.get());
-    assertThat(OpenTelemetrySdk.get()).isSameAs(sdk);
-    assertThat(((SdkTracerProvider) OpenTelemetrySdk.getGlobalTracerManagement()).get(""))
+    assertThat(GlobalOpenTelemetry.get()).isSameAs(sdk);
+    assertThat(((OpenTelemetrySdk) GlobalOpenTelemetry.get()).getSdkTracerProvider().get(""))
         .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""));
-    assertThat(OpenTelemetrySdk.getGlobalTracerManagement()).isNotNull();
-  }
-
-  @Test
-  void testGetTracerManagementWhenNotTracerSdk() {
-    OpenTelemetrySdk.builder().buildAndRegisterGlobal();
-    assertThatCode(OpenTelemetrySdk::getGlobalTracerManagement).doesNotThrowAnyException();
-    GlobalOpenTelemetry.set(
-        DefaultOpenTelemetry.builder().setTracerProvider(tracerProvider).build());
-    assertThatThrownBy(OpenTelemetrySdk::getGlobalTracerManagement)
-        .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
