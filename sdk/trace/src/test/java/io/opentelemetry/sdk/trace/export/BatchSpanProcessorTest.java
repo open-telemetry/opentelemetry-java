@@ -424,7 +424,6 @@ class BatchSpanProcessorTest {
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
-                    .setExportOnlySampled(true)
                     .build())
             .setTraceConfig(traceConfig::get)
             .build();
