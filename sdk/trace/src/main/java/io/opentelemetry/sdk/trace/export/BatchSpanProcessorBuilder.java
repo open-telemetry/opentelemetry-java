@@ -46,7 +46,12 @@ public final class BatchSpanProcessorBuilder {
    * @param exportOnlySampled if {@code true} report only sampled spans.
    * @return this.
    * @see BatchSpanProcessorBuilder#DEFAULT_EXPORT_ONLY_SAMPLED
+   * @deprecated Will be removed without replacement, all spans with a sampling result of {@link
+   *     io.opentelemetry.sdk.trace.samplers.SamplingResult.Decision#RECORD_AND_SAMPLE} will be
+   *     exported while spans with a result of {@link
+   *     io.opentelemetry.sdk.trace.samplers.SamplingResult.Decision#RECORD_ONLY} will not.
    */
+  @Deprecated
   public BatchSpanProcessorBuilder setExportOnlySampled(boolean exportOnlySampled) {
     this.exportOnlySampled = exportOnlySampled;
     return this;
