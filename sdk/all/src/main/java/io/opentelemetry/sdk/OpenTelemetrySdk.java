@@ -18,7 +18,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OpenTelemetrySdk implements OpenTelemetry {
   private final ObfuscatedTracerProvider tracerProvider;
-  private volatile ContextPropagators propagators;
+  private final ContextPropagators propagators;
 
   OpenTelemetrySdk(ObfuscatedTracerProvider tracerProvider, ContextPropagators propagators) {
     this.tracerProvider = tracerProvider;
