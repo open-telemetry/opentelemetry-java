@@ -77,22 +77,6 @@ public final class BatchSpanProcessorBuilder {
     return setScheduleDelay(delay.toNanos(), TimeUnit.NANOSECONDS);
   }
 
-  /**
-   * Sets the delay interval between two consecutive exports. The actual interval may be shorter if
-   * the batch size is getting larger than {@code maxQueuedSpans / 2}.
-   *
-   * <p>Default value is {@code 5000}ms.
-   *
-   * @param scheduleDelayMillis the delay interval between two consecutive exports.
-   * @return this.
-   * @see BatchSpanProcessorBuilder#DEFAULT_SCHEDULE_DELAY_MILLIS
-   * @deprecated Use {@link #setScheduleDelay(long, TimeUnit)}
-   */
-  @Deprecated
-  public BatchSpanProcessorBuilder setScheduleDelayMillis(long scheduleDelayMillis) {
-    return setScheduleDelay(Duration.ofMillis(scheduleDelayMillis));
-  }
-
   // Visible for testing
   long getScheduleDelayNanos() {
     return scheduleDelayNanos;
@@ -116,21 +100,6 @@ public final class BatchSpanProcessorBuilder {
   public BatchSpanProcessorBuilder setExporterTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
     return setExporterTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
-  }
-
-  /**
-   * Sets the maximum time an exporter will be allowed to run before being cancelled.
-   *
-   * <p>Default value is {@code 30000}ms
-   *
-   * @param exporterTimeoutMillis the timeout for exports in milliseconds.
-   * @return this
-   * @see BatchSpanProcessorBuilder#DEFAULT_EXPORT_TIMEOUT_MILLIS
-   * @deprecated Use {@link #setExporterTimeout(long, TimeUnit)}
-   */
-  @Deprecated
-  public BatchSpanProcessorBuilder setExporterTimeoutMillis(int exporterTimeoutMillis) {
-    return setExporterTimeout(Duration.ofMillis(exporterTimeoutMillis));
   }
 
   // Visible for testing

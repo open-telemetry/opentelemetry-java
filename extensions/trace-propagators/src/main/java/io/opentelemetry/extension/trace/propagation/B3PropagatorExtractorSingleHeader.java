@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-@SuppressWarnings("deprecation") // Remove after StringUtils is made package-private
 final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
   private static final Logger logger =
       Logger.getLogger(B3PropagatorExtractorSingleHeader.class.getName());

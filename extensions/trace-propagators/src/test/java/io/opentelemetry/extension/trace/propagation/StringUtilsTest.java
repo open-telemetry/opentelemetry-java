@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("deprecation") // Remove after StringUtils is made package-private
 class StringUtilsTest {
 
   @Test

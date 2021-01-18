@@ -16,7 +16,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
 class OpenTelemetryTest {
 
   @BeforeAll
