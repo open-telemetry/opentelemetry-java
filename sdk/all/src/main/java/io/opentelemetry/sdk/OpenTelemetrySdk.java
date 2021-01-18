@@ -77,7 +77,10 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   /**
    * Returns the {@link io.opentelemetry.sdk.trace.SdkTracerManagement} for this {@link
    * OpenTelemetrySdk}.
+   *
+   * @deprecated Use {@link #getSdkTracerProvider()}
    */
+  @Deprecated
   public io.opentelemetry.sdk.trace.SdkTracerManagement getTracerManagement() {
     return tracerProvider.unobfuscate();
   }

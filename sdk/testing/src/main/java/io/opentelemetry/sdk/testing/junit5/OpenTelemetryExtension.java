@@ -93,7 +93,7 @@ public final class OpenTelemetryExtension
    */
   @Deprecated
   public io.opentelemetry.sdk.trace.SdkTracerManagement getTracerManagement() {
-    return openTelemetry.getTracerManagement();
+    return openTelemetry.getSdkTracerProvider();
   }
 
   /** Returns all the exported {@link SpanData} so far. */
