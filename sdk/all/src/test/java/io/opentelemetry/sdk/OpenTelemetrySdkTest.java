@@ -124,7 +124,7 @@ class OpenTelemetrySdkTest {
         .asInstanceOf(type(ObfuscatedTracerProvider.class))
         .isNotNull()
         .matches(obfuscated -> obfuscated.unobfuscate() == tracerProvider);
-    assertThat(openTelemetry.getTracerManagement()).isNotNull();
+    assertThat(openTelemetry.getSdkTracerProvider()).isNotNull();
   }
 
   // This is just a demonstration of maximum that one can do with OpenTelemetry configuration.
