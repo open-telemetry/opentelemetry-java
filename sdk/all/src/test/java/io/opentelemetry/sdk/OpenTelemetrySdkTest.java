@@ -93,6 +93,7 @@ class OpenTelemetrySdkTest {
             .build();
     assertThat(((ObfuscatedTracerProvider) openTelemetry.getTracerProvider()).unobfuscate())
         .isEqualTo(tracerProvider);
+    assertThat(openTelemetry.getSdkTracerProvider()).isEqualTo(tracerProvider);
     assertThat(openTelemetry.getPropagators()).isEqualTo(propagators);
   }
 

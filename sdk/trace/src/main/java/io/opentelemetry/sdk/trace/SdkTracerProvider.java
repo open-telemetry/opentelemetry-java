@@ -13,7 +13,9 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import java.io.Closeable;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,7 +28,8 @@ import javax.annotation.Nullable;
  * OpenTelemetry}. However, if you need a custom implementation of the factory, you can create one
  * as needed.
  */
-public final class SdkTracerProvider implements TracerProvider, SdkTracerManagement {
+@SuppressWarnings("deprecation") // Remove when SdkTracerManagement is removed
+public final class SdkTracerProvider implements TracerProvider, SdkTracerManagement, Closeable {
   private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "unknown";
   private final TracerSharedState sharedState;
@@ -69,11 +72,28 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
     return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
   }
 
+  /** Returns the active {@link TraceConfig}. */
   @Override
   public TraceConfig getActiveTraceConfig() {
     return sharedState.getActiveTraceConfig();
   }
 
+  /**
+   * Attempts to stop all the activity for this {@link Tracer}. Calls {@link
+   * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
+   *
+   * <p>This operation may block until all the Spans are processed. Must be called before turning
+   * off the main application to ensure all data are processed and exported.
+   *
+   * <p>After this is called, newly created {@code Span}s will be no-ops.
+   *
+   * <p>After this is called, further attempts at re-using or reconfiguring this instance will
+   * result in undefined behavior. It should be considered a terminal operation for the SDK
+   * implementation.
+   *
+   * @return a {@link CompletableResultCode} which is completed when all the span processors have
+   *     been shut down.
+   */
   @Override
   public CompletableResultCode shutdown() {
     if (sharedState.isStopped()) {
@@ -83,8 +103,32 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
     return sharedState.shutdown();
   }
 
+  /**
+   * Requests the active span processor to process all span events that have not yet been processed
+   * and returns a {@link CompletableResultCode} which is completed when the flush is finished.
+   *
+   * @see SpanProcessor#forceFlush()
+   */
   @Override
   public CompletableResultCode forceFlush() {
     return sharedState.getActiveSpanProcessor().forceFlush();
+  }
+
+  /**
+   * Attempts to stop all the activity for this {@link Tracer}. Calls {@link
+   * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
+   *
+   * <p>This operation may block until all the Spans are processed. Must be called before turning
+   * off the main application to ensure all data are processed and exported.
+   *
+   * <p>After this is called, newly created {@code Span}s will be no-ops.
+   *
+   * <p>After this is called, further attempts at re-using or reconfiguring this instance will
+   * result in undefined behavior. It should be considered a terminal operation for the SDK
+   * implementation.
+   */
+  @Override
+  public void close() {
+    shutdown().join(10, TimeUnit.SECONDS);
   }
 }

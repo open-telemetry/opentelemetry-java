@@ -10,12 +10,12 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link OpenTelemetry}. */
 @ThreadSafe
+@SuppressWarnings("deprecation") // Remove when SdkTracerManagement is removed
 public final class OpenTelemetrySdk implements OpenTelemetry {
   private final ObfuscatedTracerProvider tracerProvider;
   private volatile ContextPropagators propagators;
@@ -38,8 +38,8 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     return (OpenTelemetrySdk) GlobalOpenTelemetry.get();
   }
 
-  /** Returns the global {@link SdkTracerManagement}. */
-  public static SdkTracerManagement getGlobalTracerManagement() {
+  /** Returns the global {@link io.opentelemetry.sdk.trace.SdkTracerManagement}. */
+  public static io.opentelemetry.sdk.trace.SdkTracerManagement getGlobalTracerManagement() {
     TracerProvider tracerProvider = GlobalOpenTelemetry.get().getTracerProvider();
     if (!(tracerProvider instanceof ObfuscatedTracerProvider)) {
       throw new IllegalStateException(
@@ -54,13 +54,21 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     return tracerProvider;
   }
 
+  /** Returns the {@link SdkTracerProvider} for this {@link OpenTelemetrySdk}. */
+  public SdkTracerProvider getSdkTracerProvider() {
+    return tracerProvider.unobfuscate();
+  }
+
   @Override
   public ContextPropagators getPropagators() {
     return propagators;
   }
 
-  /** Returns the {@link SdkTracerManagement} for this {@link OpenTelemetrySdk}. */
-  public SdkTracerManagement getTracerManagement() {
+  /**
+   * Returns the {@link io.opentelemetry.sdk.trace.SdkTracerManagement} for this {@link
+   * OpenTelemetrySdk}.
+   */
+  public io.opentelemetry.sdk.trace.SdkTracerManagement getTracerManagement() {
     return tracerProvider.unobfuscate();
   }
 

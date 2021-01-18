@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricExporter;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.io.IOException;
@@ -102,7 +101,7 @@ public class OtlpPipelineStressTest {
 
   private final InMemoryMetricExporter metricExporter = InMemoryMetricExporter.create();
 
-  private SdkTracerManagement tracerManagement;
+  private SdkTracerProvider sdkTracerProvider;
   private OpenTelemetry openTelemetry;
   private IntervalMetricReader intervalMetricReader;
   private Proxy collectorProxy;
@@ -131,7 +130,7 @@ public class OtlpPipelineStressTest {
   @AfterEach
   void tearDown() throws IOException {
     intervalMetricReader.shutdown();
-    tracerManagement.shutdown();
+    sdkTracerProvider.shutdown();
 
     toxiproxyClient.reset();
     collectorProxy.delete();
@@ -274,6 +273,6 @@ public class OtlpPipelineStressTest {
         SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
     openTelemetry =
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
-    tracerManagement = tracerProvider;
+    sdkTracerProvider = tracerProvider;
   }
 }
