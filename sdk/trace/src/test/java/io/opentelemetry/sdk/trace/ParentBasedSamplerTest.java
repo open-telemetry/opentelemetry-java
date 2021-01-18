@@ -14,7 +14,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -60,7 +60,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
 
     // Not sampled parent.
     assertThat(
@@ -73,7 +73,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
   }
 
   @Test
@@ -89,7 +89,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
 
     // Not sampled parent.
     assertThat(
@@ -102,7 +102,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
   }
 
   @Test
@@ -119,7 +119,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOff())
@@ -133,7 +133,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOn())
@@ -147,7 +147,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOn())
@@ -161,7 +161,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -179,7 +179,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOff())
@@ -193,7 +193,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOn())
@@ -207,7 +207,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOn())
@@ -221,7 +221,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -238,7 +238,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOff())
@@ -252,7 +252,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOn())
@@ -266,7 +266,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOn())
@@ -280,7 +280,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
   }
 
   @Test
@@ -297,7 +297,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOff())
@@ -311,7 +311,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOn())
@@ -325,7 +325,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOn())
@@ -339,7 +339,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -354,7 +354,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
 
     assertThat(
             Sampler.parentBased(Sampler.alwaysOff())
@@ -366,7 +366,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
 
     assertThat(
             Sampler.parentBasedBuilder(Sampler.alwaysOff())
@@ -383,7 +383,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
 
     assertThat(
             Sampler.parentBased(Sampler.alwaysOn())
@@ -395,7 +395,7 @@ class ParentBasedSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
   @Test

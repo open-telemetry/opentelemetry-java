@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -409,7 +410,7 @@ class BatchSpanProcessorTest {
                           Span.Kind spanKind,
                           Attributes attributes,
                           List<LinkData> parentLinks) {
-                        return SamplingResult.create(SamplingResult.Decision.RECORD_ONLY);
+                        return SamplingResult.create(SamplingDecision.RECORD_ONLY);
                       }
 
                       @Override

@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.LinkData;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -196,7 +197,7 @@ final class SdkSpanBuilder implements SpanBuilder {
             .getSampler()
             .shouldSample(
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
-    SamplingResult.Decision samplingDecision = samplingResult.getDecision();
+    SamplingDecision samplingDecision = samplingResult.getDecision();
 
     TraceState samplingResultTraceState =
         samplingResult.getUpdatedTraceState(parentSpanContext.getTraceState());
@@ -252,13 +253,13 @@ final class SdkSpanBuilder implements SpanBuilder {
   }
 
   // Visible for testing
-  static boolean isRecording(SamplingResult.Decision decision) {
-    return SamplingResult.Decision.RECORD_ONLY.equals(decision)
-        || SamplingResult.Decision.RECORD_AND_SAMPLE.equals(decision);
+  static boolean isRecording(SamplingDecision decision) {
+    return SamplingDecision.RECORD_ONLY.equals(decision)
+        || SamplingDecision.RECORD_AND_SAMPLE.equals(decision);
   }
 
   // Visible for testing
-  static boolean isSampled(SamplingResult.Decision decision) {
-    return SamplingResult.Decision.RECORD_AND_SAMPLE.equals(decision);
+  static boolean isSampled(SamplingDecision decision) {
+    return SamplingDecision.RECORD_AND_SAMPLE.equals(decision);
   }
 }
