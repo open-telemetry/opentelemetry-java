@@ -46,7 +46,7 @@ class AlwaysOffSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
   }
 
   @Test
@@ -61,7 +61,7 @@ class AlwaysOffSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
   }
 
   @Test
