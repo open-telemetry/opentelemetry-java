@@ -21,12 +21,12 @@ class OpenTelemetryTest {
 
   @BeforeAll
   static void beforeClass() {
-    GlobalOpenTelemetry.reset();
+    GlobalOpenTelemetry.resetForTest();
   }
 
   @AfterEach
   void after() {
-    GlobalOpenTelemetry.reset();
+    GlobalOpenTelemetry.resetForTest();
   }
 
   @Test

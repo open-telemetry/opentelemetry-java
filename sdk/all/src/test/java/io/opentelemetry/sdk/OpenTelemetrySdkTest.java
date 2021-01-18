@@ -26,7 +26,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -39,10 +39,9 @@ class OpenTelemetrySdkTest {
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 
-  @BeforeEach
-  void setUp() {
-    // Have all tests start with an API-only OpenTelemetry in global to check registration logic.
-    GlobalOpenTelemetry.set(DefaultOpenTelemetry.builder().build());
+  @AfterEach
+  void tearDown() {
+    GlobalOpenTelemetry.resetForTest();
   }
 
   @Test
@@ -59,6 +58,7 @@ class OpenTelemetrySdkTest {
   void testGetTracerManagementWhenNotTracerSdk() {
     OpenTelemetrySdk.builder().buildAndRegisterGlobal();
     assertThatCode(OpenTelemetrySdk::getGlobalTracerManagement).doesNotThrowAnyException();
+    GlobalOpenTelemetry.resetForTest();
     GlobalOpenTelemetry.set(
         DefaultOpenTelemetry.builder().setTracerProvider(tracerProvider).build());
     assertThatThrownBy(OpenTelemetrySdk::getGlobalTracerManagement)

@@ -74,8 +74,6 @@ public final class OpenTelemetryExtension
   private final OpenTelemetrySdk openTelemetry;
   private final InMemorySpanExporter spanExporter;
 
-  private volatile OpenTelemetry previousGlobalOpenTelemetry;
-
   private OpenTelemetryExtension(
       OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {
     this.openTelemetry = openTelemetry;
@@ -128,12 +126,11 @@ public final class OpenTelemetryExtension
 
   @Override
   public void beforeAll(ExtensionContext context) {
-    previousGlobalOpenTelemetry = GlobalOpenTelemetry.get();
     GlobalOpenTelemetry.set(openTelemetry);
   }
 
   @Override
   public void afterAll(ExtensionContext context) {
-    GlobalOpenTelemetry.set(previousGlobalOpenTelemetry);
+    GlobalOpenTelemetry.resetForTest();
   }
 }

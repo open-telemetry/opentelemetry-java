@@ -36,6 +36,7 @@ public final class GlobalOpenTelemetry {
   private static final Object mutex = new Object();
 
   @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
+  @Nullable private static volatile Throwable setGlobalCaller;
 
   private GlobalOpenTelemetry() {}
 
@@ -67,14 +68,31 @@ public final class GlobalOpenTelemetry {
    * Sets the {@link OpenTelemetry} that should be the global instance. Future calls to {@link
    * #get()} will return the provided {@link OpenTelemetry} instance. This should be called once as
    * early as possible in your application initialization logic, often in a {@code static} block in
-   * your main class.
+   * your main class. It should only be called once - an attempt to call it a second time will
+   * result in an error. If trying to set the global {@link OpenTelemetry} multiple times in tests,
+   * use {@link #resetForTest()} between them.
+   *
+   * <p>If you are using the OpenTelemetry SDK, you should generally use {@code
+   * OpenTelemetrySdk.builder().buildAndRegisterGlobal()} instead of calling this method directly.
    */
   public static void set(OpenTelemetry openTelemetry) {
-    globalOpenTelemetry = openTelemetry;
+    synchronized (mutex) {
+      if (globalOpenTelemetry != null) {
+        throw new IllegalStateException(
+            "GlobalOpenTelemetry.set has already been called, previous invocation set to cause of "
+                + "this exception.",
+            setGlobalCaller);
+      }
+      globalOpenTelemetry = openTelemetry;
+      setGlobalCaller = new Throwable();
+    }
   }
 
-  // for testing
-  static void reset() {
+  /**
+   * Unsets the global {@link OpenTelemetry}. This is only meant to be used from tests which need to
+   * reconfigure {@link OpenTelemetry}.
+   */
+  public static void resetForTest() {
     globalOpenTelemetry = null;
   }
 
