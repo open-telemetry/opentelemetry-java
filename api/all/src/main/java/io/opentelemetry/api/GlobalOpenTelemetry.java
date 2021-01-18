@@ -36,7 +36,7 @@ public final class GlobalOpenTelemetry {
   private static final Object mutex = new Object();
 
   @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
-  @Nullable private static volatile Throwable setGlobalCaller;
+  @Nullable private static Throwable setGlobalCaller;
 
   private GlobalOpenTelemetry() {}
 
