@@ -13,6 +13,7 @@ import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.net.InetAddress;
@@ -110,6 +111,12 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
 
   private Process createProcess(Resource resource) {
     Process result = new Process(this.process);
+
+    String serviceName = resource.getAttributes().get(ResourceAttributes.SERVICE_NAME);
+    if (serviceName != null && !serviceName.isEmpty()) {
+      result.setServiceName(serviceName);
+    }
+
     List<Tag> tags = Adapter.toTags(resource.getAttributes());
     tags.forEach(result::addToTags);
     return result;
