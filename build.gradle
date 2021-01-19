@@ -147,13 +147,15 @@ subprojects {
             options.compilerArgs += ["-Xlint:-serial"]
         }
 
-        jar.manifest {
-            attributes('Implementation-Title': name,
-                    'Implementation-Version': version,
-                    'Built-By': System.getProperty('user.name'),
-                    'Built-JDK': System.getProperty('java.version'),
-                    'Source-Compatibility': sourceCompatibility,
-                    'Target-Compatibility': targetCompatibility)
+        afterEvaluate {
+            jar.manifest {
+                attributes('Implementation-Title': archivesBaseName,
+                        'Implementation-Version': version,
+                        'Built-By': System.getProperty('user.name'),
+                        'Built-JDK': System.getProperty('java.version'),
+                        'Source-Compatibility': sourceCompatibility,
+                        'Target-Compatibility': targetCompatibility)
+            }
         }
 
         ext {
