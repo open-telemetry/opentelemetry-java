@@ -13,6 +13,7 @@ import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetryTesting;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -41,7 +42,7 @@ class OpenTelemetrySdkTest {
 
   @AfterEach
   void tearDown() {
-    GlobalOpenTelemetry.resetForTest();
+    OpenTelemetryTesting.resetGlobalForTest();
   }
 
   @Test
@@ -58,7 +59,7 @@ class OpenTelemetrySdkTest {
   void testGetTracerManagementWhenNotTracerSdk() {
     OpenTelemetrySdk.builder().buildAndRegisterGlobal();
     assertThatCode(OpenTelemetrySdk::getGlobalTracerManagement).doesNotThrowAnyException();
-    GlobalOpenTelemetry.resetForTest();
+    OpenTelemetryTesting.resetGlobalForTest();
     GlobalOpenTelemetry.set(
         DefaultOpenTelemetry.builder().setTracerProvider(tracerProvider).build());
     assertThatThrownBy(OpenTelemetrySdk::getGlobalTracerManagement)

@@ -70,7 +70,7 @@ public final class GlobalOpenTelemetry {
    * early as possible in your application initialization logic, often in a {@code static} block in
    * your main class. It should only be called once - an attempt to call it a second time will
    * result in an error. If trying to set the global {@link OpenTelemetry} multiple times in tests,
-   * use {@link #resetForTest()} between them.
+   * use {@link OpenTelemetryTesting#resetGlobalForTest()} between them.
    *
    * <p>If you are using the OpenTelemetry SDK, you should generally use {@code
    * OpenTelemetrySdk.builder().buildAndRegisterGlobal()} instead of calling this method directly.
@@ -86,14 +86,6 @@ public final class GlobalOpenTelemetry {
       globalOpenTelemetry = openTelemetry;
       setGlobalCaller = new Throwable();
     }
-  }
-
-  /**
-   * Unsets the global {@link OpenTelemetry}. This is only meant to be used from tests which need to
-   * reconfigure {@link OpenTelemetry}.
-   */
-  public static void resetForTest() {
-    globalOpenTelemetry = null;
   }
 
   /** Returns the globally registered {@link TracerProvider}. */
@@ -128,6 +120,10 @@ public final class GlobalOpenTelemetry {
    */
   public static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
     return get().getTracer(instrumentationName, instrumentationVersion);
+  }
+
+  static void resetForTest() {
+    GlobalOpenTelemetry.globalOpenTelemetry = null;
   }
 
   /**

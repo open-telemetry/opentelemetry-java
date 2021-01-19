@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.testing.junit4;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetryTesting;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -104,6 +105,6 @@ public final class OpenTelemetryRule extends ExternalResource {
 
   @Override
   protected void after() {
-    GlobalOpenTelemetry.resetForTest();
+    OpenTelemetryTesting.resetGlobalForTest();
   }
 }
