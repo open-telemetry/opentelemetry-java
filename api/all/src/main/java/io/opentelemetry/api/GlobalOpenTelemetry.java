@@ -52,7 +52,6 @@ public final class GlobalOpenTelemetry {
 
           OpenTelemetry autoConfigured = maybeAutoConfigure();
           if (autoConfigured != null) {
-            set(autoConfigured);
             return autoConfigured;
           }
 
