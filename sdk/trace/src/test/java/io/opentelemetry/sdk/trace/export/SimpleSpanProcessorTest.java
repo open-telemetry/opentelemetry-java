@@ -44,10 +44,7 @@ import org.mockito.quality.Strictness;
 /** Unit tests for {@link SimpleSpanProcessor}. */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-// TODO(anuraaga): Remove after builder() is removed.
-@SuppressWarnings("deprecation")
 class SimpleSpanProcessorTest {
-  private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private static final String SPAN_NAME = "MySpanName";
   @Mock private ReadableSpan readableSpan;
   @Mock private ReadWriteSpan readWriteSpan;
@@ -127,10 +124,7 @@ class SimpleSpanProcessorTest {
         new AtomicReference<>(TraceConfig.builder().setSampler(Sampler.alwaysOff()).build());
     SdkTracerProvider sdkTracerProvider =
         SdkTracerProvider.builder()
-            .addSpanProcessor(
-                BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-                    .build())
+            .addSpanProcessor(SimpleSpanProcessor.create(waitingSpanExporter))
             .setTraceConfig(traceConfig::get)
             .build();
 

@@ -51,28 +51,4 @@ public interface StatusData {
    */
   @Nullable
   String getDescription();
-
-  /**
-   * Returns {@code true} if this {@code Status} is UNSET, i.e., not an error.
-   *
-   * @return {@code true} if this {@code Status} is UNSET.
-   * @deprecated Compare {@link #getStatusCode()} with {@link StatusCode#UNSET}
-   */
-  // TODO: Consider to remove this in a future PR. Avoid too many changes in the initial PR.
-  @Deprecated
-  default boolean isUnset() {
-    return StatusCode.UNSET == getStatusCode();
-  }
-
-  /**
-   * Returns {@code true} if this {@code Status} is ok, i.e., status is not set, or has been
-   * overridden to be ok by an operator.
-   *
-   * @return {@code true} if this {@code Status} is OK or UNSET.
-   * @deprecated Compare {@link #getStatusCode()} with {@link StatusCode#ERROR}
-   */
-  @Deprecated
-  default boolean isOk() {
-    return isUnset() || StatusCode.OK == getStatusCode();
-  }
 }

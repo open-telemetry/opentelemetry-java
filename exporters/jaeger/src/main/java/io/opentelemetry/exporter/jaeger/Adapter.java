@@ -18,7 +18,6 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
-import io.opentelemetry.sdk.extension.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -63,7 +62,6 @@ final class Adapter {
    * @param span the span to be converted
    * @return the Jaeger span
    */
-  @SuppressWarnings("deprecation") // Remove after TraceProtoUtils made package-private
   static Model.Span toJaeger(SpanData span) {
     Model.Span.Builder target = Model.Span.newBuilder();
 
@@ -83,8 +81,8 @@ final class Adapter {
     if (span.getParentSpanContext().isValid()) {
       target.addReferences(
           Model.SpanRef.newBuilder()
-              .setTraceId(TraceProtoUtils.toProtoTraceId(span.getTraceId()))
-              .setSpanId(TraceProtoUtils.toProtoSpanId(span.getParentSpanId()))
+              .setTraceId(ByteString.copyFrom(TraceId.bytesFromHex(span.getTraceId(), 0)))
+              .setSpanId(ByteString.copyFrom(SpanId.bytesFromHex(span.getParentSpanId(), 0)))
               .setRefType(Model.SpanRefType.CHILD_OF));
     }
 

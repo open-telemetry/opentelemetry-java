@@ -26,7 +26,6 @@ import javax.annotation.Nullable;
  * @see TracerProvider
  * @see ContextPropagators
  */
-@SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
 public final class GlobalOpenTelemetry {
 
   private static final OpenTelemetry NOOP = DefaultOpenTelemetry.builder().build();

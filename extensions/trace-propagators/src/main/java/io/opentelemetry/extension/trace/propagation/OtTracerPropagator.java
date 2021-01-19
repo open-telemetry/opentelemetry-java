@@ -26,7 +26,6 @@ import javax.annotation.concurrent.Immutable;
  * TextMapPropagator</a>.
  */
 @Immutable
-@SuppressWarnings("deprecation") // Remove after StringUtils is made package-private
 public final class OtTracerPropagator implements TextMapPropagator {
 
   static final String TRACE_ID_HEADER = "ot-tracer-traceid";
