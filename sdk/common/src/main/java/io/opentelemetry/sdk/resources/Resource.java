@@ -59,7 +59,7 @@ public abstract class Resource {
    * The MANDATORY Resource instance contains the mandatory attributes that must be used if they are
    * not provided by the Resource that is given to an SDK signal provider.
    */
-  public static final Resource MANDATORY =
+  private static final Resource MANDATORY =
       create(Attributes.of(SERVICE_NAME, "unknown_service:java"));
 
   static {
