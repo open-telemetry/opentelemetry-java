@@ -31,6 +31,7 @@ import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -104,7 +105,10 @@ class JaegerGrpcSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key"), "resource-attr-value")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName",
+                        AttributeKey.stringKey("resource-attr-key"),
+                        "resource-attr-value")))
             .build();
 
     // test
@@ -126,6 +130,7 @@ class JaegerGrpcSpanExporterTest {
         .isEqualTo("resource-attr-value");
 
     verifyBatch(batch);
+    assertThat(batch.getProcess().getServiceName()).isEqualTo("myServiceName");
   }
 
   @Test
@@ -151,7 +156,10 @@ class JaegerGrpcSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key-1"), "resource-attr-value-1")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName1",
+                        AttributeKey.stringKey("resource-attr-key-1"),
+                        "resource-attr-value-1")))
             .build();
 
     SpanData span2 =
@@ -172,7 +180,10 @@ class JaegerGrpcSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key-2"), "resource-attr-value-2")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName2",
+                        AttributeKey.stringKey("resource-attr-key-2"),
+                        "resource-attr-value-2")))
             .build();
 
     // test
@@ -200,11 +211,13 @@ class JaegerGrpcSpanExporterTest {
         assertThat(SpanId.bytesToHex(batch.getSpans(0).getSpanId().toByteArray()))
             .isEqualTo(SPAN_ID);
         assertThat(processTag.get().getVStr()).isEqualTo("resource-attr-value-1");
+        assertThat(batch.getProcess().getServiceName()).isEqualTo("myServiceName1");
       } else if (processTag2.isPresent()) {
         assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint/2");
         assertThat(SpanId.bytesToHex(batch.getSpans(0).getSpanId().toByteArray()))
             .isEqualTo(SPAN_ID_2);
         assertThat(processTag2.get().getVStr()).isEqualTo("resource-attr-value-2");
+        assertThat(batch.getProcess().getServiceName()).isEqualTo("myServiceName2");
       } else {
         fail("No process tag resource-attr-key-1 or resource-attr-key-2");
       }
@@ -215,8 +228,7 @@ class JaegerGrpcSpanExporterTest {
     assertThat(batch.getSpansCount()).isEqualTo(1);
     assertThat(TraceId.bytesToHex(batch.getSpans(0).getTraceId().toByteArray()))
         .isEqualTo(TRACE_ID);
-    assertThat(batch.getProcess().getServiceName()).isEqualTo("test");
-    assertThat(batch.getProcess().getTagsCount()).isEqualTo(4);
+    assertThat(batch.getProcess().getTagsCount()).isEqualTo(5);
 
     assertThat(
             getSpanTagValue(batch.getSpans(0), "otel.library.name")
