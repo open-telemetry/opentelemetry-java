@@ -10,6 +10,10 @@
 
 ### Semantic Conventions
 
+The `opentelemetry-semconv` module has been marked as `-alpha` and removed from the bom. This was done because the OpenTelemetry
+project has not decided on a specification for stability of semantic conventions or the specific telemetry produced by
+instrumentation.
+
 #### Deprecations
 
 - The items in the `io.opentelemetry.semconv.trace.attributes.SemanticAttributes` which were previously
@@ -27,6 +31,10 @@ generated semantic attributes to be used in creating `Resource`s.
 
 - `SamplingResult.Decision` has been removed in favor of the `io.opentelemetry.sdk.trace.samplers.SamplingDecision` top-level class.
 - `Resource.merge(Resource)` now will resolve conflicts by preferring the `Resource` passed in, rather than the original. 
+
+#### Bugfixes
+
+- The Jaeger exporters will now properly populate the process service name from the Resource service.name attribute. 
 
 #### Deprecations
 
