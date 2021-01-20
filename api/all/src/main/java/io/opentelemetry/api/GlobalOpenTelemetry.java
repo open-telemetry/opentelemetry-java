@@ -132,7 +132,7 @@ public final class GlobalOpenTelemetry {
    * reconfigure {@link OpenTelemetry}.
    */
   public static void resetForTest() {
-    GlobalOpenTelemetry.globalOpenTelemetry = null;
+    globalOpenTelemetry = null;
   }
 
   /**
