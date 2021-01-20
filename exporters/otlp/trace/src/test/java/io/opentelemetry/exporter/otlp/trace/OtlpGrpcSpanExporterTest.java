@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +67,11 @@ class OtlpGrpcSpanExporterTest {
   }
 
   @Test
+  void legacyEndpointConfig() {
+    OtlpGrpcSpanExporter.builder().setEndpoint("localhost:4317");
+  }
+
+  @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void invalidConfig() {
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
@@ -83,13 +87,12 @@ class OtlpGrpcSpanExporterTest {
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
-    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("😺://localhost"))
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint(""))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid endpoint, must be a URL: 😺://localhost")
-        .hasCauseInstanceOf(URISyntaxException.class);
-    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("ftp://localhost"))
+        .hasMessage("Invalid endpoint, must be a URL: http://");
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("gopher://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid scheme, must be http or https: ftp://localhost");
+        .hasMessage("Invalid scheme, must be http or https: gopher://localhost");
   }
 
   @Test
