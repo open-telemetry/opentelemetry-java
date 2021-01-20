@@ -46,7 +46,7 @@ class AlwaysOnSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
   @Test
@@ -61,7 +61,7 @@ class AlwaysOnSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
   @Test

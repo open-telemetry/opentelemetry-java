@@ -51,11 +51,5 @@ public final class AwsXrayIdGenerator implements IdGenerator {
     return TraceId.fromLongs(timestampSecs << 32 | hiRandom, lowRandom);
   }
 
-  /**
-   * Constructs a new {@link AwsXrayIdGenerator}.
-   *
-   * @deprecated Use {@link #getInstance()}
-   */
-  @Deprecated
-  public AwsXrayIdGenerator() {}
+  private AwsXrayIdGenerator() {}
 }

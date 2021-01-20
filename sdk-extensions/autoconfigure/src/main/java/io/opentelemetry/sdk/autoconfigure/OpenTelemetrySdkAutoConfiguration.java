@@ -38,7 +38,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     return OpenTelemetrySdk.builder()
         .setTracerProvider(tracerProvider)
         .setPropagators(propagators)
-        .build();
+        .buildAndRegisterGlobal();
   }
 
   private static void configureMeterProvider(Resource resource, ConfigProperties config) {

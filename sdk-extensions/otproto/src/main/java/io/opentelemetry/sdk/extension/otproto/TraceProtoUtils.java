@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 /** Utilities for converting various objects to protobuf representations. */
-public final class TraceProtoUtils {
+final class TraceProtoUtils {
   private TraceProtoUtils() {}
 
   /**
@@ -21,9 +21,7 @@ public final class TraceProtoUtils {
    *
    * @param spanId the spanId to convert.
    * @return a ByteString representation.
-   * @deprecated Will be removed without replacement
    */
-  @Deprecated
   public static ByteString toProtoSpanId(String spanId) {
     return ByteString.copyFrom(SpanId.bytesFromHex(spanId, 0));
   }
@@ -33,9 +31,7 @@ public final class TraceProtoUtils {
    *
    * @param traceId the traceId to convert.
    * @return a ByteString representation.
-   * @deprecated Will be removed without replacement
    */
-  @Deprecated
   public static ByteString toProtoTraceId(String traceId) {
     return ByteString.copyFrom(TraceId.bytesFromHex(traceId, 0));
   }
@@ -45,9 +41,7 @@ public final class TraceProtoUtils {
    *
    * @param traceConfigProto proto format {@code TraceConfig}.
    * @return a {@code TraceConfig}.
-   * @deprecated Will be removed without replacement
    */
-  @Deprecated
   public static TraceConfig traceConfigFromProto(
       io.opentelemetry.proto.trace.v1.TraceConfig traceConfigProto) {
     return TraceConfig.builder()
