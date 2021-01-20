@@ -14,8 +14,8 @@ import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.ServiceLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,9 +66,8 @@ class Ec2ResourceTest {
     expectedAttrBuilders.put(ResourceAttributes.CLOUD_ZONE, "us-west-2b");
     expectedAttrBuilders.put(ResourceAttributes.HOST_TYPE, "t2.micro");
     expectedAttrBuilders.put(ResourceAttributes.HOST_IMAGE_ID, "ami-5fb8c835");
-    expectedAttrBuilders.put(ResourceAttributes.CLOUD_ACCOUNT, "123456789012");
+    expectedAttrBuilders.put(ResourceAttributes.CLOUD_ACCOUNT_ID, "123456789012");
     expectedAttrBuilders.put(ResourceAttributes.CLOUD_REGION, "us-west-2");
-    expectedAttrBuilders.put(ResourceAttributes.HOST_HOSTNAME, "ec2-1-2-3-4");
     expectedAttrBuilders.put(ResourceAttributes.HOST_NAME, "ec2-1-2-3-4");
     assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 
@@ -100,9 +99,8 @@ class Ec2ResourceTest {
             .put(ResourceAttributes.CLOUD_ZONE, "us-west-2b")
             .put(ResourceAttributes.HOST_TYPE, "t2.micro")
             .put(ResourceAttributes.HOST_IMAGE_ID, "ami-5fb8c835")
-            .put(ResourceAttributes.CLOUD_ACCOUNT, "123456789012")
+            .put(ResourceAttributes.CLOUD_ACCOUNT_ID, "123456789012")
             .put(ResourceAttributes.CLOUD_REGION, "us-west-2")
-            .put(ResourceAttributes.HOST_HOSTNAME, "ec2-1-2-3-4")
             .put(ResourceAttributes.HOST_NAME, "ec2-1-2-3-4");
     assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 

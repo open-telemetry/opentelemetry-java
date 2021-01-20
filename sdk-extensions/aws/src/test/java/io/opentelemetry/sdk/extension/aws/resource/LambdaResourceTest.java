@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -44,9 +44,9 @@ class LambdaResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                SemanticAttributes.CLOUD_PROVIDER,
+                ResourceAttributes.CLOUD_PROVIDER,
                 "aws",
-                SemanticAttributes.FAAS_NAME,
+                ResourceAttributes.FAAS_NAME,
                 "my-function"));
   }
 
@@ -67,13 +67,13 @@ class LambdaResourceTest {
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
-                SemanticAttributes.CLOUD_PROVIDER,
+                ResourceAttributes.CLOUD_PROVIDER,
                 "aws",
-                SemanticAttributes.CLOUD_REGION,
+                ResourceAttributes.CLOUD_REGION,
                 "us-east-1",
-                SemanticAttributes.FAAS_NAME,
+                ResourceAttributes.FAAS_NAME,
                 "my-function",
-                SemanticAttributes.FAAS_VERSION,
+                ResourceAttributes.FAAS_VERSION,
                 "1.2.3"));
   }
 

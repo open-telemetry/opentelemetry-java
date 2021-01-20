@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.extension.resources;
 
-import static io.opentelemetry.sdk.resources.ResourceAttributes.PROCESS_RUNTIME_DESCRIPTION;
-import static io.opentelemetry.sdk.resources.ResourceAttributes.PROCESS_RUNTIME_NAME;
-import static io.opentelemetry.sdk.resources.ResourceAttributes.PROCESS_RUNTIME_VERSION;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.PROCESS_RUNTIME_DESCRIPTION;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.PROCESS_RUNTIME_NAME;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.PROCESS_RUNTIME_VERSION;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;

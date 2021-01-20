@@ -10,8 +10,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -114,7 +114,7 @@ public final class Ec2Resource extends ResourceProvider {
             attrBuilders.put(ResourceAttributes.HOST_IMAGE_ID, value);
             break;
           case "accountId":
-            attrBuilders.put(ResourceAttributes.CLOUD_ACCOUNT, value);
+            attrBuilders.put(ResourceAttributes.CLOUD_ACCOUNT_ID, value);
             break;
           case "region":
             attrBuilders.put(ResourceAttributes.CLOUD_REGION, value);
@@ -128,7 +128,6 @@ public final class Ec2Resource extends ResourceProvider {
       return Attributes.empty();
     }
 
-    attrBuilders.put(ResourceAttributes.HOST_HOSTNAME, hostname);
     attrBuilders.put(ResourceAttributes.HOST_NAME, hostname);
 
     return attrBuilders.build();

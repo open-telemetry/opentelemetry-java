@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static io.opentelemetry.sdk.resources.ResourceAttributes.SDK_LANGUAGE;
-import static io.opentelemetry.sdk.resources.ResourceAttributes.SDK_NAME;
-import static io.opentelemetry.sdk.resources.ResourceAttributes.SDK_VERSION;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_LANGUAGE;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_NAME;
+import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_VERSION;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
@@ -59,9 +59,9 @@ public abstract class Resource {
     TELEMETRY_SDK =
         create(
             Attributes.builder()
-                .put(SDK_NAME, "opentelemetry")
-                .put(SDK_LANGUAGE, "java")
-                .put(SDK_VERSION, readVersion())
+                .put(TELEMETRY_SDK_NAME, "opentelemetry")
+                .put(TELEMETRY_SDK_LANGUAGE, "java")
+                .put(TELEMETRY_SDK_VERSION, readVersion())
                 .build());
   }
 

@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.resources;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import javax.annotation.Nullable;
 
 /** {@link ResourceProvider} which provides information about the current operating system. */
@@ -32,7 +32,7 @@ public final class OsResource extends ResourceProvider {
 
     String osName = getOs(os);
     if (osName != null) {
-      attributes.put(ResourceAttributes.OS_NAME, osName);
+      attributes.put(ResourceAttributes.OS_TYPE, osName);
     }
 
     String version = null;
@@ -51,27 +51,27 @@ public final class OsResource extends ResourceProvider {
   private static String getOs(String os) {
     os = os.toLowerCase();
     if (os.startsWith("windows")) {
-      return "WINDOWS";
+      return ResourceAttributes.OsTypeValues.WINDOWS;
     } else if (os.startsWith("linux")) {
-      return "LINUX";
+      return ResourceAttributes.OsTypeValues.LINUX;
     } else if (os.startsWith("mac")) {
-      return "DARWIN";
+      return ResourceAttributes.OsTypeValues.DARWIN;
     } else if (os.startsWith("freebsd")) {
-      return "FREEBSD";
+      return ResourceAttributes.OsTypeValues.FREEBSD;
     } else if (os.startsWith("netbsd")) {
-      return "NETBSD";
+      return ResourceAttributes.OsTypeValues.NETBSD;
     } else if (os.startsWith("openbsd")) {
-      return "OPENBSD";
+      return ResourceAttributes.OsTypeValues.OPENBSD;
     } else if (os.startsWith("dragonflybsd")) {
-      return "DRAGONFLYBSD";
+      return ResourceAttributes.OsTypeValues.DRAGONFLYBSD;
     } else if (os.startsWith("hp-ux")) {
-      return "HPUX";
+      return ResourceAttributes.OsTypeValues.HPUX;
     } else if (os.startsWith("aix")) {
-      return "AIX";
+      return ResourceAttributes.OsTypeValues.AIX;
     } else if (os.startsWith("solaris")) {
-      return "SOLARIS";
+      return ResourceAttributes.OsTypeValues.SOLARIS;
     } else if (os.startsWith("z/os")) {
-      return "ZOS";
+      return ResourceAttributes.OsTypeValues.ZOS;
     }
     return null;
   }
