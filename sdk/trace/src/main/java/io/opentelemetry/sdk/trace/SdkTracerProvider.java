@@ -82,8 +82,8 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
    * Attempts to stop all the activity for this {@link Tracer}. Calls {@link
    * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
    *
-   * <p>This operation may block until all the Spans are processed. Must be called before turning
-   * off the main application to ensure all data are processed and exported.
+   * <p>The returned {@link CompletableResultCode} will be completed when all the Spans are
+   * processed.
    *
    * <p>After this is called, newly created {@code Span}s will be no-ops.
    *
