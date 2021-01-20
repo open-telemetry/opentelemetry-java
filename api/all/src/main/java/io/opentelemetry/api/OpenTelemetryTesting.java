@@ -9,12 +9,4 @@ package io.opentelemetry.api;
 public final class OpenTelemetryTesting {
 
   private OpenTelemetryTesting() {}
-
-  /**
-   * Unsets the global {@link OpenTelemetry}. This is only meant to be used from tests which need to
-   * reconfigure {@link OpenTelemetry}.
-   */
-  public static void resetGlobalForTest() {
-    GlobalOpenTelemetry.resetForTest();
-  }
 }
