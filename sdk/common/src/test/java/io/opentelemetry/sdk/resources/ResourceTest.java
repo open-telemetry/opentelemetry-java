@@ -151,7 +151,7 @@ class ResourceTest {
   @Test
   void testMergeResources() {
     Attributes expectedAttributes =
-        Attributes.of(stringKey("a"), "1", stringKey("b"), "2", stringKey("c"), "4");
+        Attributes.of(stringKey("a"), "1", stringKey("b"), "3", stringKey("c"), "4");
 
     Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(resource2);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);

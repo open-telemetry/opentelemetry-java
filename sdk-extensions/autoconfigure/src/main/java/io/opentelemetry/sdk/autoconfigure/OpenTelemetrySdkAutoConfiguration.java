@@ -55,7 +55,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
   static Resource configureResource(ConfigProperties config) {
     AttributesBuilder resourceAttributes = Attributes.builder();
     config.getCommaSeparatedMap("otel.resource.attributes").forEach(resourceAttributes::put);
-    return Resource.create(resourceAttributes.build()).merge(Resource.getDefault());
+    return Resource.getDefault().merge(Resource.create(resourceAttributes.build()));
   }
 
   private OpenTelemetrySdkAutoConfiguration() {}
