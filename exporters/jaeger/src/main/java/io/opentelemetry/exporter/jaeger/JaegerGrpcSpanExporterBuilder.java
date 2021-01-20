@@ -25,10 +25,13 @@ public final class JaegerGrpcSpanExporterBuilder {
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
 
   /**
-   * Sets the service name to be used by this exporter. Required.
+   * Sets the service name to be used by this exporter, if none is found in the Resource associated
+   * with a span.
    *
    * @param serviceName the service name.
    * @return this.
+   * @deprecated The default service name is now extracted from the default Resource. This method
+   *     will be removed in the next release.
    */
   public JaegerGrpcSpanExporterBuilder setServiceName(String serviceName) {
     this.serviceName = serviceName;

@@ -60,7 +60,6 @@ class JaegerThriftIntegrationTest {
 
     SpanExporter jaegerExporter =
         JaegerThriftSpanExporter.builder()
-            .setServiceName(SERVICE_NAME)
             .setEndpoint(JAEGER_URL + ":" + mappedPort + "/api/traces")
             .build();
     return OpenTelemetrySdk.builder()

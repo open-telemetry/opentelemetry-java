@@ -14,10 +14,12 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -53,26 +55,19 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
   private static final String SERVICE_NAME = "myService";
-  private static final Endpoint localEndpoint =
-      ZipkinSpanExporter.produceLocalEndpoint(SERVICE_NAME);
 
   @Rule public ZipkinRule zipkin = new ZipkinRule();
 
   @Test
   public void testExportWithDefaultEncoding() {
-
     ZipkinSpanExporter exporter =
-        ZipkinSpanExporter.builder()
-            .setEndpoint(zipkin.httpUrl() + ENDPOINT_V2_SPANS)
-            .setServiceName(SERVICE_NAME)
-            .build();
+        ZipkinSpanExporter.builder().setEndpoint(zipkin.httpUrl() + ENDPOINT_V2_SPANS).build();
 
     exportAndVerify(exporter);
   }
 
   @Test
   public void testExportAsProtobuf() {
-
     ZipkinSpanExporter exporter =
         buildZipkinExporter(
             zipkin.httpUrl() + ENDPOINT_V2_SPANS, Encoding.PROTO3, SpanBytesEncoder.PROTO3);
@@ -81,7 +76,6 @@ public class ZipkinSpanExporterEndToEndHttpTest {
 
   @Test
   public void testExportAsThrift() {
-
     @SuppressWarnings("deprecation") // we have to use the deprecated thrift encoding to test it
     ZipkinSpanExporter exporter =
         buildZipkinExporter(
@@ -116,7 +110,6 @@ public class ZipkinSpanExporterEndToEndHttpTest {
       String endpoint, Encoding encoding, SpanBytesEncoder encoder) {
     return ZipkinSpanExporter.builder()
         .setSender(OkHttpSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
-        .setServiceName(SERVICE_NAME)
         .setEncoder(encoder)
         .build();
   }
@@ -156,7 +149,8 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setEvents(annotations)
         .setLinks(Collections.emptyList())
         .setEndEpochNanos(END_EPOCH_NANOS)
-        .setHasEnded(true);
+        .setHasEnded(true)
+        .setResource(Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, SERVICE_NAME)));
   }
 
   private static Span buildZipkinSpan() {
@@ -168,7 +162,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .name(SPAN_NAME)
         .timestamp(START_EPOCH_NANOS / 1000)
         .duration((END_EPOCH_NANOS / 1000) - (START_EPOCH_NANOS / 1000))
-        .localEndpoint(localEndpoint)
+        .localEndpoint(Endpoint.newBuilder().serviceName(SERVICE_NAME).build())
         .addAnnotation(RECEIVED_TIMESTAMP_NANOS / 1000, "RECEIVED")
         .addAnnotation(SENT_TIMESTAMP_NANOS / 1000, "SENT")
         .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")

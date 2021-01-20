@@ -17,12 +17,13 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
   private Sender sender;
-  private String serviceName = ZipkinSpanExporter.DEFAULT_SERVICE_NAME;
+  private String serviceName =
+      Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME);
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
 
   /**
    * Label of the remote node in the service graph, such as "favstar". Avoid names with variables or
-   * unique identifiers embedded. Defaults to "unknown".
+   * unique identifiers embedded. Defaults to the service.name specified in the default Resource.
    *
    * <p>This is a primary label for trace lookup and aggregation, so it should be intuitive and
    * consistent. Many use a name from service discovery.
@@ -30,13 +31,14 @@ public final class ZipkinSpanExporterBuilder {
    * <p>Note: this value, will be superseded by the value of {@link ResourceAttributes#SERVICE_NAME}
    * if it has been set in the {@link Resource} associated with the Tracer that created the spans.
    *
-   * <p>This property is required to be set.
-   *
    * @param serviceName The service name. It defaults to "unknown".
    * @return this.
    * @see Resource
    * @see ResourceAttributes
+   * @deprecated The default service name is now extracted from the default Resource. This method
+   *     will be removed in the next release.
    */
+  @Deprecated
   public ZipkinSpanExporterBuilder setServiceName(String serviceName) {
     this.serviceName = serviceName;
     return this;

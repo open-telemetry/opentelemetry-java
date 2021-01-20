@@ -42,7 +42,6 @@ import zipkin2.reporter.Sender;
  */
 public final class ZipkinSpanExporter implements SpanExporter {
   public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
-  public static final String DEFAULT_SERVICE_NAME = "unknown";
 
   private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
