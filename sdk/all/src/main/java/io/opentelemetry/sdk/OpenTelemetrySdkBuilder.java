@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetryTesting;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -54,7 +53,7 @@ public final class OpenTelemetrySdkBuilder {
    * io.opentelemetry.api.OpenTelemetry}. An exception will be thrown if this method is attempted to
    * be called multiple times in the lifecycle of an application - ensure you have only one SDK for
    * use as the global instance. If you need to configure multiple SDKs for tests, use {@link
-   * OpenTelemetryTesting#resetGlobalForTest()} between them.
+   * GlobalOpenTelemetry#resetForTest()} between them.
    *
    * @see GlobalOpenTelemetry
    */
