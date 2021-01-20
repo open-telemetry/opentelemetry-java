@@ -13,7 +13,8 @@ afterEvaluate {
             rootProject.subprojects.sort { "$it.archivesBaseName" }
                     .collect { it }
                     .findAll { it.name != project.name }
-                    .findAll { !it.name.endsWith('metrics') }
+                    // We only include prod artifacts, which is the default when otel.release isn't set.
+                    .findAll { it.findProperty("otel.release") == null }
                     .each { project ->
                         project.plugins.withId("maven-publish") {
                             api project
