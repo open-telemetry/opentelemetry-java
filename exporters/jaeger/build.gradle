@@ -15,6 +15,7 @@ dependencies {
 
     implementation project(':sdk-extensions:otproto'),
             project(':sdk:all'),
+            project(':semconv'),
             libraries.grpc_protobuf,
             libraries.grpc_stub,
             libraries.protobuf,

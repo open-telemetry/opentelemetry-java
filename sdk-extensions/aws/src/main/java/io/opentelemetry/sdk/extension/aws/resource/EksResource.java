@@ -9,8 +9,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -64,7 +64,7 @@ public final class EksResource extends ResourceProvider {
 
     String clusterName = getClusterName();
     if (clusterName != null && !clusterName.isEmpty()) {
-      attrBuilders.put(ResourceAttributes.K8S_CLUSTER, clusterName);
+      attrBuilders.put(ResourceAttributes.K8S_CLUSTER_NAME, clusterName);
     }
 
     String containerId = dockerHelper.getContainerId();

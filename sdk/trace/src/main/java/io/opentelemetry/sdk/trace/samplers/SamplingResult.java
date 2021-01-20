@@ -26,12 +26,12 @@ public interface SamplingResult {
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
-   * <p>Use {@link #create(Decision, Attributes)} if you need attributes.
+   * <p>Use {@link #create(SamplingDecision, Attributes)} if you need attributes.
    *
    * @param decision The decision made on the span.
    * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
-  static SamplingResult create(Decision decision) {
+  static SamplingResult create(SamplingDecision decision) {
     switch (decision) {
       case RECORD_AND_SAMPLE:
         return ImmutableSamplingResult.EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
@@ -49,8 +49,8 @@ public interface SamplingResult {
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
-   * <p>Using {@link #create(Decision)} instead of this method is slightly faster and shorter if you
-   * don't need attributes.
+   * <p>Using {@link #create(SamplingDecision)} instead of this method is slightly faster and
+   * shorter if you don't need attributes.
    *
    * @param decision The decision made on the span.
    * @param attributes The attributes to return from {@link SamplingResult#getAttributes()}. A
@@ -58,18 +58,11 @@ public interface SamplingResult {
    * @return A {@link SamplingResult} with the attributes equivalent to {@code attributes} and the
    *     provided {@code decision}.
    */
-  static SamplingResult create(Decision decision, Attributes attributes) {
+  static SamplingResult create(SamplingDecision decision, Attributes attributes) {
     requireNonNull(attributes, "attributes");
     return attributes.isEmpty()
         ? create(decision)
         : ImmutableSamplingResult.createSamplingResult(decision, attributes);
-  }
-
-  /** A decision on whether a span should be recorded, recorded and sampled or dropped. */
-  enum Decision {
-    DROP,
-    RECORD_ONLY,
-    RECORD_AND_SAMPLE,
   }
 
   /**
@@ -77,14 +70,14 @@ public interface SamplingResult {
    *
    * @return sampling result.
    */
-  Decision getDecision();
+  SamplingDecision getDecision();
 
   /**
    * Return tags which will be attached to the span.
    *
    * @return attributes added to span. These attributes should be added to the span only when
-   *     {@linkplain #getDecision() the sampling decision} is {@link Decision#RECORD_ONLY} or {@link
-   *     Decision#RECORD_AND_SAMPLE}.
+   *     {@linkplain #getDecision() the sampling decision} is {@link SamplingDecision#RECORD_ONLY}
+   *     or {@link SamplingDecision#RECORD_AND_SAMPLE}.
    */
   Attributes getAttributes();
 

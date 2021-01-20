@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extension.aws.resource;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.ResourceProvider;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -37,16 +37,16 @@ public final class LambdaResource extends ResourceProvider {
 
     AttributesBuilder builder =
         Attributes.builder()
-            .put(SemanticAttributes.CLOUD_PROVIDER, SemanticAttributes.CloudProviderValues.AWS);
+            .put(ResourceAttributes.CLOUD_PROVIDER, ResourceAttributes.CloudProviderValues.AWS);
 
     if (!region.isEmpty()) {
-      builder.put(SemanticAttributes.CLOUD_REGION, region);
+      builder.put(ResourceAttributes.CLOUD_REGION, region);
     }
     if (!functionName.isEmpty()) {
-      builder.put(SemanticAttributes.FAAS_NAME, functionName);
+      builder.put(ResourceAttributes.FAAS_NAME, functionName);
     }
     if (!functionVersion.isEmpty()) {
-      builder.put(SemanticAttributes.FAAS_VERSION, functionVersion);
+      builder.put(ResourceAttributes.FAAS_VERSION, functionVersion);
     }
 
     return builder.build();

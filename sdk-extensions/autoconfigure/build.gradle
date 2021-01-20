@@ -12,6 +12,7 @@ ext.moduleName = "io.opentelemetry.sdk.autoconfigure"
 testSets {
     testConfigError
     testFullConfig
+    testInitializeRegistersGlobal
     testJaeger
     testPrometheus
     testZipkin

@@ -115,7 +115,6 @@ class FullConfigTest {
     System.setProperty("otel.exporter.otlp.endpoint", endpoint);
     System.setProperty("otel.exporter.otlp.timeout", "10000");
 
-    OpenTelemetrySdkAutoConfiguration.initialize();
     Collection<String> fields =
         GlobalOpenTelemetry.get().getPropagators().getTextMapPropagator().fields();
     List<String> keys = new ArrayList<>();

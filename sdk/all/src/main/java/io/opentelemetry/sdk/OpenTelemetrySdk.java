@@ -18,7 +18,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @SuppressWarnings("deprecation") // Remove when SdkTracerManagement is removed
 public final class OpenTelemetrySdk implements OpenTelemetry {
   private final ObfuscatedTracerProvider tracerProvider;
-  private volatile ContextPropagators propagators;
+  private final ContextPropagators propagators;
 
   OpenTelemetrySdk(ObfuscatedTracerProvider tracerProvider, ContextPropagators propagators) {
     this.tracerProvider = tracerProvider;

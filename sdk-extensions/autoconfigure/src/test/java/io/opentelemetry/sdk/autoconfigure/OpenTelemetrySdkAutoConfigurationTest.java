@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +20,7 @@ class OpenTelemetrySdkAutoConfigurationTest {
         OpenTelemetrySdkAutoConfiguration.configureResource(
             ConfigProperties.createForTest(
                 Collections.singletonMap("otel.resource.attributes", "telemetry.sdk.name=test")));
-    assertThat(resource.getAttributes().get(SemanticAttributes.TELEMETRY_SDK_NAME))
+    assertThat(resource.getAttributes().get(ResourceAttributes.TELEMETRY_SDK_NAME))
         .isEqualTo("test");
   }
 }

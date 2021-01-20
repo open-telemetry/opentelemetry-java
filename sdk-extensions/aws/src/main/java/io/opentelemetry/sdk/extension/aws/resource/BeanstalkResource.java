@@ -10,8 +10,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -67,7 +67,7 @@ public final class BeanstalkResource extends ResourceProvider {
         String value = parser.getText();
         switch (parser.getCurrentName()) {
           case DEVELOPMENT_ID:
-            attrBuilders.put(ResourceAttributes.SERVICE_INSTANCE, value);
+            attrBuilders.put(ResourceAttributes.SERVICE_INSTANCE_ID, value);
             break;
           case VERSION_LABEL:
             attrBuilders.put(ResourceAttributes.SERVICE_VERSION, value);

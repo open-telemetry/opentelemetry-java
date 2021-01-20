@@ -31,7 +31,6 @@ import javax.annotation.concurrent.Immutable;
  * Format</a>.
  */
 @Immutable
-@SuppressWarnings("deprecation") // Remove after StringUtils is made package-private
 public final class JaegerPropagator implements TextMapPropagator {
 
   private static final Logger logger = Logger.getLogger(JaegerPropagator.class.getName());

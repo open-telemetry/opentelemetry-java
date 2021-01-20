@@ -19,6 +19,7 @@ import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model.Process;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.net.InetAddress;
@@ -158,6 +159,12 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
 
   private Collector.PostSpansRequest buildRequest(Resource resource, List<SpanData> spans) {
     Process.Builder builder = this.processBuilder.clone();
+
+    String serviceName = resource.getAttributes().get(ResourceAttributes.SERVICE_NAME);
+    if (serviceName != null && !serviceName.isEmpty()) {
+      builder.setServiceName(serviceName);
+    }
+
     builder.addAllTags(Adapter.toKeyValues(resource.getAttributes()));
 
     return Collector.PostSpansRequest.newBuilder()

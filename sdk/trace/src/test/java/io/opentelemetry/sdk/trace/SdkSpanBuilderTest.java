@@ -35,6 +35,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.time.Instant;
 import java.util.Arrays;
@@ -429,7 +430,7 @@ class SdkSpanBuilderTest {
                       Attributes attributes,
                       List<LinkData> parentLinks) {
                     return SamplingResult.create(
-                        SamplingResult.Decision.RECORD_AND_SAMPLE,
+                        SamplingDecision.RECORD_AND_SAMPLE,
                         Attributes.builder().put("cat", "meow").build());
                   }
 
@@ -518,8 +519,8 @@ class SdkSpanBuilderTest {
                                   List<LinkData> parentLinks) {
                                 return new SamplingResult() {
                                   @Override
-                                  public Decision getDecision() {
-                                    return Decision.RECORD_AND_SAMPLE;
+                                  public SamplingDecision getDecision() {
+                                    return SamplingDecision.RECORD_AND_SAMPLE;
                                   }
 
                                   @Override
@@ -571,8 +572,8 @@ class SdkSpanBuilderTest {
                                   List<LinkData> parentLinks) {
                                 return new SamplingResult() {
                                   @Override
-                                  public Decision getDecision() {
-                                    return Decision.RECORD_AND_SAMPLE;
+                                  public SamplingDecision getDecision() {
+                                    return SamplingDecision.RECORD_AND_SAMPLE;
                                   }
 
                                   @Override
@@ -880,16 +881,16 @@ class SdkSpanBuilderTest {
 
   @Test
   void isSampled() {
-    assertThat(SdkSpanBuilder.isSampled(SamplingResult.Decision.DROP)).isFalse();
-    assertThat(SdkSpanBuilder.isSampled(SamplingResult.Decision.RECORD_ONLY)).isFalse();
-    assertThat(SdkSpanBuilder.isSampled(SamplingResult.Decision.RECORD_AND_SAMPLE)).isTrue();
+    assertThat(SdkSpanBuilder.isSampled(SamplingDecision.DROP)).isFalse();
+    assertThat(SdkSpanBuilder.isSampled(SamplingDecision.RECORD_ONLY)).isFalse();
+    assertThat(SdkSpanBuilder.isSampled(SamplingDecision.RECORD_AND_SAMPLE)).isTrue();
   }
 
   @Test
   void isRecording() {
-    assertThat(SdkSpanBuilder.isRecording(SamplingResult.Decision.DROP)).isFalse();
-    assertThat(SdkSpanBuilder.isRecording(SamplingResult.Decision.RECORD_ONLY)).isTrue();
-    assertThat(SdkSpanBuilder.isRecording(SamplingResult.Decision.RECORD_AND_SAMPLE)).isTrue();
+    assertThat(SdkSpanBuilder.isRecording(SamplingDecision.DROP)).isFalse();
+    assertThat(SdkSpanBuilder.isRecording(SamplingDecision.RECORD_ONLY)).isTrue();
+    assertThat(SdkSpanBuilder.isRecording(SamplingDecision.RECORD_AND_SAMPLE)).isTrue();
   }
 
   // SpanData is very commonly used in unit tests, we want the toString to make sure it's relatively

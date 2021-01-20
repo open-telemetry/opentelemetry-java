@@ -11,7 +11,6 @@ import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 
 /** Builder class for {@link DefaultOpenTelemetry}. */
-@SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
 public final class DefaultOpenTelemetryBuilder {
   private ContextPropagators propagators = ContextPropagators.noop();
   private TracerProvider tracerProvider = TracerProvider.getDefault();

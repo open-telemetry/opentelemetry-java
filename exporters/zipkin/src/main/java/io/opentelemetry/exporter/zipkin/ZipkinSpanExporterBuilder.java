@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.zipkin;
 
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.SpanBytesEncoder;
@@ -25,17 +27,15 @@ public final class ZipkinSpanExporterBuilder {
    * <p>This is a primary label for trace lookup and aggregation, so it should be intuitive and
    * consistent. Many use a name from service discovery.
    *
-   * <p>Note: this value, will be superseded by the value of {@link
-   * io.opentelemetry.sdk.resources.ResourceAttributes#SERVICE_NAME} if it has been set in the
-   * {@link io.opentelemetry.sdk.resources.Resource} associated with the Tracer that created the
-   * spans.
+   * <p>Note: this value, will be superseded by the value of {@link ResourceAttributes#SERVICE_NAME}
+   * if it has been set in the {@link Resource} associated with the Tracer that created the spans.
    *
    * <p>This property is required to be set.
    *
    * @param serviceName The service name. It defaults to "unknown".
    * @return this.
-   * @see io.opentelemetry.sdk.resources.Resource
-   * @see io.opentelemetry.sdk.resources.ResourceAttributes
+   * @see Resource
+   * @see ResourceAttributes
    */
   public ZipkinSpanExporterBuilder setServiceName(String serviceName) {
     this.serviceName = serviceName;

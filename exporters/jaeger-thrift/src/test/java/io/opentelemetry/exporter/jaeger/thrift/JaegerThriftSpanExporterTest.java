@@ -22,6 +22,7 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -79,7 +80,10 @@ class JaegerThriftSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key"), "resource-attr-value")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName",
+                        AttributeKey.stringKey("resource-attr-key"),
+                        "resource-attr-value")))
             .build();
 
     // test
@@ -88,7 +92,7 @@ class JaegerThriftSpanExporterTest {
     assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
-    Process expectedProcess = new Process("myservice.name");
+    Process expectedProcess = new Process("myServiceName");
     expectedProcess.addToTags(
         new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
     expectedProcess.addToTags(
@@ -97,6 +101,7 @@ class JaegerThriftSpanExporterTest {
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
     expectedProcess.addToTags(
         new Tag("resource-attr-key", TagType.STRING).setVStr("resource-attr-value"));
+    expectedProcess.addToTags(new Tag("service.name", TagType.STRING).setVStr("myServiceName"));
 
     Span expectedSpan =
         new Span()
@@ -141,7 +146,10 @@ class JaegerThriftSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key-1"), "resource-attr-value-1")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName1",
+                        AttributeKey.stringKey("resource-attr-key-1"),
+                        "resource-attr-value-1")))
             .build();
 
     SpanData span2 =
@@ -162,7 +170,10 @@ class JaegerThriftSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key-2"), "resource-attr-value-2")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName2",
+                        AttributeKey.stringKey("resource-attr-key-2"),
+                        "resource-attr-value-2")))
             .build();
 
     // test
@@ -171,7 +182,7 @@ class JaegerThriftSpanExporterTest {
     assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
-    Process expectedProcess1 = new Process("myservice.name");
+    Process expectedProcess1 = new Process("myServiceName1");
     expectedProcess1.addToTags(
         new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
     expectedProcess1.addToTags(
@@ -180,8 +191,9 @@ class JaegerThriftSpanExporterTest {
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
     expectedProcess1.addToTags(
         new Tag("resource-attr-key-1", TagType.STRING).setVStr("resource-attr-value-1"));
+    expectedProcess1.addToTags(new Tag("service.name", TagType.STRING).setVStr("myServiceName1"));
 
-    Process expectedProcess2 = new Process("myservice.name");
+    Process expectedProcess2 = new Process("myServiceName2");
     expectedProcess2.addToTags(
         new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
     expectedProcess2.addToTags(
@@ -190,6 +202,7 @@ class JaegerThriftSpanExporterTest {
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
     expectedProcess2.addToTags(
         new Tag("resource-attr-key-2", TagType.STRING).setVStr("resource-attr-value-2"));
+    expectedProcess2.addToTags(new Tag("service.name", TagType.STRING).setVStr("myServiceName2"));
 
     Span expectedSpan1 =
         new Span()
