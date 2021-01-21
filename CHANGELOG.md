@@ -2,9 +2,65 @@
 
 ## Unreleased:
 
+### General
+
 #### Breaking Changes
 
 - Methods and classes deprecated in 0.14.x have been removed.
+
+### Semantic Conventions
+
+The `opentelemetry-semconv` module has been marked as `-alpha` and removed from the bom. This was done because the OpenTelemetry
+project has not decided on a specification for stability of semantic conventions or the specific telemetry produced by
+instrumentation.
+
+#### Deprecations
+
+- The items in the `io.opentelemetry.semconv.trace.attributes.SemanticAttributes` which were previously
+generated form the Resource semantic conventions have been deprecated. Please use the ones in the new
+`io.opentelemetry.semconv.resource.attributes.ResourceAttributes` class.
+
+#### Enhancements
+
+- A new `io.opentelemetry.semconv.resource.attributes.ResourceAttributes` has been introduced to hold the 
+generated semantic attributes to be used in creating `Resource`s. 
+
+### SDK
+
+#### Breaking Changes
+
+- `SamplingResult.Decision` has been removed in favor of the `io.opentelemetry.sdk.trace.samplers.SamplingDecision` top-level class.
+- `Resource.merge(Resource)` now will resolve conflicts by preferring the `Resource` passed in, rather than the original. 
+
+#### Bugfixes
+
+- The Jaeger exporters will now properly populate the process service name from the Resource service.name attribute. 
+
+#### Deprecations
+
+- Going forward, OTLP exporter endpoint specifications must include a scheme, either `http://` or `https://`.
+We will support endpoints without schemes until the next release, at which point not providing a scheme will generate
+an error when trying to use them. This applies to the use of system properties, environment variables, or programmatic
+specifications of the endpoints.
+- The `exportOnlySampled` configuration of the `BatchSpanProcessor` has been deprecated and will be removed in the next
+release.
+- The `io.opentelemetry.sdk.resources.ResourceAttributes` has been deprecated and will be removed in the next release.
+Please use the new `io.opentelemetry.semconv.resource.attributes.ResourceAttributes` class in the `opentelemetry-semconv`
+module.
+  
+#### Enhancements
+
+- `Resource.getDefault()` now includes a fallback `service.name` attribute. Exporters that require a `service.name`
+should acquire the fallback from the default resource, rather than having it configured in.
+  
+### SDK Extensions
+
+#### Enhancements
+
+- The `opentelemetry-sdk-extension-autoconfigure` module will now additionally register the auto-configured
+SDK as the instance of `GlobalOpenTelemetry` when used.
+
+---
 
 ## Version 0.14.1 - 2021-01-14
 
