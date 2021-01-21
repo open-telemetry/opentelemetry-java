@@ -63,7 +63,6 @@ class JaegerIntegrationTest {
             .build();
     SpanExporter jaegerExporter =
         JaegerGrpcSpanExporter.builder()
-            .setServiceName(SERVICE_NAME)
             .setChannel(jaegerChannel)
             .setTimeout(Duration.ofSeconds(30))
             .build();

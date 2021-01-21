@@ -69,7 +69,7 @@ class JaegerGrpcSpanExporterTest {
     closer.register(server::shutdownNow);
 
     ManagedChannel channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
-    exporter = JaegerGrpcSpanExporter.builder().setServiceName("test").setChannel(channel).build();
+    exporter = JaegerGrpcSpanExporter.builder().setChannel(channel).build();
   }
 
   @AfterEach

@@ -33,6 +33,7 @@ public final class JaegerGrpcSpanExporterBuilder {
    * @deprecated The default service name is now extracted from the default Resource. This method
    *     will be removed in the next release.
    */
+  @Deprecated
   public JaegerGrpcSpanExporterBuilder setServiceName(String serviceName) {
     this.serviceName = serviceName;
     return this;
