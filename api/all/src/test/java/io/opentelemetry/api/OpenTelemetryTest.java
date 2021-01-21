@@ -6,6 +6,7 @@
 package io.opentelemetry.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -20,12 +21,12 @@ class OpenTelemetryTest {
 
   @BeforeAll
   static void beforeClass() {
-    GlobalOpenTelemetry.reset();
+    GlobalOpenTelemetry.resetForTest();
   }
 
   @AfterEach
   void after() {
-    GlobalOpenTelemetry.reset();
+    GlobalOpenTelemetry.resetForTest();
   }
 
   @Test
@@ -80,5 +81,31 @@ class OpenTelemetryTest {
 
     assertThat(otel1.getPropagators()).isSameAs(propagators1);
     assertThat(otel2.getPropagators()).isSameAs(propagators2);
+  }
+
+  @Test
+  void setThenSet() {
+    setOpenTelemetry();
+    assertThatThrownBy(() -> GlobalOpenTelemetry.set(DefaultOpenTelemetry.builder().build()))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("GlobalOpenTelemetry.set has already been called")
+        .hasStackTraceContaining("setOpenTelemetry");
+  }
+
+  @Test
+  void getThenSet() {
+    assertThat(getOpenTelemetry()).isInstanceOf(DefaultOpenTelemetry.class);
+    assertThatThrownBy(() -> GlobalOpenTelemetry.set(DefaultOpenTelemetry.builder().build()))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("GlobalOpenTelemetry.set has already been called")
+        .hasStackTraceContaining("getOpenTelemetry");
+  }
+
+  private static void setOpenTelemetry() {
+    GlobalOpenTelemetry.set(DefaultOpenTelemetry.builder().build());
+  }
+
+  private static OpenTelemetry getOpenTelemetry() {
+    return GlobalOpenTelemetry.get();
   }
 }

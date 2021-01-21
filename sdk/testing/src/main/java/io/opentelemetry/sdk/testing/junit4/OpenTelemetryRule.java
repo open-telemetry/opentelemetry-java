@@ -67,8 +67,6 @@ public final class OpenTelemetryRule extends ExternalResource {
   private final OpenTelemetrySdk openTelemetry;
   private final InMemorySpanExporter spanExporter;
 
-  private volatile OpenTelemetry previousGlobalOpenTelemetry;
-
   private OpenTelemetryRule(OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {
     this.openTelemetry = openTelemetry;
     this.spanExporter = spanExporter;
@@ -104,13 +102,12 @@ public final class OpenTelemetryRule extends ExternalResource {
 
   @Override
   protected void before() {
-    previousGlobalOpenTelemetry = GlobalOpenTelemetry.get();
     GlobalOpenTelemetry.set(openTelemetry);
     clearSpans();
   }
 
   @Override
   protected void after() {
-    GlobalOpenTelemetry.set(previousGlobalOpenTelemetry);
+    GlobalOpenTelemetry.resetForTest();
   }
 }

@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -24,7 +23,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -37,10 +36,9 @@ class OpenTelemetrySdkTest {
   @Mock private ContextPropagators propagators;
   @Mock private Clock clock;
 
-  @BeforeEach
-  void setUp() {
-    // Have all tests start with an API-only OpenTelemetry in global to check registration logic.
-    GlobalOpenTelemetry.set(DefaultOpenTelemetry.builder().build());
+  @AfterEach
+  void tearDown() {
+    GlobalOpenTelemetry.resetForTest();
   }
 
   @Test

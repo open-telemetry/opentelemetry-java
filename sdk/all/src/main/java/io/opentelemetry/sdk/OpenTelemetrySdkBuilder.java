@@ -50,7 +50,10 @@ public final class OpenTelemetrySdkBuilder {
   /**
    * Returns a new {@link OpenTelemetrySdk} built with the configuration of this {@link
    * OpenTelemetrySdkBuilder} and registers it as the global {@link
-   * io.opentelemetry.api.OpenTelemetry}.
+   * io.opentelemetry.api.OpenTelemetry}. An exception will be thrown if this method is attempted to
+   * be called multiple times in the lifecycle of an application - ensure you have only one SDK for
+   * use as the global instance. If you need to configure multiple SDKs for tests, use {@link
+   * GlobalOpenTelemetry#resetForTest()} between them.
    *
    * @see GlobalOpenTelemetry
    */

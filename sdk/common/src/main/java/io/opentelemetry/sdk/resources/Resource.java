@@ -160,7 +160,7 @@ public abstract class Resource {
 
   /**
    * Returns a new, merged {@link Resource} by merging the current {@code Resource} with the {@code
-   * other} {@code Resource}. In case of a collision, current {@code Resource} takes precedence.
+   * other} {@code Resource}. In case of a collision, the "other" {@code Resource} takes precedence.
    *
    * @param other the {@code Resource} that will be merged with {@code this}.
    * @return the newly merged {@code Resource}.
@@ -171,8 +171,8 @@ public abstract class Resource {
     }
 
     AttributesBuilder attrBuilder = Attributes.builder();
-    attrBuilder.putAll(other.getAttributes());
     attrBuilder.putAll(this.getAttributes());
+    attrBuilder.putAll(other.getAttributes());
     return new AutoValue_Resource(attrBuilder.build());
   }
 

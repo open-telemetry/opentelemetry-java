@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api;
 
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -36,6 +37,10 @@ public final class GlobalOpenTelemetry {
 
   @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
 
+  @GuardedBy("mutex")
+  @Nullable
+  private static Throwable setGlobalCaller;
+
   private GlobalOpenTelemetry() {}
 
   /**
@@ -54,6 +59,7 @@ public final class GlobalOpenTelemetry {
             return autoConfigured;
           }
 
+          set(NOOP);
           return NOOP;
         }
       }
@@ -65,15 +71,26 @@ public final class GlobalOpenTelemetry {
    * Sets the {@link OpenTelemetry} that should be the global instance. Future calls to {@link
    * #get()} will return the provided {@link OpenTelemetry} instance. This should be called once as
    * early as possible in your application initialization logic, often in a {@code static} block in
-   * your main class.
+   * your main class. It should only be called once - an attempt to call it a second time will
+   * result in an error. If trying to set the global {@link OpenTelemetry} multiple times in tests,
+   * use {@link GlobalOpenTelemetry#resetForTest()} between them.
+   *
+   * <p>If you are using the OpenTelemetry SDK, you should generally use {@code
+   * OpenTelemetrySdk.builder().buildAndRegisterGlobal()} instead of calling this method directly.
    */
   public static void set(OpenTelemetry openTelemetry) {
-    globalOpenTelemetry = openTelemetry;
-  }
-
-  // for testing
-  static void reset() {
-    globalOpenTelemetry = null;
+    synchronized (mutex) {
+      if (globalOpenTelemetry != null) {
+        throw new IllegalStateException(
+            "GlobalOpenTelemetry.set has already been called. GlobalOpenTelemetry.set must be"
+                + "called only once before any calls to GlobalOpenTelemetry.get. If you are using"
+                + "the OpenTelemetrySdk, use OpenTelemetrySdkBuilder.buildAndRegisterGlobal"
+                + "instead. Previous invocation set to cause of this exception.",
+            setGlobalCaller);
+      }
+      globalOpenTelemetry = openTelemetry;
+      setGlobalCaller = new Throwable();
+    }
   }
 
   /** Returns the globally registered {@link TracerProvider}. */
@@ -108,6 +125,14 @@ public final class GlobalOpenTelemetry {
    */
   public static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
     return get().getTracer(instrumentationName, instrumentationVersion);
+  }
+
+  /**
+   * Unsets the global {@link OpenTelemetry}. This is only meant to be used from tests which need to
+   * reconfigure {@link OpenTelemetry}.
+   */
+  public static void resetForTest() {
+    globalOpenTelemetry = null;
   }
 
   /**
