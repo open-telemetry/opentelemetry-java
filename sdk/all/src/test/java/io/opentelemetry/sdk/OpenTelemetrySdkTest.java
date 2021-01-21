@@ -144,7 +144,7 @@ class OpenTelemetrySdkTest {
                     .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                     .setClock(mock(Clock.class))
                     .setIdGenerator(mock(IdGenerator.class))
-                    .setResource(mock(Resource.class))
+                    .setResource(Resource.getEmpty())
                     .setTraceConfig(newConfig)
                     .build());
 

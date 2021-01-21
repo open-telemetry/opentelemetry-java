@@ -8,11 +8,14 @@ package io.opentelemetry;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.time.Duration;
 
 public class SendTraceToJaeger {
@@ -42,6 +45,12 @@ public class SendTraceToJaeger {
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
+                .setResource(
+                    Resource.getDefault()
+                        .merge(
+                            Resource.create(
+                                Attributes.of(
+                                    ResourceAttributes.SERVICE_NAME, "integration test"))))
                 .build())
         .buildAndRegisterGlobal();
   }

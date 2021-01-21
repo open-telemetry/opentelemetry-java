@@ -32,7 +32,7 @@ class SdkMeterRegistryTest {
     assertThat(
             SdkMeterProvider.builder()
                 .setClock(mock(Clock.class))
-                .setResource(mock(Resource.class))
+                .setResource(Resource.getEmpty())
                 .build())
         .isNotNull();
   }
