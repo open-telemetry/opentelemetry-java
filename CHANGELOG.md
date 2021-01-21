@@ -30,7 +30,10 @@ generated semantic attributes to be used in creating `Resource`s.
 #### Breaking Changes
 
 - `SamplingResult.Decision` has been removed in favor of the `io.opentelemetry.sdk.trace.samplers.SamplingDecision` top-level class.
-- `Resource.merge(Resource)` now will resolve conflicts by preferring the `Resource` passed in, rather than the original. 
+- `Resource.merge(Resource)` now will resolve conflicts by preferring the `Resource` passed in, rather than the original.
+- The default Resource (accessible via `Resource.getDefault()`) now includes a fallback `service.name` attribute. The implication
+of this is that exporters that have configured fallback service names will only use them if the SDK is intentionally 
+configured with a Resource that does not utilize the default Resource for its underlying Resource data.
 
 #### Bugfixes
 
@@ -47,6 +50,8 @@ release.
 - The `io.opentelemetry.sdk.resources.ResourceAttributes` has been deprecated and will be removed in the next release.
 Please use the new `io.opentelemetry.semconv.resource.attributes.ResourceAttributes` class in the `opentelemetry-semconv`
 module.
+- The serviceName configuration option for the Jaeger and Zipkin exporters has been deprecated. In the next release, those
+configuration options will be removed, and the fallback `service.name` will always be pulled from the default Resource.
   
 #### Enhancements
 
