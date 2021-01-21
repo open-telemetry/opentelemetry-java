@@ -14,7 +14,6 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.assertj.TracesAssert;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -85,9 +84,14 @@ public final class OpenTelemetryExtension
     return openTelemetry;
   }
 
-  /** Returns the {@link SdkTracerManagement} created by this extension. */
-  public SdkTracerManagement getTracerManagement() {
-    return openTelemetry.getTracerManagement();
+  /**
+   * Returns the {@link io.opentelemetry.sdk.trace.SdkTracerManagement} created by this extension.
+   *
+   * @deprecated Will be removed without replacement
+   */
+  @Deprecated
+  public io.opentelemetry.sdk.trace.SdkTracerManagement getTracerManagement() {
+    return openTelemetry.getSdkTracerProvider();
   }
 
   /** Returns all the exported {@link SpanData} so far. */

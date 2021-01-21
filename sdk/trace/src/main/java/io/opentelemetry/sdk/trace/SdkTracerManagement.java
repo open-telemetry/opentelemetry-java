@@ -14,7 +14,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * "Management" interface for the Tracing SDK. This interface exposes methods for configuring the
  * Tracing SDK, as well as several lifecycle methods.
+ *
+ * @deprecated Use {@link SdkTracerProvider} directly.
  */
+@Deprecated
 public interface SdkTracerManagement extends Closeable {
 
   /**
