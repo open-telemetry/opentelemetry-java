@@ -39,7 +39,7 @@ class TracerProviderConfigurationTest {
   @Test
   void configureTracerProvider() {
     Map<String, String> properties = new HashMap<>();
-    properties.put("otel.bsp.schedule.delay.millis", "100000");
+    properties.put("otel.bsp.schedule.delay", "100000");
     properties.put("otel.trace.sampler", "always_off");
 
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
@@ -97,10 +97,10 @@ class TracerProviderConfigurationTest {
   @Test
   void configureSpanProcessor_configured() {
     Map<String, String> properties = new HashMap<>();
-    properties.put("otel.bsp.schedule.delay.millis", "100000");
+    properties.put("otel.bsp.schedule.delay", "100000");
     properties.put("otel.bsp.max.queue.size", "2");
     properties.put("otel.bsp.max.export.batch.size", "3");
-    properties.put("otel.bsp.export.timeout.millis", "4");
+    properties.put("otel.bsp.export.timeout", "4");
 
     BatchSpanProcessor processor =
         TracerProviderConfiguration.configureSpanProcessor(
