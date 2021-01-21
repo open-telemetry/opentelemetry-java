@@ -80,7 +80,7 @@ public final class OtlpGrpcSpanExporterBuilder {
    */
   public OtlpGrpcSpanExporterBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
-    if (!endpoint.matches("^[a-zA-Z]+:\\/\\/.*")) {
+    if (!endpoint.contains("://")) {
       endpoint = "http://" + endpoint;
     }
 
