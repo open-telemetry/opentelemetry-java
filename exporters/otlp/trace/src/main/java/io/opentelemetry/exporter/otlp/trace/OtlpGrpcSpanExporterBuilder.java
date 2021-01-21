@@ -80,7 +80,11 @@ public final class OtlpGrpcSpanExporterBuilder {
    */
   public OtlpGrpcSpanExporterBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
-    final URI uri;
+    if (!endpoint.contains("://")) {
+      endpoint = "http://" + endpoint;
+    }
+
+    URI uri;
     try {
       uri = new URI(endpoint);
     } catch (URISyntaxException e) {
