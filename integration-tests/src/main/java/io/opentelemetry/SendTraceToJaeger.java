@@ -35,7 +35,6 @@ public class SendTraceToJaeger {
     // Export traces to Jaeger
     JaegerGrpcSpanExporter jaegerExporter =
         JaegerGrpcSpanExporter.builder()
-            .setServiceName("integration test")
             .setChannel(jaegerChannel)
             .setTimeout(Duration.ofSeconds(30))
             .build();

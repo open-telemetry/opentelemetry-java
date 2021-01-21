@@ -348,16 +348,14 @@ class ZipkinSpanExporterTest {
 
   @Test
   void testCreate() {
-    ZipkinSpanExporter exporter =
-        ZipkinSpanExporter.builder().setSender(mockSender).setServiceName("myGreatService").build();
+    ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().setSender(mockSender).build();
 
     assertThat(exporter).isNotNull();
   }
 
   @Test
   void testShutdown() throws IOException {
-    ZipkinSpanExporter exporter =
-        ZipkinSpanExporter.builder().setServiceName("myGreatService").setSender(mockSender).build();
+    ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().setSender(mockSender).build();
 
     exporter.shutdown();
     verify(mockSender).close();

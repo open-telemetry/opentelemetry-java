@@ -50,11 +50,7 @@ class JaegerThriftSpanExporterTest {
 
   @BeforeEach
   void beforeEach() {
-    exporter =
-        JaegerThriftSpanExporter.builder()
-            .setThriftSender(thriftSender)
-            .setServiceName("myservice.name")
-            .build();
+    exporter = JaegerThriftSpanExporter.builder().setThriftSender(thriftSender).build();
   }
 
   @Test
