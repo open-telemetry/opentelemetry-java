@@ -10,8 +10,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +42,15 @@ class MetricDataTest {
           Arrays.asList(
               ValueAtPercentile.create(0.0, DOUBLE_VALUE),
               ValueAtPercentile.create(100, DOUBLE_VALUE)));
+  private static final DoubleHistogramPointData HISTOGRAM_POINT =
+      DoubleHistogramPointData.create(
+          START_EPOCH_NANOS,
+          EPOCH_NANOS,
+          Labels.of("key", "value"),
+          DOUBLE_VALUE,
+          LONG_VALUE,
+          Collections.singletonList(1.0),
+          Arrays.asList(1L, 1L));
 
   @Test
   void metricData_Getters() {
@@ -147,6 +158,39 @@ class MetricDataTest {
   }
 
   @Test
+  void metricData_HistogramPoints() {
+    assertThat(HISTOGRAM_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
+    assertThat(HISTOGRAM_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
+    assertThat(HISTOGRAM_POINT.getLabels().size()).isEqualTo(1);
+    assertThat(HISTOGRAM_POINT.getLabels().get("key")).isEqualTo("value");
+    assertThat(HISTOGRAM_POINT.getCount()).isEqualTo(LONG_VALUE);
+    assertThat(HISTOGRAM_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
+    assertThat(HISTOGRAM_POINT.getBoundaries()).isEqualTo(Collections.singletonList(1.0));
+    assertThat(HISTOGRAM_POINT.getCounts()).isEqualTo(Arrays.asList(1L, 1L));
+
+    List<Double> boundaries = new ArrayList<>();
+    List<Long> counts = new ArrayList<>();
+    HISTOGRAM_POINT.forEach(
+        (b, c) -> {
+          boundaries.add(b);
+          counts.add(c);
+        });
+    assertThat(boundaries).isEqualTo(Arrays.asList(1.0, Double.POSITIVE_INFINITY));
+    assertThat(counts).isEqualTo(HISTOGRAM_POINT.getCounts());
+
+    MetricData metricData =
+        MetricData.createDoubleHistogram(
+            Resource.getEmpty(),
+            InstrumentationLibraryInfo.getEmpty(),
+            "metric_name",
+            "metric_description",
+            "ms",
+            DoubleHistogramData.create(
+                AggregationTemporality.DELTA, Collections.singleton(HISTOGRAM_POINT)));
+    assertThat(metricData.getDoubleHistogramData().getPoints()).containsExactly(HISTOGRAM_POINT);
+  }
+
+  @Test
   void metricData_GetDefault() {
     MetricData metricData =
         MetricData.createDoubleSummary(
@@ -160,6 +204,7 @@ class MetricDataTest {
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
+    assertThat(metricData.getDoubleHistogramData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
 
     metricData =
@@ -174,6 +219,7 @@ class MetricDataTest {
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
+    assertThat(metricData.getDoubleHistogramData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSummaryData().getPoints()).isEmpty();
   }
 }
