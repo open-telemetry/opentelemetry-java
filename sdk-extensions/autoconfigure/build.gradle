@@ -15,6 +15,7 @@ testSets {
     testInitializeRegistersGlobal
     testJaeger
     testPrometheus
+    testOtlpTls
     testZipkin
 }
 
@@ -36,6 +37,7 @@ dependencies {
             'com.linecorp.armeria:armeria-junit5',
             'com.linecorp.armeria:armeria-grpc'
     testRuntimeOnly 'io.grpc:grpc-netty-shaded'
+    testRuntimeOnly libraries.slf4jsimple
 
     testFullConfigImplementation project(':extensions:trace-propagators')
     testFullConfigImplementation project(':exporters:jaeger')
@@ -45,6 +47,8 @@ dependencies {
     testFullConfigImplementation project(':exporters:prometheus')
     testFullConfigImplementation libraries.prometheus_client_httpserver
     testFullConfigImplementation project(':exporters:zipkin')
+
+    testOtlpTlsImplementation project(':exporters:otlp:all')
 
     testJaegerImplementation project(':exporters:jaeger')
 
@@ -78,6 +82,12 @@ testFullConfig {
 
 testJaeger {
     environment("OTEL_TRACE_EXPORTER", "jaeger")
+    environment("OTEL_BSP_SCHEDULE_DELAY_MILLIS", "10")
+}
+
+testOtlpTls {
+    environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
+    environment("OTEL_TRACE_EXPORTER", "otlp")
     environment("OTEL_BSP_SCHEDULE_DELAY_MILLIS", "10")
 }
 

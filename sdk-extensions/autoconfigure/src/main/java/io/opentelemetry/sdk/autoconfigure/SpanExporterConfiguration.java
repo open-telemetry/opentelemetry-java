@@ -13,6 +13,10 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import javax.annotation.Nullable;
 
@@ -57,6 +61,21 @@ final class SpanExporterConfiguration {
     Long timeoutMillis = config.getLong("otel.exporter.otlp.timeout");
     if (timeoutMillis != null) {
       builder.setTimeout(Duration.ofMillis(timeoutMillis));
+    }
+
+    String certificate = config.getString("otel.exporter.otlp.certificate");
+    if (certificate != null) {
+      Path path = Paths.get(certificate);
+      if (!Files.exists(path)) {
+        throw new ConfigurationException("Invalid OTLP certificate path: " + path);
+      }
+      final byte[] certificateBytes;
+      try {
+        certificateBytes = Files.readAllBytes(path);
+      } catch (IOException e) {
+        throw new ConfigurationException("Error reading OTLP certificate.", e);
+      }
+      builder.setTrustedCertificates(certificateBytes);
     }
 
     return builder.build();
