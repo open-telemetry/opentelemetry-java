@@ -46,6 +46,18 @@ public interface AggregatorFactory {
   }
 
   /**
+   * Returns an {@code AggregatorFactory} that calculates an approximation of the distribution of
+   * the measurements taken.
+   *
+   * @param stateful configures if the aggregator is stateful.
+   * @param boundary configures the fixed bucket boundaries.
+   * @return an {@code AggregationFactory} that calculates histogram of recorded measurements.
+   */
+  static AggregatorFactory histogram(double[] boundary, boolean stateful) {
+    return new HistogramAggregatorFactory(boundary, stateful);
+  }
+
+  /**
    * Returns an {@code AggregationFactory} that calculates the last value of all recorded
    * measurements.
    *
