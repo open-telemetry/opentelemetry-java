@@ -68,11 +68,10 @@
  * look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_BSP_SCHEDULE_DELAY_MILLIS}: sets the delay interval between two consecutive
- *       exports.
+ *   <li>{@code OTEL_BSP_SCHEDULE_DELAY}: sets the delay interval between two consecutive exports.
  *   <li>{@code OTEL_BSP_MAX_QUEUE_SIZE}: sets the maximum queue size.
  *   <li>{@code OTEL_BSP_MAX_EXPORT_BATCH_SIZE}: sets the maximum batch size.
- *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT_MILLIS}: sets the maximum allowed time to export data.
+ *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT}: sets the maximum allowed time to export data.
  *   <li>{@code OTEL_BSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
  * </ul>
  */
