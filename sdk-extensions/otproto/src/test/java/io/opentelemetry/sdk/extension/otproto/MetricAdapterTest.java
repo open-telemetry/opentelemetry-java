@@ -33,6 +33,8 @@ import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
@@ -43,6 +45,7 @@ import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -203,6 +206,48 @@ class MetricAdapterTest {
                 .addBucketCounts(0)
                 .addExplicitBounds(0.9)
                 .addExplicitBounds(0.99)
+                .build());
+  }
+
+  @Test
+  void toHistogramDataPoints() {
+    assertThat(
+            MetricAdapter.toDoubleHistogramDataPoints(
+                ImmutableList.of(
+                    DoubleHistogramPointData.create(
+                        123,
+                        456,
+                        Labels.of("k", "v"),
+                        14.2,
+                        5,
+                        Collections.singletonList(1.0),
+                        Arrays.asList(1L, 5L)),
+                    DoubleHistogramPointData.create(
+                        123,
+                        456,
+                        Labels.empty(),
+                        15.3,
+                        7,
+                        Collections.emptyList(),
+                        Collections.singletonList(7L)))))
+        .containsExactly(
+            DoubleHistogramDataPoint.newBuilder()
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
+                .addAllLabels(
+                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
+                .setCount(5)
+                .setSum(14.2)
+                .addBucketCounts(1)
+                .addBucketCounts(5)
+                .addExplicitBounds(1.0)
+                .build(),
+            DoubleHistogramDataPoint.newBuilder()
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
+                .setCount(7)
+                .setSum(15.3)
+                .addBucketCounts(7)
                 .build());
   }
 
@@ -457,6 +502,53 @@ class MetricAdapterTest {
                                             .build()))
                                 .setCount(5)
                                 .setSum(33d)
+                                .build())
+                        .build())
+                .build());
+  }
+
+  @Test
+  void toProtoMetric_histogram() {
+    assertThat(
+            MetricAdapter.toProtoMetric(
+                MetricData.createDoubleHistogram(
+                    Resource.getEmpty(),
+                    InstrumentationLibraryInfo.getEmpty(),
+                    "name",
+                    "description",
+                    "1",
+                    DoubleHistogramData.create(
+                        AggregationTemporality.DELTA,
+                        singletonList(
+                            DoubleHistogramPointData.create(
+                                123,
+                                456,
+                                Labels.of("k", "v"),
+                                4.0,
+                                33L,
+                                emptyList(),
+                                Collections.singletonList(33L)))))))
+        .isEqualTo(
+            Metric.newBuilder()
+                .setName("name")
+                .setDescription("description")
+                .setUnit("1")
+                .setDoubleHistogram(
+                    DoubleHistogram.newBuilder()
+                        .setAggregationTemporality(AGGREGATION_TEMPORALITY_DELTA)
+                        .addDataPoints(
+                            DoubleHistogramDataPoint.newBuilder()
+                                .setStartTimeUnixNano(123)
+                                .setTimeUnixNano(456)
+                                .addAllLabels(
+                                    singletonList(
+                                        StringKeyValue.newBuilder()
+                                            .setKey("k")
+                                            .setValue("v")
+                                            .build()))
+                                .setCount(33)
+                                .setSum(4.0)
+                                .addBucketCounts(33)
                                 .build())
                         .build())
                 .build());

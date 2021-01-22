@@ -25,6 +25,8 @@ import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
@@ -149,6 +151,15 @@ public final class MetricAdapter {
                 .addAllDataPoints(toDoubleDataPoints(doubleGaugeData.getPoints()))
                 .build());
         break;
+      case HISTOGRAM:
+        DoubleHistogramData doubleHistogramData = metricData.getDoubleHistogramData();
+        builder.setDoubleHistogram(
+            DoubleHistogram.newBuilder()
+                .setAggregationTemporality(
+                    mapToTemporality(doubleHistogramData.getAggregationTemporality()))
+                .addAllDataPoints(toDoubleHistogramDataPoints(doubleHistogramData.getPoints()))
+                .build());
+        break;
     }
     return builder.build();
   }
@@ -190,6 +201,27 @@ public final class MetricAdapter {
               .setTimeUnixNano(doublePoint.getEpochNanos())
               .setValue(doublePoint.getValue());
       Collection<StringKeyValue> labels = toProtoLabels(doublePoint.getLabels());
+      if (!labels.isEmpty()) {
+        builder.addAllLabels(labels);
+      }
+      result.add(builder.build());
+    }
+    return result;
+  }
+
+  static Collection<DoubleHistogramDataPoint> toDoubleHistogramDataPoints(
+      Collection<DoubleHistogramPointData> points) {
+    List<DoubleHistogramDataPoint> result = new ArrayList<>(points.size());
+    for (DoubleHistogramPointData doubleHistogramPoint : points) {
+      DoubleHistogramDataPoint.Builder builder =
+          DoubleHistogramDataPoint.newBuilder()
+              .setStartTimeUnixNano(doubleHistogramPoint.getStartEpochNanos())
+              .setTimeUnixNano(doubleHistogramPoint.getEpochNanos())
+              .setCount(doubleHistogramPoint.getCount())
+              .setSum(doubleHistogramPoint.getSum())
+              .addAllBucketCounts(doubleHistogramPoint.getCounts())
+              .addAllExplicitBounds(doubleHistogramPoint.getBoundaries());
+      Collection<StringKeyValue> labels = toProtoLabels(doubleHistogramPoint.getLabels());
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
       }
