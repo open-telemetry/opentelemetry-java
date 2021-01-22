@@ -46,7 +46,7 @@ For example:
 
 ```java
     SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-        .addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()))
+        .addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build())
         .build();
 
     OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
