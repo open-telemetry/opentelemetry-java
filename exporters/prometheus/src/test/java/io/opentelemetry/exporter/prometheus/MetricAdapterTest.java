@@ -14,6 +14,8 @@ import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
@@ -157,6 +159,24 @@ class MetricAdapterTest {
               Collections.singletonList(
                   DoubleSummaryPointData.create(
                       123, 456, Labels.of("kp", "vp"), 5, 7, Collections.emptyList()))));
+  private static final MetricData HISTOGRAM =
+      MetricData.createDoubleHistogram(
+          Resource.create(Attributes.of(stringKey("kr"), "vr")),
+          InstrumentationLibraryInfo.create("full", "version"),
+          "instrument.name",
+          "description",
+          "1",
+          DoubleHistogramData.create(
+              AggregationTemporality.DELTA,
+              Collections.singletonList(
+                  DoubleHistogramPointData.create(
+                      123,
+                      456,
+                      Labels.of("kp", "vp"),
+                      1.0,
+                      2L,
+                      Collections.emptyList(),
+                      Collections.singletonList(2L)))));
 
   @Test
   void toProtoMetricDescriptorType() {
@@ -204,6 +224,10 @@ class MetricAdapterTest {
     metricFamilySamples = MetricAdapter.toMetricFamilySamples(LONG_GAUGE);
     assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.GAUGE);
     assertThat(metricFamilySamples.samples).hasSize(1);
+
+    metricFamilySamples = MetricAdapter.toMetricFamilySamples(HISTOGRAM);
+    assertThat(metricFamilySamples.type).isEqualTo(Collector.Type.HISTOGRAM);
+    assertThat(metricFamilySamples.samples).hasSize(3);
   }
 
   @Test
@@ -321,6 +345,37 @@ class MetricAdapterTest {
                 ImmutableList.of("kp", "quantile"),
                 ImmutableList.of("vp", "0.99"),
                 12.3));
+  }
+
+  @Test
+  void toSamples_HistogramPoints() {
+    assertThat(
+            MetricAdapter.toSamples("full_name", MetricDataType.HISTOGRAM, Collections.emptyList()))
+        .isEmpty();
+
+    assertThat(
+            MetricAdapter.toSamples(
+                "full_name",
+                MetricDataType.HISTOGRAM,
+                ImmutableList.of(
+                    DoubleHistogramPointData.create(
+                        321,
+                        654,
+                        Labels.of("kp", "vp"),
+                        18.3,
+                        9,
+                        ImmutableList.of(1.0),
+                        ImmutableList.of(4L, 9L)))))
+        .containsExactly(
+            new Sample("full_name_count", ImmutableList.of("kp"), ImmutableList.of("vp"), 9),
+            new Sample("full_name_sum", ImmutableList.of("kp"), ImmutableList.of("vp"), 18.3),
+            new Sample(
+                "full_name_bucket", ImmutableList.of("kp", "le"), ImmutableList.of("vp", "1.0"), 4),
+            new Sample(
+                "full_name_bucket",
+                ImmutableList.of("kp", "le"),
+                ImmutableList.of("vp", "+Inf"),
+                9));
   }
 
   @Test

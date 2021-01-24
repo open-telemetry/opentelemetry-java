@@ -9,6 +9,7 @@ import static io.prometheus.client.Collector.doubleToGoString;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
@@ -46,7 +47,9 @@ final class MetricAdapter {
 
   static final String SAMPLE_SUFFIX_COUNT = "_count";
   static final String SAMPLE_SUFFIX_SUM = "_sum";
+  static final String SAMPLE_SUFFIX_BUCKET = "_bucket";
   static final String LABEL_NAME_QUANTILE = "quantile";
+  static final String LABEL_NAME_LE = "le";
 
   // Converts a MetricData to a Prometheus MetricFamilySamples.
   static MetricFamilySamples toMetricFamilySamples(MetricData metricData) {
@@ -85,6 +88,8 @@ final class MetricAdapter {
         return Collector.Type.GAUGE;
       case SUMMARY:
         return Collector.Type.SUMMARY;
+      case HISTOGRAM:
+        return Collector.Type.HISTOGRAM;
     }
     return Collector.Type.UNTYPED;
   }
@@ -121,6 +126,10 @@ final class MetricAdapter {
         case SUMMARY:
           addSummarySamples(
               (DoubleSummaryPointData) pointData, name, labelNames, labelValues, samples);
+          break;
+        case HISTOGRAM:
+          addHistogramSamples(
+              (DoubleHistogramPointData) pointData, name, labelNames, labelValues, samples);
           break;
       }
     }
@@ -169,6 +178,40 @@ final class MetricAdapter {
     }
   }
 
+  private static void addHistogramSamples(
+      DoubleHistogramPointData doubleHistogramPointData,
+      String name,
+      List<String> labelNames,
+      List<String> labelValues,
+      List<Sample> samples) {
+    samples.add(
+        new Sample(
+            name + SAMPLE_SUFFIX_COUNT,
+            labelNames,
+            labelValues,
+            doubleHistogramPointData.getCount()));
+    samples.add(
+        new Sample(
+            name + SAMPLE_SUFFIX_SUM, labelNames, labelValues, doubleHistogramPointData.getSum()));
+
+    List<String> labelNamesWithLe = new ArrayList<>(labelNames.size() + 1);
+    labelNamesWithLe.addAll(labelNames);
+    labelNamesWithLe.add(LABEL_NAME_LE);
+    doubleHistogramPointData.forEach(
+        (upperBound, count) -> {
+          List<String> labelValuesWithLe = new ArrayList<>(labelValues.size() + 1);
+          labelValuesWithLe.addAll(labelValues);
+          labelValuesWithLe.add(doubleToGoString(upperBound));
+          // According to
+          // https://github.com/open-telemetry/opentelemetry-proto/blob/v0.7.0/opentelemetry/proto/metrics/v1/metrics.proto#L505
+          // the upper bound is exclusive while Prometheus requires them to be inclusive.
+          // There is not much we can do here until the proto add a field to support inclusive upper
+          // bounds.
+          samples.add(
+              new Sample(name + SAMPLE_SUFFIX_BUCKET, labelNamesWithLe, labelValuesWithLe, count));
+        });
+  }
+
   private static int estimateNumSamples(int numPoints, MetricDataType type) {
     if (type == MetricDataType.SUMMARY) {
       // count + sum + estimated 2 percentiles (default MinMaxSumCount aggregator).
@@ -189,6 +232,8 @@ final class MetricAdapter {
         return metricData.getLongSumData().getPoints();
       case SUMMARY:
         return metricData.getDoubleSummaryData().getPoints();
+      case HISTOGRAM:
+        return metricData.getDoubleHistogramData().getPoints();
     }
     return Collections.emptyList();
   }
