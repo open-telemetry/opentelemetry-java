@@ -197,6 +197,7 @@ final class MetricAdapter {
     List<String> labelNamesWithLe = new ArrayList<>(labelNames.size() + 1);
     labelNamesWithLe.addAll(labelNames);
     labelNamesWithLe.add(LABEL_NAME_LE);
+    long[] cumulativeCount = new long[] {0};
     doubleHistogramPointData.forEach(
         (upperBound, count) -> {
           List<String> labelValuesWithLe = new ArrayList<>(labelValues.size() + 1);
@@ -207,8 +208,13 @@ final class MetricAdapter {
           // the upper bound is exclusive while Prometheus requires them to be inclusive.
           // There is not much we can do here until the proto add a field to support inclusive upper
           // bounds.
+          cumulativeCount[0] += count;
           samples.add(
-              new Sample(name + SAMPLE_SUFFIX_BUCKET, labelNamesWithLe, labelValuesWithLe, count));
+              new Sample(
+                  name + SAMPLE_SUFFIX_BUCKET,
+                  labelNamesWithLe,
+                  labelValuesWithLe,
+                  cumulativeCount[0]));
         });
   }
 

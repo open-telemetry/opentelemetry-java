@@ -375,7 +375,7 @@ class MetricAdapterTest {
                 "full_name_bucket",
                 ImmutableList.of("kp", "le"),
                 ImmutableList.of("vp", "+Inf"),
-                9));
+                13));
   }
 
   @Test
