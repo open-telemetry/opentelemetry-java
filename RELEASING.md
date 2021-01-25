@@ -22,7 +22,7 @@ or the Github [compare tool](https://github.com/open-telemetry/opentelemetry-jav
 to view a summary of all commits since last release as a reference.
 
 In addition, you can refer to
-[CHANGELOG.md](https://github.com/open-telemetry/opentelemetry-java/blob/master/CHANGELOG.md)
+[CHANGELOG.md](https://github.com/open-telemetry/opentelemetry-java/blob/main/CHANGELOG.md)
 for a list of major changes since last release.
 
 ## Update release versions in documentations and CHANGELOG files
@@ -34,9 +34,9 @@ After releasing is done, you need to first update the docs.
 ```
 
 Next, update the
-[CHANGELOG.md](https://github.com/open-telemetry/opentelemetry-java/blob/master/CHANGELOG.md).
+[CHANGELOG.md](https://github.com/open-telemetry/opentelemetry-java/blob/main/CHANGELOG.md).
 
-Create a PR to mark the new release in README.md and CHANGELOG.md on the master branch.
+Create a PR to mark the new release in README.md and CHANGELOG.md on the main branch.
 
 ## Patch Release
 
