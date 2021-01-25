@@ -60,6 +60,13 @@ should acquire the fallback from the default resource, rather than having it con
   
 ### SDK Extensions
 
+#### Breaking Changes
+
+- The `otel.bsp.schedule.delay.millis` env var/system property configuration option for the batch span processor has been renamed to 
+`otel.bsp.schedule.delay` to match the specification.
+- The `otel.bsp.export.timeout.millis` env var/system property configuration option for the batch span processor has been renamed to 
+`otel.bsp.export.timeout` to match the specification.
+
 #### Enhancements
 
 - The `opentelemetry-sdk-extension-autoconfigure` module will now additionally register the auto-configured
