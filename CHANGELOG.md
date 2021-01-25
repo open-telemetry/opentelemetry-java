@@ -4,6 +4,8 @@
 
 ### General
 
+- Support fixed bucket histogram aggregation and exporting them with OTLP/Prometheus exporter.
+
 #### Breaking Changes
 
 - Methods and classes deprecated in 0.14.x have been removed.
