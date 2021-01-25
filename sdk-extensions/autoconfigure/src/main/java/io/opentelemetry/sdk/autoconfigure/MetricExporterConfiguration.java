@@ -31,7 +31,7 @@ final class MetricExporterConfiguration {
         return;
       case "logging":
         ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.logging.LoggingMetricsExporter",
+            "io.opentelemetry.exporter.logging.LoggingMetricExporter",
             "Logging Metrics Exporter",
             "opentelemetry-exporter-logging");
         configureLoggingMetrics(config, meterProvider);
