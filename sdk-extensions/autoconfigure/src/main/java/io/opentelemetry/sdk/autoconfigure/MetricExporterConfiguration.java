@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
@@ -28,9 +29,31 @@ final class MetricExporterConfiguration {
       case "prometheus":
         configurePrometheusMetrics(config, meterProvider);
         return;
+      case "logging":
+        ClasspathUtil.checkClassExists(
+            "io.opentelemetry.exporter.logging.LoggingMetricsExporter",
+            "Logging Metrics Exporter",
+            "opentelemetry-exporter-logging");
+        configureLoggingMetrics(config, meterProvider);
+        return;
       default:
         return;
     }
+  }
+
+  private static void configureLoggingMetrics(
+      ConfigProperties config, SdkMeterProvider meterProvider) {
+    LoggingMetricExporter exporter = new LoggingMetricExporter();
+    IntervalMetricReaderBuilder readerBuilder =
+        IntervalMetricReader.builder()
+            .setMetricProducers(Collections.singleton(meterProvider))
+            .setMetricExporter(exporter);
+    Long exportIntervalMillis = config.getLong("otel.imr.export.interval");
+    if (exportIntervalMillis != null) {
+      readerBuilder.setExportIntervalMillis(exportIntervalMillis);
+    }
+    IntervalMetricReader reader = readerBuilder.build();
+    Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
   }
 
   // Visible for testing
