@@ -571,10 +571,6 @@ subprojects {
     }
 }
 
-wrapper {
-    gradleVersion = '6.7.1'
-}
-
 allprojects {
     tasks.register("updateVersionInDocs") {
         group("documentation")
