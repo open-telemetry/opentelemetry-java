@@ -85,6 +85,8 @@ final class MetricAdapter {
         return Collector.Type.GAUGE;
       case SUMMARY:
         return Collector.Type.SUMMARY;
+      case HISTOGRAM:
+        return Collector.Type.HISTOGRAM;
     }
     return Collector.Type.UNTYPED;
   }
@@ -121,6 +123,9 @@ final class MetricAdapter {
         case SUMMARY:
           addSummarySamples(
               (DoubleSummaryPointData) pointData, name, labelNames, labelValues, samples);
+          break;
+        case HISTOGRAM:
+          // TODO: no-op, will add in the following PRs
           break;
       }
     }
@@ -189,6 +194,8 @@ final class MetricAdapter {
         return metricData.getLongSumData().getPoints();
       case SUMMARY:
         return metricData.getDoubleSummaryData().getPoints();
+      case HISTOGRAM:
+        return metricData.getDoubleHistogramData().getPoints();
     }
     return Collections.emptyList();
   }
