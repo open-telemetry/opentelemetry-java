@@ -100,18 +100,12 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
     protected HistogramAccumulation doAccumulateThenReset() {
       lock.writeLock().lock();
       try {
-        long[] cumulative = new long[current.counts.length];
-        cumulative[0] = current.counts[0];
-        for (int i = 1; i < current.counts.length; ++i) {
-          cumulative[i] = cumulative[i - 1] + current.counts[i];
-        }
-
         HistogramAccumulation result =
             HistogramAccumulation.create(
                 current.count,
                 current.sum,
                 Arrays.stream(current.boundaries).boxed().collect(Collectors.toList()),
-                Arrays.stream(cumulative).boxed().collect(Collectors.toList()));
+                Arrays.stream(current.counts).boxed().collect(Collectors.toList()));
         current.reset();
         return result;
       } finally {

@@ -57,7 +57,7 @@ public class DoubleHistogramAggregatorTest {
     assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(
             HistogramAccumulation.create(
-                3, 175, BUCKET_BOUNDARIES, ImmutableList.of(1L, 2L, 3L, 3L)));
+                3, 175, BUCKET_BOUNDARIES, ImmutableList.of(1L, 1L, 1L, 0L)));
   }
 
   @Test
@@ -69,14 +69,14 @@ public class DoubleHistogramAggregatorTest {
     assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(
             HistogramAccumulation.create(
-                1, 100, BUCKET_BOUNDARIES, ImmutableList.of(0L, 0L, 1L, 1L)));
+                1, 100, BUCKET_BOUNDARIES, ImmutableList.of(0L, 0L, 1L, 0L)));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordLong(0);
     assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(
             HistogramAccumulation.create(
-                1, 0, BUCKET_BOUNDARIES, ImmutableList.of(1L, 1L, 1L, 1L)));
+                1, 0, BUCKET_BOUNDARIES, ImmutableList.of(1L, 0L, 0L, 0L)));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 
@@ -153,7 +153,7 @@ public class DoubleHistogramAggregatorTest {
                 numberOfThreads * numberOfUpdates,
                 101000,
                 BUCKET_BOUNDARIES,
-                ImmutableList.of(5000L, 10000L, 10000L, 10000L)));
+                ImmutableList.of(5000L, 5000L, 0L, 0L)));
   }
 
   private static final class Histogram {
