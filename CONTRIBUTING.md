@@ -3,7 +3,7 @@
 Welcome to OpenTelemetry Java repository!
 
 Before you start - see OpenTelemetry general
-[contributing](https://github.com/open-telemetry/community/blob/master/CONTRIBUTING.md)
+[contributing](https://github.com/open-telemetry/community/blob/main/CONTRIBUTING.md)
 requirements and recommendations.
 
 If you want to add new features or change behavior, please make sure your changes follow the

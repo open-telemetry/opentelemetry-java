@@ -452,18 +452,18 @@ Some of the supported system properties and environment variables:
 | otel.config.max.link.attrs       | OTEL_CONFIG_MAX_LINK_ATTRS       | Max number of attributes per link, extra will be dropped  (default: 32)                             |
 | otel.config.max.attr.length      | OTEL_CONFIG_MAX_ATTR_LENGTH      | Max length of string attribute value in characters, too long will be truncated (default: unlimited) |
 
-[AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L29
-[AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L40
-[ParentBased]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L54
-[TraceIdRatioBased]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L78
-[Library Guidelines]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/library-guidelines.md
+[AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L29
+[AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L40
+[ParentBased]:https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L54
+[TraceIdRatioBased]:https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L78
+[Library Guidelines]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/library-guidelines.md
 [OpenTelemetry Collector]: https://github.com/open-telemetry/opentelemetry-collector
 [OpenTelemetry Registry]: https://opentelemetry.io/registry/?s=exporter
 [OpenTelemetry Website]: https://opentelemetry.io/
-[Obtaining a Tracer]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/api.md#get-a-tracer
-[Semantic Conventions]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions
-[Instrumentation Library]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/glossary.md#instrumentation-library
-[instrumented library]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/glossary.md#instrumented-library
+[Obtaining a Tracer]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/api.md#get-a-tracer
+[Semantic Conventions]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions
+[Instrumentation Library]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/glossary.md#instrumentation-library
+[instrumented library]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/glossary.md#instrumented-library
 
 ## Logging and Error Handling 
 
