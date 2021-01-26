@@ -49,7 +49,7 @@ class TracerProviderConfigurationTest {
         TracerProviderConfiguration.configureTracerProvider(
             resource, ConfigProperties.createForTest(properties));
     try {
-      assertThat(tracerProvider.getActiveTraceConfig().getSampler()).isEqualTo(Sampler.alwaysOff());
+      assertThat(tracerProvider.getSampler()).isEqualTo(Sampler.alwaysOff());
 
       assertThat(tracerProvider)
           .extracting("sharedState")
@@ -148,7 +148,6 @@ class TracerProviderConfigurationTest {
     TraceConfig config =
         TracerProviderConfiguration.configureTraceConfig(
             ConfigProperties.createForTest(properties));
-    assertThat(config.getSampler()).isEqualTo(Sampler.alwaysOff());
     assertThat(config.getMaxNumberOfAttributes()).isEqualTo(5);
     assertThat(config.getMaxNumberOfEvents()).isEqualTo(4);
     assertThat(config.getMaxNumberOfLinks()).isEqualTo(3);

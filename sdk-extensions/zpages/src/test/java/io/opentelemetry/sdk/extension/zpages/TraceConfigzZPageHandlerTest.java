@@ -42,8 +42,7 @@ class TraceConfigzZPageHandlerTest {
 
     assertThat(output.toString()).contains("SamplingProbability to");
     assertThat(output.toString()).contains("name=" + querySamplingProbability);
-    assertThat(output.toString())
-        .contains("(" + TraceConfig.getDefault().getSampler().getDescription() + ")");
+    assertThat(output.toString()).contains("(1.0)");
     assertThat(output.toString()).contains("MaxNumberOfAttributes to");
     assertThat(output.toString()).contains("name=" + queryMaxNumOfAttributes);
     assertThat(output.toString())
@@ -83,7 +82,7 @@ class TraceConfigzZPageHandlerTest {
 
     assertThat(output.toString()).contains("Sampler");
     assertThat(output.toString())
-        .contains(">" + configSupplier.get().getSampler().getDescription() + "<");
+        .contains(">" + configSupplier.getSampler().getDescription() + "<");
     assertThat(output.toString()).contains("MaxNumberOfAttributes");
     assertThat(output.toString())
         .contains(">" + Integer.toString(configSupplier.get().getMaxNumberOfAttributes()) + "<");
@@ -135,7 +134,7 @@ class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.processRequest("POST", queryMap, output);
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    assertThat(configSupplier.get().getSampler().getDescription())
+    assertThat(configSupplier.getSampler().getDescription())
         .isEqualTo(
             Sampler.traceIdRatioBased(Double.parseDouble(newSamplingProbability)).getDescription());
     assertThat(configSupplier.get().getMaxNumberOfAttributes())
@@ -161,8 +160,8 @@ class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.processRequest("POST", queryMap, output);
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    assertThat(configSupplier.get().getSampler().getDescription())
-        .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
+    assertThat(configSupplier.getSampler().getDescription())
+        .isEqualTo(Sampler.parentBased(Sampler.alwaysOn()).getDescription());
     assertThat(configSupplier.get().getMaxNumberOfAttributes())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributes());
     assertThat(configSupplier.get().getMaxNumberOfEvents())
@@ -186,8 +185,8 @@ class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.processRequest("POST", queryMap, output);
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    assertThat(configSupplier.get().getSampler().getDescription())
-        .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
+    assertThat(configSupplier.getSampler().getDescription())
+        .isEqualTo(Sampler.parentBased(Sampler.alwaysOn()).getDescription());
     assertThat(configSupplier.get().getMaxNumberOfAttributes())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributes());
     assertThat(configSupplier.get().getMaxNumberOfEvents())
@@ -320,8 +319,8 @@ class TraceConfigzZPageHandlerTest {
     // GET request, Should not apply changes
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    assertThat(configSupplier.get().getSampler().getDescription())
-        .isEqualTo(TraceConfig.getDefault().getSampler().getDescription());
+    assertThat(configSupplier.getSampler().getDescription())
+        .isEqualTo(Sampler.parentBased(Sampler.alwaysOn()).getDescription());
     assertThat(configSupplier.get().getMaxNumberOfAttributes())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributes());
     assertThat(configSupplier.get().getMaxNumberOfEvents())
@@ -337,7 +336,7 @@ class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.processRequest("POST", queryMap, output);
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
-    assertThat(configSupplier.get().getSampler().getDescription())
+    assertThat(configSupplier.getSampler().getDescription())
         .isEqualTo(
             Sampler.traceIdRatioBased(Double.parseDouble(newSamplingProbability)).getDescription());
     assertThat(configSupplier.get().getMaxNumberOfAttributes())

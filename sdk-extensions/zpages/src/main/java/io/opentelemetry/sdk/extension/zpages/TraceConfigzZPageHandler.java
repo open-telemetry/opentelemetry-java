@@ -121,7 +121,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         /* rowName= */ "SamplingProbability to",
         /* paramName= */ QUERY_STRING_SAMPLING_PROBABILITY,
         /* inputPlaceHolder= */ "[0.0, 1.0]",
-        /* paramDefaultValue= */ TraceConfig.getDefault().getSampler().getDescription(),
+        /* paramDefaultValue= */ "1.0",
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitChangeTableRow(
@@ -210,7 +210,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "Sampler",
-        /* paramValue=*/ configSupplier.get().getSampler().getDescription(),
+        /* paramValue=*/ configSupplier.getSampler().getDescription(),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
@@ -366,11 +366,11 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         try {
           double samplingProbability = Double.parseDouble(samplingProbabilityStr);
           if (samplingProbability == 0) {
-            newConfigBuilder.setSampler(Sampler.alwaysOff());
+            configSupplier.setSampler(Sampler.alwaysOff());
           } else if (samplingProbability == 1) {
-            newConfigBuilder.setSampler(Sampler.alwaysOn());
+            configSupplier.setSampler(Sampler.alwaysOn());
           } else {
-            newConfigBuilder.setSampler(Sampler.traceIdRatioBased(samplingProbability));
+            configSupplier.setSampler(Sampler.traceIdRatioBased(samplingProbability));
           }
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException("SamplingProbability must be of the type double", e);

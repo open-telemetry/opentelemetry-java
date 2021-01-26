@@ -5,15 +5,11 @@
 
 package io.opentelemetry.sdk.trace.config;
 
-import static java.util.Objects.requireNonNull;
-
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 /** Builder for {@link TraceConfig}. */
 public final class TraceConfigBuilder {
-  private static final Sampler DEFAULT_SAMPLER = Sampler.parentBased(Sampler.alwaysOn());
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 1000;
   private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 1000;
   private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 1000;
@@ -21,7 +17,6 @@ public final class TraceConfigBuilder {
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
   private static final int DEFAULT_MAX_ATTRIBUTE_LENGTH = TraceConfig.UNLIMITED_ATTRIBUTE_LENGTH;
 
-  private Sampler sampler = DEFAULT_SAMPLER;
   private int maxNumAttributes = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES;
   private int maxNumEvents = DEFAULT_SPAN_MAX_NUM_EVENTS;
   private int maxNumLinks = DEFAULT_SPAN_MAX_NUM_LINKS;
@@ -30,39 +25,6 @@ public final class TraceConfigBuilder {
   private int maxAttributeLength = DEFAULT_MAX_ATTRIBUTE_LENGTH;
 
   TraceConfigBuilder() {}
-
-  /**
-   * Sets the global default {@code Sampler}. It must be not {@code null} otherwise {@link #build()}
-   * will throw an exception.
-   *
-   * @param sampler the global default {@code Sampler}.
-   * @return this.
-   */
-  public TraceConfigBuilder setSampler(Sampler sampler) {
-    requireNonNull(sampler, "sampler");
-    this.sampler = sampler;
-    return this;
-  }
-
-  /**
-   * Sets the global default {@code Sampler}. It must be not {@code null} otherwise {@link #build()}
-   * will throw an exception.
-   *
-   * @param samplerRatio the global default ratio used to make decisions on {@link Span} sampling.
-   * @return this.
-   */
-  public TraceConfigBuilder setTraceIdRatioBased(double samplerRatio) {
-    Utils.checkArgument(samplerRatio >= 0, "samplerRatio must be greater than or equal to 0.");
-    Utils.checkArgument(samplerRatio <= 1, "samplerRatio must be lesser than or equal to 1.");
-    if (samplerRatio == 1) {
-      setSampler(Sampler.parentBased(Sampler.alwaysOn()));
-    } else if (samplerRatio == 0) {
-      setSampler(Sampler.alwaysOff());
-    } else {
-      setSampler(Sampler.parentBased(Sampler.traceIdRatioBased(samplerRatio)));
-    }
-    return this;
-  }
 
   /**
    * Sets the global default max number of attributes per {@link Span}.
@@ -156,7 +118,6 @@ public final class TraceConfigBuilder {
    */
   public TraceConfig build() {
     return TraceConfig.create(
-        sampler,
         maxNumAttributes,
         maxNumEvents,
         maxNumLinks,

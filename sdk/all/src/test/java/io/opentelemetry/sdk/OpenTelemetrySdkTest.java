@@ -129,17 +129,13 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void fullOpenTelemetrySdkConfigurationDemo() {
-    TraceConfig currentConfig = TraceConfig.getDefault();
-    TraceConfig newConfig =
-        currentConfig.toBuilder()
-            .setSampler(mock(Sampler.class))
-            .setMaxLengthOfAttributeValues(128)
-            .build();
+    TraceConfig newConfig = TraceConfig.builder().setMaxLengthOfAttributeValues(128).build();
 
     OpenTelemetrySdkBuilder sdkBuilder =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder()
+                    .setSampler(mock(Sampler.class))
                     .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                     .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                     .setClock(mock(Clock.class))
@@ -173,7 +169,7 @@ class OpenTelemetrySdkTest {
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
-                .setTraceConfig(TraceConfig.builder().setSampler(mock(Sampler.class)).build())
+                .setSampler(mock(Sampler.class))
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))
         .build();
@@ -182,7 +178,7 @@ class OpenTelemetrySdkTest {
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
-                .setTraceConfig(TraceConfig.builder().setSampler(mock(Sampler.class)).build())
+                .setSampler(mock(Sampler.class))
                 .setIdGenerator(mock(IdGenerator.class))
                 .build())
         .setPropagators(ContextPropagators.create(mock(TextMapPropagator.class)))

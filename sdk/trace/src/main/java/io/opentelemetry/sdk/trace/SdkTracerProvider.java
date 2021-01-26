@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -49,9 +50,11 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
       IdGenerator idsGenerator,
       Resource resource,
       Supplier<TraceConfig> traceConfigSupplier,
+      Sampler sampler,
       List<SpanProcessor> spanProcessors) {
     this.sharedState =
-        new TracerSharedState(clock, idsGenerator, resource, traceConfigSupplier, spanProcessors);
+        new TracerSharedState(
+            clock, idsGenerator, resource, traceConfigSupplier, sampler, spanProcessors);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkTracer(sharedState, instrumentationLibraryInfo));
@@ -76,6 +79,11 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
   @Override
   public TraceConfig getActiveTraceConfig() {
     return sharedState.getActiveTraceConfig();
+  }
+
+  /** Returns the configured {@link Sampler}. */
+  public Sampler getSampler() {
+    return sharedState.getSampler();
   }
 
   /**

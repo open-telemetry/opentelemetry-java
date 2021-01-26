@@ -23,7 +23,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
@@ -40,11 +39,8 @@ final class SdkSpanBuilder implements SpanBuilder {
 
   private final String spanName;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
-  private final SpanProcessor spanProcessor;
+  private final TracerSharedState tracerSharedState;
   private final TraceConfig traceConfig;
-  private final Resource resource;
-  private final IdGenerator idsGenerator;
-  private final Clock clock;
 
   @Nullable private Context parent;
   private Kind spanKind = Kind.INTERNAL;
@@ -57,18 +53,12 @@ final class SdkSpanBuilder implements SpanBuilder {
   SdkSpanBuilder(
       String spanName,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      SpanProcessor spanProcessor,
-      TraceConfig traceConfig,
-      Resource resource,
-      IdGenerator idsGenerator,
-      Clock clock) {
+      TracerSharedState tracerSharedState,
+      TraceConfig traceConfig) {
     this.spanName = spanName;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    this.spanProcessor = spanProcessor;
+    this.tracerSharedState = tracerSharedState;
     this.traceConfig = traceConfig;
-    this.resource = resource;
-    this.idsGenerator = idsGenerator;
-    this.clock = clock;
   }
 
   @Override
@@ -178,10 +168,11 @@ final class SdkSpanBuilder implements SpanBuilder {
     final Span parentSpan = Span.fromContext(parentContext);
     final SpanContext parentSpanContext = parentSpan.getSpanContext();
     String traceId;
-    String spanId = idsGenerator.generateSpanId();
+    IdGenerator idGenerator = tracerSharedState.getIdGenerator();
+    String spanId = idGenerator.generateSpanId();
     if (!parentSpanContext.isValid()) {
       // New root span.
-      traceId = idsGenerator.generateTraceId();
+      traceId = idGenerator.generateTraceId();
     } else {
       // New child span.
       traceId = parentSpanContext.getTraceIdAsHexString();
@@ -193,7 +184,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     links = null;
     Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
     SamplingResult samplingResult =
-        traceConfig
+        tracerSharedState
             .getSampler()
             .shouldSample(
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
@@ -228,9 +219,9 @@ final class SdkSpanBuilder implements SpanBuilder {
         parentSpanContext,
         parentContext,
         traceConfig,
-        spanProcessor,
-        getClock(parentSpan, clock),
-        resource,
+        tracerSharedState.getActiveSpanProcessor(),
+        getClock(parentSpan, tracerSharedState.getClock()),
+        tracerSharedState.getResource(),
         recordedAttributes,
         immutableLinks,
         totalNumberOfLinksAdded,

@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -22,6 +23,7 @@ final class TracerSharedState {
   private final Resource resource;
 
   private final Supplier<TraceConfig> traceConfigSupplier;
+  private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
 
   @GuardedBy("lock")
@@ -33,11 +35,13 @@ final class TracerSharedState {
       IdGenerator idGenerator,
       Resource resource,
       Supplier<TraceConfig> traceConfigSupplier,
+      Sampler sampler,
       List<SpanProcessor> spanProcessors) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.resource = resource;
     this.traceConfigSupplier = traceConfigSupplier;
+    this.sampler = sampler;
     activeSpanProcessor = SpanProcessor.composite(spanProcessors);
   }
 
@@ -60,6 +64,11 @@ final class TracerSharedState {
    */
   TraceConfig getActiveTraceConfig() {
     return traceConfigSupplier.get();
+  }
+
+  /** Returns the configured {@link Sampler}. */
+  Sampler getSampler() {
+    return sampler;
   }
 
   /**
