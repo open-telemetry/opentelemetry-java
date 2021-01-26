@@ -463,8 +463,8 @@ class InteroperabilityTest {
   void testUnsupportedMetricsDoesNotGetExported() throws InterruptedException {
     Tagger tagger = Tags.getTagger();
     Measure.MeasureLong latency =
-        Measure.MeasureLong
-            .create("task_latency_distribution", "The task latency in milliseconds", "ms");
+        Measure.MeasureLong.create(
+            "task_latency_distribution", "The task latency in milliseconds", "ms");
     StatsRecorder statsRecorder = Stats.getStatsRecorder();
     TagKey tagKey = TagKey.create("tagKey");
     TagValue tagValue = TagValue.create("tagValue");
