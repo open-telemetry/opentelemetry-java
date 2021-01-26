@@ -12,6 +12,7 @@ import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReaderBuilder;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
@@ -43,17 +44,8 @@ final class MetricExporterConfiguration {
 
   private static void configureLoggingMetrics(
       ConfigProperties config, SdkMeterProvider meterProvider) {
-    LoggingMetricExporter exporter = new LoggingMetricExporter();
-    IntervalMetricReaderBuilder readerBuilder =
-        IntervalMetricReader.builder()
-            .setMetricProducers(Collections.singleton(meterProvider))
-            .setMetricExporter(exporter);
-    Long exportIntervalMillis = config.getLong("otel.imr.export.interval");
-    if (exportIntervalMillis != null) {
-      readerBuilder.setExportIntervalMillis(exportIntervalMillis);
-    }
-    IntervalMetricReader reader = readerBuilder.build();
-    Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
+    MetricExporter exporter = new LoggingMetricExporter();
+    configureIntervalMetricReader(config, meterProvider, exporter);
   }
 
   // Visible for testing
@@ -79,6 +71,13 @@ final class MetricExporterConfiguration {
 
     OtlpGrpcMetricExporter exporter = builder.build();
 
+    configureIntervalMetricReader(config, meterProvider, exporter);
+
+    return exporter;
+  }
+
+  private static void configureIntervalMetricReader(
+      ConfigProperties config, SdkMeterProvider meterProvider, MetricExporter exporter) {
     IntervalMetricReaderBuilder readerBuilder =
         IntervalMetricReader.builder()
             .setMetricProducers(Collections.singleton(meterProvider))
@@ -89,8 +88,6 @@ final class MetricExporterConfiguration {
     }
     IntervalMetricReader reader = readerBuilder.build();
     Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
-
-    return exporter;
   }
 
   private static void configurePrometheusMetrics(
