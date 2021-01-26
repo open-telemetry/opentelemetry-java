@@ -90,7 +90,7 @@ public final class SdkTracerProviderBuilder {
 
   /** Assign a {@link Sampler} to use for sampling traces. */
   public SdkTracerProviderBuilder setSampler(Sampler sampler) {
-    requireNonNull(sampler);
+    requireNonNull(sampler, "sampler");
     this.sampler = sampler;
     return this;
   }

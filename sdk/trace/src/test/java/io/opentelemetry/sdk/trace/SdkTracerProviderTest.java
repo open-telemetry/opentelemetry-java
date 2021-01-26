@@ -74,6 +74,13 @@ class SdkTracerProviderTest {
   }
 
   @Test
+  void builder_configureSampler_null() {
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setSampler(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("sampler");
+  }
+
+  @Test
   void builder_serviceNameProvided() {
     Resource resource =
         Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "mySpecialService"));
