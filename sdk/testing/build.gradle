@@ -11,11 +11,11 @@ dependencies {
     api project(':sdk:all')
     api project(':sdk:metrics')
 
-    compileOnly libraries.assertj
-    compileOnly libraries.junit
-    compileOnly libraries.junit_jupiter_api
+    compileOnly "org.assertj:assertj-core"
+    compileOnly "junit:junit"
+    compileOnly "org.junit.jupiter:junit-jupiter-api"
 
-    testImplementation libraries.junit
+    testImplementation "junit:junit"
 
-    annotationProcessor libraries.auto_value
+    annotationProcessor "com.google.auto.value:auto-value"
 }

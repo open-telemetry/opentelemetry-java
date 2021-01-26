@@ -11,32 +11,28 @@ ext.moduleName = "io.opentelemetry.exporter.jaeger"
 
 dependencies {
     api project(':sdk:all'),
-            libraries.grpc_api
+            "io.grpc:grpc-api"
 
     implementation project(':sdk-extensions:otproto'),
             project(':sdk:all'),
             project(':semconv'),
-            libraries.grpc_protobuf,
-            libraries.grpc_stub,
-            libraries.protobuf,
-            libraries.protobuf_util
+            "io.grpc:grpc-protobuf",
+            "io.grpc:grpc-stub",
+            "com.google.protobuf:protobuf-java",
+            "com.google.protobuf:protobuf-java-util"
 
-    testImplementation "io.grpc:grpc-testing:${grpcVersion}",
+    testImplementation "io.grpc:grpc-testing",
             'com.fasterxml.jackson.core:jackson-databind',
-            libraries.testcontainers,
-            libraries.okhttp
+            "org.testcontainers:junit-jupiter",
+            "com.squareup.okhttp3:okhttp"
 
     testImplementation project(':sdk:testing')
 
     // Protobuf plugin seems to erroneously use the non-classpath configurations for resolving
     // dependencies.
-    boms.each {
-        testImplementation enforcedPlatform(it)
-    }
+    testImplementation enforcedPlatform(project(':dependencyManagement'))
 
-    testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
-
-    signature libraries.android_signature
+    testRuntimeOnly "io.grpc:grpc-netty-shaded"
 }
 
 animalsniffer {
@@ -44,19 +40,6 @@ animalsniffer {
     sourceSets = [
             sourceSets.main
     ]
-}
-
-protobuf {
-    protoc {
-        // The artifact spec for the Protobuf Compiler
-        artifact = "com.google.protobuf:protoc:${protocVersion}"
-    }
-    plugins {
-        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
-    }
-    generateProtoTasks {
-        all()*.plugins { grpc {} }
-    }
 }
 
 // IntelliJ complains that the generated classes are not found, ask IntelliJ to include the

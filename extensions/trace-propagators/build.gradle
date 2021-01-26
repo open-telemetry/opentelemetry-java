@@ -12,8 +12,6 @@ ext.moduleName = "io.opentelemetry.extension.trace.propagation"
 dependencies {
     api project(':api:all')
 
-    testImplementation libraries.jaeger_client,
-            libraries.guava
-
-    signature libraries.android_signature
+    testImplementation "io.jaegertracing:jaeger-client",
+            "com.google.guava:guava"
 }

@@ -14,12 +14,10 @@ dependencies {
             project(':sdk:all'),
             project(':sdk:metrics')
 
-    implementation libraries.protobuf
+    implementation "com.google.protobuf:protobuf-java"
 
     testImplementation project(':sdk:testing')
 
-    testImplementation "io.grpc:grpc-testing:${grpcVersion}"
-    testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
-
-    signature libraries.android_signature
+    testImplementation "io.grpc:grpc-testing"
+    testRuntime "io.grpc:grpc-netty-shaded"
 }

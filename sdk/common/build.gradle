@@ -13,16 +13,13 @@ dependencies {
     api project(':api:all')
     api project(':semconv')
 
-    annotationProcessor libraries.auto_value
+    annotationProcessor "com.google.auto.value:auto-value"
 
-    testAnnotationProcessor libraries.auto_value
-    testCompileOnly libraries.auto_value_annotation
+    testAnnotationProcessor "com.google.auto.value:auto-value"
 
     testImplementation project(':sdk:testing')
-    testImplementation libraries.junit_pioneer,
-            libraries.guava_testlib
-
-    signature libraries.android_signature
+    testImplementation "org.junit-pioneer:junit-pioneer",
+            "com.google.guava:guava-testlib"
 }
 
 sourceSets {

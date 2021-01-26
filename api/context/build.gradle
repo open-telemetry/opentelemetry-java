@@ -25,18 +25,16 @@ testSets {
 }
 
 dependencies {
-    grpcInOtelTestImplementation libraries.grpc_context
-    otelInGrpcTestImplementation libraries.grpc_context
+    grpcInOtelTestImplementation "io.grpc:grpc-context"
+    otelInGrpcTestImplementation "io.grpc:grpc-context"
 
-    braveInOtelTestImplementation libraries.brave
-    otelAsBraveTestImplementation libraries.brave
-    otelInBraveTestImplementation libraries.brave
+    braveInOtelTestImplementation "io.zipkin.brave:brave"
+    otelAsBraveTestImplementation "io.zipkin.brave:brave"
+    otelInBraveTestImplementation "io.zipkin.brave:brave"
 
-    testImplementation libraries.awaitility
-    testImplementation libraries.guava
-    testImplementation libraries.junit_pioneer
-
-    signature libraries.android_signature
+    testImplementation "org.awaitility:awaitility"
+    testImplementation "com.google.guava:guava"
+    testImplementation "org.junit-pioneer:junit-pioneer"
 }
 
 tasks.named("strictContextEnabledTest").configure {

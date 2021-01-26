@@ -12,15 +12,13 @@ dependencies {
     api project(':sdk:metrics')
 
     implementation project(':sdk-extensions:otproto'),
-            libraries.grpc_api,
-            libraries.grpc_protobuf,
-            libraries.grpc_stub,
-            libraries.protobuf
+            "io.grpc:grpc-api",
+            "io.grpc:grpc-protobuf",
+            "io.grpc:grpc-stub",
+            "com.google.protobuf:protobuf-java"
 
     testImplementation project(':sdk:testing')
 
-    testImplementation "io.grpc:grpc-testing:${grpcVersion}"
-    testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
-
-    signature libraries.android_signature
+    testImplementation "io.grpc:grpc-testing"
+    testRuntimeOnly "io.grpc:grpc-netty-shaded"
 }

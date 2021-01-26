@@ -12,10 +12,8 @@ ext.moduleName = "io.opentelemetry.api.metrics"
 dependencies {
     api project(':api:all')
 
-    annotationProcessor libraries.auto_value
+    annotationProcessor "com.google.auto.value:auto-value"
 
-    signature libraries.android_signature
-
-    testImplementation libraries.jqf,
-            libraries.guava_testlib
+    testImplementation "edu.berkeley.cs.jqf:jqf-fuzz",
+            "com.google.guava:guava-testlib"
 }

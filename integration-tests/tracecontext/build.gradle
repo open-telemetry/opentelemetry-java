@@ -19,9 +19,9 @@ task fatJar(type: Jar) {
 dependencies {
     implementation project(':sdk:all'),
             project(':extensions:trace-propagators'),
-            libraries.okhttp,
-            libraries.slf4jsimple,
-            "com.sparkjava:spark-core:2.9.3",
-            "com.google.code.gson:gson:2.8.6"
+            "com.squareup.okhttp3:okhttp",
+            "org.slf4j:slf4j-simple",
+            "com.sparkjava:spark-core",
+            "com.google.code.gson:gson"
 }
 

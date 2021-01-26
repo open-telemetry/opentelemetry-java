@@ -158,96 +158,6 @@ subprojects {
             }
         }
 
-        ext {
-            armeriaVersion = '1.3.0'
-            autoValueVersion = '1.7.4'
-            errorProneVersion = '2.4.0'
-            errorProneJavacVersion = '9+181-r4173-1'
-            findBugsJsr305Version = '3.0.2'
-            grpcVersion = '1.34.1'
-            guavaVersion = '30.1-android'
-            jacksonVersion = '2.12.0'
-            jmhVersion = '1.26'
-            junitVersion = '5.7.0'
-            mockitoVersion = '3.7.0'
-            opencensusVersion = '0.28.2'
-            opentracingVersion = '0.33.0'
-            prometheusVersion = '0.9.0'
-            protobufVersion = '3.14.0'
-            protocVersion = '3.14.0'
-            zipkinReporterVersion = '2.16.3'
-            zipkinVersion = '2.18.3'
-
-            boms = [
-                    "com.linecorp.armeria:armeria-bom:${armeriaVersion}",
-                    "io.grpc:grpc-bom:${grpcVersion}",
-                    "com.google.guava:guava-bom:${guavaVersion}",
-                    "com.fasterxml.jackson:jackson-bom:${jacksonVersion}",
-                    "org.junit:junit-bom:${junitVersion}",
-                    "com.google.protobuf:protobuf-bom:${protobufVersion}",
-                    "io.zipkin.reporter2:zipkin-reporter-bom:${zipkinReporterVersion}"
-            ]
-
-            libraries = [
-                    auto_value                  : "com.google.auto.value:auto-value:${autoValueVersion}",
-                    auto_value_annotation       : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
-                    disruptor                   : "com.lmax:disruptor:3.4.2",
-                    errorprone_annotation       : "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
-                    errorprone_core             : "com.google.errorprone:error_prone_core:${errorProneVersion}",
-                    errorprone_javac            : "com.google.errorprone:javac:${errorProneJavacVersion}",
-                    grpc_api                    : "io.grpc:grpc-api",
-                    grpc_context                : "io.grpc:grpc-context",
-                    grpc_protobuf               : "io.grpc:grpc-protobuf",
-                    grpc_stub                   : "io.grpc:grpc-stub",
-                    guava                       : "com.google.guava:guava",
-                    javax_annotations           : "javax.annotation:javax.annotation-api:1.3.2",
-                    jmh_core                    : "org.openjdk.jmh:jmh-core:${jmhVersion}",
-                    jmh_bytecode                : "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
-                    jsr305                      : "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
-                    prometheus_client           : "io.prometheus:simpleclient:${prometheusVersion}",
-                    prometheus_client_common    : "io.prometheus:simpleclient_common:${prometheusVersion}",
-                    prometheus_client_httpserver: "io.prometheus:simpleclient_httpserver:${prometheusVersion}",
-                    protobuf                    : "com.google.protobuf:protobuf-java",
-                    protobuf_util               : "com.google.protobuf:protobuf-java-util",
-                    zipkin_reporter             : "io.zipkin.reporter2:zipkin-reporter",
-                    zipkin_okhttp               : "io.zipkin.reporter2:zipkin-sender-okhttp3",
-
-                    // Compatibility layer
-                    opencensus_api              : "io.opencensus:opencensus-api:${opencensusVersion}",
-                    opencensus_impl             : "io.opencensus:opencensus-impl:${opencensusVersion}",
-                    opencensus_impl_core        : "io.opencensus:opencensus-impl-core:${opencensusVersion}",
-                    opencensus_metric_exporter  : "io.opencensus:opencensus-exporter-metrics-util:${opencensusVersion}",
-                    opentracing                 : "io.opentracing:opentracing-api:${opentracingVersion}",
-
-                    // Test dependencies.
-                    assertj                     : "org.assertj:assertj-core:3.18.1",
-                    brave                       : "io.zipkin.brave:brave:5.13.1",
-                    equals_verifier             : "nl.jqno.equalsverifier:equalsverifier:3.5",
-                    guava_testlib               : "com.google.guava:guava-testlib",
-                    junit                       : 'junit:junit:4.13.1',
-                    junit_pioneer               : 'org.junit-pioneer:junit-pioneer:1.1.0',
-                    junit_jupiter_api           : 'org.junit.jupiter:junit-jupiter-api',
-                    junit_jupiter_engine        : 'org.junit.jupiter:junit-jupiter-engine',
-                    junit_vintage_engine        : 'org.junit.vintage:junit-vintage-engine',
-                    mockito                     : "org.mockito:mockito-core:${mockitoVersion}",
-                    mockito_junit_jupiter       : "org.mockito:mockito-junit-jupiter:${mockitoVersion}",
-                    okhttp                      : 'com.squareup.okhttp3:okhttp:3.14.9',
-                    system_rules                : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
-                    slf4jsimple                 : 'org.slf4j:slf4j-simple:1.7.30', // Compatibility layer
-                    awaitility                  : 'org.awaitility:awaitility:4.0.3',
-                    testcontainers              : 'org.testcontainers:junit-jupiter:1.15.1',
-                    rest_assured                : 'io.rest-assured:rest-assured:4.2.0',
-                    jaeger_client               : 'io.jaegertracing:jaeger-client:1.5.0', // Jaeger Client
-                    zipkin_junit                : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
-                    archunit                    : 'com.tngtech.archunit:archunit-junit4:0.15.0', //Architectural constraints
-                    jqf                         : 'edu.berkeley.cs.jqf:jqf-fuzz:1.6', // fuzz testing
-                    logunit                     : 'io.github.netmikey.logunit:logunit-jul:1.1.0',
-
-                    // Tooling
-                    android_signature       : 'com.toasttab.android:gummy-bears-api-24:0.3.0:coreLib@signature'
-            ]
-        }
-
         checkstyle {
             configDirectory = file("$rootDir/buildscripts/")
             toolVersion = "8.12"
@@ -315,42 +225,44 @@ subprojects {
 
         dependencies {
             configurations.all {
-                // Kotlin compiler classpaths don't support BOM nor need it.
-                if (it.name.endsWith('Classpath') && !it.name.startsWith('kotlin')) {
-                    boms.each {bom ->
-                        add(it.name, enforcedPlatform(bom))
-                    }
-                }
+                // Gradle and newer plugins will set these configuration properties correctly.
+                if (it.canBeResolved && !it.canBeConsumed
+                        // Older ones (like JMH) may not, so check the name as well.
+                        // Kotlin compiler classpaths don't support BOM nor need it.
+                        || it.name.endsWith('Classpath') && !it.name.startsWith('kotlin')
+                        // Configuration name used by protobuf plugin for finding tools.
+                        || it.name.startsWith('protobufToolsLocator'))
+                    add(it.name, platform(project(':dependencyManagement')))
             }
 
-            compileOnly libraries.auto_value_annotation,
-                    libraries.errorprone_annotation,
-                    libraries.jsr305
+            compileOnly "com.google.auto.value:auto-value-annotations",
+                    "com.google.errorprone:error_prone_annotations",
+                    "com.google.code.findbugs:jsr305"
 
-            testCompileOnly libraries.auto_value_annotation,
-                    libraries.errorprone_annotation,
-                    libraries.jsr305
+            testCompileOnly "com.google.auto.value:auto-value-annotations",
+                    "com.google.errorprone:error_prone_annotations",
+                    "com.google.code.findbugs:jsr305"
 
-            testImplementation libraries.junit_jupiter_api,
-                    libraries.equals_verifier,
-                    libraries.mockito,
-                    libraries.mockito_junit_jupiter,
-                    libraries.assertj,
-                    libraries.awaitility,
-                    libraries.logunit
+            testImplementation "org.junit.jupiter:junit-jupiter-api",
+                    "nl.jqno.equalsverifier:equalsverifier",
+                    "org.mockito:mockito-core",
+                    "org.mockito:mockito-junit-jupiter",
+                    "org.assertj:assertj-core",
+                    "org.awaitility:awaitility",
+                    "io.github.netmikey.logunit:logunit-jul"
 
-            testRuntimeOnly libraries.junit_jupiter_engine,
-                    libraries.junit_vintage_engine
+            testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine",
+                    "org.junit.vintage:junit-vintage-engine"
 
             // The ErrorProne plugin defaults to the latest, which would break our
             // build if error prone releases a new version with a new check
-            errorprone libraries.errorprone_core
+            errorprone "com.google.errorprone:error_prone_core"
 
-            annotationProcessor "com.google.guava:guava-beta-checker:1.0"
+            annotationProcessor "com.google.guava:guava-beta-checker"
 
             // Workaround for @javax.annotation.Generated
             // see: https://github.com/grpc/grpc-java/issues/3633
-            compileOnly libraries.javax_annotations
+            compileOnly "javax.annotation:javax.annotation-api"
         }
 
         tasks.withType(Test) {
@@ -384,7 +296,28 @@ subprojects {
             }
         }
 
+        plugins.withId("com.google.protobuf") {
+            afterEvaluate {
+                protobuf {
+                    protoc {
+                        // The artifact spec for the Protobuf Compiler
+                        artifact = "com.google.protobuf:protoc:${versions["com.google.protobuf"]}"
+                    }
+                    plugins {
+                        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${versions["io.grpc"]}" }
+                    }
+                    generateProtoTasks {
+                        all()*.plugins { grpc {} }
+                    }
+                }
+            }
+        }
+
         plugins.withId("ru.vyarus.animalsniffer") {
+            dependencies {
+                signature "com.toasttab.android:gummy-bears-api-24:0.3.0:coreLib@signature"
+            }
+
             tasks.withType(AnimalSniffer) {
                 if (name.startsWith('animalsnifferTest')) {
                     enabled = false
@@ -402,8 +335,8 @@ subprojects {
             // Always include the jmhreport plugin and run it after jmh task.
             plugins.apply "io.morethan.jmhreport"
             dependencies {
-                jmh libraries.jmh_core,
-                        libraries.jmh_bytecode
+                jmh "org.openjdk.jmh:jmh-core",
+                        "org.openjdk.jmh:jmh-generator-bytecode"
             }
 
             // invoke jmh on a single benchmark class like so:

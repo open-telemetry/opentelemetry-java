@@ -15,9 +15,7 @@ dependencies {
             project(':sdk:all')
 
 
-    annotationProcessor libraries.auto_value
+    annotationProcessor "com.google.auto.value:auto-value"
     testImplementation project(':sdk:testing'),
-            libraries.guava_testlib
-
-    signature libraries.android_signature
+            "com.google.guava:guava-testlib"
 }

@@ -2,7 +2,8 @@ plugins {
     id "java-library"
     id "maven-publish"
 
-    id "ru.vyarus.animalsniffer"
+    // TODO(anuraaga): Use reflection for RuntimeMXBean which is not included in Android.
+    // id "ru.vyarus.animalsniffer"
 }
 
 description = 'OpenTelemetry SDK Resource Providers'
@@ -12,8 +13,5 @@ dependencies {
     api project(':sdk:common')
     api project(':semconv')
 
-    testImplementation libraries.junit_pioneer
-
-    // TODO(anuraaga): Use reflection for RuntimeMXBean which is not included in Android.
-    // signature libraries.android_signature
+    testImplementation "org.junit-pioneer:junit-pioneer"
 }

@@ -1,6 +1,5 @@
 plugins {
     id "java"
-    id "ru.vyarus.animalsniffer"
 }
 
 description = 'OpenTelemetry Integration Tests'
@@ -16,15 +15,13 @@ task fatJar(type: Jar) {
 dependencies {
     implementation project(':sdk:all'),
             project(':exporters:jaeger'),
-            libraries.grpc_protobuf,
-            libraries.protobuf,
-            "io.grpc:grpc-netty-shaded:${grpcVersion}"
+            "io.grpc:grpc-protobuf",
+            "com.google.protobuf:protobuf-java",
+            "io.grpc:grpc-netty-shaded"
 
     testImplementation 'com.fasterxml.jackson.core:jackson-databind',
-            libraries.testcontainers,
-            libraries.okhttp
-
-    signature libraries.android_signature
+            "org.testcontainers:junit-jupiter",
+            "com.squareup.okhttp3:okhttp"
 
     tasks.withType(Test) {
         dependsOn fatJar

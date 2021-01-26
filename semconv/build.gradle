@@ -10,6 +10,4 @@ ext.moduleName = "io.opentelemetry.semconv"
 
 dependencies {
     api project(':api:all')
-
-    signature libraries.android_signature
 }

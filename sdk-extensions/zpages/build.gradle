@@ -3,7 +3,6 @@ plugins {
     id "maven-publish"
 
     id "me.champeau.gradle.jmh"
-    id "ru.vyarus.animalsniffer"
 }
 
 description = 'OpenTelemetry - zPages'
@@ -27,14 +26,7 @@ dependencies {
     implementation project(':api:all'),
             project(':sdk:all')
 
-    testImplementation libraries.guava
+    testImplementation "com.google.guava:guava"
     
-    compileOnly 'com.sun.net.httpserver:http:20070405'
-}
-
-animalsniffer {
-    // Don't check sourceSets.jmh and sourceSets.test
-    sourceSets = [
-            sourceSets.main
-    ]
+    compileOnly 'com.sun.net.httpserver:http'
 }

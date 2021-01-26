@@ -9,30 +9,18 @@ description = 'OpenTelemetry - Zipkin Exporter'
 ext.moduleName = "io.opentelemetry.exporter.zipkin"
 
 dependencies {
-    compileOnly libraries.auto_value
+    compileOnly "com.google.auto.value:auto-value"
 
     api project(':sdk:all')
 
-    annotationProcessor libraries.auto_value
+    annotationProcessor "com.google.auto.value:auto-value"
 
-    implementation libraries.zipkin_reporter,
-            libraries.zipkin_okhttp
+    implementation "io.zipkin.reporter2:zipkin-reporter",
+            "io.zipkin.reporter2:zipkin-sender-okhttp3"
 
     testImplementation project(':sdk:testing')
-    testImplementation libraries.guava,
-            libraries.zipkin_junit
-
-    signature libraries.android_signature
-}
-
-configurations {
-    all {
-        resolutionStrategy {
-            // override the version of zipkin-junit provided by zipkin-reporter bom
-            // as newer versions use okhttp v4.x (which requires JVM >= 8).
-            force 'io.zipkin.zipkin2:zipkin-junit:2.18.3'
-        }
-    }
+    testImplementation "com.google.guava:guava",
+            "io.zipkin.zipkin2:zipkin-junit"
 }
 
 animalsniffer {

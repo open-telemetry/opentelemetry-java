@@ -13,8 +13,6 @@ dependencies {
     api project(':sdk:metrics')
 
     testImplementation project(':sdk:testing')
-
-    signature libraries.android_signature
 }
 
 animalsniffer {

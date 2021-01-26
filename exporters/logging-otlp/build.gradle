@@ -13,10 +13,8 @@ dependencies {
     compileOnly project(':sdk:metrics')
 
     implementation project(':sdk-extensions:otproto'),
-            'org.curioswitch.curiostack:protobuf-jackson:1.1.0'
+            'org.curioswitch.curiostack:protobuf-jackson'
 
     testImplementation project(':sdk:testing'),
-            'org.skyscreamer:jsonassert:1.5.0'
-
-    signature libraries.android_signature
+            'org.skyscreamer:jsonassert'
 }

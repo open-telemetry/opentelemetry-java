@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -149,7 +150,7 @@ class CompletableResultCodeTest {
     CompletableResultCode result = new CompletableResultCode();
     new Thread(
             () -> {
-              Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
+              Uninterruptibles.sleepUninterruptibly(Duration.ofMillis(50));
               result.succeed();
             })
         .start();
