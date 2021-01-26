@@ -229,9 +229,7 @@ subprojects {
                 if (it.canBeResolved && !it.canBeConsumed
                         // Older ones (like JMH) may not, so check the name as well.
                         // Kotlin compiler classpaths don't support BOM nor need it.
-                        || it.name.endsWith('Classpath') && !it.name.startsWith('kotlin')
-                        // Configuration name used by protobuf plugin for finding tools.
-                        || it.name.startsWith('protobufToolsLocator'))
+                        || it.name.endsWith('Classpath') && !it.name.startsWith('kotlin'))
                     add(it.name, platform(project(':dependencyManagement')))
             }
 
