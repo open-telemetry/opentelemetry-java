@@ -365,13 +365,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       if (samplingProbabilityStr != null) {
         try {
           double samplingProbability = Double.parseDouble(samplingProbabilityStr);
-          if (samplingProbability == 0) {
-            configSupplier.setSampler(Sampler.alwaysOff());
-          } else if (samplingProbability == 1) {
-            configSupplier.setSampler(Sampler.alwaysOn());
-          } else {
-            configSupplier.setSampler(Sampler.traceIdRatioBased(samplingProbability));
-          }
+          configSupplier.setSampler(Sampler.traceIdRatioBased(samplingProbability));
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException("SamplingProbability must be of the type double", e);
         }

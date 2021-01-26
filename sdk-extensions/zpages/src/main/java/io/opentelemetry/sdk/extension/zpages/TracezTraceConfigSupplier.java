@@ -21,7 +21,7 @@ final class TracezTraceConfigSupplier implements Supplier<TraceConfig>, Sampler 
   private volatile TraceConfig activeTraceConfig;
 
   TracezTraceConfigSupplier() {
-    sampler = Sampler.parentBased(Sampler.alwaysOn());
+    sampler = Sampler.traceIdRatioBased(1.0);
     activeTraceConfig = TraceConfig.getDefault();
   }
 

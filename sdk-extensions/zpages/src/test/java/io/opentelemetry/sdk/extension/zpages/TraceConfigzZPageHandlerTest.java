@@ -161,7 +161,7 @@ class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
     assertThat(configSupplier.getSampler().getDescription())
-        .isEqualTo(Sampler.parentBased(Sampler.alwaysOn()).getDescription());
+        .isEqualTo(Sampler.traceIdRatioBased(1.0).getDescription());
     assertThat(configSupplier.get().getMaxNumberOfAttributes())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributes());
     assertThat(configSupplier.get().getMaxNumberOfEvents())
@@ -186,7 +186,7 @@ class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
     assertThat(configSupplier.getSampler().getDescription())
-        .isEqualTo(Sampler.parentBased(Sampler.alwaysOn()).getDescription());
+        .isEqualTo(Sampler.traceIdRatioBased(1.0).getDescription());
     assertThat(configSupplier.get().getMaxNumberOfAttributes())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributes());
     assertThat(configSupplier.get().getMaxNumberOfEvents())
@@ -320,7 +320,7 @@ class TraceConfigzZPageHandlerTest {
     traceConfigzZPageHandler.emitHtml(queryMap, output);
 
     assertThat(configSupplier.getSampler().getDescription())
-        .isEqualTo(Sampler.parentBased(Sampler.alwaysOn()).getDescription());
+        .isEqualTo(Sampler.traceIdRatioBased(1.0).getDescription());
     assertThat(configSupplier.get().getMaxNumberOfAttributes())
         .isEqualTo(TraceConfig.getDefault().getMaxNumberOfAttributes());
     assertThat(configSupplier.get().getMaxNumberOfEvents())
