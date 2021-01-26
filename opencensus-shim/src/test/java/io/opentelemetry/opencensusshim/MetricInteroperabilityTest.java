@@ -26,7 +26,6 @@ import io.opencensus.tags.TagMetadata.TagTtl;
 import io.opencensus.tags.TagValue;
 import io.opencensus.tags.Tagger;
 import io.opencensus.tags.Tags;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -35,15 +34,9 @@ import io.opentelemetry.sdk.metrics.data.PointData;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class MetricInteroperabilityTest {
-
-  @AfterEach
-  void tearDown() {
-    GlobalOpenTelemetry.resetForTest();
-  }
 
   @Test
   @SuppressWarnings("deprecation") // Summary is deprecated in census
