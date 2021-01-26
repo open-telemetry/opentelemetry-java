@@ -27,7 +27,7 @@ class OtTracerPropagatorTest {
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
   private static final String TRACE_ID = "ff000000000000000000000000000041";
-  private static final String TRACE_ID_RIGHT_PART = TRACE_ID.substring(TraceId.getHexLength() / 2);
+  private static final String TRACE_ID_RIGHT_PART = "0000000000000041";
   private static final String SHORT_TRACE_ID = "ff00000000000000";
   private static final String SHORT_TRACE_ID_FULL = "0000000000000000ff00000000000000";
   private static final String SPAN_ID = "ff00000000000041";
