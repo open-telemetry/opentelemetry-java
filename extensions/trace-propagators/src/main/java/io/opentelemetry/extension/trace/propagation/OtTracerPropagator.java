@@ -58,7 +58,7 @@ public final class OtTracerPropagator implements TextMapPropagator {
     if (!spanContext.isValid()) {
       return;
     }
-    // OpenTracing trace id MUST be 64-bits therefore OpenTelemetry trace id is truncated to 64-bits
+    // Lightstep trace id MUST be 64-bits therefore OpenTelemetry trace id is truncated to 64-bits
     // by retaining least significant (right-most) bits.
     setter.set(
         carrier,
