@@ -27,6 +27,7 @@ class OtTracerPropagatorTest {
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
   private static final String TRACE_ID = "ff000000000000000000000000000041";
+  private static final String TRACE_ID_RIGHT_PART = "0000000000000041";
   private static final String SHORT_TRACE_ID = "ff00000000000000";
   private static final String SHORT_TRACE_ID_FULL = "0000000000000000ff00000000000000";
   private static final String SPAN_ID = "ff00000000000041";
@@ -80,7 +81,7 @@ class OtTracerPropagatorTest {
             Context.current()),
         carrier,
         setter);
-    assertThat(carrier).containsEntry(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
+    assertThat(carrier).containsEntry(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID_RIGHT_PART);
     assertThat(carrier).containsEntry(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     assertThat(carrier).containsEntry(OtTracerPropagator.SAMPLED_HEADER, "true");
   }
@@ -94,7 +95,7 @@ class OtTracerPropagatorTest {
             Context.current()),
         null,
         (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
-    assertThat(carrier).containsEntry(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
+    assertThat(carrier).containsEntry(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID_RIGHT_PART);
     assertThat(carrier).containsEntry(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     assertThat(carrier).containsEntry(OtTracerPropagator.SAMPLED_HEADER, "true");
   }
@@ -108,7 +109,7 @@ class OtTracerPropagatorTest {
             Context.current()),
         carrier,
         setter);
-    assertThat(carrier).containsEntry(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
+    assertThat(carrier).containsEntry(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID_RIGHT_PART);
     assertThat(carrier).containsEntry(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     assertThat(carrier).containsEntry(OtTracerPropagator.SAMPLED_HEADER, "false");
   }
