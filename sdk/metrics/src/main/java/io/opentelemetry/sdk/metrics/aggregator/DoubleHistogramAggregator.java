@@ -25,7 +25,7 @@ import javax.annotation.concurrent.GuardedBy;
 final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumulation> {
   private static final Logger logger = Logger.getLogger(DoubleHistogramAggregator.class.getName());
 
-  private static boolean LoggedMergingInvalidBoundaries = false;
+  private static volatile boolean loggedMergingInvalidBoundaries = false;
 
   private final double[] boundaries;
 
@@ -64,7 +64,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   public final HistogramAccumulation merge(HistogramAccumulation x, HistogramAccumulation y) {
     if (!x.getBoundaries().equals(y.getBoundaries())) {
       // If this happens, it's a pretty severe bug in the SDK.
-      if (!LoggedMergingInvalidBoundaries) {
+      if (!loggedMergingInvalidBoundaries) {
         logger.log(
             Level.SEVERE,
             "can't merge histograms with different boundaries, something's very wrong: "
@@ -72,7 +72,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
                 + x.getBoundaries()
                 + " y.boundaries="
                 + y.getBoundaries());
-        LoggedMergingInvalidBoundaries = true;
+        loggedMergingInvalidBoundaries = true;
       }
       return HistogramAccumulation.create(
           0, 0, Collections.emptyList(), Collections.singletonList(0L));
