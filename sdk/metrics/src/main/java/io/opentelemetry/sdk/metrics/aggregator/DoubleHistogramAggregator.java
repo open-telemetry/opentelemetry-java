@@ -12,14 +12,21 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
 
 final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumulation> {
+  private static final Logger logger = Logger.getLogger(DoubleHistogramAggregator.class.getName());
+
+  private static boolean LoggedMergingInvalidBoundaries = false;
+
   private final double[] boundaries;
 
   DoubleHistogramAggregator(
@@ -32,6 +39,22 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
     this.boundaries = boundaries;
   }
 
+  private static List<Double> asUnmodifiableDoubleList(double[] xs) {
+    List<Double> result = new ArrayList<>(xs.length);
+    for (double x : xs) {
+      result.add(x);
+    }
+    return result;
+  }
+
+  private static List<Long> asUnmodifiableLongList(long[] xs) {
+    List<Long> result = new ArrayList<>(xs.length);
+    for (long x : xs) {
+      result.add(x);
+    }
+    return result;
+  }
+
   @Override
   public AggregatorHandle<HistogramAccumulation> createHandle() {
     return new Handle(this.boundaries);
@@ -40,7 +63,19 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   @Override
   public final HistogramAccumulation merge(HistogramAccumulation x, HistogramAccumulation y) {
     if (!x.getBoundaries().equals(y.getBoundaries())) {
-      throw new IllegalArgumentException("can't merge histograms with different boundaries");
+      // If this happens, it's a pretty severe bug in the SDK.
+      if (!LoggedMergingInvalidBoundaries) {
+        logger.log(
+            Level.SEVERE,
+            "can't merge histograms with different boundaries, something's very wrong: "
+                + "x.boundaries="
+                + x.getBoundaries()
+                + " y.boundaries="
+                + y.getBoundaries());
+        LoggedMergingInvalidBoundaries = true;
+      }
+      return HistogramAccumulation.create(
+          0, 0, Collections.emptyList(), Collections.singletonList(0L));
     }
 
     long[] mergedCounts = new long[x.getCounts().size()];
@@ -51,7 +86,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
         x.getCount() + y.getCount(),
         x.getSum() + y.getSum(),
         x.getBoundaries(),
-        Arrays.stream(mergedCounts).boxed().collect(Collectors.toList()));
+        asUnmodifiableLongList(mergedCounts));
   }
 
   @Override
@@ -98,19 +133,20 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
     @Override
     protected HistogramAccumulation doAccumulateThenReset() {
+      List<Long> counts;
       lock.writeLock().lock();
       try {
-        HistogramAccumulation result =
-            HistogramAccumulation.create(
-                current.count,
-                current.sum,
-                Arrays.stream(current.boundaries).boxed().collect(Collectors.toList()),
-                Arrays.stream(current.counts).boxed().collect(Collectors.toList()));
+        counts = asUnmodifiableLongList(current.counts);
         current.reset();
-        return result;
       } finally {
         lock.writeLock().unlock();
       }
+
+      return HistogramAccumulation.create(
+          counts.stream().mapToLong(i -> i).sum(),
+          current.sum,
+          asUnmodifiableDoubleList(current.boundaries),
+          asUnmodifiableLongList(current.counts));
     }
 
     @Override
@@ -131,7 +167,6 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
     }
 
     private static final class State {
-      private long count;
       private double sum;
       private final double[] boundaries;
       private final long[] counts;
@@ -153,13 +188,11 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       }
 
       private void reset() {
-        this.count = 0;
         this.sum = 0;
         Arrays.fill(this.counts, 0);
       }
 
       private void record(int bucketIndex, double value) {
-        this.count++;
         this.sum += value;
         this.counts[bucketIndex]++;
       }

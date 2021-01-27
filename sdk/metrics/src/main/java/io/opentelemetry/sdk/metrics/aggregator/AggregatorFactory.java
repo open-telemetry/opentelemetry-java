@@ -50,11 +50,11 @@ public interface AggregatorFactory {
    * the measurements taken.
    *
    * @param stateful configures if the aggregator is stateful.
-   * @param boundary configures the fixed bucket boundaries.
+   * @param boundaries configures the fixed bucket boundaries.
    * @return an {@code AggregationFactory} that calculates histogram of recorded measurements.
    */
-  static AggregatorFactory histogram(double[] boundary, boolean stateful) {
-    return new HistogramAggregatorFactory(boundary, stateful);
+  static AggregatorFactory histogram(double[] boundaries, boolean stateful) {
+    return new HistogramAggregatorFactory(boundaries, stateful);
   }
 
   /**

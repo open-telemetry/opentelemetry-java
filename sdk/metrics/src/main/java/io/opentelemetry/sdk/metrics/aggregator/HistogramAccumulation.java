@@ -15,13 +15,15 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class HistogramAccumulation {
   /**
-   * Creates a new {@link HistogramAccumulation} with the given values.
+   * Creates a new {@link HistogramAccumulation} with the given values. It's the caller's
+   * responsibility to make sure that the `boundaries` and `counts` are unmodifiable.
    *
+   * @param boundaries the bucket boundaries in unmodifiable mode.
+   * @param counts the bucket count in unmodifiable mode.
    * @return a new {@link HistogramAccumulation} with the given values.
    */
   static HistogramAccumulation create(
       long count, double sum, List<Double> boundaries, List<Long> counts) {
-    // TODO make it immutable?
     return new AutoValue_HistogramAccumulation(count, sum, boundaries, counts);
   }
 
@@ -43,16 +45,17 @@ public abstract class HistogramAccumulation {
 
   /**
    * The bucket boundaries. For a Histogram with N defined boundaries, e.g, [x, y, z]. There are N+1
-   * counts: [-inf, x), [x, y), [y, z), [z, +inf].
+   * counts: [-inf, x), [x, y), [y, z), [z, +inf]. The returned object is unmodifiable so <b>do not
+   * mutate</b> it.
    *
-   * @return the bucket boundaries in increasing order.
+   * @return the unmodifiable bucket boundaries in increasing order.
    */
   abstract List<Double> getBoundaries();
 
   /**
-   * The counts in each bucket.
+   * The counts in each bucket. The returned object is unmodifiable so <b>do not mutate</b> it.
    *
-   * @return the counts in each bucket.
+   * @return the unmodifiable counts in each bucket.
    */
   abstract List<Long> getCounts();
 
