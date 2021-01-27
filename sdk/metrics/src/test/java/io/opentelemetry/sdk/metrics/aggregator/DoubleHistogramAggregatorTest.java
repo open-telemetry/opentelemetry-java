@@ -81,6 +81,17 @@ public class DoubleHistogramAggregatorTest {
   }
 
   @Test
+  void invalidMergeReturnsEmptyAccumulation() {
+    HistogramAccumulation x =
+        HistogramAccumulation.create(1, 1, ImmutableList.of(1.0), ImmutableList.of(0L, 1L));
+    HistogramAccumulation y =
+        HistogramAccumulation.create(1, 2, ImmutableList.of(2.0), ImmutableList.of(1L));
+    assertThat(aggregator.merge(x, y))
+        .isEqualTo(
+            HistogramAccumulation.create(0, 0, Collections.emptyList(), ImmutableList.of(0L)));
+  }
+
+  @Test
   void toMetricData() {
     AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
