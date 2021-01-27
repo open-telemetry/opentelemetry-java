@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.example;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -21,7 +20,7 @@ public class ConfigureSpanProcessorExample {
   private static final LoggingSpanExporter exporter = new LoggingSpanExporter();
   private static final OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
   // Get the Tracer Management interface
-  private static final SdkTracerManagement tracerManagement = openTelemetry.getTracerManagement();
+  private static final SdkTracerProvider tracerManagement = openTelemetry.getSdkTracerProvider();
   // Acquire a tracer
   private static final Tracer tracer = openTelemetry.getTracer("ConfigureSpanProcessorExample");
 
@@ -64,7 +63,6 @@ public class ConfigureSpanProcessorExample {
     // Configure the batch spans processor. This span processor exports span in batches.
     BatchSpanProcessor batchSpansProcessor =
         BatchSpanProcessor.builder(exporter)
-            .setExportOnlySampled(true) // send to the exporter only spans that have been sampled
             .setMaxExportBatchSize(512) // set the maximum batch size to use
             .setMaxQueueSize(2048) // set the queue size. This must be >= the export batch size
             .setExporterTimeout(

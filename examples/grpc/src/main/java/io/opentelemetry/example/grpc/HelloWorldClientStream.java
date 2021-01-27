@@ -163,12 +163,11 @@ public class HelloWorldClientStream {
   }
 
   private static OpenTelemetry initOpenTelemetry(LoggingSpanExporter exporter) {
-    // install the W3C Trace Context propagator
-    // Get the tracer management instance
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
     // Set to process the the spans by the LogExporter
-    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
+    SdkTracerProvider sdkTracerProvider =
+        SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(exporter)).build();
 
+    // install the W3C Trace Context propagator
     return OpenTelemetrySdk.builder()
         .setTracerProvider(sdkTracerProvider)
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))

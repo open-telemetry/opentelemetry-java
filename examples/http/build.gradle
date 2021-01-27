@@ -7,10 +7,9 @@ ext.moduleName = "io.opentelemetry.examples.http"
 
 dependencies {
     compile("io.opentelemetry:opentelemetry-api")
-    compile("io.opentelemetry:opentelemetry-semconv")
+    compile("io.opentelemetry:opentelemetry-semconv:${openTelemetryAlphaVersion}")
     compile("io.opentelemetry:opentelemetry-sdk")
-    compile("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
+    compile("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${openTelemetryAlphaVersion}")
     compile("io.opentelemetry:opentelemetry-exporter-logging")
     compile "io.grpc:grpc-context"
-
 }

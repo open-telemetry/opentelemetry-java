@@ -37,17 +37,15 @@ public class ExampleConfiguration {
             .setScheduleDelay(100, TimeUnit.MILLISECONDS)
             .build();
 
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(spanProcessor)
+            .setResource(Resource.getDefault())
+            .build();
     OpenTelemetrySdk openTelemetrySdk =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(
-                SdkTracerProvider.builder()
-                    .addSpanProcessor(spanProcessor)
-                    .setResource(Resource.getDefault())
-                    .build())
-            .buildAndRegisterGlobal();
+        OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
 
-    Runtime.getRuntime()
-        .addShutdownHook(new Thread(() -> openTelemetrySdk.getTracerManagement().shutdown()));
+    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::shutdown));
 
     return openTelemetrySdk;
   }

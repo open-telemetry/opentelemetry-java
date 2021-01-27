@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 
@@ -71,10 +72,7 @@ class ConfigureTraceExample {
     //  - alwaysOn: it samples all traces
     //  - alwaysOff: it rejects all traces
     //  - probability: it samples traces based on the probability passed in input
-    TraceConfig alwaysOff = TraceConfig.builder().setSampler(Sampler.alwaysOff()).build();
-    TraceConfig alwaysOn = TraceConfig.builder().setSampler(Sampler.alwaysOn()).build();
-    TraceConfig probability =
-        TraceConfig.builder().setSampler(Sampler.traceIdRatioBased(0.5)).build();
+    Sampler traceIdRatioBased = Sampler.traceIdRatioBased(0.5);
 
     // We build an SDK with the alwaysOff sampler.
     openTelemetrySdk =
@@ -82,7 +80,7 @@ class ConfigureTraceExample {
             .setTracerProvider(
                 SdkTracerProvider.builder()
                     .addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()))
-                    .setTraceConfig(alwaysOff)
+                    .setSampler(Sampler.alwaysOff())
                     .build())
             .build();
 
@@ -98,7 +96,7 @@ class ConfigureTraceExample {
             .setTracerProvider(
                 SdkTracerProvider.builder()
                     .addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()))
-                    .setTraceConfig(alwaysOn)
+                    .setSampler(Sampler.alwaysOn())
                     .build())
             .build();
     printTraceConfig(openTelemetrySdk);
@@ -115,7 +113,7 @@ class ConfigureTraceExample {
             .setTracerProvider(
                 SdkTracerProvider.builder()
                     .addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()))
-                    .setTraceConfig(probability)
+                    .setSampler(traceIdRatioBased)
                     .build())
             .build();
     printTraceConfig(openTelemetrySdk);
@@ -142,9 +140,7 @@ class ConfigureTraceExample {
           Attributes attributes,
           List<LinkData> parentLinks) {
         return SamplingResult.create(
-            name.contains("SAMPLE")
-                ? SamplingResult.Decision.RECORD_AND_SAMPLE
-                : SamplingResult.Decision.DROP);
+            name.contains("SAMPLE") ? SamplingDecision.RECORD_AND_SAMPLE : SamplingDecision.DROP);
       }
 
       @Override
@@ -154,13 +150,12 @@ class ConfigureTraceExample {
     }
 
     // Add MySampler to the Trace Configuration
-    TraceConfig mySampler = TraceConfig.builder().setSampler(new MySampler()).build();
     openTelemetrySdk =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder()
                     .addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()))
-                    .setTraceConfig(mySampler)
+                    .setSampler(new MySampler())
                     .build())
             .build();
     printTraceConfig(openTelemetrySdk);
@@ -181,7 +176,7 @@ class ConfigureTraceExample {
   }
 
   private static void printTraceConfig(OpenTelemetrySdk sdk) {
-    TraceConfig config = sdk.getTracerManagement().getActiveTraceConfig();
+    TraceConfig config = sdk.getSdkTracerProvider().getActiveTraceConfig();
     System.err.println("==================================");
     System.err.print("Max number of attributes: ");
     System.err.println(config.getMaxNumberOfAttributes());
@@ -194,6 +189,6 @@ class ConfigureTraceExample {
     System.err.print("Max number of links: ");
     System.err.println(config.getMaxNumberOfLinks());
     System.err.print("Sampler: ");
-    System.err.println(config.getSampler().getDescription());
+    System.err.println(sdk.getSdkTracerProvider().getSampler().getDescription());
   }
 }
