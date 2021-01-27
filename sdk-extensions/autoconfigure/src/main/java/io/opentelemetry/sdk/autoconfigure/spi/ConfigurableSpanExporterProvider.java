@@ -24,8 +24,9 @@ public interface ConfigurableSpanExporterProvider {
 
   /**
    * Returns the name of this exporter, which can be specified with the {@code otel.trace.exporter}
-   * property to enable it. If the name is the same as any other defined exporter name, it is
-   * undefined which will be used.
+   * property to enable it. The name returned should NOT be the same as any other exporter name.
+   * If the name does conflict with another exporter name, the resulting behavior is undefined and 
+   * it is explicitly unspecified which exporter will actually be used.
    */
   String getName();
 }
