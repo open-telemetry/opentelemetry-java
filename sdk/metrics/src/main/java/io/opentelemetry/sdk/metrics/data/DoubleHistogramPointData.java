@@ -19,8 +19,11 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class DoubleHistogramPointData implements PointData {
   /**
-   * Creates a DoubleHistogramPointData.
+   * Creates a DoubleHistogramPointData. It's the caller's responsibility to make sure that the
+   * `boundaries` and `counts` are unmodifiable.
    *
+   * @param boundaries the bucket boundaries in unmodifiable mode.
+   * @param counts the bucket count in unmodifiable mode.
    * @return a DoubleHistogramPointData.
    */
   public static DoubleHistogramPointData create(
@@ -53,16 +56,17 @@ public abstract class DoubleHistogramPointData implements PointData {
 
   /**
    * The bucket boundaries. For a Histogram with N defined boundaries, e.g, [x, y, z]. There are N+1
-   * counts: [-inf, x), [x, y), [y, z), [z, +inf].
+   * counts: [-inf, x), [x, y), [y, z), [z, +inf]. The returned object is unmodifiable so <b>do not
+   * mutate</b> it.
    *
-   * @return the bucket boundaries in increasing order.
+   * @return the unmodifiable bucket boundaries in increasing order.
    */
   public abstract List<Double> getBoundaries();
 
   /**
-   * The counts in each bucket.
+   * The counts in each bucket. The returned object is unmodifiable so <b>do not mutate</b> it.
    *
-   * @return the counts in each bucket.
+   * @return the unmodifiable counts in each bucket.
    */
   public abstract List<Long> getCounts();
 
