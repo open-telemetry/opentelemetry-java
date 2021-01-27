@@ -133,9 +133,11 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
     @Override
     protected HistogramAccumulation doAccumulateThenReset() {
+      double sum;
       List<Long> counts;
       lock.writeLock().lock();
       try {
+        sum = current.sum;
         counts = asUnmodifiableLongList(current.counts);
         current.reset();
       } finally {
@@ -144,9 +146,9 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
       return HistogramAccumulation.create(
           counts.stream().mapToLong(i -> i).sum(),
-          current.sum,
+          sum,
           asUnmodifiableDoubleList(current.boundaries),
-          asUnmodifiableLongList(current.counts));
+          counts);
     }
 
     @Override
