@@ -165,7 +165,7 @@ subprojects {
             errorProneJavacVersion = '9+181-r4173-1'
             findBugsJsr305Version = '3.0.2'
             grpcVersion = '1.34.1'
-            guavaVersion = '30.1-android'
+            guavaVersion = '30.1-jre'
             jacksonVersion = '2.12.0'
             jmhVersion = '1.26'
             junitVersion = '5.7.0'

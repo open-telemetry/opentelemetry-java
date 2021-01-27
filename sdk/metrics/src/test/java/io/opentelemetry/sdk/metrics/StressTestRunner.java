@@ -8,10 +8,10 @@ package io.opentelemetry.sdk.metrics;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Uninterruptibles;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.Immutable;
 
 @AutoValue
@@ -32,8 +32,7 @@ abstract class StressTestRunner {
             () -> {
               // While workers still work, do collections.
               while (countDownLatch.getCount() != 0) {
-                Uninterruptibles.sleepUninterruptibly(
-                    getCollectionIntervalMs(), TimeUnit.MILLISECONDS);
+                Uninterruptibles.sleepUninterruptibly(Duration.ofMillis(getCollectionIntervalMs()));
               }
             });
     List<Thread> operationThreads = new ArrayList<>(numThreads);
@@ -44,7 +43,7 @@ abstract class StressTestRunner {
                 for (int i = 0; i < operation.getNumOperations(); i++) {
                   operation.getUpdater().update();
                   Uninterruptibles.sleepUninterruptibly(
-                      operation.getOperationDelayMs(), TimeUnit.MILLISECONDS);
+                      Duration.ofMillis(operation.getOperationDelayMs()));
                 }
                 countDownLatch.countDown();
               }));
