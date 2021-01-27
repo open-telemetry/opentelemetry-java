@@ -20,8 +20,6 @@ dependencies {
 
     testImplementation project(':sdk:testing')
     testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-
-    signature libraries.android_signature
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {

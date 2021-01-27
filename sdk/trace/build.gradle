@@ -17,14 +17,13 @@ dependencies {
 
     implementation project(':api:metrics')
 
-    annotationProcessor libraries.auto_value
+    annotationProcessor "com.google.auto.value:auto-value"
 
-    testAnnotationProcessor libraries.auto_value
-    testCompileOnly libraries.auto_value_annotation
+    testAnnotationProcessor "com.google.auto.value:auto-value"
 
-    testImplementation libraries.guava
+    testImplementation "com.google.guava:guava"
     testImplementation project(':sdk:testing')
-    testImplementation libraries.junit_pioneer
+    testImplementation "org.junit-pioneer:junit-pioneer"
 
     jmh project(':sdk:metrics')
     jmh(project(':sdk:testing')) {
@@ -44,9 +43,7 @@ dependencies {
     jmh("io.grpc:grpc-api")
     jmh("io.grpc:grpc-netty-shaded")
     jmh("org.testcontainers:testcontainers:1.15.1") // testContainer for OTLP collector
-    jmh libraries.guava
-
-    signature libraries.android_signature
+    jmh "com.google.guava:guava"
 }
 
 sourceSets {

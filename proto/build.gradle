@@ -13,16 +13,12 @@ ext.moduleName = 'io.opentelemetry.proto'
 dependencies {
     // Protobuf plugin seems to erroneously use the non-classpath configurations for resolving
     // dependencies.
-    boms.each {
-        implementation enforcedPlatform(it)
-    }
+    implementation enforcedPlatform(project(':dependencyManagement'))
 
-    api libraries.protobuf,
-            libraries.grpc_api,
-            libraries.grpc_protobuf,
-            libraries.grpc_stub
-
-    signature libraries.android_signature
+    api "com.google.protobuf:protobuf-java",
+            "io.grpc:grpc-api",
+            "io.grpc:grpc-protobuf",
+            "io.grpc:grpc-stub"
 }
 
 animalsniffer {
@@ -30,19 +26,6 @@ animalsniffer {
     sourceSets = [
             sourceSets.main
     ]
-}
-
-protobuf {
-    protoc {
-        // The artifact spec for the Protobuf Compiler
-        artifact = "com.google.protobuf:protoc:${protocVersion}"
-    }
-    plugins {
-        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
-    }
-    generateProtoTasks {
-        all()*.plugins { grpc {} }
-    }
 }
 
 def protoVersion = "0.7.0"

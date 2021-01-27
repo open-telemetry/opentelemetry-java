@@ -14,17 +14,15 @@ dependencies {
 
     implementation project(':sdk-extensions:otproto'),
             project(':sdk:all'),
-            libraries.grpc_api,
-            libraries.grpc_protobuf,
-            libraries.grpc_stub,
-            libraries.protobuf
+            "io.grpc:grpc-api",
+            "io.grpc:grpc-protobuf",
+            "io.grpc:grpc-stub",
+            "com.google.protobuf:protobuf-java"
 
-    testImplementation "io.grpc:grpc-testing:${grpcVersion}",
-            libraries.testcontainers
+    testImplementation "io.grpc:grpc-testing",
+            "org.testcontainers:junit-jupiter"
 
-    testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
-
-    signature libraries.android_signature
+    testRuntimeOnly "io.grpc:grpc-netty-shaded"
 }
 
 animalsniffer {
@@ -32,19 +30,6 @@ animalsniffer {
     sourceSets = [
             sourceSets.main
     ]
-}
-
-protobuf {
-    protoc {
-        // The artifact spec for the Protobuf Compiler
-        artifact = "com.google.protobuf:protoc:${protocVersion}"
-    }
-    plugins {
-        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
-    }
-    generateProtoTasks {
-        all()*.plugins { grpc {} }
-    }
 }
 
 // IntelliJ complains that the generated classes are not found, ask IntelliJ to include the

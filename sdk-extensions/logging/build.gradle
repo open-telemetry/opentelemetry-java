@@ -13,10 +13,8 @@ dependencies {
 
     implementation project(':api:metrics')
 
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
-    testImplementation libraries.awaitility
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    testImplementation "org.awaitility:awaitility"
 
-    annotationProcessor libraries.auto_value
-
-    signature libraries.android_signature
+    annotationProcessor "com.google.auto.value:auto-value"
 }

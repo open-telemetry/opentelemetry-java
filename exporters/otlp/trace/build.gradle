@@ -23,13 +23,13 @@ dependencies {
     compileOnly "io.grpc:grpc-netty-shaded"
 
     implementation project(':sdk-extensions:otproto'),
-            libraries.grpc_api,
-            libraries.grpc_protobuf,
-            libraries.grpc_stub,
-            libraries.protobuf
+            "io.grpc:grpc-api",
+            "io.grpc:grpc-protobuf",
+            "io.grpc:grpc-stub",
+            "com.google.protobuf:protobuf-java"
 
     testImplementation project(':sdk:testing'),
-            "io.grpc:grpc-testing:${grpcVersion}"
+            "io.grpc:grpc-testing"
 
     testGrpcNettyImplementation 'com.linecorp.armeria:armeria-grpc',
             'com.linecorp.armeria:armeria-junit5'
@@ -40,18 +40,16 @@ dependencies {
     testGrpcOkhttpImplementation 'com.linecorp.armeria:armeria-grpc',
             'com.linecorp.armeria:armeria-junit5'
 
-    testGrpcNettyRuntimeOnly "io.grpc:grpc-netty:${grpcVersion}",
-            libraries.slf4jsimple
+    testGrpcNettyRuntimeOnly "io.grpc:grpc-netty",
+            "org.slf4j:slf4j-simple"
 
-    testGrpcNettyShadedRuntimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}",
-            libraries.slf4jsimple
+    testGrpcNettyShadedRuntimeOnly "io.grpc:grpc-netty-shaded",
+            "org.slf4j:slf4j-simple"
 
-    testGrpcOkhttpRuntimeOnly "io.grpc:grpc-okhttp:${grpcVersion}",
-            libraries.slf4jsimple
+    testGrpcOkhttpRuntimeOnly "io.grpc:grpc-okhttp",
+            "org.slf4j:slf4j-simple"
 
     jmh project(':sdk:testing')
-
-    signature libraries.android_signature
 }
 
 check.dependsOn(testGrpcNetty, testGrpcNettyShaded, testGrpcOkhttp)

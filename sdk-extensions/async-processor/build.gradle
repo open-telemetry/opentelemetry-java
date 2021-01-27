@@ -12,6 +12,6 @@ dependencies {
     api project(':api:all'),
             project(':sdk:all')
 
-    implementation libraries.guava,
-            libraries.disruptor
+    implementation "com.google.guava:guava",
+            "com.lmax:disruptor"
 }

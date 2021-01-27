@@ -12,15 +12,13 @@ dependencies {
     api project(':sdk:all')
 
     implementation project(':sdk:all'),
-            libraries.jaeger_client
+            "io.jaegertracing:jaeger-client"
 
     testImplementation 'com.fasterxml.jackson.core:jackson-databind',
-            libraries.testcontainers,
-            libraries.okhttp
+            "org.testcontainers:junit-jupiter",
+            "com.squareup.okhttp3:okhttp"
 
     testImplementation project(':sdk:testing')
-
-    signature libraries.android_signature
 }
 
 animalsniffer {

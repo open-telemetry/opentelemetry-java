@@ -10,10 +10,8 @@ ext.moduleName = "io.opentelemetry.exporter.prometheus"
 
 dependencies {
     api project(':sdk:metrics'),
-            libraries.prometheus_client
+            "io.prometheus:simpleclient"
 
-    testImplementation libraries.prometheus_client_common,
-            libraries.guava
-
-    signature libraries.android_signature
+    testImplementation "io.prometheus:simpleclient_common",
+            "com.google.guava:guava"
 }

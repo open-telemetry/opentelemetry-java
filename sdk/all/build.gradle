@@ -16,15 +16,12 @@ dependencies {
             project(':sdk:common'),
             project(':sdk:trace')
 
-    annotationProcessor libraries.auto_value
+    annotationProcessor "com.google.auto.value:auto-value"
 
-    testAnnotationProcessor libraries.auto_value
-    testCompileOnly libraries.auto_value_annotation
+    testAnnotationProcessor "com.google.auto.value:auto-value"
 
     testImplementation project(':sdk:testing')
-    testImplementation libraries.junit_pioneer
-    
-    signature libraries.android_signature
+    testImplementation "org.junit-pioneer:junit-pioneer"
 }
 
 sourceSets {
