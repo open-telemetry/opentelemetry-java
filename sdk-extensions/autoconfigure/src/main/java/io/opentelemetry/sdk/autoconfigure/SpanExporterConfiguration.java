@@ -12,18 +12,30 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 final class SpanExporterConfiguration {
 
-  @Nullable
   static SpanExporter configureExporter(String name, ConfigProperties config) {
+    Map<String, SpanExporter> spiExporters =
+        StreamSupport.stream(
+                ServiceLoader.load(ConfigurableSpanExporterProvider.class).spliterator(), false)
+            .collect(
+                Collectors.toMap(
+                    ConfigurableSpanExporterProvider::getName,
+                    configurableSpanExporterProvider ->
+                        configurableSpanExporterProvider.createExporter(config)));
+
     switch (name) {
       case "otlp":
       case "otlp_span":
@@ -39,7 +51,11 @@ final class SpanExporterConfiguration {
             "opentelemetry-exporter-logging");
         return new LoggingSpanExporter();
       default:
-        return null;
+        SpanExporter spiExporter = spiExporters.get(name);
+        if (spiExporter == null) {
+          throw new ConfigurationException("Unrecognized value for otel.trace.exporter: " + name);
+        }
+        return spiExporter;
     }
   }
 

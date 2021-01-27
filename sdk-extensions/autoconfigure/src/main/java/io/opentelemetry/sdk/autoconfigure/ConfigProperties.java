@@ -16,7 +16,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-class ConfigProperties {
+/**
+ * Properties to be used for auto-configuration of the OpenTelemetry SDK components. These
+ * properties will be a combination of system properties and environment variables. The properties
+ * for both of these will be normalized to be all lower case, and underscores will be replaced with
+ * periods.
+ */
+public class ConfigProperties {
 
   private final Map<String, String> config;
 
@@ -39,14 +45,25 @@ class ConfigProperties {
     this.config = config;
   }
 
+  /**
+   * Get a string-valued configuration property.
+   *
+   * @return null if the property has not been configured.
+   */
   @Nullable
-  String getString(String name) {
+  public String getString(String name) {
     return config.get(name);
   }
 
+  /**
+   * Get a integer-valued configuration property.
+   *
+   * @return null if the property has not been configured.
+   * @throws NumberFormatException if the property is not a valid integer.
+   */
   @Nullable
   @SuppressWarnings("UnusedException")
-  Integer getInt(String name) {
+  public Integer getInt(String name) {
     String value = config.get(name);
     if (value == null || value.isEmpty()) {
       return null;
@@ -58,9 +75,15 @@ class ConfigProperties {
     }
   }
 
+  /**
+   * Get a long-valued configuration property.
+   *
+   * @return null if the property has not been configured.
+   * @throws NumberFormatException if the property is not a valid long.
+   */
   @Nullable
   @SuppressWarnings("UnusedException")
-  Long getLong(String name) {
+  public Long getLong(String name) {
     String value = config.get(name);
     if (value == null || value.isEmpty()) {
       return null;
@@ -72,9 +95,15 @@ class ConfigProperties {
     }
   }
 
+  /**
+   * Get a double-valued configuration property.
+   *
+   * @return null if the property has not been configured.
+   * @throws NumberFormatException if the property is not a valid double.
+   */
   @Nullable
   @SuppressWarnings("UnusedException")
-  Double getDouble(String name) {
+  public Double getDouble(String name) {
     String value = config.get(name);
     if (value == null || value.isEmpty()) {
       return null;
@@ -86,7 +115,13 @@ class ConfigProperties {
     }
   }
 
-  List<String> getCommaSeparatedValues(String name) {
+  /**
+   * Get a list-valued configuration property. The format of the original value must be
+   * comma-separated. Empty values will be removed.
+   *
+   * @return an empty list if the property has not been configured.
+   */
+  public List<String> getCommaSeparatedValues(String name) {
     String value = config.get(name);
     if (value == null) {
       return Collections.emptyList();
@@ -94,7 +129,14 @@ class ConfigProperties {
     return filterBlanksAndNulls(value.split(","));
   }
 
-  Map<String, String> getCommaSeparatedMap(String name) {
+  /**
+   * Get a map-valued configuration property. The format of the original value must be
+   * comma-separated for each key, with an '=' separating the key and value. For instance, <code>
+   * service.name=Greatest Service,host.name=localhost</code> Empty values will be removed.
+   *
+   * @return an empty list if the property has not been configured.
+   */
+  public Map<String, String> getCommaSeparatedMap(String name) {
     return getCommaSeparatedValues(name).stream()
         .map(keyValuePair -> filterBlanksAndNulls(keyValuePair.split("=", 2)))
         .map(
@@ -113,7 +155,13 @@ class ConfigProperties {
                 Map.Entry::getKey, Map.Entry::getValue, (first, next) -> next, LinkedHashMap::new));
   }
 
-  boolean getBoolean(String name) {
+  /**
+   * Get a boolean-valued configuration property. Uses the same rules as {@link
+   * Boolean#parseBoolean(String)} for handling the values.
+   *
+   * @return false if the property has not been configured.
+   */
+  public boolean getBoolean(String name) {
     return Boolean.parseBoolean(config.get(name));
   }
 
