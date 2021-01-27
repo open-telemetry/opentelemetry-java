@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.trace;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Uninterruptibles;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -35,7 +36,7 @@ abstract class StressTestRunner {
                 for (int i = 0; i < operation.getNumOperations(); i++) {
                   operation.getUpdater().update();
                   Uninterruptibles.sleepUninterruptibly(
-                      operation.getOperationDelayMs(), TimeUnit.MILLISECONDS);
+                      Duration.ofMillis(operation.getOperationDelayMs()));
                 }
                 countDownLatch.countDown();
               }));
