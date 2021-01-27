@@ -19,14 +19,15 @@ import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferPlugin
 plugins {
     id("com.diffplug.spotless")
     id("com.github.ben-manes.versions")
+    id("nebula.release")
+
     id("com.google.protobuf") apply false
     id("com.jfrog.artifactory") apply false
     id("com.jfrog.bintray") apply false
+    id("io.morethan.jmhreport") apply false
     id("me.champeau.gradle.jmh") apply false
-    id("nebula.release")
     id("net.ltgt.errorprone") apply false
     id("ru.vyarus.animalsniffer") apply false
-    id("io.morethan.jmhreport") apply false
 }
 
 if (!JavaVersion.current().isJava11Compatible()) {
@@ -161,7 +162,6 @@ subprojects {
                     // but currently uses javax.annotation.concurrent.Immutable
                     disable("ImmutableRefactoring") // "-Xep:ImmutableRefactoring:OFF"
 
-
                     // AutoValueImmutableFields suggests returning Guava types from API methods
                     disable("AutoValueImmutableFields")
                     // "-Xep:AutoValueImmutableFields:OFF"
@@ -169,7 +169,6 @@ subprojects {
                     // Fully qualified names may be necessary when deprecating a class to avoid
                     // deprecation warning.
                     disable("UnnecessarilyFullyQualified")
-
 
                     // Ignore warnings for protobuf and jmh generated files.
                     excludedPaths.set(".*generated.*")
@@ -455,8 +454,8 @@ subprojects {
                             developers {
                                 developer {
                                     id.set("opentelemetry")
-                                    name.set("OpenTelemetry Gitter")
-                                    url.set("https://gitter.im/open-telemetry/community")
+                                    name.set("OpenTelemetry")
+                                    url.set("https://github.com/open-telemetry/community")
                                 }
                             }
 
