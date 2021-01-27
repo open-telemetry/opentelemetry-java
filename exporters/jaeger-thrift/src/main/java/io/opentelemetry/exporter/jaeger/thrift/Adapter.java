@@ -94,9 +94,11 @@ final class Adapter {
     }
     target.setReferences(references);
 
-    tags.add(
-        new Tag(KEY_SPAN_KIND, TagType.STRING)
-            .setVStr(span.getKind().name().toLowerCase(Locale.ROOT)));
+    if (span.getKind() != io.opentelemetry.api.trace.Span.Kind.INTERNAL) {
+      tags.add(
+          new Tag(KEY_SPAN_KIND, TagType.STRING)
+              .setVStr(span.getKind().name().toLowerCase(Locale.ROOT)));
+    }
 
     if (span.getStatus().getDescription() != null) {
       tags.add(

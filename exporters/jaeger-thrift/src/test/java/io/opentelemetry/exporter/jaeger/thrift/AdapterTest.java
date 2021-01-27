@@ -56,7 +56,7 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
 
-    SpanData span = getSpanData(startMs, endMs);
+    SpanData span = getSpanData(startMs, endMs, Span.Kind.SERVER);
     List<SpanData> spans = Collections.singletonList(span);
 
     List<io.jaegertracing.thriftjava.Span> jaegerSpans = Adapter.toJaeger(spans);
@@ -71,7 +71,7 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
 
-    SpanData span = getSpanData(startMs, endMs);
+    SpanData span = getSpanData(startMs, endMs, Span.Kind.SERVER);
 
     // test
     io.jaegertracing.thriftjava.Span jaegerSpan = Adapter.toJaeger(span);
@@ -101,6 +101,21 @@ class AdapterTest {
 
     assertHasFollowsFrom(jaegerSpan);
     assertHasParent(jaegerSpan);
+  }
+
+  @Test
+  void testThriftSpan_internal() {
+    long duration = 900; // ms
+    long startMs = System.currentTimeMillis();
+    long endMs = startMs + duration;
+
+    SpanData span = getSpanData(startMs, endMs, Span.Kind.INTERNAL);
+
+    // test
+    io.jaegertracing.thriftjava.Span jaegerSpan = Adapter.toJaeger(span);
+
+    assertThat(jaegerSpan.getTagsSize()).isEqualTo(4);
+    assertThat(getValue(jaegerSpan.getTags(), Adapter.KEY_SPAN_KIND)).isNull();
   }
 
   @Test
@@ -261,7 +276,7 @@ class AdapterTest {
     return EventData.create(epochNanos, "the log message", attributes, totalAttributeCount);
   }
 
-  private static SpanData getSpanData(long startMs, long endMs) {
+  private static SpanData getSpanData(long startMs, long endMs, Span.Kind kind) {
     Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
     LinkData link = LinkData.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
@@ -281,7 +296,7 @@ class AdapterTest {
         .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)
-        .setKind(Span.Kind.SERVER)
+        .setKind(kind)
         .setResource(Resource.create(Attributes.empty()))
         .setStatus(StatusData.create(StatusCode.OK, "ok!"))
         .build();
