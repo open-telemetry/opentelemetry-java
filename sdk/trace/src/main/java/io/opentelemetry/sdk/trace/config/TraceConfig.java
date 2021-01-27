@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.trace.config;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -91,7 +90,6 @@ public abstract class TraceConfig {
   }
 
   static TraceConfig create(
-      Sampler sampler,
       int maxNumAttributes,
       int maxNumEvents,
       int maxNumLinks,
@@ -99,7 +97,6 @@ public abstract class TraceConfig {
       int maxNumAttributesPerLink,
       int maxAttributeLength) {
     return new AutoValue_TraceConfig(
-        sampler,
         maxNumAttributes,
         maxNumEvents,
         maxNumLinks,
@@ -107,13 +104,6 @@ public abstract class TraceConfig {
         maxNumAttributesPerLink,
         maxAttributeLength);
   }
-
-  /**
-   * Returns the global default {@code Sampler} which is used when constructing a new {@code Span}.
-   *
-   * @return the global default {@code Sampler}.
-   */
-  public abstract Sampler getSampler();
 
   /**
    * Returns the global default max number of attributes per {@link Span}.
@@ -171,7 +161,6 @@ public abstract class TraceConfig {
    */
   public TraceConfigBuilder toBuilder() {
     return new TraceConfigBuilder()
-        .setSampler(getSampler())
         .setMaxNumberOfAttributes(getMaxNumberOfAttributes())
         .setMaxNumberOfEvents(getMaxNumberOfEvents())
         .setMaxNumberOfLinks(getMaxNumberOfLinks())

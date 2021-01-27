@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,6 +59,25 @@ class SdkTracerProviderTest {
     assertThat(tracerProvider)
         .extracting("sharedState")
         .hasFieldOrPropertyWithValue("resource", resourceWithDefaults);
+  }
+
+  @Test
+  void builder_defaultSampler() {
+    assertThat(SdkTracerProvider.builder().build().getSampler())
+        .isEqualTo(Sampler.parentBased(Sampler.alwaysOn()));
+  }
+
+  @Test
+  void builder_configureSampler() {
+    assertThat(SdkTracerProvider.builder().setSampler(Sampler.alwaysOff()).build().getSampler())
+        .isEqualTo(Sampler.alwaysOff());
+  }
+
+  @Test
+  void builder_configureSampler_null() {
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setSampler(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("sampler");
   }
 
   @Test

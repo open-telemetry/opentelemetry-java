@@ -26,6 +26,11 @@ final class TracerProviderConfiguration {
             .setResource(resource)
             .setTraceConfig(configureTraceConfig(config));
 
+    String sampler = config.getString("otel.trace.sampler");
+    if (sampler != null) {
+      tracerProviderBuilder.setSampler(configureSampler(sampler, config));
+    }
+
     // Run user configuration before setting exporters from environment to allow user span
     // processors to effect export.
     for (SdkTracerProviderConfigurer configurer :
@@ -76,11 +81,6 @@ final class TracerProviderConfiguration {
   // Visible for testing
   static TraceConfig configureTraceConfig(ConfigProperties config) {
     TraceConfigBuilder builder = TraceConfig.builder();
-
-    String sampler = config.getString("otel.trace.sampler");
-    if (sampler != null) {
-      builder.setSampler(configureSampler(sampler, config));
-    }
 
     Integer maxAttrs = config.getInt("otel.span.attribute.count.limit");
     if (maxAttrs != null) {

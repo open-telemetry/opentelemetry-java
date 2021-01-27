@@ -52,6 +52,18 @@ class NotOnClasspathTest {
   }
 
   @Test
+  void logging_metrics() {
+    assertThatThrownBy(
+            () ->
+                MetricExporterConfiguration.configureExporter(
+                    "logging", EMPTY, SdkMeterProvider.builder().build()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining(
+            "Logging Metrics Exporter enabled but opentelemetry-exporter-logging not found on "
+                + "classpath");
+  }
+
+  @Test
   void otlpMetrics() {
     assertThatThrownBy(
             () ->

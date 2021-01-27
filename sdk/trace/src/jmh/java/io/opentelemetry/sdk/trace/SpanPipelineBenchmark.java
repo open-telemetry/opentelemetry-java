@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -69,11 +68,9 @@ public class SpanPipelineBenchmark {
 
       String address = collector.getHost() + ":" + collector.getMappedPort(EXPOSED_PORT);
 
-      TraceConfig alwaysOn = TraceConfig.builder().setSampler(Sampler.alwaysOn()).build();
-
       SdkTracerProvider tracerProvider =
           SdkTracerProvider.builder()
-              .setTraceConfig(alwaysOn)
+              .setSampler(Sampler.alwaysOn())
               .addSpanProcessor(getSpanProcessor(address))
               .build();
 

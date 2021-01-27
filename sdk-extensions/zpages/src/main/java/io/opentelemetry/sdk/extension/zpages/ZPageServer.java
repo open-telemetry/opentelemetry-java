@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.extension.zpages;
 import com.sun.net.httpserver.HttpServer;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -18,10 +19,11 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A collection of HTML pages to display stats and trace data and allow library configuration
- * control. To use, add {@linkplain ZPageServer#getSpanProcessor() the z-pages span processor} and
- * {@linkplain ZPageServer#getTracezTraceConfigSupplier() the z-pages dynamic trace config} to a
- * {@link io.opentelemetry.sdk.trace.SdkTracerProviderBuilder}. Currently all tracers can only be
- * made visible to a singleton {@link ZPageServer}.
+ * control. To use, add {@linkplain ZPageServer#getSpanProcessor() the z-pages span processor},
+ * {@linkplain ZPageServer#getTracezTraceConfigSupplier() the z-pages dynamic trace config} and
+ * {@linkplain ZPageServer#getTracezSampler() the z-pages dynamic sampler} to a {@link
+ * io.opentelemetry.sdk.trace.SdkTracerProviderBuilder}. Currently all tracers can only be made
+ * visible to a singleton {@link ZPageServer}.
  *
  * <p>Example usage with private {@link HttpServer}
  *
@@ -32,6 +34,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *         .setTracerProvider(SdkTracerProvider.builder()
  *             .addSpanProcessor(ZPageServer.getSpanProcessor())
  *             .setTraceConfigSupplier(ZPageServer.getTraceConfigSupplier())
+ *             .setSampler(ZPageServer.getSampler())
  *             .build();
  *         .build();
  *
@@ -50,6 +53,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *         .setTracerProvider(SdkTracerProvider.builder()
  *             .addSpanProcessor(ZPageServer.getSpanProcessor())
  *             .setTraceConfigSupplier(ZPageServer.getTraceConfigSupplier())
+ *             .setSampler(ZPageServer.getSampler())
  *             .build();
  *         .build();
  *
@@ -92,6 +96,11 @@ public final class ZPageServer {
 
   /** Returns a supplier of {@link TraceConfig} which can be reconfigured using zpages. */
   public static Supplier<TraceConfig> getTracezTraceConfigSupplier() {
+    return tracezTraceConfigSupplier;
+  }
+
+  /** Returns a {@link Sampler} which can be reconfigured using zpages. */
+  public static Sampler getTracezSampler() {
     return tracezTraceConfigSupplier;
   }
 
