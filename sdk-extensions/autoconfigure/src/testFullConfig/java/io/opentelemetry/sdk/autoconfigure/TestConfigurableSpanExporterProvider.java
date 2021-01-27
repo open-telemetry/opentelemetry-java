@@ -14,7 +14,7 @@ import java.util.Collection;
 public class TestConfigurableSpanExporterProvider implements ConfigurableSpanExporterProvider {
   @Override
   public SpanExporter createExporter(ConfigProperties config) {
-    return new TestSpanExporter(config.getBoolean("should.always.fail"));
+    return new TestSpanExporter(config);
   }
 
   @Override
@@ -24,31 +24,29 @@ public class TestConfigurableSpanExporterProvider implements ConfigurableSpanExp
 
   public static class TestSpanExporter implements SpanExporter {
 
-    private final boolean shouldAlwaysFail;
+    private final ConfigProperties config;
 
-    public TestSpanExporter(boolean shouldAlwaysFail) {
-      this.shouldAlwaysFail = shouldAlwaysFail;
+    public TestSpanExporter(ConfigProperties config) {
+      this.config = config;
     }
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
-      return shouldAlwaysFail
-          ? CompletableResultCode.ofFailure()
-          : CompletableResultCode.ofSuccess();
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override
     public CompletableResultCode flush() {
-      return shouldAlwaysFail
-          ? CompletableResultCode.ofFailure()
-          : CompletableResultCode.ofSuccess();
+      return CompletableResultCode.ofSuccess();
     }
 
     @Override
     public CompletableResultCode shutdown() {
-      return shouldAlwaysFail
-          ? CompletableResultCode.ofFailure()
-          : CompletableResultCode.ofSuccess();
+      return CompletableResultCode.ofSuccess();
+    }
+
+    public ConfigProperties getConfig() {
+      return config;
     }
   }
 }
