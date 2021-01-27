@@ -7,6 +7,8 @@ package io.opentelemetry.extension.trace.propagation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -112,6 +114,20 @@ class OtTracerPropagatorTest {
     assertThat(carrier).containsEntry(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID_RIGHT_PART);
     assertThat(carrier).containsEntry(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     assertThat(carrier).containsEntry(OtTracerPropagator.SAMPLED_HEADER, "false");
+  }
+
+  @Test
+  void inject_Baggage() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    Baggage baggage = Baggage.builder().put("foo", "bar").put("key", "value").build();
+    propagator.inject(
+        withSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+            Context.current().with(baggage)),
+        carrier,
+        setter);
+    assertThat(carrier).containsEntry(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "foo", "bar");
+    assertThat(carrier).containsEntry(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "key", "value");
   }
 
   @Test
@@ -245,5 +261,39 @@ class OtTracerPropagatorTest {
     Map<String, String> emptyHeaders = new HashMap<>();
     assertThat(getSpanContext(propagator.extract(Context.current(), emptyHeaders, getter)))
         .isEqualTo(SpanContext.getInvalid());
+  }
+
+  @Test
+  void extract_Baggage() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    carrier.put(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "foo", "bar");
+    carrier.put(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "key", "value");
+
+    Context context = propagator.extract(Context.current(), carrier, getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("foo", "bar").put("key", "value").build();
+    assertThat(Baggage.fromContext(context)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_Baggage_WithMetadata() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    carrier.put(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "foo", "bar;meta");
+    carrier.put(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "key", "value");
+
+    Context context = propagator.extract(Context.current(), carrier, getter);
+
+    Baggage expectedBaggage =
+        Baggage.builder()
+            .put("foo", "bar", BaggageEntryMetadata.create("meta"))
+            .put("key", "value")
+            .build();
+    assertThat(Baggage.fromContext(context)).isEqualTo(expectedBaggage);
   }
 }
