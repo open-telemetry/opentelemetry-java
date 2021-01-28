@@ -71,6 +71,8 @@ should acquire the fallback from the default resource, rather than having it con
 
 - The `opentelemetry-sdk-extension-autoconfigure` module will now additionally register the auto-configured
 SDK as the instance of `GlobalOpenTelemetry` when used.
+- The `opentelemetry-sdk-extension-autoconfigure` module now supports the `otel.exporter.otlp.certificate` configuration
+property for specifying a path to a trusted certificate for the OTLP exporters.
 
 ---
 
