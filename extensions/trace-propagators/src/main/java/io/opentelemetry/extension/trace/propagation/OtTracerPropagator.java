@@ -75,14 +75,8 @@ public final class OtTracerPropagator implements TextMapPropagator {
     if (!baggage.isEmpty()) {
       baggage.forEach(
           (key, value, metadata) -> {
-            String metadataValue = metadata.getValue();
-            String baggageValue;
-            if (metadataValue != null && !metadataValue.isEmpty()) {
-              baggageValue = value + ";" + metadataValue;
-            } else {
-              baggageValue = value;
-            }
-            setter.set(carrier, PREFIX_BAGGAGE_HEADER + key, baggageValue);
+            // Metadata is not supported by OpenTracing
+            setter.set(carrier, PREFIX_BAGGAGE_HEADER + key, value);
           });
     }
   }
