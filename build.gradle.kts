@@ -1,8 +1,6 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.protobuf.gradle.*
-import com.jfrog.bintray.gradle.BintrayExtension
-import com.jfrog.bintray.gradle.BintrayExtension.*
-import groovy.lang.GroovyObject
+import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import io.morethan.jmhreport.gradle.JmhReportExtension
 import me.champeau.gradle.JMHPluginExtension
 import nebula.plugin.release.git.opinion.Strategies
@@ -10,20 +8,18 @@ import net.ltgt.gradle.errorprone.ErrorProneOptions
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import org.gradle.api.plugins.JavaPlugin.*
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.jfrog.gradle.plugin.artifactory.dsl.ArtifactoryPluginConvention
-import org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig
-import org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferPlugin
+import java.time.Duration
 
 plugins {
     id("com.diffplug.spotless")
     id("com.github.ben-manes.versions")
+    id("io.codearte.nexus-staging")
     id("nebula.release")
 
     id("com.google.protobuf") apply false
-    id("com.jfrog.artifactory") apply false
-    id("com.jfrog.bintray") apply false
+    id("de.marcphilipp.nexus-publish") apply false
     id("io.morethan.jmhreport") apply false
     id("me.champeau.gradle.jmh") apply false
     id("net.ltgt.errorprone") apply false
@@ -55,6 +51,17 @@ if (file(".git").exists()) {
     }
 } else {
     releaseTask = tasks.register("release")
+}
+
+nexusStaging {
+    packageGroup = "io.opentelemetry"
+    username = System.getenv("SONATYPE_USER")
+    password = System.getenv("SONATYPE_KEY")
+
+    // We have many artifacts so Maven Central takes a long time on its compliance checks. This sets
+    // the timeout for waiting for the repository to close to a comfortable 50 minutes.
+    numberOfRetries = 300
+    delayBetweenRetriesInMillis = 10000
 }
 
 subprojects {
@@ -399,17 +406,7 @@ subprojects {
         plugins.withId("maven-publish") {
             plugins.apply("signing")
 
-            // Always include the artifactory/bintray plugins to do the deployment.
-            plugins.apply("com.jfrog.artifactory")
-            plugins.apply("com.jfrog.bintray")
-
-            releaseTask.configure {
-                if (version.toString().endsWith("-SNAPSHOT")) {
-                    finalizedBy(tasks.named("artifactoryPublish"))
-                } else {
-                    finalizedBy(tasks.named("bintrayUpload"))
-                }
-            }
+            plugins.apply("de.marcphilipp.nexus-publish")
 
             configure<PublishingExtension> {
                 publications {
@@ -469,65 +466,30 @@ subprojects {
                 }
             }
 
+            configure<NexusPublishExtension> {
+                repositories {
+                    sonatype()
+                }
+
+                connectTimeout.set(Duration.ofMinutes(5))
+                clientTimeout.set(Duration.ofMinutes(5))
+            }
+
+            val publishToSonatype by tasks.getting
+            releaseTask.configure {
+                finalizedBy(publishToSonatype)
+            }
+            rootProject.tasks.named("closeAndReleaseRepository") {
+                mustRunAfter(publishToSonatype)
+            }
+
+            tasks.withType(Sign::class) {
+                onlyIf { System.getenv("CI") != null }
+            }
+
             configure<SigningExtension> {
-                isRequired = false
-                sign(configurations.archives.get())
-            }
-
-            // Snapshot publishing.
-            configure<ArtifactoryPluginConvention> {
-                setContextUrl("https://oss.jfrog.org")
-                publish(delegateClosureOf<PublisherConfig> {
-                    repository(delegateClosureOf<GroovyObject> {
-                        setProperty("repoKey", "oss-snapshot-local")
-                        setProperty("username", System.getenv("BINTRAY_USER"))
-                        setProperty("password", System.getenv("BINTRAY_KEY"))
-                    })
-                    defaults(delegateClosureOf<GroovyObject> {
-                        invokeMethod("publications", "mavenPublication")
-                        setProperty("publishArtifacts", true)
-                        setProperty("publishPom", true)
-                    })
-                })
-                resolve(delegateClosureOf<ResolverConfig> {
-                    setProperty("repoKey", "libs-release")
-                })
-            }
-
-            tasks.named("artifactoryPublish") {
-                enabled = version.toString().endsWith("-SNAPSHOT")
-            }
-
-            // Release artifacts publishing.
-            configure<BintrayExtension> {
-                user = System.getenv("BINTRAY_USER")
-                key = System.getenv("BINTRAY_KEY")
-                setPublications("mavenPublication")
-
-                publish = true
-
-                pkg(delegateClosureOf<PackageConfig> {
-                    repo = "maven"
-                    name = "opentelemetry-java"
-                    setLicenses("Apache-2.0")
-                    vcsUrl = "https://github.com/open-telemetry/opentelemetry-java.git"
-                    userOrg = "open-telemetry"
-
-                    githubRepo = "open-telemetry/opentelemetry-java"
-
-                    version(delegateClosureOf<VersionConfig> {
-                        name = "${project.version}"
-
-                        gpg(delegateClosureOf<GpgConfig> {
-                            sign = true
-                        })
-
-                        mavenCentralSync(delegateClosureOf<MavenCentralSyncConfig> {
-                            user = System.getenv("SONATYPE_USER")
-                            password = System.getenv("SONATYPE_KEY")
-                        })
-                    })
-                })
+                useInMemoryPgpKeys(System.getenv("GPG_PRIVATE_KEY"), System.getenv("GPG_PASSWORD"))
+                sign(the<PublishingExtension>().publications["mavenPublication"])
             }
         }
     }

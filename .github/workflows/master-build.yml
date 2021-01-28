@@ -65,7 +65,9 @@ jobs:
       - uses: burrunan/gradle-cache-action@v1.6
         with:
           remote-build-cache-proxy-enabled: false
-          arguments: artifactoryPublish
+          arguments: snapshot --stacktrace
         env:
-          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
-          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+          SONATYPE_KEY: ${{ secrets.SONATYPE_KEY }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
