@@ -7,10 +7,11 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
+import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -28,8 +29,8 @@ import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 public class DoubleHistogramAggregatorTest {
-  private static final ImmutableList<Double> BUCKET_BOUNDARIES =
-      ImmutableList.of(10.0, 100.0, 1000.0);
+  private static final ImmutableDoubleArray BUCKET_BOUNDARIES =
+      ImmutableDoubleArray.copyOf(new double[] {10.0, 100.0, 1000.0});
   private static final DoubleHistogramAggregator aggregator =
       new DoubleHistogramAggregator(
           Resource.getDefault(),
@@ -40,7 +41,7 @@ public class DoubleHistogramAggregatorTest {
               "unit",
               InstrumentType.VALUE_RECORDER,
               InstrumentValueType.LONG),
-          BUCKET_BOUNDARIES.stream().mapToDouble(i -> i).toArray(),
+          BUCKET_BOUNDARIES,
           /* stateful= */ false);
 
   @Test
@@ -54,10 +55,11 @@ public class DoubleHistogramAggregatorTest {
     aggregatorHandle.recordLong(20);
     aggregatorHandle.recordLong(5);
     aggregatorHandle.recordLong(150);
+    aggregatorHandle.recordLong(2000);
     assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(
             HistogramAccumulation.create(
-                3, 175, BUCKET_BOUNDARIES, ImmutableList.of(1L, 1L, 1L, 0L)));
+                4, 2175, BUCKET_BOUNDARIES, ImmutableLongArray.copyOf(new long[] {1, 1, 1, 1})));
   }
 
   @Test
@@ -69,26 +71,28 @@ public class DoubleHistogramAggregatorTest {
     assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(
             HistogramAccumulation.create(
-                1, 100, BUCKET_BOUNDARIES, ImmutableList.of(0L, 0L, 1L, 0L)));
+                1, 100, BUCKET_BOUNDARIES, ImmutableLongArray.copyOf(new long[] {0, 0, 1, 0})));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordLong(0);
     assertThat(aggregatorHandle.accumulateThenReset())
         .isEqualTo(
             HistogramAccumulation.create(
-                1, 0, BUCKET_BOUNDARIES, ImmutableList.of(1L, 0L, 0L, 0L)));
+                1, 0, BUCKET_BOUNDARIES, ImmutableLongArray.copyOf(new long[] {1, 0, 0, 0})));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 
   @Test
   void invalidMergeReturnsEmptyAccumulation() {
     HistogramAccumulation x =
-        HistogramAccumulation.create(1, 1, ImmutableList.of(1.0), ImmutableList.of(0L, 1L));
+        HistogramAccumulation.create(
+            1, 1, ImmutableDoubleArray.of(1), ImmutableLongArray.copyOf(new long[] {0, 1}));
     HistogramAccumulation y =
-        HistogramAccumulation.create(1, 2, ImmutableList.of(2.0), ImmutableList.of(1L));
+        HistogramAccumulation.create(1, 2, ImmutableDoubleArray.of(2), ImmutableLongArray.of(1));
     assertThat(aggregator.merge(x, y))
         .isEqualTo(
-            HistogramAccumulation.create(0, 0, Collections.emptyList(), ImmutableList.of(0L)));
+            HistogramAccumulation.create(
+                0, 0, ImmutableDoubleArray.of(), ImmutableLongArray.of(0)));
   }
 
   @Test
@@ -112,10 +116,12 @@ public class DoubleHistogramAggregatorTest {
   void accumulateData() {
     assertThat(aggregator.accumulateDouble(2.0))
         .isEqualTo(
-            HistogramAccumulation.create(1, 2.0, Collections.emptyList(), ImmutableList.of(1L)));
+            HistogramAccumulation.create(
+                1, 2.0, ImmutableDoubleArray.of(), ImmutableLongArray.of(1)));
     assertThat(aggregator.accumulateLong(10))
         .isEqualTo(
-            HistogramAccumulation.create(1, 10.0, Collections.emptyList(), ImmutableList.of(1L)));
+            HistogramAccumulation.create(
+                1, 10.0, ImmutableDoubleArray.of(), ImmutableLongArray.of(1)));
   }
 
   @Test
@@ -164,7 +170,7 @@ public class DoubleHistogramAggregatorTest {
                 numberOfThreads * numberOfUpdates,
                 101000,
                 BUCKET_BOUNDARIES,
-                ImmutableList.of(5000L, 5000L, 0L, 0L)));
+                ImmutableLongArray.copyOf(new long[] {5000, 5000, 0, 0})));
   }
 
   private static final class Histogram {

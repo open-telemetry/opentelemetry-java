@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Labels;
-import java.util.List;
-import java.util.function.BiConsumer;
+import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
+import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -19,11 +19,15 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class DoubleHistogramPointData implements PointData {
   /**
-   * Creates a DoubleHistogramPointData. It's the caller's responsibility to make sure that the
-   * `boundaries` and `counts` are unmodifiable.
+   * Functional interface for consuming bucket boundaries and counts as a sequence of pair values.
+   */
+  public interface BucketConsumer {
+    void accept(double upperBound, long count);
+  }
+
+  /**
+   * Creates a DoubleHistogramPointData.
    *
-   * @param boundaries the bucket boundaries in unmodifiable mode.
-   * @param counts the bucket count in unmodifiable mode.
    * @return a DoubleHistogramPointData.
    */
   public static DoubleHistogramPointData create(
@@ -32,8 +36,8 @@ public abstract class DoubleHistogramPointData implements PointData {
       Labels labels,
       double sum,
       long count,
-      List<Double> boundaries,
-      List<Long> counts) {
+      ImmutableDoubleArray boundaries,
+      ImmutableLongArray counts) {
     return new AutoValue_DoubleHistogramPointData(
         startEpochNanos, epochNanos, labels, sum, count, boundaries, counts);
   }
@@ -56,27 +60,26 @@ public abstract class DoubleHistogramPointData implements PointData {
 
   /**
    * The bucket boundaries. For a Histogram with N defined boundaries, e.g, [x, y, z]. There are N+1
-   * counts: [-inf, x), [x, y), [y, z), [z, +inf]. The returned object is unmodifiable so <b>do not
-   * mutate</b> it.
+   * counts: [-inf, x), [x, y), [y, z), [z, +inf].
    *
-   * @return the unmodifiable bucket boundaries in increasing order.
+   * @return the bucket boundaries in increasing order.
    */
-  public abstract List<Double> getBoundaries();
+  public abstract ImmutableDoubleArray getBoundaries();
 
   /**
-   * The counts in each bucket. The returned object is unmodifiable so <b>do not mutate</b> it.
+   * The counts in each bucket.
    *
-   * @return the unmodifiable counts in each bucket.
+   * @return the counts in each bucket.
    */
-  public abstract List<Long> getCounts();
+  public abstract ImmutableLongArray getCounts();
 
   /** Iterates over all the bucket boundaries and counts in this histogram. */
-  public void forEach(BiConsumer<? super Double, ? super Long> action) {
-    List<Double> boundaries = getBoundaries();
-    List<Long> counts = getCounts();
-    for (int i = 0; i < boundaries.size(); ++i) {
+  public void forEach(BucketConsumer action) {
+    ImmutableDoubleArray boundaries = getBoundaries();
+    ImmutableLongArray counts = getCounts();
+    for (int i = 0; i < boundaries.length(); ++i) {
       action.accept(boundaries.get(i), counts.get(i));
     }
-    action.accept(Double.POSITIVE_INFINITY, counts.get(boundaries.size()));
+    action.accept(Double.POSITIVE_INFINITY, counts.get(boundaries.length()));
   }
 }

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
@@ -53,7 +54,7 @@ public interface AggregatorFactory {
    * @param boundaries configures the fixed bucket boundaries.
    * @return an {@code AggregationFactory} that calculates histogram of recorded measurements.
    */
-  static AggregatorFactory histogram(double[] boundaries, boolean stateful) {
+  static AggregatorFactory histogram(ImmutableDoubleArray boundaries, boolean stateful) {
     return new HistogramAggregatorFactory(boundaries, stateful);
   }
 

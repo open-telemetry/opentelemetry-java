@@ -7,23 +7,21 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
+import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
-import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
 public abstract class HistogramAccumulation {
   /**
-   * Creates a new {@link HistogramAccumulation} with the given values. It's the caller's
-   * responsibility to make sure that the `boundaries` and `counts` are unmodifiable.
+   * Creates a new {@link HistogramAccumulation} with the given values.
    *
-   * @param boundaries the bucket boundaries in unmodifiable mode.
-   * @param counts the bucket count in unmodifiable mode.
    * @return a new {@link HistogramAccumulation} with the given values.
    */
   static HistogramAccumulation create(
-      long count, double sum, List<Double> boundaries, List<Long> counts) {
+      long count, double sum, ImmutableDoubleArray boundaries, ImmutableLongArray counts) {
     return new AutoValue_HistogramAccumulation(count, sum, boundaries, counts);
   }
 
@@ -45,19 +43,18 @@ public abstract class HistogramAccumulation {
 
   /**
    * The bucket boundaries. For a Histogram with N defined boundaries, e.g, [x, y, z]. There are N+1
-   * counts: [-inf, x), [x, y), [y, z), [z, +inf]. The returned object is unmodifiable so <b>do not
-   * mutate</b> it.
+   * counts: [-inf, x), [x, y), [y, z), [z, +inf].
    *
-   * @return the unmodifiable bucket boundaries in increasing order.
+   * @return the bucket boundaries in increasing order.
    */
-  abstract List<Double> getBoundaries();
+  abstract ImmutableDoubleArray getBoundaries();
 
   /**
-   * The counts in each bucket. The returned object is unmodifiable so <b>do not mutate</b> it.
+   * The counts in each bucket.
    *
-   * @return the unmodifiable counts in each bucket.
+   * @return the counts in each bucket.
    */
-  abstract List<Long> getCounts();
+  abstract ImmutableLongArray getCounts();
 
   final DoubleHistogramPointData toPoint(long startEpochNanos, long epochNanos, Labels labels) {
     return DoubleHistogramPointData.create(

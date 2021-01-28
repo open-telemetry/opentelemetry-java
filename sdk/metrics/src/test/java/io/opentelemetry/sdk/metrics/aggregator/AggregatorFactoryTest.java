@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -128,7 +129,8 @@ class AggregatorFactoryTest {
   @Test
   void getHistogramAggregatorFactory() {
     AggregatorFactory histogram =
-        AggregatorFactory.histogram(new double[] {1.0}, /* stateful= */ false);
+        AggregatorFactory.histogram(
+            ImmutableDoubleArray.copyOf(new double[] {1.0}), /* stateful= */ false);
     assertThat(
             histogram.create(
                 Resource.getDefault(),
@@ -166,7 +168,8 @@ class AggregatorFactoryTest {
                 .isStateful())
         .isFalse();
     assertThat(
-            AggregatorFactory.histogram(new double[] {1.0}, /* stateful= */ true)
+            AggregatorFactory.histogram(
+                    ImmutableDoubleArray.copyOf(new double[] {1.0}), /* stateful= */ true)
                 .create(
                     Resource.getDefault(),
                     InstrumentationLibraryInfo.getEmpty(),
@@ -183,14 +186,18 @@ class AggregatorFactoryTest {
         IllegalArgumentException.class,
         () ->
             AggregatorFactory.histogram(
-                new double[] {Double.NEGATIVE_INFINITY}, /* stateful= */ false));
+                ImmutableDoubleArray.copyOf(new double[] {Double.NEGATIVE_INFINITY}),
+                /* stateful= */ false));
     Assertions.assertThrows(
         IllegalArgumentException.class,
         () ->
             AggregatorFactory.histogram(
-                new double[] {1, Double.POSITIVE_INFINITY}, /* stateful= */ false));
+                ImmutableDoubleArray.copyOf(new double[] {1, Double.POSITIVE_INFINITY}),
+                /* stateful= */ false));
     Assertions.assertThrows(
         IllegalArgumentException.class,
-        () -> AggregatorFactory.histogram(new double[] {2, 1, 3}, /* stateful= */ false));
+        () ->
+            AggregatorFactory.histogram(
+                ImmutableDoubleArray.copyOf(new double[] {2, 1, 3}), /* stateful= */ false));
   }
 }

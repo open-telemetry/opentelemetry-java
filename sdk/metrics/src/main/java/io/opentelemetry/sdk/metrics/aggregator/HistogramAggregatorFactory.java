@@ -6,25 +6,26 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 
 final class HistogramAggregatorFactory implements AggregatorFactory {
-  private final double[] boundaries;
+  private final ImmutableDoubleArray boundaries;
   private final boolean stateful;
 
-  HistogramAggregatorFactory(double[] boundaries, boolean stateful) {
-    for (int i = 1; i < boundaries.length; ++i) {
-      if (Double.compare(boundaries[i - 1], boundaries[i]) >= 0) {
+  HistogramAggregatorFactory(ImmutableDoubleArray boundaries, boolean stateful) {
+    for (int i = 1; i < boundaries.length(); ++i) {
+      if (Double.compare(boundaries.get(i - 1), boundaries.get(i)) >= 0) {
         throw new IllegalArgumentException(
-            "invalid bucket boundary: " + boundaries[i - 1] + " >= " + boundaries[i]);
+            "invalid bucket boundary: " + boundaries.get(i - 1) + " >= " + boundaries.get(i));
       }
     }
-    if (boundaries.length > 0) {
-      if (boundaries[0] == Double.NEGATIVE_INFINITY) {
+    if (boundaries.length() > 0) {
+      if (boundaries.get(0) == Double.NEGATIVE_INFINITY) {
         throw new IllegalArgumentException("invalid bucket boundary: -Inf");
       }
-      if (boundaries[boundaries.length - 1] == Double.POSITIVE_INFINITY) {
+      if (boundaries.get(boundaries.length() - 1) == Double.POSITIVE_INFINITY) {
         throw new IllegalArgumentException("invalid bucket boundary: +Inf");
       }
     }

@@ -7,15 +7,14 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
+import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -27,32 +26,16 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
   private static volatile boolean loggedMergingInvalidBoundaries = false;
 
-  private final double[] boundaries;
+  private final ImmutableDoubleArray boundaries;
 
   DoubleHistogramAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
-      double[] boundaries,
+      ImmutableDoubleArray boundaries,
       boolean stateful) {
     super(resource, instrumentationLibraryInfo, instrumentDescriptor, stateful);
     this.boundaries = boundaries;
-  }
-
-  private static List<Double> asUnmodifiableDoubleList(double[] xs) {
-    List<Double> result = new ArrayList<>(xs.length);
-    for (double x : xs) {
-      result.add(x);
-    }
-    return result;
-  }
-
-  private static List<Long> asUnmodifiableLongList(long[] xs) {
-    List<Long> result = new ArrayList<>(xs.length);
-    for (long x : xs) {
-      result.add(x);
-    }
-    return result;
   }
 
   @Override
@@ -75,18 +58,18 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
         loggedMergingInvalidBoundaries = true;
       }
       return HistogramAccumulation.create(
-          0, 0, Collections.emptyList(), Collections.singletonList(0L));
+          0, 0, ImmutableDoubleArray.of(), ImmutableLongArray.of(0));
     }
 
-    long[] mergedCounts = new long[x.getCounts().size()];
-    for (int i = 0; i < x.getCounts().size(); ++i) {
+    long[] mergedCounts = new long[x.getCounts().length()];
+    for (int i = 0; i < x.getCounts().length(); ++i) {
       mergedCounts[i] = x.getCounts().get(i) + y.getCounts().get(i);
     }
     return HistogramAccumulation.create(
         x.getCount() + y.getCount(),
         x.getSum() + y.getSum(),
         x.getBoundaries(),
-        asUnmodifiableLongList(mergedCounts));
+        ImmutableLongArray.copyOf(mergedCounts));
   }
 
   @Override
@@ -112,13 +95,13 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   @Override
   public HistogramAccumulation accumulateDouble(double value) {
     return HistogramAccumulation.create(
-        1, value, Collections.emptyList(), Collections.singletonList(1L));
+        1, value, ImmutableDoubleArray.of(), ImmutableLongArray.of(1));
   }
 
   @Override
   public HistogramAccumulation accumulateLong(long value) {
     return HistogramAccumulation.create(
-        1, value, Collections.emptyList(), Collections.singletonList(1L));
+        1, value, ImmutableDoubleArray.of(), ImmutableLongArray.of(1));
   }
 
   static final class Handle extends AggregatorHandle<HistogramAccumulation> {
@@ -127,28 +110,29 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
     @GuardedBy("lock")
     private final State current;
 
-    Handle(double[] boundaries) {
+    Handle(ImmutableDoubleArray boundaries) {
       current = new State(boundaries);
     }
 
     @Override
     protected HistogramAccumulation doAccumulateThenReset() {
       double sum;
-      List<Long> counts;
+      ImmutableLongArray counts;
       lock.writeLock().lock();
       try {
         sum = current.sum;
-        counts = asUnmodifiableLongList(current.counts);
+        counts = ImmutableLongArray.copyOf(current.counts);
         current.reset();
       } finally {
         lock.writeLock().unlock();
       }
 
-      return HistogramAccumulation.create(
-          counts.stream().mapToLong(i -> i).sum(),
-          sum,
-          asUnmodifiableDoubleList(current.boundaries),
-          counts);
+      long total_count = 0;
+      for (int i = 0; i < counts.length(); ++i) {
+        total_count += counts.get(i);
+      }
+
+      return HistogramAccumulation.create(total_count, sum, current.boundaries, counts);
     }
 
     @Override
@@ -170,24 +154,24 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
     private static final class State {
       private double sum;
-      private final double[] boundaries;
+      private final ImmutableDoubleArray boundaries;
       private final long[] counts;
 
-      public State(double[] boundaries) {
-        this.boundaries = Arrays.copyOf(boundaries, boundaries.length);
-        this.counts = new long[this.boundaries.length + 1];
+      public State(ImmutableDoubleArray boundaries) {
+        this.boundaries = boundaries;
+        this.counts = new long[this.boundaries.length() + 1];
         reset();
       }
 
       // Benchmark shows that linear search performs better than binary search with ordinary
       // buckets.
       private int findBucketIndex(double value) {
-        for (int i = 0; i < this.boundaries.length; ++i) {
-          if (value < this.boundaries[i]) {
+        for (int i = 0; i < this.boundaries.length(); ++i) {
+          if (value < this.boundaries.get(i)) {
             return i;
           }
         }
-        return this.boundaries.length;
+        return this.boundaries.length();
       }
 
       private void reset() {

@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
+import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +20,13 @@ public class HistogramAccumulationTest {
   @Test
   void toPoint() {
     HistogramAccumulation accumulation =
-        HistogramAccumulation.create(12, 25, ImmutableList.of(1.0), ImmutableList.of(1L, 2L));
+        HistogramAccumulation.create(
+            12, 25, ImmutableDoubleArray.of(1), ImmutableLongArray.copyOf(new long[] {1, 2}));
     DoubleHistogramPointData point = getPoint(accumulation);
     assertThat(point.getCount()).isEqualTo(12);
     assertThat(point.getSum()).isEqualTo(25);
-    assertThat(point.getBoundaries()).isEqualTo(ImmutableList.of(1.0));
-    assertThat(point.getCounts()).isEqualTo(ImmutableList.of(1L, 2L));
+    assertThat(point.getBoundaries()).isEqualTo(ImmutableDoubleArray.of(1));
+    assertThat(point.getCounts()).isEqualTo(ImmutableLongArray.copyOf(new long[] {1, 2}));
 
     List<Double> boundaries = new ArrayList<>();
     List<Long> counts = new ArrayList<>();
@@ -33,7 +36,7 @@ public class HistogramAccumulationTest {
           counts.add(c);
         });
     assertThat(boundaries).isEqualTo(ImmutableList.of(1.0, Double.POSITIVE_INFINITY));
-    assertThat(counts).isEqualTo(point.getCounts());
+    assertThat(counts).isEqualTo(ImmutableList.of(1L, 2L));
   }
 
   private static DoubleHistogramPointData getPoint(HistogramAccumulation accumulation) {

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -25,7 +26,8 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class DoubleHistogramBenchmark {
   private static final Aggregator<HistogramAccumulation> aggregator =
-      AggregatorFactory.histogram(new double[] {10, 100, 1_000}, /* stateful= */ false)
+      AggregatorFactory.histogram(
+              ImmutableDoubleArray.copyOf(new double[] {10, 100, 1_000}), /* stateful= */ false)
           .create(
               Resource.getDefault(),
               InstrumentationLibraryInfo.getEmpty(),
