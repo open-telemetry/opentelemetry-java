@@ -179,7 +179,8 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
         reset();
       }
 
-      // Benchmark shows that linear search performs better with ordinary buckets.
+      // Benchmark shows that linear search performs better than binary search with ordinary
+      // buckets.
       private int findBucketIndex(double value) {
         for (int i = 0; i < this.boundaries.length; ++i) {
           if (value < this.boundaries[i]) {
