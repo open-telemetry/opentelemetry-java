@@ -96,21 +96,24 @@ is`v1.2.3-RC$`, where `$` denotes a release candidate version, e.g. `v1.2.3-RC1`
 
 The following credentials are required for publishing (and automatically set in Circle CI):
 
-* `BINTRAY_USER` and `BINTRAY_KEY`: Bintray username and API Key.
-  See [this](https://www.jfrog.com/confluence/display/BT/Bintray+Security#BintraySecurity-APIKeys).
+* `GPG_PRIVATE_KEY` and `GPG_PASSWORD`: GPG private key and password for signing
+  - Note, currently only @anuraaga has this and we need to find a way to safely share secrets in the
+    OpenTelemetry project, for example with a password manager. In the worst case if you need to
+    release manually and cannot get a hold of it, you can generate a new key but don't forget to
+    upload the public key to keyservers.
 
 * `SONATYPE_USER` and `SONATYPE_KEY`: Sonatype username and password.
 
 ## Releasing from the local setup
 
 Releasing from the local setup can be done providing the previously mentioned four credential values, i.e.
-`BINTRAY_KEY`, `BINTRAY_USER`, `SONATYPE_USER` and `SONATYPE_KEY`:
+`GPG_PRIVATE_KEY`, `GPG_PASSWORD`, `SONATYPE_USER` and `SONATYPE_KEY`:
 
 ```sh
-export BINTRAY_USER=my_bintray_user
-export BINTRAY_KEY=my_user_api_key
 export SONATYPE_USER=my_maven_user
 export SONATYPE_KEY=my_maven_password
+export GPG_PRIVATE_KEY=$(cat ~/tmp/gpg.key.txt)
+export GPG_PASSWORD=<gpg password>
 export RELEASE_VERSION=2.4.5 # Set version you want to release
 ./gradlew final -Prelease.version=${RELEASE_VERSION}
 ```

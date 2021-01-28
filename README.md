@@ -99,7 +99,7 @@ We strongly recommend using our published BOM to keep all dependency versions in
   <repositories>
     <repository>
       <id>oss.sonatype.org-snapshot</id>
-      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </repository>
   </repositories>
   <dependencyManagement>
@@ -126,7 +126,7 @@ We strongly recommend using our published BOM to keep all dependency versions in
 
 ```groovy
 repositories {
-	maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
+	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 dependencies {
