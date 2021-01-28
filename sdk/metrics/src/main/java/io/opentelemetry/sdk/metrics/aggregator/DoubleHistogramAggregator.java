@@ -127,12 +127,12 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
         lock.writeLock().unlock();
       }
 
-      long total_count = 0;
+      long totalCount = 0;
       for (int i = 0; i < counts.length(); ++i) {
-        total_count += counts.get(i);
+        totalCount += counts.get(i);
       }
 
-      return HistogramAccumulation.create(total_count, sum, current.boundaries, counts);
+      return HistogramAccumulation.create(totalCount, sum, current.boundaries, counts);
     }
 
     @Override
