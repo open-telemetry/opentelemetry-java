@@ -46,7 +46,7 @@ public class ConfigProperties {
   }
 
   /**
-   * Get a string-valued configuration property.
+   * Returns a string-valued configuration property.
    *
    * @return null if the property has not been configured.
    */
@@ -56,7 +56,7 @@ public class ConfigProperties {
   }
 
   /**
-   * Get a integer-valued configuration property.
+   * Returns a integer-valued configuration property.
    *
    * @return null if the property has not been configured.
    * @throws NumberFormatException if the property is not a valid integer.
@@ -76,7 +76,7 @@ public class ConfigProperties {
   }
 
   /**
-   * Get a long-valued configuration property.
+   * Returns a long-valued configuration property.
    *
    * @return null if the property has not been configured.
    * @throws NumberFormatException if the property is not a valid long.
@@ -96,7 +96,7 @@ public class ConfigProperties {
   }
 
   /**
-   * Get a double-valued configuration property.
+   * Returns a double-valued configuration property.
    *
    * @return null if the property has not been configured.
    * @throws NumberFormatException if the property is not a valid double.
@@ -116,7 +116,7 @@ public class ConfigProperties {
   }
 
   /**
-   * Get a list-valued configuration property. The format of the original value must be
+   * Returns a list-valued configuration property. The format of the original value must be
    * comma-separated. Empty values will be removed.
    *
    * @return an empty list if the property has not been configured.
@@ -130,7 +130,7 @@ public class ConfigProperties {
   }
 
   /**
-   * Get a map-valued configuration property. The format of the original value must be
+   * Returns a map-valued configuration property. The format of the original value must be
    * comma-separated for each key, with an '=' separating the key and value. For instance, <code>
    * service.name=Greatest Service,host.name=localhost</code> Empty values will be removed.
    *
@@ -156,7 +156,7 @@ public class ConfigProperties {
   }
 
   /**
-   * Get a boolean-valued configuration property. Uses the same rules as {@link
+   * Returns a boolean-valued configuration property. Uses the same rules as {@link
    * Boolean#parseBoolean(String)} for handling the values.
    *
    * @return false if the property has not been configured.
