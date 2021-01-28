@@ -68,11 +68,16 @@ public class ImmutableDoubleArray {
       return false;
     }
     for (int i = 0; i < length(); i++) {
-      if (this.get(i) != that.get(i)) {
+      if (!areEqual(this.get(i), that.get(i))) {
         return false;
       }
     }
     return true;
+  }
+
+  // Match the behavior of Double.equals()
+  private static boolean areEqual(double a, double b) {
+    return Double.doubleToLongBits(a) == Double.doubleToLongBits(b);
   }
 
   /** Returns an unspecified hash code for the contents of this immutable array. */
