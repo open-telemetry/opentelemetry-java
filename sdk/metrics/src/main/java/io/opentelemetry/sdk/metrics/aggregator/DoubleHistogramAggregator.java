@@ -16,7 +16,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
@@ -105,26 +105,40 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   }
 
   static final class Handle extends AggregatorHandle<HistogramAccumulation> {
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ImmutableDoubleArray boundaries;
+
+    private final ReentrantLock lock = new ReentrantLock();
 
     @GuardedBy("lock")
     private final State current;
 
     Handle(ImmutableDoubleArray boundaries) {
-      current = new State(boundaries);
+      this.boundaries = boundaries;
+      this.current = new State(this.boundaries.length() + 1);
+    }
+
+    // Benchmark shows that linear search performs better than binary search with ordinary
+    // buckets.
+    private int findBucketIndex(double value) {
+      for (int i = 0; i < boundaries.length(); ++i) {
+        if (value < boundaries.get(i)) {
+          return i;
+        }
+      }
+      return boundaries.length();
     }
 
     @Override
     protected HistogramAccumulation doAccumulateThenReset() {
       double sum;
       ImmutableLongArray counts;
-      lock.writeLock().lock();
+      lock.lock();
       try {
         sum = current.sum;
         counts = ImmutableLongArray.copyOf(current.counts);
         current.reset();
       } finally {
-        lock.writeLock().unlock();
+        lock.unlock();
       }
 
       long totalCount = 0;
@@ -132,18 +146,18 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
         totalCount += counts.get(i);
       }
 
-      return HistogramAccumulation.create(totalCount, sum, current.boundaries, counts);
+      return HistogramAccumulation.create(totalCount, sum, boundaries, counts);
     }
 
     @Override
     protected void doRecordDouble(double value) {
-      int bucketIndex = current.findBucketIndex(value);
+      int bucketIndex = findBucketIndex(value);
 
-      lock.writeLock().lock();
+      lock.lock();
       try {
         current.record(bucketIndex, value);
       } finally {
-        lock.writeLock().unlock();
+        lock.unlock();
       }
     }
 
@@ -154,24 +168,11 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
     private static final class State {
       private double sum;
-      private final ImmutableDoubleArray boundaries;
       private final long[] counts;
 
-      public State(ImmutableDoubleArray boundaries) {
-        this.boundaries = boundaries;
-        this.counts = new long[this.boundaries.length() + 1];
+      public State(int bucketSize) {
+        this.counts = new long[bucketSize];
         reset();
-      }
-
-      // Benchmark shows that linear search performs better than binary search with ordinary
-      // buckets.
-      private int findBucketIndex(double value) {
-        for (int i = 0; i < this.boundaries.length(); ++i) {
-          if (value < this.boundaries.get(i)) {
-            return i;
-          }
-        }
-        return this.boundaries.length();
       }
 
       private void reset() {
