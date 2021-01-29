@@ -345,6 +345,15 @@ subprojects {
                     }
                 }
             }
+
+            afterEvaluate {
+                // Classpath when compiling protos, we add dependency management directly
+                // since it doesn't follow Gradle conventions of naming / properties.
+                dependencies {
+                    add("compileProtoPath", platform(project(":dependencyManagement")))
+                    add("testCompileProtoPath", platform(project(":dependencyManagement")))
+                }
+            }
         }
 
         plugins.withId("ru.vyarus.animalsniffer") {
