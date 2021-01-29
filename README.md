@@ -21,7 +21,7 @@ This project contains the following top level components:
   * [context api](api/context/src/main/java/io/opentelemetry/context/) The OpenTelmetry Context implementation.
   * [metrics api](api/metrics/src/main/java/io/opentelemetry/api/metrics/) alpha code for the metrics API.
 * [extensions](extensions/) define additional API extensions, which are not part of the core API.
-* [sdk](sdk/) defines the reference implementation complying to the OpenTelemetry API.
+* [sdk](sdk/) defines the implementation of the OpenTelemetry API.
 * [sdk-extensions](sdk-extensions/) define additional SDK extensions, which are not part of the core SDK.
 * [OpenTracing shim](opentracing-shim/) defines a bridge layer from OpenTracing to the OpenTelemetry API.
 * [examples](examples/) on how to use the APIs, SDK, and standard exporters.
