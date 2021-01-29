@@ -2,6 +2,8 @@
 
 ## Unreleased:
 
+## Version 0.15.0 - 2021-01-29
+
 ### General
 
 #### Breaking Changes
