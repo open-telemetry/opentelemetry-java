@@ -42,7 +42,7 @@ public class HelloWorldServer {
       openTelemetry.getPropagators().getTextMapPropagator();
 
   // Extract the Distributed Context from the gRPC metadata
-  TextMapPropagator.Getter<Metadata> getter =
+  private final TextMapPropagator.Getter<Metadata> getter =
       new TextMapPropagator.Getter<>() {
         @Override
         public Iterable<String> keys(Metadata carrier) {
