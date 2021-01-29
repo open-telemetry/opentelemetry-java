@@ -50,6 +50,7 @@ generated semantic attributes to be used in creating `Resource`s.
 - The default Resource (accessible via `Resource.getDefault()`) now includes a fallback `service.name` attribute. The implication
 of this is that exporters that have configured fallback service names will only use them if the SDK is intentionally 
 configured with a Resource that does not utilize the default Resource for its underlying Resource data.
+- The `Sampler` is now specified when building the SdkTracerProvider directly, rather than being a part of the TraceConfig. 
 
 #### Bugfixes
 
