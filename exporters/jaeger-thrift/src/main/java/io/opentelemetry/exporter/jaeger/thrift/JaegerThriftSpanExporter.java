@@ -48,16 +48,11 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
    * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.
    *
    * @param thriftSender The sender used for sending the data.
-   * @param serviceName this service's name.
    */
-  JaegerThriftSpanExporter(ThriftSender thriftSender, String serviceName) {
+  JaegerThriftSpanExporter(ThriftSender thriftSender) {
     this.thriftSender = thriftSender;
     String hostname;
     String ipv4;
-
-    if (serviceName == null || serviceName.trim().length() == 0) {
-      throw new IllegalArgumentException("Service name must not be null or empty");
-    }
 
     try {
       hostname = InetAddress.getLocalHost().getHostName();
@@ -71,7 +66,7 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
     Tag ipv4Tag = new Tag(IP_KEY, TagType.STRING).setVStr(ipv4);
     Tag hostnameTag = new Tag(HOSTNAME_KEY, TagType.STRING).setVStr(hostname);
 
-    this.process = new Process().setServiceName(serviceName);
+    this.process = new Process();
     this.process.addToTags(clientTag);
     this.process.addToTags(ipv4Tag);
     this.process.addToTags(hostnameTag);
@@ -113,9 +108,10 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
     Process result = new Process(this.process);
 
     String serviceName = resource.getAttributes().get(ResourceAttributes.SERVICE_NAME);
-    if (serviceName != null && !serviceName.isEmpty()) {
-      result.setServiceName(serviceName);
+    if (serviceName == null || serviceName.isEmpty()) {
+      serviceName = Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME);
     }
+    result.setServiceName(serviceName);
 
     List<Tag> tags = Adapter.toTags(resource.getAttributes());
     tags.forEach(result::addToTags);

@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -53,17 +54,16 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   private final BytesEncoder<Span> encoder;
   private final Sender sender;
-  private final Endpoint localEndpoint;
+  @Nullable private final InetAddress localAddress;
 
-  ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender, String serviceName) {
+  ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender) {
     this.encoder = encoder;
     this.sender = sender;
-    this.localEndpoint = produceLocalEndpoint(serviceName);
+    localAddress = produceLocalIp();
   }
 
   /** Logic borrowed from brave.internal.Platform.produceLocalEndpoint */
-  static Endpoint produceLocalEndpoint(String serviceName) {
-    Endpoint.Builder builder = Endpoint.newBuilder().serviceName(serviceName);
+  static InetAddress produceLocalIp() {
     try {
       Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
       while (nics.hasMoreElements()) {
@@ -72,8 +72,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
         while (addresses.hasMoreElements()) {
           InetAddress address = addresses.nextElement();
           if (address.isSiteLocalAddress()) {
-            builder.ip(address);
-            break;
+            return address;
           }
         }
       }
@@ -83,11 +82,11 @@ public final class ZipkinSpanExporter implements SpanExporter {
         logger.log(Level.FINE, "error reading nics", e);
       }
     }
-    return builder.build();
+    return null;
   }
 
-  static Span generateSpan(SpanData spanData, Endpoint localEndpoint) {
-    Endpoint endpoint = chooseEndpoint(spanData, localEndpoint);
+  Span generateSpan(SpanData spanData) {
+    Endpoint endpoint = getEndpoint(spanData);
 
     long startTimestamp = toEpochMicros(spanData.getStartEpochNanos());
     long endTimestamp = toEpochMicros(spanData.getEndEpochNanos());
@@ -143,15 +142,15 @@ public final class ZipkinSpanExporter implements SpanExporter {
     return value != null ? value : "";
   }
 
-  private static Endpoint chooseEndpoint(SpanData spanData, Endpoint localEndpoint) {
+  private Endpoint getEndpoint(SpanData spanData) {
     Attributes resourceAttributes = spanData.getResource().getAttributes();
 
     // use the service.name from the Resource, if it's been set.
     String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
     if (serviceNameValue == null) {
-      return localEndpoint;
+      serviceNameValue = Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME);
     }
-    return Endpoint.newBuilder().serviceName(serviceNameValue).build();
+    return Endpoint.newBuilder().serviceName(serviceNameValue).ip(localAddress).build();
   }
 
   @Nullable
@@ -212,7 +211,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   public CompletableResultCode export(final Collection<SpanData> spanDataList) {
     List<byte[]> encodedSpans = new ArrayList<>(spanDataList.size());
     for (SpanData spanData : spanDataList) {
-      encodedSpans.add(encoder.encode(generateSpan(spanData, localEndpoint)));
+      encodedSpans.add(encoder.encode(generateSpan(spanData)));
     }
 
     final CompletableResultCode result = new CompletableResultCode();
@@ -257,5 +256,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
    */
   public static ZipkinSpanExporterBuilder builder() {
     return new ZipkinSpanExporterBuilder();
+  }
+
+  // VisibleForTesting
+  InetAddress getLocalAddressForTest() {
+    return localAddress;
   }
 }
