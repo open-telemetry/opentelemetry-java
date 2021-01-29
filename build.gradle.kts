@@ -402,95 +402,95 @@ subprojects {
                 }
             }
         }
+    }
 
-        plugins.withId("maven-publish") {
-            plugins.apply("signing")
+    plugins.withId("maven-publish") {
+        plugins.apply("signing")
 
-            plugins.apply("de.marcphilipp.nexus-publish")
+        plugins.apply("de.marcphilipp.nexus-publish")
 
-            configure<PublishingExtension> {
-                publications {
-                    register<MavenPublication>("mavenPublication") {
-                        val release = findProperty("otel.release")
-                        if (release != null) {
-                            val versionParts = version.split('-').toMutableList()
-                            versionParts[0] += "-${release}"
-                            version = versionParts.joinToString("-")
+        configure<PublishingExtension> {
+            publications {
+                register<MavenPublication>("mavenPublication") {
+                    val release = findProperty("otel.release")
+                    if (release != null) {
+                        val versionParts = version.split('-').toMutableList()
+                        versionParts[0] += "-${release}"
+                        version = versionParts.joinToString("-")
+                    }
+                    groupId = "io.opentelemetry"
+                    afterEvaluate {
+                        // not available until evaluated.
+                        artifactId = the<BasePluginConvention>().archivesBaseName
+                        description = project.description
+                    }
+
+                    plugins.withId("java-platform") {
+                        from(components["javaPlatform"])
+                    }
+                    plugins.withId("java-library") {
+                        from(components["java"])
+                    }
+
+                    versionMapping {
+                        allVariants {
+                            fromResolutionResult()
                         }
-                        groupId = "io.opentelemetry"
-                        afterEvaluate {
-                            // not available until evaluated.
-                            artifactId = the<BasePluginConvention>().archivesBaseName
-                            description = project.description
-                        }
+                    }
 
-                        plugins.withId("java-platform") {
-                            from(components["javaPlatform"])
-                        }
-                        plugins.withId("java-library") {
-                            from(components["java"])
-                        }
+                    pom {
+                        name.set("OpenTelemetry Java")
+                        url.set("https://github.com/open-telemetry/opentelemetry-java")
 
-                        versionMapping {
-                            allVariants {
-                                fromResolutionResult()
+                        licenses {
+                            license {
+                                name.set("The Apache License, Version 2.0")
+                                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
                             }
                         }
 
-                        pom {
-                            name.set("OpenTelemetry Java")
-                            url.set("https://github.com/open-telemetry/opentelemetry-java")
-
-                            licenses {
-                                license {
-                                    name.set("The Apache License, Version 2.0")
-                                    url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                                }
+                        developers {
+                            developer {
+                                id.set("opentelemetry")
+                                name.set("OpenTelemetry")
+                                url.set("https://github.com/open-telemetry/community")
                             }
+                        }
 
-                            developers {
-                                developer {
-                                    id.set("opentelemetry")
-                                    name.set("OpenTelemetry")
-                                    url.set("https://github.com/open-telemetry/community")
-                                }
-                            }
-
-                            scm {
-                                connection.set("scm:git:git@github.com:open-telemetry/opentelemetry-java.git")
-                                developerConnection.set("scm:git:git@github.com:open-telemetry/opentelemetry-java.git")
-                                url.set("git@github.com:open-telemetry/opentelemetry-java.git")
-                            }
+                        scm {
+                            connection.set("scm:git:git@github.com:open-telemetry/opentelemetry-java.git")
+                            developerConnection.set("scm:git:git@github.com:open-telemetry/opentelemetry-java.git")
+                            url.set("git@github.com:open-telemetry/opentelemetry-java.git")
                         }
                     }
                 }
             }
+        }
 
-            configure<NexusPublishExtension> {
-                repositories {
-                    sonatype()
-                }
-
-                connectTimeout.set(Duration.ofMinutes(5))
-                clientTimeout.set(Duration.ofMinutes(5))
+        configure<NexusPublishExtension> {
+            repositories {
+                sonatype()
             }
 
-            val publishToSonatype by tasks.getting
-            releaseTask.configure {
-                finalizedBy(publishToSonatype)
-            }
-            rootProject.tasks.named("closeAndReleaseRepository") {
-                mustRunAfter(publishToSonatype)
-            }
+            connectTimeout.set(Duration.ofMinutes(5))
+            clientTimeout.set(Duration.ofMinutes(5))
+        }
 
-            tasks.withType(Sign::class) {
-                onlyIf { System.getenv("CI") != null }
-            }
+        val publishToSonatype by tasks.getting
+        releaseTask.configure {
+            finalizedBy(publishToSonatype)
+        }
+        rootProject.tasks.named("closeAndReleaseRepository") {
+            mustRunAfter(publishToSonatype)
+        }
 
-            configure<SigningExtension> {
-                useInMemoryPgpKeys(System.getenv("GPG_PRIVATE_KEY"), System.getenv("GPG_PASSWORD"))
-                sign(the<PublishingExtension>().publications["mavenPublication"])
-            }
+        tasks.withType(Sign::class) {
+            onlyIf { System.getenv("CI") != null }
+        }
+
+        configure<SigningExtension> {
+            useInMemoryPgpKeys(System.getenv("GPG_PRIVATE_KEY"), System.getenv("GPG_PASSWORD"))
+            sign(the<PublishingExtension>().publications["mavenPublication"])
         }
     }
 }
