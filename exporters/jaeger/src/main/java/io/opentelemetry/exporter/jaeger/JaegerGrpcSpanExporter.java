@@ -55,18 +55,13 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   /**
    * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.
    *
-   * @param serviceName this service's name.
    * @param channel the channel to use when communicating with the Jaeger Collector.
    * @param timeoutNanos max waiting time for the collector to process each span batch. When set to
    *     0 or to a negative value, the exporter will wait indefinitely.
    */
-  JaegerGrpcSpanExporter(String serviceName, ManagedChannel channel, long timeoutNanos) {
+  JaegerGrpcSpanExporter(ManagedChannel channel, long timeoutNanos) {
     String hostname;
     String ipv4;
-
-    if (serviceName == null || serviceName.trim().length() == 0) {
-      throw new IllegalArgumentException("Service name must not be null or empty");
-    }
 
     try {
       hostname = InetAddress.getLocalHost().getHostName();
@@ -88,11 +83,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
         Model.KeyValue.newBuilder().setKey(HOSTNAME_KEY).setVStr(hostname).build();
 
     this.processBuilder =
-        Model.Process.newBuilder()
-            .setServiceName(serviceName)
-            .addTags(clientTag)
-            .addTags(ipv4Tag)
-            .addTags(hostnameTag);
+        Model.Process.newBuilder().addTags(clientTag).addTags(ipv4Tag).addTags(hostnameTag);
 
     this.managedChannel = channel;
     this.stub = CollectorServiceGrpc.newFutureStub(channel);
@@ -161,9 +152,10 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     Process.Builder builder = this.processBuilder.clone();
 
     String serviceName = resource.getAttributes().get(ResourceAttributes.SERVICE_NAME);
-    if (serviceName != null && !serviceName.isEmpty()) {
-      builder.setServiceName(serviceName);
+    if (serviceName == null || serviceName.isEmpty()) {
+      serviceName = Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME);
     }
+    builder.setServiceName(serviceName);
 
     builder.addAllTags(Adapter.toKeyValues(resource.getAttributes()));
 

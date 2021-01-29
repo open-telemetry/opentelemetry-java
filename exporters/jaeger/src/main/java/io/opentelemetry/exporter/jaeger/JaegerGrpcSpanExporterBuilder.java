@@ -16,28 +16,11 @@ import java.util.concurrent.TimeUnit;
 /** Builder utility for this exporter. */
 public final class JaegerGrpcSpanExporterBuilder {
   private static final String DEFAULT_ENDPOINT = "localhost:14250";
-  private static final String DEFAULT_SERVICE_NAME = "unknown";
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
-  private String serviceName = DEFAULT_SERVICE_NAME;
   private String endpoint = DEFAULT_ENDPOINT;
   private ManagedChannel channel;
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
-
-  /**
-   * Sets the service name to be used by this exporter, if none is found in the Resource associated
-   * with a span.
-   *
-   * @param serviceName the service name.
-   * @return this.
-   * @deprecated The default service name is now extracted from the default Resource. This method
-   *     will be removed in the next release.
-   */
-  @Deprecated
-  public JaegerGrpcSpanExporterBuilder setServiceName(String serviceName) {
-    this.serviceName = serviceName;
-    return this;
-  }
 
   /**
    * Sets the managed channel to use when communicating with the backend. Takes precedence over
@@ -91,7 +74,7 @@ public final class JaegerGrpcSpanExporterBuilder {
     if (channel == null) {
       channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
     }
-    return new JaegerGrpcSpanExporter(serviceName, channel, timeoutNanos);
+    return new JaegerGrpcSpanExporter(channel, timeoutNanos);
   }
 
   JaegerGrpcSpanExporterBuilder() {}

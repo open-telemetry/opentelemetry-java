@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.net.InetAddress;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -129,7 +130,8 @@ public class ZipkinSpanExporterEndToEndHttpTest {
 
     assertThat(zipkinSpans).isNotNull();
     assertThat(zipkinSpans.size()).isEqualTo(1);
-    assertThat(zipkinSpans.get(0)).isEqualTo(buildZipkinSpan());
+    assertThat(zipkinSpans.get(0))
+        .isEqualTo(buildZipkinSpan(zipkinSpanExporter.getLocalAddressForTest()));
   }
 
   private static TestSpanData.Builder buildStandardSpan() {
@@ -153,7 +155,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setResource(Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, SERVICE_NAME)));
   }
 
-  private static Span buildZipkinSpan() {
+  private static Span buildZipkinSpan(InetAddress localAddress) {
     return Span.newBuilder()
         .traceId(TRACE_ID)
         .parentId(PARENT_SPAN_ID)
@@ -162,7 +164,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .name(SPAN_NAME)
         .timestamp(START_EPOCH_NANOS / 1000)
         .duration((END_EPOCH_NANOS / 1000) - (START_EPOCH_NANOS / 1000))
-        .localEndpoint(Endpoint.newBuilder().serviceName(SERVICE_NAME).build())
+        .localEndpoint(Endpoint.newBuilder().serviceName(SERVICE_NAME).ip(localAddress).build())
         .addAnnotation(RECEIVED_TIMESTAMP_NANOS / 1000, "RECEIVED")
         .addAnnotation(SENT_TIMESTAMP_NANOS / 1000, "SENT")
         .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")

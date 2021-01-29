@@ -7,14 +7,9 @@ package io.opentelemetry.exporter.jaeger.thrift;
 
 import io.jaegertracing.thrift.internal.senders.HttpSender;
 import io.jaegertracing.thrift.internal.senders.ThriftSender;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 /** Builder utility for this exporter. */
 public final class JaegerThriftSpanExporterBuilder {
-
-  private String serviceName =
-      Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME);
 
   private String endpoint = JaegerThriftSpanExporter.DEFAULT_ENDPOINT;
   private ThriftSender thriftSender;
@@ -28,21 +23,6 @@ public final class JaegerThriftSpanExporterBuilder {
    */
   public JaegerThriftSpanExporterBuilder setThriftSender(ThriftSender thriftSender) {
     this.thriftSender = thriftSender;
-    return this;
-  }
-
-  /**
-   * Sets the service name to be used by this exporter, if none is found in the Resource associated
-   * with a span.
-   *
-   * @param serviceName the service name.
-   * @return this.
-   * @deprecated The default service name is now extracted from the default Resource. This method
-   *     will be removed in the next release.
-   */
-  @Deprecated
-  public JaegerThriftSpanExporterBuilder setServiceName(String serviceName) {
-    this.serviceName = serviceName;
     return this;
   }
 
@@ -68,7 +48,7 @@ public final class JaegerThriftSpanExporterBuilder {
     if (thriftSender == null) {
       thriftSender = new HttpSender.Builder(endpoint).build();
     }
-    return new JaegerThriftSpanExporter(thriftSender, serviceName);
+    return new JaegerThriftSpanExporter(thriftSender);
   }
 
   JaegerThriftSpanExporterBuilder() {}
