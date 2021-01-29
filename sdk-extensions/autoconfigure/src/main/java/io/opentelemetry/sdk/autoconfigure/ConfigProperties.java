@@ -132,8 +132,8 @@ public class ConfigProperties {
   }
 
   /**
-   * Get a duration property from the map, or {@code null} if it cannot be found or it has a wrong
-   * type.
+   * Returns a duration property from the map, or {@code null} if it cannot be found or it has a
+   * wrong type.
    *
    * <p>Durations can be of the form "{number}{unit}", where unit is one of:
    *
@@ -154,7 +154,7 @@ public class ConfigProperties {
    */
   @Nullable
   @SuppressWarnings("UnusedException")
-  Duration getDuration(String name) {
+  public Duration getDuration(String name) {
     String value = config.get(name);
     if (value == null || value.isEmpty()) {
       return null;
