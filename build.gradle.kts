@@ -431,7 +431,7 @@ subprojects {
                     afterEvaluate {
                         // not available until evaluated.
                         artifactId = the<BasePluginConvention>().archivesBaseName
-                        description = project.description
+                        pom.description.set(project.description)
                     }
 
                     plugins.withId("java-platform") {
