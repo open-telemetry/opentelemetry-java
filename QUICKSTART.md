@@ -79,7 +79,7 @@ Tracer tracer =
 Important: the "name" and optional version of the tracer are purely informational. 
 All `Tracer`s that are created by a single `OpenTelemetry` instance will interoperate, regardless of name.
 
-### Create basic Span
+### Create a basic Span
 To create a basic span, you only need to specify the name of the span.
 The start and end time of the span is automatically set by the OpenTelemetry SDK.
 ```java
@@ -122,7 +122,7 @@ void b(Span parentSpan) {
 ```
 The OpenTelemetry API offers also an automated way to propagate the parent span on the current thread:
 ```java
-void a() {
+void c() {
   Span parentSpan = tracer.spanBuilder("a").startSpan();
   try(Scope scope = parentSpan.makeCurrent()) {
     b();
@@ -130,7 +130,7 @@ void a() {
     parentSpan.end();
   }
 }
-void b() {
+void d() {
   Span childSpan = tracer.spanBuilder("b")
     // NOTE: setParent(...) is not required; 
     // `Span.current()` is automatically added as the parent
@@ -243,7 +243,7 @@ The following presents an example of processing an incoming HTTP request using
 
 ```java
 TextMapPropagator.Getter<HttpExchange> getter =
-  new TextMapPropagator.Getter<HttpExchange>() {
+  new TextMapPropagator.Getter<>() {
     @Override
     public String get(HttpExchange carrier, String key) {
       if (carrier.getRequestHeaders().containsKey(key)) {
@@ -303,7 +303,7 @@ The following is an example of counter usage:
 
 ```java
 // Gets or creates a named meter instance
-Meter meter = meterProvider.getMeter("instrumentation-library-name", "1.0.0");
+Meter meter = meterProvider.get("instrumentation-library-name", "1.0.0");
 
 // Build counter e.g. LongCounter 
 LongCounter counter = meter
@@ -330,21 +330,15 @@ collecting metric data on demand, once per collection interval.
 The following is an example of observer usage:
 
 ```java
-// Build observer e.g. LongObserver
-LongObserver observer = meter
-        .observerLongBuilder("cpu_usage")
+// Build observer e.g. LongSumObserver
+    LongSumObserver observer = meter
+        .longSumObserverBuilder("cpu_usage")
         .setDescription("CPU Usage")
         .setUnit("ms")
+        .setUpdater(result -> {
+        result.observe(getCpuUsage(), Labels.of("Key", "SomeWork"));
+        })
         .build();
-
-observer.setCallback(
-        new LongObserver.Callback<LongObserver.ResultLongObserver>() {
-          @Override
-          public void update(ResultLongObserver result) {
-            // long getCpuUsage()
-            result.observe(getCpuUsage(), Labels.of("Key", "SomeWork"));
-          }
-        });
 ```
 
 ## Tracing SDK Configuration
@@ -381,13 +375,12 @@ Additional samplers can be provided by implementing the `io.opentelemetry.sdk.tr
 interface.
 
 ```java
-TraceConfig alwaysOn = TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOn()).build();
-TraceConfig alwaysOff = TraceConfig.getDefault().toBuilder().setSampler(Sampler.alwaysOff()).build();
-TraceConfig half = TraceConfig.getDefault().toBuilder().setSampler(Sampler.traceIdRatioBased(0.5)).build();
-
-// You configure the sampler when building the SDK implementation:
     SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
-      .setTraceConfig(half)
+      .setSampler(Sampler.alwaysOn())
+      //or 
+      .setSampler(Sampler.alwaysOff())
+      //or
+      .setSampler(Sampler.traceIdRatioBased(0.5))
       .build();
 ```
 
@@ -401,11 +394,11 @@ in bulk. Multiple Span processors can be configured to be active at the same tim
 ```java
     SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
       .addSpanProcessor(
-        MultiSpanProcessor.create(Arrays.asList(
+        SpanProcessor.composite(
           SimpleSpanProcessor.create(new LoggingSpanExporter()),
           BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
-        )))
-    .build();
+      ))
+      .build();
 ```
 
 ### Exporter
@@ -421,14 +414,17 @@ a particular backend. OpenTelemetry offers five exporters out of the box:
 Other exporters can be found in the [OpenTelemetry Registry].
 
 ```java
-ManagedChannel jaegerChannel =
-    ManagedChannelBuilder.forAddress([ip:String], [port:int]).usePlaintext().build();
+    ManagedChannel jaegerChannel = ManagedChannelBuilder.forAddress("localhost", 3336)
+      .usePlaintext()
+      .build();
+    
     JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
-      .setServiceName("example").setChannel(jaegerChannel).setDeadline(30000)
-      .build()
+      .setChannel(jaegerChannel).setTimeout(30, TimeUnit.SECONDS)
+      .build();
 
-    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
-    tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(jaegerExporter).build()));
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
+      .addSpanProcessor(BatchSpanProcessor.builder(jaegerExporter).build())
+      .build();
 ```
 
 ### Auto Configuration
@@ -444,13 +440,11 @@ Some of the supported system properties and environment variables:
 
 | System property                  | Environment variable             | Purpose                                                                                             | 
 |----------------------------------|----------------------------------|-----------------------------------------------------------------------------------------------------|       
-| otel.config.sampler.probability  | OTEL_CONFIG_SAMPLER_PROBABILITY  | Sampler which is used when constructing a new span (default: 1)                                     |                        
+| otel.trace.sampler               | OTEL_TRACE_SAMPLER               | Which sampler to use (`parentbased_traceidratio` for example)
+| otel.trace.sampler.arg           | OTEL_TRACE_SAMPLER_ARG           | Used to configured the ratio for the ratio-based sampler (default: 1)                                     |                        
 | otel.span.attribute.count.limit  | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT  | Max number of attributes per span, extra will be dropped (default: 1000)                              |                        
 | otel.span.event.count.limit      | OTEL_SPAN_EVENT_COUNT_LIMIT      | Max number of Events per span, extra will be dropped (default: 1000)                                 |                        
 | otel.span.link.count.limit       | OTEL_SPAN_LINK_COUNT_LIMIT       | Max number of Link entries per span, extra will be dropped (default: 1000)                            |
-| otel.config.max.event.attrs      | OTEL_CONFIG_MAX_EVENT_ATTRS      | Max number of attributes per event, extra will be dropped (default: 32)                             |
-| otel.config.max.link.attrs       | OTEL_CONFIG_MAX_LINK_ATTRS       | Max number of attributes per link, extra will be dropped  (default: 32)                             |
-| otel.config.max.attr.length      | OTEL_CONFIG_MAX_ATTR_LENGTH      | Max length of string attribute value in characters, too long will be truncated (default: unlimited) |
 
 [AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L29
 [AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L40
