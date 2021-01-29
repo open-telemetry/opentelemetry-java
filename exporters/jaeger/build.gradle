@@ -28,10 +28,6 @@ dependencies {
 
     testImplementation project(':sdk:testing')
 
-    // Protobuf plugin seems to erroneously use the non-classpath configurations for resolving
-    // dependencies.
-    testImplementation enforcedPlatform(project(':dependencyManagement'))
-
     testRuntimeOnly "io.grpc:grpc-netty-shaded"
 }
 
