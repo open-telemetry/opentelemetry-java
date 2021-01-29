@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -130,6 +132,56 @@ public class ConfigProperties {
   }
 
   /**
+   * Returns a duration property from the map, or {@code null} if it cannot be found or it has a
+   * wrong type.
+   *
+   * <p>Durations can be of the form "{number}{unit}", where unit is one of:
+   *
+   * <ul>
+   *   <li>ms
+   *   <li>s
+   *   <li>m
+   *   <li>h
+   *   <li>d
+   * </ul>
+   *
+   * <p>If no unit is specified, milliseconds is the assumed duration unit.
+   *
+   * @param name The property name
+   * @return the {@link Duration} value of the property, {@code null} if the property cannot be
+   *     found.
+   * @throws ConfigurationException for malformed duration strings.
+   */
+  @Nullable
+  @SuppressWarnings("UnusedException")
+  public Duration getDuration(String name) {
+    String value = config.get(name);
+    if (value == null || value.isEmpty()) {
+      return null;
+    }
+    String unitString = getUnitString(value);
+    // TODO: Environment variables have unknown encoding.  `trim()` may cut codepoints oddly
+    // but likely we'll fail for malformed unit string either way.
+    String numberString = value.substring(0, value.length() - unitString.length());
+    try {
+      long rawNumber = Long.parseLong(numberString.trim());
+      TimeUnit unit = getDurationUnit(unitString.trim());
+      return Duration.ofMillis(TimeUnit.MILLISECONDS.convert(rawNumber, unit));
+    } catch (NumberFormatException ex) {
+      throw new ConfigurationException(
+          "Invalid duration property "
+              + name
+              + "="
+              + value
+              + ". Expected number, found: "
+              + numberString);
+    } catch (ConfigurationException ex) {
+      throw new ConfigurationException(
+          "Invalid duration property " + name + "=" + value + ". " + ex.getMessage());
+    }
+  }
+
+  /**
    * Returns a map-valued configuration property. The format of the original value must be
    * comma-separated for each key, with an '=' separating the key and value. For instance, <code>
    * service.name=Greatest Service,host.name=localhost</code> Empty values will be removed.
@@ -176,5 +228,42 @@ public class ConfigProperties {
         .map(String::trim)
         .filter(s -> !s.isEmpty())
         .collect(Collectors.toList());
+  }
+
+  /** Returns the TimeUnit associated with a unit string. Defaults to milliseconds. */
+  private static TimeUnit getDurationUnit(String unitString) {
+    switch (unitString) {
+      case "": // Falllthrough expected
+      case "ms":
+        return TimeUnit.MILLISECONDS;
+      case "s":
+        return TimeUnit.SECONDS;
+      case "m":
+        return TimeUnit.MINUTES;
+      case "h":
+        return TimeUnit.HOURS;
+      case "d":
+        return TimeUnit.DAYS;
+      default:
+        throw new ConfigurationException("Invalid duration string, found: " + unitString);
+    }
+  }
+
+  /**
+   * Fragments the 'units' portion of a config value from the 'value' portion.
+   *
+   * <p>E.g. "1ms" would return the string "ms".
+   */
+  private static String getUnitString(String rawValue) {
+    int lastDigitIndex = rawValue.length() - 1;
+    while (lastDigitIndex >= 0) {
+      char c = rawValue.charAt(lastDigitIndex);
+      if (Character.isDigit(c)) {
+        break;
+      }
+      lastDigitIndex -= 1;
+    }
+    // Pull everything after the last digit.
+    return rawValue.substring(lastDigitIndex + 1);
   }
 }

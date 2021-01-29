@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +26,7 @@ class ConfigPropertiesTest {
     properties.put("double", "5.4");
     properties.put("list", "cat,dog,bear");
     properties.put("map", "cat=meow,dog=bark,bear=growl");
+    properties.put("duration", "1s");
 
     ConfigProperties config = ConfigProperties.createForTest(properties);
     assertThat(config.getString("string")).isEqualTo("str");
@@ -34,6 +36,7 @@ class ConfigPropertiesTest {
     assertThat(config.getCommaSeparatedValues("list")).containsExactly("cat", "dog", "bear");
     assertThat(config.getCommaSeparatedMap("map"))
         .containsExactly(entry("cat", "meow"), entry("dog", "bark"), entry("bear", "growl"));
+    assertThat(config.getDuration("duration")).isEqualTo(Duration.ofSeconds(1));
   }
 
   @Test
@@ -45,6 +48,7 @@ class ConfigPropertiesTest {
     assertThat(config.getDouble("double")).isNull();
     assertThat(config.getCommaSeparatedValues("list")).isEmpty();
     assertThat(config.getCommaSeparatedMap("map")).isEmpty();
+    assertThat(config.getDuration("duration")).isNull();
   }
 
   @Test
@@ -56,6 +60,7 @@ class ConfigPropertiesTest {
     properties.put("double", "");
     properties.put("list", "");
     properties.put("map", "");
+    properties.put("duration", "");
 
     ConfigProperties config = ConfigProperties.createForTest(properties);
     assertThat(config.getString("string")).isEmpty();
@@ -64,6 +69,7 @@ class ConfigPropertiesTest {
     assertThat(config.getDouble("double")).isNull();
     assertThat(config.getCommaSeparatedValues("list")).isEmpty();
     assertThat(config.getCommaSeparatedMap("map")).isEmpty();
+    assertThat(config.getDuration("duration")).isNull();
   }
 
   @Test
@@ -153,5 +159,58 @@ class ConfigPropertiesTest {
                     .getCommaSeparatedMap("map"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid map property: map=a=1,=b");
+  }
+
+  @Test
+  void invalidDuration() {
+    assertThatThrownBy(
+            () ->
+                ConfigProperties.createForTest(Collections.singletonMap("duration", "1a1ms"))
+                    .getDuration("duration"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Invalid duration property duration=1a1ms. Expected number, found: 1a1");
+    assertThatThrownBy(
+            () ->
+                ConfigProperties.createForTest(Collections.singletonMap("duration", "9mm"))
+                    .getDuration("duration"))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessage("Invalid duration property duration=9mm. Invalid duration string, found: mm");
+  }
+
+  @Test
+  void durationUnitParsing() {
+    assertThat(
+            ConfigProperties.createForTest(Collections.singletonMap("duration", "1"))
+                .getDuration("duration"))
+        .isEqualTo(Duration.ofMillis(1));
+    assertThat(
+            ConfigProperties.createForTest(Collections.singletonMap("duration", "2ms"))
+                .getDuration("duration"))
+        .isEqualTo(Duration.ofMillis(2));
+    assertThat(
+            ConfigProperties.createForTest(Collections.singletonMap("duration", "3s"))
+                .getDuration("duration"))
+        .isEqualTo(Duration.ofSeconds(3));
+    assertThat(
+            ConfigProperties.createForTest(Collections.singletonMap("duration", "4m"))
+                .getDuration("duration"))
+        .isEqualTo(Duration.ofMinutes(4));
+    assertThat(
+            ConfigProperties.createForTest(Collections.singletonMap("duration", "5h"))
+                .getDuration("duration"))
+        .isEqualTo(Duration.ofHours(5));
+    assertThat(
+            ConfigProperties.createForTest(Collections.singletonMap("duration", "6d"))
+                .getDuration("duration"))
+        .isEqualTo(Duration.ofDays(6));
+    // Check Space handling
+    assertThat(
+            ConfigProperties.createForTest(Collections.singletonMap("duration", "7 ms"))
+                .getDuration("duration"))
+        .isEqualTo(Duration.ofMillis(7));
+    assertThat(
+            ConfigProperties.createForTest(Collections.singletonMap("duration", "8   ms"))
+                .getDuration("duration"))
+        .isEqualTo(Duration.ofMillis(8));
   }
 }
