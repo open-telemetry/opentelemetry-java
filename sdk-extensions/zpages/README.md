@@ -20,14 +20,14 @@ For Maven, add the following to your `pom.xml`:
   <dependency>
     <groupId>io.opentelemetry</groupId>
     <artifactId>opentelemetry-sdk-extension-zpages</artifactId>
-    <version>0.14.1-alpha</version>
+    <version>0.15.0-alpha</version>
   </dependency>
 </dependencies>
 ```
 
 For Gradle, add the following to your dependencies:
 ```groovy
-implementation 'io.opentelemetry:opentelemetry-sdk-extension-zpages:0.14.1-alpha'
+implementation 'io.opentelemetry:opentelemetry-sdk-extension-zpages:0.15.0-alpha'
 ```
 
 ### Register the zPages
