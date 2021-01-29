@@ -55,9 +55,9 @@ final class TracerProviderConfiguration {
   static BatchSpanProcessor configureSpanProcessor(ConfigProperties config, SpanExporter exporter) {
     BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(exporter);
 
-    Long scheduleDelayMillis = config.getLong("otel.bsp.schedule.delay");
-    if (scheduleDelayMillis != null) {
-      builder.setScheduleDelay(Duration.ofMillis(scheduleDelayMillis));
+    Duration scheduleDelay = config.getDuration("otel.bsp.schedule.delay");
+    if (scheduleDelay != null) {
+      builder.setScheduleDelay(scheduleDelay);
     }
 
     Integer maxQueue = config.getInt("otel.bsp.max.queue.size");
@@ -70,9 +70,9 @@ final class TracerProviderConfiguration {
       builder.setMaxExportBatchSize(maxExportBatch);
     }
 
-    Integer timeout = config.getInt("otel.bsp.export.timeout");
+    Duration timeout = config.getDuration("otel.bsp.export.timeout");
     if (timeout != null) {
-      builder.setExporterTimeout(Duration.ofMillis(timeout));
+      builder.setExporterTimeout(timeout);
     }
 
     return builder.build();

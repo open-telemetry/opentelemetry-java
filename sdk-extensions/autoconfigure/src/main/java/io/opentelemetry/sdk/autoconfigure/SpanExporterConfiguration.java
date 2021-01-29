@@ -74,9 +74,9 @@ final class SpanExporterConfiguration {
 
     config.getCommaSeparatedMap("otel.exporter.otlp.headers").forEach(builder::addHeader);
 
-    Long timeoutMillis = config.getLong("otel.exporter.otlp.timeout");
-    if (timeoutMillis != null) {
-      builder.setTimeout(Duration.ofMillis(timeoutMillis));
+    Duration timeout = config.getDuration("otel.exporter.otlp.timeout");
+    if (timeout != null) {
+      builder.setTimeout(timeout);
     }
 
     String certificate = config.getString("otel.exporter.otlp.certificate");
