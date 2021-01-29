@@ -38,7 +38,6 @@ public final class OtlpGrpcSpanExporterBuilder {
   private ManagedChannel channel;
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private URI endpoint = DEFAULT_ENDPOINT;
-  private boolean useTls = false;
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
 
@@ -107,20 +106,6 @@ public final class OtlpGrpcSpanExporterBuilder {
   }
 
   /**
-   * Sets use or not TLS, default is false. Optional. Applicable only if {@link
-   * OtlpGrpcSpanExporterBuilder#endpoint} is set to build channel.
-   *
-   * @param useTls use TLS or not
-   * @return this builder's instance
-   * @deprecated Pass a URL starting with https:// to {@link #setEndpoint(String)}
-   */
-  @Deprecated
-  public OtlpGrpcSpanExporterBuilder setUseTls(boolean useTls) {
-    this.useTls = useTls;
-    return this;
-  }
-
-  /**
    * Sets the certificate chain to use for verifying servers when TLS is enabled. The {@code byte[]}
    * should contain an X.509 certificate collection in PEM format. If not set, TLS connections will
    * use the system default trusted certificates.
@@ -156,7 +141,7 @@ public final class OtlpGrpcSpanExporterBuilder {
       final ManagedChannelBuilder<?> managedChannelBuilder =
           ManagedChannelBuilder.forTarget(endpoint.getAuthority());
 
-      if (endpoint.getScheme().equals("https") || useTls) {
+      if (endpoint.getScheme().equals("https")) {
         managedChannelBuilder.useTransportSecurity();
       } else {
         managedChannelBuilder.usePlaintext();

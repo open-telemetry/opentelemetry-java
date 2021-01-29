@@ -46,7 +46,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
   private static final String SPAN_PROCESSOR_TYPE_VALUE = BatchSpanProcessor.class.getSimpleName();
 
   private final Worker worker;
-  private final boolean sampled;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
@@ -62,7 +61,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   BatchSpanProcessor(
       SpanExporter spanExporter,
-      boolean sampled,
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
@@ -76,7 +74,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
             new ArrayBlockingQueue<>(maxQueueSize));
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
-    this.sampled = sampled;
   }
 
   @Override
@@ -89,7 +86,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (sampled && !span.getSpanContext().isSampled()) {
+    if (!span.getSpanContext().isSampled()) {
       return;
     }
     worker.addSpan(span);

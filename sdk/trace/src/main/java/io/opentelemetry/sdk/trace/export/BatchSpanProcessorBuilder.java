@@ -22,45 +22,18 @@ public final class BatchSpanProcessorBuilder {
   static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   // Visible for testing
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
-  // Visible for testing
-  static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
 
   private final SpanExporter spanExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
-  private boolean exportOnlySampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
   BatchSpanProcessorBuilder(SpanExporter spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
   }
 
   // TODO: Consider to add support for constant Attributes and/or Resource.
-
-  /**
-   * Set whether only sampled spans should be reported.
-   *
-   * <p>Default value is {@code true}.
-   *
-   * @param exportOnlySampled if {@code true} report only sampled spans.
-   * @return this.
-   * @see BatchSpanProcessorBuilder#DEFAULT_EXPORT_ONLY_SAMPLED
-   * @deprecated Will be removed without replacement, all spans with a sampling result of {@link
-   *     io.opentelemetry.sdk.trace.samplers.SamplingDecision#RECORD_AND_SAMPLE} will be exported
-   *     while spans with a result of {@link
-   *     io.opentelemetry.sdk.trace.samplers.SamplingDecision#RECORD_ONLY} will not.
-   */
-  @Deprecated
-  public BatchSpanProcessorBuilder setExportOnlySampled(boolean exportOnlySampled) {
-    this.exportOnlySampled = exportOnlySampled;
-    return this;
-  }
-
-  // Visible for testing
-  boolean getExportOnlySampled() {
-    return exportOnlySampled;
-  }
 
   /**
    * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
@@ -165,11 +138,6 @@ public final class BatchSpanProcessorBuilder {
    */
   public BatchSpanProcessor build() {
     return new BatchSpanProcessor(
-        spanExporter,
-        exportOnlySampled,
-        scheduleDelayNanos,
-        maxQueueSize,
-        maxExportBatchSize,
-        exporterTimeoutNanos);
+        spanExporter, scheduleDelayNanos, maxQueueSize, maxExportBatchSize, exporterTimeoutNanos);
   }
 }
