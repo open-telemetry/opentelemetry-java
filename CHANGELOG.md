@@ -2,6 +2,20 @@
 
 ## Unreleased:
 
+### General
+
+#### Breaking Changes
+
+- Methods and classes deprecated in 0.15.0 have been removed.
+
+### SDK Extensions
+
+#### Enhancements
+
+- The `opentelemetry-autoconfigure` module now supports using non-millisecond values for duration & 
+interval configuration options. See the javadoc on the `io.opentelemetry.sdk.autoconfigure.ConfigProperties.getDuration(String)` 
+method for details on supported formats.
+
 ## Version 0.15.0 - 2021-01-29
 
 ### General
