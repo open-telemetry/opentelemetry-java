@@ -132,7 +132,7 @@ public class ConfigProperties {
   }
 
   /**
-   * Get a duration property from the map, {@code null} if it cannot be found or it has a wrong
+   * Get a duration property from the map, or {@code null} if it cannot be found or it has a wrong
    * type.
    *
    * <p>Durations can be of the form "{number}{unit}", where unit is one of:
