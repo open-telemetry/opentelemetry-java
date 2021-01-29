@@ -70,6 +70,7 @@ public final class OtTracerPropagator implements TextMapPropagator {
     setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanIdAsHexString());
     setter.set(carrier, SAMPLED_HEADER, String.valueOf(spanContext.isSampled()));
 
+    // Baggage is only injected if there is a valid SpanContext
     Baggage baggage = Baggage.fromContext(context);
     if (!baggage.isEmpty()) {
       baggage.forEach(
@@ -100,6 +101,7 @@ public final class OtTracerPropagator implements TextMapPropagator {
 
     Context extractedContext = context.with(Span.wrap(spanContext));
 
+    // Baggage is only extracted if there is a valid SpanContext
     if (carrier != null) {
       BaggageBuilder baggageBuilder = Baggage.builder();
       for (String key : getter.keys(carrier)) {

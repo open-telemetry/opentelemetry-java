@@ -130,6 +130,23 @@ class OtTracerPropagatorTest {
   }
 
   @Test
+  void inject_Baggage_InvalidContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    Baggage baggage = Baggage.builder().put("foo", "bar").put("key", "value").build();
+    propagator.inject(
+        withSpanContext(
+            SpanContext.create(
+                TraceId.getInvalid(),
+                SpanId.getInvalid(),
+                SAMPLED_TRACE_OPTIONS,
+                TRACE_STATE_DEFAULT),
+            Context.current().with(baggage)),
+        carrier,
+        setter);
+    assertThat(carrier).isEmpty();
+  }
+
+  @Test
   void extract_Nothing() {
     // Context remains untouched.
     assertThat(
@@ -275,5 +292,19 @@ class OtTracerPropagatorTest {
 
     Baggage expectedBaggage = Baggage.builder().put("foo", "bar").put("key", "value").build();
     assertThat(Baggage.fromContext(context)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_Baggage_InvalidContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, TraceId.getInvalid());
+    carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    carrier.put(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "foo", "bar");
+    carrier.put(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "key", "value");
+
+    Context context = propagator.extract(Context.current(), carrier, getter);
+
+    assertThat(Baggage.fromContext(context).isEmpty()).isTrue();
   }
 }
