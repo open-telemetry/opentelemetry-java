@@ -80,8 +80,6 @@ class BatchSpanProcessorTest {
     assertThat(config.getExporterTimeoutNanos())
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
-    assertThat(config.getExportOnlySampled())
-        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }
 
   @Test

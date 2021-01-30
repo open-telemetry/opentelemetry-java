@@ -29,8 +29,7 @@ import javax.annotation.Nullable;
  * OpenTelemetry}. However, if you need a custom implementation of the factory, you can create one
  * as needed.
  */
-@SuppressWarnings("deprecation") // Remove when SdkTracerManagement is removed
-public final class SdkTracerProvider implements TracerProvider, SdkTracerManagement, Closeable {
+public final class SdkTracerProvider implements TracerProvider, Closeable {
   private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "unknown";
   private final TracerSharedState sharedState;
@@ -76,7 +75,6 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
   }
 
   /** Returns the active {@link TraceConfig}. */
-  @Override
   public TraceConfig getActiveTraceConfig() {
     return sharedState.getActiveTraceConfig();
   }
@@ -102,7 +100,6 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
    * @return a {@link CompletableResultCode} which is completed when all the span processors have
    *     been shut down.
    */
-  @Override
   public CompletableResultCode shutdown() {
     if (sharedState.isStopped()) {
       logger.log(Level.WARNING, "Calling shutdown() multiple times.");
@@ -117,7 +114,6 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
    *
    * @see SpanProcessor#forceFlush()
    */
-  @Override
   public CompletableResultCode forceFlush() {
     return sharedState.getActiveSpanProcessor().forceFlush();
   }

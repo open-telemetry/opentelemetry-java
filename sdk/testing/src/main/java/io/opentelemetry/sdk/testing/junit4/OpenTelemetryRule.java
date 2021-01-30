@@ -77,16 +77,6 @@ public final class OpenTelemetryRule extends ExternalResource {
     return openTelemetry;
   }
 
-  /**
-   * Returns the {@link io.opentelemetry.sdk.trace.SdkTracerManagement} created by this extension.
-   *
-   * @deprecated Will be removed without replacement
-   */
-  @Deprecated
-  public io.opentelemetry.sdk.trace.SdkTracerManagement getTracerManagement() {
-    return openTelemetry.getSdkTracerProvider();
-  }
-
   /** Returns all the exported {@link SpanData} so far. */
   public List<SpanData> getSpans() {
     return spanExporter.getFinishedSpanItems();

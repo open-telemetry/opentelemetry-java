@@ -34,7 +34,6 @@ public final class OtlpGrpcMetricExporterBuilder {
   private ManagedChannel channel;
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private URI endpoint = DEFAULT_ENDPOINT;
-  private boolean useTls = false;
 
   @Nullable private Metadata metadata;
 
@@ -99,20 +98,6 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Sets use or not TLS, default is false. Optional. Applicable only if {@link
-   * OtlpGrpcMetricExporterBuilder#endpoint} is set to build channel.
-   *
-   * @param useTls use TLS or not
-   * @return this builder's instance
-   * @deprecated Pass a URL starting with https:// to {@link #setEndpoint(String)}
-   */
-  @Deprecated
-  public OtlpGrpcMetricExporterBuilder setUseTls(boolean useTls) {
-    this.useTls = useTls;
-    return this;
-  }
-
-  /**
    * Add header to request. Optional. Applicable only if {@link
    * OtlpGrpcMetricExporterBuilder#endpoint} is set to build channel.
    *
@@ -138,7 +123,7 @@ public final class OtlpGrpcMetricExporterBuilder {
       final ManagedChannelBuilder<?> managedChannelBuilder =
           ManagedChannelBuilder.forTarget(endpoint.getAuthority());
 
-      if (endpoint.getScheme().equals("https") || useTls) {
+      if (endpoint.getScheme().equals("https")) {
         managedChannelBuilder.useTransportSecurity();
       } else {
         managedChannelBuilder.usePlaintext();
