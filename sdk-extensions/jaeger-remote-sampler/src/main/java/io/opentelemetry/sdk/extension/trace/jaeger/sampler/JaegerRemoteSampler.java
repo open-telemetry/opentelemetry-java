@@ -66,7 +66,7 @@ public final class JaegerRemoteSampler implements Sampler {
           SamplingStrategyParameters.newBuilder().setServiceName(this.serviceName).build();
       SamplingStrategyResponse response = stub.getSamplingStrategy(params);
       this.sampler = updateSampler(response);
-    } catch (Exception e) { // keep the timer thread alive
+    } catch (RuntimeException e) { // keep the timer thread alive
       logger.log(Level.WARNING, "Failed to update sampler", e);
     }
   }

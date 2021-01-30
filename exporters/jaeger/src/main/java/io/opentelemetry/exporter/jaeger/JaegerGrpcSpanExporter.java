@@ -12,11 +12,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector.PostSpansRequest;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector.PostSpansResponse;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.Model.Process;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -108,8 +105,9 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
         .collect(Collectors.groupingBy(SpanData::getResource))
         .forEach((resource, spanData) -> requests.add(buildRequest(resource, spanData)));
 
-    List<ListenableFuture<PostSpansResponse>> listenableFutures = new ArrayList<>(requests.size());
-    for (PostSpansRequest request : requests) {
+    List<ListenableFuture<Collector.PostSpansResponse>> listenableFutures =
+        new ArrayList<>(requests.size());
+    for (Collector.PostSpansRequest request : requests) {
       listenableFutures.add(stub.postSpans(request));
     }
 
@@ -119,7 +117,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     for (ListenableFuture<Collector.PostSpansResponse> future : listenableFutures) {
       Futures.addCallback(
           future,
-          new FutureCallback<PostSpansResponse>() {
+          new FutureCallback<Collector.PostSpansResponse>() {
             @Override
             public void onSuccess(Collector.PostSpansResponse result) {
               fulfill();
@@ -149,7 +147,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   }
 
   private Collector.PostSpansRequest buildRequest(Resource resource, List<SpanData> spans) {
-    Process.Builder builder = this.processBuilder.clone();
+    Model.Process.Builder builder = this.processBuilder.clone();
 
     String serviceName = resource.getAttributes().get(ResourceAttributes.SERVICE_NAME);
     if (serviceName == null || serviceName.isEmpty()) {

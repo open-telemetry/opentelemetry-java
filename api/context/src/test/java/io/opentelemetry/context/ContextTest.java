@@ -479,6 +479,7 @@ class ContextTest {
     assertThat(twoKeys.get(cheese)).isEqualTo("whiz");
   }
 
+  @SuppressWarnings("HashCodeToString")
   private static class HashCollidingKey implements ContextKey<String> {
     @Override
     public int hashCode() {

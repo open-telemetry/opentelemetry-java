@@ -42,7 +42,7 @@ final class MultiSpanExporter implements SpanExporter {
       final CompletableResultCode exportResult;
       try {
         exportResult = spanExporter.export(spans);
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         // If an exception was thrown by the exporter
         logger.log(Level.WARNING, "Exception thrown by the export.", e);
         results.add(CompletableResultCode.ofFailure());
@@ -65,7 +65,7 @@ final class MultiSpanExporter implements SpanExporter {
       final CompletableResultCode flushResult;
       try {
         flushResult = spanExporter.flush();
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         // If an exception was thrown by the exporter
         logger.log(Level.WARNING, "Exception thrown by the flush.", e);
         results.add(CompletableResultCode.ofFailure());
@@ -83,7 +83,7 @@ final class MultiSpanExporter implements SpanExporter {
       final CompletableResultCode shutdownResult;
       try {
         shutdownResult = spanExporter.shutdown();
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         // If an exception was thrown by the exporter
         logger.log(Level.WARNING, "Exception thrown by the shutdown.", e);
         results.add(CompletableResultCode.ofFailure());

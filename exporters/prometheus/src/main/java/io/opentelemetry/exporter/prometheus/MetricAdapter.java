@@ -86,7 +86,7 @@ final class MetricAdapter {
       case SUMMARY:
         return Collector.Type.SUMMARY;
     }
-    return Collector.Type.UNTYPED;
+    return Collector.Type.UNKNOWN;
   }
 
   private static final Function<String, String> sanitizer = new LabelNameSanitizer();

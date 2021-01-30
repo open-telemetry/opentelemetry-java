@@ -71,7 +71,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
               logger.log(Level.FINE, "Exporter failed");
             }
           });
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       logger.log(Level.WARNING, "Exporter threw an Exception", e);
     }
   }

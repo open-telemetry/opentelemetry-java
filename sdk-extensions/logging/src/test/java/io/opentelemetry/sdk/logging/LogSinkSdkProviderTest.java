@@ -15,7 +15,6 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logging.data.LogRecord;
-import io.opentelemetry.sdk.logging.data.LogRecord.Severity;
 import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logging.util.TestLogExporter;
 import io.opentelemetry.sdk.logging.util.TestLogProcessor;
@@ -47,12 +46,13 @@ class LogSinkSdkProviderTest {
     LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
     provider.addLogProcessor(processor);
     LogSink sink = provider.get("test", "0.1a");
-    LogRecord log = createLog(Severity.ERROR, "test");
+    LogRecord log = createLog(LogRecord.Severity.ERROR, "test");
     sink.offer(log);
     provider.forceFlush().join(500, TimeUnit.MILLISECONDS);
     List<LogRecord> records = exporter.getRecords();
     assertThat(records).singleElement().isEqualTo(log);
-    assertThat(log.getSeverity().getSeverityNumber()).isEqualTo(Severity.ERROR.getSeverityNumber());
+    assertThat(log.getSeverity().getSeverityNumber())
+        .isEqualTo(LogRecord.Severity.ERROR.getSeverityNumber());
   }
 
   @Test
@@ -69,7 +69,7 @@ class LogSinkSdkProviderTest {
     LogSink sink = provider.get("test", "0.1a");
 
     for (int i = 0; i < 7; i++) {
-      sink.offer(createLog(Severity.WARN, "test #" + i));
+      sink.offer(createLog(LogRecord.Severity.WARN, "test #" + i));
     }
     // Ensure that more than batch size kicks off a flush
     await().atMost(Duration.ofSeconds(5)).until(() -> exporter.getRecords().size() > 0);
@@ -103,7 +103,7 @@ class LogSinkSdkProviderTest {
     long start = System.currentTimeMillis();
     int testRecordCount = 700;
     for (int i = 0; i < testRecordCount; i++) {
-      sink.offer(createLog(Severity.WARN, "test #" + i));
+      sink.offer(createLog(LogRecord.Severity.WARN, "test #" + i));
     }
     long end = System.currentTimeMillis();
     assertThat(end - start).isLessThan(250L);

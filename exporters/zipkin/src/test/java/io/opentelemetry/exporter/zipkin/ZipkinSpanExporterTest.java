@@ -19,7 +19,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
@@ -62,7 +61,7 @@ class ZipkinSpanExporterTest {
   private static final String PARENT_SPAN_ID = "8b03ab423da481c5";
   private static final Attributes attributes = Attributes.empty();
   private static final List<EventData> annotations =
-      ImmutableList.of(
+      Arrays.asList(
           EventData.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
           EventData.create(1505855799_459486280L, "SENT", Attributes.empty()));
 

@@ -19,7 +19,6 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
-import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -126,7 +125,7 @@ public final class SpanAdapter {
       case CONSUMER:
         return SPAN_KIND_CONSUMER;
     }
-    return SpanKind.UNRECOGNIZED;
+    return Span.SpanKind.UNRECOGNIZED;
   }
 
   static Span.Event toProtoSpanEvent(EventData event) {

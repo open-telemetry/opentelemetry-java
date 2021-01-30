@@ -25,6 +25,14 @@ plugins {
     id "com.gradle.enterprise" version "3.5"
 }
 
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        jcenter()
+        mavenLocal()
+    }
+}
+
 rootProject.name = "opentelemetry-java"
 include ":all",
         ":api:all",

@@ -20,8 +20,7 @@ dependencies {
     implementation "io.zipkin.reporter2:zipkin-sender-okhttp3"
 
     testImplementation project(':sdk:testing')
-    testImplementation "com.google.guava:guava",
-            "io.zipkin.zipkin2:zipkin-junit"
+    testImplementation "io.zipkin.zipkin2:zipkin-junit"
 }
 
 animalsniffer {

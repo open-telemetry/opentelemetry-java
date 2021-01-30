@@ -86,7 +86,7 @@ class OpenTelemetrySdkTest {
   void testConfiguration_tracerSettings() {
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     IdGenerator idGenerator = mock(IdGenerator.class);
-    TraceConfig traceConfig = mock(TraceConfig.class);
+    TraceConfig traceConfig = TraceConfig.getDefault();
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setTracerProvider(

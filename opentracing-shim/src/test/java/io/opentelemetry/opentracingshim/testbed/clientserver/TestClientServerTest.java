@@ -66,12 +66,15 @@ class TestClientServerTest {
 
     assertThat(finished.get(1).getTraceId()).isEqualTo(finished.get(0).getTraceId());
     Kind firstSpanKind = finished.get(0).getKind();
-    if (firstSpanKind == Kind.CLIENT) {
-      assertThat(finished.get(1).getKind()).isEqualTo(Kind.SERVER);
-    } else if (firstSpanKind == Kind.SERVER) {
-      assertThat(finished.get(1).getKind()).isEqualTo(Kind.CLIENT);
-    } else {
-      fail("Unexpected first span kind: " + firstSpanKind);
+    switch (firstSpanKind) {
+      case CLIENT:
+        assertThat(finished.get(1).getKind()).isEqualTo(Kind.SERVER);
+        break;
+      case SERVER:
+        assertThat(finished.get(1).getKind()).isEqualTo(Kind.CLIENT);
+        break;
+      default:
+        fail("Unexpected first span kind: " + firstSpanKind);
     }
 
     assertThat(tracer.scopeManager().activeSpan()).isNull();

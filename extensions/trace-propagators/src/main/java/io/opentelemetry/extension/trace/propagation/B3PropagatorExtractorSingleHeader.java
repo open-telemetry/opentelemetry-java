@@ -26,7 +26,6 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
     return extractSpanContextFromSingleHeader(context, carrier, getter);
   }
 
-  @SuppressWarnings("StringSplitter")
   private static <C> Optional<Context> extractSpanContextFromSingleHeader(
       Context context, C carrier, TextMapPropagator.Getter<C> getter) {
     String value = getter.get(carrier, B3Propagator.COMBINED_HEADER);

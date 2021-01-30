@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 // Suppress warnings since this is copied as-is.
 @SuppressWarnings({
+  "HashCodeToString",
   "MissingSummary",
   "UngroupedOverloads",
   "ThreadPriorityCheck",

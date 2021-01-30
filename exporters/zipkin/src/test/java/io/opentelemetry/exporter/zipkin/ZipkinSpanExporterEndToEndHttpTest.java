@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.zipkin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
@@ -21,6 +20,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -49,7 +49,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final long SENT_TIMESTAMP_NANOS = 1505855799_459486280L;
   private static final Attributes attributes = Attributes.empty();
   private static final List<EventData> annotations =
-      ImmutableList.of(
+      Arrays.asList(
           EventData.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
           EventData.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
 
@@ -103,8 +103,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
 
     assertThat(resultCode.isSuccess()).isFalse();
     List<Span> zipkinSpans = zipkin.getTrace(TRACE_ID);
-    assertThat(zipkinSpans).isNotNull();
-    assertThat(zipkinSpans).isEmpty();
+    assertThat(zipkinSpans).isNull();
   }
 
   private static ZipkinSpanExporter buildZipkinExporter(
