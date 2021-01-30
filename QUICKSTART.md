@@ -123,7 +123,7 @@ void b(Span parentSpan) {
 The OpenTelemetry API offers also an automated way to propagate the parent span on the current thread:
 ```java
 void c() {
-  Span parentSpan = tracer.spanBuilder("a").startSpan();
+  Span parentSpan = tracer.spanBuilder("c").startSpan();
   try(Scope scope = parentSpan.makeCurrent()) {
     b();
   } finally {
