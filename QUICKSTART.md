@@ -125,7 +125,7 @@ The OpenTelemetry API offers also an automated way to propagate the parent span 
 void c() {
   Span parentSpan = tracer.spanBuilder("c").startSpan();
   try(Scope scope = parentSpan.makeCurrent()) {
-    b();
+    d();
   } finally {
     parentSpan.end();
   }
