@@ -17,6 +17,7 @@ import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -56,6 +57,7 @@ class LoggingSpanExporterTest {
                       Attributes.of(booleanKey("important"), true))))
           .setTotalRecordedEvents(1)
           .setTotalRecordedLinks(0)
+          .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("tracer1", null))
           .build();
 
   private static final SpanData SPAN2 =
@@ -68,6 +70,7 @@ class LoggingSpanExporterTest {
           .setStatus(StatusData.error())
           .setName("testSpan2")
           .setKind(Kind.CLIENT)
+          .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("tracer2", "1.0"))
           .build();
 
   @RegisterExtension
@@ -95,9 +98,12 @@ class LoggingSpanExporterTest {
     assertThat(logs.getEvents().get(0).getMessage())
         .isEqualTo(
             "'testSpan1' : 00000000000004d20000000000001a85 0000000000002694 "
+                + "INTERNAL [tracer: tracer1:] "
                 + "{animal=\"cat\", lives=9}");
     assertThat(logs.getEvents().get(1).getMessage())
-        .isEqualTo("'testSpan2' : 0000000000000014000000000000001e 000000000000000f {}");
+        .isEqualTo(
+            "'testSpan2' : 0000000000000014000000000000001e 000000000000000f "
+                + "CLIENT [tracer: tracer2:1.0] {}");
   }
 
   @Test
