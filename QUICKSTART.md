@@ -131,7 +131,7 @@ void c() {
   }
 }
 void d() {
-  Span childSpan = tracer.spanBuilder("b")
+  Span childSpan = tracer.spanBuilder("d")
     // NOTE: setParent(...) is not required; 
     // `Span.current()` is automatically added as the parent
     .startSpan();
