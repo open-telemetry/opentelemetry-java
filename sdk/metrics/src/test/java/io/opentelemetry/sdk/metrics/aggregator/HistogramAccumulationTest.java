@@ -21,11 +21,14 @@ public class HistogramAccumulationTest {
   void toPoint() {
     HistogramAccumulation accumulation =
         HistogramAccumulation.create(
-            12, 25, ImmutableDoubleArray.of(1), ImmutableLongArray.copyOf(new long[] {1, 2}));
+            12,
+            25,
+            ImmutableDoubleArray.copyOf(new double[] {1}),
+            ImmutableLongArray.copyOf(new long[] {1, 2}));
     DoubleHistogramPointData point = getPoint(accumulation);
     assertThat(point.getCount()).isEqualTo(12);
     assertThat(point.getSum()).isEqualTo(25);
-    assertThat(point.getBoundaries()).isEqualTo(ImmutableDoubleArray.of(1));
+    assertThat(point.getBoundaries()).isEqualTo(ImmutableDoubleArray.copyOf(new double[] {1}));
     assertThat(point.getCounts()).isEqualTo(ImmutableLongArray.copyOf(new long[] {1, 2}));
 
     List<Double> boundaries = new ArrayList<>();

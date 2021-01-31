@@ -52,7 +52,7 @@ class MetricDataTest {
           Labels.of("key", "value"),
           DOUBLE_VALUE,
           LONG_VALUE,
-          ImmutableDoubleArray.of(1),
+          ImmutableDoubleArray.copyOf(new double[] {1}),
           ImmutableLongArray.copyOf(new long[] {1, 1}));
 
   @Test
@@ -168,7 +168,8 @@ class MetricDataTest {
     assertThat(HISTOGRAM_POINT.getLabels().get("key")).isEqualTo("value");
     assertThat(HISTOGRAM_POINT.getCount()).isEqualTo(LONG_VALUE);
     assertThat(HISTOGRAM_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
-    assertThat(HISTOGRAM_POINT.getBoundaries()).isEqualTo(ImmutableDoubleArray.of(1));
+    assertThat(HISTOGRAM_POINT.getBoundaries())
+        .isEqualTo(ImmutableDoubleArray.copyOf(new double[] {1}));
     assertThat(HISTOGRAM_POINT.getCounts()).isEqualTo(ImmutableLongArray.copyOf(new long[] {1, 1}));
 
     List<Double> boundaries = new ArrayList<>();

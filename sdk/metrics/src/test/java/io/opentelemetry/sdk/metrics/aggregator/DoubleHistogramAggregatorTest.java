@@ -86,9 +86,13 @@ public class DoubleHistogramAggregatorTest {
   void invalidMergeReturnsEmptyAccumulation() {
     HistogramAccumulation x =
         HistogramAccumulation.create(
-            1, 1, ImmutableDoubleArray.of(1), ImmutableLongArray.copyOf(new long[] {0, 1}));
+            1,
+            1,
+            ImmutableDoubleArray.copyOf(new double[] {1}),
+            ImmutableLongArray.copyOf(new long[] {0, 1}));
     HistogramAccumulation y =
-        HistogramAccumulation.create(1, 2, ImmutableDoubleArray.of(2), ImmutableLongArray.of(1));
+        HistogramAccumulation.create(
+            1, 2, ImmutableDoubleArray.copyOf(new double[] {2}), ImmutableLongArray.of(1));
     assertThat(aggregator.merge(x, y))
         .isEqualTo(
             HistogramAccumulation.create(

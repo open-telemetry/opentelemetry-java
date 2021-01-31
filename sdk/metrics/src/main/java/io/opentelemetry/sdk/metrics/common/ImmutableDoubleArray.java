@@ -18,11 +18,6 @@ public class ImmutableDoubleArray {
     return EMPTY;
   }
 
-  /** Returns an immutable array containing a single value. */
-  public static ImmutableDoubleArray of(double e0) {
-    return new ImmutableDoubleArray(new double[] {e0});
-  }
-
   /** Returns an immutable array containing the given values, in order. */
   public static ImmutableDoubleArray copyOf(double[] values) {
     return values.length == 0
