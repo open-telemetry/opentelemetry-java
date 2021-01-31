@@ -37,7 +37,6 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -60,10 +59,6 @@ class ZipkinSpanExporterTest {
   private static final String SPAN_ID = "9cc1e3049173be09";
   private static final String PARENT_SPAN_ID = "8b03ab423da481c5";
   private static final Attributes attributes = Attributes.empty();
-  private static final List<EventData> annotations =
-      Arrays.asList(
-          EventData.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
-          EventData.create(1505855799_459486280L, "SENT", Attributes.empty()));
 
   private final ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().build();
 
@@ -380,7 +375,10 @@ class ZipkinSpanExporterTest {
         .setEndEpochNanos(1505855799_465726528L)
         .setAttributes(attributes)
         .setTotalAttributeCount(attributes.size())
-        .setEvents(annotations)
+        .setEvents(
+            Arrays.asList(
+                EventData.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
+                EventData.create(1505855799_459486280L, "SENT", Attributes.empty())))
         .setLinks(Collections.emptyList())
         .setHasEnded(true);
   }
