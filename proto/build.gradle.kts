@@ -23,25 +23,25 @@ dependencies {
 val protoVersion = "0.7.0"
 // To generate checksum, download the file and run "shasum -a 256 ~/path/to/vfoo.zip"
 val protoChecksum = "0b581c654b2360485b99c2de3731dd59275b0fe7b91d78e7f6c5efd5997f4c82"
-val protoArchivePath = "$buildDir/archives/opentelemetry-proto-${protoVersion}.zip"
+val protoArchive = file("$buildDir/archives/opentelemetry-proto-${protoVersion}.zip")
 
 tasks {
     val downloadProtoArchive by registering(Download::class) {
-        onlyIf { !file(protoArchivePath).exists() }
+        onlyIf { !protoArchive.exists() }
         src("https://github.com/open-telemetry/opentelemetry-proto/archive/v${protoVersion}.zip")
-        dest(protoArchivePath)
+        dest(protoArchive)
     }
 
     val verifyProtoArchive by registering(Verify::class) {
         dependsOn(downloadProtoArchive)
-        src(protoArchivePath)
+        src(protoArchive)
         algorithm("SHA-256")
         checksum(protoChecksum)
     }
 
     val unzipProtoArchive by registering(Copy::class) {
         dependsOn(verifyProtoArchive)
-        from(zipTree(protoArchivePath))
+        from(zipTree(protoArchive))
         into("$buildDir/protos")
     }
 
