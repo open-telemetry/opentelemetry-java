@@ -103,17 +103,17 @@ processes, see [Context Propagation](#context-propagation).
 
 For a method `a` calling a method `b`, the spans could be manually linked in the following way:
 ```java
-void a() {
-  Span parentSpan = tracer.spanBuilder("a").startSpan();
+void parentOne() {
+  Span parentSpan = tracer.spanBuilder("parent").startSpan();
   try {
-    b(parentSpan);
+    childOne(parentSpan);
   } finally {
     parentSpan.end();
   }
 }
 
-void b(Span parentSpan) {
-  Span childSpan = tracer.spanBuilder("b")
+void childOne(Span parentSpan) {
+  Span childSpan = tracer.spanBuilder("child")
         .setParent(Context.current().with(parentSpan))
         .startSpan();
   // do stuff
@@ -122,16 +122,16 @@ void b(Span parentSpan) {
 ```
 The OpenTelemetry API offers also an automated way to propagate the parent span on the current thread:
 ```java
-void c() {
-  Span parentSpan = tracer.spanBuilder("c").startSpan();
+void parentTwo() {
+  Span parentSpan = tracer.spanBuilder("parent").startSpan();
   try(Scope scope = parentSpan.makeCurrent()) {
-    d();
+    childTwo();
   } finally {
     parentSpan.end();
   }
 }
-void d() {
-  Span childSpan = tracer.spanBuilder("d")
+void childTwo() {
+  Span childSpan = tracer.spanBuilder("child")
     // NOTE: setParent(...) is not required; 
     // `Span.current()` is automatically added as the parent
     .startSpan();
@@ -393,11 +393,8 @@ in bulk. Multiple Span processors can be configured to be active at the same tim
 
 ```java
     SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
-      .addSpanProcessor(
-        SpanProcessor.composite(
-          SimpleSpanProcessor.create(new LoggingSpanExporter()),
-          BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
-      ))
+      .addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()))
+      .addSpanProcessor(BatchSpanProcessor.builder(new LoggingSpanExporter()).build())
       .build();
 ```
 
@@ -417,9 +414,10 @@ Other exporters can be found in the [OpenTelemetry Registry].
     ManagedChannel jaegerChannel = ManagedChannelBuilder.forAddress("localhost", 3336)
       .usePlaintext()
       .build();
-    
+
     JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
-      .setChannel(jaegerChannel).setTimeout(30, TimeUnit.SECONDS)
+      .setEndpoint("localhost:3336")
+      .setTimeout(30, TimeUnit.SECONDS)
       .build();
 
     SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
