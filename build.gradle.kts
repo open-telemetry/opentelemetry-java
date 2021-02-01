@@ -275,12 +275,11 @@ subprojects {
                 }
             }
 
-            // TODO(anuraaga): Probably remove this, compile is a deprecated configuration.
-            named("compile") {
-                // Detect Maven Enforcer's dependencyConvergence failures. We only
-                // care for artifacts used as libraries by others.
-                // TODO: Enable failOnVersionConflict()
-                resolutionStrategy.preferProjectModules()
+            configureEach {
+                resolutionStrategy {
+                    failOnVersionConflict()
+                    preferProjectModules()
+                }
             }
         }
 
