@@ -80,12 +80,6 @@ subprojects {
             archivesBaseName = "opentelemetry-${name}"
         }
 
-        repositories {
-            mavenCentral()
-            jcenter()
-            mavenLocal()
-        }
-
         configure<JavaPluginExtension> {
             sourceCompatibility = JavaVersion.VERSION_1_8
             targetCompatibility = JavaVersion.VERSION_1_8
@@ -192,6 +186,17 @@ subprojects {
 
                     // Limits APIs
                     disable("NoFunctionalReturnType")
+
+                    // We don't depend on Guava so use normal splitting
+                    disable("StringSplitter")
+
+                    // Prevents lazy initialization
+                    disable("InitializeInline")
+
+                    if (name.contains("Jmh") || name.contains("Test")) {
+                        // Allow underscore in test-type method names
+                        disable("MemberName")
+                    }
                 }
             }
 

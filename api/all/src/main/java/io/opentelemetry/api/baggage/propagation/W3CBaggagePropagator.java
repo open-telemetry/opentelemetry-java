@@ -72,13 +72,12 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     BaggageBuilder baggageBuilder = Baggage.builder();
     try {
       extractEntries(baggageHeader, baggageBuilder);
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       return context.with(Baggage.empty());
     }
     return context.with(baggageBuilder.build());
   }
 
-  @SuppressWarnings("StringSplitter")
   private static void extractEntries(String baggageHeader, BaggageBuilder baggageBuilder) {
     // todo: optimize this implementation; it can probably done with a single pass through the
     // string.

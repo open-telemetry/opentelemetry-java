@@ -43,7 +43,7 @@ final class Common {
           spanId,
           traceFlags,
           TraceState.getDefault());
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       logger.log(Level.FINE, "Error parsing header. Returning INVALID span context.", e);
       return SpanContext.getInvalid();
     }

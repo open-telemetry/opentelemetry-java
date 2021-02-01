@@ -127,7 +127,7 @@ public class Application {
               String argumentsJson = gson.toJson(req.getArguments());
               RequestBody argumentsBody =
                   RequestBody.create(
-                      MediaType.parse("application/json; charset=utf-8"), argumentsJson);
+                      argumentsJson, MediaType.parse("application/json; charset=utf-8"));
               okhttp3.Request newRequest = reqBuilder.url(req.getUrl()).post(argumentsBody).build();
 
               // Execute the request

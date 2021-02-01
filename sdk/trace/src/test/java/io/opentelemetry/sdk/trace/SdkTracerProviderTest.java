@@ -52,7 +52,6 @@ class SdkTracerProviderTest {
         SdkTracerProvider.builder()
             .setClock(mock(Clock.class))
             .setIdGenerator(mock(IdGenerator.class))
-            .setTraceConfig(mock(TraceConfig.class))
             .build();
 
     assertThat(tracerProvider).isNotNull();
@@ -90,7 +89,6 @@ class SdkTracerProviderTest {
             .setClock(mock(Clock.class))
             .setResource(resource)
             .setIdGenerator(mock(IdGenerator.class))
-            .setTraceConfig(mock(TraceConfig.class))
             .build();
 
     assertThat(tracerProvider).isNotNull();
@@ -161,7 +159,7 @@ class SdkTracerProviderTest {
 
   @Test
   void build_traceConfig() {
-    TraceConfig initialTraceConfig = mock(TraceConfig.class);
+    TraceConfig initialTraceConfig = TraceConfig.builder().build();
     SdkTracerProvider sdkTracerProvider =
         SdkTracerProvider.builder().setTraceConfig(initialTraceConfig).build();
 

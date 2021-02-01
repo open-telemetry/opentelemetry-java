@@ -172,7 +172,7 @@ public final class BatchLogProcessor implements LogProcessor {
         } else {
           exporterFailureCounter.add(1);
         }
-      } catch (Exception t) {
+      } catch (RuntimeException t) {
         exporterFailureCounter.add(batch.size());
       } finally {
         batch.clear();

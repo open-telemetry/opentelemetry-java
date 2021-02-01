@@ -96,7 +96,7 @@ public final class IntervalMetricReader {
                 }
                 exportAvailable.set(true);
               });
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
           logger.log(Level.WARNING, "Exporter threw an Exception", e);
         }
       } else {

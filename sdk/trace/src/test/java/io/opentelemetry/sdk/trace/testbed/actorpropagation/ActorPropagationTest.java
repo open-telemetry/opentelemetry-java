@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace.testbed.actorpropagation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -47,7 +46,7 @@ class ActorPropagationTest {
   void testActorTell() {
     try (Actor actor = new Actor(tracer, phaser)) {
       phaser.register();
-      Span parent = tracer.spanBuilder("actorTell").setSpanKind(Kind.PRODUCER).startSpan();
+      Span parent = tracer.spanBuilder("actorTell").setSpanKind(Span.Kind.PRODUCER).startSpan();
       parent.setAttribute("component", "example-actor");
       try (Scope ignored = parent.makeCurrent()) {
         actor.tell("my message 1");
@@ -80,7 +79,7 @@ class ActorPropagationTest {
       phaser.register();
       Future<String> future1;
       Future<String> future2;
-      Span span = tracer.spanBuilder("actorAsk").setSpanKind(Kind.PRODUCER).startSpan();
+      Span span = tracer.spanBuilder("actorAsk").setSpanKind(Span.Kind.PRODUCER).startSpan();
       span.setAttribute("component", "example-actor");
 
       try (Scope ignored = span.makeCurrent()) {

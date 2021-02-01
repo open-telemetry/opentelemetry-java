@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /** Unit tests for {@link SdkTracer}. */
@@ -37,7 +36,6 @@ class SdkTracerTest {
   private static final InstrumentationLibraryInfo instrumentationLibraryInfo =
       InstrumentationLibraryInfo.create(
           INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
-  @Mock private Span span;
   private final SdkTracer tracer =
       (SdkTracer)
           SdkTracerProvider.builder()

@@ -78,7 +78,7 @@ final class TracerShim extends BaseShimObject implements Tracer {
           || format == Format.Builtin.HTTP_HEADERS) {
         return propagation.extractTextMap((TextMapExtract) carrier);
       }
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       logger.log(
           Level.INFO,
           "Exception caught while extracting span context; returning null. "

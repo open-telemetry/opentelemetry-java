@@ -141,7 +141,6 @@ public final class JaegerPropagator implements TextMapPropagator {
     return context;
   }
 
-  @SuppressWarnings("StringSplitter")
   private static <C> SpanContext getSpanContextFromHeader(C carrier, Getter<C> getter) {
     String value = getter.get(carrier, PROPAGATION_HEADER);
     if (StringUtils.isNullOrEmpty(value)) {
@@ -228,7 +227,6 @@ public final class JaegerPropagator implements TextMapPropagator {
     return builder == null ? null : builder.build();
   }
 
-  @SuppressWarnings("StringSplitter")
   private static BaggageBuilder parseBaggageHeader(String header, BaggageBuilder builder) {
     for (String part : header.split("\\s*,\\s*")) {
       String[] kv = part.split("\\s*=\\s*");
@@ -256,7 +254,7 @@ public final class JaegerPropagator implements TextMapPropagator {
       }
       return SpanContext.createFromRemoteParent(
           otelTraceId, otelSpanId, traceFlags, TraceState.getDefault());
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       logger.log(
           Level.FINE,
           "Error parsing '" + PROPAGATION_HEADER + "' header. Returning INVALID span context.",

@@ -441,37 +441,39 @@ final class TracezZPageHandler extends ZPageHandler {
       if (typeStr != null) {
         List<SpanData> spans = null;
         SampleType type = SampleType.fromString(typeStr);
-        if (type == SampleType.UNKNOWN) {
-          // Type of unknown is garbage value
-          return;
-        } else if (type == SampleType.RUNNING) {
-          // Display running span
-          spans = dataAggregator.getRunningSpans(spanName);
-        } else {
-          String subtypeStr = queryMap.get(PARAM_SAMPLE_SUB_TYPE);
-          if (subtypeStr != null) {
-            int subtype = Integer.parseInt(subtypeStr);
-            if (type == SampleType.LATENCY) {
-              if (subtype < 0 || subtype >= LatencyBoundary.values().length) {
-                // N/A or out-of-bound check for latency based subtype, valid values: [0, 8]
-                return;
+        switch (type) {
+          case UNKNOWN:
+            // Type of unknown is garbage value
+            return;
+          case RUNNING:
+            // Display running span
+            spans = dataAggregator.getRunningSpans(spanName);
+            break;
+          default:
+            String subtypeStr = queryMap.get(PARAM_SAMPLE_SUB_TYPE);
+            if (subtypeStr != null) {
+              int subtype = Integer.parseInt(subtypeStr);
+              if (type == SampleType.LATENCY) {
+                if (subtype < 0 || subtype >= LatencyBoundary.values().length) {
+                  // N/A or out-of-bound check for latency based subtype, valid values: [0, 8]
+                  return;
+                }
+                // Display latency based span
+                LatencyBoundary latencyBoundary = LatencyBoundary.values()[subtype];
+                spans =
+                    dataAggregator.getOkSpans(
+                        spanName,
+                        latencyBoundary.getLatencyLowerBound(),
+                        latencyBoundary.getLatencyUpperBound());
+              } else {
+                if (subtype < 0 || subtype >= StatusCode.values().length) {
+                  // N/A or out-of-bound cueck for error based subtype, valid values: [0, 15]
+                  return;
+                }
+                // Display error based span
+                spans = dataAggregator.getErrorSpans(spanName);
               }
-              // Display latency based span
-              LatencyBoundary latencyBoundary = LatencyBoundary.values()[subtype];
-              spans =
-                  dataAggregator.getOkSpans(
-                      spanName,
-                      latencyBoundary.getLatencyLowerBound(),
-                      latencyBoundary.getLatencyUpperBound());
-            } else {
-              if (subtype < 0 || subtype >= StatusCode.values().length) {
-                // N/A or out-of-bound cueck for error based subtype, valid values: [0, 15]
-                return;
-              }
-              // Display error based span
-              spans = dataAggregator.getErrorSpans(spanName);
             }
-          }
         }
         out.print("<h2>Span Details</h2>");
         emitSpanNameAndCount(out, spanName, spans == null ? 0 : spans.size(), type);

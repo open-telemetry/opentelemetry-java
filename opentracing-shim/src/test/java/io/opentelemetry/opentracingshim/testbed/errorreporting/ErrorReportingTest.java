@@ -43,7 +43,7 @@ public final class ErrorReportingTest {
     Span span = tracer.buildSpan("one").start();
     try (Scope scope = tracer.activateSpan(span)) {
       throw new RuntimeException("Invalid state");
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       Tags.ERROR.set(span, true);
     } finally {
       span.finish();
@@ -64,7 +64,7 @@ public final class ErrorReportingTest {
         () -> {
           try (Scope scope = tracer.activateSpan(span)) {
             throw new RuntimeException("Invalid state");
-          } catch (Exception exc) {
+          } catch (RuntimeException exc) {
             Tags.ERROR.set(span, true);
           } finally {
             span.finish();
@@ -90,7 +90,7 @@ public final class ErrorReportingTest {
       while (retries++ < maxRetries) {
         try {
           throw new RuntimeException("No url could be fetched");
-        } catch (final Exception exc) {
+        } catch (RuntimeException exc) {
           Map<String, Object> errorMap = new HashMap<>();
           errorMap.put(Fields.EVENT, Tags.ERROR.getKey());
           errorMap.put(Fields.ERROR_OBJECT, exc);
@@ -128,7 +128,7 @@ public final class ErrorReportingTest {
               () -> {
                 try {
                   throw new RuntimeException("Invalid state");
-                } catch (Exception exc) {
+                } catch (RuntimeException exc) {
                   Tags.ERROR.set(tracer.activeSpan(), true);
                 } finally {
                   tracer.activeSpan().finish();

@@ -51,7 +51,6 @@ class IntervalMetricReaderTest {
               /* isMonotonic= */ true, AggregationTemporality.CUMULATIVE, LONG_POINT_LIST));
 
   @Mock private MetricProducer metricProducer;
-  @Mock private MetricExporter metricExporter;
 
   @BeforeEach
   void setup() {
