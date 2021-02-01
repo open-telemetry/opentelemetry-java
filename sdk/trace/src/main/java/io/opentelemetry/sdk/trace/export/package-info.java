@@ -13,7 +13,6 @@
  *   <li>{@link io.opentelemetry.sdk.trace.export.SpanExporter}
  *   <li>{@link io.opentelemetry.sdk.trace.export.SimpleSpanProcessor}
  *   <li>{@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor}
- *   <li>{@link io.opentelemetry.sdk.trace.export.MultiSpanExporter}
  * </ul>
  *
  * <h2>Default values for {@link io.opentelemetry.sdk.trace.export.SimpleSpanProcessor}</h2>
