@@ -34,15 +34,8 @@ public class HelloWorldServer {
   // lifecycle.
   private static final OpenTelemetry openTelemetry = ExampleConfiguration.initOpenTelemetry();
 
-  private Server server;
-
-  private final Tracer tracer =
-      openTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
-  private final TextMapPropagator textFormat =
-      openTelemetry.getPropagators().getTextMapPropagator();
-
   // Extract the Distributed Context from the gRPC metadata
-  private final TextMapPropagator.Getter<Metadata> getter =
+  private static final TextMapPropagator.Getter<Metadata> getter =
       new TextMapPropagator.Getter<>() {
         @Override
         public Iterable<String> keys(Metadata carrier) {
@@ -58,6 +51,13 @@ public class HelloWorldServer {
           return "";
         }
       };
+
+  private Server server;
+
+  private final Tracer tracer =
+      openTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
+  private final TextMapPropagator textFormat =
+      openTelemetry.getPropagators().getTextMapPropagator();
 
   private void start() throws IOException {
     /* The port on which the server should run */
