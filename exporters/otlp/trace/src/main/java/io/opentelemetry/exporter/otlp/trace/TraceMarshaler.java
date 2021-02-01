@@ -15,8 +15,8 @@ import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPREC
 
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.UnknownFieldSet;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
@@ -544,7 +544,7 @@ final class TraceMarshaler {
     return result;
   }
 
-  private static Span.SpanKind toProtoSpanKind(Kind kind) {
+  private static Span.SpanKind toProtoSpanKind(SpanKind kind) {
     switch (kind) {
       case INTERNAL:
         return SPAN_KIND_INTERNAL;

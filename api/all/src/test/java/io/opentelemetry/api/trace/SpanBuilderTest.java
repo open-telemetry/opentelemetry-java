@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +22,7 @@ class SpanBuilderTest {
   @Test
   void doNotCrash_NoopImplementation() {
     SpanBuilder spanBuilder = tracer.spanBuilder("MySpanName");
-    spanBuilder.setSpanKind(Kind.SERVER);
+    spanBuilder.setSpanKind(SpanKind.SERVER);
     spanBuilder.setParent(Context.root().with(Span.wrap(null)));
     spanBuilder.setParent(Context.root());
     spanBuilder.setNoParent();

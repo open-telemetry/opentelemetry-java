@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace.testbed.clientserver;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
@@ -26,7 +26,7 @@ final class Client {
   public void send() throws InterruptedException {
     Message message = new Message();
 
-    Span span = tracer.spanBuilder("send").setSpanKind(Kind.CLIENT).startSpan();
+    Span span = tracer.spanBuilder("send").setSpanKind(SpanKind.CLIENT).startSpan();
     span.setAttribute("component", "example-client");
 
     try (Scope ignored = span.makeCurrent()) {

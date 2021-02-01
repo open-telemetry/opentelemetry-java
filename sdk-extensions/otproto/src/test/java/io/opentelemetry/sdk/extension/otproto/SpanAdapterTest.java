@@ -21,9 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.protobuf.ByteString;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
@@ -59,7 +59,7 @@ class SpanAdapterTest {
                 .setSpanContext(SPAN_CONTEXT)
                 .setParentSpanContext(SpanContext.getInvalid())
                 .setName("GET /api/endpoint")
-                .setKind(Kind.SERVER)
+                .setKind(SpanKind.SERVER)
                 .setStartEpochNanos(12345)
                 .setEndEpochNanos(12349)
                 .setAttributes(Attributes.of(booleanKey("key"), true))
@@ -103,11 +103,11 @@ class SpanAdapterTest {
 
   @Test
   void toProtoSpanKind() {
-    assertThat(SpanAdapter.toProtoSpanKind(Kind.INTERNAL)).isEqualTo(SPAN_KIND_INTERNAL);
-    assertThat(SpanAdapter.toProtoSpanKind(Kind.CLIENT)).isEqualTo(SPAN_KIND_CLIENT);
-    assertThat(SpanAdapter.toProtoSpanKind(Kind.SERVER)).isEqualTo(SPAN_KIND_SERVER);
-    assertThat(SpanAdapter.toProtoSpanKind(Kind.PRODUCER)).isEqualTo(SPAN_KIND_PRODUCER);
-    assertThat(SpanAdapter.toProtoSpanKind(Kind.CONSUMER)).isEqualTo(SPAN_KIND_CONSUMER);
+    assertThat(SpanAdapter.toProtoSpanKind(SpanKind.INTERNAL)).isEqualTo(SPAN_KIND_INTERNAL);
+    assertThat(SpanAdapter.toProtoSpanKind(SpanKind.CLIENT)).isEqualTo(SPAN_KIND_CLIENT);
+    assertThat(SpanAdapter.toProtoSpanKind(SpanKind.SERVER)).isEqualTo(SPAN_KIND_SERVER);
+    assertThat(SpanAdapter.toProtoSpanKind(SpanKind.PRODUCER)).isEqualTo(SPAN_KIND_PRODUCER);
+    assertThat(SpanAdapter.toProtoSpanKind(SpanKind.CONSUMER)).isEqualTo(SPAN_KIND_CONSUMER);
   }
 
   @Test

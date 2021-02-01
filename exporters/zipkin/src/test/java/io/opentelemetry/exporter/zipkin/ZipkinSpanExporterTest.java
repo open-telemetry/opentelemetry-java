@@ -20,8 +20,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
@@ -97,7 +97,7 @@ class ZipkinSpanExporterTest {
 
   @Test
   void generateSpan_ServerKind() {
-    SpanData data = buildStandardSpan().setKind(Kind.SERVER).build();
+    SpanData data = buildStandardSpan().setKind(SpanKind.SERVER).build();
 
     assertThat(exporter.generateSpan(data))
         .isEqualTo(
@@ -108,7 +108,7 @@ class ZipkinSpanExporterTest {
 
   @Test
   void generateSpan_ClientKind() {
-    SpanData data = buildStandardSpan().setKind(Kind.CLIENT).build();
+    SpanData data = buildStandardSpan().setKind(SpanKind.CLIENT).build();
 
     assertThat(exporter.generateSpan(data))
         .isEqualTo(
@@ -119,7 +119,7 @@ class ZipkinSpanExporterTest {
 
   @Test
   void generateSpan_InternalKind() {
-    SpanData data = buildStandardSpan().setKind(Kind.INTERNAL).build();
+    SpanData data = buildStandardSpan().setKind(SpanKind.INTERNAL).build();
 
     assertThat(exporter.generateSpan(data))
         .isEqualTo(
@@ -130,7 +130,7 @@ class ZipkinSpanExporterTest {
 
   @Test
   void generateSpan_ConsumeKind() {
-    SpanData data = buildStandardSpan().setKind(Kind.CONSUMER).build();
+    SpanData data = buildStandardSpan().setKind(SpanKind.CONSUMER).build();
 
     assertThat(exporter.generateSpan(data))
         .isEqualTo(
@@ -141,7 +141,7 @@ class ZipkinSpanExporterTest {
 
   @Test
   void generateSpan_ProducerKind() {
-    SpanData data = buildStandardSpan().setKind(Kind.PRODUCER).build();
+    SpanData data = buildStandardSpan().setKind(SpanKind.PRODUCER).build();
 
     assertThat(exporter.generateSpan(data))
         .isEqualTo(
@@ -182,7 +182,7 @@ class ZipkinSpanExporterTest {
             .put(doubleArrayKey("doubleArray"), Arrays.asList(32.33d, -98.3d))
             .put(longArrayKey("longArray"), Arrays.asList(33L, 999L))
             .build();
-    SpanData data = buildStandardSpan().setAttributes(attributes).setKind(Kind.CLIENT).build();
+    SpanData data = buildStandardSpan().setAttributes(attributes).setKind(SpanKind.CLIENT).build();
 
     assertThat(exporter.generateSpan(data))
         .isEqualTo(
@@ -205,7 +205,7 @@ class ZipkinSpanExporterTest {
         buildStandardSpan()
             .setInstrumentationLibraryInfo(
                 InstrumentationLibraryInfo.create("io.opentelemetry.auto", "1.0.0"))
-            .setKind(Kind.CLIENT)
+            .setKind(SpanKind.CLIENT)
             .build();
 
     assertThat(exporter.generateSpan(data))
@@ -225,7 +225,7 @@ class ZipkinSpanExporterTest {
     SpanData data =
         buildStandardSpan()
             .setAttributes(attributeMap)
-            .setKind(Kind.CLIENT)
+            .setKind(SpanKind.CLIENT)
             .setStatus(StatusData.error())
             .build();
 
@@ -374,7 +374,7 @@ class ZipkinSpanExporterTest {
             Resource.create(
                 Attributes.builder().put(ResourceAttributes.SERVICE_NAME, "tweetiebird").build()))
         .setStatus(StatusData.ok())
-        .setKind(Kind.SERVER)
+        .setKind(SpanKind.SERVER)
         .setName("Recv.helloworld.Greeter.SayHello")
         .setStartEpochNanos(1505855794_194009601L)
         .setEndEpochNanos(1505855799_465726528L)

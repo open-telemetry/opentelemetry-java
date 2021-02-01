@@ -14,8 +14,8 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -88,7 +88,7 @@ final class Adapter {
               .setRefType(Model.SpanRefType.CHILD_OF));
     }
 
-    if (span.getKind() != Span.Kind.INTERNAL) {
+    if (span.getKind() != SpanKind.INTERNAL) {
       target.addTags(
           Model.KeyValue.newBuilder()
               .setKey(KEY_SPAN_KIND)

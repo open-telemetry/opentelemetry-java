@@ -38,6 +38,7 @@ import io.opencensus.trace.Tracestate;
 import io.opencensus.trace.config.TraceConfig;
 import io.opencensus.trace.config.TraceParams;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ class OpenTelemetrySpanBuilderImpl extends SpanBuilder {
   @Nullable private final Span ocParent;
   @Nullable private final SpanContext ocRemoteParentSpanContext;
   @Nullable private Sampler ocSampler;
-  @Nullable private io.opentelemetry.api.trace.Span.Kind otelKind;
+  @Nullable private SpanKind otelKind;
 
   @Override
   public SpanBuilder setSampler(Sampler sampler) {

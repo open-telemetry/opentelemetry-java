@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -109,7 +109,7 @@ class TestSpanDataTest {
         .setName("spanName")
         .setStartEpochNanos(START_EPOCH_NANOS)
         .setEndEpochNanos(END_EPOCH_NANOS)
-        .setKind(Kind.SERVER)
+        .setKind(SpanKind.SERVER)
         .setStatus(StatusData.ok())
         .setTotalRecordedEvents(0)
         .setTotalRecordedLinks(0);
