@@ -270,8 +270,8 @@ subprojects {
                     attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("jacoco-coverage-data"))
                 }
                 // This will cause the test task to run if the coverage data is requested by the aggregation task
-                tasks.withType(Test::class).forEach { task ->
-                    outgoing.artifact(task.extensions.getByType<JacocoTaskExtension>().destinationFile!!)
+                tasks.withType(Test::class) {
+                    outgoing.artifact(extensions.getByType<JacocoTaskExtension>().destinationFile!!)
                 }
             }
 
