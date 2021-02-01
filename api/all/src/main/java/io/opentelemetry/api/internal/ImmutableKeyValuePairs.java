@@ -77,21 +77,16 @@ public abstract class ImmutableKeyValuePairs<K, V> {
     return dedupe(data, filterNullValues, keyComparator);
   }
 
-  private static void mergeSort(Object[] data, Comparator<?> keyComparator) {
-    Object[] workArray = new Object[data.length];
-    mergeSort(data, workArray, data.length, keyComparator);
-  }
-
   // note: merge sort implementation cribbed from this wikipedia article:
   // https://en.wikipedia.org/wiki/Merge_sort (this is the top-down variant)
-  private static void mergeSort(
-      Object[] sourceArray, Object[] workArray, int n, Comparator<?> keyComparator) {
-    System.arraycopy(sourceArray, 0, workArray, 0, sourceArray.length);
+  private static void mergeSort(Object[] data, Comparator<?> keyComparator) {
+    Object[] workArray = new Object[data.length];
+    System.arraycopy(data, 0, workArray, 0, data.length);
     splitAndMerge(
         workArray,
         0,
-        n,
-        sourceArray,
+        data.length,
+        data,
         keyComparator); // sort data from workArray[] into sourceArray[]
   }
 
