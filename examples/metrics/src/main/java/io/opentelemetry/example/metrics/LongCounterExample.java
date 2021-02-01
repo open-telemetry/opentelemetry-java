@@ -3,9 +3,9 @@ package io.opentelemetry.example.metrics;
 import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
@@ -16,8 +16,7 @@ import java.io.File;
 import javax.swing.filechooser.FileSystemView;
 
 /**
- * Example of using {@link LongCounter} and {@link LongCounter.BoundLongCounter} to count searched
- * directories.
+ * Example of using {@link LongCounter} and {@link BoundLongCounter} to count searched directories.
  */
 public class LongCounterExample {
   private static final OpenTelemetry openTelemetry = DefaultOpenTelemetry.builder().build();
