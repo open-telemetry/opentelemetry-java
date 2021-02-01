@@ -61,9 +61,10 @@ class ZipkinSpanExporterTest {
   private static final String PARENT_SPAN_ID = "8b03ab423da481c5";
   private static final Attributes attributes = Attributes.empty();
   private static final List<EventData> annotations =
-      Arrays.asList(
-          EventData.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
-          EventData.create(1505855799_459486280L, "SENT", Attributes.empty()));
+      Collections.unmodifiableList(
+          Arrays.asList(
+              EventData.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
+              EventData.create(1505855799_459486280L, "SENT", Attributes.empty())));
 
   private final ZipkinSpanExporter exporter = ZipkinSpanExporter.builder().build();
 

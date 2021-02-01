@@ -49,9 +49,10 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final long SENT_TIMESTAMP_NANOS = 1505855799_459486280L;
   private static final Attributes attributes = Attributes.empty();
   private static final List<EventData> annotations =
-      Arrays.asList(
-          EventData.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
-          EventData.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
+      Collections.unmodifiableList(
+          Arrays.asList(
+              EventData.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
+              EventData.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty())));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
