@@ -31,13 +31,6 @@ dependencies {
     testRuntimeOnly "io.grpc:grpc-netty-shaded"
 }
 
-animalsniffer {
-    // Don't check sourceSets.jmh and sourceSets.test
-    sourceSets = [
-            sourceSets.main
-    ]
-}
-
 // IntelliJ complains that the generated classes are not found, ask IntelliJ to include the
 // generated Java directories as source folders.
 idea {
