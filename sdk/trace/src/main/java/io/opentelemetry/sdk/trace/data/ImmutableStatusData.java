@@ -58,7 +58,7 @@ abstract class ImmutableStatusData implements StatusData {
    * @param description the new description of the {@code Status}.
    * @return The newly created {@code Status} with the given description.
    */
-  public static StatusData create(StatusCode statusCode, @Nullable String description) {
+  static StatusData create(StatusCode statusCode, @Nullable String description) {
     if (description == null) {
       return codeToStatus.get(statusCode);
     }
