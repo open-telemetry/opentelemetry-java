@@ -79,7 +79,7 @@ val DEPENDENCIES = listOf(
         "com.sparkjava:spark-core:2.9.3",
         "com.squareup.okhttp3:okhttp:4.9.0",
         "com.sun.net.httpserver:http:20070405",
-        "com.tngtech.archunit:archunit-junit4:0.15.0",
+        "com.tngtech.archunit:archunit-junit4:0.16.0",
         "edu.berkeley.cs.jqf:jqf-fuzz:1.6",
         "eu.rekawek.toxiproxy:toxiproxy-java:2.1.4",
         "io.github.netmikey.logunit:logunit-jul:1.1.0",
