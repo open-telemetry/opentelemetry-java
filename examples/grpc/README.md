@@ -15,17 +15,17 @@ and create a **Child Span**.
 
 ## 1 - Compile 
 ```shell script
-../gradlew fatJar
+../gradlew shadowJar
 ```
 
 ## 2 - Start the Server
 ```shell script
-java -cp ./build/libs/opentelemetry-examples-grpc-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.grpc.HelloWorldServer
+java -cp ./build/libs/opentelemetry-examples-grpc-0.1.0-SNAPSHOT-all.jar io.opentelemetry.example.grpc.HelloWorldServer
 ```
  
 ## 3 - Start the normal Client
 ```shell script
-java -cp ./build/libs/opentelemetry-examples-grpc-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.grpc.HelloWorldClient
+java -cp ./build/libs/opentelemetry-examples-grpc-0.1.0-SNAPSHOT-all.jar io.opentelemetry.example.grpc.HelloWorldClient
 ```
 
 ## 4 - Start the streamed Client

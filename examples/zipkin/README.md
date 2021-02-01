@@ -11,7 +11,7 @@ to instrument a simple application using Zipkin as trace exporter.
 
 ## 1 - Compile 
 ```shell script
-../gradlew fatJar
+../gradlew shadowJar
 ```
 ## 2 - Run Zipkin
 
@@ -23,7 +23,7 @@ docker run --rm -it --name zipkin \
 
 ## 3 - Start the Application
 ```shell script
-java -cp build/libs/opentelemetry-examples-zipkin-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.zipkin.ZipkinExample localhost 9411
+java -cp build/libs/opentelemetry-examples-zipkin-0.1.0-SNAPSHOT-all.jar io.opentelemetry.example.zipkin.ZipkinExample localhost 9411
 ```
 ## 4 - Open the Zipkin UI
 
