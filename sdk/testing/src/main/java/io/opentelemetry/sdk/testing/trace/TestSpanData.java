@@ -9,7 +9,6 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -36,6 +35,7 @@ public abstract class TestSpanData implements SpanData {
    */
   public static Builder builder() {
     return new AutoValue_TestSpanData.Builder()
+        .setSpanContext(SpanContext.getInvalid())
         .setParentSpanContext(SpanContext.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
         .setLinks(Collections.emptyList())
@@ -44,8 +44,6 @@ public abstract class TestSpanData implements SpanData {
         .setEvents(Collections.emptyList())
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
-        .setTraceState(TraceState.getDefault())
-        .setSampled(false)
         .setTotalAttributeCount(0);
   }
 
@@ -79,30 +77,12 @@ public abstract class TestSpanData implements SpanData {
     }
 
     /**
-     * Set the trace id on this builder.
+     * Set the {@code SpanContext} on this builder.
      *
-     * @param traceId the trace id.
+     * @param spanContext the {@code SpanContext}.
      * @return this builder (for chaining).
      */
-    public abstract Builder setTraceId(String traceId);
-
-    /**
-     * Set the span id on this builder.
-     *
-     * @param spanId the span id.
-     * @return this builder (for chaining).
-     */
-    public abstract Builder setSpanId(String spanId);
-
-    public abstract Builder setSampled(boolean isSampled);
-
-    /**
-     * Set the {@link TraceState} on this builder.
-     *
-     * @param traceState the {@code TraceState}.
-     * @return this.
-     */
-    public abstract Builder setTraceState(TraceState traceState);
+    public abstract Builder setSpanContext(SpanContext spanContext);
 
     /**
      * The parent span context associated for this span, which may be null.

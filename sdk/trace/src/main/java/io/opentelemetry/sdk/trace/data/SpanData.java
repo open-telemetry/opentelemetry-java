@@ -22,29 +22,40 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface SpanData {
 
+  /** Returns the {@link SpanContext} of the Span. */
+  SpanContext getSpanContext();
+
   /**
    * Gets the trace id for this span.
    *
    * @return the trace id.
    */
-  String getTraceId();
+  default String getTraceId() {
+    return getSpanContext().getTraceIdAsHexString();
+  }
 
   /**
    * Gets the span id for this span.
    *
    * @return the span id.
    */
-  String getSpanId();
+  default String getSpanId() {
+    return getSpanContext().getSpanIdAsHexString();
+  }
 
   /** Whether the 'sampled' option set on this span. */
-  boolean isSampled();
+  default boolean isSampled() {
+    return getSpanContext().isSampled();
+  }
 
   /**
    * Gets the {@code TraceState} for this span.
    *
    * @return the {@code TraceState} for this span.
    */
-  TraceState getTraceState();
+  default TraceState getTraceState() {
+    return getSpanContext().getTraceState();
+  }
 
   /**
    * Returns the parent {@link SpanContext}. If the span is a root span, the {@link SpanContext}

@@ -15,9 +15,8 @@ import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -66,8 +65,9 @@ final class Adapter {
   static Model.Span toJaeger(SpanData span) {
     Model.Span.Builder target = Model.Span.newBuilder();
 
-    target.setTraceId(ByteString.copyFrom(TraceId.bytesFromHex(span.getTraceId(), 0)));
-    target.setSpanId(ByteString.copyFrom(SpanId.bytesFromHex(span.getSpanId(), 0)));
+    SpanContext spanContext = span.getSpanContext();
+    target.setTraceId(ByteString.copyFrom(spanContext.getTraceIdBytes()));
+    target.setSpanId(ByteString.copyFrom(spanContext.getSpanIdBytes()));
     target.setOperationName(span.getName());
     Timestamp startTimestamp = Timestamps.fromNanos(span.getStartEpochNanos());
     target.setStartTime(startTimestamp);
@@ -79,11 +79,12 @@ final class Adapter {
     target.addAllReferences(toSpanRefs(span.getLinks()));
 
     // add the parent span
-    if (span.getParentSpanContext().isValid()) {
+    SpanContext parentSpanContext = span.getParentSpanContext();
+    if (parentSpanContext.isValid()) {
       target.addReferences(
           Model.SpanRef.newBuilder()
-              .setTraceId(ByteString.copyFrom(TraceId.bytesFromHex(span.getTraceId(), 0)))
-              .setSpanId(ByteString.copyFrom(SpanId.bytesFromHex(span.getParentSpanId(), 0)))
+              .setTraceId(ByteString.copyFrom(parentSpanContext.getTraceIdBytes()))
+              .setSpanId(ByteString.copyFrom(parentSpanContext.getSpanIdBytes()))
               .setRefType(Model.SpanRefType.CHILD_OF));
     }
 

@@ -13,7 +13,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -107,8 +106,6 @@ class TestSpanDataTest {
   private static TestSpanData.Builder createBasicSpanBuilder() {
     return TestSpanData.builder()
         .setHasEnded(true)
-        .setSpanId(SpanId.getInvalid())
-        .setTraceId(TraceId.getInvalid())
         .setName("spanName")
         .setStartEpochNanos(START_EPOCH_NANOS)
         .setEndEpochNanos(END_EPOCH_NANOS)
