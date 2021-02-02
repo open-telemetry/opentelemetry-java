@@ -40,7 +40,7 @@ class TracerProviderConfigurationTest {
   void configureTracerProvider() {
     Map<String, String> properties = new HashMap<>();
     properties.put("otel.bsp.schedule.delay", "100000");
-    properties.put("otel.trace.sampler", "always_off");
+    properties.put("otel.traces.sampler", "always_off");
 
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     // We don't have any exporters on classpath for this test so check no-op case. Exporter cases
@@ -140,7 +140,7 @@ class TracerProviderConfigurationTest {
   void configureTraceConfig_full() {
 
     Map<String, String> properties = new HashMap<>();
-    properties.put("otel.trace.sampler", "always_off");
+    properties.put("otel.traces.sampler", "always_off");
     properties.put("otel.span.attribute.count.limit", "5");
     properties.put("otel.span.event.count.limit", "4");
     properties.put("otel.span.link.count.limit", "3");
@@ -163,7 +163,7 @@ class TracerProviderConfigurationTest {
             TracerProviderConfiguration.configureSampler(
                 "traceidratio",
                 ConfigProperties.createForTest(
-                    Collections.singletonMap("otel.trace.sampler.arg", "0.5"))))
+                    Collections.singletonMap("otel.traces.sampler.arg", "0.5"))))
         .isEqualTo(Sampler.traceIdRatioBased(0.5));
     assertThat(TracerProviderConfiguration.configureSampler("traceidratio", EMPTY))
         .isEqualTo(Sampler.traceIdRatioBased(1.0d));
@@ -175,13 +175,13 @@ class TracerProviderConfigurationTest {
             TracerProviderConfiguration.configureSampler(
                 "parentbased_traceidratio",
                 ConfigProperties.createForTest(
-                    Collections.singletonMap("otel.trace.sampler.arg", "0.4"))))
+                    Collections.singletonMap("otel.traces.sampler.arg", "0.4"))))
         .isEqualTo(Sampler.parentBased(Sampler.traceIdRatioBased(0.4)));
     assertThat(TracerProviderConfiguration.configureSampler("parentbased_traceidratio", EMPTY))
         .isEqualTo(Sampler.parentBased(Sampler.traceIdRatioBased(1.0d)));
 
     assertThatThrownBy(() -> TracerProviderConfiguration.configureSampler("catsampler", EMPTY))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized value for otel.trace.sampler: catsampler");
+        .hasMessage("Unrecognized value for otel.traces.sampler: catsampler");
   }
 }

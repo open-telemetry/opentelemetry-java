@@ -34,34 +34,34 @@ class ConfigErrorTest {
   }
 
   @Test
-  @SetSystemProperty(key = "otel.trace.sampler", value = "traceidratio")
-  @SetSystemProperty(key = "otel.trace.sampler.arg", value = "bar")
+  @SetSystemProperty(key = "otel.traces.sampler", value = "traceidratio")
+  @SetSystemProperty(key = "otel.traces.sampler.arg", value = "bar")
   void invalidTraceIdRatio() {
     assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Invalid value for property otel.trace.sampler.arg=bar. Must be a double.");
+        .hasMessage("Invalid value for property otel.traces.sampler.arg=bar. Must be a double.");
   }
 
   @Test
-  @SetSystemProperty(key = "otel.trace.sampler", value = "parentbased_traceidratio")
-  @SetSystemProperty(key = "otel.trace.sampler.arg", value = "bar")
+  @SetSystemProperty(key = "otel.traces.sampler", value = "parentbased_traceidratio")
+  @SetSystemProperty(key = "otel.traces.sampler.arg", value = "bar")
   void invalidTraceIdRatioWithParent() {
     assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Invalid value for property otel.trace.sampler.arg=bar. Must be a double.");
+        .hasMessage("Invalid value for property otel.traces.sampler.arg=bar. Must be a double.");
   }
 
   @Test
-  @SetSystemProperty(key = "otel.trace.sampler", value = "cat")
+  @SetSystemProperty(key = "otel.traces.sampler", value = "cat")
   void invalidSampler() {
     assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized value for otel.trace.sampler: cat");
+        .hasMessage("Unrecognized value for otel.traces.sampler: cat");
   }
 
   @Test
-  @SetSystemProperty(key = "otel.trace.sampler", value = "traceidratio")
-  @SetSystemProperty(key = "otel.trace.sampler.arg", value = "bar")
+  @SetSystemProperty(key = "otel.traces.sampler", value = "traceidratio")
+  @SetSystemProperty(key = "otel.traces.sampler.arg", value = "bar")
   void globalOpenTelemetryWhenError() {
     assertThat(GlobalOpenTelemetry.get())
         .isInstanceOf(OpenTelemetry.class)
