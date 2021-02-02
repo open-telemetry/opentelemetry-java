@@ -36,7 +36,7 @@ import javax.annotation.concurrent.Immutable;
  * designed to support all the data propagated via W3C propagation natively.
  */
 @Immutable
-public final class W3CTraceContextPropagator {
+public final class W3CTraceContextPropagator implements TextMapPropagator {
   private static final Logger logger = Logger.getLogger(W3CTraceContextPropagator.class.getName());
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
@@ -66,73 +66,7 @@ public final class W3CTraceContextPropagator {
       Pattern.compile("[ \t]*" + TRACESTATE_ENTRY_DELIMITER + "[ \t]*");
   private static final Set<String> VALID_VERSIONS;
   private static final String VERSION_00 = "00";
-  private static final TextMapPropagator INSTANCE =
-      new TextMapPropagator() {
-        @Override
-        public Collection<String> fields() {
-          return FIELDS;
-        }
-
-        @Override
-        public <C> void inject(Context context, C carrier, Setter<C> setter) {
-          Objects.requireNonNull(context, "context");
-          Objects.requireNonNull(setter, "setter");
-
-          SpanContext spanContext = Span.fromContext(context).getSpanContext();
-          if (!spanContext.isValid()) {
-            return;
-          }
-
-          char[] chars = TemporaryBuffers.chars(TRACEPARENT_HEADER_SIZE);
-          chars[0] = VERSION.charAt(0);
-          chars[1] = VERSION.charAt(1);
-          chars[2] = TRACEPARENT_DELIMITER;
-
-          String traceId = spanContext.getTraceIdAsHexString();
-          for (int i = 0; i < traceId.length(); i++) {
-            chars[TRACE_ID_OFFSET + i] = traceId.charAt(i);
-          }
-
-          chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
-
-          String spanId = spanContext.getSpanIdAsHexString();
-          for (int i = 0; i < spanId.length(); i++) {
-            chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
-          }
-
-          chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
-          spanContext.copyTraceFlagsHexTo(chars, TRACE_OPTION_OFFSET);
-          setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
-          TraceState traceState = spanContext.getTraceState();
-          if (traceState.isEmpty()) {
-            // No need to add an empty "tracestate" header.
-            return;
-          }
-          StringBuilder stringBuilder = new StringBuilder(TRACESTATE_MAX_SIZE);
-          traceState.forEach(
-              (key, value) -> {
-                if (stringBuilder.length() != 0) {
-                  stringBuilder.append(TRACESTATE_ENTRY_DELIMITER);
-                }
-                stringBuilder.append(key).append(TRACESTATE_KEY_VALUE_DELIMITER).append(value);
-              });
-          setter.set(carrier, TRACE_STATE, stringBuilder.toString());
-        }
-
-        @Override
-        public <C /*>>> extends @NonNull Object*/> Context extract(
-            Context context, @Nullable C carrier, Getter<C> getter) {
-          Objects.requireNonNull(context, "context");
-          Objects.requireNonNull(getter, "getter");
-
-          SpanContext spanContext = extractImpl(carrier, getter);
-          if (!spanContext.isValid()) {
-            return context;
-          }
-
-          return context.with(Span.wrap(spanContext));
-        }
-      };
+  private static final W3CTraceContextPropagator INSTANCE = new W3CTraceContextPropagator();
 
   static {
     // A valid version is 1 byte representing an 8-bit unsigned integer, version ff is invalid.
@@ -154,11 +88,76 @@ public final class W3CTraceContextPropagator {
    * Returns a singleton instance of a {@link TextMapPropagator} implementing the W3C TraceContext
    * propagation.
    */
-  public static TextMapPropagator getInstance() {
+  public static W3CTraceContextPropagator getInstance() {
     return INSTANCE;
   }
 
-  private static <C> SpanContext extractImpl(C carrier, TextMapPropagator.Getter<C> getter) {
+  @Override
+  public Collection<String> fields() {
+    return FIELDS;
+  }
+
+  @Override
+  public <C> void inject(Context context, @Nullable C carrier, Setter<C> setter) {
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(setter, "setter");
+
+    SpanContext spanContext = Span.fromContext(context).getSpanContext();
+    if (!spanContext.isValid()) {
+      return;
+    }
+
+    char[] chars = TemporaryBuffers.chars(TRACEPARENT_HEADER_SIZE);
+    chars[0] = VERSION.charAt(0);
+    chars[1] = VERSION.charAt(1);
+    chars[2] = TRACEPARENT_DELIMITER;
+
+    String traceId = spanContext.getTraceIdAsHexString();
+    for (int i = 0; i < traceId.length(); i++) {
+      chars[TRACE_ID_OFFSET + i] = traceId.charAt(i);
+    }
+
+    chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
+
+    String spanId = spanContext.getSpanIdAsHexString();
+    for (int i = 0; i < spanId.length(); i++) {
+      chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
+    }
+
+    chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
+    spanContext.copyTraceFlagsHexTo(chars, TRACE_OPTION_OFFSET);
+    setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
+    TraceState traceState = spanContext.getTraceState();
+    if (traceState.isEmpty()) {
+      // No need to add an empty "tracestate" header.
+      return;
+    }
+    StringBuilder stringBuilder = new StringBuilder(TRACESTATE_MAX_SIZE);
+    traceState.forEach(
+        (key, value) -> {
+          if (stringBuilder.length() != 0) {
+            stringBuilder.append(TRACESTATE_ENTRY_DELIMITER);
+          }
+          stringBuilder.append(key).append(TRACESTATE_KEY_VALUE_DELIMITER).append(value);
+        });
+    setter.set(carrier, TRACE_STATE, stringBuilder.toString());
+  }
+
+  @Override
+  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(getter, "getter");
+
+    SpanContext spanContext = extractImpl(carrier, getter);
+    if (!spanContext.isValid()) {
+      return context;
+    }
+
+    return context.with(Span.wrap(spanContext));
+  }
+
+  private static <C> SpanContext extractImpl(
+      @Nullable C carrier, TextMapPropagator.Getter<C> getter) {
     String traceParent = getter.get(carrier, TRACE_PARENT);
     if (traceParent == null) {
       return SpanContext.getInvalid();
