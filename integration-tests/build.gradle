@@ -1,16 +1,11 @@
 plugins {
     id "java"
+
+    id "com.github.johnrengelman.shadow"
 }
 
 description = 'OpenTelemetry Integration Tests'
 ext.moduleName = "io.opentelemetry.integration.tests"
-
-// create a single Jar with all dependencies
-task fatJar(type: Jar) {
-    baseName = project.name + '-all'
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
 
 dependencies {
     implementation project(':sdk:all'),
@@ -24,8 +19,8 @@ dependencies {
             "com.squareup.okhttp3:okhttp"
 
     tasks.withType(Test) {
-        dependsOn fatJar
-        systemProperty 'archive.name', fatJar.outputs.files[0].path
+        dependsOn shadowJar
+        systemProperty 'archive.name', shadowJar.archiveFile.get().asFile.absolutePath
     }
 }
 

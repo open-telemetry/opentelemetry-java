@@ -1,66 +1,68 @@
 plugins {
-    id "java"
+    java
 }
 
 description = "OpenTelemetry All"
-ext.moduleName = "io.opentelemetry.all"
+extra["moduleName"] = "io.opentelemetry.all"
 
-// We don't compile much here, just some API boundary tests. This project is mostly for
-// aggregating jacoco reports and it doesn't work if this isn't at least as high as the
-// highest supported Java version in any of our projects. Most of our projects target
-// Java 8, except for jfr-events.
-tasks.withType(JavaCompile) {
-    it.options.release = 11
-}
+tasks {
+    // We don't compile much here, just some API boundary tests. This project is mostly for
+    // aggregating jacoco reports and it doesn't work if this isn't at least as high as the
+    // highest supported Java version in any of our projects. Most of our projects target
+    // Java 8, except for jfr-events.
+    withType(JavaCompile::class) {
+        options.release.set(11)
+    }
 
-tasks.testJava8 {
-    enabled = false
+    named("testJava8") {
+        enabled = false
+    }
 }
 
 dependencies {
-    rootProject.subprojects.each { subproject ->
+    rootProject.subprojects.forEach { subproject ->
         // Generate aggregate coverage report for published modules that enable jacoco.
         subproject.plugins.withId("jacoco") {
             subproject.plugins.withId("maven-publish") {
-                implementation(subproject) {
-                    transitive = false
+                implementation(project(subproject.path)) {
+                    isTransitive = false
                 }
             }
         }
     }
-    testImplementation "com.tngtech.archunit:archunit-junit4"
+    testImplementation("com.tngtech.archunit:archunit-junit4")
 }
 
 // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
 
-def sourcesPath = configurations.create("sourcesPath") {
-    visible = false
-    canBeResolved = true
-    canBeConsumed = false
-    extendsFrom(configurations.implementation)
+val sourcesPath by configurations.creating {
+    isVisible = false
+    isCanBeResolved = true
+    isCanBeConsumed = false
+    extendsFrom(configurations.implementation.get())
     attributes {
-        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
-        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
-        attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, 'source-folders'))
+        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
+        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
+        attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("source-folders"))
     }
 }
 
-def coverageDataPath = configurations.create("coverageDataPath") {
-    visible = false
-    canBeResolved = true
-    canBeConsumed = false
-    extendsFrom(configurations.implementation)
+val coverageDataPath by configurations.creating {
+    isVisible = false
+    isCanBeResolved = true
+    isCanBeConsumed = false
+    extendsFrom(configurations.implementation.get())
     attributes {
-        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
-        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category, Category.DOCUMENTATION))
-        attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType, 'jacoco-coverage-data'))
+        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
+        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
+        attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("jacoco-coverage-data"))
     }
 }
 
-tasks.named('jacocoTestReport', JacocoReport) {
+tasks.named<JacocoReport>("jacocoTestReport") {
     enabled = true
 
-    configurations.runtimeClasspath.each {
+    configurations.runtimeClasspath.get().forEach {
         additionalClassDirs(zipTree(it).filter {
             // Exclude mrjar (jacoco complains), shaded, and generated code
             !it.absolutePath.contains("META-INF/versions/") &&
@@ -81,10 +83,10 @@ tasks.named('jacocoTestReport', JacocoReport) {
     reports {
         // xml is usually used to integrate code coverage with
         // other tools like SonarQube, Coveralls or Codecov
-        xml.enabled true
+        xml.isEnabled = true
 
         // HTML reports can be used to see code coverage
         // without any external tools
-        html.enabled true
+        html.isEnabled = true
     }
 }

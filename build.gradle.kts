@@ -9,6 +9,7 @@ import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import org.gradle.api.plugins.JavaPlugin.*
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
+import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferPlugin
 import java.time.Duration
 
@@ -270,17 +271,16 @@ subprojects {
                     attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("jacoco-coverage-data"))
                 }
                 // This will cause the test task to run if the coverage data is requested by the aggregation task
-                tasks.withType(Test::class).forEach { task ->
-                    outgoing.artifact(task.extensions.getByType<JacocoTaskExtension>().destinationFile!!)
+                tasks.withType(Test::class) {
+                    outgoing.artifact(extensions.getByType<JacocoTaskExtension>().destinationFile!!)
                 }
             }
 
-            // TODO(anuraaga): Probably remove this, compile is a deprecated configuration.
-            named("compile") {
-                // Detect Maven Enforcer's dependencyConvergence failures. We only
-                // care for artifacts used as libraries by others.
-                // TODO: Enable failOnVersionConflict()
-                resolutionStrategy.preferProjectModules()
+            configureEach {
+                resolutionStrategy {
+                    failOnVersionConflict()
+                    preferProjectModules()
+                }
             }
         }
 
@@ -364,21 +364,10 @@ subprojects {
         plugins.withId("ru.vyarus.animalsniffer") {
             dependencies {
                 add(AnimalSnifferPlugin.SIGNATURE_CONF, "com.toasttab.android:gummy-bears-api-24:0.3.0:coreLib@signature")
+            }
 
-                tasks {
-                    withType(AnimalSniffer::class) {
-                        if (name.startsWith("animalsnifferTest")) {
-                            enabled = false
-                        }
-                    }
-
-                    // If JMH enabled ignore animalsniffer.
-                    plugins.withId("me.champeau.gradle.jmh") {
-                        named("animalsnifferJmh") {
-                            enabled = false
-                        }
-                    }
-                }
+            configure<AnimalSnifferExtension> {
+                sourceSets = listOf(the<JavaPluginConvention>().sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME))
             }
         }
 
