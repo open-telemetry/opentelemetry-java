@@ -26,7 +26,7 @@ final class SdkTracer implements Tracer {
     if (spanName == null || spanName.trim().isEmpty()) {
       spanName = FALLBACK_SPAN_NAME;
     }
-    if (sharedState.isStopped()) {
+    if (sharedState.hasBeenShutdown()) {
       return Tracer.getDefault().spanBuilder(spanName);
     }
     return new SdkSpanBuilder(

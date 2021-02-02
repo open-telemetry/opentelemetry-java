@@ -81,18 +81,20 @@ final class TracerSharedState {
   }
 
   /**
-   * Returns {@code true} if tracing is stopped.
+   * Returns {@code true} if tracing has been shut down.
    *
-   * @return {@code true} if tracing is stopped.
+   * @return {@code true} if tracing has been shut down.
    */
-  boolean isStopped() {
+  boolean hasBeenShutdown() {
+    // todo: do we really need a lock around this check? This is on the hot path of tracing.
     synchronized (lock) {
-      return shutdownResult != null && shutdownResult.isSuccess();
+      return shutdownResult != null;
     }
   }
 
   /**
-   * Stops tracing, including shutting down processors and set to {@code true} {@link #isStopped()}.
+   * Stops tracing, including shutting down processors and set to {@code true} {@link
+   * #hasBeenShutdown()}.
    *
    * @return a {@link CompletableResultCode} that will be completed when the span processor is shut
    *     down.
