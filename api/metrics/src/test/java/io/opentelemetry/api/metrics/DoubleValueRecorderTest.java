@@ -8,6 +8,7 @@ package io.opentelemetry.api.metrics;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.internal.MetricsStringUtils;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +42,7 @@ class DoubleValueRecorderTest {
 
   @Test
   void preventTooLongName() {
-    char[] chars = new char[256];
+    char[] chars = new char[MetricsStringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     assertThatThrownBy(() -> meter.doubleValueRecorderBuilder(longName).build())
