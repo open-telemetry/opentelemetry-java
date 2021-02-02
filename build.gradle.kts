@@ -107,10 +107,6 @@ subprojects {
         val javaToolchains = the<JavaToolchainService>()
 
         tasks {
-            withType(Javadoc::class) {
-                exclude("io/opentelemetry/internal/**")
-            }
-
             val testJava8 by registering(Test::class) {
                 javaLauncher.set(javaToolchains.launcherFor {
                     languageVersion.set(JavaLanguageVersion.of(14))
@@ -214,11 +210,24 @@ subprojects {
             }
 
             withType(Javadoc::class) {
+                exclude("io/opentelemetry/internal/**")
+
                 with(options as StandardJavadocDocletOptions) {
                     source = "8"
                     encoding = "UTF-8"
+                    docEncoding = "UTF-8"
+                    breakIterator(true)
+
+                    addBooleanOption("html5", true)
+
                     links("https://docs.oracle.com/javase/8/docs/api/")
                     addBooleanOption("Xdoclint:all,-missing", true)
+
+                    afterEvaluate {
+                        val title = "${project.description}"
+                        docTitle = title
+                        windowTitle = title
+                    }
                 }
             }
 
