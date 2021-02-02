@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.protobuf.CodedOutputStream;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
@@ -78,7 +78,7 @@ class TraceMarshalerTest {
         Collections.singletonList(
             TestSpanData.builder()
                 .setSpanContext(SPAN_CONTEXT)
-                .setKind(Span.Kind.INTERNAL)
+                .setKind(SpanKind.INTERNAL)
                 .setName("")
                 .setStartEpochNanos(0)
                 .setEndEpochNanos(0)
@@ -93,7 +93,7 @@ class TraceMarshalerTest {
         Collections.singletonList(
             TestSpanData.builder()
                 .setSpanContext(SPAN_CONTEXT)
-                .setKind(Span.Kind.INTERNAL)
+                .setKind(SpanKind.INTERNAL)
                 .setName("")
                 .setStartEpochNanos(0)
                 .setEndEpochNanos(0)
@@ -109,7 +109,7 @@ class TraceMarshalerTest {
             TestSpanData.builder()
                 .setSpanContext(SPAN_CONTEXT)
                 .setParentSpanContext(PARENT_SPAN_CONTEXT)
-                .setKind(Span.Kind.INTERNAL)
+                .setKind(SpanKind.INTERNAL)
                 .setName("")
                 .setStartEpochNanos(0)
                 .setEndEpochNanos(0)
@@ -135,7 +135,7 @@ class TraceMarshalerTest {
     return TestSpanData.builder()
         .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
         .setSpanContext(SPAN_CONTEXT)
-        .setKind(Span.Kind.INTERNAL)
+        .setKind(SpanKind.INTERNAL)
         .setName("")
         .setStartEpochNanos(0)
         .setEndEpochNanos(0)
@@ -178,7 +178,7 @@ class TraceMarshalerTest {
         .setSpanContext(SPAN_CONTEXT)
         .setParentSpanContext(SpanContext.getInvalid())
         .setName("GET /api/endpoint")
-        .setKind(Span.Kind.SERVER)
+        .setKind(SpanKind.SERVER)
         .setStartEpochNanos(12345)
         .setEndEpochNanos(12349)
         .setAttributes(

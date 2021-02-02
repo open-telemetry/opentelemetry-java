@@ -10,6 +10,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
@@ -55,7 +56,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   // Number of links recorded.
   private final int totalRecordedLinks;
   // The kind of the span.
-  private final Kind kind;
+  private final SpanKind kind;
   // The clock used to get the time.
   private final Clock clock;
   // The resource associated with this span.
@@ -94,7 +95,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       SpanContext context,
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      Kind kind,
+      SpanKind kind,
       SpanContext parentSpanContext,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -141,7 +142,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       SpanContext context,
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      Kind kind,
+      SpanKind kind,
       @Nullable SpanContext parentSpanContext,
       @Nonnull Context parentContext,
       TraceConfig traceConfig,
@@ -463,7 +464,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public Kind getKind() {
+  public SpanKind getKind() {
     return kind;
   }
 

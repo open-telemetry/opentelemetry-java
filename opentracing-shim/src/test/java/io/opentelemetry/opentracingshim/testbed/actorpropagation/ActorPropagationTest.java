@@ -9,7 +9,7 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByKind;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByKind;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -69,14 +69,14 @@ class ActorPropagationTest {
       phaser.arriveAndAwaitAdvance(); // continue...
       phaser.arriveAndAwaitAdvance(); // child tracer finished
       assertThat(otelTesting.getSpans().size()).isEqualTo(3);
-      assertThat(getByKind(otelTesting.getSpans(), Kind.CONSUMER)).hasSize(2);
+      assertThat(getByKind(otelTesting.getSpans(), SpanKind.CONSUMER)).hasSize(2);
       phaser.arriveAndDeregister(); // continue...
 
       List<SpanData> finished = otelTesting.getSpans();
       assertThat(finished.size()).isEqualTo(3);
       assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
-      assertThat(getByKind(finished, Kind.CONSUMER)).hasSize(2);
-      assertThat(getOneByKind(finished, Kind.PRODUCER)).isNotNull();
+      assertThat(getByKind(finished, SpanKind.CONSUMER)).hasSize(2);
+      assertThat(getOneByKind(finished, SpanKind.PRODUCER)).isNotNull();
 
       assertThat(tracer.scopeManager().activeSpan()).isNull();
     }
@@ -105,7 +105,7 @@ class ActorPropagationTest {
       phaser.arriveAndAwaitAdvance(); // continue...
       phaser.arriveAndAwaitAdvance(); // child tracer finished
       assertThat(otelTesting.getSpans().size()).isEqualTo(3);
-      assertThat(getByKind(otelTesting.getSpans(), Kind.CONSUMER)).hasSize(2);
+      assertThat(getByKind(otelTesting.getSpans(), SpanKind.CONSUMER)).hasSize(2);
       phaser.arriveAndDeregister(); // continue...
 
       List<SpanData> finished = otelTesting.getSpans();
@@ -116,8 +116,8 @@ class ActorPropagationTest {
 
       assertThat(finished.size()).isEqualTo(3);
       assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
-      assertThat(getByKind(finished, Kind.CONSUMER)).hasSize(2);
-      assertThat(getOneByKind(finished, Kind.PRODUCER)).isNotNull();
+      assertThat(getByKind(finished, SpanKind.CONSUMER)).hasSize(2);
+      assertThat(getOneByKind(finished, SpanKind.PRODUCER)).isNotNull();
 
       assertThat(tracer.scopeManager().activeSpan()).isNull();
     }

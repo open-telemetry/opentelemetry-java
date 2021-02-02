@@ -14,9 +14,9 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
@@ -43,7 +43,7 @@ final class SdkSpanBuilder implements SpanBuilder {
   private final TraceConfig traceConfig;
 
   @Nullable private Context parent;
-  private Kind spanKind = Kind.INTERNAL;
+  private SpanKind spanKind = SpanKind.INTERNAL;
   @Nullable private AttributesMap attributes;
   @Nullable private List<LinkData> links;
   private int totalNumberOfLinksAdded = 0;
@@ -77,7 +77,7 @@ final class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder setSpanKind(Kind spanKind) {
+  public SpanBuilder setSpanKind(SpanKind spanKind) {
     this.spanKind = Objects.requireNonNull(spanKind, "spanKind");
     return this;
   }

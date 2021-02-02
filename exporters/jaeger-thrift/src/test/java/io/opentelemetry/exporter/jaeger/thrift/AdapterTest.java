@@ -21,9 +21,9 @@ import io.jaegertracing.thriftjava.SpanRef;
 import io.jaegertracing.thriftjava.SpanRefType;
 import io.jaegertracing.thriftjava.Tag;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
@@ -56,7 +56,7 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
 
-    SpanData span = getSpanData(startMs, endMs, Span.Kind.SERVER);
+    SpanData span = getSpanData(startMs, endMs, SpanKind.SERVER);
     List<SpanData> spans = Collections.singletonList(span);
 
     List<io.jaegertracing.thriftjava.Span> jaegerSpans = Adapter.toJaeger(spans);
@@ -71,7 +71,7 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
 
-    SpanData span = getSpanData(startMs, endMs, Span.Kind.SERVER);
+    SpanData span = getSpanData(startMs, endMs, SpanKind.SERVER);
 
     // test
     io.jaegertracing.thriftjava.Span jaegerSpan = Adapter.toJaeger(span);
@@ -109,7 +109,7 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
 
-    SpanData span = getSpanData(startMs, endMs, Span.Kind.INTERNAL);
+    SpanData span = getSpanData(startMs, endMs, SpanKind.INTERNAL);
 
     // test
     io.jaegertracing.thriftjava.Span jaegerSpan = Adapter.toJaeger(span);
@@ -222,7 +222,7 @@ class AdapterTest {
             .setName("GET /api/endpoint")
             .setStartEpochNanos(MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(MILLISECONDS.toNanos(endMs))
-            .setKind(Span.Kind.SERVER)
+            .setKind(SpanKind.SERVER)
             .setStatus(StatusData.error())
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
@@ -248,7 +248,7 @@ class AdapterTest {
             .setName("GET /api/endpoint")
             .setStartEpochNanos(MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(MILLISECONDS.toNanos(endMs))
-            .setKind(Span.Kind.SERVER)
+            .setKind(SpanKind.SERVER)
             .setStatus(StatusData.error())
             .setAttributes(attributes)
             .setTotalRecordedEvents(0)
@@ -274,7 +274,7 @@ class AdapterTest {
     return EventData.create(epochNanos, "the log message", attributes, totalAttributeCount);
   }
 
-  private static SpanData getSpanData(long startMs, long endMs, Span.Kind kind) {
+  private static SpanData getSpanData(long startMs, long endMs, SpanKind kind) {
     Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
     LinkData link = LinkData.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);

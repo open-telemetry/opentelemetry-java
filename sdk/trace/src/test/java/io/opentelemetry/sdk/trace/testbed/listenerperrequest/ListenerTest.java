@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.trace.testbed.listenerperrequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -32,7 +32,7 @@ class ListenerTest {
 
     List<SpanData> finished = otelTesting.getSpans();
     assertThat(finished).hasSize(1);
-    assertThat(finished.get(0).getKind()).isEqualTo(Kind.CLIENT);
+    assertThat(finished.get(0).getKind()).isEqualTo(SpanKind.CLIENT);
 
     assertThat(Span.current()).isSameAs(Span.getInvalid());
   }

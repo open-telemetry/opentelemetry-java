@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
 
@@ -68,5 +69,5 @@ public interface ReadableSpan {
    *
    * @return the kind of the span.
    */
-  Span.Kind getKind();
+  SpanKind getKind();
 }

@@ -7,9 +7,9 @@ package io.opentelemetry.exporter.otlp.trace;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
@@ -79,7 +79,7 @@ public class RequestMarshalState {
         .setSpanContext(SPAN_CONTEXT)
         .setParentSpanContext(SpanContext.getInvalid())
         .setName("GET /api/endpoint")
-        .setKind(Span.Kind.SERVER)
+        .setKind(SpanKind.SERVER)
         .setStartEpochNanos(12345)
         .setEndEpochNanos(12349)
         .setAttributes(

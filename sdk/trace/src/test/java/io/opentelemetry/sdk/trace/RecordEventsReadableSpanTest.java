@@ -19,9 +19,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
@@ -97,7 +97,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void nothingChangedAfterEnd() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     span.end();
     // Check that adding trace events or update fields after Span#end() does not throw any thrown
     // and are ignored.
@@ -117,7 +117,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void endSpanTwice_DoNotCrash() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     assertThat(span.hasEnded()).isFalse();
     span.end();
     assertThat(span.hasEnded()).isTrue();
@@ -127,7 +127,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_ActiveSpan() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     try {
       assertThat(span.hasEnded()).isFalse();
       spanDoWork(span, null, null);
@@ -155,7 +155,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_EndedSpan() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     try {
       spanDoWork(span, StatusCode.ERROR, "CANCELLED");
     } finally {
@@ -179,7 +179,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_immutableLinks() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     SpanData spanData = span.toSpanData();
 
     assertThatThrownBy(() -> spanData.getLinks().add(LinkData.create(SpanContext.getInvalid())))
@@ -188,7 +188,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void toSpanData_immutableEvents() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     SpanData spanData = span.toSpanData();
 
     assertThatThrownBy(
@@ -254,7 +254,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void setStatus() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.CONSUMER);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
       assertThat(span.toSpanData().getStatus()).isEqualTo(StatusData.unset());
@@ -270,9 +270,9 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void getSpanKind() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.SERVER);
     try {
-      assertThat(span.toSpanData().getKind()).isEqualTo(Kind.SERVER);
+      assertThat(span.toSpanData().getKind()).isEqualTo(SpanKind.SERVER);
     } finally {
       span.end();
     }
@@ -280,7 +280,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void getInstrumentationLibraryInfo() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.CLIENT);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.CLIENT);
     try {
       assertThat(span.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
     } finally {
@@ -302,7 +302,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void getLatencyNs_ActiveSpan() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
       long elapsedTimeNanos1 = testClock.now() - START_EPOCH_NANOS;
@@ -317,7 +317,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void getLatencyNs_EndedSpan() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.end();
     long elapsedTimeNanos = testClock.now() - START_EPOCH_NANOS;
@@ -756,7 +756,7 @@ class RecordEventsReadableSpanTest {
         new AttributesMap(TraceConfig.getDefault().getMaxNumberOfAttributes());
     attributes.forEach(attributesMap::put);
     return createTestSpan(
-        Kind.INTERNAL,
+        SpanKind.INTERNAL,
         TraceConfig.getDefault(),
         null,
         attributesMap,
@@ -765,25 +765,25 @@ class RecordEventsReadableSpanTest {
 
   private RecordEventsReadableSpan createTestRootSpan() {
     return createTestSpan(
-        Kind.INTERNAL,
+        SpanKind.INTERNAL,
         TraceConfig.getDefault(),
         SpanId.getInvalid(),
         null,
         Collections.singletonList(link));
   }
 
-  private RecordEventsReadableSpan createTestSpan(Kind kind) {
+  private RecordEventsReadableSpan createTestSpan(SpanKind kind) {
     return createTestSpan(
         kind, TraceConfig.getDefault(), parentSpanId, null, Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(TraceConfig config) {
     return createTestSpan(
-        Kind.INTERNAL, config, parentSpanId, null, Collections.singletonList(link));
+        SpanKind.INTERNAL, config, parentSpanId, null, Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(
-      Kind kind,
+      SpanKind kind,
       TraceConfig config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
@@ -860,7 +860,7 @@ class RecordEventsReadableSpanTest {
   @Test
   void testAsSpanData() {
     String name = "GreatSpan";
-    Kind kind = Kind.SERVER;
+    SpanKind kind = SpanKind.SERVER;
     String traceId = this.traceId;
     String spanId = this.spanId;
     String parentSpanId = this.parentSpanId;
@@ -932,7 +932,7 @@ class RecordEventsReadableSpanTest {
 
   @Test
   void testConcurrentModification() throws ExecutionException, InterruptedException {
-    final RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    final RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     ExecutorService es = Executors.newSingleThreadExecutor();
     Future<?> modifierFuture =
         es.submit(

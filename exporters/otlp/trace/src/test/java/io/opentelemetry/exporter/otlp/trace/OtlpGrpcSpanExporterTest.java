@@ -17,8 +17,8 @@ import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
@@ -260,7 +260,7 @@ class OtlpGrpcSpanExporterTest {
         .setStartEpochNanos(startNs)
         .setEndEpochNanos(endNs)
         .setStatus(StatusData.ok())
-        .setKind(Kind.SERVER)
+        .setKind(SpanKind.SERVER)
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)

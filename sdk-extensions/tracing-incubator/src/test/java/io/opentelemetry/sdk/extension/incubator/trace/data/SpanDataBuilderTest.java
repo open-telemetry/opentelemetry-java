@@ -9,8 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
@@ -33,7 +33,7 @@ class SpanDataBuilderTest {
           .setName("GET /api/endpoint")
           .setStartEpochNanos(0)
           .setEndEpochNanos(100)
-          .setKind(Span.Kind.SERVER)
+          .setKind(SpanKind.SERVER)
           .setStatus(StatusData.error())
           .setAttributes(Attributes.builder().put("cat", "meow").put("dog", "bark").build())
           .setTotalRecordedEvents(1000)
