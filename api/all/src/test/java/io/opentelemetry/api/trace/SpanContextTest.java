@@ -11,17 +11,10 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanContext}. */
 class SpanContextTest {
-  private static final byte[] firstTraceIdBytes =
-      new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
-  private static final String FIRST_TRACE_ID = TraceId.bytesToHex(firstTraceIdBytes);
-  private static final byte[] secondTraceIdBytes =
-      new byte[] {0, 0, 0, 0, 0, 0, 0, '0', 0, 0, 0, 0, 0, 0, 0, 0};
-  private static final String SECOND_TRACE_ID = TraceId.bytesToHex(secondTraceIdBytes);
-
-  private static final byte[] firstSpanIdBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
-  private static final String FIRST_SPAN_ID = SpanId.bytesToHex(firstSpanIdBytes);
-  private static final byte[] secondSpanIdBytes = new byte[] {'0', 0, 0, 0, 0, 0, 0, 0};
-  private static final String SECOND_SPAN_ID = SpanId.bytesToHex(secondSpanIdBytes);
+  private static final String FIRST_TRACE_ID = "00000000000000000000000000000061";
+  private static final String SECOND_TRACE_ID = "00000000000000300000000000000000";
+  private static final String FIRST_SPAN_ID = "0000000000000061";
+  private static final String SECOND_SPAN_ID = "3000000000000000";
   private static final TraceState FIRST_TRACE_STATE =
       TraceState.builder().set("foo", "bar").build();
   private static final TraceState SECOND_TRACE_STATE =

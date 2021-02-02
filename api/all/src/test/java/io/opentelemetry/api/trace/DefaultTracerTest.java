@@ -18,13 +18,10 @@ import org.junit.jupiter.api.Test;
 class DefaultTracerTest {
   private static final Tracer defaultTracer = Tracer.getDefault();
   private static final String SPAN_NAME = "MySpanName";
-  private static final byte[] firstBytes =
-      new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
-  private static final byte[] spanBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final SpanContext spanContext =
       SpanContext.create(
-          TraceId.bytesToHex(firstBytes),
-          SpanId.bytesToHex(spanBytes),
+          "00000000000000000000000000000061",
+          "0000000000000061",
           TraceFlags.getDefault(),
           TraceState.getDefault());
 
