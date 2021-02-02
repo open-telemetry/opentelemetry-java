@@ -66,19 +66,10 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Assign an initial {@link TraceConfig} that should be used with this SDK.
-   *
-   * @return this
-   */
-  public SdkTracerProviderBuilder setTraceConfig(TraceConfig traceConfig) {
-    requireNonNull(traceConfig, "traceConfig");
-    this.traceConfigSupplier = () -> traceConfig;
-    return this;
-  }
-
-  /**
    * Assign a {@link Supplier} of {@link TraceConfig}. {@link TraceConfig} will be retrieved each
-   * time a {@link io.opentelemetry.api.trace.Span} is started.
+   * time a {@link io.opentelemetry.api.trace.Span} is started. If you do not need to dynamically
+   * update {@link TraceConfig} you should just set the result of {@link
+   * io.opentelemetry.sdk.trace.config.TraceConfigBuilder#build()} as is.
    *
    * @return this
    */

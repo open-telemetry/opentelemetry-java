@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace.config;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.trace.Span;
+import java.util.function.Supplier;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -61,7 +62,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @AutoValue
 @Immutable
-public abstract class TraceConfig {
+public abstract class TraceConfig implements Supplier<TraceConfig> {
 
   /**
    * Value for attribute length which indicates attributes should not be truncated.
@@ -167,5 +168,10 @@ public abstract class TraceConfig {
         .setMaxNumberOfAttributesPerEvent(getMaxNumberOfAttributesPerEvent())
         .setMaxNumberOfAttributesPerLink(getMaxNumberOfAttributesPerLink())
         .setMaxLengthOfAttributeValues(getMaxLengthOfAttributeValues());
+  }
+
+  @Override
+  public TraceConfig get() {
+    return this;
   }
 }
