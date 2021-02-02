@@ -5,7 +5,10 @@
 
 package io.opentelemetry.api.baggage;
 
+import javax.annotation.concurrent.Immutable;
+
 /** An entry in a set of baggage. */
+@Immutable
 public interface BaggageEntry {
 
   /** Returns the entry's value. */
