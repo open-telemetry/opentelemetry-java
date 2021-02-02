@@ -210,7 +210,7 @@ subprojects {
             }
 
             withType(Javadoc::class) {
-                exclude("io/opentelemetry/internal/**")
+                exclude("io/opentelemetry/**/internal/**")
 
                 with(options as StandardJavadocDocletOptions) {
                     source = "8"
