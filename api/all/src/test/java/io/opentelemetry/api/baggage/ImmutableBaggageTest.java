@@ -43,7 +43,8 @@ class ImmutableBaggageTest {
   void getEntries_nonEmpty() {
     Baggage baggage = TWO_ENTRIES;
     assertThat(baggage.asMap())
-        .containsOnly(entry(K1, Entry.create(V1, TMD)), entry(K2, Entry.create(V2, TMD)));
+        .containsOnly(
+            entry(K1, ImmutableEntry.create(V1, TMD)), entry(K2, ImmutableEntry.create(V2, TMD)));
     assertThat(baggage.size()).isEqualTo(2);
     assertThat(baggage.isEmpty()).isFalse();
   }
@@ -53,21 +54,23 @@ class ImmutableBaggageTest {
     Context parentContext = Context.root().with(TWO_ENTRIES);
     Baggage baggage = Baggage.builder().setParent(parentContext).put(K1, V2, TMD).build();
     assertThat(baggage.asMap())
-        .containsOnly(entry(K1, Entry.create(V2, TMD)), entry(K2, Entry.create(V2, TMD)));
+        .containsOnly(
+            entry(K1, ImmutableEntry.create(V2, TMD)), entry(K2, ImmutableEntry.create(V2, TMD)));
   }
 
   @Test
   void put_newKey() {
     Context parentContext = Context.root().with(ONE_ENTRY);
     assertThat(Baggage.builder().setParent(parentContext).put(K2, V2, TMD).build().asMap())
-        .containsOnly(entry(K1, Entry.create(V1, TMD)), entry(K2, Entry.create(V2, TMD)));
+        .containsOnly(
+            entry(K1, ImmutableEntry.create(V1, TMD)), entry(K2, ImmutableEntry.create(V2, TMD)));
   }
 
   @Test
   void put_existingKey() {
     Context parentContext = Context.root().with(ONE_ENTRY);
     assertThat(Baggage.builder().setParent(parentContext).put(K1, V2, TMD).build().asMap())
-        .containsOnly(entry(K1, Entry.create(V2, TMD)));
+        .containsOnly(entry(K1, ImmutableEntry.create(V2, TMD)));
   }
 
   @Test
@@ -135,7 +138,7 @@ class ImmutableBaggageTest {
     Baggage baggage = Baggage.builder().put(K2, V2, TMD).build();
     Context context = Context.root().with(baggage);
     baggage = Baggage.builder().setParent(context).build();
-    assertThat(baggage.asMap()).containsOnly(entry(K2, Entry.create(V2, TMD)));
+    assertThat(baggage.asMap()).containsOnly(entry(K2, ImmutableEntry.create(V2, TMD)));
   }
 
   @Test
@@ -160,7 +163,8 @@ class ImmutableBaggageTest {
     builder.put(K1, V1, TMD);
     builder.put(K2, V2, TMD);
 
-    assertThat(builder.remove(K1).build().asMap()).containsOnly(entry(K2, Entry.create(V2, TMD)));
+    assertThat(builder.remove(K1).build().asMap())
+        .containsOnly(entry(K2, ImmutableEntry.create(V2, TMD)));
   }
 
   @Test
@@ -169,14 +173,15 @@ class ImmutableBaggageTest {
     builder.put(K1, V1, TMD);
     builder.put(K2, V2, TMD);
 
-    assertThat(builder.remove(K2).build().asMap()).containsOnly(entry(K1, Entry.create(V1, TMD)));
+    assertThat(builder.remove(K2).build().asMap())
+        .containsOnly(entry(K1, ImmutableEntry.create(V1, TMD)));
   }
 
   @Test
   void remove_keyFromParent() {
     Context parentContext = Context.root().with(TWO_ENTRIES);
     assertThat(Baggage.builder().setParent(parentContext).remove(K1).build().asMap())
-        .containsOnly(entry(K2, Entry.create(V2, TMD)));
+        .containsOnly(entry(K2, ImmutableEntry.create(V2, TMD)));
   }
 
   @Test

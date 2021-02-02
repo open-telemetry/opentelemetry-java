@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.testing.EqualsTester;
 import org.junit.jupiter.api.Test;
 
-class EntryTest {
+class ImmutableEntryTest {
 
   private static final String VALUE = "VALUE";
   private static final String VALUE_2 = "VALUE2";
@@ -19,16 +19,18 @@ class EntryTest {
 
   @Test
   void testGetEntryMetadata() {
-    assertThat(Entry.create(VALUE, SAMPLE_METADATA).getEntryMetadata()).isEqualTo(SAMPLE_METADATA);
+    assertThat(ImmutableEntry.create(VALUE, SAMPLE_METADATA).getEntryMetadata())
+        .isEqualTo(SAMPLE_METADATA);
   }
 
   @Test
   void testEntryEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            Entry.create(VALUE, SAMPLE_METADATA), Entry.create(VALUE, SAMPLE_METADATA))
-        .addEqualityGroup(Entry.create(VALUE_2, SAMPLE_METADATA))
-        .addEqualityGroup(Entry.create(VALUE, BaggageEntryMetadata.create("other")))
+            ImmutableEntry.create(VALUE, SAMPLE_METADATA),
+            ImmutableEntry.create(VALUE, SAMPLE_METADATA))
+        .addEqualityGroup(ImmutableEntry.create(VALUE_2, SAMPLE_METADATA))
+        .addEqualityGroup(ImmutableEntry.create(VALUE, BaggageEntryMetadata.create("other")))
         .testEquals();
   }
 }
