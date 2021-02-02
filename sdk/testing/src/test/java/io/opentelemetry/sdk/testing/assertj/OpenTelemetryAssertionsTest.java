@@ -71,10 +71,6 @@ class OpenTelemetryAssertionsTest {
   static {
     TestSpanData.Builder spanDataBuilder =
         TestSpanData.builder()
-            .setTraceId(TRACE_ID)
-            .setSpanId(SPAN_ID1)
-            .setSampled(true)
-            .setTraceState(TRACE_STATE)
             .setParentSpanContext(
                 SpanContext.create(
                     TRACE_ID, SPAN_ID2, TraceFlags.getDefault(), TraceState.getDefault()))
@@ -93,9 +89,18 @@ class OpenTelemetryAssertionsTest {
             .setTotalRecordedLinks(400)
             .setTotalAttributeCount(500);
 
-    SPAN1 = spanDataBuilder.build();
+    SPAN1 =
+        spanDataBuilder
+            .setSpanContext(
+                SpanContext.create(TRACE_ID, SPAN_ID1, TraceFlags.getSampled(), TRACE_STATE))
+            .build();
 
-    SPAN2 = spanDataBuilder.setSampled(false).setHasEnded(false).build();
+    SPAN2 =
+        spanDataBuilder
+            .setSpanContext(
+                SpanContext.create(TRACE_ID, SPAN_ID1, TraceFlags.getDefault(), TRACE_STATE))
+            .setHasEnded(false)
+            .build();
   }
 
   @Test

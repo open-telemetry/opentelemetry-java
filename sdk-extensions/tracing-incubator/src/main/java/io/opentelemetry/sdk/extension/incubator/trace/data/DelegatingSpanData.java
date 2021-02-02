@@ -10,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -56,23 +55,8 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public String getTraceId() {
-    return delegate.getTraceId();
-  }
-
-  @Override
-  public String getSpanId() {
-    return delegate.getSpanId();
-  }
-
-  @Override
-  public boolean isSampled() {
-    return delegate.isSampled();
-  }
-
-  @Override
-  public TraceState getTraceState() {
-    return delegate.getTraceState();
+  public SpanContext getSpanContext() {
+    return delegate.getSpanContext();
   }
 
   @Override
@@ -157,10 +141,7 @@ public abstract class DelegatingSpanData implements SpanData {
     }
     if (o instanceof SpanData) {
       SpanData that = (SpanData) o;
-      return getTraceId().equals(that.getTraceId())
-          && getSpanId().equals(that.getSpanId())
-          && isSampled() == that.isSampled()
-          && getTraceState().equals(that.getTraceState())
+      return getSpanContext().equals(that.getSpanContext())
           && getParentSpanContext().equals(that.getParentSpanContext())
           && getResource().equals(that.getResource())
           && getInstrumentationLibraryInfo().equals(that.getInstrumentationLibraryInfo())
@@ -184,13 +165,7 @@ public abstract class DelegatingSpanData implements SpanData {
   public int hashCode() {
     int code = 1;
     code *= 1000003;
-    code ^= getTraceId().hashCode();
-    code *= 1000003;
-    code ^= getSpanId().hashCode();
-    code *= 1000003;
-    code ^= getTraceId().hashCode();
-    code *= 1000003;
-    code ^= getTraceState().hashCode();
+    code ^= getSpanContext().hashCode();
     code *= 1000003;
     code ^= getParentSpanContext().hashCode();
     code *= 1000003;
@@ -227,17 +202,8 @@ public abstract class DelegatingSpanData implements SpanData {
   @Override
   public String toString() {
     return "SpanDataImpl{"
-        + "traceId="
-        + getTraceId()
-        + ", "
-        + "spanId="
-        + getSpanId()
-        + ", "
-        + "isSampled="
-        + isSampled()
-        + ", "
-        + "traceState="
-        + getTraceState()
+        + "spanContext="
+        + getSpanContext()
         + ", "
         + "parentSpanContext="
         + getParentSpanContext()

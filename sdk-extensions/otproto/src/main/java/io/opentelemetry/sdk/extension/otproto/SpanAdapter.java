@@ -13,6 +13,7 @@ import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 
+import com.google.protobuf.ByteString;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -85,11 +86,12 @@ public final class SpanAdapter {
 
   static Span toProtoSpan(SpanData spanData) {
     final Span.Builder builder = Span.newBuilder();
-    builder.setTraceId(TraceProtoUtils.toProtoTraceId(spanData.getTraceId()));
-    builder.setSpanId(TraceProtoUtils.toProtoSpanId(spanData.getSpanId()));
+    builder.setTraceId(ByteString.copyFrom(spanData.getSpanContext().getTraceIdBytes()));
+    builder.setSpanId(ByteString.copyFrom(spanData.getSpanContext().getSpanIdBytes()));
     // TODO: Set TraceState;
     if (spanData.getParentSpanContext().isValid()) {
-      builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(spanData.getParentSpanId()));
+      builder.setParentSpanId(
+          ByteString.copyFrom(spanData.getParentSpanContext().getSpanIdBytes()));
     }
     builder.setName(spanData.getName());
     builder.setKind(toProtoSpanKind(spanData.getKind()));
@@ -142,9 +144,8 @@ public final class SpanAdapter {
 
   static Span.Link toProtoSpanLink(LinkData link) {
     final Span.Link.Builder builder = Span.Link.newBuilder();
-    builder.setTraceId(
-        TraceProtoUtils.toProtoTraceId(link.getSpanContext().getTraceIdAsHexString()));
-    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getSpanContext().getSpanIdAsHexString()));
+    builder.setTraceId(ByteString.copyFrom(link.getSpanContext().getTraceIdBytes()));
+    builder.setSpanId(ByteString.copyFrom(link.getSpanContext().getSpanIdBytes()));
     // TODO: Set TraceState;
     Attributes attributes = link.getAttributes();
     attributes.forEach(

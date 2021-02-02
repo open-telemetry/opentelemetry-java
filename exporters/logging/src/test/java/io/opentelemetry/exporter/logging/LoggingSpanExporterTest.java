@@ -14,8 +14,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -41,8 +44,12 @@ class LoggingSpanExporterTest {
   private static final SpanData SPAN1 =
       TestSpanData.builder()
           .setHasEnded(true)
-          .setTraceId(TraceId.fromLongs(1234L, 6789L))
-          .setSpanId(SpanId.fromLong(9876L))
+          .setSpanContext(
+              SpanContext.create(
+                  TraceId.fromLongs(1234L, 6789L),
+                  SpanId.fromLong(9876L),
+                  TraceFlags.getSampled(),
+                  TraceState.getDefault()))
           .setStartEpochNanos(100)
           .setEndEpochNanos(100 + 1000)
           .setStatus(StatusData.ok())
@@ -63,8 +70,12 @@ class LoggingSpanExporterTest {
   private static final SpanData SPAN2 =
       TestSpanData.builder()
           .setHasEnded(false)
-          .setTraceId(TraceId.fromLongs(20L, 30L))
-          .setSpanId(SpanId.fromLong(15L))
+          .setSpanContext(
+              SpanContext.create(
+                  TraceId.fromLongs(20L, 30L),
+                  SpanId.fromLong(15L),
+                  TraceFlags.getSampled(),
+                  TraceState.getDefault()))
           .setStartEpochNanos(500)
           .setEndEpochNanos(500 + 1001)
           .setStatus(StatusData.error())
@@ -112,8 +123,12 @@ class LoggingSpanExporterTest {
     SpanData spanData =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setTraceId(TraceId.fromLongs(1234L, 6789L))
-            .setSpanId(SpanId.fromLong(9876L))
+            .setSpanContext(
+                SpanContext.create(
+                    TraceId.fromLongs(1234L, 6789L),
+                    SpanId.fromLong(9876L),
+                    TraceFlags.getSampled(),
+                    TraceState.getDefault()))
             .setStartEpochNanos(epochNanos)
             .setEndEpochNanos(epochNanos + 1000)
             .setStatus(StatusData.ok())
