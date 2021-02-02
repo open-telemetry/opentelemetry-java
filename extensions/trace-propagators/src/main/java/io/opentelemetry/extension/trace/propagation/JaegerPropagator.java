@@ -119,9 +119,7 @@ public final class JaegerPropagator implements TextMapPropagator {
 
   private static <C> void injectBaggage(Baggage baggage, C carrier, Setter<C> setter) {
     baggage.forEach(
-        (key, value, metadata) -> {
-          setter.set(carrier, BAGGAGE_PREFIX + key, value);
-        });
+        (key, baggageEntry) -> setter.set(carrier, BAGGAGE_PREFIX + key, baggageEntry.getValue()));
   }
 
   @Override
