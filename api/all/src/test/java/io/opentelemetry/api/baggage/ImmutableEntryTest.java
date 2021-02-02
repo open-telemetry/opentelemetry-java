@@ -14,8 +14,8 @@ class ImmutableEntryTest {
 
   private static final String VALUE = "VALUE";
   private static final String VALUE_2 = "VALUE2";
-  private static final BaggageEntryMetadata SAMPLE_METADATA =
-      BaggageEntryMetadata.create("propagation=unlimited");
+  private static final BaggageMetadata SAMPLE_METADATA =
+      BaggageMetadata.create("propagation=unlimited");
 
   @Test
   void testGetEntryMetadata() {
@@ -30,7 +30,7 @@ class ImmutableEntryTest {
             ImmutableEntry.create(VALUE, SAMPLE_METADATA),
             ImmutableEntry.create(VALUE, SAMPLE_METADATA))
         .addEqualityGroup(ImmutableEntry.create(VALUE_2, SAMPLE_METADATA))
-        .addEqualityGroup(ImmutableEntry.create(VALUE, BaggageEntryMetadata.create("other")))
+        .addEqualityGroup(ImmutableEntry.create(VALUE, BaggageMetadata.create("other")))
         .testEquals();
   }
 }

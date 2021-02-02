@@ -9,5 +9,5 @@ package io.opentelemetry.api.baggage;
 @FunctionalInterface
 public interface BaggageConsumer {
   /** Consumes an entry of a {@link Baggage}. */
-  void accept(String key, String value, BaggageEntryMetadata metadata);
+  void accept(String key, String value, BaggageMetadata metadata);
 }

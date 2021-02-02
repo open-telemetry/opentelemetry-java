@@ -14,6 +14,6 @@ public interface BaggageEntry {
   /** Returns the entry's value. */
   String getValue();
 
-  /** Returns the entry's {@link BaggageEntryMetadata}. */
-  BaggageEntryMetadata getEntryMetadata();
+  /** Returns the entry's {@link BaggageMetadata}. */
+  BaggageMetadata getEntryMetadata();
 }

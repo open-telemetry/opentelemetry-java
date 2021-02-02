@@ -48,10 +48,10 @@ public interface BaggageBuilder {
    *
    * @param key the {@code String} key which will be set.
    * @param value the {@code String} value to set for the given key.
-   * @param entryMetadata the {@code BaggageEntryMetadata} metadata to set for the given key.
+   * @param entryMetadata the {@code BaggageMetadata} to set for the given key.
    * @return this
    */
-  BaggageBuilder put(String key, String value, BaggageEntryMetadata entryMetadata);
+  BaggageBuilder put(String key, String value, BaggageMetadata entryMetadata);
 
   /**
    * Adds the key/value pair with empty metadata regardless of whether the key is present.
@@ -61,7 +61,7 @@ public interface BaggageBuilder {
    * @return this
    */
   default BaggageBuilder put(String key, String value) {
-    return put(key, value, BaggageEntryMetadata.empty());
+    return put(key, value, BaggageMetadata.empty());
   }
 
   /**

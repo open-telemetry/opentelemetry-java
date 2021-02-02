@@ -10,30 +10,25 @@ import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
-abstract class ImmutableEntryMetadata implements BaggageEntryMetadata {
+abstract class ImmutableMetadata implements BaggageMetadata {
   /** Returns an empty metadata. */
-  static final ImmutableEntryMetadata EMPTY = create("");
+  static final ImmutableMetadata EMPTY = create("");
 
-  ImmutableEntryMetadata() {}
+  ImmutableMetadata() {}
 
   /**
-   * Creates an {@link ImmutableEntryMetadata} with the given value.
+   * Creates an {@link ImmutableMetadata} with the given value.
    *
    * @param metadata TTL of an {@code Entry}.
    * @return an {@code EntryMetadata}.
    */
-  static ImmutableEntryMetadata create(String metadata) {
+  static ImmutableMetadata create(String metadata) {
     if (metadata == null) {
       return EMPTY;
     }
-    return new AutoValue_ImmutableEntryMetadata(metadata);
+    return new AutoValue_ImmutableMetadata(metadata);
   }
 
-  /**
-   * Returns the String value of this {@link ImmutableEntryMetadata}.
-   *
-   * @return the raw metadata value.
-   */
   @Override
   public abstract String getValue();
 }

@@ -91,7 +91,7 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
     }
 
     @Override
-    public BaggageBuilder put(String key, String value, BaggageEntryMetadata entryMetadata) {
+    public BaggageBuilder put(String key, String value, BaggageMetadata entryMetadata) {
       if (!isKeyValid(key) || !isValueValid(value) || entryMetadata == null) {
         return this;
       }

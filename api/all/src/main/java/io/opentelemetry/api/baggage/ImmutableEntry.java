@@ -8,7 +8,6 @@ package io.opentelemetry.api.baggage;
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
 
-/** String-String key-value pair, along with {@link ImmutableEntryMetadata}. */
 @Immutable
 @AutoValue
 abstract class ImmutableEntry implements BaggageEntry {
@@ -22,7 +21,7 @@ abstract class ImmutableEntry implements BaggageEntry {
    * @param entryMetadata the entry metadata.
    * @return a {@code Entry}.
    */
-  static ImmutableEntry create(String value, BaggageEntryMetadata entryMetadata) {
+  static ImmutableEntry create(String value, BaggageMetadata entryMetadata) {
     return new AutoValue_ImmutableEntry(value, entryMetadata);
   }
 }

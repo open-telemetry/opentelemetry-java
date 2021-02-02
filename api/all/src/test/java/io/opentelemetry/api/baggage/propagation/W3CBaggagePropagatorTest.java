@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.baggage.BaggageEntryMetadata;
+import io.opentelemetry.api.baggage.BaggageMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import java.util.HashMap;
@@ -104,7 +104,7 @@ class W3CBaggagePropagatorTest {
 
     Baggage expectedBaggage =
         Baggage.builder()
-            .put("key", "value", BaggageEntryMetadata.create("metadata-key=value;othermetadata"))
+            .put("key", "value", BaggageMetadata.create("metadata-key=value;othermetadata"))
             .build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
@@ -124,11 +124,8 @@ class W3CBaggagePropagatorTest {
 
     Baggage expectedBaggage =
         Baggage.builder()
-            .put(
-                "key1",
-                "value1",
-                BaggageEntryMetadata.create("metadata-key = value; othermetadata"))
-            .put("key2", "value2", BaggageEntryMetadata.empty())
+            .put("key1", "value1", BaggageMetadata.create("metadata-key = value; othermetadata"))
+            .put("key2", "value2", BaggageMetadata.empty())
             .put("key3", "value3")
             .build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -176,7 +173,7 @@ class W3CBaggagePropagatorTest {
     Baggage baggage =
         Baggage.builder()
             .put("nometa", "nometa-value")
-            .put("meta", "meta-value", BaggageEntryMetadata.create("somemetadata; someother=foo"))
+            .put("meta", "meta-value", BaggageMetadata.create("somemetadata; someother=foo"))
             .build();
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Map<String, String> carrier = new HashMap<>();

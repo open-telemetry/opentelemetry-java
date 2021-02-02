@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
  */
 class ImmutableBaggageTest {
 
-  private static final BaggageEntryMetadata TMD = BaggageEntryMetadata.create("tmd");
+  private static final BaggageMetadata TMD = BaggageMetadata.create("tmd");
 
   private static final String K1 = "k1";
   private static final String K2 = "k2";

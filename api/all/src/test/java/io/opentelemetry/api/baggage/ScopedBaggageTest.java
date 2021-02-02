@@ -23,10 +23,9 @@ class ScopedBaggageTest {
   private static final String VALUE_3 = "value 3";
   private static final String VALUE_4 = "value 4";
 
-  private static final BaggageEntryMetadata METADATA_UNLIMITED_PROPAGATION =
-      BaggageEntryMetadata.create("unlimited");
-  private static final BaggageEntryMetadata METADATA_NO_PROPAGATION =
-      BaggageEntryMetadata.create("noprop");
+  private static final BaggageMetadata METADATA_UNLIMITED_PROPAGATION =
+      BaggageMetadata.create("unlimited");
+  private static final BaggageMetadata METADATA_NO_PROPAGATION = BaggageMetadata.create("noprop");
 
   @Test
   void emptyBaggage() {
