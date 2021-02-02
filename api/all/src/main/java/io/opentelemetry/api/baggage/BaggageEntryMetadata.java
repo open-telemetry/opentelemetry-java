@@ -5,10 +5,13 @@
 
 package io.opentelemetry.api.baggage;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Metadata associated with an entry in baggage. This is an opaque wrapper for a String metadata
  * value.
  */
+@Immutable
 public interface BaggageEntryMetadata {
 
   /** Returns an empty {@link BaggageEntryMetadata}. */
