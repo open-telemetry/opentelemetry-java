@@ -7,13 +7,10 @@ package io.opentelemetry.sdk.common;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
+import java.util.concurrent.TimeoutException;
 
 /**
  * This class models JDK 8's CompletableFuture to afford migration should Open Telemetry's SDK
@@ -37,65 +34,43 @@ public final class CompletableResultCode {
    * Returns a {@link CompletableResultCode} that completes after all the provided {@link
    * CompletableResultCode}s complete. If any of the results fail, the result will be failed.
    */
+  @SuppressWarnings("rawtypes")
   public static CompletableResultCode ofAll(final Collection<CompletableResultCode> codes) {
-    final CompletableResultCode result = new CompletableResultCode();
-    final AtomicInteger pending = new AtomicInteger(codes.size());
-    final AtomicBoolean failed = new AtomicBoolean();
-    for (final CompletableResultCode code : codes) {
-      code.whenComplete(
-          () -> {
-            if (!code.isSuccess()) {
-              failed.set(true);
-            }
-            if (pending.decrementAndGet() == 0) {
-              if (failed.get()) {
-                result.fail();
-              } else {
-                result.succeed();
-              }
-            }
-          });
-    }
-    return result;
+    ArrayList<CompletableFuture<Boolean>> futures = new ArrayList<>(codes.size());
+    codes.forEach(completableResultCode -> futures.add(completableResultCode.future));
+    CompletableFuture<Boolean> allFuturesResult =
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+            .thenApply(
+                ignored ->
+                    codes.stream()
+                        .map(code -> code.future.join())
+                        .reduce(Boolean::logicalAnd)
+                        .orElse(Boolean.TRUE));
+    return new CompletableResultCode(allFuturesResult);
   }
 
   private static final CompletableResultCode SUCCESS = new CompletableResultCode().succeed();
   private static final CompletableResultCode FAILURE = new CompletableResultCode().fail();
 
-  public CompletableResultCode() {}
+  public CompletableResultCode() {
+    this(new CompletableFuture<>());
+  }
 
-  @Nullable
-  @GuardedBy("lock")
-  private Boolean succeeded = null;
+  private CompletableResultCode(CompletableFuture<Boolean> future) {
+    this.future = future;
+  }
 
-  @GuardedBy("lock")
-  private final List<Runnable> completionActions = new ArrayList<>();
-
-  private final Object lock = new Object();
+  private final CompletableFuture<Boolean> future;
 
   /** Complete this {@link CompletableResultCode} successfully if it is not already completed. */
   public CompletableResultCode succeed() {
-    synchronized (lock) {
-      if (succeeded == null) {
-        succeeded = true;
-        for (Runnable action : completionActions) {
-          action.run();
-        }
-      }
-    }
+    future.complete(Boolean.TRUE);
     return this;
   }
 
   /** Complete this {@link CompletableResultCode} unsuccessfully if it is not already completed. */
   public CompletableResultCode fail() {
-    synchronized (lock) {
-      if (succeeded == null) {
-        succeeded = false;
-        for (Runnable action : completionActions) {
-          action.run();
-        }
-      }
-    }
+    future.complete(Boolean.FALSE);
     return this;
   }
 
@@ -106,9 +81,7 @@ public final class CompletableResultCode {
    * @return the current state of completion
    */
   public boolean isSuccess() {
-    synchronized (lock) {
-      return succeeded != null && succeeded;
-    }
+    return future.getNow(Boolean.FALSE);
   }
 
   /**
@@ -118,21 +91,12 @@ public final class CompletableResultCode {
    * @return this completable result so that it may be further composed
    */
   public CompletableResultCode whenComplete(Runnable action) {
-    synchronized (lock) {
-      if (succeeded != null) {
-        action.run();
-      } else {
-        this.completionActions.add(action);
-      }
-    }
-    return this;
+    return new CompletableResultCode(future.whenComplete((value, throwable) -> action.run()));
   }
 
   /** Returns whether this {@link CompletableResultCode} has completed. */
   public boolean isDone() {
-    synchronized (lock) {
-      return succeeded != null;
-    }
+    return future.isDone();
   }
 
   /**
@@ -142,17 +106,12 @@ public final class CompletableResultCode {
    * @return this {@link CompletableResultCode}
    */
   public CompletableResultCode join(long timeout, TimeUnit unit) {
-    if (isDone()) {
-      return this;
-    }
-    final CountDownLatch latch = new CountDownLatch(1);
-    whenComplete(latch::countDown);
     try {
-      if (!latch.await(timeout, unit)) {
-        fail();
-      }
+      future.get(timeout, unit);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
+      fail();
+    } catch (ExecutionException | TimeoutException e) {
       fail();
     }
     return this;
