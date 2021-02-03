@@ -158,4 +158,57 @@ abstract class SpanWrapper implements SpanData {
   public int getTotalAttributeCount() {
     return totalAttributeCount();
   }
+
+  @Override
+  public final String toString() {
+    return "SpanData{"
+        + "spanContext="
+        + getSpanContext()
+        + ", "
+        + "parentSpanContext="
+        + getParentSpanContext()
+        + ", "
+        + "resource="
+        + getResource()
+        + ", "
+        + "instrumentationLibraryInfo="
+        + getInstrumentationLibraryInfo()
+        + ", "
+        + "name="
+        + getName()
+        + ", "
+        + "kind="
+        + getKind()
+        + ", "
+        + "startEpochNanos="
+        + getStartEpochNanos()
+        + ", "
+        + "endEpochNanos="
+        + getEndEpochNanos()
+        + ", "
+        + "attributes="
+        + getAttributes()
+        + ", "
+        + "totalAttributeCount="
+        + getTotalAttributeCount()
+        + ", "
+        + "events="
+        + getEvents()
+        + ", "
+        + "totalRecordedEvents="
+        + getTotalRecordedEvents()
+        + ", "
+        + "links="
+        + getLinks()
+        + ", "
+        + "totalRecordedLinks="
+        + getTotalRecordedLinks()
+        + ", "
+        + "status="
+        + getStatus()
+        + ", "
+        + "hasEnded="
+        + hasEnded()
+        + "}";
+  }
 }
