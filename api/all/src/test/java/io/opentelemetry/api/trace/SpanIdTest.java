@@ -24,23 +24,15 @@ class SpanIdTest {
   }
 
   @Test
-  void fromLowerBase16() {
-    assertThat(SpanId.bytesToHex(SpanId.bytesFromHex("0000000000000000", 0)))
+  void fromLowerHex() {
+    assertThat(SpanId.bytesToHex(SpanId.bytesFromHex("0000000000000000")))
         .isEqualTo(SpanId.getInvalid());
-    assertThat(SpanId.bytesFromHex("0000000000000061", 0)).isEqualTo(firstBytes);
-    assertThat(SpanId.bytesFromHex("ff00000000000041", 0)).isEqualTo(secondBytes);
+    assertThat(SpanId.bytesFromHex("0000000000000061")).isEqualTo(firstBytes);
+    assertThat(SpanId.bytesFromHex("ff00000000000041")).isEqualTo(secondBytes);
   }
 
   @Test
-  void fromLowerBase16_WithOffset() {
-    assertThat(SpanId.bytesToHex(SpanId.bytesFromHex("XX0000000000000000AA", 2)))
-        .isEqualTo(SpanId.getInvalid());
-    assertThat(SpanId.bytesFromHex("YY0000000000000061BB", 2)).isEqualTo(firstBytes);
-    assertThat(SpanId.bytesFromHex("ZZff00000000000041CC", 2)).isEqualTo(secondBytes);
-  }
-
-  @Test
-  public void toLowerBase16() {
+  public void toLowerHex() {
     assertThat(SpanId.getInvalid()).isEqualTo("0000000000000000");
     assertThat(SpanId.bytesToHex(firstBytes)).isEqualTo("0000000000000061");
     assertThat(SpanId.bytesToHex(secondBytes)).isEqualTo("ff00000000000041");
