@@ -232,8 +232,8 @@ final class Adapter {
     // https://github.com/open-telemetry/opentelemetry-java/pull/481/files#r312577862
     return new SpanRef(
         SpanRefType.FOLLOWS_FROM,
-        TraceId.traceIdLowBytesAsLong(link.getSpanContext().getTraceIdAsHexString()),
-        TraceId.traceIdHighBytesAsLong(link.getSpanContext().getTraceIdAsHexString()),
-        SpanId.asLong(link.getSpanContext().getSpanIdAsHexString()));
+        TraceId.traceIdLowBytesAsLong(link.getSpanContext().getTraceId()),
+        TraceId.traceIdHighBytesAsLong(link.getSpanContext().getTraceId()),
+        SpanId.asLong(link.getSpanContext().getSpanId()));
   }
 }

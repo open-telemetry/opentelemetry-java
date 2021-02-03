@@ -64,10 +64,8 @@ public final class OtTracerPropagator implements TextMapPropagator {
     // Lightstep trace id MUST be 64-bits therefore OpenTelemetry trace id is truncated to 64-bits
     // by retaining least significant (right-most) bits.
     setter.set(
-        carrier,
-        TRACE_ID_HEADER,
-        spanContext.getTraceIdAsHexString().substring(TraceId.getHexLength() / 2));
-    setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanIdAsHexString());
+        carrier, TRACE_ID_HEADER, spanContext.getTraceId().substring(TraceId.getHexLength() / 2));
+    setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanId());
     setter.set(carrier, SAMPLED_HEADER, String.valueOf(spanContext.isSampled()));
 
     // Baggage is only injected if there is a valid SpanContext

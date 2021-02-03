@@ -50,8 +50,8 @@ class SpanConverter {
 
   static SpanContext mapSpanContext(io.opentelemetry.api.trace.SpanContext otelSpanContext) {
     return SpanContext.create(
-        TraceId.fromLowerBase16(otelSpanContext.getTraceIdAsHexString()),
-        SpanId.fromLowerBase16(otelSpanContext.getSpanIdAsHexString()),
+        TraceId.fromLowerBase16(otelSpanContext.getTraceId()),
+        SpanId.fromLowerBase16(otelSpanContext.getSpanId()),
         TraceOptions.builder().setIsSampled(otelSpanContext.isSampled()).build(),
         mapTracestate(otelSpanContext.getTraceState()));
   }
