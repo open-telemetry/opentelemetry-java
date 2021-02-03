@@ -36,11 +36,11 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
     }
 
     char[] chars = new char[COMBINED_HEADER_SIZE];
-    String traceId = spanContext.getTraceIdAsHexString();
+    String traceId = spanContext.getTraceId();
     traceId.getChars(0, traceId.length(), chars, 0);
     chars[SPAN_ID_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
 
-    String spanId = spanContext.getSpanIdAsHexString();
+    String spanId = spanContext.getSpanId();
     System.arraycopy(spanId.toCharArray(), 0, chars, SPAN_ID_OFFSET, SpanId.getHexLength());
 
     chars[SAMPLED_FLAG_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;

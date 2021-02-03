@@ -65,33 +65,33 @@ public interface SpanContext {
   }
 
   /**
-   * Returns the trace identifier associated with this {@code SpanContext}.
+   * Returns the trace identifier associated with this {@link SpanContext} as lowercase hex.
    *
-   * @return the trace identifier associated with this {@code SpanContext}.
+   * @return the trace identifier associated with this {@link SpanContext} as lowercase hex.
    */
-  String getTraceIdAsHexString();
+  String getTraceId();
 
   /**
-   * Returns the byte[] representation of the trace identifier associated with this {@link
+   * Returns the {@code byte[]} representation of the trace identifier associated with this {@link
    * SpanContext}.
    */
   default byte[] getTraceIdBytes() {
-    return TraceId.bytesFromHex(getTraceIdAsHexString());
+    return TraceId.bytesFromHex(getTraceId());
   }
 
   /**
-   * Returns the span identifier associated with this {@code SpanContext}.
+   * Returns the span identifier associated with this {@link SpanContext} as lowercase hex.
    *
-   * @return the span identifier associated with this {@code SpanContext}.
+   * @return the span identifier associated with this {@link SpanContext} as lowercase hex.
    */
-  String getSpanIdAsHexString();
+  String getSpanId();
 
   /**
-   * Returns the byte[] representation of the span identifier associated with this {@link
+   * Returns the {@code byte[]} representation of the span identifier associated with this {@link
    * SpanContext}.
    */
   default byte[] getSpanIdBytes() {
-    return SpanId.bytesFromHex(getSpanIdAsHexString());
+    return SpanId.bytesFromHex(getSpanId());
   }
 
   /** Whether the span in this context is sampled. */
@@ -119,7 +119,7 @@ public interface SpanContext {
    * @return {@code true} if this {@code SpanContext} is valid.
    */
   default boolean isValid() {
-    return TraceId.isValid(getTraceIdAsHexString()) && SpanId.isValid(getSpanIdAsHexString());
+    return TraceId.isValid(getTraceId()) && SpanId.isValid(getSpanId());
   }
 
   /**
