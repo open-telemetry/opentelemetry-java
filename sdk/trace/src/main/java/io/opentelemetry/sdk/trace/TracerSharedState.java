@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 
 // Represents the shared state/config between all Tracers created by the same TracerProvider.
 final class TracerSharedState {
@@ -26,9 +25,7 @@ final class TracerSharedState {
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
 
-  @GuardedBy("lock")
-  @Nullable
-  private volatile CompletableResultCode shutdownResult = null;
+  @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   TracerSharedState(
       Clock clock,
@@ -81,18 +78,17 @@ final class TracerSharedState {
   }
 
   /**
-   * Returns {@code true} if tracing is stopped.
+   * Returns {@code true} if tracing has been shut down.
    *
-   * @return {@code true} if tracing is stopped.
+   * @return {@code true} if tracing has been shut down.
    */
-  boolean isStopped() {
-    synchronized (lock) {
-      return shutdownResult != null && shutdownResult.isSuccess();
-    }
+  boolean hasBeenShutdown() {
+    return shutdownResult != null;
   }
 
   /**
-   * Stops tracing, including shutting down processors and set to {@code true} {@link #isStopped()}.
+   * Stops tracing, including shutting down processors and set to {@code true} {@link
+   * #hasBeenShutdown()}.
    *
    * @return a {@link CompletableResultCode} that will be completed when the span processor is shut
    *     down.
