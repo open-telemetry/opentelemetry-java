@@ -48,10 +48,9 @@ class JaegerThriftSpanExporterTest {
   private static final String SPAN_ID = "00000f0000def456";
   private static final String SPAN_ID_2 = "00a0000000aef789";
   private static final SpanContext SPAN_CONTEXT =
-      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.builder().build());
+      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault());
   private static final SpanContext SPAN_CONTEXT_2 =
-      SpanContext.create(
-          TRACE_ID, SPAN_ID_2, TraceFlags.getDefault(), TraceState.builder().build());
+      SpanContext.create(TRACE_ID, SPAN_ID_2, TraceFlags.getDefault(), TraceState.getDefault());
 
   private JaegerThriftSpanExporter exporter;
   @Mock private ThriftSender thriftSender;

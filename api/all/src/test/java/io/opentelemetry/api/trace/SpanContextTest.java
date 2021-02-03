@@ -19,7 +19,6 @@ class SpanContextTest {
       TraceState.builder().set("foo", "bar").build();
   private static final TraceState SECOND_TRACE_STATE =
       TraceState.builder().set("foo", "baz").build();
-  private static final TraceState EMPTY_TRACE_STATE = TraceState.builder().build();
   private static final SpanContext first =
       SpanContext.create(FIRST_TRACE_ID, FIRST_SPAN_ID, TraceFlags.getDefault(), FIRST_TRACE_STATE);
   private static final SpanContext second =
@@ -27,7 +26,7 @@ class SpanContextTest {
           SECOND_TRACE_ID, SECOND_SPAN_ID, TraceFlags.getSampled(), SECOND_TRACE_STATE);
   private static final SpanContext remote =
       SpanContext.createFromRemoteParent(
-          SECOND_TRACE_ID, SECOND_SPAN_ID, TraceFlags.getSampled(), EMPTY_TRACE_STATE);
+          SECOND_TRACE_ID, SECOND_SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
 
   @Test
   void invalidSpanContext() {
@@ -41,12 +40,18 @@ class SpanContextTest {
     assertThat(SpanContext.getInvalid().isValid()).isFalse();
     assertThat(
             SpanContext.create(
-                    FIRST_TRACE_ID, SpanId.getInvalid(), TraceFlags.getDefault(), EMPTY_TRACE_STATE)
+                    FIRST_TRACE_ID,
+                    SpanId.getInvalid(),
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault())
                 .isValid())
         .isFalse();
     assertThat(
             SpanContext.create(
-                    TraceId.getInvalid(), FIRST_SPAN_ID, TraceFlags.getDefault(), EMPTY_TRACE_STATE)
+                    TraceId.getInvalid(),
+                    FIRST_SPAN_ID,
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault())
                 .isValid())
         .isFalse();
     assertThat(first.isValid()).isTrue();

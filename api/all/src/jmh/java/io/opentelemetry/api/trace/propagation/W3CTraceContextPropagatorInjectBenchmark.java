@@ -62,9 +62,7 @@ public class W3CTraceContextPropagatorInjectBenchmark {
   }
 
   private static SpanContext createTestSpanContext(String traceId, String spanId) {
-    byte sampledTraceOptions = TraceFlags.getSampled();
-    TraceState traceStateDefault = TraceState.builder().build();
-    return SpanContext.create(traceId, spanId, sampledTraceOptions, traceStateDefault);
+    return SpanContext.create(traceId, spanId, TraceFlags.getSampled(), TraceState.getDefault());
   }
 
   private static List<Context> createContexts(List<SpanContext> spanContexts) {

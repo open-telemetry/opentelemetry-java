@@ -25,15 +25,15 @@ class AlwaysOnSamplerTest {
   private final IdGenerator idsGenerator = IdGenerator.random();
   private final String traceId = idsGenerator.generateTraceId();
   private final String parentSpanId = idsGenerator.generateSpanId();
-  private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), traceState);
+      SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), TraceState.getDefault());
   private final Context sampledParentContext = Context.root().with(Span.wrap(sampledSpanContext));
   private final Context notSampledParentContext =
       Context.root()
           .with(
               Span.wrap(
-                  SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState)));
+                  SpanContext.create(
+                      traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())));
 
   @Test
   void parentSampled() {
