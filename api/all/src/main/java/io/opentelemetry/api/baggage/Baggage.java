@@ -51,7 +51,7 @@ public interface Baggage extends ImplicitContextKeyed {
    * Baggage} if there is no baggage in the context.
    */
   static Baggage fromContext(Context context) {
-    Baggage baggage = fromContextOrNull(context);
+    Baggage baggage = context.get(BaggageContextKey.KEY);
     return baggage != null ? baggage : empty();
   }
 
