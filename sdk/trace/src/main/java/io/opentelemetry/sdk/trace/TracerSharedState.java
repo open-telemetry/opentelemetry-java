@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 
 // Represents the shared state/config between all Tracers created by the same TracerProvider.
 final class TracerSharedState {
@@ -26,9 +25,7 @@ final class TracerSharedState {
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
 
-  @GuardedBy("lock")
-  @Nullable
-  private volatile CompletableResultCode shutdownResult = null;
+  @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   TracerSharedState(
       Clock clock,
@@ -86,10 +83,7 @@ final class TracerSharedState {
    * @return {@code true} if tracing has been shut down.
    */
   boolean hasBeenShutdown() {
-    // todo: do we really need a lock around this check? This is on the hot path of tracing.
-    synchronized (lock) {
-      return shutdownResult != null;
-    }
+    return shutdownResult != null;
   }
 
   /**
