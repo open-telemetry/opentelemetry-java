@@ -31,7 +31,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -108,8 +107,8 @@ class SdkSpanBuilderTest {
   @Test
   void truncateLink() {
     final int maxNumberOfLinks = 8;
-    TraceConfig traceConfig = TraceConfig.builder().setMaxNumberOfLinks(maxNumberOfLinks).build();
-    TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
+    SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfLinks(maxNumberOfLinks).build();
+    TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
@@ -131,8 +130,8 @@ class SdkSpanBuilderTest {
 
   @Test
   void truncateLinkAttributes() {
-    TraceConfig traceConfig = TraceConfig.builder().setMaxNumberOfAttributesPerLink(1).build();
-    TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
+    SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfAttributesPerLink(1).build();
+    TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     Attributes attributes =
@@ -356,9 +355,8 @@ class SdkSpanBuilderTest {
   @Test
   void droppingAttributes() {
     final int maxNumberOfAttrs = 8;
-    TraceConfig traceConfig =
-        TraceConfig.builder().setMaxNumberOfAttributes(maxNumberOfAttrs).build();
-    TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
+    SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttrs).build();
+    TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfAttrs; i++) {
@@ -378,8 +376,8 @@ class SdkSpanBuilderTest {
 
   @Test
   public void tooLargeAttributeValuesAreTruncated() {
-    TraceConfig traceConfig = TraceConfig.builder().setMaxLengthOfAttributeValues(10).build();
-    TracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
+    SpanLimits spanLimits = SpanLimits.builder().setMaxLengthOfAttributeValues(10).build();
+    TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
     // Verify methods do not crash.
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("builderStringNull", null);

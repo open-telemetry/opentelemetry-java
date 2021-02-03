@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
@@ -48,7 +47,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
       Clock clock,
       IdGenerator idsGenerator,
       Resource resource,
-      Supplier<TraceConfig> traceConfigSupplier,
+      Supplier<SpanLimits> traceConfigSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors) {
     this.sharedState =
@@ -74,9 +73,9 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
     return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
   }
 
-  /** Returns the active {@link TraceConfig}. */
-  public TraceConfig getActiveTraceConfig() {
-    return sharedState.getActiveTraceConfig();
+  /** Returns the {@link SpanLimits} that are currently applied to created spans. */
+  public SpanLimits getSpanLimits() {
+    return sharedState.getSpanLimits();
   }
 
   /** Returns the configured {@link Sampler}. */
