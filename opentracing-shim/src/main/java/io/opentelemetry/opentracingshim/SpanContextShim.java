@@ -72,7 +72,8 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
   public Iterable<Map.Entry<String, String>> baggageItems() {
     List<Map.Entry<String, String>> items = new ArrayList<>(baggage.size());
     baggage.forEach(
-        (key, value, metadata) -> items.add(new AbstractMap.SimpleImmutableEntry<>(key, value)));
+        (key, baggageEntry) ->
+            items.add(new AbstractMap.SimpleImmutableEntry<>(key, baggageEntry.getValue())));
     return items;
   }
 
