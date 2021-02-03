@@ -8,6 +8,29 @@
 
 - Methods and classes deprecated in 0.15.0 have been removed.
 
+### API
+
+#### Breaking Changes
+
+- The `Span.Kind` enum has been moved to the top level, and named `SpanKind`.
+- The `Labels` interface and related classes have been moved into the alpha metrics modules and repackaged.
+- The `TraceId.copyHexInto(byte[] traceId, char[] dest, int destOffset)` method has been removed.
+
+#### Enhancements
+
+- The `W3CTraceContextPropagator` class now directly implements the `TextMapPropagator` interface.
+
+#### Misc Notes
+
+- The internal `StringUtils` class has had metrics-related methods removed from it. But, you weren't using
+internal classes, were you?
+
+### SDK
+
+#### Enhancements
+
+- `SpanData` now directly exposes the underlying `SpanContext` instance.
+
 ### SDK Extensions
 
 #### Enhancements
@@ -15,6 +38,13 @@
 - The `opentelemetry-autoconfigure` module now supports using non-millisecond values for duration & 
 interval configuration options. See the javadoc on the `io.opentelemetry.sdk.autoconfigure.ConfigProperties.getDuration(String)` 
 method for details on supported formats.
+
+### Metrics (alpha)
+
+#### API
+
+- The `Labels` interface has been moved into the metrics API module and repackaged into the 
+`io.opentelemetry.api.metrics.common` package.
 
 ## Version 0.15.0 - 2021-01-29
 
