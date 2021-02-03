@@ -76,7 +76,7 @@ public interface SpanContext {
    * SpanContext}.
    */
   default byte[] getTraceIdBytes() {
-    return TraceId.bytesFromHex(getTraceIdAsHexString(), 0);
+    return TraceId.bytesFromHex(getTraceIdAsHexString());
   }
 
   /**
@@ -91,7 +91,7 @@ public interface SpanContext {
    * SpanContext}.
    */
   default byte[] getSpanIdBytes() {
-    return SpanId.bytesFromHex(getSpanIdAsHexString(), 0);
+    return SpanId.bytesFromHex(getSpanIdAsHexString());
   }
 
   /** Whether the span in this context is sampled. */
