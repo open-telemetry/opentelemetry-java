@@ -17,8 +17,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
   private static final int SAMPLED_FLAG_SIZE = 1;
-  private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
-  private static final int SPAN_ID_HEX_SIZE = SpanId.getHexLength();
+  private static final int TRACE_ID_HEX_SIZE = TraceId.getLength();
+  private static final int SPAN_ID_HEX_SIZE = SpanId.getLength();
   private static final int COMBINED_HEADER_DELIMITER_SIZE = 1;
   private static final int SPAN_ID_OFFSET = TRACE_ID_HEX_SIZE + COMBINED_HEADER_DELIMITER_SIZE;
   private static final int SAMPLED_FLAG_OFFSET =
@@ -41,7 +41,7 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
     chars[SPAN_ID_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
 
     String spanId = spanContext.getSpanId();
-    System.arraycopy(spanId.toCharArray(), 0, chars, SPAN_ID_OFFSET, SpanId.getHexLength());
+    System.arraycopy(spanId.toCharArray(), 0, chars, SPAN_ID_OFFSET, SpanId.getLength());
 
     chars[SAMPLED_FLAG_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
     if (Boolean.TRUE.equals(context.get(B3Propagator.DEBUG_CONTEXT_KEY))) {

@@ -149,7 +149,7 @@ class TraceIdRatioBasedSamplerTest {
     // This traceId will not be sampled by the Probability Sampler because the last 8 bytes as long
     // is not less than probability * Long.MAX_VALUE;
     String notSampledTraceId =
-        TraceId.bytesToHex(
+        TraceId.fromBytes(
             new byte[] {
               0,
               0,
@@ -180,7 +180,7 @@ class TraceIdRatioBasedSamplerTest {
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     String sampledTraceId =
-        TraceId.bytesToHex(
+        TraceId.fromBytes(
             new byte[] {
               (byte) 0x00,
               (byte) 0x00,

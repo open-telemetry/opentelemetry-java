@@ -54,9 +54,9 @@ class TraceMarshalerTest {
       InstrumentationLibraryInfo.create("name", null);
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4};
-  private static final String TRACE_ID = TraceId.bytesToHex(TRACE_ID_BYTES);
+  private static final String TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);
   private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
-  private static final String SPAN_ID = SpanId.bytesToHex(SPAN_ID_BYTES);
+  private static final String SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES);
 
   private static final SpanContext SPAN_CONTEXT =
       SpanContext.create(
