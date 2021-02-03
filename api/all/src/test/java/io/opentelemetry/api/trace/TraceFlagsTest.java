@@ -18,14 +18,6 @@ class TraceFlagsTest {
   }
 
   @Test
-  void toBooleanFromBase16() {
-    assertThat(TraceFlags.isSampledFromHex("ff", 0)).isTrue();
-    assertThat(TraceFlags.isSampledFromHex("01", 0)).isTrue();
-    assertThat(TraceFlags.isSampledFromHex("05", 0)).isTrue();
-    assertThat(TraceFlags.isSampledFromHex("00", 0)).isFalse();
-  }
-
-  @Test
   void toByteFromBase16() {
     assertThat(TraceFlags.byteFromHex("ff", 0)).isEqualTo((byte) 0xff);
     assertThat(TraceFlags.byteFromHex("01", 0)).isEqualTo((byte) 0x1);
