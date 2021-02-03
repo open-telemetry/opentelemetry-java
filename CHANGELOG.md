@@ -42,6 +42,11 @@ internal classes, were you?
 
 ### SDK
 
+#### Breaking Changes
+
+- `TraceConfig` has been renamed to `SpanLimits` and relocated to the `io.opentelemetry.sdk.tracing` package.
+All related method names have been renamed to match.
+
 #### Enhancements
 
 - `SpanData` now directly exposes the underlying `SpanContext` instance.
