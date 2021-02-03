@@ -53,7 +53,7 @@ final class SpanExporterConfiguration {
       default:
         SpanExporter spiExporter = spiExporters.get(name);
         if (spiExporter == null) {
-          throw new ConfigurationException("Unrecognized value for otel.trace.exporter: " + name);
+          throw new ConfigurationException("Unrecognized value for otel.traces.exporter: " + name);
         }
         return spiExporter;
     }
