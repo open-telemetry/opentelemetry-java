@@ -4,6 +4,12 @@
 
 ### General
 
+Note: In an effort to accelerate our work toward a 1.0.0 release, we have skipped the deprecation phase
+on a number of breaking changes. We apologize for the inconvenience this may have caused. We are very
+aware that these changes will impact users. If you need assistance in migrating from previous releases,
+please open a [discussion topic](https://github.com/opentelemetry/opentelemetry-java/discussions) at 
+[https://github.com/opentelemetry/opentelemetry-java/discussions](https://github.com/opentelemetry/opentelemetry-java/discussions).
+
 #### Breaking Changes
 
 - Methods and classes deprecated in 0.15.0 have been removed.
@@ -14,7 +20,16 @@
 
 - The `Span.Kind` enum has been moved to the top level, and named `SpanKind`.
 - The `Labels` interface and related classes have been moved into the alpha metrics modules and repackaged.
-- The `TraceId.copyHexInto(byte[] traceId, char[] dest, int destOffset)` method has been removed.
+- `TraceId.copyHexInto(byte[] traceId, char[] dest, int destOffset)` has been removed.
+- `SpanContext.getTraceIdAsHexString()` has been renamed to `SpanContext.getTraceId()`
+- `SpanContext.getSpanIdAsHexString()` has been renamed to `SpanContext.getSpanId()`
+- `BaggageEntry.getEntryMetadata()` has been renamed to `BaggageEntry.getMetadata()`
+- `BaggageConsumer` has been removed in favor of a standard `java.util.function.BiConsumer<String, BaggageEntry>`
+- `TraceFlags.isSampledFromHex(CharSequence src, int srcOffset)` has been removed.
+- `SpanId` and `TraceId` methods that had a `String` parameter now accept `CharSequence`
+- `SpanId.bytesFromHex()` and `TraceId.bytesFromHex()` no longer accept an offset to the `CharSequence` 
+but assume the id starts at the beginning.
+- `SpanId.getSize()` and `TraceId.getSize()` have been removed. 
 
 #### Enhancements
 
@@ -32,6 +47,14 @@ internal classes, were you?
 - `SpanData` now directly exposes the underlying `SpanContext` instance.
 
 ### SDK Extensions
+
+#### Breaking Changes
+
+- In the `opentelemetry-autoconfigure` module, three environment variables/system properties 
+have been renamed to match the spec:
+  * `OTEL_TRACE_EXPORTER`/`otel.trace.exporter` has been replaced with `OTEL_TRACES_EXPORTER`/`otel.traces.exporter`
+  * `OTEL_TRACE_SAMPLER`/`otel.trace.sampler` has been replaced with `OTEL_TRACES_SAMPLER`/`otel_traces_sampler`
+  * `OTEL_TRACE_SAMPLER_ARG`/`otel.trace.sampler.arg` has been replaced with `OTEL_TRACES_SAMPLER_ARG`/`otel.traces.sampler.arg` 
 
 #### Enhancements
 
