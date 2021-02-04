@@ -32,7 +32,7 @@ abstract class ImmutableSpanContext implements SpanContext {
       TraceState traceState,
       boolean remote) {
     return new AutoValue_ImmutableSpanContext(
-        traceIdHex, spanIdHex, traceFlags, traceState, remote);
+        traceIdHex, spanIdHex, traceState, remote, TraceFlags.parsedFromHex(traceFlags));
   }
 
   @Override
@@ -52,4 +52,16 @@ abstract class ImmutableSpanContext implements SpanContext {
   public boolean isValid() {
     return SpanContext.super.isValid();
   }
+
+  @Override
+  public final boolean isSampled() {
+    return getParsedTraceFlags().sampled();
+  }
+
+  @Override
+  public final String getTraceFlags() {
+    return getParsedTraceFlags().hex();
+  }
+
+  abstract TraceFlags getParsedTraceFlags();
 }

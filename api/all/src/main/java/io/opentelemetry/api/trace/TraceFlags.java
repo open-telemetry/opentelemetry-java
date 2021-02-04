@@ -17,7 +17,6 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class TraceFlags {
-  private TraceFlags() {}
 
   // Bit to represent whether trace is sampled or not.
   private static final byte SAMPLED_BIT = 0x1;
@@ -81,7 +80,7 @@ public final class TraceFlags {
   /** Extract the lowercase hex (base16) representation of the {@code TraceFlags} from a buffer. */
   public static String fromBuffer(CharSequence src, int srcOffset) {
     // TODO: Improve this by having all possible 256 strings pre-allocated.
-    return src.subSequence(srcOffset, srcOffset + 2).toString();
+    return fromByte(BigendianEncoding.byteFromBase16String(src, srcOffset));
   }
 
   /**
@@ -94,10 +93,7 @@ public final class TraceFlags {
    * @throws IllegalArgumentException if not enough characters in the {@code traceFlags}.
    */
   public static String fromByte(byte traceFlagsByte) {
-    // TODO: Improve this by having all possible 256 strings pre-allocated.
-    char[] result = new char[2];
-    BigendianEncoding.byteToBase16String(traceFlagsByte, result, 0);
-    return new String(result);
+    return ALL_TRACE_FLAGS[traceFlagsByte & 0xFF].hex;
   }
 
   /**
@@ -112,5 +108,37 @@ public final class TraceFlags {
   public static byte asByte(CharSequence traceFlags) {
     Objects.requireNonNull(traceFlags, "traceFlags");
     return BigendianEncoding.byteFromBase16String(traceFlags, 0);
+  }
+
+  static TraceFlags parsedFromHex(String traceFlags) {
+    return ALL_TRACE_FLAGS[asByte(traceFlags) & 0xFF];
+  }
+
+  private static final TraceFlags[] ALL_TRACE_FLAGS;
+
+  static {
+    TraceFlags[] allTraceFlags = new TraceFlags[256];
+    for (int b = 0; b <= 255; b++) {
+      allTraceFlags[b] = new TraceFlags((byte) b);
+    }
+    ALL_TRACE_FLAGS = allTraceFlags;
+  }
+
+  private final String hex;
+  private final boolean sampled;
+
+  private TraceFlags(byte flagsByte) {
+    char[] result = new char[2];
+    BigendianEncoding.byteToBase16String(flagsByte, result, 0);
+    hex = new String(result);
+    sampled = isSampled(hex);
+  }
+
+  boolean sampled() {
+    return sampled;
+  }
+
+  String hex() {
+    return hex;
   }
 }
