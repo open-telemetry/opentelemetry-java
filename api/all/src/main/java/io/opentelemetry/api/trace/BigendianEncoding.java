@@ -149,7 +149,7 @@ final class BigendianEncoding {
     return decodeByte(chars.charAt(offset), chars.charAt(offset + 1));
   }
 
-  private static byte decodeByte(char hi, char lo) {
+  static byte decodeByte(char hi, char lo) {
     Utils.checkArgument(lo < ASCII_CHARACTERS && DECODING[lo] != -1, "invalid character " + lo);
     Utils.checkArgument(hi < ASCII_CHARACTERS && DECODING[hi] != -1, "invalid character " + hi);
     int decoded = DECODING[hi] << 4 | DECODING[lo];

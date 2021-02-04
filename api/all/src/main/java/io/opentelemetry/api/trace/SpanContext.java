@@ -96,15 +96,15 @@ public interface SpanContext {
 
   /** Whether the span in this context is sampled. */
   default boolean isSampled() {
-    return (getTraceFlags() & 1) == 1;
+    return TraceFlags.isSampled(getTraceFlags());
   }
 
-  /** The byte-representation of {@link TraceFlags}. */
+  /**
+   * Returns the trace flags associated with this {@link SpanContext} as byte representation.
+   *
+   * @return the trace flags associated with this {@link SpanContext} as byte representation.
+   */
   byte getTraceFlags();
-
-  default void copyTraceFlagsHexTo(char[] dest, int destOffset) {
-    BigendianEncoding.byteToBase16String(getTraceFlags(), dest, destOffset);
-  }
 
   /**
    * Returns the {@code TraceState} associated with this {@code SpanContext}.

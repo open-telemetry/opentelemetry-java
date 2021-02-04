@@ -19,9 +19,9 @@ class TraceFlagsTest {
 
   @Test
   void toByteFromBase16() {
-    assertThat(TraceFlags.byteFromHex("ff", 0)).isEqualTo((byte) 0xff);
-    assertThat(TraceFlags.byteFromHex("01", 0)).isEqualTo((byte) 0x1);
-    assertThat(TraceFlags.byteFromHex("05", 0)).isEqualTo((byte) 0x5);
-    assertThat(TraceFlags.byteFromHex("00", 0)).isEqualTo((byte) 0x0);
+    assertThat(TraceFlags.fromHexCharacters('f', 'f')).isEqualTo((byte) 0xff);
+    assertThat(TraceFlags.fromHexCharacters('0', '1')).isEqualTo((byte) 0x1);
+    assertThat(TraceFlags.fromHexCharacters('0', '5')).isEqualTo((byte) 0x5);
+    assertThat(TraceFlags.fromHexCharacters('0', '0')).isEqualTo((byte) 0x0);
   }
 }
