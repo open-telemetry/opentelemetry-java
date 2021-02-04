@@ -18,8 +18,8 @@ import javax.annotation.concurrent.Immutable;
  * equals/hashCode implementations. If an implementation does not strictly conform to these
  * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed. It is
  * strongly suggested that you use the implementation that is provided here via {@link
- * #create(String, String, byte, TraceState)} or {@link #createFromRemoteParent(String, String,
- * byte, TraceState)}.
+ * #create(String, String, String, TraceState)} or {@link #createFromRemoteParent(String, String,
+ * String, TraceState)}.
  */
 @Immutable
 public interface SpanContext {
@@ -43,7 +43,7 @@ public interface SpanContext {
    * @return a new {@code SpanContext} with the given identifiers and options.
    */
   static SpanContext create(
-      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
+      String traceIdHex, String spanIdHex, String traceFlags, TraceState traceState) {
     return ImmutableSpanContext.create(
         traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ false);
   }
@@ -52,14 +52,14 @@ public interface SpanContext {
    * Creates a new {@code SpanContext} that was propagated from a remote parent, with the given
    * identifiers and options.
    *
-   * @param traceIdHex the trace identifier of the span context.
-   * @param spanIdHex the span identifier of the span context.
-   * @param traceFlags the byte representation of the {@link TraceFlags}
+   * @param traceIdHex the trace identifier of the {@code SpanContext}.
+   * @param spanIdHex the span identifier of the {@code SpanContext}.
+   * @param traceFlags the trace flags of the {@code SpanContext}.
    * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    */
   static SpanContext createFromRemoteParent(
-      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
+      String traceIdHex, String spanIdHex, String traceFlags, TraceState traceState) {
     return ImmutableSpanContext.create(
         traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ true);
   }
@@ -96,15 +96,15 @@ public interface SpanContext {
 
   /** Whether the span in this context is sampled. */
   default boolean isSampled() {
-    return (getTraceFlags() & 1) == 1;
+    return TraceFlags.isSampled(getTraceFlags());
   }
 
-  /** The byte-representation of {@link TraceFlags}. */
-  byte getTraceFlags();
-
-  default void copyTraceFlagsHexTo(char[] dest, int destOffset) {
-    BigendianEncoding.byteToBase16String(getTraceFlags(), dest, destOffset);
-  }
+  /**
+   * Returns the trace flags associated with this {@link SpanContext} as lowercase hex.
+   *
+   * @return the trace flags associated with this {@link SpanContext} as lowercase hex.
+   */
+  String getTraceFlags();
 
   /**
    * Returns the {@code TraceState} associated with this {@code SpanContext}.

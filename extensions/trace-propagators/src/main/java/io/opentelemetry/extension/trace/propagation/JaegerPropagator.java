@@ -239,7 +239,7 @@ public final class JaegerPropagator implements TextMapPropagator {
   private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {
     try {
       int flagsInt = Integer.parseInt(flags);
-      byte traceFlags = ((flagsInt & 1) == 1) ? TraceFlags.getSampled() : TraceFlags.getDefault();
+      String traceFlags = ((flagsInt & 1) == 1) ? TraceFlags.getSampled() : TraceFlags.getDefault();
 
       String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
       String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);

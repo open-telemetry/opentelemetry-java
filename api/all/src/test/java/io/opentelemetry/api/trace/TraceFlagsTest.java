@@ -13,15 +13,31 @@ import org.junit.jupiter.api.Test;
 class TraceFlagsTest {
 
   @Test
-  void isDefaultSampled() {
-    assertThat(TraceFlags.getDefault()).isEqualTo((byte) 0x0);
+  void defaultInstances() {
+    assertThat(TraceFlags.getDefault()).isEqualTo("00");
+    assertThat(TraceFlags.getSampled()).isEqualTo("01");
   }
 
   @Test
-  void toByteFromBase16() {
-    assertThat(TraceFlags.byteFromHex("ff", 0)).isEqualTo((byte) 0xff);
-    assertThat(TraceFlags.byteFromHex("01", 0)).isEqualTo((byte) 0x1);
-    assertThat(TraceFlags.byteFromHex("05", 0)).isEqualTo((byte) 0x5);
-    assertThat(TraceFlags.byteFromHex("00", 0)).isEqualTo((byte) 0x0);
+  void isSampled() {
+    assertThat(TraceFlags.isSampled("ff")).isTrue();
+    assertThat(TraceFlags.isSampled("01")).isTrue();
+    assertThat(TraceFlags.isSampled("05")).isTrue();
+    assertThat(TraceFlags.isSampled("00")).isFalse();
+  }
+
+  @Test
+  void fromBuffer() {
+    assertThat(TraceFlags.fromBuffer("ff", 0)).isEqualTo("ff");
+    assertThat(TraceFlags.fromBuffer("01", 0)).isEqualTo("01");
+    assertThat(TraceFlags.fromBuffer("05", 0)).isEqualTo("05");
+    assertThat(TraceFlags.fromBuffer("00", 0)).isEqualTo("00");
+  }
+
+  @Test
+  void toFromByte() {
+    for (int i = 0; i < 256; i++) {
+      assertThat(TraceFlags.asByte(TraceFlags.fromByte((byte) i))).isEqualTo((byte) i);
+    }
   }
 }

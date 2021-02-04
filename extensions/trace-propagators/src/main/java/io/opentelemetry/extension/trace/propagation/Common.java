@@ -31,7 +31,7 @@ final class Common {
 
   static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {
     try {
-      byte traceFlags =
+      String traceFlags =
           TRUE_INT.equals(sampled) || Boolean.parseBoolean(sampled) // accept either "1" or "true"
               ? TraceFlags.getSampled()
               : TraceFlags.getDefault();
