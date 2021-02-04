@@ -29,25 +29,32 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public abstract class ImmutableKeyValuePairs<K, V> {
+  private final List<Object> data;
 
-  protected abstract List<Object> data();
+  protected ImmutableKeyValuePairs(List<Object> data) {
+    this.data = data;
+  }
 
-  public int size() {
+  protected final List<Object> data() {
+    return data;
+  }
+
+  public final int size() {
     return data().size() / 2;
   }
 
-  public boolean isEmpty() {
+  public final boolean isEmpty() {
     return data().isEmpty();
   }
 
-  public Map<K, V> asMap() {
+  public final Map<K, V> asMap() {
     return ReadOnlyArrayMap.wrap(data());
   }
 
   /** Returns the value for the given {@code key}, or {@code null} if the key is not present. */
   @Nullable
   @SuppressWarnings("unchecked")
-  public V get(K key) {
+  public final V get(K key) {
     for (int i = 0; i < data().size(); i += 2) {
       if (key.equals(data().get(i))) {
         return (V) data().get(i + 1);
@@ -58,7 +65,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
 
   /** Iterates over all the key-value pairs of labels contained by this instance. */
   @SuppressWarnings("unchecked")
-  public void forEach(BiConsumer<K, V> consumer) {
+  public final void forEach(BiConsumer<K, V> consumer) {
     for (int i = 0; i < data().size(); i += 2) {
       consumer.accept((K) data().get(i), (V) data().get(i + 1));
     }
@@ -193,6 +200,26 @@ public abstract class ImmutableKeyValuePairs<K, V> {
       result.add(key);
     }
     Collections.reverse(result);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof ImmutableKeyValuePairs)) {
+      return false;
+    }
+    ImmutableKeyValuePairs<?, ?> that = (ImmutableKeyValuePairs<?, ?>) o;
+    return this.data.equals(that.data());
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 1;
+    result *= 1000003;
+    result ^= data.hashCode();
     return result;
   }
 
