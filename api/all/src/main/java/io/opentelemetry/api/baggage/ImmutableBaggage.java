@@ -7,7 +7,6 @@ package io.opentelemetry.api.baggage;
 
 import static java.util.Objects.requireNonNull;
 
-import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.context.Context;
@@ -16,12 +15,15 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-@AutoValue
 @Immutable
-abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry>
+final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry>
     implements Baggage {
 
   private static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
+
+  ImmutableBaggage(List<Object> data) {
+    super(data);
+  }
 
   static Baggage empty() {
     return EMPTY;
@@ -30,9 +32,6 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
   static BaggageBuilder builder() {
     return new Builder();
   }
-
-  @Override
-  protected abstract List<Object> data();
 
   @Nullable
   @Override
@@ -49,7 +48,7 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
   }
 
   private static Baggage sortAndFilterToBaggage(Object[] data) {
-    return new AutoValue_ImmutableBaggage(sortAndFilter(data, /* filterNullValues= */ true));
+    return new ImmutableBaggage(sortAndFilter(data, /* filterNullValues= */ true));
   }
 
   // TODO: Migrate to AutoValue.Builder
