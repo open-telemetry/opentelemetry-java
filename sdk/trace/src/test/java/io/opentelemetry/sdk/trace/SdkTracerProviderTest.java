@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.function.Supplier;
@@ -98,16 +97,15 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  void builder_NullTraceConfig() {
-    assertThatThrownBy(() -> SdkTracerProvider.builder().setTraceConfig((TraceConfig) null))
+  void builder_NullSpanLimits() {
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setSpanLimits((SpanLimits) null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("traceConfig");
   }
 
   @Test
-  void builder_NullTraceConfigSupplier() {
-    assertThatThrownBy(
-            () -> SdkTracerProvider.builder().setTraceConfig((Supplier<TraceConfig>) null))
+  void builder_NullSpanLimitsSupplier() {
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setSpanLimits((Supplier<SpanLimits>) null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("traceConfig");
   }
@@ -159,11 +157,11 @@ class SdkTracerProviderTest {
 
   @Test
   void build_traceConfig() {
-    TraceConfig initialTraceConfig = TraceConfig.builder().build();
+    SpanLimits initialSpanLimits = SpanLimits.builder().build();
     SdkTracerProvider sdkTracerProvider =
-        SdkTracerProvider.builder().setTraceConfig(initialTraceConfig).build();
+        SdkTracerProvider.builder().setSpanLimits(initialSpanLimits).build();
 
-    assertThat(sdkTracerProvider.getActiveTraceConfig()).isSameAs(initialTraceConfig);
+    assertThat(sdkTracerProvider.getSpanLimits()).isSameAs(initialSpanLimits);
   }
 
   @Test

@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
 import java.util.function.Supplier;
@@ -21,7 +20,7 @@ final class TracerSharedState {
   private final IdGenerator idGenerator;
   private final Resource resource;
 
-  private final Supplier<TraceConfig> traceConfigSupplier;
+  private final Supplier<SpanLimits> traceConfigSupplier;
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
 
@@ -31,7 +30,7 @@ final class TracerSharedState {
       Clock clock,
       IdGenerator idGenerator,
       Resource resource,
-      Supplier<TraceConfig> traceConfigSupplier,
+      Supplier<SpanLimits> traceConfigSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors) {
     this.clock = clock;
@@ -54,12 +53,8 @@ final class TracerSharedState {
     return resource;
   }
 
-  /**
-   * Returns the active {@code TraceConfig}.
-   *
-   * @return the active {@code TraceConfig}.
-   */
-  TraceConfig getActiveTraceConfig() {
+  /** Returns the current {@link SpanLimits}. */
+  SpanLimits getSpanLimits() {
     return traceConfigSupplier.get();
   }
 

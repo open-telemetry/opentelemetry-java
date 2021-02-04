@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.extension.zpages;
 
 import com.sun.net.httpserver.HttpServer;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -94,8 +94,8 @@ public final class ZPageServer {
   @Nullable
   private static HttpServer server;
 
-  /** Returns a supplier of {@link TraceConfig} which can be reconfigured using zpages. */
-  public static Supplier<TraceConfig> getTracezTraceConfigSupplier() {
+  /** Returns a supplier of {@link SpanLimits} which can be reconfigured using zpages. */
+  public static Supplier<SpanLimits> getTracezTraceConfigSupplier() {
     return tracezTraceConfigSupplier;
   }
 

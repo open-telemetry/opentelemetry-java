@@ -9,8 +9,8 @@ import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
+import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.SpanLimitsBuilder;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -24,7 +24,7 @@ final class TracerProviderConfiguration {
     SdkTracerProviderBuilder tracerProviderBuilder =
         SdkTracerProvider.builder()
             .setResource(resource)
-            .setTraceConfig(configureTraceConfig(config));
+            .setSpanLimits(configureSpanLimits(config));
 
     String sampler = config.getString("otel.traces.sampler");
     if (sampler != null) {
@@ -79,8 +79,8 @@ final class TracerProviderConfiguration {
   }
 
   // Visible for testing
-  static TraceConfig configureTraceConfig(ConfigProperties config) {
-    TraceConfigBuilder builder = TraceConfig.builder();
+  static SpanLimits configureSpanLimits(ConfigProperties config) {
+    SpanLimitsBuilder builder = SpanLimits.builder();
 
     Integer maxAttrs = config.getInt("otel.span.attribute.count.limit");
     if (maxAttrs != null) {

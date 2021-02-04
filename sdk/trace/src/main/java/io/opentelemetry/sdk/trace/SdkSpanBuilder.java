@@ -23,7 +23,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -40,7 +39,7 @@ final class SdkSpanBuilder implements SpanBuilder {
   private final String spanName;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final TracerSharedState tracerSharedState;
-  private final TraceConfig traceConfig;
+  private final SpanLimits spanLimits;
 
   @Nullable private Context parent;
   private SpanKind spanKind = SpanKind.INTERNAL;
@@ -54,11 +53,11 @@ final class SdkSpanBuilder implements SpanBuilder {
       String spanName,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       TracerSharedState tracerSharedState,
-      TraceConfig traceConfig) {
+      SpanLimits spanLimits) {
     this.spanName = spanName;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.tracerSharedState = tracerSharedState;
-    this.traceConfig = traceConfig;
+    this.spanLimits = spanLimits;
   }
 
   @Override
@@ -95,7 +94,7 @@ final class SdkSpanBuilder implements SpanBuilder {
         LinkData.create(
             spanContext,
             RecordEventsReadableSpan.copyAndLimitAttributes(
-                attributes, traceConfig.getMaxNumberOfAttributesPerLink()),
+                attributes, spanLimits.getMaxNumberOfAttributesPerLink()),
             totalAttributeCount));
     return this;
   }
@@ -104,11 +103,11 @@ final class SdkSpanBuilder implements SpanBuilder {
     Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     if (links == null) {
-      links = new ArrayList<>(traceConfig.getMaxNumberOfLinks());
+      links = new ArrayList<>(spanLimits.getMaxNumberOfLinks());
     }
 
     // don't bother doing anything with any links beyond the max.
-    if (links.size() == traceConfig.getMaxNumberOfLinks()) {
+    if (links.size() == spanLimits.getMaxNumberOfLinks()) {
       return;
     }
 
@@ -142,11 +141,11 @@ final class SdkSpanBuilder implements SpanBuilder {
       return this;
     }
     if (attributes == null) {
-      attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
+      attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
     }
 
-    if (traceConfig.shouldTruncateStringAttributeValues()) {
-      value = StringUtils.truncateToSize(key, value, traceConfig.getMaxLengthOfAttributeValues());
+    if (spanLimits.shouldTruncateStringAttributeValues()) {
+      value = StringUtils.truncateToSize(key, value, spanLimits.getMaxLengthOfAttributeValues());
     }
 
     attributes.put(key, value);
@@ -201,7 +200,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     Attributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
       if (attributes == null) {
-        attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
+        attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
       }
       samplingAttributes.forEach((key, value) -> attributes.put((AttributeKey) key, value));
     }
@@ -218,7 +217,7 @@ final class SdkSpanBuilder implements SpanBuilder {
         spanKind,
         parentSpanContext,
         parentContext,
-        traceConfig,
+        spanLimits,
         tracerSharedState.getActiveSpanProcessor(),
         getClock(parentSpan, tracerSharedState.getClock()),
         tracerSharedState.getResource(),
