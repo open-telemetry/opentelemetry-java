@@ -73,9 +73,9 @@ class AdapterTest {
 
     // test
     Model.Span jaegerSpan = Adapter.toJaeger(span);
-    assertThat(TraceId.bytesToHex(jaegerSpan.getTraceId().toByteArray()))
+    assertThat(TraceId.fromBytes(jaegerSpan.getTraceId().toByteArray()))
         .isEqualTo(span.getTraceId());
-    assertThat(SpanId.bytesToHex(jaegerSpan.getSpanId().toByteArray())).isEqualTo(span.getSpanId());
+    assertThat(SpanId.fromBytes(jaegerSpan.getSpanId().toByteArray())).isEqualTo(span.getSpanId());
     assertThat(jaegerSpan.getOperationName()).isEqualTo("GET /api/endpoint");
     assertThat(jaegerSpan.getStartTime()).isEqualTo(Timestamps.fromMillis(startMs));
     assertThat(Durations.toMillis(jaegerSpan.getDuration())).isEqualTo(duration);
@@ -216,8 +216,8 @@ class AdapterTest {
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
 
     // verify
-    assertThat(SpanId.bytesToHex(spanRef.getSpanId().toByteArray())).isEqualTo(SPAN_ID);
-    assertThat(TraceId.bytesToHex(spanRef.getTraceId().toByteArray())).isEqualTo(TRACE_ID);
+    assertThat(SpanId.fromBytes(spanRef.getSpanId().toByteArray())).isEqualTo(SPAN_ID);
+    assertThat(TraceId.fromBytes(spanRef.getTraceId().toByteArray())).isEqualTo(TRACE_ID);
     assertThat(spanRef.getRefType()).isEqualTo(Model.SpanRefType.FOLLOWS_FROM);
   }
 
@@ -330,8 +330,8 @@ class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.FOLLOWS_FROM.equals(spanRef.getRefType())) {
-        assertThat(TraceId.bytesToHex(spanRef.getTraceId().toByteArray())).isEqualTo(LINK_TRACE_ID);
-        assertThat(SpanId.bytesToHex(spanRef.getSpanId().toByteArray())).isEqualTo(LINK_SPAN_ID);
+        assertThat(TraceId.fromBytes(spanRef.getTraceId().toByteArray())).isEqualTo(LINK_TRACE_ID);
+        assertThat(SpanId.fromBytes(spanRef.getSpanId().toByteArray())).isEqualTo(LINK_SPAN_ID);
         found = true;
       }
     }
@@ -342,8 +342,8 @@ class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.CHILD_OF.equals(spanRef.getRefType())) {
-        assertThat(TraceId.bytesToHex(spanRef.getTraceId().toByteArray())).isEqualTo(TRACE_ID);
-        assertThat(SpanId.bytesToHex(spanRef.getSpanId().toByteArray())).isEqualTo(PARENT_SPAN_ID);
+        assertThat(TraceId.fromBytes(spanRef.getTraceId().toByteArray())).isEqualTo(TRACE_ID);
+        assertThat(SpanId.fromBytes(spanRef.getSpanId().toByteArray())).isEqualTo(PARENT_SPAN_ID);
         found = true;
       }
     }

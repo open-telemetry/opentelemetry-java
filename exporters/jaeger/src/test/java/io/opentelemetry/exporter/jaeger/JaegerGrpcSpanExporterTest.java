@@ -125,7 +125,7 @@ class JaegerGrpcSpanExporterTest {
 
     Model.Batch batch = requestCaptor.getValue().getBatch();
     assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint");
-    assertThat(SpanId.bytesToHex(batch.getSpans(0).getSpanId().toByteArray())).isEqualTo(SPAN_ID);
+    assertThat(SpanId.fromBytes(batch.getSpans(0).getSpanId().toByteArray())).isEqualTo(SPAN_ID);
 
     assertThat(
             getTagValue(batch.getProcess().getTagsList(), "resource-attr-key")
@@ -214,13 +214,13 @@ class JaegerGrpcSpanExporterTest {
       if (processTag.isPresent()) {
         assertThat(processTag2.isPresent()).isFalse();
         assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint/1");
-        assertThat(SpanId.bytesToHex(batch.getSpans(0).getSpanId().toByteArray()))
+        assertThat(SpanId.fromBytes(batch.getSpans(0).getSpanId().toByteArray()))
             .isEqualTo(SPAN_ID);
         assertThat(processTag.get().getVStr()).isEqualTo("resource-attr-value-1");
         assertThat(batch.getProcess().getServiceName()).isEqualTo("myServiceName1");
       } else if (processTag2.isPresent()) {
         assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint/2");
-        assertThat(SpanId.bytesToHex(batch.getSpans(0).getSpanId().toByteArray()))
+        assertThat(SpanId.fromBytes(batch.getSpans(0).getSpanId().toByteArray()))
             .isEqualTo(SPAN_ID_2);
         assertThat(processTag2.get().getVStr()).isEqualTo("resource-attr-value-2");
         assertThat(batch.getProcess().getServiceName()).isEqualTo("myServiceName2");
@@ -232,8 +232,7 @@ class JaegerGrpcSpanExporterTest {
 
   private static void verifyBatch(Model.Batch batch) throws Exception {
     assertThat(batch.getSpansCount()).isEqualTo(1);
-    assertThat(TraceId.bytesToHex(batch.getSpans(0).getTraceId().toByteArray()))
-        .isEqualTo(TRACE_ID);
+    assertThat(TraceId.fromBytes(batch.getSpans(0).getTraceId().toByteArray())).isEqualTo(TRACE_ID);
     assertThat(batch.getProcess().getTagsCount()).isEqualTo(5);
 
     assertThat(

@@ -17,15 +17,19 @@ class TraceIdTest {
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final byte[] secondBytes =
       new byte[] {(byte) 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'A'};
-  private static final String first = TraceId.bytesToHex(firstBytes);
+  private static final String first = TraceId.fromBytes(firstBytes);
 
   private static final String second =
       TraceId.fromLongs(
           ByteBuffer.wrap(secondBytes).getLong(), ByteBuffer.wrap(secondBytes, 8, 8).getLong());
 
   @Test
-  void invalidTraceId() {
-    assertThat(TraceId.getTraceIdRandomPart(TraceId.getInvalid())).isEqualTo(0);
+  void invalid() {
+    assertThat(TraceId.getInvalid()).isEqualTo("00000000000000000000000000000000");
+    assertThat(TraceId.asBytes(TraceId.getInvalid()))
+        .isEqualTo(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+    assertThat(TraceId.highPartAsLong(TraceId.getInvalid())).isEqualTo(0);
+    assertThat(TraceId.lowPartAsLong(TraceId.getInvalid())).isEqualTo(0);
   }
 
   @Test
@@ -43,21 +47,21 @@ class TraceIdTest {
     byte[] id = {
       0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x00
     };
-    String traceId = TraceId.bytesToHex(id);
+    String traceId = TraceId.fromBytes(id);
     assertThat(TraceId.getTraceIdRandomPart(traceId)).isEqualTo(0x090A0B0C0D0E0F00L);
   }
 
   @Test
   void testGetRandomTracePart_NegativeLongRepresentation() {
     byte[] id = {
+      (byte) 0xFF, // force a negative value
       0x01,
       0x02,
       0x03,
       0x04,
       0x05,
       0x06,
-      0x07,
-      0x08,
+      0x00,
       (byte) 0xFF, // force a negative value
       0x0A,
       0x0B,
@@ -67,34 +71,35 @@ class TraceIdTest {
       0x0F,
       0x00
     };
-    String traceId = TraceId.bytesToHex(id);
-    assertThat(TraceId.getTraceIdRandomPart(traceId)).isEqualTo(0xFF0A0B0C0D0E0F00L);
+    String traceId = TraceId.fromBytes(id);
+    assertThat(TraceId.highPartAsLong(traceId)).isEqualTo(0xFF01020304050600L);
+    assertThat(TraceId.lowPartAsLong(traceId)).isEqualTo(0xFF0A0B0C0D0E0F00L);
   }
 
   @Test
   void fromLowerHex() {
-    assertThat(TraceId.bytesToHex(TraceId.bytesFromHex("00000000000000000000000000000000")))
+    assertThat(TraceId.fromBytes(TraceId.asBytes("00000000000000000000000000000000")))
         .isEqualTo(TraceId.getInvalid());
-    assertThat(TraceId.bytesFromHex("00000000000000000000000000000061")).isEqualTo(firstBytes);
-    assertThat(TraceId.bytesFromHex("ff000000000000000000000000000041")).isEqualTo(secondBytes);
+    assertThat(TraceId.asBytes("00000000000000000000000000000061")).isEqualTo(firstBytes);
+    assertThat(TraceId.asBytes("ff000000000000000000000000000041")).isEqualTo(secondBytes);
   }
 
   @Test
   void toLowerHex() {
     assertThat(TraceId.getInvalid()).isEqualTo("00000000000000000000000000000000");
-    assertThat(TraceId.bytesToHex(firstBytes)).isEqualTo("00000000000000000000000000000061");
-    assertThat(TraceId.bytesToHex(secondBytes)).isEqualTo("ff000000000000000000000000000041");
+    assertThat(TraceId.fromBytes(firstBytes)).isEqualTo("00000000000000000000000000000061");
+    assertThat(TraceId.fromBytes(secondBytes)).isEqualTo("ff000000000000000000000000000041");
   }
 
   @Test
-  void toAndFromLongs() {
+  void toFromLongs() {
     Random random = new Random();
     for (int i = 0; i < 10000; i++) {
       long idHi = random.nextLong();
       long idLo = random.nextLong();
       String traceId = TraceId.fromLongs(idHi, idLo);
-      assertThat(TraceId.traceIdHighBytesAsLong(traceId)).isEqualTo(idHi);
-      assertThat(TraceId.traceIdLowBytesAsLong(traceId)).isEqualTo(idLo);
+      assertThat(TraceId.highPartAsLong(traceId)).isEqualTo(idHi);
+      assertThat(TraceId.lowPartAsLong(traceId)).isEqualTo(idLo);
     }
   }
 }

@@ -49,10 +49,10 @@ public class RequestMarshalState {
       InstrumentationLibraryInfo.create("name", null);
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {123, 46, 23, 78, 12, 5, (byte) 180, (byte) 223, 45, 89, 71, 61, 62, 29, 34, 54};
-  private static final String TRACE_ID = TraceId.bytesToHex(TRACE_ID_BYTES);
+  private static final String TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);
   private static final byte[] SPAN_ID_BYTES =
       new byte[] {(byte) 198, (byte) 245, (byte) 213, (byte) 156, 46, 31, 29, 101};
-  private static final String SPAN_ID = SpanId.bytesToHex(SPAN_ID_BYTES);
+  private static final String SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES);
   private static final SpanContext SPAN_CONTEXT =
       SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
 

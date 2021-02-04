@@ -67,8 +67,8 @@ final class Adapter {
   static Span toJaeger(SpanData span) {
     Span target = new Span();
 
-    long traceIdHigh = TraceId.traceIdHighBytesAsLong(span.getTraceId());
-    long traceIdLow = TraceId.traceIdLowBytesAsLong(span.getTraceId());
+    long traceIdHigh = TraceId.highPartAsLong(span.getTraceId());
+    long traceIdLow = TraceId.lowPartAsLong(span.getTraceId());
     long spanIdAsLong = SpanId.asLong(span.getSpanId());
 
     target.setTraceIdHigh(traceIdHigh);
@@ -232,8 +232,8 @@ final class Adapter {
     // https://github.com/open-telemetry/opentelemetry-java/pull/481/files#r312577862
     return new SpanRef(
         SpanRefType.FOLLOWS_FROM,
-        TraceId.traceIdLowBytesAsLong(link.getSpanContext().getTraceId()),
-        TraceId.traceIdHighBytesAsLong(link.getSpanContext().getTraceId()),
+        TraceId.lowPartAsLong(link.getSpanContext().getTraceId()),
+        TraceId.highPartAsLong(link.getSpanContext().getTraceId()),
         SpanId.asLong(link.getSpanContext().getSpanId()));
   }
 }
