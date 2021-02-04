@@ -59,9 +59,9 @@ public interface Sampler {
 
   /**
    * Returns a {@link ParentBasedSamplerBuilder} that enables configuration of the parent-based
-   * sampling strategy. The parent's sampling decision if one exists, otherwise following the root
-   * sampler and other optional sampler's decision. There are a several options available on the
-   * builder to configure the precise behavior with respect to how the decision will be made.
+   * sampling strategy. The parent's sampling decision is used if a parent span exists, otherwise
+   * this strategy uses the root sampler's decision. There are a several options available on the
+   * builder to control the precise behavior of how the decision will be made.
    *
    * @param root the required {@code Sampler} which is used to make the sampling decisions if the
    *     parent does not exist.
