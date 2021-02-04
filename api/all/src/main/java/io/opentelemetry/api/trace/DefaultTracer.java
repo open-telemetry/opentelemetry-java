@@ -20,7 +20,7 @@ final class DefaultTracer implements Tracer {
 
   private static final DefaultTracer INSTANCE = new DefaultTracer();
 
-  static DefaultTracer getInstance() {
+  static Tracer getInstance() {
     return INSTANCE;
   }
 
