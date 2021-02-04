@@ -66,7 +66,7 @@ public final class SpanId {
    * @param spanIdBytes the bytes (8-byte array) representation of the {@code SpanId}.
    * @return the lowercase hex (base16) representation of the {@code SpanId}.
    * @throws NullPointerException if {@code spanIdBytes} is null.
-   * @throws IllegalArgumentException if not enough characters in the {@code spanIdBytes}.
+   * @throws IndexOutOfBoundsException if {@code spanIdBytes} too short.
    */
   public static String fromBytes(byte[] spanIdBytes) {
     Objects.requireNonNull(spanIdBytes, "spanIdBytes");
@@ -82,7 +82,8 @@ public final class SpanId {
    * @param spanId the lowercase hex (base16) representation of the {@code SpanId}.
    * @return the bytes (8-byte array) representation of the {@code SpanId}.
    * @throws NullPointerException if {@code spanId} is null.
-   * @throws IllegalArgumentException if not enough characters in the {@code spanId}.
+   * @throws IndexOutOfBoundsException if {@code spanId} too short.
+   * @throws IllegalArgumentException if {@code spanId} contains non lowercase hex characters.
    */
   public static byte[] asBytes(CharSequence spanId) {
     Objects.requireNonNull(spanId, "spanId");
@@ -119,6 +120,8 @@ public final class SpanId {
    * @param spanId the lowercase hex (base16) representation of the {@code SpanId}.
    * @return the {@code long} value representation of the {@code SpanId}.
    * @throws NullPointerException if {@code spanId} is null.
+   * @throws IndexOutOfBoundsException if {@code spanId} too short.
+   * @throws IllegalArgumentException if {@code spanId} contains non lowercase hex characters.
    */
   public static long asLong(CharSequence spanId) {
     Objects.requireNonNull(spanId, "spanId");
