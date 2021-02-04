@@ -45,10 +45,8 @@ class SpanAdapterTest {
   private static final String TRACE_ID = TraceId.bytesToHex(TRACE_ID_BYTES);
   private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
   private static final String SPAN_ID = SpanId.bytesToHex(SPAN_ID_BYTES);
-
-  private static final TraceState TRACE_STATE = TraceState.builder().build();
   private static final SpanContext SPAN_CONTEXT =
-      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TRACE_STATE);
+      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
 
   @Test
   void toProtoSpan() {

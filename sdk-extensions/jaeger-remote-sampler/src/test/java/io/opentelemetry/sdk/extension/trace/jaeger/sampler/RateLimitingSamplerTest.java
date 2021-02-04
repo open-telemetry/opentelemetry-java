@@ -27,17 +27,18 @@ class RateLimitingSamplerTest {
   private static final SpanKind SPAN_KIND = SpanKind.INTERNAL;
   private final String traceId = TraceId.fromLongs(150, 150);
   private final String parentSpanId = SpanId.fromLong(250);
-  private final TraceState traceState = TraceState.builder().build();
   private final Context sampledSpanContext =
       Context.root()
           .with(
               Span.wrap(
-                  SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), traceState)));
+                  SpanContext.create(
+                      traceId, parentSpanId, TraceFlags.getSampled(), TraceState.getDefault())));
   private final Context notSampledSpanContext =
       Context.root()
           .with(
               Span.wrap(
-                  SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState)));
+                  SpanContext.create(
+                      traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())));
 
   @Test
   void alwaysSampleSampledContext() {
