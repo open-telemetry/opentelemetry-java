@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Sampler is used to make decisions on {@link Span} sampling. */
+/** A Sampler is used to make decisions on {@link Span} sampling. */
 @ThreadSafe
 public interface Sampler {
 
@@ -46,6 +46,8 @@ public interface Sampler {
    * whether or not to sample. If there is no parent, the Sampler uses the provided Sampler delegate
    * to determine the sampling decision.
    *
+   * <p>This method is equivalent to calling {@code #parentBasedBuilder(Sampler).build()}
+   *
    * @param root the {@code Sampler} which is used to make the sampling decisions if the parent does
    *     not exist.
    * @return a {@code Sampler} that follows the parent's sampling decision if one exists, otherwise
@@ -56,12 +58,14 @@ public interface Sampler {
   }
 
   /**
-   * Returns a {@link ParentBasedSamplerBuilder} that follows the parent's sampling decision if one
-   * exists, otherwise following the root sampler and other optional sampler's decision.
+   * Returns a {@link ParentBasedSamplerBuilder} that enables configuration of the parent-based
+   * sampling strategy. The parent's sampling decision is used if a parent span exists, otherwise
+   * this strategy uses the root sampler's decision. There are a several options available on the
+   * builder to control the precise behavior of how the decision will be made.
    *
    * @param root the required {@code Sampler} which is used to make the sampling decisions if the
    *     parent does not exist.
-   * @return a {@code ParentBased.Builder}
+   * @return a {@code ParentBasedSamplerBuilder}
    */
   static ParentBasedSamplerBuilder parentBasedBuilder(Sampler root) {
     return new ParentBasedSamplerBuilder(root);
