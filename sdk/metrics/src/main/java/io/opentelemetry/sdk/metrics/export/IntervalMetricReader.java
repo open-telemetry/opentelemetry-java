@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +35,7 @@ public final class IntervalMetricReader {
 
   /** Stops the scheduled task and calls export one more time. */
   public void shutdown() {
+    System.out.println("Starting shutting down reader");
     scheduler.shutdown();
     try {
       scheduler.awaitTermination(5, TimeUnit.SECONDS);
@@ -73,6 +75,7 @@ public final class IntervalMetricReader {
 
     private final InternalState internalState;
     private final AtomicBoolean exportAvailable = new AtomicBoolean(true);
+    private CountDownLatch latch = new CountDownLatch(0);
 
     private Exporter(InternalState internalState) {
       this.internalState = internalState;
@@ -82,6 +85,8 @@ public final class IntervalMetricReader {
     @SuppressWarnings("BooleanParameter")
     public void run() {
       if (exportAvailable.compareAndSet(true, false)) {
+        long before = System.currentTimeMillis();
+        latch = new CountDownLatch(1);
         try {
           List<MetricData> metricsList = new ArrayList<>();
           for (MetricProducer metricProducer : internalState.getMetricProducers()) {
@@ -89,14 +94,20 @@ public final class IntervalMetricReader {
           }
           final CompletableResultCode result =
               internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
+          System.out.printf(
+              "[MetricReader]Set up export call in %d ms\n", System.currentTimeMillis() - before);
           result.whenComplete(
               () -> {
                 if (!result.isSuccess()) {
                   logger.log(Level.FINE, "Exporter failed");
                 }
                 exportAvailable.set(true);
+                latch.countDown();
+                long timediff = System.currentTimeMillis() - before;
+                System.out.printf("[MetricReader]Exported metrics in %d ms\n", timediff);
               });
         } catch (RuntimeException e) {
+          latch.countDown();
           logger.log(Level.WARNING, "Exporter threw an Exception", e);
         }
       } else {
@@ -105,6 +116,16 @@ public final class IntervalMetricReader {
     }
 
     void shutdown() {
+      long before = System.currentTimeMillis();
+      System.out.println("flag is " + this.exportAvailable.get() + " Waiting at " + before);
+      try {
+        latch.await(5, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        logger.log(Level.WARNING, "Exporter shutdown threw an Exception", e);
+      }
+      long timediff = System.currentTimeMillis() - before;
+      System.out.printf(
+          "flag is %s, Shut down exporter, using %d ms", exportAvailable.get(), timediff);
       internalState.getMetricExporter().shutdown();
     }
   }
