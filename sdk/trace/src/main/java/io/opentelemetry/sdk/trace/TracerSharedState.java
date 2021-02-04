@@ -20,7 +20,7 @@ final class TracerSharedState {
   private final IdGenerator idGenerator;
   private final Resource resource;
 
-  private final Supplier<SpanLimits> traceConfigSupplier;
+  private final Supplier<SpanLimits> spanLimitsSupplier;
   private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
 
@@ -30,13 +30,13 @@ final class TracerSharedState {
       Clock clock,
       IdGenerator idGenerator,
       Resource resource,
-      Supplier<SpanLimits> traceConfigSupplier,
+      Supplier<SpanLimits> spanLimitsSupplier,
       Sampler sampler,
       List<SpanProcessor> spanProcessors) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.resource = resource;
-    this.traceConfigSupplier = traceConfigSupplier;
+    this.spanLimitsSupplier = spanLimitsSupplier;
     this.sampler = sampler;
     activeSpanProcessor = SpanProcessor.composite(spanProcessors);
   }
@@ -55,7 +55,7 @@ final class TracerSharedState {
 
   /** Returns the current {@link SpanLimits}. */
   SpanLimits getSpanLimits() {
-    return traceConfigSupplier.get();
+    return spanLimitsSupplier.get();
   }
 
   /** Returns the configured {@link Sampler}. */

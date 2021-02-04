@@ -5,7 +5,10 @@
 
 package io.opentelemetry.sdk.common;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 /** Interface for getting the current time. */
+@ThreadSafe
 public interface Clock {
   /**
    * Obtains the current epoch timestamp in nanos from this clock.

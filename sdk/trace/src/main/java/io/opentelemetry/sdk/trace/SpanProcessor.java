@@ -13,11 +13,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * SpanProcessor is the interface {@code TracerSdk} uses to allow synchronous hooks for when a
  * {@code Span} is started or when a {@code Span} is ended.
  */
+@ThreadSafe
 public interface SpanProcessor extends Closeable {
 
   /**
