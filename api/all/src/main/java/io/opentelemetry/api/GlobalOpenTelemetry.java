@@ -29,8 +29,6 @@ import javax.annotation.Nullable;
  */
 public final class GlobalOpenTelemetry {
 
-  private static final OpenTelemetry NOOP = DefaultOpenTelemetry.builder().build();
-
   private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
 
   private static final Object mutex = new Object();
@@ -59,8 +57,7 @@ public final class GlobalOpenTelemetry {
             return autoConfigured;
           }
 
-          set(NOOP);
-          return NOOP;
+          return set(OpenTelemetry.getDefault());
         }
       }
     }
@@ -78,7 +75,7 @@ public final class GlobalOpenTelemetry {
    * <p>If you are using the OpenTelemetry SDK, you should generally use {@code
    * OpenTelemetrySdk.builder().buildAndRegisterGlobal()} instead of calling this method directly.
    */
-  public static void set(OpenTelemetry openTelemetry) {
+  public static OpenTelemetry set(OpenTelemetry openTelemetry) {
     synchronized (mutex) {
       if (globalOpenTelemetry != null) {
         throw new IllegalStateException(
@@ -90,6 +87,7 @@ public final class GlobalOpenTelemetry {
       }
       globalOpenTelemetry = openTelemetry;
       setGlobalCaller = new Throwable();
+      return openTelemetry;
     }
   }
 

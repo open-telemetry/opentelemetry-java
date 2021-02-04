@@ -15,26 +15,25 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class DefaultOpenTelemetry implements OpenTelemetry {
-  private final TracerProvider tracerProvider;
-  private final ContextPropagators propagators;
+  private static final OpenTelemetry NO_OP = new DefaultOpenTelemetry(ContextPropagators.noop());
 
-  DefaultOpenTelemetry(TracerProvider tracerProvider, ContextPropagators propagators) {
-    this.tracerProvider = tracerProvider;
-    this.propagators = propagators;
+  static OpenTelemetry noOp() {
+    return NO_OP;
   }
 
-  /**
-   * Returns a builder for the {@link DefaultOpenTelemetry}.
-   *
-   * @return a builder for the {@link DefaultOpenTelemetry}.
-   */
-  public static DefaultOpenTelemetryBuilder builder() {
-    return new DefaultOpenTelemetryBuilder();
+  static OpenTelemetry propagating(ContextPropagators propagators) {
+    return new DefaultOpenTelemetry(propagators);
+  }
+
+  private final ContextPropagators propagators;
+
+  DefaultOpenTelemetry(ContextPropagators propagators) {
+    this.propagators = propagators;
   }
 
   @Override
   public TracerProvider getTracerProvider() {
-    return tracerProvider;
+    return TracerProvider.getDefault();
   }
 
   @Override
