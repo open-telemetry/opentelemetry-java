@@ -23,7 +23,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 public interface OpenTelemetry {
   /** Returns a default, completely no-op {@link OpenTelemetry}. */
   static OpenTelemetry getDefault() {
-    return DefaultOpenTelemetry.noOp();
+    return DefaultOpenTelemetry.noop();
   }
 
   /**
