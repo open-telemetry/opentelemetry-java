@@ -22,11 +22,15 @@
  * will sample the provided fraction of Spans, deterministically based on the TraceId of the Spans.
  * This means that all spans from the a given trace will have the same sampling result.
  *
- * <p>{@code Sampler#parentBased(Sampler)} : This strategy will always use the sampled state of the
- * parent span when deciding whether to sample a Span or not. If the the Span has no parent, the
- * provided "root" Sampler will be used for that decision. The parent-based strategy is highly
- * configurable, using the {@link io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder}
- * which can be acquired from the {@code Sampler#parentBasedBuilder(Sampler)} method.
+ * <p>{@link
+ * io.opentelemetry.sdk.trace.samplers.Sampler#parentBased(io.opentelemetry.sdk.trace.samplers.Sampler)}
+ * : This strategy will always use the sampled state of the parent span when deciding whether to
+ * sample a Span or not. If the the Span has no parent, the provided "root" Sampler will be used for
+ * that decision. The parent-based strategy is highly configurable, using the {@link
+ * io.opentelemetry.sdk.trace.samplers.ParentBasedSamplerBuilder} which can be acquired from the
+ * {@link
+ * io.opentelemetry.sdk.trace.samplers.Sampler#parentBasedBuilder(io.opentelemetry.sdk.trace.samplers.Sampler)}
+ * method.
  */
 @ParametersAreNonnullByDefault
 package io.opentelemetry.sdk.trace.samplers;
