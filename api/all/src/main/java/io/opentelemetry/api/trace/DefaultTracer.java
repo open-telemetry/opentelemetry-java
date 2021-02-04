@@ -18,7 +18,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 final class DefaultTracer implements Tracer {
 
-  private static final DefaultTracer INSTANCE = new DefaultTracer();
+  private static final Tracer INSTANCE = new DefaultTracer();
 
   static Tracer getInstance() {
     return INSTANCE;
