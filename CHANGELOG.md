@@ -30,6 +30,15 @@ please open a [discussion topic](https://github.com/opentelemetry/opentelemetry-
 - `SpanId.bytesFromHex()` and `TraceId.bytesFromHex()` no longer accept an offset to the `CharSequence` 
 but assume the id starts at the beginning.
 - `SpanId.getSize()` and `TraceId.getSize()` have been removed. 
+- `SpanId.getHexLength()` has been renamed to `SpanId.getLength()`
+- `SpanId.bytesFromHex()` has been renamed to `SpanId.asBytes()`
+- `SpanId.bytesToHex()` has been renamed to `SpanId.fromBytes()`
+- `TraceId.getHexLength()` has been renamed to `TraceId.getLength()`
+- `TraceId.bytesFromHex()` has been renamed to `TraceId.asBytes()`
+- `TraceId.bytesToHex()` has been renamed to `TraceId.fromBytes()`
+- `TraceId.traceIdLowBytesAsLong()` has been renamed to `TraceId.lowPartAsLong()`
+- `TraceId.traceIdHighBytesAsLong()` has been renamed to `TraceId.highPartAsLong()`
+
 
 #### Enhancements
 
