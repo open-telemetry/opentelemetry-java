@@ -9,7 +9,7 @@
  *
  * <p>Sampling is a mechanism to control the noise and overhead introduced by OpenTelemetry by
  * reducing the number of samples of traces collected and sent to the backend. See the <a
- * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/sdk.md#sampling">OpenTelemetry
+ * href="https://github.com/open-telemetry/opentelemetry-specification/blob/1afab39e5658f807315abf2f3256809293bfd421/specification/trace/sdk.md#sampling">OpenTelemetry
  * specification</a> for more details. <br>
  *
  * <p>The following sampling strategies are provided here:
