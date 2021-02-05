@@ -81,14 +81,14 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span has the given {@link TraceState}. */
   public SpanDataAssert hasTraceState(TraceState traceState) {
     isNotNull();
-    if (!actual.getTraceState().equals(traceState)) {
+    if (!actual.getSpanContext().getTraceState().equals(traceState)) {
       failWithActualExpectedAndMessage(
-          actual.getTraceState(),
+          actual.getSpanContext().getTraceState(),
           traceState,
           "Expected span [%s] to have trace state <%s> but was <%s>",
           actual.getName(),
           traceState,
-          actual.getTraceState());
+          actual.getSpanContext().getTraceState());
     }
     return this;
   }

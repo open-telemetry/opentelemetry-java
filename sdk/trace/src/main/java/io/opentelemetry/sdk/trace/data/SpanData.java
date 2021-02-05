@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace.data;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -46,15 +45,6 @@ public interface SpanData {
   /** Whether the 'sampled' option set on this span. */
   default boolean isSampled() {
     return getSpanContext().isSampled();
-  }
-
-  /**
-   * Gets the {@code TraceState} for this span.
-   *
-   * @return the {@code TraceState} for this span.
-   */
-  default TraceState getTraceState() {
-    return getSpanContext().getTraceState();
   }
 
   /**
