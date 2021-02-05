@@ -14,7 +14,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * back to no-op default implementations.
  */
 @ThreadSafe
-public final class DefaultOpenTelemetry implements OpenTelemetry {
+final class DefaultOpenTelemetry implements OpenTelemetry {
   private static final OpenTelemetry NO_OP = new DefaultOpenTelemetry(ContextPropagators.noop());
 
   static OpenTelemetry noop() {

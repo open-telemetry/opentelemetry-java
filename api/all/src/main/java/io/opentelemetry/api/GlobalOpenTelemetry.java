@@ -57,7 +57,8 @@ public final class GlobalOpenTelemetry {
             return autoConfigured;
           }
 
-          return set(OpenTelemetry.getDefault());
+          set(OpenTelemetry.getDefault());
+          return OpenTelemetry.getDefault();
         }
       }
     }
@@ -75,7 +76,7 @@ public final class GlobalOpenTelemetry {
    * <p>If you are using the OpenTelemetry SDK, you should generally use {@code
    * OpenTelemetrySdk.builder().buildAndRegisterGlobal()} instead of calling this method directly.
    */
-  public static OpenTelemetry set(OpenTelemetry openTelemetry) {
+  public static void set(OpenTelemetry openTelemetry) {
     synchronized (mutex) {
       if (globalOpenTelemetry != null) {
         throw new IllegalStateException(
@@ -87,7 +88,6 @@ public final class GlobalOpenTelemetry {
       }
       globalOpenTelemetry = openTelemetry;
       setGlobalCaller = new Throwable();
-      return openTelemetry;
     }
   }
 
