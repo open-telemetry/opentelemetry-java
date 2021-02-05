@@ -26,7 +26,11 @@ abstract class ImmutableSpanContext implements SpanContext {
   }
 
   static SpanContext create(
-      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState, boolean remote) {
+      String traceIdHex,
+      String spanIdHex,
+      TraceFlags traceFlags,
+      TraceState traceState,
+      boolean remote) {
     return new AutoValue_ImmutableSpanContext(
         traceIdHex, spanIdHex, traceFlags, traceState, remote);
   }

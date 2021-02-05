@@ -30,7 +30,7 @@ class LogSinkSdkProviderTest {
         .setUnixTimeMillis(System.currentTimeMillis())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
-        .setFlags(TraceFlags.getDefault())
+        .setFlags(TraceFlags.getDefault().asByte())
         .setSeverity(severity)
         .setSeverityText("really severe")
         .setName("log1")
