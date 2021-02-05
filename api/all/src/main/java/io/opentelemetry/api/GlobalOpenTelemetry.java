@@ -29,8 +29,6 @@ import javax.annotation.Nullable;
  */
 public final class GlobalOpenTelemetry {
 
-  private static final OpenTelemetry NOOP = DefaultOpenTelemetry.builder().build();
-
   private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
 
   private static final Object mutex = new Object();
@@ -59,8 +57,8 @@ public final class GlobalOpenTelemetry {
             return autoConfigured;
           }
 
-          set(NOOP);
-          return NOOP;
+          set(OpenTelemetry.getDefault());
+          return OpenTelemetry.getDefault();
         }
       }
     }
