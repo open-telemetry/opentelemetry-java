@@ -3,7 +3,6 @@ name: "PR Examples Build"
 on:
   pull_request:
     branches:
-      - master
       - main
     paths:
       - 'examples/**'

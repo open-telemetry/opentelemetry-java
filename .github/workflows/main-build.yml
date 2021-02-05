@@ -3,7 +3,6 @@ name: "Continuous Build"
 on:
   push:
     branches:
-      - master
       - main
 
 jobs:
@@ -49,7 +48,7 @@ jobs:
           name: coverage-report
           path: all/build/reports/jacoco/test/html
   publish-snapshots:
-    name: Publish snapshots to JFrog
+    name: Publish snapshots
     if: ${{ github.event_name == 'push' && github.repository == 'open-telemetry/opentelemetry-java' }}
     needs: build
     runs-on: ubuntu-latest
