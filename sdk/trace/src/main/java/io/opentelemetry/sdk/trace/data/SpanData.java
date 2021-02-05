@@ -43,11 +43,6 @@ public interface SpanData {
     return getSpanContext().getSpanId();
   }
 
-  /** Whether the 'sampled' option set on this span. */
-  default boolean isSampled() {
-    return getSpanContext().isSampled();
-  }
-
   /**
    * Gets the {@code TraceState} for this span.
    *
