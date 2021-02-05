@@ -73,8 +73,8 @@ class JfrSpanProcessorTest {
       events.stream()
           .forEach(
               e -> {
-                assertEquals(span.getSpanContext().getTraceId(), e.getValue("traceId"));
-                assertEquals(span.getSpanContext().getSpanId(), e.getValue("spanId"));
+                assertEquals(span.getSpanContext().getTraceIdHex(), e.getValue("traceId"));
+                assertEquals(span.getSpanContext().getSpanIdHex(), e.getValue("spanId"));
                 assertEquals(OPERATION_NAME, e.getValue("operationName"));
               });
 
@@ -113,8 +113,8 @@ class JfrSpanProcessorTest {
       events.stream()
           .forEach(
               e -> {
-                assertEquals(span.getSpanContext().getTraceId(), e.getValue("traceId"));
-                assertEquals(span.getSpanContext().getSpanId(), e.getValue("spanId"));
+                assertEquals(span.getSpanContext().getTraceIdHex(), e.getValue("traceId"));
+                assertEquals(span.getSpanContext().getSpanIdHex(), e.getValue("spanId"));
                 if ("Span".equals(e.getEventType().getLabel())) {
                   assertEquals(OPERATION_NAME, e.getValue("operationName"));
                 }

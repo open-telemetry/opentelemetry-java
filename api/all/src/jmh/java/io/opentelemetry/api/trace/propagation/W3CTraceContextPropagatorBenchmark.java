@@ -76,8 +76,8 @@ public class W3CTraceContextPropagatorBenchmark {
       SpanContext current = Span.fromContext(result).getSpanContext();
       SpanContext clientSpanContext =
           SpanContext.create(
-              current.getTraceId(),
-              current.getSpanId(),
+              current.getTraceIdHex(),
+              current.getSpanIdHex(),
               current.getTraceFlags(),
               current.getTraceState());
       result = Span.wrap(clientSpanContext).storeInContext(result);

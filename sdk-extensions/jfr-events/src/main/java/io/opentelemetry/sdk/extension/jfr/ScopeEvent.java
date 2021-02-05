@@ -24,8 +24,8 @@ class ScopeEvent extends Event {
   private final String spanId;
 
   ScopeEvent(SpanContext spanContext) {
-    this.traceId = spanContext.getTraceId();
-    this.spanId = spanContext.getSpanId();
+    this.traceId = spanContext.getTraceIdHex();
+    this.spanId = spanContext.getSpanIdHex();
   }
 
   @Label("Trace Id")

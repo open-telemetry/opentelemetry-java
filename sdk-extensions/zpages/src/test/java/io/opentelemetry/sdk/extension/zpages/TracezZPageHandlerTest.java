@@ -270,8 +270,8 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + RUNNING_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of running: 1");
-    assertThat(output.toString()).contains(runningSpan.getSpanContext().getTraceId());
-    assertThat(output.toString()).contains(runningSpan.getSpanContext().getSpanId());
+    assertThat(output.toString()).contains(runningSpan.getSpanContext().getTraceIdHex());
+    assertThat(output.toString()).contains(runningSpan.getSpanContext().getSpanIdHex());
 
     runningSpan.end();
   }
@@ -294,10 +294,10 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + LATENCY_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of latency samples: 2");
-    assertThat(output.toString()).contains(latencySpan1.getSpanContext().getTraceId());
-    assertThat(output.toString()).contains(latencySpan1.getSpanContext().getSpanId());
-    assertThat(output.toString()).contains(latencySpan2.getSpanContext().getTraceId());
-    assertThat(output.toString()).contains(latencySpan2.getSpanContext().getSpanId());
+    assertThat(output.toString()).contains(latencySpan1.getSpanContext().getTraceIdHex());
+    assertThat(output.toString()).contains(latencySpan1.getSpanContext().getSpanIdHex());
+    assertThat(output.toString()).contains(latencySpan2.getSpanContext().getTraceIdHex());
+    assertThat(output.toString()).contains(latencySpan2.getSpanContext().getSpanIdHex());
   }
 
   @Test
@@ -318,10 +318,10 @@ class TracezZPageHandlerTest {
     assertThat(output.toString()).contains("<h2>Span Details</h2>");
     assertThat(output.toString()).contains("<b> Span Name: " + ERROR_SPAN + "</b>");
     assertThat(output.toString()).contains("<b> Number of error samples: 2");
-    assertThat(output.toString()).contains(errorSpan1.getSpanContext().getTraceId());
-    assertThat(output.toString()).contains(errorSpan1.getSpanContext().getSpanId());
-    assertThat(output.toString()).contains(errorSpan2.getSpanContext().getTraceId());
-    assertThat(output.toString()).contains(errorSpan2.getSpanContext().getSpanId());
+    assertThat(output.toString()).contains(errorSpan1.getSpanContext().getTraceIdHex());
+    assertThat(output.toString()).contains(errorSpan1.getSpanContext().getSpanIdHex());
+    assertThat(output.toString()).contains(errorSpan2.getSpanContext().getTraceIdHex());
+    assertThat(output.toString()).contains(errorSpan2.getSpanContext().getSpanIdHex());
   }
 
   @Test

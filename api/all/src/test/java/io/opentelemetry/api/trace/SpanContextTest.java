@@ -30,8 +30,8 @@ class SpanContextTest {
 
   @Test
   void invalidSpanContext() {
-    assertThat(SpanContext.getInvalid().getTraceId()).isEqualTo(TraceId.getInvalid());
-    assertThat(SpanContext.getInvalid().getSpanId()).isEqualTo(SpanId.getInvalid());
+    assertThat(SpanContext.getInvalid().getTraceIdHex()).isEqualTo(TraceId.getInvalid());
+    assertThat(SpanContext.getInvalid().getSpanIdHex()).isEqualTo(SpanId.getInvalid());
     assertThat(SpanContext.getInvalid().getTraceFlags()).isEqualTo(TraceFlags.getDefault());
   }
 
@@ -60,14 +60,14 @@ class SpanContextTest {
 
   @Test
   void getTraceId() {
-    assertThat(first.getTraceId()).isEqualTo(FIRST_TRACE_ID);
-    assertThat(second.getTraceId()).isEqualTo(SECOND_TRACE_ID);
+    assertThat(first.getTraceIdHex()).isEqualTo(FIRST_TRACE_ID);
+    assertThat(second.getTraceIdHex()).isEqualTo(SECOND_TRACE_ID);
   }
 
   @Test
   void getSpanId() {
-    assertThat(first.getSpanId()).isEqualTo(FIRST_SPAN_ID);
-    assertThat(second.getSpanId()).isEqualTo(SECOND_SPAN_ID);
+    assertThat(first.getSpanIdHex()).isEqualTo(FIRST_SPAN_ID);
+    assertThat(second.getSpanIdHex()).isEqualTo(SECOND_SPAN_ID);
   }
 
   @Test
