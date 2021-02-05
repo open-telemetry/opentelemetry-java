@@ -87,15 +87,14 @@ final class BigendianEncoding {
    * @param offset the starting offset in the {@code CharSequence}.
    */
   static long longFromBase16String(CharSequence chars, int offset) {
-    Utils.checkArgument(chars.length() >= offset + LONG_BASE16, "chars too small");
-    return (decodeByte(chars.charAt(offset), chars.charAt(offset + 1)) & 0xFFL) << 56
-        | (decodeByte(chars.charAt(offset + 2), chars.charAt(offset + 3)) & 0xFFL) << 48
-        | (decodeByte(chars.charAt(offset + 4), chars.charAt(offset + 5)) & 0xFFL) << 40
-        | (decodeByte(chars.charAt(offset + 6), chars.charAt(offset + 7)) & 0xFFL) << 32
-        | (decodeByte(chars.charAt(offset + 8), chars.charAt(offset + 9)) & 0xFFL) << 24
-        | (decodeByte(chars.charAt(offset + 10), chars.charAt(offset + 11)) & 0xFFL) << 16
-        | (decodeByte(chars.charAt(offset + 12), chars.charAt(offset + 13)) & 0xFFL) << 8
-        | (decodeByte(chars.charAt(offset + 14), chars.charAt(offset + 15)) & 0xFFL);
+    return (byteFromBase16(chars.charAt(offset), chars.charAt(offset + 1)) & 0xFFL) << 56
+        | (byteFromBase16(chars.charAt(offset + 2), chars.charAt(offset + 3)) & 0xFFL) << 48
+        | (byteFromBase16(chars.charAt(offset + 4), chars.charAt(offset + 5)) & 0xFFL) << 40
+        | (byteFromBase16(chars.charAt(offset + 6), chars.charAt(offset + 7)) & 0xFFL) << 32
+        | (byteFromBase16(chars.charAt(offset + 8), chars.charAt(offset + 9)) & 0xFFL) << 24
+        | (byteFromBase16(chars.charAt(offset + 10), chars.charAt(offset + 11)) & 0xFFL) << 16
+        | (byteFromBase16(chars.charAt(offset + 12), chars.charAt(offset + 13)) & 0xFFL) << 8
+        | (byteFromBase16(chars.charAt(offset + 14), chars.charAt(offset + 15)) & 0xFFL);
   }
 
   /**
@@ -119,7 +118,7 @@ final class BigendianEncoding {
   static byte[] bytesFromBase16(CharSequence value, int length) {
     byte[] result = new byte[length / 2];
     for (int i = 0; i < length; i += 2) {
-      result[i / 2] = byteFromBase16(value, i);
+      result[i / 2] = byteFromBase16(value.charAt(i), value.charAt(i + 1));
     }
     return result;
   }
@@ -146,21 +145,16 @@ final class BigendianEncoding {
   /**
    * Decodes the specified two character sequence, and returns the resulting {@code byte}.
    *
-   * @param chars the character sequence to be decoded.
-   * @param offset the starting offset in the {@code CharSequence}.
+   * @param first the first hex character.
+   * @param second the second hex character.
    * @return the resulting {@code byte}
-   * @throws IllegalArgumentException if the input is not a valid encoded string according to this
-   *     encoding.
    */
-  static byte byteFromBase16(CharSequence chars, int offset) {
-    Utils.checkArgument(chars.length() >= offset + 2, "chars too small");
-    return decodeByte(chars.charAt(offset), chars.charAt(offset + 1));
-  }
-
-  private static byte decodeByte(char hi, char lo) {
-    Utils.checkArgument(lo < ASCII_CHARACTERS && DECODING[lo] != -1, "invalid character " + lo);
-    Utils.checkArgument(hi < ASCII_CHARACTERS && DECODING[hi] != -1, "invalid character " + hi);
-    int decoded = DECODING[hi] << 4 | DECODING[lo];
+  static byte byteFromBase16(char first, char second) {
+    Utils.checkArgument(
+        first < ASCII_CHARACTERS && DECODING[first] != -1, "invalid character " + first);
+    Utils.checkArgument(
+        second < ASCII_CHARACTERS && DECODING[second] != -1, "invalid character " + second);
+    int decoded = DECODING[first] << 4 | DECODING[second];
     return (byte) decoded;
   }
 

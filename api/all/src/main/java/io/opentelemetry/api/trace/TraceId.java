@@ -70,7 +70,7 @@ public final class TraceId {
    * @param traceIdBytes the bytes (16-byte array) representation of the {@code TraceId}.
    * @return the lowercase hex (base16) representation of the {@code TraceId}.
    * @throws NullPointerException if {@code traceIdBytes} is null.
-   * @throws IllegalArgumentException if not enough characters in the {@code traceIdBytes}.
+   * @throws IndexOutOfBoundsException if {@code traceIdBytes} too short.
    */
   public static String fromBytes(byte[] traceIdBytes) {
     Objects.requireNonNull(traceIdBytes, "traceIdBytes");
@@ -86,7 +86,8 @@ public final class TraceId {
    * @param traceId the lowercase hex (base16) representation of the {@code TraceId}.
    * @return the bytes (16-byte array) representation of the {@code TraceId}.
    * @throws NullPointerException if {@code traceId} is null.
-   * @throws IllegalArgumentException if not enough characters in the {@code traceId}.
+   * @throws IndexOutOfBoundsException if {@code traceId} too short.
+   * @throws IllegalArgumentException if {@code traceId} contains non lowercase hex characters.
    */
   public static byte[] asBytes(CharSequence traceId) {
     Objects.requireNonNull(traceId, "traceId");
@@ -139,8 +140,11 @@ public final class TraceId {
    * @param traceId the lowercase hex (base16) representation of the {@code TraceId}.
    * @return the {@code long} value representation of the {@code TraceId}.
    * @throws NullPointerException if {@code traceId} is null.
+   * @throws IndexOutOfBoundsException if {@code traceId} too short.
+   * @throws IllegalArgumentException if {@code spanId} contains non lowercase hex characters.
    */
   public static long highPartAsLong(CharSequence traceId) {
+    Objects.requireNonNull(traceId, "traceId");
     return BigendianEncoding.longFromBase16String(traceId, 0);
   }
 
@@ -151,8 +155,11 @@ public final class TraceId {
    * @param traceId the lowercase hex (base16) representation of the {@code TraceId}.
    * @return the {@code long} value representation of the {@code TraceId}.
    * @throws NullPointerException if {@code traceId} is null.
+   * @throws IndexOutOfBoundsException if {@code traceId} too short.
+   * @throws IllegalArgumentException if {@code spanId} contains non lowercase hex characters.
    */
   public static long lowPartAsLong(CharSequence traceId) {
+    Objects.requireNonNull(traceId, "traceId");
     return BigendianEncoding.longFromBase16String(traceId, BigendianEncoding.LONG_BASE16);
   }
 
