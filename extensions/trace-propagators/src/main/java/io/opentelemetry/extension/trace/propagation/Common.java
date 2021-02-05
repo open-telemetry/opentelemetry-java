@@ -12,6 +12,7 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -47,13 +48,13 @@ final class Common {
     }
   }
 
-  static boolean isTraceIdValid(String value) {
+  static boolean isTraceIdValid(@Nullable String value) {
     return !(StringUtils.isNullOrEmpty(value)
         || (value.length() != MIN_TRACE_ID_LENGTH && value.length() != MAX_TRACE_ID_LENGTH)
         || !TraceId.isValid(StringUtils.padLeft(value, TraceId.getLength())));
   }
 
-  static boolean isSpanIdValid(String value) {
+  static boolean isSpanIdValid(@Nullable String value) {
     return !StringUtils.isNullOrEmpty(value) && SpanId.isValid(value);
   }
 }
