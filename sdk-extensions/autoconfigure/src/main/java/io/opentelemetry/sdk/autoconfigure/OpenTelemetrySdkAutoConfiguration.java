@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -28,7 +26,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     ConfigProperties config = ConfigProperties.get();
     ContextPropagators propagators = PropagatorConfiguration.configurePropagators(config);
 
-    Resource resource = configureResource(config);
+    Resource resource = Resource.getDefault();
 
     configureMeterProvider(resource, config);
 
@@ -49,13 +47,6 @@ public final class OpenTelemetrySdkAutoConfiguration {
     if (exporterName != null) {
       MetricExporterConfiguration.configureExporter(exporterName, config, meterProvider);
     }
-  }
-
-  // Visible for testing
-  static Resource configureResource(ConfigProperties config) {
-    AttributesBuilder resourceAttributes = Attributes.builder();
-    config.getCommaSeparatedMap("otel.resource.attributes").forEach(resourceAttributes::put);
-    return Resource.getDefault().merge(Resource.create(resourceAttributes.build()));
   }
 
   private OpenTelemetrySdkAutoConfiguration() {}
