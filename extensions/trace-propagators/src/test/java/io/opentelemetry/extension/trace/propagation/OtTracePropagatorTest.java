@@ -24,7 +24,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
-class OtTracerPropagatorTest {
+class OtTracePropagatorTest {
 
   private static final String TRACE_ID = "ff000000000000000000000000000041";
   private static final String TRACE_ID_RIGHT_PART = "0000000000000041";
@@ -45,7 +45,7 @@ class OtTracerPropagatorTest {
           return carrier.get(key);
         }
       };
-  private final OtTracerPropagator propagator = OtTracerPropagator.getInstance();
+  private final OtTracePropagator propagator = OtTracePropagator.getInstance();
 
   private static SpanContext getSpanContext(Context context) {
     return Span.fromContext(context).getSpanContext();
@@ -80,9 +80,9 @@ class OtTracerPropagatorTest {
             Context.current()),
         carrier,
         setter);
-    assertThat(carrier).containsEntry(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID_RIGHT_PART);
-    assertThat(carrier).containsEntry(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    assertThat(carrier).containsEntry(OtTracerPropagator.SAMPLED_HEADER, "true");
+    assertThat(carrier).containsEntry(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID_RIGHT_PART);
+    assertThat(carrier).containsEntry(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    assertThat(carrier).containsEntry(OtTracePropagator.SAMPLED_HEADER, "true");
   }
 
   @Test
@@ -94,9 +94,9 @@ class OtTracerPropagatorTest {
             Context.current()),
         null,
         (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
-    assertThat(carrier).containsEntry(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID_RIGHT_PART);
-    assertThat(carrier).containsEntry(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    assertThat(carrier).containsEntry(OtTracerPropagator.SAMPLED_HEADER, "true");
+    assertThat(carrier).containsEntry(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID_RIGHT_PART);
+    assertThat(carrier).containsEntry(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    assertThat(carrier).containsEntry(OtTracePropagator.SAMPLED_HEADER, "true");
   }
 
   @Test
@@ -108,9 +108,9 @@ class OtTracerPropagatorTest {
             Context.current()),
         carrier,
         setter);
-    assertThat(carrier).containsEntry(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID_RIGHT_PART);
-    assertThat(carrier).containsEntry(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    assertThat(carrier).containsEntry(OtTracerPropagator.SAMPLED_HEADER, "false");
+    assertThat(carrier).containsEntry(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID_RIGHT_PART);
+    assertThat(carrier).containsEntry(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    assertThat(carrier).containsEntry(OtTracePropagator.SAMPLED_HEADER, "false");
   }
 
   @Test
@@ -123,8 +123,8 @@ class OtTracerPropagatorTest {
             Context.current().with(baggage)),
         carrier,
         setter);
-    assertThat(carrier).containsEntry(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "foo", "bar");
-    assertThat(carrier).containsEntry(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "key", "value");
+    assertThat(carrier).containsEntry(OtTracePropagator.PREFIX_BAGGAGE_HEADER + "foo", "bar");
+    assertThat(carrier).containsEntry(OtTracePropagator.PREFIX_BAGGAGE_HEADER + "key", "value");
   }
 
   @Test
@@ -155,9 +155,9 @@ class OtTracerPropagatorTest {
   @Test
   void extract_SampledContext_Int() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
-    carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
 
     assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
@@ -168,9 +168,9 @@ class OtTracerPropagatorTest {
   @Test
   void extract_SampledContext_Bool() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
-    carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    carrier.put(OtTracerPropagator.SAMPLED_HEADER, "true");
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, "true");
 
     assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
@@ -181,9 +181,9 @@ class OtTracerPropagatorTest {
   @Test
   void extract_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
-    carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.FALSE_INT);
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, Common.FALSE_INT);
 
     assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
@@ -194,9 +194,9 @@ class OtTracerPropagatorTest {
   @Test
   void extract_SampledContext_Int_Short_TraceId() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, SHORT_TRACE_ID);
-    carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, SHORT_TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
 
     assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
@@ -207,9 +207,9 @@ class OtTracerPropagatorTest {
   @Test
   void extract_SampledContext_Bool_Short_TraceId() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, SHORT_TRACE_ID);
-    carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    carrier.put(OtTracerPropagator.SAMPLED_HEADER, "true");
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, SHORT_TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, "true");
 
     assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
@@ -220,9 +220,9 @@ class OtTracerPropagatorTest {
   @Test
   void extract_NotSampledContext_Short_TraceId() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, SHORT_TRACE_ID);
-    carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.FALSE_INT);
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, SHORT_TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, Common.FALSE_INT);
 
     assertThat(getSpanContext(propagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
@@ -233,9 +233,9 @@ class OtTracerPropagatorTest {
   @Test
   void extract_InvalidTraceId() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
-    invalidHeaders.put(OtTracerPropagator.TRACE_ID_HEADER, "abcdefghijklmnopabcdefghijklmnop");
-    invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    invalidHeaders.put(OtTracePropagator.TRACE_ID_HEADER, "abcdefghijklmnopabcdefghijklmnop");
+    invalidHeaders.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    invalidHeaders.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
   }
@@ -243,9 +243,9 @@ class OtTracerPropagatorTest {
   @Test
   void extract_InvalidTraceId_Size() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
-    invalidHeaders.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID + "00");
-    invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    invalidHeaders.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID + "00");
+    invalidHeaders.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    invalidHeaders.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
   }
@@ -253,9 +253,9 @@ class OtTracerPropagatorTest {
   @Test
   void extract_InvalidSpanId() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
-    invalidHeaders.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
-    invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, "abcdefghijklmnop");
-    invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    invalidHeaders.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    invalidHeaders.put(OtTracePropagator.SPAN_ID_HEADER, "abcdefghijklmnop");
+    invalidHeaders.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
   }
@@ -263,9 +263,9 @@ class OtTracerPropagatorTest {
   @Test
   void extract_InvalidSpanId_Size() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
-    invalidHeaders.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
-    invalidHeaders.put(OtTracerPropagator.SPAN_ID_HEADER, "abcdefghijklmnop" + "00");
-    invalidHeaders.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    invalidHeaders.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    invalidHeaders.put(OtTracePropagator.SPAN_ID_HEADER, "abcdefghijklmnop" + "00");
+    invalidHeaders.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
     assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
   }
@@ -280,11 +280,11 @@ class OtTracerPropagatorTest {
   @Test
   void extract_Baggage() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, TRACE_ID);
-    carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
-    carrier.put(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "foo", "bar");
-    carrier.put(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "key", "value");
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    carrier.put(OtTracePropagator.PREFIX_BAGGAGE_HEADER + "foo", "bar");
+    carrier.put(OtTracePropagator.PREFIX_BAGGAGE_HEADER + "key", "value");
 
     Context context = propagator.extract(Context.current(), carrier, getter);
 
@@ -295,11 +295,11 @@ class OtTracerPropagatorTest {
   @Test
   void extract_Baggage_InvalidContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, TraceId.getInvalid());
-    carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
-    carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
-    carrier.put(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "foo", "bar");
-    carrier.put(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "key", "value");
+    carrier.put(OtTracePropagator.TRACE_ID_HEADER, TraceId.getInvalid());
+    carrier.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
+    carrier.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
+    carrier.put(OtTracePropagator.PREFIX_BAGGAGE_HEADER + "foo", "bar");
+    carrier.put(OtTracePropagator.PREFIX_BAGGAGE_HEADER + "key", "value");
 
     Context context = propagator.extract(Context.current(), carrier, getter);
 
