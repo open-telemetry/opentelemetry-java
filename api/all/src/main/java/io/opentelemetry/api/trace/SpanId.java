@@ -120,7 +120,7 @@ public final class SpanId {
    * @param spanId the lowercase hex (base16) representation of the {@code SpanId}.
    * @return the {@code long} value representation of the {@code SpanId}.
    * @throws NullPointerException if {@code spanId} is null.
-   * @throws IndexOutOfBoundsException if {@code spanId} too short.
+   * @throws IndexOutOfBoundsException if {@code spanId} is too short.
    * @throws IllegalArgumentException if {@code spanId} contains non lowercase hex characters.
    */
   public static long asLong(CharSequence spanId) {
