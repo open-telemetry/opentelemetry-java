@@ -13,10 +13,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -43,8 +41,8 @@ class OtlpJsonLoggingSpanExporterTest {
           .setHasEnded(true)
           .setSpanContext(
               SpanContext.create(
-                  TraceId.fromLongs(1234L, 6789L),
-                  SpanId.fromLong(9876L),
+                  "12345678876543211234567887654321",
+                  "8765432112345678",
                   TraceFlags.getSampled(),
                   TraceState.getDefault()))
           .setStartEpochNanos(100)
@@ -71,8 +69,8 @@ class OtlpJsonLoggingSpanExporterTest {
           .setHasEnded(false)
           .setSpanContext(
               SpanContext.create(
-                  TraceId.fromLongs(20L, 30L),
-                  SpanId.fromLong(15L),
+                  "12340000000043211234000000004321",
+                  "8765000000005678",
                   TraceFlags.getSampled(),
                   TraceState.getDefault()))
           .setStartEpochNanos(500)
@@ -117,8 +115,8 @@ class OtlpJsonLoggingSpanExporterTest {
             + "      \"version\": \"2\""
             + "    },"
             + "    \"spans\": [{"
-            + "      \"traceId\": \"0000000000000014000000000000001e\","
-            + "      \"spanId\": \"000000000000000f\","
+            + "      \"traceId\": \"12340000000043211234000000004321\","
+            + "      \"spanId\": \"8765000000005678\","
             + "      \"name\": \"testSpan2\","
             + "      \"kind\": \"SPAN_KIND_CLIENT\","
             + "      \"startTimeUnixNano\": \"500\","
@@ -134,8 +132,8 @@ class OtlpJsonLoggingSpanExporterTest {
             + "      \"version\": \"1\""
             + "    },"
             + "    \"spans\": [{"
-            + "      \"traceId\": \"00000000000004d20000000000001a85\","
-            + "      \"spanId\": \"0000000000002694\","
+            + "      \"traceId\": \"12345678876543211234567887654321\","
+            + "      \"spanId\": \"8765432112345678\","
             + "      \"name\": \"testSpan1\","
             + "      \"kind\": \"SPAN_KIND_INTERNAL\","
             + "      \"startTimeUnixNano\": \"100\","

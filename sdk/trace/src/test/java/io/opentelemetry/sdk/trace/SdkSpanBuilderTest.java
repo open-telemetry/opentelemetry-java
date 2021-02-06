@@ -26,7 +26,6 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
@@ -58,8 +57,8 @@ class SdkSpanBuilderTest {
   private static final String SPAN_NAME = "span_name";
   private final SpanContext sampledSpanContext =
       SpanContext.create(
-          TraceId.fromLongs(1000, 1000),
-          SpanId.fromLong(3000),
+          "12345678876543211234567887654321",
+          "8765432112345678",
           TraceFlags.getSampled(),
           TraceState.getDefault());
 
@@ -162,8 +161,8 @@ class SdkSpanBuilderTest {
       // this test to pass.
       spanBuilder.addLink(
           SpanContext.create(
-              TraceId.fromLongs(2000, 2000),
-              SpanId.fromLong(4000),
+              "00000000000004d20000000000001a85",
+              "0000000000002694",
               TraceFlags.getSampled(),
               TraceState.getDefault()));
       assertThat(span.toSpanData().getLinks())

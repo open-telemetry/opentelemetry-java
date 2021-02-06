@@ -11,10 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -31,9 +29,9 @@ import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("PreferJavaTimeOverload")
 class OpenTelemetryAssertionsTest {
-  private static final String TRACE_ID = TraceId.fromLongs(1, 2);
-  private static final String SPAN_ID1 = SpanId.fromLong(3);
-  private static final String SPAN_ID2 = SpanId.fromLong(4);
+  private static final String TRACE_ID = "00000000000000010000000000000002";
+  private static final String SPAN_ID1 = "0000000000000003";
+  private static final String SPAN_ID2 = "0000000000000004";
   private static final TraceState TRACE_STATE = TraceState.builder().set("cat", "meow").build();
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("dog", "bark").build());
