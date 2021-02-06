@@ -33,7 +33,7 @@ class TraceFlagsTest {
       if (hex.length() == 1) {
         hex = "0" + hex;
       }
-      assertThat(TraceFlags.fromHex(hex, 0).asHex()).isEqualTo(hex);
+      assertThat(TraceFlags.fromHex(hex.charAt(0), hex.charAt(1)).asHex()).isEqualTo(hex);
     }
   }
 

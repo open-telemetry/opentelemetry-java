@@ -50,7 +50,7 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
   private static final int TRACEPARENT_DELIMITER_SIZE = 1;
   private static final int TRACE_ID_HEX_SIZE = TraceId.getLength();
   private static final int SPAN_ID_HEX_SIZE = SpanId.getLength();
-  private static final int TRACE_OPTION_HEX_SIZE = TraceFlags.getLength();
+  private static final int TRACE_OPTION_HEX_SIZE = 2;
   private static final int TRACE_ID_OFFSET = VERSION_SIZE + TRACEPARENT_DELIMITER_SIZE;
   private static final int SPAN_ID_OFFSET =
       TRACE_ID_OFFSET + TRACE_ID_HEX_SIZE + TRACEPARENT_DELIMITER_SIZE;
@@ -215,7 +215,10 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
           traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getLength());
       String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getLength());
       if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
-        TraceFlags traceFlags = TraceFlags.fromHex(traceparent, TRACE_OPTION_OFFSET);
+        TraceFlags traceFlags =
+            TraceFlags.fromHex(
+                traceparent.charAt(TRACE_OPTION_OFFSET),
+                traceparent.charAt(TRACE_OPTION_OFFSET + 1));
         return SpanContext.createFromRemoteParent(
             traceId, spanId, traceFlags, TraceState.getDefault());
       }

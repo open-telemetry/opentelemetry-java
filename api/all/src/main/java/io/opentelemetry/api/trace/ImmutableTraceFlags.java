@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.trace;
 
-import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -16,17 +15,9 @@ final class ImmutableTraceFlags implements TraceFlags {
 
   static final ImmutableTraceFlags DEFAULT = fromByte((byte) 0x00);
   static final ImmutableTraceFlags SAMPLED = fromByte(SAMPLED_BIT);
-  static final int HEX_LENGTH = 2;
 
   private final String hexRep;
   private final byte byteRep;
-
-  // Implementation of the TraceFlags.fromHex().
-  static ImmutableTraceFlags fromHex(CharSequence src, int srcOffset) {
-    Objects.requireNonNull(src, "src");
-    return fromByte(
-        BigendianEncoding.byteFromBase16(src.charAt(srcOffset), src.charAt(srcOffset + 1)));
-  }
 
   // Implementation of the TraceFlags.fromByte().
   static ImmutableTraceFlags fromByte(byte traceFlagsByte) {

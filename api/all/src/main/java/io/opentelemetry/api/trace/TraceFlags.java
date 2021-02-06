@@ -16,15 +16,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface TraceFlags {
   /**
-   * Returns the length of the lowercase hex (base16) representation of the {@link TraceFlags}.
-   *
-   * @return the length of the lowercase hex (base16) representation of the {@link TraceFlags}.
-   */
-  static int getLength() {
-    return ImmutableTraceFlags.HEX_LENGTH;
-  }
-
-  /**
    * Returns the default (with all flag bits off) byte representation of the {@link TraceFlags}.
    *
    * @return the default (with all flag bits off) byte representation of the {@link TraceFlags}.
@@ -45,17 +36,15 @@ public interface TraceFlags {
   }
 
   /**
-   * Returns the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
+   * Returns the {@link TraceFlags} converted from the given two lowercase hex characters.
    *
-   * @param src the buffer where the hex (base16) representation of the {@link TraceFlags} is.
-   * @param srcOffset the offset int buffer.
+   * @param first the first hex character.
+   * @param second the second hex character.
    * @return the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
-   * @throws NullPointerException if {@code src} is null.
-   * @throws IndexOutOfBoundsException if {@code src} is too short.
-   * @throws IllegalArgumentException if invalid characters in the {@code src}.
+   * @throws IllegalArgumentException if invalid lowercase hex characters.
    */
-  static TraceFlags fromHex(CharSequence src, int srcOffset) {
-    return ImmutableTraceFlags.fromHex(src, srcOffset);
+  static TraceFlags fromHex(char first, char second) {
+    return fromByte(BigendianEncoding.byteFromBase16(first, second));
   }
 
   /**
