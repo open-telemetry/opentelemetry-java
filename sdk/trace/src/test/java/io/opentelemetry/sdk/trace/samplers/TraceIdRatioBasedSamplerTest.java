@@ -13,7 +13,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.IdGenerator;
@@ -148,26 +147,7 @@ class TraceIdRatioBasedSamplerTest {
     final Sampler defaultProbability = Sampler.traceIdRatioBased(0.0001);
     // This traceId will not be sampled by the Probability Sampler because the last 8 bytes as long
     // is not less than probability * Long.MAX_VALUE;
-    String notSampledTraceId =
-        TraceId.fromBytes(
-            new byte[] {
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              (byte) 0x8F,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF
-            });
+    String notSampledTraceId = "00000000000000008fffffffffffffff";
     SamplingResult samplingResult1 =
         defaultProbability.shouldSample(
             invalidParentContext,
@@ -179,26 +159,7 @@ class TraceIdRatioBasedSamplerTest {
     assertThat(samplingResult1.getDecision()).isEqualTo(SamplingDecision.DROP);
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
-    String sampledTraceId =
-        TraceId.fromBytes(
-            new byte[] {
-              (byte) 0x00,
-              (byte) 0x00,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0
-            });
+    String sampledTraceId = "0000ffffffffffff0000000000000000";
     SamplingResult samplingResult2 =
         defaultProbability.shouldSample(
             invalidParentContext,
