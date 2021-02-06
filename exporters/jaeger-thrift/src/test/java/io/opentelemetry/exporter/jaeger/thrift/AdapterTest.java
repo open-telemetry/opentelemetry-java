@@ -16,17 +16,16 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.io.BaseEncoding;
 import io.jaegertracing.thriftjava.Log;
 import io.jaegertracing.thriftjava.SpanRef;
 import io.jaegertracing.thriftjava.SpanRefType;
 import io.jaegertracing.thriftjava.Tag;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -34,6 +33,8 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +44,7 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Adapter}. */
 class AdapterTest {
-
+  private static final BaseEncoding hex = BaseEncoding.base16().lowerCase();
   private static final String LINK_TRACE_ID = "00000000000000000000000000cba123";
   private static final String LINK_SPAN_ID = "0000000000fed456";
   private static final String TRACE_ID = "00000000000000000000000000abc123";
@@ -77,9 +78,9 @@ class AdapterTest {
     io.jaegertracing.thriftjava.Span jaegerSpan = Adapter.toJaeger(span);
 
     String rebuildTraceId =
-        TraceId.fromLongs(jaegerSpan.getTraceIdHigh(), jaegerSpan.getTraceIdLow());
+        traceIdFromLongs(jaegerSpan.getTraceIdHigh(), jaegerSpan.getTraceIdLow());
     assertThat(rebuildTraceId).isEqualTo(span.getTraceId());
-    assertThat(SpanId.fromLong(jaegerSpan.getSpanId())).isEqualTo(span.getSpanId());
+    assertThat(spanIdFromLong(jaegerSpan.getSpanId())).isEqualTo(span.getSpanId());
     assertThat(jaegerSpan.getOperationName()).isEqualTo("GET /api/endpoint");
     assertThat(jaegerSpan.getStartTime()).isEqualTo(MILLISECONDS.toMicros(startMs));
     assertThat(jaegerSpan.getDuration()).isEqualTo(MILLISECONDS.toMicros(duration));
@@ -205,8 +206,8 @@ class AdapterTest {
     SpanRef spanRef = Adapter.toSpanRef(link);
 
     // verify
-    assertThat(SpanId.fromLong(spanRef.getSpanId())).isEqualTo(SPAN_ID);
-    assertThat(TraceId.fromLongs(spanRef.getTraceIdHigh(), spanRef.getTraceIdLow()))
+    assertThat(spanIdFromLong(spanRef.getSpanId())).isEqualTo(SPAN_ID);
+    assertThat(traceIdFromLongs(spanRef.getTraceIdHigh(), spanRef.getTraceIdLow()))
         .isEqualTo(TRACE_ID);
     assertThat(spanRef.getRefType()).isEqualTo(SpanRefType.FOLLOWS_FROM);
   }
@@ -318,9 +319,9 @@ class AdapterTest {
     for (SpanRef spanRef : jaegerSpan.getReferences()) {
 
       if (SpanRefType.FOLLOWS_FROM.equals(spanRef.getRefType())) {
-        assertThat(TraceId.fromLongs(spanRef.getTraceIdHigh(), spanRef.getTraceIdLow()))
+        assertThat(traceIdFromLongs(spanRef.getTraceIdHigh(), spanRef.getTraceIdLow()))
             .isEqualTo(LINK_TRACE_ID);
-        assertThat(SpanId.fromLong(spanRef.getSpanId())).isEqualTo(LINK_SPAN_ID);
+        assertThat(spanIdFromLong(spanRef.getSpanId())).isEqualTo(LINK_SPAN_ID);
         found = true;
       }
     }
@@ -331,12 +332,21 @@ class AdapterTest {
     boolean found = false;
     for (SpanRef spanRef : jaegerSpan.getReferences()) {
       if (SpanRefType.CHILD_OF.equals(spanRef.getRefType())) {
-        assertThat(TraceId.fromLongs(spanRef.getTraceIdHigh(), spanRef.getTraceIdLow()))
+        assertThat(traceIdFromLongs(spanRef.getTraceIdHigh(), spanRef.getTraceIdLow()))
             .isEqualTo(TRACE_ID);
-        assertThat(SpanId.fromLong(spanRef.getSpanId())).isEqualTo(PARENT_SPAN_ID);
+        assertThat(spanIdFromLong(spanRef.getSpanId())).isEqualTo(PARENT_SPAN_ID);
         found = true;
       }
     }
     assertThat(found).isTrue();
+  }
+
+  private static String traceIdFromLongs(long high, long low) {
+    return hex.encode(
+        ByteBuffer.allocate(16).order(ByteOrder.BIG_ENDIAN).putLong(high).putLong(low).array());
+  }
+
+  private static String spanIdFromLong(long id) {
+    return hex.encode(ByteBuffer.allocate(8).order(ByteOrder.BIG_ENDIAN).putLong(id).array());
   }
 }
