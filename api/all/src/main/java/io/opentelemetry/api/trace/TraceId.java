@@ -65,21 +65,6 @@ public final class TraceId {
 
   /**
    * Returns the bytes (16-byte array) representation of the {@code TraceId} converted from the
-   * given lowercase hex (base16) representation.
-   *
-   * @param traceId the lowercase hex (base16) representation of the {@code TraceId}.
-   * @return the bytes (16-byte array) representation of the {@code TraceId}.
-   * @throws NullPointerException if {@code traceId} is null.
-   * @throws IndexOutOfBoundsException if {@code traceId} too short.
-   * @throws IllegalArgumentException if {@code traceId} contains non lowercase hex characters.
-   */
-  static byte[] asBytes(CharSequence traceId) {
-    Objects.requireNonNull(traceId, "traceId");
-    return BigendianEncoding.bytesFromBase16(traceId, HEX_LENGTH);
-  }
-
-  /**
-   * Returns the bytes (16-byte array) representation of the {@code TraceId} converted from the
    * given two {@code long} values representing the lower and higher parts.
    *
    * <p>There is no restriction on the specified values, other than the already established validity
