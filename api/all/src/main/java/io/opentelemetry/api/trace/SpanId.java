@@ -85,7 +85,7 @@ public final class SpanId {
    * @throws IndexOutOfBoundsException if {@code spanId} too short.
    * @throws IllegalArgumentException if {@code spanId} contains non lowercase hex characters.
    */
-  public static byte[] asBytes(CharSequence spanId) {
+  static byte[] asBytes(CharSequence spanId) {
     Objects.requireNonNull(spanId, "spanId");
     return BigendianEncoding.bytesFromBase16(spanId, HEX_LENGTH);
   }
