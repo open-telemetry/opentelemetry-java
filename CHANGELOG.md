@@ -19,31 +19,35 @@ please open a [discussion topic](https://github.com/opentelemetry/opentelemetry-
 #### Breaking Changes
 
 - The `Span.Kind` enum has been moved to the top level, and named `SpanKind`.
-- `DefaultOpenTelemetry` is no longer a public class. If you need the functionality previously provided by this
-implementation, it can be accessed via new static methods on the `OpenTelemetry` interface itself.
-- The `TraceFlags` interface has been re-introduced. This is now used, rather than a bare `byte` wherever
-trace flags is used. In particular, `SpanContext.create()`, `SpanContext.createFromRemoteParent()` now require
-a `TraceFlags` instance, and `SpanContext.getTraceFlags()` returns a `TraceFlags` instance.
-- The names of static methods on `TraceFlags` have been normalized to match other similar classes, and now 
-return `TraceFlags` instead of `byte` where appropriate.
-- The `Labels` interface and related classes have been moved into the alpha metrics modules and repackaged.
-- `TraceId.copyHexInto(byte[] traceId, char[] dest, int destOffset)` has been removed.
-- `SpanContext.getTraceIdAsHexString()` has been renamed to `SpanContext.getTraceId()`
-- `SpanContext.getSpanIdAsHexString()` has been renamed to `SpanContext.getSpanId()`
+- `DefaultOpenTelemetry` is no longer a public class. If you need the functionality previously
+  provided by this implementation, it can be accessed via new static methods on the `OpenTelemetry`
+  interface itself.
+- The `Labels` interface and related classes have been moved into the alpha metrics modules and
+  repackaged.
 - `BaggageEntry.getEntryMetadata()` has been renamed to `BaggageEntry.getMetadata()`
-- `BaggageConsumer` has been removed in favor of a standard `java.util.function.BiConsumer<String, BaggageEntry>`
+- `BaggageConsumer` has been removed in favor of a standard 
+  `java.util.function.BiConsumer<String, BaggageEntry>`
+- The `TraceFlags` interface has been re-introduced. This is now used, rather than a bare `byte`
+  wherever trace flags is used. In particular, `SpanContext.create()`,
+  `SpanContext.createFromRemoteParent()` now require a `TraceFlags` instance,
+  and `SpanContext.getTraceFlags()` returns a `TraceFlags` instance.
+- The names of static methods on `TraceFlags` have been normalized to match other similar classes,
+  and now return `TraceFlags` instead of `byte` where appropriate.
+- `TraceId.copyHexInto(byte[] traceId, char[] dest, int destOffset)` has been removed.
+- `SpanContext.getTraceIdAsHexString()` has been renamed to `SpanContext.getTraceIdHex()`
+- `SpanContext.getSpanIdAsHexString()` has been renamed to `SpanContext.getSpanIdHex()`
 - `TraceFlags.isSampledFromHex(CharSequence src, int srcOffset)` has been removed.
 - `SpanId` and `TraceId` methods that had a `String` parameter now accept `CharSequence`
-and assume the id starts at the beginning.
-- `SpanId.getSize()` and `TraceId.getSize()` have been removed. 
+  and assume the id starts at the beginning.
+- `SpanId.getSize()` and `TraceId.getSize()` have been removed.
 - `SpanId.getHexLength()` has been renamed to `SpanId.getLength()`
-- `SpanId.bytesFromHex()` has been renamed to `SpanId.asBytes()` and no longer accepts an offset to the `CharSequence`
-- `SpanId.bytesToHex()` has been renamed to `SpanId.fromBytes()`
+- `SpanId.bytesFromHex()` has been removed
+- `SpanId.bytesToHex()` has been removed
 - `TraceId.getHexLength()` has been renamed to `TraceId.getLength()`
-- `TraceId.bytesFromHex()` has been renamed to `TraceId.asBytes()` and no longer accepts an offset to the `CharSequence`
-- `TraceId.bytesToHex()` has been renamed to `TraceId.fromBytes()`
-- `TraceId.traceIdLowBytesAsLong()` has been renamed to `TraceId.lowPartAsLong()`
-- `TraceId.traceIdHighBytesAsLong()` has been renamed to `TraceId.highPartAsLong()`
+- `TraceId.bytesFromHex()` has been removed
+- `TraceId.bytesToHex()` has been removed
+- `TraceId.traceIdLowBytesAsLong()` has been removed
+- `TraceId.traceIdHighBytesAsLong()` has been removed
 
 #### Enhancements
 
