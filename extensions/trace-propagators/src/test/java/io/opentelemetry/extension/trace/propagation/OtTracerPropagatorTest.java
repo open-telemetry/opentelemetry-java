@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceIdHex;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
@@ -61,8 +61,8 @@ class OtTracerPropagatorTest {
     propagator.inject(
         withSpanContext(
             SpanContext.create(
-                TraceId.getInvalid(),
-                SpanId.getInvalid(),
+                TraceIdHex.getInvalid(),
+                SpanIdHex.getInvalid(),
                 TraceFlags.getSampled(),
                 TraceState.builder().set("foo", "bar").build()),
             Context.current()),
@@ -134,8 +134,8 @@ class OtTracerPropagatorTest {
     propagator.inject(
         withSpanContext(
             SpanContext.create(
-                TraceId.getInvalid(),
-                SpanId.getInvalid(),
+                TraceIdHex.getInvalid(),
+                SpanIdHex.getInvalid(),
                 TraceFlags.getSampled(),
                 TraceState.getDefault()),
             Context.current().with(baggage)),
@@ -295,7 +295,7 @@ class OtTracerPropagatorTest {
   @Test
   void extract_Baggage_InvalidContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, TraceId.getInvalid());
+    carrier.put(OtTracerPropagator.TRACE_ID_HEADER, TraceIdHex.getInvalid());
     carrier.put(OtTracerPropagator.SPAN_ID_HEADER, SPAN_ID);
     carrier.put(OtTracerPropagator.SAMPLED_HEADER, Common.TRUE_INT);
     carrier.put(OtTracerPropagator.PREFIX_BAGGAGE_HEADER + "foo", "bar");

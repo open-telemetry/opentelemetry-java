@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -99,7 +99,7 @@ class PromisePropagationTest {
       AttributeKey<String> component = stringKey("component");
       SpanData parentSpanProto = TestUtils.getOneByAttr(finished, component, "example-promises");
       assertThat(parentSpanProto).isNotNull();
-      assertThat(SpanId.isValid(parentSpanProto.getParentSpanId())).isFalse();
+      assertThat(SpanIdHex.isValid(parentSpanProto.getParentSpanId())).isFalse();
       List<SpanData> successSpans = TestUtils.getByAttr(finished, component, "success");
       assertThat(successSpans).hasSize(2);
 

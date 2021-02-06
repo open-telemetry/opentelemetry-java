@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.SpanIdHex;
+import io.opentelemetry.api.trace.TraceIdHex;
 import java.util.concurrent.ThreadLocalRandom;
 
 enum RandomIdGenerator implements IdGenerator {
@@ -21,7 +21,7 @@ enum RandomIdGenerator implements IdGenerator {
     do {
       id = random.nextLong();
     } while (id == INVALID_ID);
-    return SpanId.fromLong(id);
+    return SpanIdHex.fromLong(id);
   }
 
   @Override
@@ -33,6 +33,6 @@ enum RandomIdGenerator implements IdGenerator {
       idHi = random.nextLong();
       idLo = random.nextLong();
     } while (idHi == INVALID_ID && idLo == INVALID_ID);
-    return TraceId.fromLongs(idHi, idLo);
+    return TraceIdHex.fromLongs(idHi, idLo);
   }
 }

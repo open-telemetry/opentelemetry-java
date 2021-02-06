@@ -20,7 +20,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -204,7 +204,7 @@ class RecordEventsReadableSpanTest {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
+    assertThat(SpanIdHex.isValid(spanData.getParentSpanId())).isFalse();
   }
 
   @Test
@@ -766,7 +766,7 @@ class RecordEventsReadableSpanTest {
     return createTestSpan(
         SpanKind.INTERNAL,
         SpanLimits.getDefault(),
-        SpanId.getInvalid(),
+        SpanIdHex.getInvalid(),
         null,
         Collections.singletonList(link));
   }

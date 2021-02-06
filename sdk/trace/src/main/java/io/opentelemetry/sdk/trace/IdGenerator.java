@@ -5,11 +5,14 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.SpanIdHex;
+import io.opentelemetry.api.trace.TraceIdHex;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Interface used by the {@link SdkTracer} to generate new {@link SpanId}s and {@link TraceId}s. */
+/**
+ * Interface used by the {@link SdkTracer} to generate new {@link SpanIdHex}s and {@link
+ * TraceIdHex}s.
+ */
 @ThreadSafe
 public interface IdGenerator {
 

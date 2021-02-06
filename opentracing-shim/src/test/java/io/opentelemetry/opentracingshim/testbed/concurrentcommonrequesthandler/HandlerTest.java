@@ -9,7 +9,7 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByName;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -51,8 +51,8 @@ class HandlerTest {
     }
 
     assertThat(finished.get(1).getTraceId()).isNotEqualTo(finished.get(0).getTraceId());
-    assertThat(SpanId.isValid(finished.get(0).getParentSpanId())).isFalse();
-    assertThat(SpanId.isValid(finished.get(1).getParentSpanId())).isFalse();
+    assertThat(SpanIdHex.isValid(finished.get(0).getParentSpanId())).isFalse();
+    assertThat(SpanIdHex.isValid(finished.get(1).getParentSpanId())).isFalse();
 
     assertThat(tracer.scopeManager().activeSpan()).isNull();
   }

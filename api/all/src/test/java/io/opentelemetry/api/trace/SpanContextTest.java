@@ -30,8 +30,8 @@ class SpanContextTest {
 
   @Test
   void invalidSpanContext() {
-    assertThat(SpanContext.getInvalid().getTraceIdHex()).isEqualTo(TraceId.getInvalid());
-    assertThat(SpanContext.getInvalid().getSpanIdHex()).isEqualTo(SpanId.getInvalid());
+    assertThat(SpanContext.getInvalid().getTraceIdHex()).isEqualTo(TraceIdHex.getInvalid());
+    assertThat(SpanContext.getInvalid().getSpanIdHex()).isEqualTo(SpanIdHex.getInvalid());
     assertThat(SpanContext.getInvalid().getTraceFlags()).isEqualTo(TraceFlags.getDefault());
   }
 
@@ -41,14 +41,14 @@ class SpanContextTest {
     assertThat(
             SpanContext.create(
                     FIRST_TRACE_ID,
-                    SpanId.getInvalid(),
+                    SpanIdHex.getInvalid(),
                     TraceFlags.getDefault(),
                     TraceState.getDefault())
                 .isValid())
         .isFalse();
     assertThat(
             SpanContext.create(
-                    TraceId.getInvalid(),
+                    TraceIdHex.getInvalid(),
                     FIRST_SPAN_ID,
                     TraceFlags.getDefault(),
                     TraceState.getDefault())

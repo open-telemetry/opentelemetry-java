@@ -11,7 +11,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -59,7 +59,7 @@ class ActiveSpanReplacementTest {
 
     // initial task is not related in any way to those two tasks
     assertThat(spans.get(0).getTraceId()).isNotEqualTo(spans.get(1).getTraceId());
-    assertThat(spans.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
+    assertThat(spans.get(0).getParentSpanId()).isEqualTo(SpanIdHex.getInvalid());
 
     assertThat(Span.current()).isSameAs(Span.getInvalid());
   }

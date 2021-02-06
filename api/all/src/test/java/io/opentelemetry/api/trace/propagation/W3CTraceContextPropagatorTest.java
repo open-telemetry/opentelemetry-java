@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.entry;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceIdHex;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -94,8 +94,8 @@ class W3CTraceContextPropagatorTest {
     w3cTraceContextPropagator.inject(
         withSpanContext(
             SpanContext.create(
-                TraceId.getInvalid(),
-                SpanId.getInvalid(),
+                TraceIdHex.getInvalid(),
+                SpanIdHex.getInvalid(),
                 TraceFlags.getSampled(),
                 TraceState.builder().set("foo", "bar").build()),
             Context.current()),

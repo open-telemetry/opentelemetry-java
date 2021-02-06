@@ -22,7 +22,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -808,7 +808,7 @@ class SdkSpanBuilderTest {
               ArgumentMatchers.same(parentContext), ArgumentMatchers.same((ReadWriteSpan) span));
       assertThat(span.getSpanContext().getTraceIdHex())
           .isNotEqualTo(parent.getSpanContext().getTraceIdHex());
-      assertThat(SpanId.isValid(span.toSpanData().getParentSpanId())).isFalse();
+      assertThat(SpanIdHex.isValid(span.toSpanData().getParentSpanId())).isFalse();
     } finally {
       span.end();
     }

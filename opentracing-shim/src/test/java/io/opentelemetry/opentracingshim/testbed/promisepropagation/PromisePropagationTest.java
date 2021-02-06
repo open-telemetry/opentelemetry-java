@@ -10,7 +10,7 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByAttr;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -101,7 +101,7 @@ class PromisePropagationTest {
       AttributeKey<String> component = stringKey(Tags.COMPONENT.getKey());
       List<SpanData> spanExamplePromise = getByAttr(finished, component, "example-promises");
       assertThat(spanExamplePromise).hasSize(1);
-      assertThat(spanExamplePromise.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
+      assertThat(spanExamplePromise.get(0).getParentSpanId()).isEqualTo(SpanIdHex.getInvalid());
 
       assertThat(getByAttr(finished, component, "success")).hasSize(2);
 

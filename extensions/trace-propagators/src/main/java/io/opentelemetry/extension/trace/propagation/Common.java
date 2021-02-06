@@ -6,9 +6,9 @@
 package io.opentelemetry.extension.trace.propagation;
 
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceIdHex;
 import io.opentelemetry.api.trace.TraceState;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +25,7 @@ final class Common {
 
   static final String TRUE_INT = "1";
   static final String FALSE_INT = "0";
-  static final int MAX_TRACE_ID_LENGTH = TraceId.getLength();
+  static final int MAX_TRACE_ID_LENGTH = TraceIdHex.getLength();
   static final int MIN_TRACE_ID_LENGTH = MAX_TRACE_ID_LENGTH / 2;
 
   private Common() {}
@@ -51,10 +51,10 @@ final class Common {
   static boolean isTraceIdValid(@Nullable String value) {
     return !(StringUtils.isNullOrEmpty(value)
         || (value.length() != MIN_TRACE_ID_LENGTH && value.length() != MAX_TRACE_ID_LENGTH)
-        || !TraceId.isValid(StringUtils.padLeft(value, TraceId.getLength())));
+        || !TraceIdHex.isValid(StringUtils.padLeft(value, TraceIdHex.getLength())));
   }
 
   static boolean isSpanIdValid(@Nullable String value) {
-    return !StringUtils.isNullOrEmpty(value) && SpanId.isValid(value);
+    return !StringUtils.isNullOrEmpty(value) && SpanIdHex.isValid(value);
   }
 }

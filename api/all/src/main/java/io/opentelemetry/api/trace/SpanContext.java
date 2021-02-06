@@ -9,9 +9,9 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * A class that represents a span context. A span context contains the state that must propagate to
- * child {@link Span}s and across process boundaries. It contains the identifiers (a {@link TraceId
- * trace_id} and {@link SpanId span_id}) associated with the {@link Span} and a set of options
- * (currently only whether the context is sampled or not), as well as the {@link TraceState
+ * child {@link Span}s and across process boundaries. It contains the identifiers (a {@link
+ * TraceIdHex trace_id} and {@link SpanIdHex span_id}) associated with the {@link Span} and a set of
+ * options (currently only whether the context is sampled or not), as well as the {@link TraceState
  * traceState} and the {@link boolean remote} flag.
  *
  * <p>Implementations of this interface *must* be immutable and have well-defined value-based
@@ -78,7 +78,7 @@ public interface SpanContext {
    * @return the trace identifier associated with this {@link SpanContext} as 16-byte array.
    */
   default byte[] getTraceIdBytes() {
-    return TraceId.asBytes(getTraceIdHex());
+    return TraceIdHex.asBytes(getTraceIdHex());
   }
 
   /**
@@ -96,7 +96,7 @@ public interface SpanContext {
    * @return the span identifier associated with this {@link SpanContext} as 8-byte array.
    */
   default byte[] getSpanIdBytes() {
-    return SpanId.asBytes(getSpanIdHex());
+    return SpanIdHex.asBytes(getSpanIdHex());
   }
 
   /** Whether the span in this context is sampled. */
@@ -124,7 +124,7 @@ public interface SpanContext {
    * @return {@code true} if this {@code SpanContext} is valid.
    */
   default boolean isValid() {
-    return TraceId.isValid(getTraceIdHex()) && SpanId.isValid(getSpanIdHex());
+    return TraceIdHex.isValid(getTraceIdHex()) && SpanIdHex.isValid(getSpanIdHex());
   }
 
   /**

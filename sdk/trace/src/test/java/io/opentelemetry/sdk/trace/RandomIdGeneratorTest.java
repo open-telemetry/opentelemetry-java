@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.SpanIdHex;
+import io.opentelemetry.api.trace.TraceIdHex;
 import org.junit.jupiter.api.Test;
 
 class RandomIdGeneratorTest {
@@ -20,10 +20,10 @@ class RandomIdGeneratorTest {
     // Can't assert values but can assert they're valid, try a lot as a sort of fuzz check.
     for (int i = 0; i < 1000; i++) {
       CharSequence traceId = generator.generateTraceId();
-      assertThat(traceId.toString()).isNotEqualTo(TraceId.getInvalid());
+      assertThat(traceId.toString()).isNotEqualTo(TraceIdHex.getInvalid());
 
       CharSequence spanId = generator.generateSpanId();
-      assertThat(spanId.toString()).isNotEqualTo(SpanId.getInvalid());
+      assertThat(spanId.toString()).isNotEqualTo(SpanIdHex.getInvalid());
     }
   }
 }

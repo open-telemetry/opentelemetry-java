@@ -7,7 +7,7 @@ package io.opentelemetry.opentracingshim.testbed.suspendresumepropagation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -54,7 +54,7 @@ class SuspendResumePropagationTest {
     assertThat(finished.get(0).getName()).isEqualTo("job 1");
     assertThat(finished.get(1).getName()).isEqualTo("job 2");
 
-    assertThat(SpanId.isValid(finished.get(0).getParentSpanId())).isFalse();
-    assertThat(SpanId.isValid(finished.get(1).getParentSpanId())).isFalse();
+    assertThat(SpanIdHex.isValid(finished.get(0).getParentSpanId())).isFalse();
+    assertThat(SpanIdHex.isValid(finished.get(1).getParentSpanId())).isFalse();
   }
 }

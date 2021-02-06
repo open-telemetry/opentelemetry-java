@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceIdHex;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
@@ -28,8 +28,8 @@ class LogSinkSdkProviderTest {
   private static LogRecord createLog(LogRecord.Severity severity, String message) {
     return new LogRecord.Builder()
         .setUnixTimeMillis(System.currentTimeMillis())
-        .setTraceId(TraceId.getInvalid())
-        .setSpanId(SpanId.getInvalid())
+        .setTraceId(TraceIdHex.getInvalid())
+        .setSpanId(SpanIdHex.getInvalid())
         .setFlags(TraceFlags.getDefault().asByte())
         .setSeverity(severity)
         .setSeverityText("really severe")

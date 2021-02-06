@@ -9,7 +9,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceIdHex;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
@@ -88,8 +88,8 @@ public interface Sampler {
    *
    * @param parentContext the parent span's {@link SpanContext}. This can be {@code
    *     SpanContext.INVALID} if this is a root span.
-   * @param traceId the {@link TraceId} for the new {@code Span}. This will be identical to that in
-   *     the parentContext, unless this is a root span.
+   * @param traceId the {@link TraceIdHex} for the new {@code Span}. This will be identical to that
+   *     in the parentContext, unless this is a root span.
    * @param name the name of the new {@code Span}.
    * @param spanKind the {@link SpanKind} of the {@code Span}.
    * @param attributes {@link Attributes} associated with the span.

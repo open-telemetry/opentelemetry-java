@@ -15,7 +15,6 @@ import javax.annotation.concurrent.Immutable;
  * <p>There are two more other representation that this class helps with:
  *
  * <ul>
- *   <li>Bytes: a 16-byte array, where valid means that at least one of the bytes is not `\0`.
  *   <li>Long: two {@code long} values, where valid means that at least one of values is non-zero.
  *       To avoid allocating new objects this representation uses two parts, "high part"
  *       representing the left most part of the {@code TraceId} and "low part" representing the
@@ -24,13 +23,13 @@ import javax.annotation.concurrent.Immutable;
  * </ul>
  */
 @Immutable
-public final class TraceId {
+public final class TraceIdHex {
   private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
 
   private static final int HEX_LENGTH = 32;
   private static final String INVALID = "00000000000000000000000000000000";
 
-  private TraceId() {}
+  private TraceIdHex() {}
 
   /**
    * Returns the length of the lowercase hex (base16) representation of the {@code TraceId}.
@@ -57,10 +56,10 @@ public final class TraceId {
    *
    * @return {@code true} if the {@code TraceId} is valid.
    */
-  public static boolean isValid(CharSequence traceId) {
-    return (traceId.length() == HEX_LENGTH)
-        && !INVALID.contentEquals(traceId)
-        && BigendianEncoding.isValidBase16String(traceId);
+  public static boolean isValid(String traceIdHex) {
+    return (traceIdHex.length() == HEX_LENGTH)
+        && !INVALID.equals(traceIdHex)
+        && BigendianEncoding.isValidBase16String(traceIdHex);
   }
 
   /**
@@ -110,9 +109,9 @@ public final class TraceId {
    *
    * @return the rightmost 8 bytes of the trace-id as a long value.
    */
-  public static long getTraceIdRandomPart(CharSequence traceId) {
-    Objects.requireNonNull(traceId, "traceId");
-    return BigendianEncoding.longFromBase16String(traceId, BigendianEncoding.LONG_BASE16);
+  public static long getTraceIdRandomPart(String traceIdHex) {
+    Objects.requireNonNull(traceIdHex, "traceId");
+    return BigendianEncoding.longFromBase16String(traceIdHex, BigendianEncoding.LONG_BASE16);
   }
 
   private static char[] getTemporaryBuffer() {

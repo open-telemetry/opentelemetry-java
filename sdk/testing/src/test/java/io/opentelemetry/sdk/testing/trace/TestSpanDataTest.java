@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -31,7 +31,7 @@ class TestSpanDataTest {
   void defaultValues() {
     SpanData spanData = createBasicSpanBuilder().build();
 
-    assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
+    assertThat(SpanIdHex.isValid(spanData.getParentSpanId())).isFalse();
     assertThat(spanData.getAttributes()).isEqualTo(Attributes.empty());
     assertThat(spanData.getEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());

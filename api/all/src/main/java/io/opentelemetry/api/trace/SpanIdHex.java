@@ -9,24 +9,24 @@ import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Helper methods for dealing with a span identifier. A valid span identifier is a 16 character
- * lowercase hex (base16) String, where at least one of the characters is not a "0".
+ * Helper methods for dealing with a span identifier represented as lowercase hex Strings. A valid
+ * span identifier is a 16 character lowercase hex (base16) String, where at least one of the
+ * characters is not a "0".
  *
  * <p>There are two more other representation that this class helps with:
  *
  * <ul>
- *   <li>Bytes: a 8-byte array, where valid means that at least one of the bytes is not `\0`.
  *   <li>Long: a {@code long} value, where valid means that the value is non-zero.
  * </ul>
  */
 @Immutable
-public final class SpanId {
+public final class SpanIdHex {
   private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
 
   private static final int HEX_LENGTH = 16;
   private static final String INVALID = "0000000000000000";
 
-  private SpanId() {}
+  private SpanIdHex() {}
 
   /**
    * Returns the length of the lowercase hex (base16) representation of the {@code SpanId}.
@@ -53,10 +53,10 @@ public final class SpanId {
    *
    * @return {@code true} if the span identifier is valid.
    */
-  public static boolean isValid(CharSequence spanId) {
-    return (spanId.length() == HEX_LENGTH)
-        && !INVALID.contentEquals(spanId)
-        && BigendianEncoding.isValidBase16String(spanId);
+  public static boolean isValid(String spanIdHex) {
+    return (spanIdHex.length() == HEX_LENGTH)
+        && !INVALID.equals(spanIdHex)
+        && BigendianEncoding.isValidBase16String(spanIdHex);
   }
 
   /**

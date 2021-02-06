@@ -16,9 +16,9 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceIdHex;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
@@ -54,8 +54,8 @@ class SimpleSpanProcessorTest {
   @Mock private Sampler mockSampler;
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
-          TraceId.getInvalid(),
-          SpanId.getInvalid(),
+          TraceIdHex.getInvalid(),
+          SpanIdHex.getInvalid(),
           TraceFlags.getSampled(),
           TraceState.getDefault());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();

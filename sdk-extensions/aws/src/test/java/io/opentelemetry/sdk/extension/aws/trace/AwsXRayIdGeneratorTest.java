@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.aws.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.SpanIdHex;
+import io.opentelemetry.api.trace.TraceIdHex;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
@@ -26,9 +26,9 @@ class AwsXRayIdGeneratorTest {
     AwsXrayIdGenerator generator = AwsXrayIdGenerator.getInstance();
     for (int i = 0; i < 1000; i++) {
       String traceId = generator.generateTraceId();
-      assertThat(TraceId.isValid(traceId)).isTrue();
+      assertThat(TraceIdHex.isValid(traceId)).isTrue();
       String spanId = generator.generateSpanId();
-      assertThat(SpanId.isValid(spanId)).isTrue();
+      assertThat(SpanIdHex.isValid(spanId)).isTrue();
     }
   }
 

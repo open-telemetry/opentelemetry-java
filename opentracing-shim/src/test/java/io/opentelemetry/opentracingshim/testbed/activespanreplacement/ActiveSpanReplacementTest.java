@@ -5,7 +5,7 @@
 
 package io.opentelemetry.opentracingshim.testbed.activespanreplacement;
 
-import static io.opentelemetry.api.trace.SpanId.isValid;
+import static io.opentelemetry.api.trace.SpanIdHex.isValid;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
 import static org.assertj.core.api.Assertions.assertThat;

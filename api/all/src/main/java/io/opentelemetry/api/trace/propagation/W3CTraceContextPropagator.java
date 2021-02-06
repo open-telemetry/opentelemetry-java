@@ -9,9 +9,9 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceIdHex;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TraceStateBuilder;
 import io.opentelemetry.context.Context;
@@ -48,8 +48,8 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
   private static final int VERSION_SIZE = 2;
   private static final char TRACEPARENT_DELIMITER = '-';
   private static final int TRACEPARENT_DELIMITER_SIZE = 1;
-  private static final int TRACE_ID_HEX_SIZE = TraceId.getLength();
-  private static final int SPAN_ID_HEX_SIZE = SpanId.getLength();
+  private static final int TRACE_ID_HEX_SIZE = TraceIdHex.getLength();
+  private static final int SPAN_ID_HEX_SIZE = SpanIdHex.getLength();
   private static final int TRACE_OPTION_HEX_SIZE = TraceFlags.getLength();
   private static final int TRACE_ID_OFFSET = VERSION_SIZE + TRACEPARENT_DELIMITER_SIZE;
   private static final int SPAN_ID_OFFSET =
@@ -212,9 +212,9 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
       }
 
       String traceId =
-          traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getLength());
-      String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getLength());
-      if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
+          traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceIdHex.getLength());
+      String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanIdHex.getLength());
+      if (TraceIdHex.isValid(traceId) && SpanIdHex.isValid(spanId)) {
         TraceFlags traceFlags = TraceFlags.fromHex(traceparent, TRACE_OPTION_OFFSET);
         return SpanContext.createFromRemoteParent(
             traceId, spanId, traceFlags, TraceState.getDefault());

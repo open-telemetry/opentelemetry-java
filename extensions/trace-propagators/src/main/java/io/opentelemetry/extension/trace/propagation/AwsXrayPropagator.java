@@ -7,9 +7,9 @@ package io.opentelemetry.extension.trace.propagation;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanIdHex;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceIdHex;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -134,8 +134,8 @@ public final class AwsXrayPropagator implements TextMapPropagator {
       return SpanContext.getInvalid();
     }
 
-    String traceId = TraceId.getInvalid();
-    String spanId = SpanId.getInvalid();
+    String traceId = TraceIdHex.getInvalid();
+    String spanId = SpanIdHex.getInvalid();
     Boolean isSampled = false;
 
     int pos = 0;
@@ -171,7 +171,7 @@ public final class AwsXrayPropagator implements TextMapPropagator {
       }
       // TODO: Put the arbitrary TraceHeader keys in OT trace state
     }
-    if (!TraceId.isValid(traceId)) {
+    if (!TraceIdHex.isValid(traceId)) {
       logger.fine(
           "Invalid TraceId in X-Ray trace header: '"
               + TRACE_HEADER_KEY
@@ -181,7 +181,7 @@ public final class AwsXrayPropagator implements TextMapPropagator {
       return SpanContext.getInvalid();
     }
 
-    if (!SpanId.isValid(spanId)) {
+    if (!SpanIdHex.isValid(spanId)) {
       logger.fine(
           "Invalid ParentId in X-Ray trace header: '"
               + TRACE_HEADER_KEY
@@ -210,18 +210,18 @@ public final class AwsXrayPropagator implements TextMapPropagator {
 
   private static String parseTraceId(String xrayTraceId) {
     if (xrayTraceId.length() != TRACE_ID_LENGTH) {
-      return TraceId.getInvalid();
+      return TraceIdHex.getInvalid();
     }
 
     // Check version trace id version
     if (!xrayTraceId.startsWith(TRACE_ID_VERSION)) {
-      return TraceId.getInvalid();
+      return TraceIdHex.getInvalid();
     }
 
     // Check delimiters
     if (xrayTraceId.charAt(TRACE_ID_DELIMITER_INDEX_1) != TRACE_ID_DELIMITER
         || xrayTraceId.charAt(TRACE_ID_DELIMITER_INDEX_2) != TRACE_ID_DELIMITER) {
-      return TraceId.getInvalid();
+      return TraceIdHex.getInvalid();
     }
 
     String epochPart =
@@ -234,7 +234,7 @@ public final class AwsXrayPropagator implements TextMapPropagator {
 
   private static String parseSpanId(String xrayParentId) {
     if (xrayParentId.length() != PARENT_ID_LENGTH) {
-      return SpanId.getInvalid();
+      return SpanIdHex.getInvalid();
     }
 
     return xrayParentId;

@@ -11,7 +11,7 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceIdHex;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Arrays;
@@ -64,7 +64,9 @@ public final class OtTracerPropagator implements TextMapPropagator {
     // Lightstep trace id MUST be 64-bits therefore OpenTelemetry trace id is truncated to 64-bits
     // by retaining least significant (right-most) bits.
     setter.set(
-        carrier, TRACE_ID_HEADER, spanContext.getTraceIdHex().substring(TraceId.getLength() / 2));
+        carrier,
+        TRACE_ID_HEADER,
+        spanContext.getTraceIdHex().substring(TraceIdHex.getLength() / 2));
     setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanIdHex());
     setter.set(carrier, SAMPLED_HEADER, String.valueOf(spanContext.isSampled()));
 
@@ -87,7 +89,7 @@ public final class OtTracerPropagator implements TextMapPropagator {
     String incomingTraceId = getter.get(carrier, TRACE_ID_HEADER);
     String traceId =
         incomingTraceId == null
-            ? TraceId.getInvalid()
+            ? TraceIdHex.getInvalid()
             : StringUtils.padLeft(incomingTraceId, MAX_TRACE_ID_LENGTH);
     String spanId = getter.get(carrier, SPAN_ID_HEADER);
     String sampled = getter.get(carrier, SAMPLED_HEADER);

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.extension.aws.trace;
 
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceIdHex;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -48,7 +48,7 @@ public final class AwsXrayIdGenerator implements IdGenerator {
 
     long lowRandom = random.nextLong();
 
-    return TraceId.fromLongs(timestampSecs << 32 | hiRandom, lowRandom);
+    return TraceIdHex.fromLongs(timestampSecs << 32 | hiRandom, lowRandom);
   }
 
   private AwsXrayIdGenerator() {}
