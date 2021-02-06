@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -71,13 +70,16 @@ class OpenTelemetryExtensionTest {
         otelTesting.getSpans().stream()
             .collect(
                 Collectors.groupingBy(
-                    SpanData::getTraceId, LinkedHashMap::new, Collectors.toList()))
+                    spanData -> spanData.getSpanContext().getTraceIdHex(),
+                    LinkedHashMap::new,
+                    Collectors.toList()))
             .values()
             .stream()
             .findFirst()
             .get()
             .get(0)
-            .getTraceId();
+            .getSpanContext()
+            .getTraceIdHex();
 
     otelTesting
         .assertTraces()

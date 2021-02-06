@@ -25,38 +25,10 @@ public interface SpanData {
   SpanContext getSpanContext();
 
   /**
-   * Gets the trace id for this span.
-   *
-   * @return the trace id.
-   */
-  default String getTraceId() {
-    return getSpanContext().getTraceIdHex();
-  }
-
-  /**
-   * Gets the span id for this span.
-   *
-   * @return the span id.
-   */
-  default String getSpanId() {
-    return getSpanContext().getSpanIdHex();
-  }
-
-  /**
    * Returns the parent {@link SpanContext}. If the span is a root span, the {@link SpanContext}
    * returned will be invalid.
    */
   SpanContext getParentSpanContext();
-
-  /**
-   * Returns the parent {@code SpanId}. If the {@code Span} is a root {@code Span}, the SpanId
-   * returned will be invalid.
-   *
-   * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
-   */
-  default String getParentSpanId() {
-    return getParentSpanContext().getSpanIdHex();
-  }
 
   /**
    * Returns the resource of this {@code Span}.

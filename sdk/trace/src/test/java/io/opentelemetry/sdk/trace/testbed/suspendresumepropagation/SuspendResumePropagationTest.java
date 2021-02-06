@@ -53,7 +53,7 @@ class SuspendResumePropagationTest {
     assertThat(finished.get(0).getName()).isEqualTo("job 1");
     assertThat(finished.get(1).getName()).isEqualTo("job 2");
 
-    assertThat(SpanId.isValid(finished.get(0).getParentSpanId())).isFalse();
-    assertThat(SpanId.isValid(finished.get(1).getParentSpanId())).isFalse();
+    assertThat(SpanId.isValid(finished.get(0).getParentSpanContext().getSpanIdHex())).isFalse();
+    assertThat(SpanId.isValid(finished.get(1).getParentSpanContext().getSpanIdHex())).isFalse();
   }
 }

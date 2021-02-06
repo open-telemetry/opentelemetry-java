@@ -204,7 +204,7 @@ class RecordEventsReadableSpanTest {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
+    assertThat(SpanId.isValid(spanData.getParentSpanContext().getSpanIdHex())).isFalse();
   }
 
   @Test
@@ -836,9 +836,9 @@ class RecordEventsReadableSpanTest {
       long endEpochNanos,
       StatusData status,
       boolean hasEnded) {
-    assertThat(spanData.getTraceId()).isEqualTo(traceId);
-    assertThat(spanData.getSpanId()).isEqualTo(spanId);
-    assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
+    assertThat(spanData.getSpanContext().getTraceIdHex()).isEqualTo(traceId);
+    assertThat(spanData.getSpanContext().getSpanIdHex()).isEqualTo(spanId);
+    assertThat(spanData.getParentSpanContext().getSpanIdHex()).isEqualTo(parentSpanId);
     assertThat(spanData.getSpanContext().getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);

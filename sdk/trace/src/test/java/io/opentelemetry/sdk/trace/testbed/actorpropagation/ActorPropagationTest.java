@@ -66,7 +66,8 @@ class ActorPropagationTest {
 
       List<SpanData> finished = otelTesting.getSpans();
       assertThat(finished.size()).isEqualTo(3);
-      assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
+      assertThat(finished.get(0).getSpanContext().getTraceIdHex())
+          .isEqualTo(finished.get(1).getSpanContext().getTraceIdHex());
       assertThat(TestUtils.getByKind(finished, SpanKind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, SpanKind.PRODUCER)).isNotNull();
 
@@ -104,7 +105,8 @@ class ActorPropagationTest {
       assertThat(message2).isEqualTo("received my message 2");
 
       assertThat(finished.size()).isEqualTo(3);
-      assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
+      assertThat(finished.get(0).getSpanContext().getTraceIdHex())
+          .isEqualTo(finished.get(1).getSpanContext().getTraceIdHex());
       assertThat(TestUtils.getByKind(finished, SpanKind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, SpanKind.PRODUCER)).isNotNull();
 

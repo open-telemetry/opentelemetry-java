@@ -98,7 +98,9 @@ public final class OpenTelemetryExtension
         getSpans().stream()
             .collect(
                 Collectors.groupingBy(
-                    SpanData::getTraceId, LinkedHashMap::new, Collectors.toList()));
+                    spanData -> spanData.getSpanContext().getTraceIdHex(),
+                    LinkedHashMap::new,
+                    Collectors.toList()));
     for (List<SpanData> trace : traces.values()) {
       trace.sort(Comparator.comparing(SpanData::getStartEpochNanos));
     }

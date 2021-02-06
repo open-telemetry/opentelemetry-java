@@ -66,12 +66,12 @@ final class Adapter {
   static Span toJaeger(SpanData span) {
     Span target = new Span();
 
-    long traceIdHigh = traceIdAsLongHigh(span.getTraceId());
-    long traceIdLow = traceIdAsLongLow(span.getTraceId());
+    long traceIdHigh = traceIdAsLongHigh(span.getSpanContext().getTraceIdHex());
+    long traceIdLow = traceIdAsLongLow(span.getSpanContext().getTraceIdHex());
 
     target.setTraceIdHigh(traceIdHigh);
     target.setTraceIdLow(traceIdLow);
-    target.setSpanId(spanIdAsLong(span.getSpanId()));
+    target.setSpanId(spanIdAsLong(span.getSpanContext().getSpanIdHex()));
     target.setOperationName(span.getName());
     target.setStartTime(TimeUnit.NANOSECONDS.toMicros(span.getStartEpochNanos()));
     target.setDuration(
@@ -86,7 +86,10 @@ final class Adapter {
     if (span.getParentSpanContext().isValid()) {
       references.add(
           new SpanRef(
-              SpanRefType.CHILD_OF, traceIdLow, traceIdHigh, spanIdAsLong(span.getParentSpanId())));
+              SpanRefType.CHILD_OF,
+              traceIdLow,
+              traceIdHigh,
+              spanIdAsLong(span.getParentSpanContext().getSpanIdHex())));
     }
     target.setReferences(references);
 

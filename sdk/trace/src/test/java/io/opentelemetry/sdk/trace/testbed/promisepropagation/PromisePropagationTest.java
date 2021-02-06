@@ -99,18 +99,18 @@ class PromisePropagationTest {
       AttributeKey<String> component = stringKey("component");
       SpanData parentSpanProto = TestUtils.getOneByAttr(finished, component, "example-promises");
       assertThat(parentSpanProto).isNotNull();
-      assertThat(SpanId.isValid(parentSpanProto.getParentSpanId())).isFalse();
+      assertThat(SpanId.isValid(parentSpanProto.getParentSpanContext().getSpanIdHex())).isFalse();
       List<SpanData> successSpans = TestUtils.getByAttr(finished, component, "success");
       assertThat(successSpans).hasSize(2);
 
-      CharSequence parentId = parentSpanProto.getSpanId();
+      CharSequence parentId = parentSpanProto.getSpanContext().getSpanIdHex();
       for (SpanData span : successSpans) {
-        assertThat(span.getParentSpanId()).isEqualTo(parentId.toString());
+        assertThat(span.getParentSpanContext().getSpanIdHex()).isEqualTo(parentId.toString());
       }
 
       SpanData errorSpan = TestUtils.getOneByAttr(finished, component, "error");
       assertThat(errorSpan).isNotNull();
-      assertThat(errorSpan.getParentSpanId()).isEqualTo(parentId.toString());
+      assertThat(errorSpan.getParentSpanContext().getSpanIdHex()).isEqualTo(parentId.toString());
     }
   }
 }

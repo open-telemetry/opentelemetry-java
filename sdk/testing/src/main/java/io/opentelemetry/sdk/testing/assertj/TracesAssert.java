@@ -27,7 +27,11 @@ public class TracesAssert
    */
   public static TracesAssert assertThat(Collection<List<SpanData>> traces) {
     for (List<SpanData> trace : traces) {
-      if (trace.stream().map(SpanData::getTraceId).distinct().count() != 1) {
+      if (trace.stream()
+              .map(spanData -> spanData.getSpanContext().getTraceIdHex())
+              .distinct()
+              .count()
+          != 1) {
         throw new IllegalArgumentException(
             "trace does not have consistent trace IDs, group spans into traces before calling "
                 + "this function: "
