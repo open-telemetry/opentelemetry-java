@@ -174,7 +174,7 @@ final class SdkSpanBuilder implements SpanBuilder {
       traceId = idGenerator.generateTraceId();
     } else {
       // New child span.
-      traceId = parentSpanContext.getTraceId();
+      traceId = parentSpanContext.getTraceIdHex();
     }
     List<LinkData> immutableLinks =
         links == null ? Collections.emptyList() : Collections.unmodifiableList(links);

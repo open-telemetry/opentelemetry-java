@@ -95,13 +95,13 @@ public final class JaegerPropagator implements TextMapPropagator {
 
     char[] chars = new char[PROPAGATION_HEADER_SIZE];
 
-    String traceId = spanContext.getTraceId();
+    String traceId = spanContext.getTraceIdHex();
     for (int i = 0; i < traceId.length(); i++) {
       chars[i] = traceId.charAt(i);
     }
 
     chars[SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
-    String spanId = spanContext.getSpanId();
+    String spanId = spanContext.getSpanIdHex();
     for (int i = 0; i < spanId.length(); i++) {
       chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
     }
