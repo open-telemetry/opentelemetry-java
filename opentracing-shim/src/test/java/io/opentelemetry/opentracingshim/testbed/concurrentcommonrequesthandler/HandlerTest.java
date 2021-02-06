@@ -50,9 +50,9 @@ class HandlerTest {
       assertThat(spanData.getKind()).isEqualTo(SpanKind.CLIENT);
     }
 
-    assertThat(finished.get(1).getTraceId()).isNotEqualTo(finished.get(0).getTraceId());
-    assertThat(SpanId.isValid(finished.get(0).getParentSpanId())).isFalse();
-    assertThat(SpanId.isValid(finished.get(1).getParentSpanId())).isFalse();
+    assertThat(finished.get(1).getTraceIdHex()).isNotEqualTo(finished.get(0).getTraceIdHex());
+    assertThat(SpanId.isValid(finished.get(0).getParentSpanIdHex())).isFalse();
+    assertThat(SpanId.isValid(finished.get(1).getParentSpanIdHex())).isFalse();
 
     assertThat(tracer.scopeManager().activeSpan()).isNull();
   }
@@ -79,7 +79,7 @@ class HandlerTest {
 
     // Here check that there is no parent-child relation although it should be because child is
     // created when parent is active
-    assertThat(child.getParentSpanId()).isNotEqualTo(parent.getSpanId());
+    assertThat(child.getParentSpanIdHex()).isNotEqualTo(parent.getSpanIdHex());
   }
 
   /**
@@ -112,9 +112,9 @@ class HandlerTest {
     assertThat(parent).isNotNull();
 
     // now there is parent/child relation between first and second span:
-    assertThat(finished.get(1).getParentSpanId()).isEqualTo(parent.getSpanId());
+    assertThat(finished.get(1).getParentSpanIdHex()).isEqualTo(parent.getSpanIdHex());
 
     // third span should not have parent, but it has, damn it
-    assertThat(finished.get(2).getParentSpanId()).isEqualTo(parent.getSpanId());
+    assertThat(finished.get(2).getParentSpanIdHex()).isEqualTo(parent.getSpanIdHex());
   }
 }

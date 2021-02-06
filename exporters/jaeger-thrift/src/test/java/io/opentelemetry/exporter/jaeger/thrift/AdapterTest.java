@@ -79,8 +79,8 @@ class AdapterTest {
 
     String rebuildTraceId =
         traceIdFromLongs(jaegerSpan.getTraceIdHigh(), jaegerSpan.getTraceIdLow());
-    assertThat(rebuildTraceId).isEqualTo(span.getTraceId());
-    assertThat(spanIdFromLong(jaegerSpan.getSpanId())).isEqualTo(span.getSpanId());
+    assertThat(rebuildTraceId).isEqualTo(span.getTraceIdHex());
+    assertThat(spanIdFromLong(jaegerSpan.getSpanId())).isEqualTo(span.getSpanIdHex());
     assertThat(jaegerSpan.getOperationName()).isEqualTo("GET /api/endpoint");
     assertThat(jaegerSpan.getStartTime()).isEqualTo(MILLISECONDS.toMicros(startMs));
     assertThat(jaegerSpan.getDuration()).isEqualTo(MILLISECONDS.toMicros(duration));

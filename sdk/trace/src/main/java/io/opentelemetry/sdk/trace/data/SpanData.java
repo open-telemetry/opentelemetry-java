@@ -29,7 +29,7 @@ public interface SpanData {
    *
    * @return the trace id.
    */
-  default String getTraceId() {
+  default String getTraceIdHex() {
     return getSpanContext().getTraceIdHex();
   }
 
@@ -38,7 +38,7 @@ public interface SpanData {
    *
    * @return the span id.
    */
-  default String getSpanId() {
+  default String getSpanIdHex() {
     return getSpanContext().getSpanIdHex();
   }
 
@@ -54,7 +54,7 @@ public interface SpanData {
    *
    * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
    */
-  default String getParentSpanId() {
+  default String getParentSpanIdHex() {
     return getParentSpanContext().getSpanIdHex();
   }
 

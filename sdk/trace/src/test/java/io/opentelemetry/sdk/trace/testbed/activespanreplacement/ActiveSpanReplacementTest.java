@@ -54,12 +54,12 @@ class ActiveSpanReplacementTest {
     assertThat(spans.get(2).getName()).isEqualTo("task");
 
     // task/subtask are part of the same trace, and subtask is a child of task
-    assertThat(spans.get(1).getTraceId()).isEqualTo(spans.get(2).getTraceId());
-    assertThat(spans.get(2).getSpanId()).isEqualTo(spans.get(1).getParentSpanId());
+    assertThat(spans.get(1).getTraceIdHex()).isEqualTo(spans.get(2).getTraceIdHex());
+    assertThat(spans.get(2).getSpanIdHex()).isEqualTo(spans.get(1).getParentSpanIdHex());
 
     // initial task is not related in any way to those two tasks
-    assertThat(spans.get(0).getTraceId()).isNotEqualTo(spans.get(1).getTraceId());
-    assertThat(spans.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
+    assertThat(spans.get(0).getTraceIdHex()).isNotEqualTo(spans.get(1).getTraceIdHex());
+    assertThat(spans.get(0).getParentSpanIdHex()).isEqualTo(SpanId.getInvalid());
 
     assertThat(Span.current()).isSameAs(Span.getInvalid());
   }

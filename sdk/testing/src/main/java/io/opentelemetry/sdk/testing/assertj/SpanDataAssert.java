@@ -33,14 +33,14 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span has the given trace ID. */
   public SpanDataAssert hasTraceId(String traceId) {
     isNotNull();
-    if (!actual.getTraceId().equals(traceId)) {
+    if (!actual.getTraceIdHex().equals(traceId)) {
       failWithActualExpectedAndMessage(
-          actual.getTraceId(),
+          actual.getTraceIdHex(),
           traceId,
           "Expected span [%s] to have trace ID <%s> but was <%s>",
           actual.getName(),
           traceId,
-          actual.getTraceId());
+          actual.getTraceIdHex());
     }
     return this;
   }
@@ -48,14 +48,14 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span has the given span ID. */
   public SpanDataAssert hasSpanId(String spanId) {
     isNotNull();
-    if (!actual.getSpanId().equals(spanId)) {
+    if (!actual.getSpanIdHex().equals(spanId)) {
       failWithActualExpectedAndMessage(
-          actual.getSpanId(),
+          actual.getSpanIdHex(),
           spanId,
           "Expected span [%s] to have span ID <%s> but was <%s>",
           actual.getName(),
           spanId,
-          actual.getSpanId());
+          actual.getSpanIdHex());
     }
     return this;
   }
@@ -96,7 +96,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span has the given parent span ID. */
   public SpanDataAssert hasParentSpanId(String parentSpanId) {
     isNotNull();
-    String actualParentSpanId = actual.getParentSpanId();
+    String actualParentSpanId = actual.getParentSpanIdHex();
     if (!actualParentSpanId.equals(parentSpanId)) {
       failWithActualExpectedAndMessage(
           actualParentSpanId,

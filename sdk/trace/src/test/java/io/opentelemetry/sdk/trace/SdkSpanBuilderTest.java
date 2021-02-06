@@ -671,7 +671,7 @@ class SdkSpanBuilderTest {
             .onStart(Mockito.same(parentContext), Mockito.same((ReadWriteSpan) span));
         assertThat(span.getSpanContext().getTraceIdHex())
             .isEqualTo(parent.getSpanContext().getTraceIdHex());
-        assertThat(span.toSpanData().getParentSpanId())
+        assertThat(span.toSpanData().getParentSpanIdHex())
             .isEqualTo(parent.getSpanContext().getSpanIdHex());
 
         final Context parentContext2 = Context.current().with(parent);
@@ -712,7 +712,7 @@ class SdkSpanBuilderTest {
             .onStart(Mockito.same(parentContext), Mockito.same((ReadWriteSpan) span));
         assertThat(span.getSpanContext().getTraceIdHex())
             .isEqualTo(parent.getSpanContext().getTraceIdHex());
-        assertThat(span.toSpanData().getParentSpanId())
+        assertThat(span.toSpanData().getParentSpanIdHex())
             .isEqualTo(parent.getSpanContext().getSpanIdHex());
       } finally {
         span.end();
@@ -735,7 +735,7 @@ class SdkSpanBuilderTest {
             .onStart(Mockito.same(context), Mockito.same((ReadWriteSpan) span));
         assertThat(span.getSpanContext().getTraceIdHex())
             .isEqualTo(parent.getSpanContext().getTraceIdHex());
-        assertThat(span.toSpanData().getParentSpanId())
+        assertThat(span.toSpanData().getParentSpanIdHex())
             .isEqualTo(parent.getSpanContext().getSpanIdHex());
       } finally {
         span.end();
@@ -762,7 +762,7 @@ class SdkSpanBuilderTest {
             .onStart(Mockito.same(emptyContext), Mockito.same((ReadWriteSpan) span));
         assertThat(span.getSpanContext().getTraceIdHex())
             .isNotEqualTo(parent.getSpanContext().getTraceIdHex());
-        assertThat(span.toSpanData().getParentSpanId())
+        assertThat(span.toSpanData().getParentSpanIdHex())
             .isNotEqualTo(parent.getSpanContext().getSpanIdHex());
       } finally {
         span.end();
@@ -784,7 +784,7 @@ class SdkSpanBuilderTest {
             .onStart(Mockito.same(implicitParent), Mockito.same((ReadWriteSpan) span));
         assertThat(span.getSpanContext().getTraceIdHex())
             .isEqualTo(parent.getSpanContext().getTraceIdHex());
-        assertThat(span.toSpanData().getParentSpanId())
+        assertThat(span.toSpanData().getParentSpanIdHex())
             .isEqualTo(parent.getSpanContext().getSpanIdHex());
       } finally {
         span.end();
@@ -808,7 +808,7 @@ class SdkSpanBuilderTest {
               ArgumentMatchers.same(parentContext), ArgumentMatchers.same((ReadWriteSpan) span));
       assertThat(span.getSpanContext().getTraceIdHex())
           .isNotEqualTo(parent.getSpanContext().getTraceIdHex());
-      assertThat(SpanId.isValid(span.toSpanData().getParentSpanId())).isFalse();
+      assertThat(SpanId.isValid(span.toSpanData().getParentSpanIdHex())).isFalse();
     } finally {
       span.end();
     }

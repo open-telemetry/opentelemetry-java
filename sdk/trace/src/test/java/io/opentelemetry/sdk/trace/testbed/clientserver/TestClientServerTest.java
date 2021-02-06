@@ -58,7 +58,7 @@ class TestClientServerTest {
     assertThat(finished).hasSize(2);
 
     finished = TestUtils.sortByStartTime(finished);
-    assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
+    assertThat(finished.get(0).getTraceIdHex()).isEqualTo(finished.get(1).getTraceIdHex());
     assertThat(finished.get(0).getKind()).isEqualTo(SpanKind.CLIENT);
     assertThat(finished.get(1).getKind()).isEqualTo(SpanKind.SERVER);
 

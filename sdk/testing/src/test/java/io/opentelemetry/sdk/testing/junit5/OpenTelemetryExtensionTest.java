@@ -71,13 +71,13 @@ class OpenTelemetryExtensionTest {
         otelTesting.getSpans().stream()
             .collect(
                 Collectors.groupingBy(
-                    SpanData::getTraceId, LinkedHashMap::new, Collectors.toList()))
+                    SpanData::getTraceIdHex, LinkedHashMap::new, Collectors.toList()))
             .values()
             .stream()
             .findFirst()
             .get()
             .get(0)
-            .getTraceId();
+            .getTraceIdHex();
 
     otelTesting
         .assertTraces()

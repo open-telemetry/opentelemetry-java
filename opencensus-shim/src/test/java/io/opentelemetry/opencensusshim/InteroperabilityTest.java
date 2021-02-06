@@ -143,9 +143,9 @@ class InteroperabilityTest {
     assertThat(spanData3.getEvents().get(0).getName()).isEqualTo("OpenTelemetry: Event 1");
     assertThat(spanData3.getEvents().get(1).getName()).isEqualTo("OpenTelemetry: Event 2");
 
-    assertThat(spanData1.getParentSpanId()).isEqualTo(spanData2.getSpanId());
-    assertThat(spanData2.getParentSpanId()).isEqualTo(spanData3.getSpanId());
-    assertThat(spanData3.getParentSpanId()).isEqualTo(NULL_SPAN_ID);
+    assertThat(spanData1.getParentSpanIdHex()).isEqualTo(spanData2.getSpanIdHex());
+    assertThat(spanData2.getParentSpanIdHex()).isEqualTo(spanData3.getSpanIdHex());
+    assertThat(spanData3.getParentSpanIdHex()).isEqualTo(NULL_SPAN_ID);
   }
 
   @Test
@@ -275,9 +275,9 @@ class InteroperabilityTest {
         .isEqualTo(true);
     assertThat(spanData3.getEvents().get(2).getName()).isEqualTo("OpenCensus: Event 2");
 
-    assertThat(spanData1.getParentSpanId()).isEqualTo(spanData2.getSpanId());
-    assertThat(spanData2.getParentSpanId()).isEqualTo(spanData3.getSpanId());
-    assertThat(spanData3.getParentSpanId()).isEqualTo(NULL_SPAN_ID);
+    assertThat(spanData1.getParentSpanIdHex()).isEqualTo(spanData2.getSpanIdHex());
+    assertThat(spanData2.getParentSpanIdHex()).isEqualTo(spanData3.getSpanIdHex());
+    assertThat(spanData3.getParentSpanIdHex()).isEqualTo(NULL_SPAN_ID);
   }
 
   @Test

@@ -26,7 +26,7 @@ public class TraceAssert
     isNotNull();
     isNotEmpty();
 
-    String actualTraceId = actual.get(0).getTraceId();
+    String actualTraceId = actual.get(0).getTraceIdHex();
     if (!actualTraceId.equals(traceId)) {
       failWithActualExpectedAndMessage(
           actualTraceId,

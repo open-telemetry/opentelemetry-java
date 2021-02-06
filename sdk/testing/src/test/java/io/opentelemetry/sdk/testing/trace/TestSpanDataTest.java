@@ -31,7 +31,7 @@ class TestSpanDataTest {
   void defaultValues() {
     SpanData spanData = createBasicSpanBuilder().build();
 
-    assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
+    assertThat(SpanId.isValid(spanData.getParentSpanIdHex())).isFalse();
     assertThat(spanData.getAttributes()).isEqualTo(Attributes.empty());
     assertThat(spanData.getEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());

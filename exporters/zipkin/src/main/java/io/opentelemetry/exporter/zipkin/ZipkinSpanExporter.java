@@ -93,8 +93,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     final Span.Builder spanBuilder =
         Span.newBuilder()
-            .traceId(spanData.getTraceId())
-            .id(spanData.getSpanId())
+            .traceId(spanData.getTraceIdHex())
+            .id(spanData.getSpanIdHex())
             .kind(toSpanKind(spanData))
             .name(spanData.getName())
             .timestamp(toEpochMicros(spanData.getStartEpochNanos()))
@@ -102,7 +102,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
             .localEndpoint(endpoint);
 
     if (spanData.getParentSpanContext().isValid()) {
-      spanBuilder.parentId(spanData.getParentSpanId());
+      spanBuilder.parentId(spanData.getParentSpanIdHex());
     }
 
     Attributes spanAttributes = spanData.getAttributes();

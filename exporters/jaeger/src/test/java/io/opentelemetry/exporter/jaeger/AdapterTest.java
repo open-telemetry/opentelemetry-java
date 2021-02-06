@@ -73,8 +73,8 @@ class AdapterTest {
 
     // test
     Model.Span jaegerSpan = Adapter.toJaeger(span);
-    assertThat(hex.encode(jaegerSpan.getTraceId().toByteArray())).isEqualTo(span.getTraceId());
-    assertThat(hex.encode(jaegerSpan.getSpanId().toByteArray())).isEqualTo(span.getSpanId());
+    assertThat(hex.encode(jaegerSpan.getTraceId().toByteArray())).isEqualTo(span.getTraceIdHex());
+    assertThat(hex.encode(jaegerSpan.getSpanId().toByteArray())).isEqualTo(span.getSpanIdHex());
     assertThat(jaegerSpan.getOperationName()).isEqualTo("GET /api/endpoint");
     assertThat(jaegerSpan.getStartTime()).isEqualTo(Timestamps.fromMillis(startMs));
     assertThat(Durations.toMillis(jaegerSpan.getDuration())).isEqualTo(duration);

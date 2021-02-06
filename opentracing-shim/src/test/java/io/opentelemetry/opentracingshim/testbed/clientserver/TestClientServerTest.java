@@ -64,7 +64,7 @@ class TestClientServerTest {
     List<SpanData> finished = otelTesting.getSpans();
     assertThat(finished).hasSize(2);
 
-    assertThat(finished.get(1).getTraceId()).isEqualTo(finished.get(0).getTraceId());
+    assertThat(finished.get(1).getTraceIdHex()).isEqualTo(finished.get(0).getTraceIdHex());
     SpanKind firstSpanKind = finished.get(0).getKind();
     switch (firstSpanKind) {
       case CLIENT:
