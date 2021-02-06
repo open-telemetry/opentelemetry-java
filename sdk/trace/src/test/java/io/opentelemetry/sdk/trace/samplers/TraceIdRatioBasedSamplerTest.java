@@ -28,8 +28,8 @@ class TraceIdRatioBasedSamplerTest {
 
   private static final IdGenerator idsGenerator = IdGenerator.random();
 
-  private final String traceId = idsGenerator.generateTraceId();
-  private final String parentSpanId = idsGenerator.generateSpanId();
+  private final String traceId = idsGenerator.generateTraceIdHex();
+  private final String parentSpanId = idsGenerator.generateSpanIdHex();
   private final SpanContext sampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), TraceState.getDefault());
   private final Context sampledParentContext = Context.root().with(Span.wrap(sampledSpanContext));
@@ -179,7 +179,7 @@ class TraceIdRatioBasedSamplerTest {
       if (sampler
           .shouldSample(
               parent,
-              idsGenerator.generateTraceId(),
+              idsGenerator.generateTraceIdHex(),
               SPAN_NAME,
               SPAN_KIND,
               Attributes.empty(),

@@ -25,16 +25,16 @@ public interface IdGenerator {
   }
 
   /**
-   * Generates a new valid {@code SpanId}.
+   * Generates a new valid 16 lowercase hex (base16) characters {@code SpanId}.
    *
-   * @return a new valid {@code SpanId}.
+   * @return a new valid 16 lowercase hex (base16) characters {@code SpanId}.
    */
-  String generateSpanId();
+  String generateSpanIdHex();
 
   /**
-   * Generates a new valid {@code TraceId}.
+   * Generates a new valid 32 lowercase hex (base16) characters {@code TraceId}.
    *
-   * @return a new valid {@code TraceId}.
+   * @return a new valid 32 lowercase hex (base16) characters {@code TraceId}.
    */
-  String generateTraceId();
+  String generateTraceIdHex();
 }

@@ -21,8 +21,8 @@ class SpanConverterTest {
 
   @Test
   void testFromOtelSpan() {
-    String traceIdHex = RANDOM_IDS_GENERATOR.generateTraceId();
-    String spanIdHex = RANDOM_IDS_GENERATOR.generateSpanId();
+    String traceIdHex = RANDOM_IDS_GENERATOR.generateTraceIdHex();
+    String spanIdHex = RANDOM_IDS_GENERATOR.generateSpanIdHex();
     String traceStateKey = "key123";
     String traceStateValue = "value123";
 

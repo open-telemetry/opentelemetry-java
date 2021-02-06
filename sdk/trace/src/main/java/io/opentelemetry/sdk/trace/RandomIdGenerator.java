@@ -15,7 +15,7 @@ enum RandomIdGenerator implements IdGenerator {
   private static final long INVALID_ID = 0;
 
   @Override
-  public String generateSpanId() {
+  public String generateSpanIdHex() {
     long id;
     ThreadLocalRandom random = ThreadLocalRandom.current();
     do {
@@ -25,7 +25,7 @@ enum RandomIdGenerator implements IdGenerator {
   }
 
   @Override
-  public String generateTraceId() {
+  public String generateTraceIdHex() {
     long idHi;
     long idLo;
     ThreadLocalRandom random = ThreadLocalRandom.current();

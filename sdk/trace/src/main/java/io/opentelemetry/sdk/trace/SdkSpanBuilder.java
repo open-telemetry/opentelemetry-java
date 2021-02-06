@@ -168,10 +168,10 @@ final class SdkSpanBuilder implements SpanBuilder {
     final SpanContext parentSpanContext = parentSpan.getSpanContext();
     String traceId;
     IdGenerator idGenerator = tracerSharedState.getIdGenerator();
-    String spanId = idGenerator.generateSpanId();
+    String spanId = idGenerator.generateSpanIdHex();
     if (!parentSpanContext.isValid()) {
       // New root span.
-      traceId = idGenerator.generateTraceId();
+      traceId = idGenerator.generateTraceIdHex();
     } else {
       // New child span.
       traceId = parentSpanContext.getTraceIdHex();

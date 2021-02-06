@@ -28,7 +28,7 @@ public class AwsXrayIdGeneratorBenchmark {
   @BenchmarkMode(Mode.AverageTime)
   @Fork(1)
   public String generateTraceId() {
-    return idGenerator.generateTraceId();
+    return idGenerator.generateTraceIdHex();
   }
 
   @Benchmark
@@ -38,6 +38,6 @@ public class AwsXrayIdGeneratorBenchmark {
   @BenchmarkMode(Mode.AverageTime)
   @Fork(1)
   public String generateSpanId() {
-    return idGenerator.generateSpanId();
+    return idGenerator.generateSpanIdHex();
   }
 }

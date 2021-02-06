@@ -32,12 +32,12 @@ public final class AwsXrayIdGenerator implements IdGenerator {
   }
 
   @Override
-  public String generateSpanId() {
-    return RANDOM_ID_GENERATOR.generateSpanId();
+  public String generateSpanIdHex() {
+    return RANDOM_ID_GENERATOR.generateSpanIdHex();
   }
 
   @Override
-  public String generateTraceId() {
+  public String generateTraceIdHex() {
     // hi - 4 bytes timestamp, 4 bytes random
     // low - 8 bytes random.
     // Since we include timestamp, impossible to be invalid.

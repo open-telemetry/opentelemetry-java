@@ -51,8 +51,8 @@ class StrictContextStorageTest {
 
   private static final ContextKey<String> ANIMAL = ContextKey.named("animal");
   private static final IdGenerator IDS_GENERATOR = IdGenerator.random();
-  private static final String TRACE_ID = IDS_GENERATOR.generateTraceId();
-  private static final String SPAN_ID = IDS_GENERATOR.generateSpanId();
+  private static final String TRACE_ID = IDS_GENERATOR.generateTraceIdHex();
+  private static final String SPAN_ID = IDS_GENERATOR.generateSpanIdHex();
 
   private static final Span SPAN =
       Span.wrap(

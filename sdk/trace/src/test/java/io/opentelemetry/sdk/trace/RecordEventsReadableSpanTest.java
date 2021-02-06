@@ -65,9 +65,9 @@ class RecordEventsReadableSpanTest {
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
   private final IdGenerator idsGenerator = IdGenerator.random();
-  private final String traceId = idsGenerator.generateTraceId();
-  private final String spanId = idsGenerator.generateSpanId();
-  private final String parentSpanId = idsGenerator.generateSpanId();
+  private final String traceId = idsGenerator.generateTraceIdHex();
+  private final String spanId = idsGenerator.generateSpanIdHex();
+  private final String parentSpanId = idsGenerator.generateSpanIdHex();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   private final Resource resource = Resource.getEmpty();

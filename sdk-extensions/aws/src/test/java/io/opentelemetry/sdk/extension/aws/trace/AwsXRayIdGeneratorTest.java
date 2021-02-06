@@ -25,9 +25,9 @@ class AwsXRayIdGeneratorTest {
   void shouldGenerateValidIds() {
     AwsXrayIdGenerator generator = AwsXrayIdGenerator.getInstance();
     for (int i = 0; i < 1000; i++) {
-      String traceId = generator.generateTraceId();
+      String traceId = generator.generateTraceIdHex();
       assertThat(TraceId.isValid(traceId)).isTrue();
-      String spanId = generator.generateSpanId();
+      String spanId = generator.generateSpanIdHex();
       assertThat(SpanId.isValid(spanId)).isTrue();
     }
   }
@@ -36,7 +36,7 @@ class AwsXRayIdGeneratorTest {
   void shouldGenerateTraceIdsWithTimestampsWithAllowedXrayTimeRange() {
     AwsXrayIdGenerator generator = AwsXrayIdGenerator.getInstance();
     for (int i = 0; i < 1000; i++) {
-      String traceId = generator.generateTraceId();
+      String traceId = generator.generateTraceIdHex();
       long unixSeconds = Long.valueOf(traceId.subSequence(0, 8).toString(), 16);
       long ts = unixSeconds * 1000L;
       long currentTs = System.currentTimeMillis();
@@ -91,8 +91,8 @@ class AwsXRayIdGeneratorTest {
       try {
         barrier.await();
         for (int i = 0; i < generations; i++) {
-          traceIds.add(idsGenerator.generateTraceId());
-          spanIds.add(idsGenerator.generateSpanId());
+          traceIds.add(idsGenerator.generateTraceIdHex());
+          spanIds.add(idsGenerator.generateSpanIdHex());
         }
         barrier.await();
       } catch (InterruptedException | BrokenBarrierException cause) {
