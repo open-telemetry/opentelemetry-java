@@ -544,7 +544,8 @@ class SdkSpanBuilderTest {
     try {
       assertThat(span.getSpanContext().isSampled()).isTrue();
       assertThat(span.toSpanData().getAttributes().get(samplerAttributeKey)).isNotNull();
-      assertThat(span.toSpanData().getTraceState()).isEqualTo(TraceState.getDefault());
+      assertThat(span.toSpanData().getSpanContext().getTraceState())
+          .isEqualTo(TraceState.getDefault());
     } finally {
       span.end();
     }
@@ -598,7 +599,7 @@ class SdkSpanBuilderTest {
     try {
       assertThat(span.getSpanContext().isSampled()).isTrue();
       assertThat(span.toSpanData().getAttributes().get(samplerAttributeKey)).isNotNull();
-      assertThat(span.toSpanData().getTraceState())
+      assertThat(span.toSpanData().getSpanContext().getTraceState())
           .isEqualTo(TraceState.builder().set("newkey", "newValue").build());
     } finally {
       span.end();
