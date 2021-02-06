@@ -63,7 +63,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span is sampled. */
   public SpanDataAssert isSampled() {
     isNotNull();
-    if (!actual.isSampled()) {
+    if (!actual.getSpanContext().isSampled()) {
       failWithMessage("Expected span [%s] to be sampled but was not.", actual.getName());
     }
     return this;
@@ -72,7 +72,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span is not sampled. */
   public SpanDataAssert isNotSampled() {
     isNotNull();
-    if (actual.isSampled()) {
+    if (actual.getSpanContext().isSampled()) {
       failWithMessage("Expected span [%s] to not be sampled but it was.", actual.getName());
     }
     return this;

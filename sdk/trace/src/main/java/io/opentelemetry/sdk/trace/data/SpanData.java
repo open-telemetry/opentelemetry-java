@@ -42,11 +42,6 @@ public interface SpanData {
     return getSpanContext().getSpanIdHex();
   }
 
-  /** Whether the 'sampled' option set on this span. */
-  default boolean isSampled() {
-    return getSpanContext().isSampled();
-  }
-
   /**
    * Returns the parent {@link SpanContext}. If the span is a root span, the {@link SpanContext}
    * returned will be invalid.
