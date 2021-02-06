@@ -16,13 +16,12 @@ import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -67,13 +66,12 @@ final class Adapter {
   static Span toJaeger(SpanData span) {
     Span target = new Span();
 
-    long traceIdHigh = TraceId.highPartAsLong(span.getTraceId());
-    long traceIdLow = TraceId.lowPartAsLong(span.getTraceId());
-    long spanIdAsLong = SpanId.asLong(span.getSpanId());
+    long traceIdHigh = traceIdAsLongHigh(span.getTraceId());
+    long traceIdLow = traceIdAsLongLow(span.getTraceId());
 
     target.setTraceIdHigh(traceIdHigh);
     target.setTraceIdLow(traceIdLow);
-    target.setSpanId(spanIdAsLong);
+    target.setSpanId(spanIdAsLong(span.getSpanId()));
     target.setOperationName(span.getName());
     target.setStartTime(TimeUnit.NANOSECONDS.toMicros(span.getStartEpochNanos()));
     target.setDuration(
@@ -88,10 +86,7 @@ final class Adapter {
     if (span.getParentSpanContext().isValid()) {
       references.add(
           new SpanRef(
-              SpanRefType.CHILD_OF,
-              traceIdLow,
-              traceIdHigh,
-              SpanId.asLong(span.getParentSpanId())));
+              SpanRefType.CHILD_OF, traceIdLow, traceIdHigh, spanIdAsLong(span.getParentSpanId())));
     }
     target.setReferences(references);
 
@@ -232,8 +227,20 @@ final class Adapter {
     // https://github.com/open-telemetry/opentelemetry-java/pull/481/files#r312577862
     return new SpanRef(
         SpanRefType.FOLLOWS_FROM,
-        TraceId.lowPartAsLong(link.getSpanContext().getTraceIdHex()),
-        TraceId.highPartAsLong(link.getSpanContext().getTraceIdHex()),
-        SpanId.asLong(link.getSpanContext().getSpanIdHex()));
+        traceIdAsLongLow(link.getSpanContext().getTraceIdHex()),
+        traceIdAsLongHigh(link.getSpanContext().getTraceIdHex()),
+        spanIdAsLong(link.getSpanContext().getSpanIdHex()));
+  }
+
+  private static long traceIdAsLongHigh(String traceId) {
+    return new BigInteger(traceId.substring(0, 16), 16).longValue();
+  }
+
+  private static long traceIdAsLongLow(String traceId) {
+    return new BigInteger(traceId.substring(16, 32), 16).longValue();
+  }
+
+  private static long spanIdAsLong(String spanId) {
+    return new BigInteger(spanId, 16).longValue();
   }
 }

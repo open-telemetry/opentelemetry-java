@@ -7,7 +7,6 @@ package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceId}. */
@@ -24,8 +23,6 @@ class TraceIdTest {
     assertThat(TraceId.getInvalid()).isEqualTo("00000000000000000000000000000000");
     assertThat(TraceId.asBytes(TraceId.getInvalid()))
         .isEqualTo(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
-    assertThat(TraceId.highPartAsLong(TraceId.getInvalid())).isEqualTo(0);
-    assertThat(TraceId.lowPartAsLong(TraceId.getInvalid())).isEqualTo(0);
   }
 
   @Test
@@ -47,27 +44,23 @@ class TraceIdTest {
   @Test
   void testGetRandomTracePart_NegativeLongRepresentation() {
     String traceId = "ff01020304050600ff0a0b0c0d0e0f00";
-    assertThat(TraceId.highPartAsLong(traceId)).isEqualTo(0xFF01020304050600L);
-    assertThat(TraceId.lowPartAsLong(traceId)).isEqualTo(0xFF0A0B0C0D0E0F00L);
+    assertThat(TraceId.getTraceIdRandomPart(traceId)).isEqualTo(0xFF0A0B0C0D0E0F00L);
   }
 
   @Test
   void asBytes() {
     assertThat(TraceId.asBytes(TraceId.getInvalid()))
         .isEqualTo(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
-    assertThat(TraceId.asBytes("00000000000000000000000000000061")).isEqualTo(firstBytes);
-    assertThat(TraceId.asBytes("ff000000000000000000000000000041")).isEqualTo(secondBytes);
+    assertThat(TraceId.asBytes(first)).isEqualTo(firstBytes);
+    assertThat(TraceId.asBytes(second)).isEqualTo(secondBytes);
   }
 
   @Test
-  void toFromLongs() {
-    Random random = new Random();
-    for (int i = 0; i < 10000; i++) {
-      long idHi = random.nextLong();
-      long idLo = random.nextLong();
-      String traceId = TraceId.fromLongs(idHi, idLo);
-      assertThat(TraceId.highPartAsLong(traceId)).isEqualTo(idHi);
-      assertThat(TraceId.lowPartAsLong(traceId)).isEqualTo(idLo);
-    }
+  void fromLongs() {
+    assertThat(TraceId.fromLongs(0, 0)).isEqualTo(TraceId.getInvalid());
+    assertThat(TraceId.fromLongs(0, 0x61)).isEqualTo(first);
+    assertThat(TraceId.fromLongs(0xff00000000000000L, 0x41)).isEqualTo(second);
+    assertThat(TraceId.fromLongs(0xff01020304050600L, 0xff0a0b0c0d0e0f00L))
+        .isEqualTo("ff01020304050600ff0a0b0c0d0e0f00");
   }
 }

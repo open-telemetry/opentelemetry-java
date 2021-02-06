@@ -94,21 +94,6 @@ public final class SpanId {
     return new String(result);
   }
 
-  /**
-   * Returns the {@code long} value representation of the {@code SpanId} converted from the given
-   * lowercase hex (base16) representation.
-   *
-   * @param spanId the lowercase hex (base16) representation of the {@code SpanId}.
-   * @return the {@code long} value representation of the {@code SpanId}.
-   * @throws NullPointerException if {@code spanId} is null.
-   * @throws IndexOutOfBoundsException if {@code spanId} is too short.
-   * @throws IllegalArgumentException if {@code spanId} contains non lowercase hex characters.
-   */
-  public static long asLong(CharSequence spanId) {
-    Objects.requireNonNull(spanId, "spanId");
-    return BigendianEncoding.longFromBase16String(spanId, 0);
-  }
-
   private static char[] getTemporaryBuffer() {
     char[] chars = charBuffer.get();
     if (chars == null) {
