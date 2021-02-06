@@ -8,11 +8,13 @@ package io.opentelemetry.sdk.trace.data;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Defines the status of a {@link Span} by providing a standard {@link StatusCode} in conjunction
  * with an optional descriptive message.
  */
+@Immutable
 public interface StatusData {
 
   /**
