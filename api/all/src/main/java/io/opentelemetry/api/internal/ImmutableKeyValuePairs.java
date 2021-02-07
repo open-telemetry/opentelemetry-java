@@ -59,7 +59,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
    * Sorts and dedupes the key/value pairs in {@code data}. If {@code filterNullValues} is {@code
    * true}, {@code null} values will be removed. Keys must be {@link Comparable}.
    */
-  protected static List<Object> sortAndFilter(Object[] data, boolean filterNullValues) {
+  public static List<Object> sortAndFilter(Object[] data, boolean filterNullValues) {
     return sortAndFilter(data, filterNullValues, Comparator.naturalOrder());
   }
 
@@ -68,7 +68,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
    * true}, {@code null} values will be removed. Keys will be compared with the given {@link
    * Comparator}.
    */
-  protected static List<Object> sortAndFilter(
+  public static List<Object> sortAndFilter(
       Object[] data, boolean filterNullValues, Comparator<?> keyComparator) {
     checkArgument(
         data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
