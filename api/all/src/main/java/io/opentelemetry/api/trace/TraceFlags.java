@@ -22,33 +22,35 @@ public final class TraceFlags {
   private static final byte DEFAULT = 0x0;
 
   private static final int SIZE = 1;
-  private static final int HEX_SIZE = 2 * SIZE;
+  private static final int BASE16_SIZE = 2 * SIZE;
 
   /** Returns the size in Hex of trace flags. */
   public static int getHexLength() {
-    return HEX_SIZE;
+    return BASE16_SIZE;
   }
 
   /**
-   * Returns the default byte representation of the flags.
+   * Returns the default {@code TraceFlags}.
    *
-   * @return the default byte representation of the flags.
+   * @return the default {@code TraceFlags}.
    */
   public static byte getDefault() {
     return DEFAULT;
   }
 
-  /**
-   * Returns the byte representation of the flags with the sampling bit set to {@code 1}.
-   *
-   * @return the byte representation of the flags with the sampling bit set to {@code 1}.
-   */
-  public static byte getSampled() {
-    return IS_SAMPLED;
+  /** Extract the sampled flag from hex-based trace-flags. */
+  public static boolean isSampledFromHex(CharSequence src, int srcOffset) {
+    // todo bypass the byte conversion and look directly at the hex.
+    byte b = BigendianEncoding.byteFromBase16String(src, srcOffset);
+    return (b & IS_SAMPLED) != 0;
   }
 
   /** Extract the byte representation of the flags from a hex-representation. */
   public static byte byteFromHex(CharSequence src, int srcOffset) {
     return BigendianEncoding.byteFromBase16String(src, srcOffset);
+  }
+
+  public static byte getSampled() {
+    return IS_SAMPLED;
   }
 }

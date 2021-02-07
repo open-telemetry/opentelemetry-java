@@ -214,8 +214,8 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
           traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getHexLength());
       String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getHexLength());
       if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
-        byte traceFlags = TraceFlags.byteFromHex(traceparent, TRACE_OPTION_OFFSET);
-        return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+        byte isSampled = TraceFlags.byteFromHex(traceparent, TRACE_OPTION_OFFSET);
+        return SpanContext.createFromRemoteParent(traceId, spanId, isSampled, TRACE_STATE_DEFAULT);
       }
       return SpanContext.getInvalid();
     } catch (IllegalArgumentException e) {
