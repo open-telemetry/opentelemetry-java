@@ -37,14 +37,14 @@ public final class SpanId {
   }
 
   /**
-   * Returns whether the span identifier is valid. A valid span identifier is a 16 character hex
-   * String, where at least one of the characters is not a '0'.
+   * Returns whether the span identifier is valid. A valid span identifier is an 8-byte array with
+   * at least one non-zero byte.
    *
    * @return {@code true} if the span identifier is valid.
    */
-  public static boolean isValid(CharSequence spanId) {
+  public static boolean isValid(String spanId) {
     return (spanId.length() == HEX_SIZE)
-        && !INVALID.contentEquals(spanId)
+        && !INVALID.equals(spanId)
         && BigendianEncoding.isValidBase16String(spanId);
   }
 
@@ -52,12 +52,15 @@ public final class SpanId {
    * Returns a {@code SpanId} built from a lowercase hex (base16) representation.
    *
    * @param src the lowercase hex (base16) representation.
+   * @param srcOffset the offset in the buffer where the representation of the {@code SpanId}
+   *     begins.
    * @return a {@code SpanId} built from a lowercase hex (base16) representation.
    * @throws NullPointerException if {@code src} is null.
-   * @throws IllegalArgumentException if not enough characters in the {@code src}.
+   * @throws IllegalArgumentException if not enough characters in the {@code src} from the {@code
+   *     srcOffset}.
    */
-  public static byte[] bytesFromHex(CharSequence src) {
-    return BigendianEncoding.bytesFromBase16(src, 0, HEX_SIZE);
+  public static byte[] bytesFromHex(String src, int srcOffset) {
+    return BigendianEncoding.bytesFromBase16(src, srcOffset, HEX_SIZE);
   }
 
   /** Encode the bytes as hex (base16), padded with '0's on the left. */

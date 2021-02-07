@@ -72,15 +72,25 @@ class TraceIdTest {
   }
 
   @Test
-  void fromLowerHex() {
-    assertThat(TraceId.bytesToHex(TraceId.bytesFromHex("00000000000000000000000000000000")))
+  void fromLowerBase16() {
+    assertThat(TraceId.bytesToHex(TraceId.bytesFromHex("00000000000000000000000000000000", 0)))
         .isEqualTo(TraceId.getInvalid());
-    assertThat(TraceId.bytesFromHex("00000000000000000000000000000061")).isEqualTo(firstBytes);
-    assertThat(TraceId.bytesFromHex("ff000000000000000000000000000041")).isEqualTo(secondBytes);
+    assertThat(TraceId.bytesFromHex("00000000000000000000000000000061", 0)).isEqualTo(firstBytes);
+    assertThat(TraceId.bytesFromHex("ff000000000000000000000000000041", 0)).isEqualTo(secondBytes);
   }
 
   @Test
-  void toLowerHex() {
+  void fromLowerBase16_WithOffset() {
+    assertThat(TraceId.bytesToHex(TraceId.bytesFromHex("XX00000000000000000000000000000000CC", 2)))
+        .isEqualTo(TraceId.getInvalid());
+    assertThat(TraceId.bytesFromHex("YY00000000000000000000000000000061AA", 2))
+        .isEqualTo(firstBytes);
+    assertThat(TraceId.bytesFromHex("ZZff000000000000000000000000000041BB", 2))
+        .isEqualTo(secondBytes);
+  }
+
+  @Test
+  void toLowerBase16() {
     assertThat(TraceId.getInvalid()).isEqualTo("00000000000000000000000000000000");
     assertThat(TraceId.bytesToHex(firstBytes)).isEqualTo("00000000000000000000000000000061");
     assertThat(TraceId.bytesToHex(secondBytes)).isEqualTo("ff000000000000000000000000000041");
