@@ -11,12 +11,18 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceId}. */
 class TraceIdTest {
+  private static final byte[] firstBytes =
+      new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
+  private static final byte[] secondBytes =
+      new byte[] {(byte) 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'A'};
   private static final String first = "00000000000000000000000000000061";
   private static final String second = "ff000000000000000000000000000041";
 
   @Test
   void invalid() {
     assertThat(TraceId.getInvalid()).isEqualTo("00000000000000000000000000000000");
+    assertThat(TraceId.asBytes(TraceId.getInvalid()))
+        .isEqualTo(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
   }
 
   @Test
@@ -39,6 +45,14 @@ class TraceIdTest {
   void testGetRandomTracePart_NegativeLongRepresentation() {
     String traceId = "ff01020304050600ff0a0b0c0d0e0f00";
     assertThat(TraceId.getTraceIdRandomPart(traceId)).isEqualTo(0xFF0A0B0C0D0E0F00L);
+  }
+
+  @Test
+  void asBytes() {
+    assertThat(TraceId.asBytes(TraceId.getInvalid()))
+        .isEqualTo(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+    assertThat(TraceId.asBytes(first)).isEqualTo(firstBytes);
+    assertThat(TraceId.asBytes(second)).isEqualTo(secondBytes);
   }
 
   @Test

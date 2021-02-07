@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -56,6 +57,21 @@ public final class SpanId {
     return (spanId.length() == HEX_LENGTH)
         && !INVALID.contentEquals(spanId)
         && BigendianEncoding.isValidBase16String(spanId);
+  }
+
+  /**
+   * Returns the bytes (8-byte array) representation of the {@code SpanId} converted from the given
+   * lowercase hex (base16) representation.
+   *
+   * @param spanId the lowercase hex (base16) representation of the {@code SpanId}.
+   * @return the bytes (8-byte array) representation of the {@code SpanId}.
+   * @throws NullPointerException if {@code spanId} is null.
+   * @throws IndexOutOfBoundsException if {@code spanId} too short.
+   * @throws IllegalArgumentException if {@code spanId} contains non lowercase hex characters.
+   */
+  static byte[] asBytes(CharSequence spanId) {
+    Objects.requireNonNull(spanId, "spanId");
+    return BigendianEncoding.bytesFromBase16(spanId, HEX_LENGTH);
   }
 
   /**

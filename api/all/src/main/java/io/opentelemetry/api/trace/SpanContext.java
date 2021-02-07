@@ -78,7 +78,7 @@ public interface SpanContext {
    * @return the trace identifier associated with this {@link SpanContext} as 16-byte array.
    */
   default byte[] getTraceIdBytes() {
-    return BigendianEncoding.bytesFromBase16(getTraceIdHex(), TraceId.getLength());
+    return TraceId.asBytes(getTraceIdHex());
   }
 
   /**
@@ -96,7 +96,7 @@ public interface SpanContext {
    * @return the span identifier associated with this {@link SpanContext} as 8-byte array.
    */
   default byte[] getSpanIdBytes() {
-    return BigendianEncoding.bytesFromBase16(getSpanIdHex(), SpanId.getLength());
+    return SpanId.asBytes(getSpanIdHex());
   }
 
   /** Whether the span in this context is sampled. */
