@@ -926,7 +926,7 @@ class RecordEventsReadableSpanTest {
         StatusData.unset(),
         /* hasEnded= */ true);
     assertThat(result.getTotalRecordedLinks()).isEqualTo(1);
-    assertThat(result.getSpanContext().isSampled()).isEqualTo(false);
+    assertThat(result.isSampled()).isEqualTo(false);
   }
 
   @Test
