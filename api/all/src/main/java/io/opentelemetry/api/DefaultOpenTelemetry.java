@@ -14,26 +14,27 @@ import javax.annotation.concurrent.ThreadSafe;
  * back to no-op default implementations.
  */
 @ThreadSafe
-final class DefaultOpenTelemetry implements OpenTelemetry {
-  private static final OpenTelemetry NO_OP = new DefaultOpenTelemetry(ContextPropagators.noop());
-
-  static OpenTelemetry noop() {
-    return NO_OP;
-  }
-
-  static OpenTelemetry propagating(ContextPropagators propagators) {
-    return new DefaultOpenTelemetry(propagators);
-  }
-
+public final class DefaultOpenTelemetry implements OpenTelemetry {
+  private final TracerProvider tracerProvider;
   private final ContextPropagators propagators;
 
-  DefaultOpenTelemetry(ContextPropagators propagators) {
+  DefaultOpenTelemetry(TracerProvider tracerProvider, ContextPropagators propagators) {
+    this.tracerProvider = tracerProvider;
     this.propagators = propagators;
+  }
+
+  /**
+   * Returns a builder for the {@link DefaultOpenTelemetry}.
+   *
+   * @return a builder for the {@link DefaultOpenTelemetry}.
+   */
+  public static DefaultOpenTelemetryBuilder builder() {
+    return new DefaultOpenTelemetryBuilder();
   }
 
   @Override
   public TracerProvider getTracerProvider() {
-    return TracerProvider.getDefault();
+    return tracerProvider;
   }
 
   @Override

@@ -6,6 +6,7 @@
 package io.opentelemetry;
 
 import com.google.gson.Gson;
+import io.opentelemetry.api.DefaultOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -34,8 +35,9 @@ public class Application {
 
   static {
     openTelemetry =
-        OpenTelemetry.getPropagating(
-            ContextPropagators.create(W3CTraceContextPropagator.getInstance()));
+        DefaultOpenTelemetry.builder()
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .build();
   }
 
   private Application() {}
