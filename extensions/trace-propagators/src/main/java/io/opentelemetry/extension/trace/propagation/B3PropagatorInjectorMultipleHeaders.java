@@ -31,8 +31,8 @@ final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector 
       sampled = Common.TRUE_INT;
     }
 
-    setter.set(carrier, B3Propagator.TRACE_ID_HEADER, spanContext.getTraceIdHex());
-    setter.set(carrier, B3Propagator.SPAN_ID_HEADER, spanContext.getSpanIdHex());
+    setter.set(carrier, B3Propagator.TRACE_ID_HEADER, spanContext.getTraceId());
+    setter.set(carrier, B3Propagator.SPAN_ID_HEADER, spanContext.getSpanId());
     setter.set(carrier, B3Propagator.SAMPLED_HEADER, sampled);
   }
 }
