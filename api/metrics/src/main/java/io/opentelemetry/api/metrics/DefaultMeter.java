@@ -6,8 +6,8 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
-import io.opentelemetry.api.metrics.internal.MetricsStringUtils;
 import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.Immutable;
@@ -22,7 +22,7 @@ final class DefaultMeter implements Meter {
 
   /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
       "Name should be a ASCII string with a length no greater than "
-          + MetricsStringUtils.METRIC_NAME_MAX_LENGTH
+          + StringUtils.METRIC_NAME_MAX_LENGTH
           + " characters.";
 
   static Meter getInstance() {
@@ -32,84 +32,84 @@ final class DefaultMeter implements Meter {
   @Override
   public DoubleCounterBuilder doubleCounterBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleCounter.NoopBuilder();
   }
 
   @Override
   public LongCounterBuilder longCounterBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongCounter.NoopBuilder();
   }
 
   @Override
   public DoubleUpDownCounterBuilder doubleUpDownCounterBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleUpDownCounter.NoopBuilder();
   }
 
   @Override
   public LongUpDownCounterBuilder longUpDownCounterBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongUpDownCounter.NoopBuilder();
   }
 
   @Override
   public DoubleValueRecorderBuilder doubleValueRecorderBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleValueRecorder.NoopBuilder();
   }
 
   @Override
   public LongValueRecorderBuilder longValueRecorderBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongValueRecorder.NoopBuilder();
   }
 
   @Override
   public DoubleSumObserverBuilder doubleSumObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleSumObserver.NoopBuilder();
   }
 
   @Override
   public LongSumObserverBuilder longSumObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongSumObserver.NoopBuilder();
   }
 
   @Override
   public DoubleUpDownSumObserverBuilder doubleUpDownSumObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleUpDownSumObserver.NoopBuilder();
   }
 
   @Override
   public LongUpDownSumObserverBuilder longUpDownSumObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongUpDownSumObserver.NoopBuilder();
   }
 
   @Override
   public DoubleValueObserverBuilder doubleValueObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleValueObserver.NoopBuilder();
   }
 
   @Override
   public LongValueObserverBuilder longValueObserverBuilder(String name) {
     Objects.requireNonNull(name, "name");
-    Utils.checkArgument(MetricsStringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongValueObserver.NoopBuilder();
   }
 

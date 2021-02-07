@@ -5,11 +5,11 @@
 
 package io.opentelemetry.api.metrics;
 
+import static io.opentelemetry.api.internal.StringUtils.METRIC_NAME_MAX_LENGTH;
 import static io.opentelemetry.api.metrics.DefaultMeter.ERROR_MESSAGE_INVALID_NAME;
 import static java.util.Arrays.fill;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.metrics.internal.MetricsStringUtils;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongValueObserver}. */
@@ -43,7 +43,7 @@ class LongValueObserverTest {
 
   @Test
   void preventTooLongName() {
-    char[] chars = new char[MetricsStringUtils.METRIC_NAME_MAX_LENGTH + 1];
+    char[] chars = new char[METRIC_NAME_MAX_LENGTH + 1];
     fill(chars, 'a');
     String longName = String.valueOf(chars);
     assertThatThrownBy(() -> meter.longValueObserverBuilder(longName).build())

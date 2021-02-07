@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.metrics.AbstractInstrument.Builder.ERROR_MESS
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.metrics.internal.MetricsStringUtils;
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -59,7 +59,7 @@ class AbstractInstrumentBuilderTest {
 
   @Test
   void preventTooLongName() {
-    char[] chars = new char[MetricsStringUtils.METRIC_NAME_MAX_LENGTH + 1];
+    char[] chars = new char[StringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     assertThatThrownBy(() -> new TestInstrumentBuilder(longName).build())
