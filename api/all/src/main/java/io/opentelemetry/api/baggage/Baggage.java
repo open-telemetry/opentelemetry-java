@@ -12,8 +12,8 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A map from {@link String} to {@link BaggageEntry} that can be used to label anything that is
- * associated with a specific operation.
+ * A map from {@link String} to {@link String} and {@link EntryMetadata} that can be used to label
+ * anything that is associated with a specific operation.
  *
  * <p>For example, {@code Baggage}s can be used to label stats, log messages, or debugging
  * information.

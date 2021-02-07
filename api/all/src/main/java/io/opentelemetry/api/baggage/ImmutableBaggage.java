@@ -37,7 +37,7 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
   @Override
   public void forEach(BaggageConsumer consumer) {
     for (int i = 0; i < data().size(); i += 2) {
-      ImmutableEntry entry = (ImmutableEntry) data().get(i + 1);
+      Entry entry = (Entry) data().get(i + 1);
       consumer.accept((String) data().get(i), entry.getValue(), entry.getEntryMetadata());
     }
   }
@@ -96,7 +96,7 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
         return this;
       }
       data.add(key);
-      data.add(ImmutableEntry.create(value, entryMetadata));
+      data.add(Entry.create(value, entryMetadata));
 
       return this;
     }
@@ -123,7 +123,7 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
         parent.forEach(
             (key, value, metadata) -> {
               merged.add(key);
-              merged.add(ImmutableEntry.create(value, metadata));
+              merged.add(Entry.create(value, metadata));
             });
         merged.addAll(data);
         data = merged;

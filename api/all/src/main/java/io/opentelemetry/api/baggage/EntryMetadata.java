@@ -8,29 +8,33 @@ package io.opentelemetry.api.baggage;
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * {@link EntryMetadata} contains properties associated with an {@link Entry}. This is an opaque
+ * wrapper for a String metadata value.
+ */
 @Immutable
 @AutoValue
-abstract class ImmutableEntryMetadata implements BaggageEntryMetadata {
+abstract class EntryMetadata implements BaggageEntryMetadata {
   /** Returns an empty metadata. */
-  static final ImmutableEntryMetadata EMPTY = create("");
+  static final EntryMetadata EMPTY = create("");
 
-  ImmutableEntryMetadata() {}
+  EntryMetadata() {}
 
   /**
-   * Creates an {@link ImmutableEntryMetadata} with the given value.
+   * Creates an {@link EntryMetadata} with the given value.
    *
    * @param metadata TTL of an {@code Entry}.
    * @return an {@code EntryMetadata}.
    */
-  static ImmutableEntryMetadata create(String metadata) {
+  static EntryMetadata create(String metadata) {
     if (metadata == null) {
       return EMPTY;
     }
-    return new AutoValue_ImmutableEntryMetadata(metadata);
+    return new AutoValue_EntryMetadata(metadata);
   }
 
   /**
-   * Returns the String value of this {@link ImmutableEntryMetadata}.
+   * Returns the String value of this {@link EntryMetadata}.
    *
    * @return the raw metadata value.
    */
