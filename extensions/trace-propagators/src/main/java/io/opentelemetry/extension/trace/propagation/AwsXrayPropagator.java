@@ -201,11 +201,8 @@ public final class AwsXrayPropagator implements TextMapPropagator {
       return SpanContext.getInvalid();
     }
 
-    return SpanContext.createFromRemoteParent(
-        traceId,
-        spanId,
-        isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault(),
-        TraceState.getDefault());
+    byte traceFlags = isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault();
+    return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TraceState.getDefault());
   }
 
   private static String parseTraceId(String xrayTraceId) {
