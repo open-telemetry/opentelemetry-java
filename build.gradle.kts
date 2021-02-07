@@ -9,7 +9,6 @@ import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import org.gradle.api.plugins.JavaPlugin.*
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferPlugin
 import java.time.Duration
 
@@ -364,10 +363,21 @@ subprojects {
         plugins.withId("ru.vyarus.animalsniffer") {
             dependencies {
                 add(AnimalSnifferPlugin.SIGNATURE_CONF, "com.toasttab.android:gummy-bears-api-24:0.3.0:coreLib@signature")
-            }
 
-            configure<AnimalSnifferExtension> {
-                sourceSets = listOf(the<JavaPluginConvention>().sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME))
+                tasks {
+                    withType(AnimalSniffer::class) {
+                        if (name.startsWith("animalsnifferTest")) {
+                            enabled = false
+                        }
+                    }
+
+                    // If JMH enabled ignore animalsniffer.
+                    plugins.withId("me.champeau.gradle.jmh") {
+                        named("animalsnifferJmh") {
+                            enabled = false
+                        }
+                    }
+                }
             }
         }
 

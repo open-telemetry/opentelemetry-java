@@ -17,6 +17,13 @@ dependencies {
             "io.grpc:grpc-stub"
 }
 
+animalsniffer {
+    // Don't check sourceSets.jmh and sourceSets.test
+    sourceSets = [
+            sourceSets.main
+    ]
+}
+
 def protoVersion = "0.7.0"
 // To generate checksum, download the file and run "shasum -a 256 ~/path/to/vfoo.zip"
 def protoChecksum = "0b581c654b2360485b99c2de3731dd59275b0fe7b91d78e7f6c5efd5997f4c82"

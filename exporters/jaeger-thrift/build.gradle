@@ -20,3 +20,10 @@ dependencies {
 
     testImplementation project(':sdk:testing')
 }
+
+animalsniffer {
+    // Don't check sourceSets.jmh and sourceSets.test
+    sourceSets = [
+            sourceSets.main
+    ]
+}

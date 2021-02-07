@@ -22,3 +22,10 @@ dependencies {
     testImplementation project(':sdk:testing')
     testImplementation "io.zipkin.zipkin2:zipkin-junit"
 }
+
+animalsniffer {
+    // Don't check sourceSets.jmh and sourceSets.test
+    sourceSets = [
+            sourceSets.main
+    ]
+}
