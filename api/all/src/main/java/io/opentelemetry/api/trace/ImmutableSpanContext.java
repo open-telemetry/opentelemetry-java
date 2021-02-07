@@ -33,6 +33,18 @@ abstract class ImmutableSpanContext implements SpanContext {
 
   @Override
   @Memoized
+  public byte[] getTraceIdBytes() {
+    return SpanContext.super.getTraceIdBytes();
+  }
+
+  @Override
+  @Memoized
+  public byte[] getSpanIdBytes() {
+    return SpanContext.super.getSpanIdBytes();
+  }
+
+  @Override
+  @Memoized
   public boolean isValid() {
     return SpanContext.super.isValid();
   }
