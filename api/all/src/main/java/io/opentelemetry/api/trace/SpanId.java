@@ -14,14 +14,25 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class SpanId {
-  private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
 
-  private static final int HEX_SIZE = 16;
+  private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
+  private static final int SIZE = 8;
+  private static final int HEX_SIZE = 2 * SIZE;
+
   private static final String INVALID = "0000000000000000";
 
   private SpanId() {}
 
-  /** Returns the length of the lowercase hex (base16) representation of the {@code SpanId}. */
+  /**
+   * Returns the size in bytes of the {@code SpanId}.
+   *
+   * @return the size in bytes of the {@code SpanId}.
+   */
+  public static int getSize() {
+    return SIZE;
+  }
+
+  /** Returns the length of the hex (base16) representation of the {@code SpanId}. */
   public static int getHexLength() {
     return HEX_SIZE;
   }

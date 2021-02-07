@@ -17,12 +17,22 @@ import javax.annotation.concurrent.Immutable;
 public final class TraceId {
   private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
 
-  private static final int HEX_SIZE = 32;
+  private static final int SIZE_IN_BYTES = 16;
+  private static final int HEX_SIZE = 2 * BigendianEncoding.LONG_BASE16;
   private static final String INVALID = "00000000000000000000000000000000";
 
   private TraceId() {}
 
-  /** Returns the length of the lowercase hex (base16) representation of the {@code TraceId}. */
+  /**
+   * Returns the size in bytes of the {@code TraceId}.
+   *
+   * @return the size in bytes of the {@code TraceId}.
+   */
+  public static int getSize() {
+    return SIZE_IN_BYTES;
+  }
+
+  /** Returns the length of the hex (base16) representation of the {@code TraceId}. */
   public static int getHexLength() {
     return HEX_SIZE;
   }
