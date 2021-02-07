@@ -1,18 +1,19 @@
 plugins {
     id 'java'
-
-    id "com.github.johnrengelman.shadow"
 }
 
 description = 'OpenTelemetry W3C Context Propagation Integration Tests'
 ext.moduleName = "io.opentelemetry.tracecontext.integration.tests"
 
-shadowJar {
-    archiveFileName = 'tracecontext-tests.jar'
 
+// create a single Jar with all dependencies
+task fatJar(type: Jar) {
     manifest {
         attributes 'Main-Class': 'io.opentelemetry.Application'
     }
+    archiveName = 'tracecontext-tests.jar'
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
 dependencies {

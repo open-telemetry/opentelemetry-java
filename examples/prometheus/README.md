@@ -13,7 +13,7 @@ These are collected by a Prometheus instance which is configured to pull these m
 
 ## 1 - Compile 
 ```shell script
-../gradlew shadowJar
+../gradlew fatJar
 ```
 ## 2 - Run Prometheus
 
@@ -31,7 +31,7 @@ docker run --network="host" --rm -it \
 
 ## 3 - Start the Application
 ```shell script
-java -cp build/libs/opentelemetry-examples-prometheus-0.1.0-SNAPSHOT-all.jar io.opentelemetry.example.prometheus.PrometheusExample 19090
+java -cp build/libs/opentelemetry-examples-prometheus-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.prometheus.PrometheusExample 19090
 ```
 ## 4 - Open the Prometheus UI
 

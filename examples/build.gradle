@@ -1,6 +1,5 @@
 plugins {
     id "com.diffplug.spotless"
-    id "com.github.johnrengelman.shadow" apply false
 }
 
 subprojects {
@@ -9,7 +8,6 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'idea'
     apply plugin: 'com.diffplug.spotless'
-    apply plugin: 'com.github.johnrengelman.shadow'
 
     group = "io.opentelemetry"
     version = "0.1.0-SNAPSHOT"
@@ -40,5 +38,12 @@ subprojects {
         java {
             googleJavaFormat("1.9")
         }
+    }
+
+    //create a single Jar with all dependencies
+    task fatJar(type: Jar) {
+        archiveBaseName = project.name + '-all'
+        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+        with jar
     }
 }

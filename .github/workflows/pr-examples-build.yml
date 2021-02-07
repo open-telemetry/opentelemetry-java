@@ -36,6 +36,6 @@ jobs:
       - uses: burrunan/gradle-cache-action@v1.6
         with:
           remote-build-cache-proxy-enabled: false
-          arguments: clean check shadowJar
+          arguments: clean check fatJar
           build-root-directory: examples
-      - run: java -cp examples/sdk-usage/build/libs/opentelemetry-examples-sdk-usage-0.1.0-SNAPSHOT-all.jar io.opentelemetry.sdk.example.ConfigureSpanProcessorExample
+      - run: java -cp examples/sdk-usage/build/libs/opentelemetry-examples-sdk-usage-all-0.1.0-SNAPSHOT.jar io.opentelemetry.sdk.example.ConfigureSpanProcessorExample

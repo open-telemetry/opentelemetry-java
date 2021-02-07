@@ -16,15 +16,15 @@ and create a **Child Span** with attached a **Span Event**.
 
 ## 1 - Compile 
 ```shell script
-../gradlew shadowJar
+../gradlew fatJar
 ```
 
 ## 2 - Start the Server
 ```shell script
-java -cp ./build/libs/opentelemetry-examples-http-0.1.0-SNAPSHOT-all.jar io.opentelemetry.example.http.HttpServer
+java -cp ./build/libs/opentelemetry-examples-http-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.http.HttpServer
 ```
  
 ## 3 - Start the Client
 ```shell script
-java -cp ./build/libs/opentelemetry-examples-http-0.1.0-SNAPSHOT-all.jar io.opentelemetry.example.http.HttpClient
+java -cp ./build/libs/opentelemetry-examples-http-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.http.HttpClient
 ```
