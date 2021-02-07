@@ -45,10 +45,10 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link Adapter}. */
 class AdapterTest {
   private static final BaseEncoding hex = BaseEncoding.base16().lowerCase();
-  private static final String LINK_TRACE_ID = "ff000000000000000000000000cba123";
+  private static final String LINK_TRACE_ID = "00000000000000000000000000cba123";
   private static final String LINK_SPAN_ID = "0000000000fed456";
-  private static final String TRACE_ID = "0000000000000000ff00000000abc123";
-  private static final String SPAN_ID = "ff00000000def456";
+  private static final String TRACE_ID = "00000000000000000000000000abc123";
+  private static final String SPAN_ID = "0000000000def456";
   private static final String PARENT_SPAN_ID = "0000000000aef789";
 
   @Test

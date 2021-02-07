@@ -111,6 +111,35 @@ public final class TraceId {
    * @return the rightmost 8 bytes of the trace-id as a long value.
    */
   public static long getTraceIdRandomPart(CharSequence traceId) {
+    return lowPartAsLong(traceId);
+  }
+
+  /**
+   * Returns the "high part" of the {@code long} values representation of the {@code TraceId}
+   * converted from the given lowercase hex (base16) representation.
+   *
+   * @param traceId the lowercase hex (base16) representation of the {@code TraceId}.
+   * @return the {@code long} value representation of the {@code TraceId}.
+   * @throws NullPointerException if {@code traceId} is null.
+   * @throws IndexOutOfBoundsException if {@code traceId} too short.
+   * @throws IllegalArgumentException if {@code spanId} contains non lowercase hex characters.
+   */
+  public static long highPartAsLong(CharSequence traceId) {
+    Objects.requireNonNull(traceId, "traceId");
+    return BigendianEncoding.longFromBase16String(traceId, 0);
+  }
+
+  /**
+   * Returns the "low part" of the {@code long} values representation of the {@code TraceId}
+   * converted from the given lowercase hex (base16) representation.
+   *
+   * @param traceId the lowercase hex (base16) representation of the {@code TraceId}.
+   * @return the {@code long} value representation of the {@code TraceId}.
+   * @throws NullPointerException if {@code traceId} is null.
+   * @throws IndexOutOfBoundsException if {@code traceId} too short.
+   * @throws IllegalArgumentException if {@code spanId} contains non lowercase hex characters.
+   */
+  public static long lowPartAsLong(CharSequence traceId) {
     Objects.requireNonNull(traceId, "traceId");
     return BigendianEncoding.longFromBase16String(traceId, BigendianEncoding.LONG_BASE16);
   }

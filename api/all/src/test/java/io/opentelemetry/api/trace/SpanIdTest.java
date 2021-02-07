@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Random;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanId}. */
@@ -20,6 +21,7 @@ class SpanIdTest {
   void invalid() {
     assertThat(SpanId.getInvalid()).isEqualTo("0000000000000000");
     assertThat(SpanId.asBytes(SpanId.getInvalid())).isEqualTo(new byte[] {0, 0, 0, 0, 0, 0, 0, 0});
+    assertThat(SpanId.asLong(SpanId.getInvalid())).isEqualTo(0);
   }
 
   @Test
@@ -33,14 +35,16 @@ class SpanIdTest {
   @Test
   void fromLowerHex() {
     assertThat(SpanId.asBytes(SpanId.getInvalid())).isEqualTo(new byte[] {0, 0, 0, 0, 0, 0, 0, 0});
-    assertThat(SpanId.asBytes(first)).isEqualTo(firstBytes);
-    assertThat(SpanId.asBytes(second)).isEqualTo(secondBytes);
+    assertThat(SpanId.asBytes("0000000000000061")).isEqualTo(firstBytes);
+    assertThat(SpanId.asBytes("ff00000000000041")).isEqualTo(secondBytes);
   }
 
   @Test
-  void fromLong() {
-    assertThat(SpanId.fromLong(0)).isEqualTo(SpanId.getInvalid());
-    assertThat(SpanId.fromLong(0x61)).isEqualTo(first);
-    assertThat(SpanId.fromLong(0xff00000000000041L)).isEqualTo(second);
+  void toFromLong() {
+    Random random = new Random();
+    for (int i = 0; i < 1000; i++) {
+      long id = random.nextLong();
+      assertThat(SpanId.asLong(SpanId.fromLong(id))).isEqualTo(id);
+    }
   }
 }
