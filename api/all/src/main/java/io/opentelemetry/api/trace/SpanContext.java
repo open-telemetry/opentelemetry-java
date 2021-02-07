@@ -65,35 +65,30 @@ public interface SpanContext {
   }
 
   /**
-   * Returns the trace identifier associated with this {@link SpanContext} as 32 character lowercase
-   * hex String.
+   * Returns the trace identifier associated with this {@link SpanContext} as lowercase hex.
    *
    * @return the trace identifier associated with this {@link SpanContext} as lowercase hex.
    */
   String getTraceId();
 
   /**
-   * Returns the trace identifier associated with this {@link SpanContext} as 16-byte array.
-   *
-   * @return the trace identifier associated with this {@link SpanContext} as 16-byte array.
+   * Returns the {@code byte[]} representation of the trace identifier associated with this {@link
+   * SpanContext}.
    */
   default byte[] getTraceIdBytes() {
     return TraceId.asBytes(getTraceId());
   }
 
   /**
-   * Returns the span identifier associated with this {@link SpanContext} as 16 character lowercase
-   * hex String.
+   * Returns the span identifier associated with this {@link SpanContext} as lowercase hex.
    *
-   * @return the span identifier associated with this {@link SpanContext} as 16 character lowercase
-   *     hex (base16) String.
+   * @return the span identifier associated with this {@link SpanContext} as lowercase hex.
    */
   String getSpanId();
 
   /**
-   * Returns the span identifier associated with this {@link SpanContext} as 8-byte array.
-   *
-   * @return the span identifier associated with this {@link SpanContext} as 8-byte array.
+   * Returns the {@code byte[]} representation of the span identifier associated with this {@link
+   * SpanContext}.
    */
   default byte[] getSpanIdBytes() {
     return SpanId.asBytes(getSpanId());
