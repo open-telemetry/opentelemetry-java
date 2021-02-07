@@ -26,7 +26,7 @@ final class TracerProviderConfiguration {
             .setResource(resource)
             .setTraceConfig(configureTraceConfig(config));
 
-    String sampler = config.getString("otel.traces.sampler");
+    String sampler = config.getString("otel.trace.sampler");
     if (sampler != null) {
       tracerProviderBuilder.setSampler(configureSampler(sampler, config));
     }
@@ -38,7 +38,7 @@ final class TracerProviderConfiguration {
       configurer.configure(tracerProviderBuilder);
     }
 
-    String exporterName = config.getString("otel.traces.exporter");
+    String exporterName = config.getString("otel.trace.exporter");
     if (exporterName != null) {
       SpanExporter exporter = SpanExporterConfiguration.configureExporter(exporterName, config);
       if (exporter != null) {
@@ -109,7 +109,7 @@ final class TracerProviderConfiguration {
         return Sampler.alwaysOff();
       case "traceidratio":
         {
-          Double ratio = config.getDouble("otel.traces.sampler.arg");
+          Double ratio = config.getDouble("otel.trace.sampler.arg");
           if (ratio == null) {
             ratio = 1.0d;
           }
@@ -121,14 +121,14 @@ final class TracerProviderConfiguration {
         return Sampler.parentBased(Sampler.alwaysOff());
       case "parentbased_traceidratio":
         {
-          Double ratio = config.getDouble("otel.traces.sampler.arg");
+          Double ratio = config.getDouble("otel.trace.sampler.arg");
           if (ratio == null) {
             ratio = 1.0d;
           }
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
         }
       default:
-        throw new ConfigurationException("Unrecognized value for otel.traces.sampler: " + sampler);
+        throw new ConfigurationException("Unrecognized value for otel.trace.sampler: " + sampler);
     }
   }
 

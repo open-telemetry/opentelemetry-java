@@ -69,7 +69,7 @@ dependencies {
 
 testFullConfig {
     environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
-    environment("OTEL_TRACES_EXPORTER", "otlp")
+    environment("OTEL_TRACE_EXPORTER", "otlp")
     environment("OTEL_METRICS_EXPORTER", "otlp")
     environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottracer,xray,test")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
@@ -80,18 +80,18 @@ testFullConfig {
 }
 
 testJaeger {
-    environment("OTEL_TRACES_EXPORTER", "jaeger")
+    environment("OTEL_TRACE_EXPORTER", "jaeger")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
 }
 
 testOtlpTls {
     environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
-    environment("OTEL_TRACES_EXPORTER", "otlp")
+    environment("OTEL_TRACE_EXPORTER", "otlp")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
 }
 
 testZipkin {
-    environment("OTEL_TRACES_EXPORTER", "zipkin")
+    environment("OTEL_TRACE_EXPORTER", "zipkin")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
 }
 
