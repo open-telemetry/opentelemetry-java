@@ -8,15 +8,13 @@ package io.opentelemetry.sdk.trace.data;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.trace.SpanLimits;
-import javax.annotation.concurrent.Immutable;
 
 /**
- * Data representation of a link.
+ * Data representation of a Link.
  *
  * <p>Used (for example) in batching operations, where a single batch handler processes multiple
  * requests from different traces. Link can be also used to reference spans from the same trace.
  */
-@Immutable
 public interface LinkData {
 
   /**

@@ -10,8 +10,8 @@ import io.opentelemetry.api.common.Attributes;
 import javax.annotation.concurrent.Immutable;
 
 /** An immutable implementation of the {@link EventData}. */
-@AutoValue
 @Immutable
+@AutoValue
 abstract class ImmutableEventData implements EventData {
 
   /**

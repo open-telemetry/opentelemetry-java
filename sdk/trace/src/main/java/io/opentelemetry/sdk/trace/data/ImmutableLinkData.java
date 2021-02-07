@@ -11,8 +11,8 @@ import io.opentelemetry.api.trace.SpanContext;
 import javax.annotation.concurrent.Immutable;
 
 /** An immutable implementation of {@link LinkData}. */
-@AutoValue
 @Immutable
+@AutoValue
 abstract class ImmutableLinkData implements LinkData {
   private static final Attributes DEFAULT_ATTRIBUTE_COLLECTION = Attributes.empty();
   private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
