@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;

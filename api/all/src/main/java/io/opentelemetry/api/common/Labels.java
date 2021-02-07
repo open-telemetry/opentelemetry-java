@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.metrics.common;
+package io.opentelemetry.api.common;
 
-import static io.opentelemetry.api.metrics.common.ArrayBackedLabels.sortAndFilterToLabels;
+import static io.opentelemetry.api.common.ArrayBackedLabels.sortAndFilterToLabels;
 
 import java.util.Map;
 import java.util.function.BiConsumer;

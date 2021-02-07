@@ -5,8 +5,8 @@
 
 package io.opentelemetry.api.metrics;
 
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.internal.Utils;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.api.metrics.internal.MetricsStringUtils;
 import java.util.Objects;
 import java.util.function.Consumer;

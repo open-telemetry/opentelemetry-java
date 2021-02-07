@@ -7,7 +7,7 @@ package io.opentelemetry.api.metrics;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.internal.MetricsStringUtils;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;

@@ -9,7 +9,7 @@ import static io.opentelemetry.api.metrics.DefaultMeter.ERROR_MESSAGE_INVALID_NA
 import static java.util.Arrays.fill;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.internal.MetricsStringUtils;
 import org.junit.jupiter.api.Test;
 
