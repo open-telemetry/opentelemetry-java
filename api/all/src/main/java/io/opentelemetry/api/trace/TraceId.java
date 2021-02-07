@@ -47,6 +47,36 @@ public final class TraceId {
   }
 
   /**
+   * Constructs a {@code TraceId} whose representation is specified by two long values representing
+   * the lower and higher parts.
+   *
+   * <p>There is no restriction on the specified values, other than the already established validity
+   * rules applying to {@code TraceId}. Specifying 0 for both values will effectively make the new
+   * {@code TraceId} invalid.
+   *
+   * <p>This is equivalent to calling {@link #bytesToHex(byte[])} with the specified values stored
+   * as big-endian.
+   *
+   * @param idHi the higher part of the {@code TraceId}.
+   * @param idLo the lower part of the {@code TraceId}.
+   */
+  public static String fromLongs(long idHi, long idLo) {
+    char[] chars = getTemporaryBuffer();
+    BigendianEncoding.longToBase16String(idHi, chars, 0);
+    BigendianEncoding.longToBase16String(idLo, chars, 16);
+    return new String(chars);
+  }
+
+  private static char[] getTemporaryBuffer() {
+    char[] chars = charBuffer.get();
+    if (chars == null) {
+      chars = new char[HEX_SIZE];
+      charBuffer.set(chars);
+    }
+    return chars;
+  }
+
+  /**
    * Returns a {@code TraceId} built from a lowercase base16 representation.
    *
    * @param src the lowercase base16 representation.
@@ -88,27 +118,6 @@ public final class TraceId {
   }
 
   /**
-   * Constructs a {@code TraceId} whose representation is specified by two long values representing
-   * the lower and higher parts.
-   *
-   * <p>There is no restriction on the specified values, other than the already established validity
-   * rules applying to {@code TraceId}. Specifying 0 for both values will effectively make the new
-   * {@code TraceId} invalid.
-   *
-   * <p>This is equivalent to calling {@link #bytesToHex(byte[])} with the specified values stored
-   * as big-endian.
-   *
-   * @param idHi the higher part of the {@code TraceId}.
-   * @param idLo the lower part of the {@code TraceId}.
-   */
-  public static String fromLongs(long idHi, long idLo) {
-    char[] chars = getTemporaryBuffer();
-    BigendianEncoding.longToBase16String(idHi, chars, 0);
-    BigendianEncoding.longToBase16String(idLo, chars, 16);
-    return new String(chars);
-  }
-
-  /**
    * Returns the rightmost 8 bytes of the trace-id as a long value. This is used in
    * ProbabilitySampler.
    *
@@ -128,14 +137,5 @@ public final class TraceId {
   /** Convert the "low bytes" of the given hex traceId into a long representation. */
   public static long traceIdLowBytesAsLong(CharSequence traceId) {
     return BigendianEncoding.longFromBase16String(traceId, BigendianEncoding.LONG_BASE16);
-  }
-
-  private static char[] getTemporaryBuffer() {
-    char[] chars = charBuffer.get();
-    if (chars == null) {
-      chars = new char[HEX_SIZE];
-      charBuffer.set(chars);
-    }
-    return chars;
   }
 }

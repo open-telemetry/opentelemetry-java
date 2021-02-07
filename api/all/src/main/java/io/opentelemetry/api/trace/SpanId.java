@@ -46,6 +46,22 @@ public final class SpanId {
     return INVALID;
   }
 
+  /** Generate a valid {@link SpanId} from the given long value. */
+  public static String fromLong(long id) {
+    char[] result = getTemporaryBuffer();
+    BigendianEncoding.longToBase16String(id, result, 0);
+    return new String(result);
+  }
+
+  private static char[] getTemporaryBuffer() {
+    char[] chars = charBuffer.get();
+    if (chars == null) {
+      chars = new char[HEX_SIZE];
+      charBuffer.set(chars);
+    }
+    return chars;
+  }
+
   /**
    * Returns a {@code SpanId} built from a lowercase base16 representation.
    *
@@ -61,23 +77,6 @@ public final class SpanId {
     return BigendianEncoding.bytesFromBase16(src, srcOffset, HEX_SIZE);
   }
 
-  /** Encode the bytes as base-16 (hex), padded with '0's on the left. */
-  public static String bytesToHex(byte[] spanId) {
-    return BigendianEncoding.toLowerBase16(spanId);
-  }
-
-  /** Generate a valid {@link SpanId} from the given long value. */
-  public static String fromLong(long id) {
-    char[] result = getTemporaryBuffer();
-    BigendianEncoding.longToBase16String(id, result, 0);
-    return new String(result);
-  }
-
-  /** Convert the the given hex spanId into a long representation. */
-  public static long asLong(CharSequence src) {
-    return BigendianEncoding.longFromBase16String(src, 0);
-  }
-
   /**
    * Returns whether the span identifier is valid. A valid span identifier is an 8-byte array with
    * at least one non-zero byte.
@@ -90,12 +89,13 @@ public final class SpanId {
         && BigendianEncoding.isValidBase16String(spanId);
   }
 
-  private static char[] getTemporaryBuffer() {
-    char[] chars = charBuffer.get();
-    if (chars == null) {
-      chars = new char[HEX_SIZE];
-      charBuffer.set(chars);
-    }
-    return chars;
+  /** Encode the bytes as base-16 (hex), padded with '0's on the left. */
+  public static String bytesToHex(byte[] spanId) {
+    return BigendianEncoding.toLowerBase16(spanId);
+  }
+
+  /** Convert the the given hex spanId into a long representation. */
+  public static long asLong(CharSequence src) {
+    return BigendianEncoding.longFromBase16String(src, 0);
   }
 }
