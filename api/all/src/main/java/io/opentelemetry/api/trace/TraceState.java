@@ -39,9 +39,7 @@ public interface TraceState {
   /**
    * Returns the default {@code TraceState} with no entries.
    *
-   * <p>This method is equivalent to calling {@code #builder().build()}, but avoids new allocations.
-   *
-   * @return the default {@code TraceState} with no entries.
+   * @return the default {@code TraceState}.
    */
   static TraceState getDefault() {
     return DefaultTraceState.get();

@@ -53,8 +53,10 @@ public class RequestMarshalState {
   private static final byte[] SPAN_ID_BYTES =
       new byte[] {(byte) 198, (byte) 245, (byte) 213, (byte) 156, 46, 31, 29, 101};
   private static final String SPAN_ID = SpanId.bytesToHex(SPAN_ID_BYTES);
+
+  private static final TraceState TRACE_STATE = TraceState.builder().build();
   private static final SpanContext SPAN_CONTEXT =
-      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
+      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TRACE_STATE);
 
   @Param({"16"})
   int numSpans;

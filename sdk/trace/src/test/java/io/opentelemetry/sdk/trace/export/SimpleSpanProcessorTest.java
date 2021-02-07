@@ -57,7 +57,7 @@ class SimpleSpanProcessorTest {
           TraceId.getInvalid(),
           SpanId.getInvalid(),
           TraceFlags.getSampled(),
-          TraceState.getDefault());
+          TraceState.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
 
   private SpanProcessor simpleSampledSpansProcessor;

@@ -74,7 +74,8 @@ public class PropagatorContextInjectBenchmark {
     }
 
     private static SpanContext createTestSpanContext(String traceId, String spanId) {
-      return SpanContext.create(traceId, spanId, TraceFlags.getSampled(), TraceState.getDefault());
+      TraceState traceStateDefault = TraceState.builder().build();
+      return SpanContext.create(traceId, spanId, TraceFlags.getSampled(), traceStateDefault);
     }
   }
 

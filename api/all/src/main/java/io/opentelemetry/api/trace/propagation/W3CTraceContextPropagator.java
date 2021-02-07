@@ -39,6 +39,7 @@ import javax.annotation.concurrent.Immutable;
 public final class W3CTraceContextPropagator implements TextMapPropagator {
   private static final Logger logger = Logger.getLogger(W3CTraceContextPropagator.class.getName());
 
+  private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
   static final String TRACE_PARENT = "traceparent";
   static final String TRACE_STATE = "tracestate";
   private static final List<String> FIELDS =
@@ -214,8 +215,7 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
       String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getHexLength());
       if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
         byte traceFlags = TraceFlags.byteFromHex(traceparent, TRACE_OPTION_OFFSET);
-        return SpanContext.createFromRemoteParent(
-            traceId, spanId, traceFlags, TraceState.getDefault());
+        return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
       }
       return SpanContext.getInvalid();
     } catch (IllegalArgumentException e) {

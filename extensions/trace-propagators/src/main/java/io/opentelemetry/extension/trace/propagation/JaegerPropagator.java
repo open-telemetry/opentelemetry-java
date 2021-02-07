@@ -62,7 +62,11 @@ public final class JaegerPropagator implements TextMapPropagator {
       PARENT_SPAN_ID_OFFSET + PARENT_SPAN_ID_SIZE + PROPAGATION_HEADER_DELIMITER_SIZE;
   private static final int PROPAGATION_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
 
+  private static final byte SAMPLED = TraceFlags.getSampled();
+  private static final byte NOT_SAMPLED = TraceFlags.getDefault();
+
   private static final Collection<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
+
   private static final JaegerPropagator INSTANCE = new JaegerPropagator();
 
   private JaegerPropagator() {
@@ -239,7 +243,7 @@ public final class JaegerPropagator implements TextMapPropagator {
   private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {
     try {
       int flagsInt = Integer.parseInt(flags);
-      byte traceFlags = ((flagsInt & 1) == 1) ? TraceFlags.getSampled() : TraceFlags.getDefault();
+      byte traceFlags = ((flagsInt & 1) == 1) ? SAMPLED : NOT_SAMPLED;
 
       String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
       String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);
