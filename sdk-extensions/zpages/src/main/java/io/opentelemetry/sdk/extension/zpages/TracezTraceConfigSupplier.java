@@ -8,26 +8,26 @@ package io.opentelemetry.sdk.extension.zpages;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 import java.util.function.Supplier;
 
-final class TracezTraceConfigSupplier implements Supplier<SpanLimits>, Sampler {
+final class TracezTraceConfigSupplier implements Supplier<TraceConfig>, Sampler {
 
   private volatile Sampler sampler;
-  private volatile SpanLimits activeSpanLimits;
+  private volatile TraceConfig activeTraceConfig;
 
   TracezTraceConfigSupplier() {
     sampler = Sampler.traceIdRatioBased(1.0);
-    activeSpanLimits = SpanLimits.getDefault();
+    activeTraceConfig = TraceConfig.getDefault();
   }
 
   @Override
-  public SpanLimits get() {
-    return activeSpanLimits;
+  public TraceConfig get() {
+    return activeTraceConfig;
   }
 
   Sampler getSampler() {
@@ -38,8 +38,8 @@ final class TracezTraceConfigSupplier implements Supplier<SpanLimits>, Sampler {
     this.sampler = sampler;
   }
 
-  void setActiveTraceConfig(SpanLimits spanLimits) {
-    activeSpanLimits = spanLimits;
+  void setActiveTraceConfig(TraceConfig traceConfig) {
+    activeTraceConfig = traceConfig;
   }
 
   @Override

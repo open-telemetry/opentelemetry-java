@@ -30,7 +30,7 @@ final class SdkTracer implements Tracer {
       return Tracer.getDefault().spanBuilder(spanName);
     }
     return new SdkSpanBuilder(
-        spanName, instrumentationLibraryInfo, sharedState, sharedState.getSpanLimits());
+        spanName, instrumentationLibraryInfo, sharedState, sharedState.getActiveTraceConfig());
   }
 
   /**

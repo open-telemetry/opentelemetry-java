@@ -11,8 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -132,8 +132,8 @@ class TracerProviderConfigurationTest {
 
   @Test
   void configureTraceConfig_empty() {
-    assertThat(TracerProviderConfiguration.configureSpanLimits(EMPTY))
-        .isEqualTo(SpanLimits.getDefault());
+    assertThat(TracerProviderConfiguration.configureTraceConfig(EMPTY))
+        .isEqualTo(TraceConfig.getDefault());
   }
 
   @Test
@@ -145,8 +145,9 @@ class TracerProviderConfigurationTest {
     properties.put("otel.span.event.count.limit", "4");
     properties.put("otel.span.link.count.limit", "3");
 
-    SpanLimits config =
-        TracerProviderConfiguration.configureSpanLimits(ConfigProperties.createForTest(properties));
+    TraceConfig config =
+        TracerProviderConfiguration.configureTraceConfig(
+            ConfigProperties.createForTest(properties));
     assertThat(config.getMaxNumberOfAttributes()).isEqualTo(5);
     assertThat(config.getMaxNumberOfEvents()).isEqualTo(4);
     assertThat(config.getMaxNumberOfLinks()).isEqualTo(3);

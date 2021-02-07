@@ -19,7 +19,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -86,7 +86,7 @@ class OpenTelemetrySdkTest {
   void testConfiguration_tracerSettings() {
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     IdGenerator idGenerator = mock(IdGenerator.class);
-    SpanLimits spanLimits = SpanLimits.getDefault();
+    TraceConfig traceConfig = TraceConfig.getDefault();
     OpenTelemetrySdk openTelemetry =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
@@ -94,7 +94,7 @@ class OpenTelemetrySdkTest {
                     .setClock(clock)
                     .setResource(resource)
                     .setIdGenerator(idGenerator)
-                    .setSpanLimits(spanLimits)
+                    .setTraceConfig(traceConfig)
                     .build())
             .build();
     TracerProvider unobfuscatedTracerProvider =
@@ -104,7 +104,7 @@ class OpenTelemetrySdkTest {
         .isInstanceOfSatisfying(
             SdkTracerProvider.class,
             sdkTracerProvider ->
-                assertThat(sdkTracerProvider.getSpanLimits()).isEqualTo(spanLimits));
+                assertThat(sdkTracerProvider.getActiveTraceConfig()).isEqualTo(traceConfig));
     // Since TracerProvider is in a different package, the only alternative to this reflective
     // approach would be to make the fields public for testing which is worse than this.
     assertThat(unobfuscatedTracerProvider)
@@ -129,7 +129,7 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void fullOpenTelemetrySdkConfigurationDemo() {
-    SpanLimits newConfig = SpanLimits.builder().setMaxLengthOfAttributeValues(128).build();
+    TraceConfig newConfig = TraceConfig.builder().setMaxLengthOfAttributeValues(128).build();
 
     OpenTelemetrySdkBuilder sdkBuilder =
         OpenTelemetrySdk.builder()
@@ -141,7 +141,7 @@ class OpenTelemetrySdkTest {
                     .setClock(mock(Clock.class))
                     .setIdGenerator(mock(IdGenerator.class))
                     .setResource(Resource.getEmpty())
-                    .setSpanLimits(newConfig)
+                    .setTraceConfig(newConfig)
                     .build());
 
     sdkBuilder.build();

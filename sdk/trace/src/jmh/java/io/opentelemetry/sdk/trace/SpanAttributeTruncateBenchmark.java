@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -36,7 +37,7 @@ public class SpanAttributeTruncateBenchmark {
   public final void setup() {
     Tracer tracer =
         SdkTracerProvider.builder()
-            .setSpanLimits(SpanLimits.builder().setMaxLengthOfAttributeValues(maxLength).build())
+            .setTraceConfig(TraceConfig.builder().setMaxLengthOfAttributeValues(maxLength).build())
             .build()
             .get("benchmarkTracer");
     sdkSpanBuilder =

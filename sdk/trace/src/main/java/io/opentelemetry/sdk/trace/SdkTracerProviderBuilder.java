@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ public final class SdkTracerProviderBuilder {
   private Clock clock = SystemClock.getInstance();
   private IdGenerator idsGenerator = IdGenerator.random();
   private Resource resource = Resource.getDefault();
-  private Supplier<SpanLimits> traceConfigSupplier = SpanLimits::getDefault;
+  private Supplier<TraceConfig> traceConfigSupplier = TraceConfig::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
 
   /**
@@ -65,23 +66,23 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Assign an initial {@link SpanLimits} that should be used with this SDK.
+   * Assign an initial {@link TraceConfig} that should be used with this SDK.
    *
    * @return this
    */
-  public SdkTracerProviderBuilder setSpanLimits(SpanLimits spanLimits) {
-    requireNonNull(spanLimits, "traceConfig");
-    this.traceConfigSupplier = () -> spanLimits;
+  public SdkTracerProviderBuilder setTraceConfig(TraceConfig traceConfig) {
+    requireNonNull(traceConfig, "traceConfig");
+    this.traceConfigSupplier = () -> traceConfig;
     return this;
   }
 
   /**
-   * Assign a {@link Supplier} of {@link SpanLimits}. {@link SpanLimits} will be retrieved each time
-   * a {@link io.opentelemetry.api.trace.Span} is started.
+   * Assign a {@link Supplier} of {@link TraceConfig}. {@link TraceConfig} will be retrieved each
+   * time a {@link io.opentelemetry.api.trace.Span} is started.
    *
    * @return this
    */
-  public SdkTracerProviderBuilder setSpanLimits(Supplier<SpanLimits> traceConfigSupplier) {
+  public SdkTracerProviderBuilder setTraceConfig(Supplier<TraceConfig> traceConfigSupplier) {
     requireNonNull(traceConfigSupplier, "traceConfig");
     this.traceConfigSupplier = traceConfigSupplier;
     return this;

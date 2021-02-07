@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.trace.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.sdk.trace.SpanLimits;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 
 /**
  * Data representation of a Link.
@@ -64,7 +64,7 @@ public interface LinkData {
    * The total number of attributes that were recorded on this Link. This number may be larger than
    * the number of attributes that are attached to this span, if the total number recorded was
    * greater than the configured maximum value. See: {@link
-   * SpanLimits#getMaxNumberOfAttributesPerLink()}
+   * TraceConfig#getMaxNumberOfAttributesPerLink()}
    *
    * @return The number of attributes on this link.
    */

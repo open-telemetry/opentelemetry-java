@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.extension.zpages;
 
-import io.opentelemetry.sdk.trace.SpanLimits;
-import io.opentelemetry.sdk.trace.SpanLimitsBuilder;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.config.TraceConfigBuilder;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -130,7 +130,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         /* paramName= */ QUERY_STRING_MAX_NUM_OF_ATTRIBUTES,
         /* inputPlaceHolder= */ "",
         /* paramDefaultValue= */ Integer.toString(
-            SpanLimits.getDefault().getMaxNumberOfAttributes()),
+            TraceConfig.getDefault().getMaxNumberOfAttributes()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitChangeTableRow(
@@ -138,7 +138,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         /* rowName= */ "MaxNumberOfEvents to",
         /* paramName= */ QUERY_STRING_MAX_NUM_OF_EVENTS,
         /* inputPlaceHolder= */ "",
-        /* paramDefaultValue= */ Integer.toString(SpanLimits.getDefault().getMaxNumberOfEvents()),
+        /* paramDefaultValue= */ Integer.toString(TraceConfig.getDefault().getMaxNumberOfEvents()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitChangeTableRow(
@@ -146,7 +146,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         /* rowName= */ "MaxNumberOfLinks to",
         /* paramName= */ QUERY_STRING_MAX_NUM_OF_LINKS,
         /* inputPlaceHolder= */ "",
-        /* paramDefaultValue= */ Integer.toString(SpanLimits.getDefault().getMaxNumberOfLinks()),
+        /* paramDefaultValue= */ Integer.toString(TraceConfig.getDefault().getMaxNumberOfLinks()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitChangeTableRow(
@@ -155,7 +155,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         /* paramName= */ QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_EVENT,
         /* inputPlaceHolder= */ "",
         /* paramDefaultValue= */ Integer.toString(
-            SpanLimits.getDefault().getMaxNumberOfAttributesPerEvent()),
+            TraceConfig.getDefault().getMaxNumberOfAttributesPerEvent()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitChangeTableRow(
@@ -164,7 +164,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         /* paramName= */ QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_LINK,
         /* inputPlaceHolder= */ "",
         /* paramDefaultValue= */ Integer.toString(
-            SpanLimits.getDefault().getMaxNumberOfAttributesPerLink()),
+            TraceConfig.getDefault().getMaxNumberOfAttributesPerLink()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     out.print("</table>");
@@ -360,7 +360,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       return;
     }
     if (action.equals(QUERY_STRING_ACTION_CHANGE)) {
-      SpanLimitsBuilder newConfigBuilder = configSupplier.get().toBuilder();
+      TraceConfigBuilder newConfigBuilder = configSupplier.get().toBuilder();
       String samplingProbabilityStr = queryMap.get(QUERY_STRING_SAMPLING_PROBABILITY);
       if (samplingProbabilityStr != null) {
         try {
@@ -421,7 +421,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       }
       configSupplier.setActiveTraceConfig(newConfigBuilder.build());
     } else if (action.equals(QUERY_STRING_ACTION_DEFAULT)) {
-      SpanLimits defaultConfig = SpanLimits.builder().build();
+      TraceConfig defaultConfig = TraceConfig.builder().build();
       configSupplier.setActiveTraceConfig(defaultConfig);
     }
   }

@@ -29,6 +29,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -530,9 +531,9 @@ class RecordEventsReadableSpanTest {
   @Test
   void droppingAttributes() {
     final int maxNumberOfAttributes = 8;
-    SpanLimits spanLimits =
-        SpanLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
-    RecordEventsReadableSpan span = createTestSpan(spanLimits);
+    TraceConfig traceConfig =
+        TraceConfig.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
+    RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
         span.setAttribute(longKey("MyStringAttributeKey" + i), (long) i);
@@ -565,9 +566,9 @@ class RecordEventsReadableSpanTest {
   @Test
   void droppingAndAddingAttributes() {
     final int maxNumberOfAttributes = 8;
-    SpanLimits spanLimits =
-        SpanLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
-    RecordEventsReadableSpan span = createTestSpan(spanLimits);
+    TraceConfig traceConfig =
+        TraceConfig.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
+    RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
         span.setAttribute(longKey("MyStringAttributeKey" + i), (long) i);
@@ -600,8 +601,8 @@ class RecordEventsReadableSpanTest {
   @Test
   void droppingEvents() {
     final int maxNumberOfEvents = 8;
-    SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfEvents(maxNumberOfEvents).build();
-    RecordEventsReadableSpan span = createTestSpan(spanLimits);
+    TraceConfig traceConfig = TraceConfig.builder().setMaxNumberOfEvents(maxNumberOfEvents).build();
+    RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfEvents; i++) {
         span.addEvent("event2", Attributes.empty());
@@ -752,11 +753,11 @@ class RecordEventsReadableSpanTest {
   private RecordEventsReadableSpan createTestSpanWithAttributes(
       Map<AttributeKey, Object> attributes) {
     AttributesMap attributesMap =
-        new AttributesMap(SpanLimits.getDefault().getMaxNumberOfAttributes());
+        new AttributesMap(TraceConfig.getDefault().getMaxNumberOfAttributes());
     attributes.forEach(attributesMap::put);
     return createTestSpan(
         SpanKind.INTERNAL,
-        SpanLimits.getDefault(),
+        TraceConfig.getDefault(),
         null,
         attributesMap,
         Collections.singletonList(link));
@@ -765,7 +766,7 @@ class RecordEventsReadableSpanTest {
   private RecordEventsReadableSpan createTestRootSpan() {
     return createTestSpan(
         SpanKind.INTERNAL,
-        SpanLimits.getDefault(),
+        TraceConfig.getDefault(),
         SpanId.getInvalid(),
         null,
         Collections.singletonList(link));
@@ -773,17 +774,17 @@ class RecordEventsReadableSpanTest {
 
   private RecordEventsReadableSpan createTestSpan(SpanKind kind) {
     return createTestSpan(
-        kind, SpanLimits.getDefault(), parentSpanId, null, Collections.singletonList(link));
+        kind, TraceConfig.getDefault(), parentSpanId, null, Collections.singletonList(link));
   }
 
-  private RecordEventsReadableSpan createTestSpan(SpanLimits config) {
+  private RecordEventsReadableSpan createTestSpan(TraceConfig config) {
     return createTestSpan(
         SpanKind.INTERNAL, config, parentSpanId, null, Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(
       SpanKind kind,
-      SpanLimits config,
+      TraceConfig config,
       @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
       List<LinkData> links) {
@@ -863,7 +864,7 @@ class RecordEventsReadableSpanTest {
     String traceId = this.traceId;
     String spanId = this.spanId;
     String parentSpanId = this.parentSpanId;
-    SpanLimits spanLimits = SpanLimits.getDefault();
+    TraceConfig traceConfig = TraceConfig.getDefault();
     SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
     TestClock clock = TestClock.create();
     Resource resource = this.resource;
@@ -887,7 +888,7 @@ class RecordEventsReadableSpanTest {
                     traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())
                 : SpanContext.getInvalid(),
             Context.root(),
-            spanLimits,
+            traceConfig,
             spanProcessor,
             clock,
             resource,
