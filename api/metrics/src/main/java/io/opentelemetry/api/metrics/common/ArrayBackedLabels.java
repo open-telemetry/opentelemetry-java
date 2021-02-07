@@ -5,24 +5,27 @@
 
 package io.opentelemetry.api.metrics.common;
 
+import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
+@AutoValue
 @Immutable
-final class ArrayBackedLabels extends ImmutableKeyValuePairs<String, String> implements Labels {
+abstract class ArrayBackedLabels extends ImmutableKeyValuePairs<String, String> implements Labels {
   private static final Labels EMPTY = Labels.builder().build();
 
   static Labels empty() {
     return EMPTY;
   }
 
-  ArrayBackedLabels(List<Object> data) {
-    super(data);
-  }
+  ArrayBackedLabels() {}
+
+  @Override
+  protected abstract List<Object> data();
 
   static Labels sortAndFilterToLabels(Object... data) {
-    return new ArrayBackedLabels(sortAndFilter(data, /* filterNullValues= */ false));
+    return new AutoValue_ArrayBackedLabels(sortAndFilter(data, /* filterNullValues= */ false));
   }
 
   @Override
