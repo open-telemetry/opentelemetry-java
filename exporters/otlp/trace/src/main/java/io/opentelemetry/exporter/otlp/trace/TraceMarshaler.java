@@ -16,7 +16,6 @@ import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPREC
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.UnknownFieldSet;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceId;
@@ -186,9 +185,8 @@ final class TraceMarshaler {
       SpanLinkMarshaler[] spanLinkMarshalers = SpanLinkMarshaler.create(spanData.getLinks());
 
       byte[] parentSpanId = MarshalerUtil.EMPTY_BYTES;
-      SpanContext parentSpanContext = spanData.getParentSpanContext();
-      if (parentSpanContext.isValid()) {
-        parentSpanId = parentSpanContext.getSpanIdBytes();
+      if (spanData.getParentSpanContext().isValid()) {
+        parentSpanId = SpanId.bytesFromHex(spanData.getParentSpanId(), 0);
       }
 
       return new SpanMarshaler(
