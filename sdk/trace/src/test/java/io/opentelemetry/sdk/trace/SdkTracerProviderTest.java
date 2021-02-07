@@ -100,14 +100,14 @@ class SdkTracerProviderTest {
   void builder_NullSpanLimits() {
     assertThatThrownBy(() -> SdkTracerProvider.builder().setSpanLimits((SpanLimits) null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("spanLimits");
+        .hasMessage("traceConfig");
   }
 
   @Test
   void builder_NullSpanLimitsSupplier() {
     assertThatThrownBy(() -> SdkTracerProvider.builder().setSpanLimits((Supplier<SpanLimits>) null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("spanLimitsSupplier");
+        .hasMessage("traceConfig");
   }
 
   @Test
@@ -156,7 +156,7 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  void build_SpanLimits() {
+  void build_traceConfig() {
     SpanLimits initialSpanLimits = SpanLimits.builder().build();
     SdkTracerProvider sdkTracerProvider =
         SdkTracerProvider.builder().setSpanLimits(initialSpanLimits).build();

@@ -24,15 +24,11 @@ public final class SdkTracerProviderBuilder {
   private Clock clock = SystemClock.getInstance();
   private IdGenerator idsGenerator = IdGenerator.random();
   private Resource resource = Resource.getDefault();
-  private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;
+  private Supplier<SpanLimits> traceConfigSupplier = SpanLimits::getDefault;
   private Sampler sampler = DEFAULT_SAMPLER;
 
   /**
-   * Assign a {@link Clock}. {@link Clock} will be used each time a {@link
-   * io.opentelemetry.api.trace.Span} is started, ended or any event is recorded.
-   *
-   * <p>The {@code clock} must be thread-safe and return immediately (no remote calls, as contention
-   * free as possible).
+   * Assign a {@link Clock}.
    *
    * @param clock The clock to use for all temporal needs.
    * @return this
@@ -44,13 +40,10 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Assign an {@link IdGenerator}. {@link IdGenerator} will be used each time a {@link
-   * io.opentelemetry.api.trace.Span} is started.
+   * Assign an {@link IdGenerator}.
    *
-   * <p>The {@code idGenerator} must be thread-safe and return immediately (no remote calls, as
-   * contention free as possible).
-   *
-   * @param idGenerator A generator for trace and span ids.
+   * @param idGenerator A generator for trace and span ids. Note: this should be thread-safe and as
+   *     contention free as possible.
    * @return this
    */
   public SdkTracerProviderBuilder setIdGenerator(IdGenerator idGenerator) {
@@ -74,16 +67,11 @@ public final class SdkTracerProviderBuilder {
   /**
    * Assign an initial {@link SpanLimits} that should be used with this SDK.
    *
-   * <p>This method is equivalent to calling {@link #setSpanLimits(Supplier)} like this {@code
-   * #setSpanLimits(() -> spanLimits)}.
-   *
-   * @param spanLimits the limits that will be used for every {@link
-   *     io.opentelemetry.api.trace.Span}.
    * @return this
    */
   public SdkTracerProviderBuilder setSpanLimits(SpanLimits spanLimits) {
-    requireNonNull(spanLimits, "spanLimits");
-    this.spanLimitsSupplier = () -> spanLimits;
+    requireNonNull(spanLimits, "traceConfig");
+    this.traceConfigSupplier = () -> spanLimits;
     return this;
   }
 
@@ -91,29 +79,15 @@ public final class SdkTracerProviderBuilder {
    * Assign a {@link Supplier} of {@link SpanLimits}. {@link SpanLimits} will be retrieved each time
    * a {@link io.opentelemetry.api.trace.Span} is started.
    *
-   * <p>The {@code spanLimitsSupplier} must be thread-safe and return immediately (no remote calls,
-   * as contention free as possible).
-   *
-   * @param spanLimitsSupplier the supplier that will be used to retrieve the {@link SpanLimits} for
-   *     every {@link io.opentelemetry.api.trace.Span}.
    * @return this
    */
-  public SdkTracerProviderBuilder setSpanLimits(Supplier<SpanLimits> spanLimitsSupplier) {
-    requireNonNull(spanLimitsSupplier, "spanLimitsSupplier");
-    this.spanLimitsSupplier = spanLimitsSupplier;
+  public SdkTracerProviderBuilder setSpanLimits(Supplier<SpanLimits> traceConfigSupplier) {
+    requireNonNull(traceConfigSupplier, "traceConfig");
+    this.traceConfigSupplier = traceConfigSupplier;
     return this;
   }
 
-  /**
-   * Assign a {@link Sampler} to use for sampling traces. {@link Sampler} will be called each time a
-   * {@link io.opentelemetry.api.trace.Span} is started.
-   *
-   * <p>The {@code sampler} must be thread-safe and return immediately (no remote calls, as
-   * contention free as possible).
-   *
-   * @param sampler the {@link Sampler} to use for sampling traces.
-   * @return this
-   */
+  /** Assign a {@link Sampler} to use for sampling traces. */
   public SdkTracerProviderBuilder setSampler(Sampler sampler) {
     requireNonNull(sampler, "sampler");
     this.sampler = sampler;
@@ -121,13 +95,8 @@ public final class SdkTracerProviderBuilder {
   }
 
   /**
-   * Add a SpanProcessor to the span pipeline that will be built. {@link SpanProcessor} will be
-   * called each time a {@link io.opentelemetry.api.trace.Span} is started or ended.
+   * Add a SpanProcessor to the span pipeline that will be built.
    *
-   * <p>The {@code spanProcessor} must be thread-safe and return immediately (no remote calls, as
-   * contention free as possible).
-   *
-   * @param spanProcessor the processor to be added to the processing pipeline.
    * @return this
    */
   public SdkTracerProviderBuilder addSpanProcessor(SpanProcessor spanProcessor) {
@@ -142,7 +111,7 @@ public final class SdkTracerProviderBuilder {
    */
   public SdkTracerProvider build() {
     return new SdkTracerProvider(
-        clock, idsGenerator, resource, spanLimitsSupplier, sampler, spanProcessors);
+        clock, idsGenerator, resource, traceConfigSupplier, sampler, spanProcessors);
   }
 
   SdkTracerProviderBuilder() {}

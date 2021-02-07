@@ -7,10 +7,8 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
-import javax.annotation.concurrent.ThreadSafe;
 
 /** Interface used by the {@link SdkTracer} to generate new {@link SpanId}s and {@link TraceId}s. */
-@ThreadSafe
 public interface IdGenerator {
 
   /**
