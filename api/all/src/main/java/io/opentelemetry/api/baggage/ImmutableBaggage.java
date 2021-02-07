@@ -120,15 +120,11 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
       List<Object> data = this.data;
       if (parent != null && !parent.isEmpty()) {
         List<Object> merged = new ArrayList<>(parent.size() * 2 + data.size());
-        if (parent instanceof ImmutableBaggage) {
-          merged.addAll(((ImmutableBaggage) parent).data());
-        } else {
-          parent.forEach(
-              (key, value, metadata) -> {
-                merged.add(key);
-                merged.add(ImmutableEntry.create(value, metadata));
-              });
-        }
+        parent.forEach(
+            (key, value, metadata) -> {
+              merged.add(key);
+              merged.add(ImmutableEntry.create(value, metadata));
+            });
         merged.addAll(data);
         data = merged;
       }
