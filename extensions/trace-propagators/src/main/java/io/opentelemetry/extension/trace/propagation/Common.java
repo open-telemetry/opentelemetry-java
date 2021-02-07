@@ -24,7 +24,7 @@ final class Common {
 
   static final String TRUE_INT = "1";
   static final String FALSE_INT = "0";
-  static final int MAX_TRACE_ID_LENGTH = TraceId.getLength();
+  static final int MAX_TRACE_ID_LENGTH = TraceId.getHexLength();
   static final int MIN_TRACE_ID_LENGTH = MAX_TRACE_ID_LENGTH / 2;
 
   private Common() {}
@@ -50,7 +50,7 @@ final class Common {
   static boolean isTraceIdValid(String value) {
     return !(StringUtils.isNullOrEmpty(value)
         || (value.length() != MIN_TRACE_ID_LENGTH && value.length() != MAX_TRACE_ID_LENGTH)
-        || !TraceId.isValid(StringUtils.padLeft(value, TraceId.getLength())));
+        || !TraceId.isValid(StringUtils.padLeft(value, TraceId.getHexLength())));
   }
 
   static boolean isSpanIdValid(String value) {

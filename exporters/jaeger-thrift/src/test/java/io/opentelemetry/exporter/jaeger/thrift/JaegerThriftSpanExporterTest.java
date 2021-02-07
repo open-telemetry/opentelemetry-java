@@ -107,8 +107,8 @@ class JaegerThriftSpanExporterTest {
 
     Span expectedSpan =
         new Span()
-            .setTraceIdHigh(TraceId.highPartAsLong(TRACE_ID))
-            .setTraceIdLow(TraceId.lowPartAsLong(TRACE_ID))
+            .setTraceIdHigh(TraceId.traceIdHighBytesAsLong(TRACE_ID))
+            .setTraceIdLow(TraceId.traceIdLowBytesAsLong(TRACE_ID))
             .setSpanId(SpanId.asLong(SPAN_ID))
             .setOperationName("GET /api/endpoint")
             .setReferences(Collections.emptyList())
@@ -206,8 +206,8 @@ class JaegerThriftSpanExporterTest {
 
     Span expectedSpan1 =
         new Span()
-            .setTraceIdHigh(TraceId.highPartAsLong(TRACE_ID))
-            .setTraceIdLow(TraceId.lowPartAsLong(TRACE_ID))
+            .setTraceIdHigh(TraceId.traceIdHighBytesAsLong(TRACE_ID))
+            .setTraceIdLow(TraceId.traceIdLowBytesAsLong(TRACE_ID))
             .setSpanId(SpanId.asLong(SPAN_ID))
             .setOperationName("GET /api/endpoint/1")
             .setReferences(Collections.emptyList())
@@ -222,8 +222,8 @@ class JaegerThriftSpanExporterTest {
 
     Span expectedSpan2 =
         new Span()
-            .setTraceIdHigh(TraceId.highPartAsLong(TRACE_ID))
-            .setTraceIdLow(TraceId.lowPartAsLong(TRACE_ID))
+            .setTraceIdHigh(TraceId.traceIdHighBytesAsLong(TRACE_ID))
+            .setTraceIdLow(TraceId.traceIdLowBytesAsLong(TRACE_ID))
             .setSpanId(SpanId.asLong(SPAN_ID_2))
             .setOperationName("GET /api/endpoint/2")
             .setReferences(Collections.emptyList())

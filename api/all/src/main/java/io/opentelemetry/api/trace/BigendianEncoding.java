@@ -116,20 +116,6 @@ final class BigendianEncoding {
     byteToBase16((byte) (value & 0xFFL), dest, destOffset + 7 * BYTE_BASE16);
   }
 
-  static byte[] bytesFromBase16(CharSequence value, int length) {
-    byte[] result = new byte[length / 2];
-    for (int i = 0; i < length; i += 2) {
-      result[i / 2] = byteFromBase16(value, i);
-    }
-    return result;
-  }
-
-  static void bytesToBase16(byte[] bytes, char[] dest) {
-    for (int i = 0; i < bytes.length; i++) {
-      byteToBase16(bytes[i], dest, i * 2);
-    }
-  }
-
   /**
    * Encodes the specified byte, and returns the encoded {@code String}.
    *
@@ -137,10 +123,16 @@ final class BigendianEncoding {
    * @param dest the destination char array.
    * @param destOffset the starting offset in the destination char array.
    */
-  static void byteToBase16(byte value, char[] dest, int destOffset) {
-    int b = value & 0xFF;
-    dest[destOffset] = ENCODING[b];
-    dest[destOffset + 1] = ENCODING[b | 0x100];
+  static void byteToBase16String(byte value, char[] dest, int destOffset) {
+    byteToBase16(value, dest, destOffset);
+  }
+
+  static byte[] bytesFromBase16(CharSequence value, int offset, int length) {
+    byte[] result = new byte[length / 2];
+    for (int i = 0; i < length; i += 2) {
+      result[i / 2] = byteFromBase16String(value, offset + i);
+    }
+    return result;
   }
 
   /**
@@ -152,7 +144,7 @@ final class BigendianEncoding {
    * @throws IllegalArgumentException if the input is not a valid encoded string according to this
    *     encoding.
    */
-  static byte byteFromBase16(CharSequence chars, int offset) {
+  static byte byteFromBase16String(CharSequence chars, int offset) {
     Utils.checkArgument(chars.length() >= offset + 2, "chars too small");
     return decodeByte(chars.charAt(offset), chars.charAt(offset + 1));
   }
@@ -162,6 +154,12 @@ final class BigendianEncoding {
     Utils.checkArgument(hi < ASCII_CHARACTERS && DECODING[hi] != -1, "invalid character " + hi);
     int decoded = DECODING[hi] << 4 | DECODING[lo];
     return (byte) decoded;
+  }
+
+  private static void byteToBase16(byte value, char[] dest, int destOffset) {
+    int b = value & 0xFF;
+    dest[destOffset] = ENCODING[b];
+    dest[destOffset + 1] = ENCODING[b | 0x100];
   }
 
   static boolean isValidBase16String(CharSequence value) {
@@ -184,4 +182,12 @@ final class BigendianEncoding {
   }
 
   private BigendianEncoding() {}
+
+  static String toLowerBase16(byte[] bytes) {
+    char[] chars = new char[bytes.length * 2];
+    for (int i = 0; i < bytes.length; i++) {
+      byteToBase16(bytes[i], chars, i * 2);
+    }
+    return new String(chars);
+  }
 }

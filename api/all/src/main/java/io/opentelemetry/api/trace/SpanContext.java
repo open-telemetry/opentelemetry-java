@@ -76,7 +76,7 @@ public interface SpanContext {
    * SpanContext}.
    */
   default byte[] getTraceIdBytes() {
-    return TraceId.asBytes(getTraceId());
+    return TraceId.bytesFromHex(getTraceId());
   }
 
   /**
@@ -91,7 +91,7 @@ public interface SpanContext {
    * SpanContext}.
    */
   default byte[] getSpanIdBytes() {
-    return SpanId.asBytes(getSpanId());
+    return SpanId.bytesFromHex(getSpanId());
   }
 
   /** Whether the span in this context is sampled. */
@@ -103,7 +103,7 @@ public interface SpanContext {
   byte getTraceFlags();
 
   default void copyTraceFlagsHexTo(char[] dest, int destOffset) {
-    BigendianEncoding.byteToBase16(getTraceFlags(), dest, destOffset);
+    BigendianEncoding.byteToBase16String(getTraceFlags(), dest, destOffset);
   }
 
   /**

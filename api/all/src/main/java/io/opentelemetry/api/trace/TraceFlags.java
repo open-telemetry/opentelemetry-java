@@ -49,6 +49,6 @@ public final class TraceFlags {
 
   /** Extract the byte representation of the flags from a hex-representation. */
   public static byte byteFromHex(CharSequence src, int srcOffset) {
-    return BigendianEncoding.byteFromBase16(src, srcOffset);
+    return BigendianEncoding.byteFromBase16String(src, srcOffset);
   }
 }

@@ -179,7 +179,7 @@ class BigendianEncodingTest {
 
   @Test
   void invalidOffset() {
-    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16("fff", 2))
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("fff", 2))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("chars too small");
   }
@@ -187,16 +187,16 @@ class BigendianEncodingTest {
   @Test
   @SuppressWarnings("checkstyle:AvoidEscapedUnicodeCharacters")
   void invalidBytes() {
-    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16("gf", 0))
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("gf", 0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid character g");
-    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16("\u0129f", 0))
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("\u0129f", 0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid character \u0129");
-    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16("fg", 0))
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("fg", 0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid character g");
-    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16("f\u0129", 0))
+    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16String("f\u0129", 0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid character \u0129");
   }
