@@ -112,14 +112,14 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
     chars[1] = VERSION.charAt(1);
     chars[2] = TRACEPARENT_DELIMITER;
 
-    String traceId = spanContext.getTraceId();
+    String traceId = spanContext.getTraceIdAsHexString();
     for (int i = 0; i < traceId.length(); i++) {
       chars[TRACE_ID_OFFSET + i] = traceId.charAt(i);
     }
 
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
 
-    String spanId = spanContext.getSpanId();
+    String spanId = spanContext.getSpanIdAsHexString();
     for (int i = 0; i < spanId.length(); i++) {
       chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
     }
@@ -176,8 +176,8 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
     try {
       TraceState traceState = extractTraceState(traceStateHeader);
       return SpanContext.createFromRemoteParent(
-          contextFromParentHeader.getTraceId(),
-          contextFromParentHeader.getSpanId(),
+          contextFromParentHeader.getTraceIdAsHexString(),
+          contextFromParentHeader.getSpanIdAsHexString(),
           contextFromParentHeader.getTraceFlags(),
           traceState);
     } catch (IllegalArgumentException e) {
