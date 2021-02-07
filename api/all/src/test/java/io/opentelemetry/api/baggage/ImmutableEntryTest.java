@@ -19,7 +19,7 @@ class ImmutableEntryTest {
 
   @Test
   void testGetEntryMetadata() {
-    assertThat(ImmutableEntry.create(VALUE, SAMPLE_METADATA).getMetadata())
+    assertThat(ImmutableEntry.create(VALUE, SAMPLE_METADATA).getEntryMetadata())
         .isEqualTo(SAMPLE_METADATA);
   }
 
