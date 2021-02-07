@@ -13,6 +13,7 @@ import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.context.Context;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -33,6 +34,14 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
 
   @Override
   protected abstract List<Object> data();
+
+  @Override
+  public void forEach(BiConsumer<String, BaggageEntry> consumer) {
+    for (int i = 0; i < data().size(); i += 2) {
+      ImmutableEntry entry = (ImmutableEntry) data().get(i + 1);
+      consumer.accept((String) data().get(i), entry);
+    }
+  }
 
   @Nullable
   @Override

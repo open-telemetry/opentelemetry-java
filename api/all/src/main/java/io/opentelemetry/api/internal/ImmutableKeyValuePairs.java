@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -54,14 +53,6 @@ public abstract class ImmutableKeyValuePairs<K, V> {
       }
     }
     return null;
-  }
-
-  /** Iterates over all the key-value pairs of labels contained by this instance. */
-  @SuppressWarnings("unchecked")
-  public void forEach(BiConsumer<K, V> consumer) {
-    for (int i = 0; i < data().size(); i += 2) {
-      consumer.accept((K) data().get(i), (V) data().get(i + 1));
-    }
   }
 
   /**
