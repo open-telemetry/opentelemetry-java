@@ -10,8 +10,8 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Helper methods for dealing with a trace identifier. A valid trace identifier is a 16-byte array
- * with at least one non-zero byte. In lowercase hex (base16) representation, a 32 character hex
- * String, where at least one of the characters is not a '0'.
+ * with at least one non-zero byte. In base-16 representation, a 32 character hex String, where at
+ * least one of the characters is not a '0'.
  */
 @Immutable
 public final class TraceId {
@@ -32,19 +32,34 @@ public final class TraceId {
     return SIZE_IN_BYTES;
   }
 
-  /** Returns the length of the hex (base16) representation of the {@code TraceId}. */
+  /** Returns the length of the base16 (hex) representation of the {@code TraceId}. */
   public static int getHexLength() {
     return HEX_SIZE;
   }
 
   /**
-   * Returns the invalid {@code TraceId} in lowercase hex (base16) representation. All characters
-   * are '\0'.
+   * Returns the invalid {@code TraceId}. All bytes are '\0'.
    *
-   * @return the invalid {@code TraceId} in lowercase hex (base16) representation.
+   * @return the invalid {@code TraceId}.
    */
   public static String getInvalid() {
     return INVALID;
+  }
+
+  /**
+   * Returns a {@code TraceId} built from a lowercase base16 representation.
+   *
+   * @param src the lowercase base16 representation.
+   * @param srcOffset the offset in the buffer where the representation of the {@code TraceId}
+   *     begins.
+   * @return a {@code TraceId} built from a lowercase base16 representation.
+   * @throws NullPointerException if {@code src} is null.
+   * @throws IllegalArgumentException if not enough characters in the {@code src} from the {@code
+   *     srcOffset}.
+   */
+  public static byte[] bytesFromHex(String src, int srcOffset) {
+    Objects.requireNonNull(src, "src");
+    return BigendianEncoding.bytesFromBase16(src, srcOffset, HEX_SIZE);
   }
 
   /**
@@ -60,25 +75,9 @@ public final class TraceId {
   }
 
   /**
-   * Returns a {@code TraceId} built from a lowercase hex (base16) representation.
+   * Returns the lowercase base16 encoding of this {@code TraceId}.
    *
-   * @param src the lowercase hex (base16) representation.
-   * @param srcOffset the offset in the buffer where the representation of the {@code TraceId}
-   *     begins.
-   * @return a {@code TraceId} built from a lowercase hex (base16) representation.
-   * @throws NullPointerException if {@code src} is null.
-   * @throws IllegalArgumentException if not enough characters in the {@code src} from the {@code
-   *     srcOffset}.
-   */
-  public static byte[] bytesFromHex(String src, int srcOffset) {
-    Objects.requireNonNull(src, "src");
-    return BigendianEncoding.bytesFromBase16(src, srcOffset, HEX_SIZE);
-  }
-
-  /**
-   * Returns the lowercase hex (base16) encoding of this {@code TraceId}.
-   *
-   * @return the lowercase hex (base16) encoding of this {@code TraceId}.
+   * @return the lowercase base16 encoding of this {@code TraceId}.
    */
   public static String bytesToHex(byte[] traceId) {
     char[] chars = new char[HEX_SIZE];
