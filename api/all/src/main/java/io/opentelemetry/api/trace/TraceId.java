@@ -64,6 +64,22 @@ public final class TraceId {
   }
 
   /**
+   * Returns the lowercase hex (base16) representation of the {@code TraceId} converted from the
+   * given bytes representation.
+   *
+   * @param traceIdBytes the bytes (16-byte array) representation of the {@code TraceId}.
+   * @return the lowercase hex (base16) representation of the {@code TraceId}.
+   * @throws NullPointerException if {@code traceIdBytes} is null.
+   * @throws IndexOutOfBoundsException if {@code traceIdBytes} too short.
+   */
+  public static String fromBytes(byte[] traceIdBytes) {
+    Objects.requireNonNull(traceIdBytes, "traceIdBytes");
+    char[] result = getTemporaryBuffer();
+    BigendianEncoding.bytesToBase16(traceIdBytes, result);
+    return new String(result);
+  }
+
+  /**
    * Returns the bytes (16-byte array) representation of the {@code TraceId} converted from the
    * given lowercase hex (base16) representation.
    *
@@ -85,6 +101,9 @@ public final class TraceId {
    * <p>There is no restriction on the specified values, other than the already established validity
    * rules applying to {@code TraceId}. Specifying 0 for both values will effectively return {@link
    * #getInvalid()}.
+   *
+   * <p>This is equivalent to calling {@link #fromBytes(byte[])} with the specified values stored as
+   * big-endian.
    *
    * @param traceIdLongHighPart the higher part of the long values representation of the {@code
    *     TraceId}.

@@ -60,6 +60,22 @@ public final class SpanId {
   }
 
   /**
+   * Returns the lowercase hex (base16) representation of the {@code SpanId} converted from the
+   * given bytes representation.
+   *
+   * @param spanIdBytes the bytes (8-byte array) representation of the {@code SpanId}.
+   * @return the lowercase hex (base16) representation of the {@code SpanId}.
+   * @throws NullPointerException if {@code spanIdBytes} is null.
+   * @throws IndexOutOfBoundsException if {@code spanIdBytes} too short.
+   */
+  public static String fromBytes(byte[] spanIdBytes) {
+    Objects.requireNonNull(spanIdBytes, "spanIdBytes");
+    char[] result = getTemporaryBuffer();
+    BigendianEncoding.bytesToBase16(spanIdBytes, result);
+    return new String(result);
+  }
+
+  /**
    * Returns the bytes (8-byte array) representation of the {@code SpanId} converted from the given
    * lowercase hex (base16) representation.
    *
@@ -81,6 +97,9 @@ public final class SpanId {
    * <p>There is no restriction on the specified values, other than the already established validity
    * rules applying to {@code SpanId}. Specifying 0 for the long value will effectively return
    * {@link #getInvalid()}.
+   *
+   * <p>This is equivalent to calling {@link #fromBytes(byte[])} with the specified value stored as
+   * big-endian.
    *
    * @param id the higher part of the {@code TraceId}.
    * @return the lowercase hex (base16) representation of the {@code SpanId}.

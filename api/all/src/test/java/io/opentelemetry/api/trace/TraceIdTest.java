@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.ByteBuffer;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +17,11 @@ class TraceIdTest {
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final byte[] secondBytes =
       new byte[] {(byte) 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'A'};
-  private static final String first = "00000000000000000000000000000061";
-  private static final String second = "ff000000000000000000000000000041";
+  private static final String first = TraceId.fromBytes(firstBytes);
+
+  private static final String second =
+      TraceId.fromLongs(
+          ByteBuffer.wrap(secondBytes).getLong(), ByteBuffer.wrap(secondBytes, 8, 8).getLong());
 
   @Test
   void invalid() {
@@ -40,23 +44,51 @@ class TraceIdTest {
 
   @Test
   void testGetRandomTracePart() {
-    String traceId = "0102030405060708090a0b0c0d0e0f00";
+    byte[] id = {
+      0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x00
+    };
+    String traceId = TraceId.fromBytes(id);
     assertThat(TraceId.getTraceIdRandomPart(traceId)).isEqualTo(0x090A0B0C0D0E0F00L);
   }
 
   @Test
   void testGetRandomTracePart_NegativeLongRepresentation() {
-    String traceId = "ff01020304050600ff0a0b0c0d0e0f00";
+    byte[] id = {
+      (byte) 0xFF, // force a negative value
+      0x01,
+      0x02,
+      0x03,
+      0x04,
+      0x05,
+      0x06,
+      0x00,
+      (byte) 0xFF, // force a negative value
+      0x0A,
+      0x0B,
+      0x0C,
+      0x0D,
+      0x0E,
+      0x0F,
+      0x00
+    };
+    String traceId = TraceId.fromBytes(id);
     assertThat(TraceId.highPartAsLong(traceId)).isEqualTo(0xFF01020304050600L);
     assertThat(TraceId.lowPartAsLong(traceId)).isEqualTo(0xFF0A0B0C0D0E0F00L);
   }
 
   @Test
-  void asBytes() {
-    assertThat(TraceId.asBytes(TraceId.getInvalid()))
-        .isEqualTo(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+  void fromLowerHex() {
+    assertThat(TraceId.fromBytes(TraceId.asBytes("00000000000000000000000000000000")))
+        .isEqualTo(TraceId.getInvalid());
     assertThat(TraceId.asBytes("00000000000000000000000000000061")).isEqualTo(firstBytes);
     assertThat(TraceId.asBytes("ff000000000000000000000000000041")).isEqualTo(secondBytes);
+  }
+
+  @Test
+  void toLowerHex() {
+    assertThat(TraceId.getInvalid()).isEqualTo("00000000000000000000000000000000");
+    assertThat(TraceId.fromBytes(firstBytes)).isEqualTo("00000000000000000000000000000061");
+    assertThat(TraceId.fromBytes(secondBytes)).isEqualTo("ff000000000000000000000000000041");
   }
 
   @Test

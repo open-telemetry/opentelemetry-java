@@ -15,13 +15,14 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.io.BaseEncoding;
 import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.resources.Resource;
@@ -41,7 +42,6 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link Adapter}. */
 class AdapterTest {
 
-  private static final BaseEncoding hex = BaseEncoding.base16().lowerCase();
   private static final String LINK_TRACE_ID = "00000000000000000000000000cba123";
   private static final String LINK_SPAN_ID = "0000000000fed456";
   private static final String TRACE_ID = "00000000000000000000000000abc123";
@@ -73,8 +73,9 @@ class AdapterTest {
 
     // test
     Model.Span jaegerSpan = Adapter.toJaeger(span);
-    assertThat(hex.encode(jaegerSpan.getTraceId().toByteArray())).isEqualTo(span.getTraceId());
-    assertThat(hex.encode(jaegerSpan.getSpanId().toByteArray())).isEqualTo(span.getSpanId());
+    assertThat(TraceId.fromBytes(jaegerSpan.getTraceId().toByteArray()))
+        .isEqualTo(span.getTraceId());
+    assertThat(SpanId.fromBytes(jaegerSpan.getSpanId().toByteArray())).isEqualTo(span.getSpanId());
     assertThat(jaegerSpan.getOperationName()).isEqualTo("GET /api/endpoint");
     assertThat(jaegerSpan.getStartTime()).isEqualTo(Timestamps.fromMillis(startMs));
     assertThat(Durations.toMillis(jaegerSpan.getDuration())).isEqualTo(duration);
@@ -215,8 +216,8 @@ class AdapterTest {
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
 
     // verify
-    assertThat(hex.encode(spanRef.getSpanId().toByteArray())).isEqualTo(SPAN_ID);
-    assertThat(hex.encode(spanRef.getTraceId().toByteArray())).isEqualTo(TRACE_ID);
+    assertThat(SpanId.fromBytes(spanRef.getSpanId().toByteArray())).isEqualTo(SPAN_ID);
+    assertThat(TraceId.fromBytes(spanRef.getTraceId().toByteArray())).isEqualTo(TRACE_ID);
     assertThat(spanRef.getRefType()).isEqualTo(Model.SpanRefType.FOLLOWS_FROM);
   }
 
@@ -329,8 +330,8 @@ class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.FOLLOWS_FROM.equals(spanRef.getRefType())) {
-        assertThat(hex.encode(spanRef.getTraceId().toByteArray())).isEqualTo(LINK_TRACE_ID);
-        assertThat(hex.encode(spanRef.getSpanId().toByteArray())).isEqualTo(LINK_SPAN_ID);
+        assertThat(TraceId.fromBytes(spanRef.getTraceId().toByteArray())).isEqualTo(LINK_TRACE_ID);
+        assertThat(SpanId.fromBytes(spanRef.getSpanId().toByteArray())).isEqualTo(LINK_SPAN_ID);
         found = true;
       }
     }
@@ -341,8 +342,8 @@ class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.CHILD_OF.equals(spanRef.getRefType())) {
-        assertThat(hex.encode(spanRef.getTraceId().toByteArray())).isEqualTo(TRACE_ID);
-        assertThat(hex.encode(spanRef.getSpanId().toByteArray())).isEqualTo(PARENT_SPAN_ID);
+        assertThat(TraceId.fromBytes(spanRef.getTraceId().toByteArray())).isEqualTo(TRACE_ID);
+        assertThat(SpanId.fromBytes(spanRef.getSpanId().toByteArray())).isEqualTo(PARENT_SPAN_ID);
         found = true;
       }
     }

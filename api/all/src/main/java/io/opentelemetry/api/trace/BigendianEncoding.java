@@ -123,6 +123,12 @@ final class BigendianEncoding {
     return result;
   }
 
+  static void bytesToBase16(byte[] bytes, char[] dest) {
+    for (int i = 0; i < bytes.length; i++) {
+      byteToBase16(bytes[i], dest, i * 2);
+    }
+  }
+
   /**
    * Encodes the specified byte, and returns the encoded {@code String}.
    *
