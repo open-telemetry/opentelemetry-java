@@ -12,7 +12,6 @@
 package io.opentelemetry.extension.trace.propagation;
 
 import java.util.Objects;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** Utilities for working with strings. */
@@ -40,7 +39,7 @@ final class StringUtils {
    *     is reached
    * @return the padded string
    */
-  static String padStart(String string, int minLength, char padChar) {
+  public static String padStart(String string, int minLength, char padChar) {
     Objects.requireNonNull(string);
     if (string.length() >= minLength) {
       return string;
@@ -62,7 +61,7 @@ final class StringUtils {
    * @param string a string reference to check
    * @return {@code true} if the string is null or is the empty string
    */
-  static boolean isNullOrEmpty(@Nullable String string) {
+  public static boolean isNullOrEmpty(String string) {
     return string == null || string.isEmpty();
   }
 
@@ -74,7 +73,7 @@ final class StringUtils {
    *     negative, in which case the input string is always returned.
    * @return the padded string
    */
-  static String padLeft(String value, int minLength) {
+  public static String padLeft(String value, int minLength) {
     return padStart(value, minLength, '0');
   }
 
