@@ -101,7 +101,7 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
    *     been shut down.
    */
   public CompletableResultCode shutdown() {
-    if (sharedState.hasBeenShutdown()) {
+    if (sharedState.isStopped()) {
       logger.log(Level.WARNING, "Calling shutdown() multiple times.");
       return CompletableResultCode.ofSuccess();
     }
