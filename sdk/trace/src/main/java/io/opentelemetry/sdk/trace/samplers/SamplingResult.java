@@ -13,13 +13,11 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import java.util.List;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * Sampling result returned by {@link Sampler#shouldSample(Context, String, String, Span.Kind,
  * Attributes, List)}.
  */
-@Immutable
 public interface SamplingResult {
 
   /**
