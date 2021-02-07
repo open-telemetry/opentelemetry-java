@@ -16,8 +16,7 @@ dependencies {
 
     testImplementation 'com.fasterxml.jackson.core:jackson-databind',
             "org.testcontainers:junit-jupiter",
-            "com.squareup.okhttp3:okhttp",
-            "com.google.guava:guava-testlib"
-    
+            "com.squareup.okhttp3:okhttp"
+
     testImplementation project(':sdk:testing')
 }

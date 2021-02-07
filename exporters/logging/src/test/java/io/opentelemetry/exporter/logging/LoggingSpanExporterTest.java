@@ -14,8 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -44,8 +46,8 @@ class LoggingSpanExporterTest {
           .setHasEnded(true)
           .setSpanContext(
               SpanContext.create(
-                  "12345678876543211234567887654321",
-                  "8765432112345678",
+                  TraceId.fromLongs(1234L, 6789L),
+                  SpanId.fromLong(9876L),
                   TraceFlags.getSampled(),
                   TraceState.getDefault()))
           .setStartEpochNanos(100)
@@ -70,8 +72,8 @@ class LoggingSpanExporterTest {
           .setHasEnded(false)
           .setSpanContext(
               SpanContext.create(
-                  "12340000000043211234000000004321",
-                  "8765000000005678",
+                  TraceId.fromLongs(20L, 30L),
+                  SpanId.fromLong(15L),
                   TraceFlags.getSampled(),
                   TraceState.getDefault()))
           .setStartEpochNanos(500)
@@ -106,12 +108,12 @@ class LoggingSpanExporterTest {
         .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
     assertThat(logs.getEvents().get(0).getMessage())
         .isEqualTo(
-            "'testSpan1' : 12345678876543211234567887654321 8765432112345678 "
+            "'testSpan1' : 00000000000004d20000000000001a85 0000000000002694 "
                 + "INTERNAL [tracer: tracer1:] "
                 + "{animal=\"cat\", lives=9}");
     assertThat(logs.getEvents().get(1).getMessage())
         .isEqualTo(
-            "'testSpan2' : 12340000000043211234000000004321 8765000000005678 "
+            "'testSpan2' : 0000000000000014000000000000001e 000000000000000f "
                 + "CLIENT [tracer: tracer2:1.0] {}");
   }
 
@@ -123,8 +125,8 @@ class LoggingSpanExporterTest {
             .setHasEnded(true)
             .setSpanContext(
                 SpanContext.create(
-                    "12345678876543211234567887654321",
-                    "8765432112345678",
+                    TraceId.fromLongs(1234L, 6789L),
+                    SpanId.fromLong(9876L),
                     TraceFlags.getSampled(),
                     TraceState.getDefault()))
             .setStartEpochNanos(epochNanos)

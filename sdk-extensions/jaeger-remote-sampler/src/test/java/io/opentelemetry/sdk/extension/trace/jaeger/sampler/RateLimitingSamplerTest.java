@@ -10,8 +10,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
@@ -23,20 +25,20 @@ class RateLimitingSamplerTest {
 
   private static final String SPAN_NAME = "MySpanName";
   private static final SpanKind SPAN_KIND = SpanKind.INTERNAL;
-  private static final String TRACE_ID = "12345678876543211234567887654321";
-  private static final String PARENT_SPAN_ID = "8765432112345678";
-  private static final Context sampledSpanContext =
+  private final String traceId = TraceId.fromLongs(150, 150);
+  private final String parentSpanId = SpanId.fromLong(250);
+  private final Context sampledSpanContext =
       Context.root()
           .with(
               Span.wrap(
                   SpanContext.create(
-                      TRACE_ID, PARENT_SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault())));
-  private static final Context notSampledSpanContext =
+                      traceId, parentSpanId, TraceFlags.getSampled(), TraceState.getDefault())));
+  private final Context notSampledSpanContext =
       Context.root()
           .with(
               Span.wrap(
                   SpanContext.create(
-                      TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault())));
+                      traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())));
 
   @Test
   void alwaysSampleSampledContext() {
@@ -45,7 +47,7 @@ class RateLimitingSamplerTest {
             sampler
                 .shouldSample(
                     sampledSpanContext,
-                    TRACE_ID,
+                    traceId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Attributes.empty(),
@@ -56,7 +58,7 @@ class RateLimitingSamplerTest {
             sampler
                 .shouldSample(
                     sampledSpanContext,
-                    TRACE_ID,
+                    traceId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Attributes.empty(),
@@ -71,7 +73,7 @@ class RateLimitingSamplerTest {
     SamplingResult samplingResult =
         sampler.shouldSample(
             notSampledSpanContext,
-            TRACE_ID,
+            traceId,
             SPAN_NAME,
             SPAN_KIND,
             Attributes.empty(),
@@ -81,7 +83,7 @@ class RateLimitingSamplerTest {
             sampler
                 .shouldSample(
                     notSampledSpanContext,
-                    TRACE_ID,
+                    traceId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Attributes.empty(),
