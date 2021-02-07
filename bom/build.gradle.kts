@@ -18,7 +18,7 @@ afterEvaluate {
         constraints {
             rootProject.subprojects
                     .sortedBy { it.findProperty("archivesBaseName") as String? }
-                    .filter { !it.name.startsWith("bom")}
+                    .filter { it.name != project.name }
                     .filter { !it.hasProperty("otel.release") }
                     .forEach { project ->
                         project.plugins.withId("maven-publish") {
