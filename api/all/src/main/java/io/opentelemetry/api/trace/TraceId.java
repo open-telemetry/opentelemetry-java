@@ -93,6 +93,22 @@ public final class TraceId {
   }
 
   /**
+   * Copies the lowercase base16 representations of the {@code TraceId} into the {@code dest}
+   * beginning at the {@code destOffset} offset.
+   *
+   * @param dest the destination buffer.
+   * @param destOffset the starting offset in the destination buffer.
+   * @throws IndexOutOfBoundsException if {@code destOffset + 2 * TraceId.getSize()} is greater than
+   *     {@code dest.length}.
+   */
+  public static void copyHexInto(byte[] traceId, char[] dest, int destOffset) {
+    BigendianEncoding.longToBase16String(
+        BigendianEncoding.longFromByteArray(traceId, 0), dest, destOffset);
+    BigendianEncoding.longToBase16String(
+        BigendianEncoding.longFromByteArray(traceId, 8), dest, destOffset + 16);
+  }
+
+  /**
    * Returns whether the {@code TraceId} is valid. A valid trace identifier is a 16-byte array with
    * at least one non-zero byte.
    *
@@ -111,9 +127,7 @@ public final class TraceId {
    */
   public static String bytesToHex(byte[] traceId) {
     char[] chars = new char[HEX_SIZE];
-    BigendianEncoding.longToBase16String(BigendianEncoding.longFromByteArray(traceId, 0), chars, 0);
-    BigendianEncoding.longToBase16String(
-        BigendianEncoding.longFromByteArray(traceId, 8), chars, 16);
+    copyHexInto(traceId, chars, 0);
     return new String(chars);
   }
 
