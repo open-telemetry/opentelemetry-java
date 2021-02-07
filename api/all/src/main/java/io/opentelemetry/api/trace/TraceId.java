@@ -73,7 +73,7 @@ public final class TraceId {
    * @throws IndexOutOfBoundsException if {@code traceId} too short.
    * @throws IllegalArgumentException if {@code traceId} contains non lowercase hex characters.
    */
-  static byte[] asBytes(CharSequence traceId) {
+  public static byte[] asBytes(CharSequence traceId) {
     Objects.requireNonNull(traceId, "traceId");
     return BigendianEncoding.bytesFromBase16(traceId, HEX_LENGTH);
   }
