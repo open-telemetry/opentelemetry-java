@@ -31,7 +31,7 @@ public interface SpanData {
    * @return the trace id.
    */
   default String getTraceId() {
-    return getSpanContext().getTraceIdHex();
+    return getSpanContext().getTraceId();
   }
 
   /**
@@ -40,7 +40,7 @@ public interface SpanData {
    * @return the span id.
    */
   default String getSpanId() {
-    return getSpanContext().getSpanIdHex();
+    return getSpanContext().getSpanId();
   }
 
   /** Whether the 'sampled' option set on this span. */
@@ -70,7 +70,7 @@ public interface SpanData {
    * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
    */
   default String getParentSpanId() {
-    return getParentSpanContext().getSpanIdHex();
+    return getParentSpanContext().getSpanId();
   }
 
   /**

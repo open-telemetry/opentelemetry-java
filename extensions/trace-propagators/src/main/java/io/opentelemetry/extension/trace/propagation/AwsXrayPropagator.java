@@ -90,14 +90,14 @@ public final class AwsXrayPropagator implements TextMapPropagator {
 
     SpanContext spanContext = span.getSpanContext();
 
-    String otTraceId = spanContext.getTraceIdHex();
+    String otTraceId = spanContext.getTraceId();
     String xrayTraceId =
         TRACE_ID_VERSION
             + TRACE_ID_DELIMITER
             + otTraceId.substring(0, TRACE_ID_FIRST_PART_LENGTH)
             + TRACE_ID_DELIMITER
             + otTraceId.substring(TRACE_ID_FIRST_PART_LENGTH);
-    String parentId = spanContext.getSpanIdHex();
+    String parentId = spanContext.getSpanId();
     char samplingFlag = spanContext.isSampled() ? IS_SAMPLED : NOT_SAMPLED;
     // TODO: Add OT trace state to the X-Ray trace header
 

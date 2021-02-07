@@ -70,7 +70,7 @@ public interface SpanContext {
    *
    * @return the trace identifier associated with this {@link SpanContext} as lowercase hex.
    */
-  String getTraceIdHex();
+  String getTraceId();
 
   /**
    * Returns the trace identifier associated with this {@link SpanContext} as 16-byte array.
@@ -78,7 +78,7 @@ public interface SpanContext {
    * @return the trace identifier associated with this {@link SpanContext} as 16-byte array.
    */
   default byte[] getTraceIdBytes() {
-    return TraceId.asBytes(getTraceIdHex());
+    return TraceId.asBytes(getTraceId());
   }
 
   /**
@@ -88,7 +88,7 @@ public interface SpanContext {
    * @return the span identifier associated with this {@link SpanContext} as 16 character lowercase
    *     hex (base16) String.
    */
-  String getSpanIdHex();
+  String getSpanId();
 
   /**
    * Returns the span identifier associated with this {@link SpanContext} as 8-byte array.
@@ -96,7 +96,7 @@ public interface SpanContext {
    * @return the span identifier associated with this {@link SpanContext} as 8-byte array.
    */
   default byte[] getSpanIdBytes() {
-    return SpanId.asBytes(getSpanIdHex());
+    return SpanId.asBytes(getSpanId());
   }
 
   /** Whether the span in this context is sampled. */
@@ -124,7 +124,7 @@ public interface SpanContext {
    * @return {@code true} if this {@code SpanContext} is valid.
    */
   default boolean isValid() {
-    return TraceId.isValid(getTraceIdHex()) && SpanId.isValid(getSpanIdHex());
+    return TraceId.isValid(getTraceId()) && SpanId.isValid(getSpanId());
   }
 
   /**
