@@ -56,7 +56,8 @@ class SpanAdapterTest {
         SpanAdapter.toProtoSpan(
             TestSpanData.builder()
                 .setHasEnded(true)
-                .setSpanContext(SPAN_CONTEXT)
+                .setTraceId(TRACE_ID)
+                .setSpanId(SPAN_ID)
                 .setParentSpanContext(SpanContext.getInvalid())
                 .setName("GET /api/endpoint")
                 .setKind(Kind.SERVER)

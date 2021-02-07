@@ -58,14 +58,9 @@ class TraceMarshalerTest {
   private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
   private static final String SPAN_ID = SpanId.bytesToHex(SPAN_ID_BYTES);
 
+  private static final TraceState TRACE_STATE = TraceState.builder().build();
   private static final SpanContext SPAN_CONTEXT =
-      SpanContext.create(
-          "0123456789abcdef0123456789abcdef",
-          "0123456789abcdef",
-          TraceFlags.getSampled(),
-          TraceState.getDefault());
-  private static final SpanContext PARENT_SPAN_CONTEXT =
-      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
+      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TRACE_STATE);
 
   @Test
   void marshalAndSizeRequest() throws IOException {
@@ -77,7 +72,8 @@ class TraceMarshalerTest {
     assertMarshalAndSize(
         Collections.singletonList(
             TestSpanData.builder()
-                .setSpanContext(SPAN_CONTEXT)
+                .setTraceId("0123456789abcdef0123456789abcdef")
+                .setSpanId("0123456789abcdef")
                 .setKind(Span.Kind.INTERNAL)
                 .setName("")
                 .setStartEpochNanos(0)
@@ -92,7 +88,8 @@ class TraceMarshalerTest {
     assertMarshalAndSize(
         Collections.singletonList(
             TestSpanData.builder()
-                .setSpanContext(SPAN_CONTEXT)
+                .setTraceId("0123456789abcdef0123456789abcdef")
+                .setSpanId("0123456789abcdef")
                 .setKind(Span.Kind.INTERNAL)
                 .setName("")
                 .setStartEpochNanos(0)
@@ -107,8 +104,9 @@ class TraceMarshalerTest {
     assertMarshalAndSize(
         Collections.singletonList(
             TestSpanData.builder()
-                .setSpanContext(SPAN_CONTEXT)
-                .setParentSpanContext(PARENT_SPAN_CONTEXT)
+                .setTraceId("0123456789abcdef0123456789abcdef")
+                .setSpanId("0123456789abcdef")
+                .setParentSpanContext(SPAN_CONTEXT)
                 .setKind(Span.Kind.INTERNAL)
                 .setName("")
                 .setStartEpochNanos(0)
@@ -134,7 +132,8 @@ class TraceMarshalerTest {
       InstrumentationLibraryInfo instrumentationLibraryInfo) {
     return TestSpanData.builder()
         .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
-        .setSpanContext(SPAN_CONTEXT)
+        .setTraceId("0123456789abcdef0123456789abcdef")
+        .setSpanId("0123456789abcdef")
         .setKind(Span.Kind.INTERNAL)
         .setName("")
         .setStartEpochNanos(0)
@@ -175,7 +174,8 @@ class TraceMarshalerTest {
         .setResource(RESOURCE)
         .setInstrumentationLibraryInfo(INSTRUMENTATION_LIBRARY_INFO)
         .setHasEnded(true)
-        .setSpanContext(SPAN_CONTEXT)
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
         .setParentSpanContext(SpanContext.getInvalid())
         .setName("GET /api/endpoint")
         .setKind(Span.Kind.SERVER)
@@ -199,10 +199,9 @@ class TraceMarshalerTest {
         .setTotalRecordedEvents(3)
         .setLinks(
             Arrays.asList(
-                LinkData.create(PARENT_SPAN_CONTEXT),
+                LinkData.create(SPAN_CONTEXT),
                 LinkData.create(
-                    PARENT_SPAN_CONTEXT,
-                    Attributes.of(AttributeKey.stringKey("link_attr_key"), "value"))))
+                    SPAN_CONTEXT, Attributes.of(AttributeKey.stringKey("link_attr_key"), "value"))))
         .setTotalRecordedLinks(3)
         .setStatus(StatusData.ok())
         .build();

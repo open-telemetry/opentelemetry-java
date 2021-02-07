@@ -9,7 +9,8 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -39,7 +40,8 @@ public final class TestUtils {
   public static SpanData makeBasicSpan() {
     return TestSpanData.builder()
         .setHasEnded(true)
-        .setSpanContext(SpanContext.getInvalid())
+        .setTraceId(TraceId.getInvalid())
+        .setSpanId(SpanId.getInvalid())
         .setName("span")
         .setKind(Kind.SERVER)
         .setStartEpochNanos(TimeUnit.SECONDS.toNanos(100) + 100)

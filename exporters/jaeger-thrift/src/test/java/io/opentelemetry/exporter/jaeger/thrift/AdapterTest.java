@@ -218,7 +218,8 @@ class AdapterTest {
     SpanData span =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setSpanContext(createSpanContext(TRACE_ID, SPAN_ID))
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(MILLISECONDS.toNanos(endMs))
@@ -244,7 +245,8 @@ class AdapterTest {
     SpanData span =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setSpanContext(createSpanContext(TRACE_ID, SPAN_ID))
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(MILLISECONDS.toNanos(endMs))
@@ -281,7 +283,8 @@ class AdapterTest {
 
     return TestSpanData.builder()
         .setHasEnded(true)
-        .setSpanContext(createSpanContext(TRACE_ID, SPAN_ID))
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
         .setParentSpanContext(
             SpanContext.create(
                 TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))

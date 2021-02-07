@@ -23,11 +23,8 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
@@ -93,9 +90,8 @@ class JaegerGrpcSpanExporterTest {
     SpanData span =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setSpanContext(
-                SpanContext.create(
-                    TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()))
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -145,9 +141,8 @@ class JaegerGrpcSpanExporterTest {
     SpanData span =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setSpanContext(
-                SpanContext.create(
-                    TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()))
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint/1")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -170,9 +165,8 @@ class JaegerGrpcSpanExporterTest {
     SpanData span2 =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setSpanContext(
-                SpanContext.create(
-                    TRACE_ID, SPAN_ID_2, TraceFlags.getSampled(), TraceState.getDefault()))
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID_2)
             .setName("GET /api/endpoint/2")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))

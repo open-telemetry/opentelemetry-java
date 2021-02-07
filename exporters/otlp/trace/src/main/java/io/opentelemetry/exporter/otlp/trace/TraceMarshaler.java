@@ -17,7 +17,9 @@ import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.UnknownFieldSet;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
@@ -190,8 +192,8 @@ final class TraceMarshaler {
       }
 
       return new SpanMarshaler(
-          spanData.getSpanContext().getTraceIdBytes(),
-          spanData.getSpanContext().getSpanIdBytes(),
+          TraceId.bytesFromHex(spanData.getTraceId(), 0),
+          SpanId.bytesFromHex(spanData.getSpanId(), 0),
           parentSpanId,
           MarshalerUtil.toBytes(spanData.getName()),
           toProtoSpanKind(spanData.getKind()).getNumber(),

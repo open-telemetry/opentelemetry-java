@@ -17,11 +17,8 @@ import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -47,11 +44,6 @@ class JaegerThriftSpanExporterTest {
   private static final String TRACE_ID = "a0000000000000000000000000abc123";
   private static final String SPAN_ID = "00000f0000def456";
   private static final String SPAN_ID_2 = "00a0000000aef789";
-  private static final SpanContext SPAN_CONTEXT =
-      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.builder().build());
-  private static final SpanContext SPAN_CONTEXT_2 =
-      SpanContext.create(
-          TRACE_ID, SPAN_ID_2, TraceFlags.getDefault(), TraceState.builder().build());
 
   private JaegerThriftSpanExporter exporter;
   @Mock private ThriftSender thriftSender;
@@ -69,7 +61,8 @@ class JaegerThriftSpanExporterTest {
     SpanData span =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setSpanContext(SPAN_CONTEXT)
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -134,7 +127,8 @@ class JaegerThriftSpanExporterTest {
     SpanData span =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setSpanContext(SPAN_CONTEXT)
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID)
             .setName("GET /api/endpoint/1")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -157,7 +151,8 @@ class JaegerThriftSpanExporterTest {
     SpanData span2 =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setSpanContext(SPAN_CONTEXT_2)
+            .setTraceId(TRACE_ID)
+            .setSpanId(SPAN_ID_2)
             .setName("GET /api/endpoint/2")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
