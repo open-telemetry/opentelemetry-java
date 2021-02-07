@@ -73,10 +73,11 @@ public final class OtTracerPropagator implements TextMapPropagator {
     // Baggage is only injected if there is a valid SpanContext
     Baggage baggage = Baggage.fromContext(context);
     if (!baggage.isEmpty()) {
-      // Metadata is not supported by OpenTracing
       baggage.forEach(
-          (key, baggageEntry) ->
-              setter.set(carrier, PREFIX_BAGGAGE_HEADER + key, baggageEntry.getValue()));
+          (key, value, metadata) -> {
+            // Metadata is not supported by OpenTracing
+            setter.set(carrier, PREFIX_BAGGAGE_HEADER + key, value);
+          });
     }
   }
 
