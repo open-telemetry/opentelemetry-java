@@ -16,7 +16,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-@AutoValue
 @Immutable
 abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry>
     implements Baggage {
@@ -31,8 +30,19 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
     return new Builder();
   }
 
-  @Override
-  protected abstract List<Object> data();
+  @AutoValue
+  @Immutable
+  abstract static class ArrayBackedBaggage extends ImmutableBaggage {
+    ArrayBackedBaggage() {}
+
+    @Override
+    protected abstract List<Object> data();
+
+    @Override
+    public BaggageBuilder toBuilder() {
+      return new ImmutableBaggage.Builder(new ArrayList<>(data()));
+    }
+  }
 
   @Override
   public void forEach(BaggageConsumer consumer) {
@@ -51,13 +61,14 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
 
   @Override
   public BaggageBuilder toBuilder() {
-    Builder builder = new Builder(new ArrayList<>(data()));
+    Builder builder = new Builder(data());
     builder.noImplicitParent = true;
     return builder;
   }
 
   private static Baggage sortAndFilterToBaggage(Object[] data) {
-    return new AutoValue_ImmutableBaggage(sortAndFilter(data, /* filterNullValues= */ true));
+    return new AutoValue_ImmutableBaggage_ArrayBackedBaggage(
+        sortAndFilter(data, /* filterNullValues= */ true));
   }
 
   // TODO: Migrate to AutoValue.Builder
