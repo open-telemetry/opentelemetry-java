@@ -839,7 +839,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
-    assertThat(spanData.getSpanContext().getTraceState()).isEqualTo(TraceState.getDefault());
+    assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
     assertThat(spanData.getName()).isEqualTo(spanName);
