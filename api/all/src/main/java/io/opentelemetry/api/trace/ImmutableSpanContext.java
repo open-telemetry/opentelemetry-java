@@ -13,13 +13,17 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 abstract class ImmutableSpanContext implements SpanContext {
 
-  static final SpanContext INVALID =
+  private static final SpanContext INVALID =
       create(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
           TraceFlags.getDefault(),
           TraceState.getDefault(),
           /* remote= */ false);
+
+  static SpanContext getInvalid() {
+    return INVALID;
+  }
 
   static SpanContext create(
       String traceIdHex,

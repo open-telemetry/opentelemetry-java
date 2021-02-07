@@ -30,7 +30,7 @@ public interface SpanContext {
    * @return the invalid {@code SpanContext}.
    */
   static SpanContext getInvalid() {
-    return ImmutableSpanContext.INVALID;
+    return ImmutableSpanContext.getInvalid();
   }
 
   /**
