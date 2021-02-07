@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.trace.data;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -100,7 +100,7 @@ public interface SpanData {
    *
    * @return the kind of this {@code Span}.
    */
-  SpanKind getKind();
+  Kind getKind();
 
   /**
    * Returns the start epoch timestamp in nanos of this {@code Span}.

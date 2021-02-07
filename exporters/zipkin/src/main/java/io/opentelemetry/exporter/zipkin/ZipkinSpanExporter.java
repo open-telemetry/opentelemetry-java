@@ -11,7 +11,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -156,19 +156,19 @@ public final class ZipkinSpanExporter implements SpanExporter {
   @Nullable
   private static Span.Kind toSpanKind(SpanData spanData) {
     // This is a hack because the Span API did not have SpanKind.
-    if (spanData.getKind() == SpanKind.SERVER) {
+    if (spanData.getKind() == Kind.SERVER) {
       return Span.Kind.SERVER;
     }
 
     // This is a hack because the Span API did not have SpanKind.
-    if (spanData.getKind() == SpanKind.CLIENT || spanData.getName().startsWith("Sent.")) {
+    if (spanData.getKind() == Kind.CLIENT || spanData.getName().startsWith("Sent.")) {
       return Span.Kind.CLIENT;
     }
 
-    if (spanData.getKind() == SpanKind.PRODUCER) {
+    if (spanData.getKind() == Kind.PRODUCER) {
       return Span.Kind.PRODUCER;
     }
-    if (spanData.getKind() == SpanKind.CONSUMER) {
+    if (spanData.getKind() == Kind.CONSUMER) {
       return Span.Kind.CONSUMER;
     }
 

@@ -103,7 +103,7 @@ final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setSpanKind(SpanKind spanKind) {
+    public NoopSpanBuilder setSpanKind(Span.Kind spanKind) {
       return this;
     }
 

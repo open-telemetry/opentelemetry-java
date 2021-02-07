@@ -5,7 +5,7 @@
 
 package io.opentelemetry.opentracingshim.testbed.listenerperrequest;
 
-import static io.opentelemetry.api.trace.SpanKind.CLIENT;
+import static io.opentelemetry.api.trace.Span.Kind.CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.opentracingshim.OpenTracingShim;

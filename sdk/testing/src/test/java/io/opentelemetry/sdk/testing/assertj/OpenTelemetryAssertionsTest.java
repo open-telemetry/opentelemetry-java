@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
@@ -77,7 +77,7 @@ class OpenTelemetryAssertionsTest {
             .setResource(RESOURCE)
             .setInstrumentationLibraryInfo(INSTRUMENTATION_LIBRARY_INFO)
             .setName("span")
-            .setKind(SpanKind.CLIENT)
+            .setKind(Span.Kind.CLIENT)
             .setStartEpochNanos(100)
             .setAttributes(ATTRIBUTES)
             .setEvents(EVENTS)
@@ -114,7 +114,7 @@ class OpenTelemetryAssertionsTest {
         .hasResource(RESOURCE)
         .hasInstrumentationLibraryInfo(INSTRUMENTATION_LIBRARY_INFO)
         .hasName("span")
-        .hasKind(SpanKind.CLIENT)
+        .hasKind(Span.Kind.CLIENT)
         .startsAt(100)
         .startsAt(100, TimeUnit.NANOSECONDS)
         .startsAt(Instant.ofEpochSecond(0, 100))
@@ -169,7 +169,7 @@ class OpenTelemetryAssertionsTest {
                     .hasInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasName("foo")).isInstanceOf(AssertionError.class);
-    assertThatThrownBy(() -> assertThat(SPAN1).hasKind(SpanKind.SERVER))
+    assertThatThrownBy(() -> assertThat(SPAN1).hasKind(Span.Kind.SERVER))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).startsAt(10)).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).startsAt(10, TimeUnit.NANOSECONDS))

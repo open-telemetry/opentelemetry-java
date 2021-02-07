@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.trace.jaeger.sampler;
 
 import io.grpc.ManagedChannel;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.PerOperationSamplingStrategies;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
@@ -54,7 +54,7 @@ public final class JaegerRemoteSampler implements Sampler {
       Context parentContext,
       String traceId,
       String name,
-      SpanKind spanKind,
+      Kind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
     return sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);

@@ -13,9 +13,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
@@ -54,7 +54,7 @@ class LoggingSpanExporterTest {
           .setEndEpochNanos(100 + 1000)
           .setStatus(StatusData.ok())
           .setName("testSpan1")
-          .setKind(SpanKind.INTERNAL)
+          .setKind(Kind.INTERNAL)
           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
           .setEvents(
               Collections.singletonList(
@@ -80,7 +80,7 @@ class LoggingSpanExporterTest {
           .setEndEpochNanos(500 + 1001)
           .setStatus(StatusData.error())
           .setName("testSpan2")
-          .setKind(SpanKind.CLIENT)
+          .setKind(Kind.CLIENT)
           .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("tracer2", "1.0"))
           .build();
 
@@ -133,7 +133,7 @@ class LoggingSpanExporterTest {
             .setEndEpochNanos(epochNanos + 1000)
             .setStatus(StatusData.ok())
             .setName("testSpan")
-            .setKind(SpanKind.INTERNAL)
+            .setKind(Kind.INTERNAL)
             .setEvents(
                 Collections.singletonList(
                     EventData.create(

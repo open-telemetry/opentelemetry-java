@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
@@ -24,7 +23,7 @@ import org.junit.jupiter.api.Test;
 
 class TraceIdRatioBasedSamplerTest {
   private static final String SPAN_NAME = "MySpanName";
-  private static final SpanKind SPAN_KIND = SpanKind.INTERNAL;
+  private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private static final int NUM_SAMPLE_TRIES = 1000;
 
   private static final IdGenerator idsGenerator = IdGenerator.random();

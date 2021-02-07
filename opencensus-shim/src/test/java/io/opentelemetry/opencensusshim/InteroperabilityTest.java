@@ -44,7 +44,6 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
@@ -239,7 +238,7 @@ class InteroperabilityTest {
     assertThat(spanData3.getName()).isEqualTo("OpenCensusSpan");
     assertThat(spanData3.getLinks().get(0).getSpanContext().getSpanIdAsHexString())
         .isEqualTo(parentLinkSpan.getContext().getSpanId().toLowerBase16());
-    assertThat(spanData3.getKind()).isEqualTo(SpanKind.SERVER);
+    assertThat(spanData3.getKind()).isEqualTo(Span.Kind.SERVER);
     assertThat(spanData3.getStatus()).isEqualTo(StatusData.ok());
     assertThat(spanData3.getAttributes().get(AttributeKey.doubleKey("testKey"))).isEqualTo(2.5);
     assertThat(spanData3.getAttributes().get(AttributeKey.booleanKey("testKey2"))).isEqualTo(false);

@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace.testbed.actorpropagation;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -42,7 +42,7 @@ final class Actor implements AutoCloseable {
               tracer
                   .spanBuilder("received")
                   .setParent(parent)
-                  .setSpanKind(SpanKind.CONSUMER)
+                  .setSpanKind(Kind.CONSUMER)
                   .startSpan();
           try (Scope ignored = child.makeCurrent()) {
             phaser.arriveAndAwaitAdvance(); // child tracer started
@@ -66,7 +66,7 @@ final class Actor implements AutoCloseable {
               tracer
                   .spanBuilder("received")
                   .setParent(parent)
-                  .setSpanKind(SpanKind.CONSUMER)
+                  .setSpanKind(Kind.CONSUMER)
                   .startSpan();
           try {
             phaser.arriveAndAwaitAdvance(); // child tracer started

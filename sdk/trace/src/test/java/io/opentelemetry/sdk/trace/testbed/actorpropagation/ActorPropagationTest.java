@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace.testbed.actorpropagation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
@@ -47,7 +46,7 @@ class ActorPropagationTest {
   void testActorTell() {
     try (Actor actor = new Actor(tracer, phaser)) {
       phaser.register();
-      Span parent = tracer.spanBuilder("actorTell").setSpanKind(SpanKind.PRODUCER).startSpan();
+      Span parent = tracer.spanBuilder("actorTell").setSpanKind(Span.Kind.PRODUCER).startSpan();
       parent.setAttribute("component", "example-actor");
       try (Scope ignored = parent.makeCurrent()) {
         actor.tell("my message 1");
@@ -61,14 +60,14 @@ class ActorPropagationTest {
       phaser.arriveAndAwaitAdvance(); // continue...
       phaser.arriveAndAwaitAdvance(); // child tracer finished
       assertThat(otelTesting.getSpans()).hasSize(3);
-      assertThat(TestUtils.getByKind(otelTesting.getSpans(), SpanKind.CONSUMER)).hasSize(2);
+      assertThat(TestUtils.getByKind(otelTesting.getSpans(), Span.Kind.CONSUMER)).hasSize(2);
       phaser.arriveAndDeregister(); // continue...
 
       List<SpanData> finished = otelTesting.getSpans();
       assertThat(finished.size()).isEqualTo(3);
       assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
-      assertThat(TestUtils.getByKind(finished, SpanKind.CONSUMER)).hasSize(2);
-      assertThat(TestUtils.getOneByKind(finished, SpanKind.PRODUCER)).isNotNull();
+      assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
+      assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
       assertThat(Span.current()).isSameAs(Span.getInvalid());
     }
@@ -80,7 +79,7 @@ class ActorPropagationTest {
       phaser.register();
       Future<String> future1;
       Future<String> future2;
-      Span span = tracer.spanBuilder("actorAsk").setSpanKind(SpanKind.PRODUCER).startSpan();
+      Span span = tracer.spanBuilder("actorAsk").setSpanKind(Span.Kind.PRODUCER).startSpan();
       span.setAttribute("component", "example-actor");
 
       try (Scope ignored = span.makeCurrent()) {
@@ -94,7 +93,7 @@ class ActorPropagationTest {
       phaser.arriveAndAwaitAdvance(); // continue...
       phaser.arriveAndAwaitAdvance(); // child tracer finished
       assertThat(otelTesting.getSpans().size()).isEqualTo(3);
-      assertThat(TestUtils.getByKind(otelTesting.getSpans(), SpanKind.CONSUMER)).hasSize(2);
+      assertThat(TestUtils.getByKind(otelTesting.getSpans(), Span.Kind.CONSUMER)).hasSize(2);
       phaser.arriveAndDeregister(); // continue...
 
       List<SpanData> finished = otelTesting.getSpans();
@@ -105,8 +104,8 @@ class ActorPropagationTest {
 
       assertThat(finished.size()).isEqualTo(3);
       assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
-      assertThat(TestUtils.getByKind(finished, SpanKind.CONSUMER)).hasSize(2);
-      assertThat(TestUtils.getOneByKind(finished, SpanKind.PRODUCER)).isNotNull();
+      assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
+      assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
       assertThat(Span.current()).isSameAs(Span.getInvalid());
     }

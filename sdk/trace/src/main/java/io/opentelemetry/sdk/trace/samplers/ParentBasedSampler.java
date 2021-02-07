@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.trace.samplers;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
@@ -53,7 +53,7 @@ final class ParentBasedSampler implements Sampler {
       Context parentContext,
       String traceId,
       String name,
-      SpanKind spanKind,
+      Kind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
     SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();

@@ -17,7 +17,6 @@ import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -95,7 +94,7 @@ final class Adapter {
     }
     target.setReferences(references);
 
-    if (span.getKind() != SpanKind.INTERNAL) {
+    if (span.getKind() != io.opentelemetry.api.trace.Span.Kind.INTERNAL) {
       tags.add(
           new Tag(KEY_SPAN_KIND, TagType.STRING)
               .setVStr(span.getKind().name().toLowerCase(Locale.ROOT)));

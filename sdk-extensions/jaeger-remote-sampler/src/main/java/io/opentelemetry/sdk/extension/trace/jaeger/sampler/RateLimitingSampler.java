@@ -11,7 +11,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -54,7 +54,7 @@ class RateLimitingSampler implements Sampler {
       Context parentContext,
       String traceId,
       String name,
-      SpanKind spanKind,
+      Kind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
 

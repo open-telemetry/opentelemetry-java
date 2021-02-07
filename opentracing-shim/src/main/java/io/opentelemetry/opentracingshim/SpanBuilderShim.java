@@ -12,7 +12,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentracing.Span;
@@ -38,7 +38,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   private final List<AttributeKey> spanBuilderAttributeKeys = new ArrayList<>();
 
   private final List<Object> spanBuilderAttributeValues = new ArrayList<>();
-  private SpanKind spanKind;
+  private Kind spanKind;
   private boolean error;
 
   public SpanBuilderShim(TelemetryInfo telemetryInfo, String spanName) {
@@ -98,19 +98,19 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     if (Tags.SPAN_KIND.getKey().equals(key)) {
       switch (value) {
         case Tags.SPAN_KIND_CLIENT:
-          spanKind = SpanKind.CLIENT;
+          spanKind = Kind.CLIENT;
           break;
         case Tags.SPAN_KIND_SERVER:
-          spanKind = SpanKind.SERVER;
+          spanKind = Kind.SERVER;
           break;
         case Tags.SPAN_KIND_PRODUCER:
-          spanKind = SpanKind.PRODUCER;
+          spanKind = Kind.PRODUCER;
           break;
         case Tags.SPAN_KIND_CONSUMER:
-          spanKind = SpanKind.CONSUMER;
+          spanKind = Kind.CONSUMER;
           break;
         default:
-          spanKind = SpanKind.INTERNAL;
+          spanKind = Kind.INTERNAL;
           break;
       }
     } else if (Tags.ERROR.getKey().equals(key)) {

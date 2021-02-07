@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.trace.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -140,7 +140,7 @@ public abstract class SpanDataBuilder implements SpanData {
 
     public abstract Builder setStatus(StatusData status);
 
-    public abstract Builder setKind(SpanKind kind);
+    public abstract Builder setKind(Kind kind);
 
     public abstract Builder setLinks(List<LinkData> links);
 

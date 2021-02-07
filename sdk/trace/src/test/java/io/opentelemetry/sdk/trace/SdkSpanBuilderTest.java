@@ -20,10 +20,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
@@ -432,7 +432,7 @@ class SdkSpanBuilderTest {
               Context parentContext,
               String traceId,
               String name,
-              SpanKind spanKind,
+              Kind spanKind,
               Attributes attributes,
               List<LinkData> parentLinks) {
             return SamplingResult.create(
@@ -469,7 +469,7 @@ class SdkSpanBuilderTest {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan) sdkTracer.spanBuilder(SPAN_NAME).startSpan();
     try {
-      assertThat(span.toSpanData().getKind()).isEqualTo(SpanKind.INTERNAL);
+      assertThat(span.toSpanData().getKind()).isEqualTo(Kind.INTERNAL);
     } finally {
       span.end();
     }
@@ -479,9 +479,9 @@ class SdkSpanBuilderTest {
   void kind() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
-            sdkTracer.spanBuilder(SPAN_NAME).setSpanKind(SpanKind.CONSUMER).startSpan();
+            sdkTracer.spanBuilder(SPAN_NAME).setSpanKind(Kind.CONSUMER).startSpan();
     try {
-      assertThat(span.toSpanData().getKind()).isEqualTo(SpanKind.CONSUMER);
+      assertThat(span.toSpanData().getKind()).isEqualTo(Kind.CONSUMER);
     } finally {
       span.end();
     }
@@ -517,7 +517,7 @@ class SdkSpanBuilderTest {
                           @Nullable Context parentContext,
                           String traceId,
                           String name,
-                          SpanKind spanKind,
+                          Kind spanKind,
                           Attributes attributes,
                           List<LinkData> parentLinks) {
                         return new SamplingResult() {
@@ -567,7 +567,7 @@ class SdkSpanBuilderTest {
                           Context parentContext,
                           String traceId,
                           String name,
-                          SpanKind spanKind,
+                          Kind spanKind,
                           Attributes attributes,
                           List<LinkData> parentLinks) {
                         return new SamplingResult() {

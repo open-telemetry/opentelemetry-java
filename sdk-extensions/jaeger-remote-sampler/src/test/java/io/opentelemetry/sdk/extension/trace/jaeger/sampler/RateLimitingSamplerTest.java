@@ -11,7 +11,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
@@ -24,7 +23,7 @@ import org.junit.jupiter.api.Test;
 class RateLimitingSamplerTest {
 
   private static final String SPAN_NAME = "MySpanName";
-  private static final SpanKind SPAN_KIND = SpanKind.INTERNAL;
+  private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private final String traceId = TraceId.fromLongs(150, 150);
   private final String parentSpanId = SpanId.fromLong(250);
   private final TraceState traceState = TraceState.builder().build();

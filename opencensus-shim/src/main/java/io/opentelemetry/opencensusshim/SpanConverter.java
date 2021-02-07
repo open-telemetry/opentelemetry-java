@@ -13,7 +13,7 @@ import io.opencensus.trace.TraceId;
 import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TraceStateBuilder;
@@ -28,17 +28,17 @@ class SpanConverter {
 
   private SpanConverter() {}
 
-  static SpanKind mapKind(@Nullable io.opencensus.trace.Span.Kind ocKind) {
+  static Kind mapKind(@Nullable io.opencensus.trace.Span.Kind ocKind) {
     if (ocKind == null) {
-      return SpanKind.INTERNAL;
+      return Kind.INTERNAL;
     }
     switch (ocKind) {
       case CLIENT:
-        return SpanKind.CLIENT;
+        return Kind.CLIENT;
       case SERVER:
-        return SpanKind.SERVER;
+        return Kind.SERVER;
     }
-    return SpanKind.INTERNAL;
+    return Kind.INTERNAL;
   }
 
   static Span fromOtelSpan(io.opentelemetry.api.trace.Span otSpan) {

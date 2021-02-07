@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.testing.exporter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -97,7 +97,7 @@ class InMemorySpanExporterTest {
     return TestSpanData.builder()
         .setHasEnded(true)
         .setName("span")
-        .setKind(SpanKind.SERVER)
+        .setKind(Kind.SERVER)
         .setStartEpochNanos(100_000_000_100L)
         .setStatus(StatusData.ok())
         .setEndEpochNanos(200_000_000_200L)

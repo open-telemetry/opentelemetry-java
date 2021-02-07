@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.testing.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -166,7 +166,7 @@ public abstract class TestSpanData implements SpanData {
      * @param kind The Kind of span.
      * @return this
      */
-    public abstract Builder setKind(SpanKind kind);
+    public abstract Builder setKind(Kind kind);
 
     /**
      * Set the links associated with this span. Must not be null, may be empty.

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +44,7 @@ public class SpanAttributeTruncateBenchmark {
         (SdkSpanBuilder)
             tracer
                 .spanBuilder("benchmarkSpan")
-                .setSpanKind(SpanKind.CLIENT)
+                .setSpanKind(Kind.CLIENT)
                 .setAttribute("key", "value");
 
     String seed = "0123456789";

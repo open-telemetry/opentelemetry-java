@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.trace.testbed.concurrentcommonrequesthandler;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 
@@ -35,7 +35,7 @@ final class RequestHandler {
     // we cannot use active span because we don't know in which thread it is executed
     // and we cannot therefore activate span. thread can come from common thread pool.
     SpanBuilder spanBuilder =
-        tracer.spanBuilder(OPERATION_NAME).setNoParent().setSpanKind(SpanKind.CLIENT);
+        tracer.spanBuilder(OPERATION_NAME).setNoParent().setSpanKind(Kind.CLIENT);
 
     if (parentContext != null) {
       spanBuilder.setParent(parentContext);

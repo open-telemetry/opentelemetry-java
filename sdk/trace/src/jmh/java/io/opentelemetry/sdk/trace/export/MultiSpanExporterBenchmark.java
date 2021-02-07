@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
@@ -78,7 +78,7 @@ public class MultiSpanExporterBenchmark {
                       TraceFlags.getSampled(),
                       TraceState.getDefault()))
               .setName("noop")
-              .setKind(SpanKind.CLIENT)
+              .setKind(Span.Kind.CLIENT)
               .setStartEpochNanos(1)
               .setStatus(StatusData.ok())
               .setEndEpochNanos(2)

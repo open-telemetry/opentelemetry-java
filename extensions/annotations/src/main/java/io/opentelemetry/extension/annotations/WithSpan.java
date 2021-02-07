@@ -5,7 +5,7 @@
 
 package io.opentelemetry.extension.annotations;
 
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -36,6 +36,6 @@ public @interface WithSpan {
    */
   String value() default "";
 
-  /** Specify the {@link SpanKind} of span to be created. Defaults to {@link SpanKind#INTERNAL}. */
-  SpanKind kind() default SpanKind.INTERNAL;
+  /** Specify the {@link Kind} of span to be created. Defaults to {@link Kind#INTERNAL}. */
+  Kind kind() default Kind.INTERNAL;
 }

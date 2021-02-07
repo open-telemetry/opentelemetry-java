@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace.testbed.statelesscommonrequesthandler;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 
@@ -29,7 +29,7 @@ final class RequestHandler {
 
   /** beforeRequest handler....... */
   public void beforeRequest(Object request) {
-    Span span = tracer.spanBuilder(OPERATION_NAME).setSpanKind(SpanKind.SERVER).startSpan();
+    Span span = tracer.spanBuilder(OPERATION_NAME).setSpanKind(Kind.SERVER).startSpan();
     tlsScope.set(span.makeCurrent());
   }
 

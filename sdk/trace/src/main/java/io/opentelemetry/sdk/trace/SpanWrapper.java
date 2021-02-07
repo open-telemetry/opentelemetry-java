@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -105,7 +105,7 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public SpanKind getKind() {
+  public Kind getKind() {
     return delegate().getKind();
   }
 

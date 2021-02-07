@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.testing.assertj;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -155,7 +155,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   }
 
   /** Asserts the span has the given kind. */
-  public SpanDataAssert hasKind(SpanKind kind) {
+  public SpanDataAssert hasKind(Span.Kind kind) {
     isNotNull();
     if (!actual.getKind().equals(kind)) {
       failWithActualExpectedAndMessage(

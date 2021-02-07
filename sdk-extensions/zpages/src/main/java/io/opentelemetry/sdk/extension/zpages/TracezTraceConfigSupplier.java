@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.extension.zpages;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -47,7 +47,7 @@ final class TracezTraceConfigSupplier implements Supplier<TraceConfig>, Sampler 
       Context parentContext,
       String traceId,
       String name,
-      SpanKind spanKind,
+      Span.Kind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
     return sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);

@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -65,13 +65,13 @@ class TestClientServerTest {
     assertThat(finished).hasSize(2);
 
     assertThat(finished.get(1).getTraceId()).isEqualTo(finished.get(0).getTraceId());
-    SpanKind firstSpanKind = finished.get(0).getKind();
+    Kind firstSpanKind = finished.get(0).getKind();
     switch (firstSpanKind) {
       case CLIENT:
-        assertThat(finished.get(1).getKind()).isEqualTo(SpanKind.SERVER);
+        assertThat(finished.get(1).getKind()).isEqualTo(Kind.SERVER);
         break;
       case SERVER:
-        assertThat(finished.get(1).getKind()).isEqualTo(SpanKind.CLIENT);
+        assertThat(finished.get(1).getKind()).isEqualTo(Kind.CLIENT);
         break;
       default:
         fail("Unexpected first span kind: " + firstSpanKind);

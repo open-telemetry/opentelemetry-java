@@ -15,7 +15,7 @@ import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPREC
 
 import com.google.protobuf.ByteString;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
@@ -114,7 +114,7 @@ public final class SpanAdapter {
     return builder.build();
   }
 
-  static Span.SpanKind toProtoSpanKind(SpanKind kind) {
+  static Span.SpanKind toProtoSpanKind(Kind kind) {
     switch (kind) {
       case INTERNAL:
         return SPAN_KIND_INTERNAL;

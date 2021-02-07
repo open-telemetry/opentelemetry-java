@@ -22,9 +22,9 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
@@ -100,7 +100,7 @@ class JaegerGrpcSpanExporterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(StatusData.ok())
-            .setKind(SpanKind.CONSUMER)
+            .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
@@ -152,7 +152,7 @@ class JaegerGrpcSpanExporterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(StatusData.ok())
-            .setKind(SpanKind.CONSUMER)
+            .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
@@ -177,7 +177,7 @@ class JaegerGrpcSpanExporterTest {
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(StatusData.ok())
-            .setKind(SpanKind.CONSUMER)
+            .setKind(Kind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)

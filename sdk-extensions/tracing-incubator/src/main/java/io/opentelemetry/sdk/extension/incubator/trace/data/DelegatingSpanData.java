@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.extension.incubator.trace.data;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -80,7 +80,7 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public SpanKind getKind() {
+  public Kind getKind() {
     return delegate.getKind();
   }
 

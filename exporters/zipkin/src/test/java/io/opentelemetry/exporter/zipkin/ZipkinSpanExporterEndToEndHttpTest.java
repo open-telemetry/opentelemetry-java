@@ -8,8 +8,8 @@ package io.opentelemetry.exporter.zipkin;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -142,7 +142,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
             SpanContext.create(
                 TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
         .setStatus(StatusData.ok())
-        .setKind(SpanKind.SERVER)
+        .setKind(Kind.SERVER)
         .setName(SPAN_NAME)
         .setStartEpochNanos(START_EPOCH_NANOS)
         .setAttributes(attributes)

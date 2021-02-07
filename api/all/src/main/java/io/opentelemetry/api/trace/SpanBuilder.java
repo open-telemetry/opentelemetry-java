@@ -234,13 +234,13 @@ public interface SpanBuilder {
   <T> SpanBuilder setAttribute(AttributeKey<T> key, @Nonnull T value);
 
   /**
-   * Sets the {@link SpanKind} for the newly created {@code Span}. If not called, the implementation
-   * will provide a default value {@link SpanKind#INTERNAL}.
+   * Sets the {@link Span.Kind} for the newly created {@code Span}. If not called, the
+   * implementation will provide a default value {@link Span.Kind#INTERNAL}.
    *
    * @param spanKind the kind of the newly created {@code Span}.
    * @return this.
    */
-  SpanBuilder setSpanKind(SpanKind spanKind);
+  SpanBuilder setSpanKind(Span.Kind spanKind);
 
   /**
    * Sets an explicit start timestamp for the newly created {@code Span}.
