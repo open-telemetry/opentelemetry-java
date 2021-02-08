@@ -1,0 +1,12 @@
+plugins {
+    id 'java'
+}
+
+description = "OpenTelemetry Examples for logging exporters"
+ext.moduleName = "io.opentelemetry.examples.logging"
+
+dependencies {
+    compile("io.opentelemetry:opentelemetry-api")
+    compile("io.opentelemetry:opentelemetry-api-metrics:${openTelemetryAlphaVersion}")
+    compile("io.opentelemetry:opentelemetry-exporter-logging")
+}
