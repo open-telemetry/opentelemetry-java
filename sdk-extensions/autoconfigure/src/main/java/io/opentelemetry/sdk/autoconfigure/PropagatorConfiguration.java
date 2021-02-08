@@ -12,7 +12,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.extension.trace.propagation.AwsXrayPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
-import io.opentelemetry.extension.trace.propagation.OtTracerPropagator;
+import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -62,8 +62,9 @@ final class PropagatorConfiguration {
         return B3Propagator.builder().injectMultipleHeaders().build();
       case "jaeger":
         return JaegerPropagator.getInstance();
+        // NB: https://github.com/open-telemetry/opentelemetry-specification/pull/1406
       case "ottracer":
-        return OtTracerPropagator.getInstance();
+        return OtTracePropagator.getInstance();
       case "xray":
         return AwsXrayPropagator.getInstance();
       default:

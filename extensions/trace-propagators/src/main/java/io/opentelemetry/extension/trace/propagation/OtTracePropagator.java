@@ -21,14 +21,15 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Implementation of the Lightstep propagation protocol. Context is propagated through 3 headers,
- * ot-tracer-traceid, ot-tracer-span-id, and ot-tracer-sampled. Baggage is not supported in this
- * implementation. IDs are sent as hex strings and sampled is sent as true or false. See <a
- * href=https://github.com/lightstep/lightstep-tracer-java-common/blob/master/common/src/main/java/com/lightstep/tracer/shared/TextMapPropagator.java>Lightstep
- * TextMapPropagator</a>.
+ * Implementation of the protocol used by OpenTracing Basic Tracers. Context is propagated through 3
+ * headers, ot-tracer-traceid, ot-tracer-span-id, and ot-tracer-sampled. IDs are sent as hex strings
+ * and sampled is sent as true or false. Baggage values are propagated using the ot-baggage- prefix.
+ * See <a
+ * href=https://github.com/opentracing/basictracer-python/blob/master/basictracer/text_propagator.py>OT
+ * Python Propagation TextMapPropagator</a>.
  */
 @Immutable
-public final class OtTracerPropagator implements TextMapPropagator {
+public final class OtTracePropagator implements TextMapPropagator {
 
   static final String TRACE_ID_HEADER = "ot-tracer-traceid";
   static final String SPAN_ID_HEADER = "ot-tracer-spanid";
@@ -37,13 +38,13 @@ public final class OtTracerPropagator implements TextMapPropagator {
   private static final Collection<String> FIELDS =
       Collections.unmodifiableList(Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER));
 
-  private static final OtTracerPropagator INSTANCE = new OtTracerPropagator();
+  private static final OtTracePropagator INSTANCE = new OtTracePropagator();
 
-  private OtTracerPropagator() {
+  private OtTracePropagator() {
     // singleton
   }
 
-  public static OtTracerPropagator getInstance() {
+  public static OtTracePropagator getInstance() {
     return INSTANCE;
   }
 
@@ -109,7 +110,7 @@ public final class OtTracerPropagator implements TextMapPropagator {
         if (value == null) {
           continue;
         }
-        baggageBuilder.put(key.replace(OtTracerPropagator.PREFIX_BAGGAGE_HEADER, ""), value);
+        baggageBuilder.put(key.replace(OtTracePropagator.PREFIX_BAGGAGE_HEADER, ""), value);
       }
       Baggage baggage = baggageBuilder.build();
       if (!baggage.isEmpty()) {

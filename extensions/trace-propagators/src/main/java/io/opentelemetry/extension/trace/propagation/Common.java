@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * This set of common propagator utils is currently only used by the OtTracerPropagator and the
+ * This set of common propagator utils is currently only used by the OtTracePropagator and the
  * B3Propagator.
  */
 @Immutable
