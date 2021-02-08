@@ -33,4 +33,13 @@ class SpanIdTest {
     assertThat(SpanId.fromLong(0x61)).isEqualTo(first);
     assertThat(SpanId.fromLong(0xff00000000000041L)).isEqualTo(second);
   }
+
+  @Test
+  void fromBytes() {
+    assertThat(SpanId.fromBytes(null)).isEqualTo(SpanId.getInvalid());
+
+    String spanId = "090a0b0c0d0e0f00";
+    assertThat(SpanId.fromBytes(BigendianEncoding.bytesFromBase16(spanId, SpanId.getLength())))
+        .isEqualTo(spanId);
+  }
 }

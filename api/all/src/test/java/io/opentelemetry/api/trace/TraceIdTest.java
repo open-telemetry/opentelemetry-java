@@ -49,4 +49,13 @@ class TraceIdTest {
     assertThat(TraceId.fromLongs(0xff01020304050600L, 0xff0a0b0c0d0e0f00L))
         .isEqualTo("ff01020304050600ff0a0b0c0d0e0f00");
   }
+
+  @Test
+  void fromBytes() {
+    assertThat(TraceId.fromBytes(null)).isEqualTo(TraceId.getInvalid());
+
+    String traceId = "0102030405060708090a0b0c0d0e0f00";
+    assertThat(TraceId.fromBytes(BigendianEncoding.bytesFromBase16(traceId, TraceId.getLength())))
+        .isEqualTo(traceId);
+  }
 }
