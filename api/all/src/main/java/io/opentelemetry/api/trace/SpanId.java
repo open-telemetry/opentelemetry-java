@@ -60,11 +60,10 @@ public final class SpanId {
 
   /**
    * Returns the lowercase hex (base16) representation of the {@code SpanId} converted from the
-   * given bytes representation.
+   * given bytes representation, or {@link #getInvalid()} if input is {@code null}.
    *
    * @param spanIdBytes the bytes (8-byte array) representation of the {@code SpanId}.
    * @return the lowercase hex (base16) representation of the {@code SpanId}.
-   * @throws NullPointerException if {@code spanIdBytes} is null.
    * @throws IndexOutOfBoundsException if {@code spanIdBytes} too short.
    */
   public static String fromBytes(byte[] spanIdBytes) {

@@ -65,11 +65,10 @@ public final class TraceId {
 
   /**
    * Returns the lowercase hex (base16) representation of the {@code TraceId} converted from the
-   * given bytes representation.
+   * given bytes representation, or {@link #getInvalid()} if input is {@code null}.
    *
    * @param traceIdBytes the bytes (16-byte array) representation of the {@code TraceId}.
    * @return the lowercase hex (base16) representation of the {@code TraceId}.
-   * @throws NullPointerException if {@code traceIdBytes} is null.
    * @throws IndexOutOfBoundsException if {@code traceIdBytes} too short.
    */
   public static String fromBytes(byte[] traceIdBytes) {
