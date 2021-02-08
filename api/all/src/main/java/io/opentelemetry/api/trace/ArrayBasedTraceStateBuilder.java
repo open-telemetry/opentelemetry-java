@@ -8,7 +8,6 @@ package io.opentelemetry.api.trace;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import javax.annotation.Nullable;
 
 final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
@@ -33,7 +32,6 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   }
 
   ArrayBasedTraceStateBuilder(ArrayBasedTraceState parent) {
-    Objects.requireNonNull(parent, "parent");
     this.parent = parent;
   }
 
@@ -44,7 +42,6 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
         || (entries != null && entries.size() >= MAX_KEY_VALUE_PAIRS)) {
       return this;
     }
-    // Initially create the Entry to validate input.
     if (entries == null) {
       // Copy entries from the parent.
       entries = new ArrayList<>(parent.getEntries());
