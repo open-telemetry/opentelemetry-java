@@ -14,7 +14,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.Lists;
-import com.google.common.io.BaseEncoding;
 import com.google.common.io.Closer;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
@@ -24,8 +23,10 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
@@ -49,7 +50,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 
 class JaegerGrpcSpanExporterTest {
-  private static final BaseEncoding hex = BaseEncoding.base16().lowerCase();
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
   private static final String SPAN_ID_2 = "0000000000aef789";
@@ -125,7 +125,7 @@ class JaegerGrpcSpanExporterTest {
 
     Model.Batch batch = requestCaptor.getValue().getBatch();
     assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint");
-    assertThat(hex.encode(batch.getSpans(0).getSpanId().toByteArray())).isEqualTo(SPAN_ID);
+    assertThat(SpanId.fromBytes(batch.getSpans(0).getSpanId().toByteArray())).isEqualTo(SPAN_ID);
 
     assertThat(
             getTagValue(batch.getProcess().getTagsList(), "resource-attr-key")
@@ -214,12 +214,14 @@ class JaegerGrpcSpanExporterTest {
       if (processTag.isPresent()) {
         assertThat(processTag2.isPresent()).isFalse();
         assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint/1");
-        assertThat(hex.encode(batch.getSpans(0).getSpanId().toByteArray())).isEqualTo(SPAN_ID);
+        assertThat(SpanId.fromBytes(batch.getSpans(0).getSpanId().toByteArray()))
+            .isEqualTo(SPAN_ID);
         assertThat(processTag.get().getVStr()).isEqualTo("resource-attr-value-1");
         assertThat(batch.getProcess().getServiceName()).isEqualTo("myServiceName1");
       } else if (processTag2.isPresent()) {
         assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint/2");
-        assertThat(hex.encode(batch.getSpans(0).getSpanId().toByteArray())).isEqualTo(SPAN_ID_2);
+        assertThat(SpanId.fromBytes(batch.getSpans(0).getSpanId().toByteArray()))
+            .isEqualTo(SPAN_ID_2);
         assertThat(processTag2.get().getVStr()).isEqualTo("resource-attr-value-2");
         assertThat(batch.getProcess().getServiceName()).isEqualTo("myServiceName2");
       } else {
@@ -230,7 +232,7 @@ class JaegerGrpcSpanExporterTest {
 
   private static void verifyBatch(Model.Batch batch) throws Exception {
     assertThat(batch.getSpansCount()).isEqualTo(1);
-    assertThat(hex.encode(batch.getSpans(0).getTraceId().toByteArray())).isEqualTo(TRACE_ID);
+    assertThat(TraceId.fromBytes(batch.getSpans(0).getTraceId().toByteArray())).isEqualTo(TRACE_ID);
     assertThat(batch.getProcess().getTagsCount()).isEqualTo(5);
 
     assertThat(
