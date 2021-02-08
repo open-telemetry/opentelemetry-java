@@ -170,7 +170,7 @@ class InteroperabilityTest {
     assertThat(export1.size()).isEqualTo(1);
     SpanData spanData1 = export1.iterator().next();
     assertThat(spanData1.getName()).isEqualTo("OpenCensusSpan");
-    assertThat(spanData1.getLinks().get(0).getSpanContext().getSpanIdHex())
+    assertThat(spanData1.getLinks().get(0).getSpanContext().getSpanId())
         .isEqualTo(remoteParentSpan.getContext().getSpanId().toLowerBase16());
   }
 
@@ -237,7 +237,7 @@ class InteroperabilityTest {
     assertThat(export3.size()).isEqualTo(1);
     SpanData spanData3 = export3.iterator().next();
     assertThat(spanData3.getName()).isEqualTo("OpenCensusSpan");
-    assertThat(spanData3.getLinks().get(0).getSpanContext().getSpanIdHex())
+    assertThat(spanData3.getLinks().get(0).getSpanContext().getSpanId())
         .isEqualTo(parentLinkSpan.getContext().getSpanId().toLowerBase16());
     assertThat(spanData3.getKind()).isEqualTo(SpanKind.SERVER);
     assertThat(spanData3.getStatus()).isEqualTo(StatusData.ok());
