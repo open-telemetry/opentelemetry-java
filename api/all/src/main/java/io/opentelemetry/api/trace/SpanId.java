@@ -53,7 +53,8 @@ public final class SpanId {
    * @return {@code true} if the span identifier is valid.
    */
   public static boolean isValid(CharSequence spanId) {
-    return (spanId.length() == HEX_LENGTH)
+    return spanId != null
+        && spanId.length() == HEX_LENGTH
         && !INVALID.contentEquals(spanId)
         && BigendianEncoding.isValidBase16String(spanId);
   }

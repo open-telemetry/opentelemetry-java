@@ -58,7 +58,8 @@ public final class TraceId {
    * @return {@code true} if the {@code TraceId} is valid.
    */
   public static boolean isValid(CharSequence traceId) {
-    return (traceId.length() == HEX_LENGTH)
+    return traceId != null
+        && traceId.length() == HEX_LENGTH
         && !INVALID.contentEquals(traceId)
         && BigendianEncoding.isValidBase16String(traceId);
   }
