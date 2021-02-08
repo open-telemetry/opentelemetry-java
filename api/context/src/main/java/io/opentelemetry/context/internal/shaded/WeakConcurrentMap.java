@@ -39,9 +39,6 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <p>This class has been copied as is from
  * https://github.com/raphw/weak-lock-free/blob/ad0e5e0c04d4a31f9485bf12b89afbc9d75473b3/src/main/java/com/blogspot/mydailyjava/weaklockfree/WeakConcurrentMap.java
- * This is used in multiple artifacts in OpenTelemetry and while it is in our internal API,
- * generally backwards compatible changes should not be made to avoid a situation where different
- * versions of OpenTelemetry artifacts become incompatible with each other.
  */
 // Suppress warnings since this is copied as-is.
 @SuppressWarnings({
