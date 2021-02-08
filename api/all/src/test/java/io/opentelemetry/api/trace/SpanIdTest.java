@@ -21,10 +21,13 @@ class SpanIdTest {
 
   @Test
   void isValid() {
+    assertThat(SpanId.isValid(null)).isFalse();
+    assertThat(SpanId.isValid("001")).isFalse();
+    assertThat(SpanId.isValid("000000000000z000")).isFalse();
     assertThat(SpanId.isValid(SpanId.getInvalid())).isFalse();
+
     assertThat(SpanId.isValid(first)).isTrue();
     assertThat(SpanId.isValid(second)).isTrue();
-    assertThat(SpanId.isValid("000000000000z000")).isFalse();
   }
 
   @Test

@@ -21,12 +21,13 @@ class TraceIdTest {
 
   @Test
   void isValid() {
+    assertThat(TraceId.isValid(null)).isFalse();
+    assertThat(TraceId.isValid("001")).isFalse();
+    assertThat(TraceId.isValid("000000000000004z0000000000000016")).isFalse();
     assertThat(TraceId.isValid(TraceId.getInvalid())).isFalse();
+
     assertThat(TraceId.isValid(first)).isTrue();
     assertThat(TraceId.isValid(second)).isTrue();
-
-    assertThat(TraceId.isValid("000000000000004z0000000000000016")).isFalse();
-    assertThat(TraceId.isValid("001")).isFalse();
   }
 
   @Test
