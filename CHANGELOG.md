@@ -73,8 +73,8 @@ internal classes, were you?
 
 - `TraceConfig` has been renamed to `SpanLimits` and relocated to the `io.opentelemetry.sdk.tracing` package.
 All related method names have been renamed to match.
-- `SpanData.getTraceState()` has been removed. If this needed by an exporter, please let us know why and what your use-case is.
-- `SpanData.isSampled()` has been removed. If this needed by an exporter, please let us know why and what your use-case is.
+- `SpanData.getTraceState()` has been removed. The TraceState is still available via the SpanContext accessor.
+- `SpanData.isSampled()` has been removed. The isSampled property is still available via the SpanContext accessor.
 
 #### Enhancements
 
