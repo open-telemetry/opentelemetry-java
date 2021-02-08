@@ -11,10 +11,8 @@ import com.google.protobuf.CodedOutputStream;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -52,11 +50,8 @@ class TraceMarshalerTest {
 
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("name", null);
-  private static final byte[] TRACE_ID_BYTES =
-      new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4};
-  private static final String TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);
-  private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
-  private static final String SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES);
+  private static final String TRACE_ID = "00000000000000000000000001020304";
+  private static final String SPAN_ID = "0000000004030201";
 
   private static final SpanContext SPAN_CONTEXT =
       SpanContext.create(
