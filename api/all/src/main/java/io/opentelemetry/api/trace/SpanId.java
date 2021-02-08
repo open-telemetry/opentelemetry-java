@@ -87,7 +87,7 @@ public final class SpanId {
    * <p>This is equivalent to calling {@link #fromBytes(byte[])} with the specified value stored as
    * big-endian.
    *
-   * @param id the higher part of the {@code TraceId}.
+   * @param id {@code long} value representation of the {@code SpanId}.
    * @return the lowercase hex (base16) representation of the {@code SpanId}.
    */
   public static String fromLong(long id) {
