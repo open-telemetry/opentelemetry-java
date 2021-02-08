@@ -75,6 +75,23 @@ class LabelsTest {
   }
 
   @Test
+  void nullValueEquivalentWithMissing() {
+    Labels one =
+        Labels.of(
+            "key3", "value3",
+            "key4", null,
+            "key1", "value1",
+            "key2", "value2");
+    Labels two =
+        Labels.of(
+            "key2", "value2",
+            "key3", "value3",
+            "key1", "value1");
+
+    assertThat(one).isEqualTo(two);
+  }
+
+  @Test
   void deduplication() {
     Labels one =
         Labels.of(
