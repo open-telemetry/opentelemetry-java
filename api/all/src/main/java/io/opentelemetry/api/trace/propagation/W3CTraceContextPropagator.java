@@ -214,12 +214,10 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
       String traceId =
           traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getLength());
       String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getLength());
-      if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
-        TraceFlags traceFlags = TraceFlags.fromHex(traceparent, TRACE_OPTION_OFFSET);
-        return SpanContext.createFromRemoteParent(
-            traceId, spanId, traceFlags, TraceState.getDefault());
-      }
-      return SpanContext.getInvalid();
+
+      TraceFlags traceFlags = TraceFlags.fromHex(traceparent, TRACE_OPTION_OFFSET);
+      return SpanContext.createFromRemoteParent(
+          traceId, spanId, traceFlags, TraceState.getDefault());
     } catch (IllegalArgumentException e) {
       logger.fine("Unparseable traceparent header. Returning INVALID span context.");
       return SpanContext.getInvalid();

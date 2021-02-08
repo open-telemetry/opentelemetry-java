@@ -171,26 +171,6 @@ public final class AwsXrayPropagator implements TextMapPropagator {
       }
       // TODO: Put the arbitrary TraceHeader keys in OT trace state
     }
-    if (!TraceId.isValid(traceId)) {
-      logger.fine(
-          "Invalid TraceId in X-Ray trace header: '"
-              + TRACE_HEADER_KEY
-              + "' with value "
-              + traceHeader
-              + "'. Returning INVALID span context.");
-      return SpanContext.getInvalid();
-    }
-
-    if (!SpanId.isValid(spanId)) {
-      logger.fine(
-          "Invalid ParentId in X-Ray trace header: '"
-              + TRACE_HEADER_KEY
-              + "' with value "
-              + traceHeader
-              + "'. Returning INVALID span context.");
-      return SpanContext.getInvalid();
-    }
-
     if (isSampled == null) {
       logger.fine(
           "Invalid Sampling flag in X-Ray trace header: '"

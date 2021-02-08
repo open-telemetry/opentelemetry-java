@@ -240,9 +240,6 @@ public final class JaegerPropagator implements TextMapPropagator {
     try {
       String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
       String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);
-      if (!TraceId.isValid(otelTraceId) || !SpanId.isValid(otelSpanId)) {
-        return SpanContext.getInvalid();
-      }
       int flagsInt = Integer.parseInt(flags);
       return SpanContext.createFromRemoteParent(
           otelTraceId,

@@ -14,12 +14,18 @@ import javax.annotation.concurrent.Immutable;
 abstract class ImmutableSpanContext implements SpanContext {
 
   static final SpanContext INVALID =
-      create(
+      createInternal(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
           TraceFlags.getDefault(),
           TraceState.getDefault(),
           /* remote= */ false);
+
+  private static AutoValue_ImmutableSpanContext createInternal(
+      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState, boolean remote) {
+    return new AutoValue_ImmutableSpanContext(
+        traceId, spanId, traceFlags, traceState, /* remote$= */ remote);
+  }
 
   static SpanContext create(
       String traceIdHex,
@@ -27,8 +33,11 @@ abstract class ImmutableSpanContext implements SpanContext {
       TraceFlags traceFlags,
       TraceState traceState,
       boolean remote) {
-    return new AutoValue_ImmutableSpanContext(
-        traceIdHex, spanIdHex, traceFlags, traceState, remote);
+    if (SpanId.isValid(spanIdHex) && TraceId.isValid(traceIdHex)) {
+      return createInternal(traceIdHex, spanIdHex, traceFlags, traceState, remote);
+    }
+    return createInternal(
+        TraceId.getInvalid(), SpanId.getInvalid(), traceFlags, traceState, remote);
   }
 
   @Override
