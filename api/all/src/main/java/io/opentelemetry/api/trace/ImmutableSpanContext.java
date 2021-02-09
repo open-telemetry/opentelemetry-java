@@ -6,7 +6,6 @@
 package io.opentelemetry.api.trace;
 
 import com.google.auto.value.AutoValue;
-import com.google.auto.value.extension.memoized.Memoized;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -19,12 +18,18 @@ abstract class ImmutableSpanContext implements SpanContext {
           SpanId.getInvalid(),
           TraceFlags.getDefault(),
           TraceState.getDefault(),
-          /* remote= */ false);
+          /* remote= */ false,
+          /* valid= */ false);
 
   private static AutoValue_ImmutableSpanContext createInternal(
-      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState, boolean remote) {
+      String traceId,
+      String spanId,
+      TraceFlags traceFlags,
+      TraceState traceState,
+      boolean remote,
+      boolean valid) {
     return new AutoValue_ImmutableSpanContext(
-        traceId, spanId, traceFlags, traceState, /* remote$= */ remote);
+        traceId, spanId, traceFlags, traceState, remote, valid);
   }
 
   static SpanContext create(
@@ -34,15 +39,18 @@ abstract class ImmutableSpanContext implements SpanContext {
       TraceState traceState,
       boolean remote) {
     if (SpanId.isValid(spanIdHex) && TraceId.isValid(traceIdHex)) {
-      return createInternal(traceIdHex, spanIdHex, traceFlags, traceState, remote);
+      return createInternal(
+          traceIdHex, spanIdHex, traceFlags, traceState, remote, /* valid= */ true);
     }
     return createInternal(
-        TraceId.getInvalid(), SpanId.getInvalid(), traceFlags, traceState, remote);
+        TraceId.getInvalid(),
+        SpanId.getInvalid(),
+        traceFlags,
+        traceState,
+        remote,
+        /* valid= */ false);
   }
 
   @Override
-  @Memoized
-  public boolean isValid() {
-    return SpanContext.super.isValid();
-  }
+  public abstract boolean isValid();
 }
