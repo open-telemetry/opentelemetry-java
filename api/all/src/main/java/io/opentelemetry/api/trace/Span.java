@@ -219,6 +219,7 @@ public interface Span extends ImplicitContextKeyed {
    * @param attributes the attributes that will be added; these are associated with this event, not
    *     the {@code Span} as for {@code setAttribute()}.
    * @return this.
+   * @throws NullPointerException if {@code attributes} is {@code null}.
    */
   Span addEvent(String name, Attributes attributes);
 
@@ -237,6 +238,8 @@ public interface Span extends ImplicitContextKeyed {
    * @param timestamp the explicit event timestamp since epoch.
    * @param unit the unit of the timestamp
    * @return this.
+   * @throws NullPointerException if {@code attributes} is {@code null}.
+   * @throws NullPointerException if {@code unit} is {@code null}.
    */
   Span addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit);
 
@@ -254,6 +257,7 @@ public interface Span extends ImplicitContextKeyed {
    *     the {@code Span} as for {@code setAttribute()}.
    * @param timestamp the explicit event timestamp since epoch.
    * @return this.
+   * @throws NullPointerException if {@code attributes} is {@code null}.
    */
   default Span addEvent(String name, Attributes attributes, Instant timestamp) {
     if (timestamp == null) {
