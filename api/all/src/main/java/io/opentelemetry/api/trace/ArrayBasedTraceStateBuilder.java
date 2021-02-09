@@ -27,6 +27,10 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   private final ArrayBasedTraceState parent;
   @Nullable private List<String> entries;
 
+  static TraceState getEmpty() {
+    return EMPTY;
+  }
+
   ArrayBasedTraceStateBuilder() {
     parent = EMPTY;
   }
