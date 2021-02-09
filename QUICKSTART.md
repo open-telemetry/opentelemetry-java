@@ -16,7 +16,7 @@
   * [Sampler](#sampler)
   * [Span Processor](#span-processor)
   * [Exporter](#exporter)
-  * [TraceConfig](#traceconfig)
+- [Auto Configuration](#auto-configuration)
 - [Logging And Error Handling](#logging-and-error-handling)
   * [Examples](#examples)
 <!-- tocstop -->
@@ -156,7 +156,7 @@ attributes specific to the represented operation. Attributes provide additional 
 about the specific operation it tracks, such as results or operation properties.
 
 ```java
-Span span = tracer.spanBuilder("/resource/path").setSpanKind(Span.Kind.CLIENT).startSpan();
+Span span = tracer.spanBuilder("/resource/path").setSpanKind(SpanKind.CLIENT).startSpan();
 span.setAttribute("http.method", "GET");
 span.setAttribute("http.url", url.toString());
 ```
@@ -221,7 +221,7 @@ TextMapPropagator.Setter<HttpURLConnection> setter =
 };
 
 URL url = new URL("http://127.0.0.1:8080/resource");
-Span outGoing = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.CLIENT).startSpan();
+Span outGoing = tracer.spanBuilder("/resource").setSpanKind(SpanKind.CLIENT).startSpan();
 try (Scope scope = outGoing.makeCurrent()) {
   // Semantic Convention.
   // (Note that to set these, Span does not *need* to be the current instance in Context or Scope.)
@@ -265,7 +265,7 @@ public void handle(HttpExchange httpExchange) {
   try (Scope scope = extractedContext.makeCurrent()) {
     // Automatically use the extracted SpanContext as parent.
     Span serverSpan = tracer.spanBuilder("GET /resource")
-        .setSpanKind(Span.Kind.SERVER)
+        .setSpanKind(SpanKind.SERVER)
         .startSpan();
     try {
       // Add the attributes defined in the Semantic Conventions
