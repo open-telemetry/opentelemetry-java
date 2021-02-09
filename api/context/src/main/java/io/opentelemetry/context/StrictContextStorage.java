@@ -65,13 +65,13 @@ import java.util.stream.Collectors;
  * > }
  * }</pre>
  */
-public final class StrictContextStorage implements ContextStorage {
+final class StrictContextStorage implements ContextStorage {
 
   /**
    * Returns a new {@link StrictContextStorage} which delegates to the provided {@link
    * ContextStorage}, wrapping created scopes to track their usage.
    */
-  public static StrictContextStorage create(ContextStorage delegate) {
+  static StrictContextStorage create(ContextStorage delegate) {
     return new StrictContextStorage(delegate);
   }
 
@@ -153,7 +153,8 @@ public final class StrictContextStorage implements ContextStorage {
    * @throws AssertionError if any scopes were left unclosed.
    */
   // AssertionError to ensure test runners render the stack trace
-  public void ensureAllClosed() {
+  // Visible for testing
+  void ensureAllClosed() {
     pendingScopes.expungeStaleEntries();
     List<CallerStackTrace> leaked = pendingScopes.drainPendingCallers();
     if (!leaked.isEmpty()) {

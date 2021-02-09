@@ -32,6 +32,8 @@ dependencies {
     add("otelAsBraveTestImplementation", "io.zipkin.brave:brave")
     add("otelInBraveTestImplementation", "io.zipkin.brave:brave")
 
+    add("strictContextEnabledTestImplementation", project(":api:all"))
+
     testImplementation("org.awaitility:awaitility")
     testImplementation("com.google.guava:guava")
     testImplementation("org.junit-pioneer:junit-pioneer")

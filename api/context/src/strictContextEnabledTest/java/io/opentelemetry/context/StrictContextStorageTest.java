@@ -18,7 +18,7 @@
  * the License.
  */
 
-package io.opentelemetry.sdk.testing.context;
+package io.opentelemetry.context;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,18 +29,10 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.ContextKey;
-import io.opentelemetry.context.ContextStorage;
-import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.StrictContextStorage;
-import io.opentelemetry.sdk.trace.IdGenerator;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.event.Level;
@@ -50,23 +42,12 @@ import org.slf4j.event.LoggingEvent;
 class StrictContextStorageTest {
 
   private static final ContextKey<String> ANIMAL = ContextKey.named("animal");
-  private static final IdGenerator IDS_GENERATOR = IdGenerator.random();
-  private static final String TRACE_ID = IDS_GENERATOR.generateTraceId();
-  private static final String SPAN_ID = IDS_GENERATOR.generateSpanId();
+  private static final String TRACE_ID = "7b2e170db4df2d593ddb4ddf2ddf2d59";
+  private static final String SPAN_ID = "b2e170db4df2d593";
 
   private static final Span SPAN =
       Span.wrap(
           SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
-
-  private static ContextStorage previousStorage;
-  private static StrictContextStorage strictStorage;
-
-  @BeforeAll
-  static void setUp() {
-    previousStorage = SettableContextStorageProvider.getContextStorage();
-    strictStorage = StrictContextStorage.create(previousStorage);
-    SettableContextStorageProvider.setContextStorage(strictStorage);
-  }
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(StrictContextStorage.class);
@@ -75,12 +56,7 @@ class StrictContextStorageTest {
   // strict storage.
   @AfterEach
   void resetContext() {
-    previousStorage.attach(Context.root());
-  }
-
-  @AfterAll
-  static void tearDown() {
-    SettableContextStorageProvider.setContextStorage(previousStorage);
+    ThreadLocalContextStorage.INSTANCE.attach(Context.root());
   }
 
   // TODO(anuraaga): These rules conflict with error prone so one or the other needs to be
@@ -92,7 +68,7 @@ class StrictContextStorageTest {
       try (Scope ws2 = Context.current().with(ANIMAL, "dog").makeCurrent()) {}
     }
 
-    strictStorage.ensureAllClosed(); // doesn't error
+    ((StrictContextStorage) ContextStorage.get()).ensureAllClosed(); // doesn't error
   }
 
   static final class BusinessClass {
@@ -160,8 +136,7 @@ class StrictContextStorageTest {
         .satisfies(
             e ->
                 assertThat(e.getCause().getMessage())
-                    .matches("Thread \\[t1\\] opened scope for .* here:"))
-        .satisfies(e -> assertStackTraceStartsWithMethod(e.getCause(), methodName));
+                    .matches("Thread \\[t1\\] opened scope for .* here:"));
   }
 
   @SuppressWarnings("ReturnValueIgnored")
@@ -171,12 +146,11 @@ class StrictContextStorageTest {
     thread.start();
     thread.join();
 
-    assertThatThrownBy(strictStorage::ensureAllClosed)
+    assertThatThrownBy(() -> ((StrictContextStorage) ContextStorage.get()).ensureAllClosed())
         .isInstanceOf(AssertionError.class)
         .satisfies(
             t -> assertThat(t.getMessage()).matches("Thread \\[t1\\] opened a scope of .* here:"))
-        .hasNoCause()
-        .satisfies(t -> assertStackTraceStartsWithMethod(t, methodName));
+        .hasNoCause();
   }
 
   static void assertStackTraceStartsWithMethod(Throwable throwable, String methodName) {
@@ -188,7 +162,8 @@ class StrictContextStorageTest {
   void multipleLeaks() {
     Scope scope1 = Context.current().with(ANIMAL, "cat").makeCurrent();
     Scope scope2 = Context.current().with(ANIMAL, "dog").makeCurrent();
-    assertThatThrownBy(strictStorage::ensureAllClosed).isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> ((StrictContextStorage) ContextStorage.get()).ensureAllClosed())
+        .isInstanceOf(AssertionError.class);
   }
 
   @Test
