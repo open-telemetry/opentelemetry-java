@@ -22,8 +22,8 @@ import javax.annotation.concurrent.Immutable;
  * <p>Key-value pairs are dropped for {@code null} or empty keys.
  *
  * <p>Note: for subclasses of this, null keys will be removed, but if your key has another concept
- * of being "empty", you'll need to remove them before calling {@link #sortAndFilter(Object[],
- * boolean)}, assuming you don't want the "empty" keys to be kept in your collection.
+ * of being "empty", you'll need to remove them before calling {@link #sortAndFilter(Object[])},
+ * assuming you don't want the "empty" keys to be kept in your collection.
  *
  * @param <V> The type of the values contained in this.
  */
@@ -72,25 +72,23 @@ public abstract class ImmutableKeyValuePairs<K, V> {
   }
 
   /**
-   * Sorts and dedupes the key/value pairs in {@code data}. If {@code filterNullValues} is {@code
-   * true}, {@code null} values will be removed. Keys must be {@link Comparable}.
+   * Sorts and dedupes the key/value pairs in {@code data}. {@code null} values will be removed.
+   * Keys must be {@link Comparable}.
    */
-  protected static List<Object> sortAndFilter(Object[] data, boolean filterNullValues) {
-    return sortAndFilter(data, filterNullValues, Comparator.naturalOrder());
+  protected static List<Object> sortAndFilter(Object[] data) {
+    return sortAndFilter(data, Comparator.naturalOrder());
   }
 
   /**
-   * Sorts and dedupes the key/value pairs in {@code data}. If {@code filterNullValues} is {@code
-   * true}, {@code null} values will be removed. Keys will be compared with the given {@link
-   * Comparator}.
+   * Sorts and dedupes the key/value pairs in {@code data}. {@code null} values will be removed.
+   * Keys will be compared with the given {@link Comparator}.
    */
-  protected static List<Object> sortAndFilter(
-      Object[] data, boolean filterNullValues, Comparator<?> keyComparator) {
+  protected static List<Object> sortAndFilter(Object[] data, Comparator<?> keyComparator) {
     checkArgument(
         data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
 
     mergeSort(data, keyComparator);
-    return dedupe(data, filterNullValues, keyComparator);
+    return dedupe(data, keyComparator);
   }
 
   // note: merge sort implementation cribbed from this wikipedia article:
@@ -175,8 +173,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
   }
 
   @SuppressWarnings("unchecked")
-  private static <K> List<Object> dedupe(
-      Object[] data, boolean filterNullValues, Comparator<K> keyComparator) {
+  private static <K> List<Object> dedupe(Object[] data, Comparator<K> keyComparator) {
     List<Object> result = new ArrayList<>(data.length);
     Object previousKey = null;
 
@@ -191,7 +188,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
         continue;
       }
       previousKey = key;
-      if (filterNullValues && value == null) {
+      if (value == null) {
         continue;
       }
       // add them in reverse order, because we'll reverse the list before returning,
