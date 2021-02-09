@@ -286,6 +286,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return this;
     }
+    if (unit == null) {
+      unit = TimeUnit.MILLISECONDS;
+    }
     addTimedEvent(EventData.create(unit.toNanos(timestamp), name, Attributes.empty(), 0));
     return this;
   }
@@ -294,6 +297,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   public ReadWriteSpan addEvent(String name, Attributes attributes) {
     if (name == null) {
       return this;
+    }
+    if (attributes == null) {
+      attributes = Attributes.empty();
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
@@ -309,6 +315,12 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   public ReadWriteSpan addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit) {
     if (name == null) {
       return this;
+    }
+    if (attributes == null) {
+      attributes = Attributes.empty();
+    }
+    if (unit == null) {
+      unit = TimeUnit.MILLISECONDS;
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
