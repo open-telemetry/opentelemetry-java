@@ -152,9 +152,10 @@ This is a **current** feature status list:
 | --------------------------- | ------- |
 | Tracing API                 | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
 | Tracing SDK                 | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
+| Context                     | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
+| Baggage                     | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
 | Jaeger Trace Exporter       | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
 | Zipkin Trace Exporter       | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
-| Context Propagation         | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
 | OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
 | OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->0.16.0-alpha<!--/VERSION_UNSTABLE-->  |
 | Metrics API                 | v<!--VERSION_UNSTABLE-->0.16.0-alpha<!--/VERSION_UNSTABLE-->  |
