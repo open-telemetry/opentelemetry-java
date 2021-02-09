@@ -47,6 +47,8 @@ and assume the id starts at the beginning.
 - `TraceId.asBytes(CharSequence)` has been removed.
 - `TraceId.getHexLength()` has been renamed to `TraceId.getLength()`
 - `TraceId.bytesToHex()` has been renamed to `TraceId.fromBytes()`
+- `StrictContextStorage` has been made private. Use -Dio.opentelemetry.context.enableStrictContext=true` to enable it
+- `AwsXrayPropagator` has been moved to the `opentelemetry-extension-aws` artifact
 
 #### Enhancements
 
