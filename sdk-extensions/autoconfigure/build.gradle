@@ -38,6 +38,7 @@ dependencies {
     testRuntimeOnly 'io.grpc:grpc-netty-shaded'
     testRuntimeOnly "org.slf4j:slf4j-simple"
 
+    testFullConfigImplementation project(':extensions:aws')
     testFullConfigImplementation project(':extensions:trace-propagators')
     testFullConfigImplementation project(':exporters:jaeger')
     testFullConfigImplementation project(':exporters:logging')

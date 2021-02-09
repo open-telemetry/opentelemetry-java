@@ -11,6 +11,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.extension.aws.AwsXrayPropagator;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;

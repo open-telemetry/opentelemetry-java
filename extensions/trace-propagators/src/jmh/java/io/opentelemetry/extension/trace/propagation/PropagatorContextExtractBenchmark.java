@@ -8,6 +8,7 @@ package io.opentelemetry.extension.trace.propagation;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.extension.aws.AwsXrayPropagator;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -271,19 +272,19 @@ public class PropagatorContextExtractBenchmark {
     private static final List<Map<String, String>> traceHeaders =
         Arrays.asList(
             Collections.singletonMap(
-                AwsXrayPropagator.TRACE_HEADER_KEY,
+                "X-Amzn-Trace-Id",
                 "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1"),
             Collections.singletonMap(
-                AwsXrayPropagator.TRACE_HEADER_KEY,
+                "X-Amzn-Trace-Id",
                 "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0"),
             Collections.singletonMap(
-                AwsXrayPropagator.TRACE_HEADER_KEY,
+                "X-Amzn-Trace-Id",
                 "Parent=53995c3f42cd8ad8;Sampled=1;Root=1-8a3c60f7-d188f8fa79d48a391a778fa6"),
             Collections.singletonMap(
-                AwsXrayPropagator.TRACE_HEADER_KEY,
+                "X-Amzn-Trace-Id",
                 "Root=1-57ff426a-80c11c39b0c928905eb0828d;Parent=53995c3f42cd8ad8;Sampled=1"),
             Collections.singletonMap(
-                AwsXrayPropagator.TRACE_HEADER_KEY,
+                "X-Amzn-Trace-Id",
                 "Root=1-57ff426a-80c11c39b0c928905eb0828d;Parent=12345c3f42cd8ad8;Sampled=0"));
 
     private final TextMapPropagator.Getter<Map<String, String>> getter =

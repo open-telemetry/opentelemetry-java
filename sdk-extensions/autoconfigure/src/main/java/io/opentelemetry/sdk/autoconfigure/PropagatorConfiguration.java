@@ -9,7 +9,6 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.extension.trace.propagation.AwsXrayPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
@@ -65,8 +64,6 @@ final class PropagatorConfiguration {
         // NB: https://github.com/open-telemetry/opentelemetry-specification/pull/1406
       case "ottracer":
         return OtTracePropagator.getInstance();
-      case "xray":
-        return AwsXrayPropagator.getInstance();
       default:
         TextMapPropagator spiPropagator = spiPropagators.get(name);
         if (spiPropagator != null) {
