@@ -4,11 +4,16 @@ plugins {
 
     id "me.champeau.gradle.jmh"
     id "org.jetbrains.kotlin.jvm"
+    id "org.unbroken-dome.test-sets"
     id "ru.vyarus.animalsniffer"
 }
 
 description = "OpenTelemetry Kotlin Extensions"
 ext.moduleName = "io.opentelemetry.extension.kotlin"
+
+testSets {
+    testStrictContext
+}
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
@@ -30,3 +35,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 // We don't have any public Java classes
 tasks.javadoc.enabled = false
+
+testStrictContext {
+    jvmArgs("-Dio.opentelemetry.context.enableStrictContext=true")
+}
