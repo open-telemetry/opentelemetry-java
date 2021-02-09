@@ -150,8 +150,8 @@ This is a **current** feature status list:
 
 | Component                   | Version |
 | --------------------------- | ------- |
-| Tracing API                 | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
-| Tracing SDK                 | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
+| Trace API                   | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
+| Trace SDK                   | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
 | Context                     | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
 | Baggage                     | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
 | Jaeger Trace Exporter       | v<!--VERSION_STABLE-->0.16.0<!--/VERSION_STABLE-->  |
