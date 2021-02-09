@@ -6,7 +6,6 @@
 package io.opentelemetry.api.baggage;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 
 import com.google.common.testing.EqualsTester;
@@ -31,6 +30,16 @@ class ImmutableBaggageTest {
 
   private static final Baggage ONE_ENTRY = Baggage.builder().put(K1, V1, TMD).build();
   private static final Baggage TWO_ENTRIES = ONE_ENTRY.toBuilder().put(K2, V2, TMD).build();
+
+  @Test
+  void getEntryValue() {
+    assertThat(ONE_ENTRY.getEntryValue(K1)).isEqualTo(V1);
+  }
+
+  @Test
+  void getEntryValue_nullKey() {
+    assertThat(ONE_ENTRY.getEntryValue(null)).isNull();
+  }
 
   @Test
   void getEntries_empty() {
@@ -129,8 +138,8 @@ class ImmutableBaggageTest {
 
   @Test
   void setParent_nullContext() {
-    assertThatThrownBy(() -> Baggage.builder().setParent(null))
-        .isInstanceOf(NullPointerException.class);
+    assertThat(Baggage.builder().setParent(null).put("cat", "meow").build().getEntryValue("cat"))
+        .isEqualTo("meow");
   }
 
   @Test

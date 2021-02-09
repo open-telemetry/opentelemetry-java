@@ -291,9 +291,11 @@ class AttributesTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void get_Null() {
     assertThat(Attributes.empty().get(stringKey("foo"))).isNull();
     assertThat(Attributes.of(stringKey("key"), "value").get(stringKey("foo"))).isNull();
+    assertThat(Attributes.of(stringKey("key"), "value").get((AttributeKey) null)).isNull();
   }
 
   @Test
