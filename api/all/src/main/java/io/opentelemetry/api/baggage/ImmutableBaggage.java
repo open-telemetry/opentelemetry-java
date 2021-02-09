@@ -21,7 +21,7 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
 
   private static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
 
-  ImmutableBaggage(List<Object> data) {
+  private ImmutableBaggage(Object[] data) {
     super(data);
   }
 
@@ -48,7 +48,7 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
   }
 
   private static Baggage sortAndFilterToBaggage(Object[] data) {
-    return new ImmutableBaggage(sortAndFilter(data));
+    return new ImmutableBaggage(data);
   }
 
   // TODO: Migrate to AutoValue.Builder

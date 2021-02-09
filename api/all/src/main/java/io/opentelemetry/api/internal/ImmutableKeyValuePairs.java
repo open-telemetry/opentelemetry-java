@@ -22,8 +22,8 @@ import javax.annotation.concurrent.Immutable;
  * <p>Key-value pairs are dropped for {@code null} or empty keys.
  *
  * <p>Note: for subclasses of this, null keys will be removed, but if your key has another concept
- * of being "empty", you'll need to remove them before calling {@link #sortAndFilter(Object[])},
- * assuming you don't want the "empty" keys to be kept in your collection.
+ * of being "empty", you'll need to remove them before calling the constructor, assuming you don't
+ * want the "empty" keys to be kept in your collection.
  *
  * @param <V> The type of the values contained in this.
  */
@@ -31,8 +31,24 @@ import javax.annotation.concurrent.Immutable;
 public abstract class ImmutableKeyValuePairs<K, V> {
   private final List<Object> data;
 
-  protected ImmutableKeyValuePairs(List<Object> data) {
+  private ImmutableKeyValuePairs(List<Object> data) {
     this.data = data;
+  }
+
+  /**
+   * Sorts and dedupes the key/value pairs in {@code data}. {@code null} values will be removed.
+   * Keys must be {@link Comparable}.
+   */
+  protected ImmutableKeyValuePairs(Object[] data) {
+    this(sortAndFilter(data, Comparator.naturalOrder()));
+  }
+
+  /**
+   * Sorts and dedupes the key/value pairs in {@code data}. {@code null} values will be removed.
+   * Keys will be compared with the given {@link Comparator}.
+   */
+  protected ImmutableKeyValuePairs(Object[] data, Comparator<?> keyComparator) {
+    this(sortAndFilter(data, keyComparator));
   }
 
   protected final List<Object> data() {
@@ -73,17 +89,9 @@ public abstract class ImmutableKeyValuePairs<K, V> {
 
   /**
    * Sorts and dedupes the key/value pairs in {@code data}. {@code null} values will be removed.
-   * Keys must be {@link Comparable}.
-   */
-  protected static List<Object> sortAndFilter(Object[] data) {
-    return sortAndFilter(data, Comparator.naturalOrder());
-  }
-
-  /**
-   * Sorts and dedupes the key/value pairs in {@code data}. {@code null} values will be removed.
    * Keys will be compared with the given {@link Comparator}.
    */
-  protected static List<Object> sortAndFilter(Object[] data, Comparator<?> keyComparator) {
+  private static List<Object> sortAndFilter(Object[] data, Comparator<?> keyComparator) {
     checkArgument(
         data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
 
