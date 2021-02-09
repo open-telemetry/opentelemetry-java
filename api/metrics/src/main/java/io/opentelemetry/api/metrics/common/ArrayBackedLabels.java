@@ -6,7 +6,6 @@
 package io.opentelemetry.api.metrics.common;
 
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
-import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -17,12 +16,12 @@ final class ArrayBackedLabels extends ImmutableKeyValuePairs<String, String> imp
     return EMPTY;
   }
 
-  ArrayBackedLabels(List<Object> data) {
+  private ArrayBackedLabels(Object[] data) {
     super(data);
   }
 
   static Labels sortAndFilterToLabels(Object... data) {
-    return new ArrayBackedLabels(sortAndFilter(data));
+    return new ArrayBackedLabels(data);
   }
 
   @Override
