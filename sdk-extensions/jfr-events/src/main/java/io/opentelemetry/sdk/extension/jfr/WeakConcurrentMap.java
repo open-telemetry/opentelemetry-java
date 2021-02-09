@@ -23,7 +23,7 @@
 // Suppress warnings since this is vendored as-is.
 // CHECKSTYLE:OFF
 
-package io.opentelemetry.context.internal.shaded;
+package io.opentelemetry.sdk.extension.jfr;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicLong;
   "ThreadPriorityCheck",
   "FieldMissingNullable"
 })
-public class WeakConcurrentMap<K, V>
+class WeakConcurrentMap<K, V>
     extends AbstractWeakConcurrentMap<K, V, WeakConcurrentMap.LookupKey<K>> {
 
   /**
@@ -197,7 +197,7 @@ public class WeakConcurrentMap<K, V>
    * A {@link WeakConcurrentMap} where stale entries are removed as a side effect of interacting
    * with this map.
    */
-  public static class WithInlinedExpunction<K, V> extends WeakConcurrentMap<K, V> {
+  static class WithInlinedExpunction<K, V> extends WeakConcurrentMap<K, V> {
 
     public WithInlinedExpunction() {
       super(false);

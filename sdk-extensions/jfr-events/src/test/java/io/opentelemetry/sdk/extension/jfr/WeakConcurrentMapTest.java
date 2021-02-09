@@ -23,7 +23,7 @@
 // Suppress warnings since this is vendored as-is.
 // CHECKSTYLE:OFF
 
-package io.opentelemetry.context.internal.shaded;
+package io.opentelemetry.sdk.extension.jfr;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
