@@ -7,13 +7,13 @@ package io.opentelemetry.sdk.example;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -22,13 +22,13 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 
 /**
- * This example demonstrates various {@link TraceConfig} options and how to configure them into an
+ * This example demonstrates various {@link SpanLimits} options and how to configure them into an
  * SDK.
  */
 class ConfigureTraceExample {
 
   public static void main(String[] args) {
-    // TraceConfig handles the tracing configuration
+    // SpanLimits handles the tracing configuration
 
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder()
@@ -38,7 +38,7 @@ class ConfigureTraceExample {
                     .build())
             .build();
 
-    printTraceConfig(openTelemetrySdk);
+    printSpanLimits(openTelemetrySdk);
     Tracer tracer = openTelemetrySdk.getTracer("ConfigureTraceExample");
 
     // OpenTelemetry has a maximum of 32 Attributes by default for Spans, Links, and Events.
@@ -49,18 +49,18 @@ class ConfigureTraceExample {
 
     // The configuration can be changed in the trace provider.
     // For example, we can change the maximum number of Attributes per span to 1.
-    TraceConfig newConf = TraceConfig.builder().setMaxNumberOfAttributes(1).build();
+    SpanLimits newConf = SpanLimits.builder().setMaxNumberOfAttributes(1).build();
 
     openTelemetrySdk =
         OpenTelemetrySdk.builder()
             .setTracerProvider(
                 SdkTracerProvider.builder()
                     .addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()))
-                    .setTraceConfig(newConf)
+                    .setSpanLimits(newConf)
                     .build())
             .build();
 
-    printTraceConfig(openTelemetrySdk);
+    printSpanLimits(openTelemetrySdk);
 
     // If more attributes than allowed by the configuration are set, they are dropped.
     Span singleAttrSpan = tracer.spanBuilder("Example Span Attributes").startSpan();
@@ -84,7 +84,7 @@ class ConfigureTraceExample {
                     .build())
             .build();
 
-    printTraceConfig(openTelemetrySdk);
+    printSpanLimits(openTelemetrySdk);
 
     tracer = openTelemetrySdk.getTracer("ConfigureTraceExample");
     tracer.spanBuilder("Not forwarded to any processors").startSpan().end();
@@ -99,7 +99,7 @@ class ConfigureTraceExample {
                     .setSampler(Sampler.alwaysOn())
                     .build())
             .build();
-    printTraceConfig(openTelemetrySdk);
+    printSpanLimits(openTelemetrySdk);
 
     tracer = openTelemetrySdk.getTracer("ConfigureTraceExample");
     tracer.spanBuilder("Forwarded to all processors").startSpan().end();
@@ -116,7 +116,7 @@ class ConfigureTraceExample {
                     .setSampler(traceIdRatioBased)
                     .build())
             .build();
-    printTraceConfig(openTelemetrySdk);
+    printSpanLimits(openTelemetrySdk);
 
     tracer = openTelemetrySdk.getTracer("ConfigureTraceExample");
 
@@ -136,7 +136,7 @@ class ConfigureTraceExample {
           Context parentContext,
           String traceId,
           String name,
-          Kind spanKind,
+          SpanKind spanKind,
           Attributes attributes,
           List<LinkData> parentLinks) {
         return SamplingResult.create(
@@ -158,7 +158,7 @@ class ConfigureTraceExample {
                     .setSampler(new MySampler())
                     .build())
             .build();
-    printTraceConfig(openTelemetrySdk);
+    printSpanLimits(openTelemetrySdk);
 
     tracer = openTelemetrySdk.getTracer("ConfigureTraceExample");
 
@@ -175,8 +175,8 @@ class ConfigureTraceExample {
     tracer.spanBuilder("#5").startSpan().end();
   }
 
-  private static void printTraceConfig(OpenTelemetrySdk sdk) {
-    TraceConfig config = sdk.getSdkTracerProvider().getActiveTraceConfig();
+  private static void printSpanLimits(OpenTelemetrySdk sdk) {
+    SpanLimits config = sdk.getSdkTracerProvider().getSpanLimits();
     System.err.println("==================================");
     System.err.print("Max number of attributes: ");
     System.err.println(config.getMaxNumberOfAttributes());

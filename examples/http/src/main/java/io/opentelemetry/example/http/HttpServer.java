@@ -12,6 +12,7 @@ import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -71,7 +72,7 @@ public class HttpServer {
       Context context = TEXT_MAP_PROPAGATOR.extract(Context.current(), exchange, getter);
 
       Span span =
-          tracer.spanBuilder("GET /").setParent(context).setSpanKind(Span.Kind.SERVER).startSpan();
+          tracer.spanBuilder("GET /").setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
 
       try (Scope scope = span.makeCurrent()) {
         // Set the Semantic Convention
