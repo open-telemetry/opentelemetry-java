@@ -36,14 +36,17 @@ return `TraceFlags` instead of `byte` where appropriate.
 - `SpanId` and `TraceId` methods that had a `String` parameter now accept `CharSequence`
 and assume the id starts at the beginning.
 - `SpanId.getSize()` and `TraceId.getSize()` have been removed. 
+- `SpanId.bytesFromHex()` has been removed.
+- `SpanId.asLong(CharSequence)` has been removed.
+- `SpanId.asBytes(CharSequence)` has been removed.
 - `SpanId.getHexLength()` has been renamed to `SpanId.getLength()`
-- `SpanId.bytesFromHex()` has been renamed to `SpanId.asBytes()` and no longer accepts an offset to the `CharSequence`
 - `SpanId.bytesToHex()` has been renamed to `SpanId.fromBytes()`
+- `TraceId.bytesFromHex()` has been removed.
+- `TraceId.traceIdLowBytesAsLong(CharSequence)` has been removed.
+- `TraceId.traceIdHighBytesAsLong(CharSequence)` has been removed.
+- `TraceId.asBytes(CharSequence)` has been removed.
 - `TraceId.getHexLength()` has been renamed to `TraceId.getLength()`
-- `TraceId.bytesFromHex()` has been renamed to `TraceId.asBytes()` and no longer accepts an offset to the `CharSequence`
 - `TraceId.bytesToHex()` has been renamed to `TraceId.fromBytes()`
-- `TraceId.traceIdLowBytesAsLong()` has been renamed to `TraceId.lowPartAsLong()`
-- `TraceId.traceIdHighBytesAsLong()` has been renamed to `TraceId.highPartAsLong()`
 
 #### Enhancements
 
@@ -56,6 +59,13 @@ return an implementation that contains propagators, but is otherwise no-op.
 
 - The internal `StringUtils` class has had metrics-related methods removed from it. But, you weren't using
 internal classes, were you?
+- The internal `AbstractWeakConcurrentMap` class has been made non-public. See the line above about internal classes.
+
+### Extensions
+
+#### Breaking Changes
+
+- The `OtTracerPropagator` has been renamed to `OtTracePropagator` in the trace-propagators extension module.
 
 ### SDK
 
@@ -63,6 +73,8 @@ internal classes, were you?
 
 - `TraceConfig` has been renamed to `SpanLimits` and relocated to the `io.opentelemetry.sdk.tracing` package.
 All related method names have been renamed to match.
+- `SpanData.getTraceState()` has been removed. The TraceState is still available via the SpanContext accessor.
+- `SpanData.isSampled()` has been removed. The isSampled property is still available via the SpanContext accessor.
 
 #### Enhancements
 
