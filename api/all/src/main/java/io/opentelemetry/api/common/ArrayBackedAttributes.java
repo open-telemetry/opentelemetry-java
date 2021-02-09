@@ -46,7 +46,6 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
         data[i] = null;
       }
     }
-    return new ArrayBackedAttributes(
-        sortAndFilter(data, /* filterNullValues= */ true, KEY_COMPARATOR_FOR_CONSTRUCTION));
+    return new ArrayBackedAttributes(sortAndFilter(data, KEY_COMPARATOR_FOR_CONSTRUCTION));
   }
 }

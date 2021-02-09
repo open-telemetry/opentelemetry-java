@@ -22,7 +22,7 @@ final class ArrayBackedLabels extends ImmutableKeyValuePairs<String, String> imp
   }
 
   static Labels sortAndFilterToLabels(Object... data) {
-    return new ArrayBackedLabels(sortAndFilter(data, /* filterNullValues= */ true));
+    return new ArrayBackedLabels(sortAndFilter(data));
   }
 
   @Override
