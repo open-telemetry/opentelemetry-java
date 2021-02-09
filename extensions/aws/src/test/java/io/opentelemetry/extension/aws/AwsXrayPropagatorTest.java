@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.extension.trace.propagation;
+package io.opentelemetry.extension.aws;
 
-import static io.opentelemetry.extension.trace.propagation.AwsXrayPropagator.TRACE_HEADER_KEY;
+import static io.opentelemetry.extension.aws.AwsXrayPropagator.TRACE_HEADER_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.Span;
