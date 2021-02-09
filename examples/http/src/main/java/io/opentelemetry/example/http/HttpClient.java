@@ -7,6 +7,7 @@ package io.opentelemetry.example.http;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
@@ -47,7 +48,7 @@ public class HttpClient {
 
     // Name convention for the Span is not yet defined.
     // See: https://github.com/open-telemetry/opentelemetry-specification/issues/270
-    Span span = tracer.spanBuilder("/").setSpanKind(Span.Kind.CLIENT).startSpan();
+    Span span = tracer.spanBuilder("/").setSpanKind(SpanKind.CLIENT).startSpan();
     try (Scope scope = span.makeCurrent()) {
       span.setAttribute(SemanticAttributes.HTTP_METHOD, "GET");
       span.setAttribute("component", "http");

@@ -16,6 +16,7 @@ import io.grpc.ServerCallHandler;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -143,7 +144,7 @@ public class HelloWorldServer {
           tracer
               .spanBuilder("helloworld.Greeter/SayHello")
               .setParent(extractedContext)
-              .setSpanKind(Span.Kind.SERVER)
+              .setSpanKind(SpanKind.SERVER)
               .startSpan();
       try (Scope innerScope = span.makeCurrent()) {
         span.setAttribute("component", "grpc");

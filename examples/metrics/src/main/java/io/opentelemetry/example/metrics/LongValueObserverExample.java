@@ -1,9 +1,9 @@
 package io.opentelemetry.example.metrics;
 
-import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.common.Labels;
 
 /**
  * Example of using {@link LongValueObserver} to measure execution time of method. Setting the
