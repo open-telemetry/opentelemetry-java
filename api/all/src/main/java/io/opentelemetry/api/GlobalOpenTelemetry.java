@@ -80,9 +80,9 @@ public final class GlobalOpenTelemetry {
     synchronized (mutex) {
       if (globalOpenTelemetry != null) {
         throw new IllegalStateException(
-            "GlobalOpenTelemetry.set has already been called. GlobalOpenTelemetry.set must be"
-                + "called only once before any calls to GlobalOpenTelemetry.get. If you are using"
-                + "the OpenTelemetrySdk, use OpenTelemetrySdkBuilder.buildAndRegisterGlobal"
+            "GlobalOpenTelemetry.set has already been called. GlobalOpenTelemetry.set must be "
+                + "called only once before any calls to GlobalOpenTelemetry.get. If you are using "
+                + "the OpenTelemetrySdk, use OpenTelemetrySdkBuilder.buildAndRegisterGlobal "
                 + "instead. Previous invocation set to cause of this exception.",
             setGlobalCaller);
       }
