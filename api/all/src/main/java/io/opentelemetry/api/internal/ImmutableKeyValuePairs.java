@@ -7,8 +7,7 @@ package io.opentelemetry.api.internal;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -22,29 +21,43 @@ import javax.annotation.concurrent.Immutable;
  * <p>Key-value pairs are dropped for {@code null} or empty keys.
  *
  * <p>Note: for subclasses of this, null keys will be removed, but if your key has another concept
- * of being "empty", you'll need to remove them before calling {@link #sortAndFilter(Object[])},
- * assuming you don't want the "empty" keys to be kept in your collection.
+ * of being "empty", you'll need to remove them before calling the constructor, assuming you don't
+ * want the "empty" keys to be kept in your collection.
  *
  * @param <V> The type of the values contained in this.
  */
 @Immutable
 public abstract class ImmutableKeyValuePairs<K, V> {
-  private final List<Object> data;
+  private final Object[] data;
 
-  protected ImmutableKeyValuePairs(List<Object> data) {
-    this.data = data;
+  /**
+   * Sorts and dedupes the key/value pairs in {@code data}. {@code null} values will be removed.
+   * Keys must be {@link Comparable}.
+   */
+  protected ImmutableKeyValuePairs(Object[] data) {
+    this(data, Comparator.naturalOrder());
   }
 
+  /**
+   * Sorts and dedupes the key/value pairs in {@code data}. {@code null} values will be removed.
+   * Keys will be compared with the given {@link Comparator}.
+   */
+  protected ImmutableKeyValuePairs(Object[] data, Comparator<?> keyComparator) {
+    this.data = sortAndFilter(data, keyComparator);
+  }
+
+  // TODO: Improve this to avoid one allocation, for the moment only some Builders and the asMap
+  //  calls this.
   protected final List<Object> data() {
-    return data;
+    return Arrays.asList(data);
   }
 
   public final int size() {
-    return data().size() / 2;
+    return data.length / 2;
   }
 
   public final boolean isEmpty() {
-    return data().isEmpty();
+    return data.length == 0;
   }
 
   public final Map<K, V> asMap() {
@@ -58,9 +71,9 @@ public abstract class ImmutableKeyValuePairs<K, V> {
     if (key == null) {
       return null;
     }
-    for (int i = 0; i < data().size(); i += 2) {
-      if (key.equals(data().get(i))) {
-        return (V) data().get(i + 1);
+    for (int i = 0; i < data.length; i += 2) {
+      if (key.equals(data[i])) {
+        return (V) data[i + 1];
       }
     }
     return null;
@@ -69,26 +82,22 @@ public abstract class ImmutableKeyValuePairs<K, V> {
   /** Iterates over all the key-value pairs of labels contained by this instance. */
   @SuppressWarnings("unchecked")
   public final void forEach(BiConsumer<K, V> consumer) {
-    for (int i = 0; i < data().size(); i += 2) {
-      consumer.accept((K) data().get(i), (V) data().get(i + 1));
+    for (int i = 0; i < data.length; i += 2) {
+      consumer.accept((K) data[i], (V) data[i + 1]);
     }
-  }
-
-  /**
-   * Sorts and dedupes the key/value pairs in {@code data}. {@code null} values will be removed.
-   * Keys must be {@link Comparable}.
-   */
-  protected static List<Object> sortAndFilter(Object[] data) {
-    return sortAndFilter(data, Comparator.naturalOrder());
   }
 
   /**
    * Sorts and dedupes the key/value pairs in {@code data}. {@code null} values will be removed.
    * Keys will be compared with the given {@link Comparator}.
    */
-  protected static List<Object> sortAndFilter(Object[] data, Comparator<?> keyComparator) {
+  private static Object[] sortAndFilter(Object[] data, Comparator<?> keyComparator) {
     checkArgument(
         data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
+
+    if (data.length == 0) {
+      return data;
+    }
 
     mergeSort(data, keyComparator);
     return dedupe(data, keyComparator);
@@ -176,31 +185,39 @@ public abstract class ImmutableKeyValuePairs<K, V> {
   }
 
   @SuppressWarnings("unchecked")
-  private static <K> List<Object> dedupe(Object[] data, Comparator<K> keyComparator) {
-    List<Object> result = new ArrayList<>(data.length);
+  private static <K> Object[] dedupe(Object[] data, Comparator<K> keyComparator) {
     Object previousKey = null;
+    int size = 0;
 
-    // iterate in reverse, to implement the "last one in wins" behavior.
-    for (int i = data.length - 2; i >= 0; i -= 2) {
+    // Implement the "last one in wins" behavior.
+    for (int i = 0; i < data.length; i += 2) {
       Object key = data[i];
       Object value = data[i + 1];
+      // Skip entries with key null.
       if (key == null) {
         continue;
       }
+      // If the previously added key is equal with the current key, we overwrite what we have.
       if (previousKey != null && keyComparator.compare((K) key, (K) previousKey) == 0) {
-        continue;
+        size -= 2;
       }
-      previousKey = key;
+      // Skip entries with null value, we do it here because we want them to overwrite and remove
+      // entries with same key that we already added.
       if (value == null) {
         continue;
       }
-      // add them in reverse order, because we'll reverse the list before returning,
-      // to preserve insertion order.
-      result.add(value);
-      result.add(key);
+      previousKey = key;
+      data[size++] = key;
+      data[size++] = value;
     }
-    Collections.reverse(result);
-    return result;
+    // Elements removed from the array, copy the array. We optimize for the case where we don't have
+    // duplicates or invalid entries.
+    if (data.length != size) {
+      Object[] result = new Object[size];
+      System.arraycopy(data, 0, result, 0, size);
+      return result;
+    }
+    return data;
   }
 
   @Override
@@ -212,26 +229,25 @@ public abstract class ImmutableKeyValuePairs<K, V> {
       return false;
     }
     ImmutableKeyValuePairs<?, ?> that = (ImmutableKeyValuePairs<?, ?>) o;
-    return this.data.equals(that.data());
+    return Arrays.equals(this.data, that.data);
   }
 
   @Override
   public int hashCode() {
     int result = 1;
     result *= 1000003;
-    result ^= data.hashCode();
+    result ^= Arrays.hashCode(data);
     return result;
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder("{");
-    List<Object> data = data();
-    for (int i = 0; i < data.size(); i += 2) {
+    for (int i = 0; i < data.length; i += 2) {
       // Quote string values
-      Object value = data.get(i + 1);
+      Object value = data[i + 1];
       String valueStr = value instanceof String ? '"' + (String) value + '"' : value.toString();
-      sb.append(data.get(i)).append("=").append(valueStr).append(", ");
+      sb.append(data[i]).append("=").append(valueStr).append(", ");
     }
     // get rid of that last pesky comma
     if (sb.length() > 1) {

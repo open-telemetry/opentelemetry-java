@@ -75,6 +75,12 @@ public interface Sampler {
    * Returns a new TraceIdRatioBased {@link Sampler}. The ratio of sampling a trace is equal to that
    * of the specified ratio.
    *
+   * <p>The algorithm used by the {@link Sampler} is undefined, notably it may or may not use parts
+   * of the trace ID when generating a sampling decision. Currently, only the ratio of traces that
+   * are sampled can be relied on, not how the sampled traces are determined. As such, it is
+   * recommended to only use this {@link Sampler} for root spans using {@link
+   * Sampler#parentBased(Sampler)}.
+   *
    * @param ratio The desired ratio of sampling. Must be within [0.0, 1.0].
    * @return a new TraceIdRatioBased {@link Sampler}.
    * @throws IllegalArgumentException if {@code ratio} is out of range

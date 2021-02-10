@@ -19,6 +19,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -85,7 +86,7 @@ public class HelloWorldClientStream {
 
     // Start a span
     Span span =
-        tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(Span.Kind.CLIENT).startSpan();
+        tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(SpanKind.CLIENT).startSpan();
     span.setAttribute("component", "grpc");
     span.setAttribute(SemanticAttributes.RPC_SERVICE, "Greeter");
     span.setAttribute(SemanticAttributes.NET_HOST_IP, this.serverHostname);

@@ -18,6 +18,7 @@ import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
@@ -75,7 +76,7 @@ public class HelloWorldClient {
 
     // Start a span
     Span span =
-        tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(Span.Kind.CLIENT).startSpan();
+        tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(SpanKind.CLIENT).startSpan();
     span.setAttribute("component", "grpc");
     span.setAttribute("rpc.service", "Greeter");
     span.setAttribute("net.peer.ip", this.serverHostname);

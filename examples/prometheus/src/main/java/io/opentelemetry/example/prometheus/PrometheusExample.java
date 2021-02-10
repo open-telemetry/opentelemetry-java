@@ -1,9 +1,9 @@
 package io.opentelemetry.example.prometheus;
 
-import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
