@@ -20,6 +20,8 @@ changes are:
   
 - ABI changes that could require code using the artifact to be recompiled, but not changed, e.g.,
   changing the return type of a method from `void` to non-`void`, changing a `class` to an `interface`.
+  The [JLS](https://docs.oracle.com/javase/specs/jls/se7/html/jls-13.html) has more information on
+  what constitutes compatible changes.
 
 - Behavior changes that can require code using the artifact to be changed, e.g., throwing an exception
   in code that previously could not. Note, the opposite is not true, replacing an exception with a
@@ -34,8 +36,8 @@ are expected to be aligned by using BOMs we publish. We will always provide BOMs
 of versions.
 
 As a user, if you always depend on the latest version of the BOM for a given `MAJOR` version, and
-you do not use classes in the `internal` package, you can be assured that your app will always
-function and have the latest features of OpenTelemetry.
+you do not use classes in the `internal` package (which you MUST NOT do), you can be assured that
+your app will always function and have the latest features of OpenTelemetry.
 
 ## API vs SDK
 
