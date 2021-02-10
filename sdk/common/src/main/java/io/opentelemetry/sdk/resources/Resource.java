@@ -40,7 +40,7 @@ import javax.annotation.concurrent.Immutable;
 public abstract class Resource {
 
   private static final String OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_PROPERTY_KEY =
-      "otel.java.disabled.resource_providers";
+      "otel.java.disabled.resource-providers";
 
   private static final String OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_ENV_KEY =
       "OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS";
