@@ -31,7 +31,7 @@ changes are:
 Such changes will be avoided - if they must be made, the `MAJOR` version of the artifact will be
 incremented.
 
-Backwards incompatible changes to `internal` packages are allowed. Versions of published artifacts
+Backwards incompatible changes to `internal` packages are expected. Versions of published artifacts
 are expected to be aligned by using BOMs we publish. We will always provide BOMs to allow alignment
 of versions.
 
