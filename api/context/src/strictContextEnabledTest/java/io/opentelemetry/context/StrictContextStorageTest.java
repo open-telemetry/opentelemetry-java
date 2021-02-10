@@ -68,7 +68,7 @@ class StrictContextStorageTest {
       try (Scope ws2 = Context.current().with(ANIMAL, "dog").makeCurrent()) {}
     }
 
-    ((StrictContextStorage) ContextStorage.get()).ensureAllClosed(); // doesn't error
+    ((StrictContextStorage) ContextStorage.get()).close(); // doesn't error
   }
 
   static final class BusinessClass {
@@ -146,7 +146,7 @@ class StrictContextStorageTest {
     thread.start();
     thread.join();
 
-    assertThatThrownBy(() -> ((StrictContextStorage) ContextStorage.get()).ensureAllClosed())
+    assertThatThrownBy(() -> ((StrictContextStorage) ContextStorage.get()).close())
         .isInstanceOf(AssertionError.class)
         .satisfies(
             t -> assertThat(t.getMessage()).matches("Thread \\[t1\\] opened a scope of .* here:"))
@@ -162,7 +162,7 @@ class StrictContextStorageTest {
   void multipleLeaks() {
     Scope scope1 = Context.current().with(ANIMAL, "cat").makeCurrent();
     Scope scope2 = Context.current().with(ANIMAL, "dog").makeCurrent();
-    assertThatThrownBy(() -> ((StrictContextStorage) ContextStorage.get()).ensureAllClosed())
+    assertThatThrownBy(() -> ((StrictContextStorage) ContextStorage.get()).close())
         .isInstanceOf(AssertionError.class);
   }
 
