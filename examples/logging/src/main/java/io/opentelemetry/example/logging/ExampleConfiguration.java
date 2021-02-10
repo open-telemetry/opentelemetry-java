@@ -42,6 +42,6 @@ public class ExampleConfiguration {
         SdkTracerProvider.builder()
             .addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()))
             .build();
-    return OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
+    return OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
   }
 }
