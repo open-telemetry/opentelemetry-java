@@ -1,6 +1,6 @@
 package io.opentelemetry.example.logging;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.trace.Span;
@@ -16,8 +16,8 @@ public class LoggingExporterExample {
   private final Tracer tracer;
   private final LongCounter counter;
 
-  public LoggingExporterExample() {
-    tracer = GlobalOpenTelemetry.getTracer(INSTRUMENTATION_NAME);
+  public LoggingExporterExample(OpenTelemetry openTelemetry) {
+    tracer = openTelemetry.getTracer(INSTRUMENTATION_NAME);
     counter =
         GlobalMetricsProvider.getMeter(INSTRUMENTATION_NAME)
             .longCounterBuilder("work_done")
@@ -46,10 +46,10 @@ public class LoggingExporterExample {
 
   public static void main(String[] args) {
     // it is important to initialize your SDK as early as possible in your application's lifecycle
-    ExampleConfiguration.initOpenTelemetry();
+    OpenTelemetry oTel = ExampleConfiguration.initOpenTelemetry();
 
     // Start the example
-    LoggingExporterExample example = new LoggingExporterExample();
+    LoggingExporterExample example = new LoggingExporterExample(oTel);
     // Generate a few sample spans
     for (int i = 0; i < 5; i++) {
       example.myWonderfulUseCase();
