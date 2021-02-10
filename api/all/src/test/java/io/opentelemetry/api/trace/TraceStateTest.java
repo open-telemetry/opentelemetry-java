@@ -34,6 +34,7 @@ class TraceStateTest {
     assertThat(multiValueTraceState.get(FIRST_KEY)).isEqualTo(FIRST_VALUE);
     assertThat(multiValueTraceState.get(SECOND_KEY)).isEqualTo(SECOND_VALUE);
     assertThat(firstTraceState.get("dog")).isNull();
+    assertThat(firstTraceState.get(null)).isNull();
   }
 
   @Test

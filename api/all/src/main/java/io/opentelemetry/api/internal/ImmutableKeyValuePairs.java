@@ -68,6 +68,9 @@ public abstract class ImmutableKeyValuePairs<K, V> {
   @Nullable
   @SuppressWarnings("unchecked")
   public final V get(K key) {
+    if (key == null) {
+      return null;
+    }
     for (int i = 0; i < data.length; i += 2) {
       if (key.equals(data[i])) {
         return (V) data[i + 1];
