@@ -24,7 +24,7 @@ public class ExampleConfiguration {
    *
    * @return A ready-to-use {@link OpenTelemetry} instance.
    */
-  public static OpenTelemetry initOpenTelemetry() {
+  public static void initOpenTelemetry() {
     // This will be used to create instruments
     SdkMeterProvider meterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
 
@@ -35,13 +35,12 @@ public class ExampleConfiguration {
         .setMetricProducers(Collections.singleton(meterProvider))
         .setExportIntervalMillis(METRIC_EXPORT_INTERVAL_MS)
         .build();
-
     // Tracer provider configured to export spans with SimpleSpanProcessor using
     // the logging exporter.
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()))
             .build();
-    return OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
+    OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
   }
 }
