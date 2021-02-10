@@ -922,7 +922,7 @@ class SdkSpanBuilderTest {
                 + "startEpochNanos=[0-9]+, "
                 + "endEpochNanos=[0-9]+, "
                 + "attributes=AttributesMap\\{data=\\{http.status_code=500, "
-                + "http.url=https://opentelemetry.io}, capacity=1000, totalAddedValues=2}, "
+                + "http.url=https://opentelemetry.io}, capacity=128, totalAddedValues=2}, "
                 + "totalAttributeCount=2, "
                 + "events=\\[], "
                 + "totalRecordedEvents=0, "
