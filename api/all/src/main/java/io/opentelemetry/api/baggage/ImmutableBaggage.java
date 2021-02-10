@@ -64,7 +64,7 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
     }
 
     Builder(List<Object> data) {
-      this.data = new ArrayList<>(data);
+      this.data = data;
     }
 
     @Override
