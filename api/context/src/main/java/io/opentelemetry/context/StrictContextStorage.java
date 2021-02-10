@@ -33,37 +33,11 @@ import java.util.stream.Collectors;
 
 /**
  * A {@link ContextStorage} which keeps track of opened and closed {@link Scope}s, reporting caller
- * information if a {@link Scope} is closed incorrectly or not at all. This is useful in
- * instrumentation tests to check whether any scopes leaked.
+ * information if a {@link Scope} is closed incorrectly or not at all.
  *
- * <pre>{@code
- * > class MyInstrumentationTest {
- * >   private static ContextStorage previousStorage;
- * >   private static StrictContextStorage strictStorage;
- * >
- * >   @BeforeAll
- * >   static void setUp() {
- * >     previousStorage = ContextStorage.get()
- * >     strictStorage = StrictContextStorage.create(previousStorage);
- * >     ContextStorage.set(strictStorage);
- * >   }
- * >
- * >   @AfterEach
- * >   void checkScopes() {
- * >     strictStorage.ensureAllClosed();
- * >   }
- * >
- * >   @AfterAll
- * >   static void tearDown() {
- * >     ContextStorage.set(previousStorage);
- * >   }
- * >
- * >   @Test
- * >   void badTest() {
- * >     Context.root().makeCurrent();
- * >   }
- * > }
- * }</pre>
+ * <p>Calling {@link StrictContextStorage#close()} will check at the moment it's called whether
+ * there are any scopes that have been opened but not closed yet. This could be called at the end of
+ * a unit test to ensure the tested code cleaned up scopes correctly.
  */
 final class StrictContextStorage implements ContextStorage, AutoCloseable {
 
