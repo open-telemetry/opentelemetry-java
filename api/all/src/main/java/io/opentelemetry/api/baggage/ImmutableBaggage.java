@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.baggage;
 
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.context.Context;
@@ -67,9 +69,7 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
 
     @Override
     public BaggageBuilder setParent(Context context) {
-      if (context == null) {
-        return this;
-      }
+      requireNonNull(context, "context");
       parent = Baggage.fromContext(context);
       return this;
     }
