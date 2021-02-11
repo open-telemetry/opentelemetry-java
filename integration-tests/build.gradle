@@ -18,9 +18,5 @@ dependencies {
             "org.testcontainers:junit-jupiter",
             "com.squareup.okhttp3:okhttp"
 
-    tasks.withType(Test) {
-        dependsOn shadowJar
-        systemProperty 'archive.name', shadowJar.archiveFile.get().asFile.absolutePath
-    }
 }
 
