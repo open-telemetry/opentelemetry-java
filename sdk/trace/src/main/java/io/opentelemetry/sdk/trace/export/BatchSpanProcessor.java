@@ -246,8 +246,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
-      this.flushRequested.compareAndSet(null, flushResult);
-      return this.flushRequested.get();
+      // we set the atomic here to trigger the worker loop to do a flush on its next iteration.
+      flushRequested.compareAndSet(null, flushResult);
+      CompletableResultCode possibleResult = flushRequested.get();
+      // there's a race here where the flush happening in the worker loop could complete before
+      // get what's in the atomic. In that case, just return success, since we know it succeeded in
+      // the interim.
+      return possibleResult == null ? CompletableResultCode.ofSuccess() : possibleResult;
     }
 
     private void exportCurrentBatch() {
