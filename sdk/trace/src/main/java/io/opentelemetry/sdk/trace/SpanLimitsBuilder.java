@@ -10,11 +10,11 @@ import io.opentelemetry.api.trace.Span;
 
 /** Builder for {@link SpanLimits}. */
 public final class SpanLimitsBuilder {
-  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 1000;
-  private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 1000;
-  private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 1000;
-  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
-  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
+  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 128;
+  private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
+  private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 128;
+  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 128;
+  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 128;
   private static final int DEFAULT_MAX_ATTRIBUTE_LENGTH = SpanLimits.UNLIMITED_ATTRIBUTE_LENGTH;
 
   private int maxNumAttributes = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES;

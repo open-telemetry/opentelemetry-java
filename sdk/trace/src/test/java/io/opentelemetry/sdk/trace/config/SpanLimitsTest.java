@@ -14,11 +14,11 @@ class SpanLimitsTest {
 
   @Test
   void defaultSpanLimits() {
-    assertThat(SpanLimits.getDefault().getMaxNumberOfAttributes()).isEqualTo(1000);
-    assertThat(SpanLimits.getDefault().getMaxNumberOfEvents()).isEqualTo(1000);
-    assertThat(SpanLimits.getDefault().getMaxNumberOfLinks()).isEqualTo(1000);
-    assertThat(SpanLimits.getDefault().getMaxNumberOfAttributesPerEvent()).isEqualTo(32);
-    assertThat(SpanLimits.getDefault().getMaxNumberOfAttributesPerLink()).isEqualTo(32);
+    assertThat(SpanLimits.getDefault().getMaxNumberOfAttributes()).isEqualTo(128);
+    assertThat(SpanLimits.getDefault().getMaxNumberOfEvents()).isEqualTo(128);
+    assertThat(SpanLimits.getDefault().getMaxNumberOfLinks()).isEqualTo(128);
+    assertThat(SpanLimits.getDefault().getMaxNumberOfAttributesPerEvent()).isEqualTo(128);
+    assertThat(SpanLimits.getDefault().getMaxNumberOfAttributesPerLink()).isEqualTo(128);
   }
 
   @Test
