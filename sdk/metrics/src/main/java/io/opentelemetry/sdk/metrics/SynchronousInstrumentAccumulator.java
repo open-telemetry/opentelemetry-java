@@ -6,10 +6,12 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -21,6 +23,7 @@ final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
   private final ReentrantLock collectLock;
   private final Aggregator<T> aggregator;
   private final InstrumentProcessor<T> instrumentProcessor;
+  private final LabelsProcessor labelsProcessor;
 
   static <T> SynchronousInstrumentAccumulator<T> create(
       MeterProviderSharedState meterProviderSharedState,
@@ -30,19 +33,22 @@ final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
         getAggregator(meterProviderSharedState, meterSharedState, descriptor);
     return new SynchronousInstrumentAccumulator<>(
         aggregator,
-        new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos()));
+        new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos()),
+        getLabelsProcessor(meterProviderSharedState, descriptor));
   }
 
   SynchronousInstrumentAccumulator(
-      Aggregator<T> aggregator, InstrumentProcessor<T> instrumentProcessor) {
+      Aggregator<T> aggregator, InstrumentProcessor<T> instrumentProcessor, LabelsProcessor labelsProcessor) {
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
     this.aggregator = aggregator;
     this.instrumentProcessor = instrumentProcessor;
+    this.labelsProcessor = labelsProcessor;
   }
 
   AggregatorHandle<?> bind(Labels labels) {
     Objects.requireNonNull(labels, "labels");
+    labels = labelsProcessor.onLabelsBound(Context.current(), labels);
     AggregatorHandle<T> aggregatorHandle = aggregatorLabels.get(labels);
     if (aggregatorHandle != null && aggregatorHandle.acquire()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.

@@ -12,7 +12,9 @@ import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -102,6 +104,12 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
    * }</pre>
    */
   public void registerView(InstrumentSelector selector, AggregatorFactory aggregatorFactory) {
-    sharedState.getViewRegistry().registerView(selector, aggregatorFactory);
+    sharedState.getViewRegistry().registerView(selector, View.builder().setAggregatorFactory(aggregatorFactory).build());
+  }
+  public void registerView(InstrumentSelector selector, AggregatorFactory aggregatorFactory,
+      LabelsProcessorFactory labelsProcessorFactory) {
+    sharedState.getViewRegistry().registerView(selector, View.builder()
+        .setAggregatorFactory(aggregatorFactory)
+        .setLabelsProcessorFactory(labelsProcessorFactory).build());
   }
 }

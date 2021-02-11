@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.sdk.metrics.view.View;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
@@ -18,6 +20,7 @@ class ViewRegistryTest {
   @Test
   void selection_onType() {
     AggregatorFactory factory = AggregatorFactory.lastValue();
+    View view = View.builder().setAggregatorFactory(factory).build();
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -25,7 +28,7 @@ class ViewRegistryTest {
             .setInstrumentType(InstrumentType.COUNTER)
             .setInstrumentNameRegex(".*")
             .build(),
-        factory);
+        view);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
@@ -42,6 +45,7 @@ class ViewRegistryTest {
   @Test
   void selection_onName() {
     AggregatorFactory factory = AggregatorFactory.lastValue();
+    View view = View.builder().setAggregatorFactory(factory).build();
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -49,7 +53,7 @@ class ViewRegistryTest {
             .setInstrumentType(InstrumentType.COUNTER)
             .setInstrumentNameRegex("overridden")
             .build(),
-        factory);
+        view);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
@@ -66,7 +70,9 @@ class ViewRegistryTest {
   @Test
   void selection_LastAddedViewWins() {
     AggregatorFactory factory1 = AggregatorFactory.lastValue();
+    View view1 = View.builder().setAggregatorFactory(factory1).build();
     AggregatorFactory factory2 = AggregatorFactory.minMaxSumCount();
+    View view2 = View.builder().setAggregatorFactory(factory2).build();
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -74,13 +80,13 @@ class ViewRegistryTest {
             .setInstrumentType(InstrumentType.COUNTER)
             .setInstrumentNameRegex(".*")
             .build(),
-        factory1);
+        view1);
     viewRegistry.registerView(
         InstrumentSelector.builder()
             .setInstrumentType(InstrumentType.COUNTER)
             .setInstrumentNameRegex("overridden")
             .build(),
-        factory2);
+        view2);
 
     assertThat(
             viewRegistry.findView(
@@ -97,6 +103,7 @@ class ViewRegistryTest {
   @Test
   void selection_regex() {
     AggregatorFactory factory = AggregatorFactory.lastValue();
+    View view = View.builder().setAggregatorFactory(factory).build();
 
     ViewRegistry viewRegistry = new ViewRegistry();
     viewRegistry.registerView(
@@ -104,7 +111,7 @@ class ViewRegistryTest {
             .setInstrumentNameRegex("overrid(es|den)")
             .setInstrumentType(InstrumentType.COUNTER)
             .build(),
-        factory);
+        view);
 
     assertThat(
             viewRegistry.findView(

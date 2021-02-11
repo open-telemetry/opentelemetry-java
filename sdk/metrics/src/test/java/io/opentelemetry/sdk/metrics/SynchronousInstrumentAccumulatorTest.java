@@ -5,6 +5,10 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
+
+import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.metrics.common.Labels;
@@ -28,12 +32,13 @@ public class SynchronousInstrumentAccumulatorTest {
       AggregatorFactory.lastValue()
           .create(
               Resource.getEmpty(), InstrumentationLibraryInfo.create("test", "1.0"), DESCRIPTOR);
+  private final LabelsProcessor labelsProcessor = LabelsProcessorFactory.noop().create();
 
   @Test
   void sameAggregator_ForSameLabelSet() {
     SynchronousInstrumentAccumulator<?> accumulator =
         new SynchronousInstrumentAccumulator<>(
-            aggregator, new InstrumentProcessor<>(aggregator, testClock.now()));
+            aggregator, new InstrumentProcessor<>(aggregator, testClock.now()), labelsProcessor);
     AggregatorHandle<?> aggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     AggregatorHandle<?> duplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
     try {
