@@ -10,12 +10,18 @@ import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.PR
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.PROCESS_RUNTIME_VERSION;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 
-/** {@link ResourceProvider} which provides information about the Java runtime. */
-public final class ProcessRuntimeResource extends ResourceProvider {
-  @Override
-  protected Attributes getAttributes() {
+/** {@link Resource} which provides information about the Java runtime. */
+public final class ProcessRuntimeResource {
+
+  private static final Resource INSTANCE = buildResource();
+
+  public static Resource getInstance() {
+    return INSTANCE;
+  }
+
+  private static Resource buildResource() {
     try {
       String name = System.getProperty("java.runtime.name");
       String version = System.getProperty("java.runtime.version");
@@ -26,15 +32,15 @@ public final class ProcessRuntimeResource extends ResourceProvider {
               + " "
               + System.getProperty("java.vm.version");
 
-      return Attributes.of(
+      return Resource.create(Attributes.of(
           PROCESS_RUNTIME_NAME,
           name,
           PROCESS_RUNTIME_VERSION,
           version,
           PROCESS_RUNTIME_DESCRIPTION,
-          description);
+          description));
     } catch (SecurityException ignored) {
-      return Attributes.empty();
+      return Resource.getEmpty();
     }
   }
 }

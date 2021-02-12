@@ -15,7 +15,7 @@ import org.junitpioneer.jupiter.SetSystemProperty;
 
 class ProcessResourceTest {
 
-  private static final ProcessResource RESOURCE = new ProcessResource();
+  private static final Resource RESOURCE = ProcessResource.getInstance();
 
   @Test
   @SetSystemProperty(key = "os.name", value = "Linux 4.12")

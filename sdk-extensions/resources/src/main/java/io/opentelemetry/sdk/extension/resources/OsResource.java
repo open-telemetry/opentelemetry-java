@@ -7,25 +7,31 @@ package io.opentelemetry.sdk.extension.resources;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import javax.annotation.Nullable;
 
-/** {@link ResourceProvider} which provides information about the current operating system. */
-public final class OsResource extends ResourceProvider {
+/** {@link Resource} which provides information about the current operating system. */
+public final class OsResource {
 
-  @Override
-  protected Attributes getAttributes() {
+  private static final Resource INSTANCE = buildResource();
+
+  public static Resource getInstance() {
+    return INSTANCE;
+  }
+
+  private static Resource buildResource() {
+
     final String os;
     try {
       os = System.getProperty("os.name");
     } catch (SecurityException t) {
       // Security manager enabled, can't provide much os information.
-      return Attributes.empty();
+      return Resource.getEmpty();
     }
 
     if (os == null) {
-      return Attributes.empty();
+      return Resource.getEmpty();
     }
 
     AttributesBuilder attributes = Attributes.builder();
@@ -44,7 +50,7 @@ public final class OsResource extends ResourceProvider {
     String osDescription = version != null ? os + ' ' + version : os;
     attributes.put(ResourceAttributes.OS_DESCRIPTION, osDescription);
 
-    return attributes.build();
+    return Resource.create(attributes.build());
   }
 
   @Nullable
@@ -75,4 +81,6 @@ public final class OsResource extends ResourceProvider {
     }
     return null;
   }
+
+  private OsResource() {}
 }

@@ -157,8 +157,8 @@ public abstract class Resource {
   }
 
   /**
-   * Returns a {@link Resource}. This resource information is loaded from the
-   * OTEL_RESOURCE_ATTRIBUTES environment variable or otel.resource.attributes system properties.
+   * Returns the default {@link Resource}. This resource contains the default attributes provided by
+   * the SDK.
    *
    * @return a {@code Resource}.
    */

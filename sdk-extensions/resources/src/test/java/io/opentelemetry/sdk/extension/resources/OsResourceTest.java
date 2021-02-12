@@ -15,7 +15,7 @@ import org.junitpioneer.jupiter.SetSystemProperty;
 
 class OsResourceTest {
 
-  private static final OsResource RESOURCE = new OsResource();
+  private static final Resource RESOURCE = OsResource.getInstance();
 
   @Test
   @SetSystemProperty(key = "os.name", value = "Linux 4.11")

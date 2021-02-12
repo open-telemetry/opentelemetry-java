@@ -7,16 +7,22 @@ package io.opentelemetry.sdk.extension.resources;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 
-/** {@link ResourceProvider} which provides information about the current running process. */
-public final class ProcessResource extends ResourceProvider {
-  @Override
-  protected Attributes getAttributes() {
+/** {@link Resource} which provides information about the current running process. */
+public final class ProcessResource {
+
+  private static final Resource INSTANCE = buildResource();
+
+  public static Resource getInstance() {
+    return INSTANCE;
+  }
+
+  private static Resource buildResource() {
     AttributesBuilder attributes = Attributes.builder();
 
     // TODO(anuraaga): Use reflection to get more stable values on Java 9+
@@ -67,6 +73,6 @@ public final class ProcessResource extends ResourceProvider {
       attributes.put(ResourceAttributes.PROCESS_COMMAND_LINE, commandLine.toString());
     }
 
-    return attributes.build();
+    return Resource.create(attributes.build());
   }
 }

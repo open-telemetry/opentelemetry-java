@@ -13,5 +13,7 @@ dependencies {
     api project(':sdk:common')
     api project(':semconv')
 
+    compileOnly project(':sdk-extensions:autoconfigure')
+
     testImplementation "org.junit-pioneer:junit-pioneer"
 }
