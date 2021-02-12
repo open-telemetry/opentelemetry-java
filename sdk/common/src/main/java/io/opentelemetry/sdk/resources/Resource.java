@@ -90,10 +90,10 @@ public abstract class Resource {
 
   private static Resource readResourceFromProviders() {
     String disabledResourceProvidersConfig =
-        System.getenv(OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_ENV_KEY);
+        System.getProperty(OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_PROPERTY_KEY, "");
     if (disabledResourceProvidersConfig == null) {
       disabledResourceProvidersConfig =
-          System.getProperty(OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_PROPERTY_KEY, "");
+          System.getenv(OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_ENV_KEY);
     }
     Set<String> disabledResourceProviders =
         Arrays.stream(disabledResourceProvidersConfig.split(","))
