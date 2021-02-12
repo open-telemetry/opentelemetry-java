@@ -13,7 +13,9 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,7 +56,7 @@ public final class OtTracePropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, C carrier, Setter<C> setter) {
+  public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
     if (context == null || setter == null) {
       return;
     }
@@ -80,7 +82,7 @@ public final class OtTracePropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null || getter == null) {
       // TODO Other propagators throw exceptions here
       return context;

@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -20,8 +20,8 @@ import org.junit.jupiter.api.Test;
 
 class W3CBaggagePropagatorTest {
 
-  private static final Getter<Map<String, String>> getter =
-      new Getter<Map<String, String>>() {
+  private static final TextMapGetter<Map<String, String>> getter =
+      new TextMapGetter<Map<String, String>>() {
         @Override
         public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();

@@ -15,7 +15,9 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TraceStateBuilder;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -97,7 +99,7 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, @Nullable C carrier, Setter<C> setter) {
+  public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
@@ -145,7 +147,7 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(getter, "getter");
 
@@ -157,8 +159,7 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
     return context.with(Span.wrap(spanContext));
   }
 
-  private static <C> SpanContext extractImpl(
-      @Nullable C carrier, TextMapPropagator.Getter<C> getter) {
+  private static <C> SpanContext extractImpl(@Nullable C carrier, TextMapGetter<C> getter) {
     String traceParent = getter.get(carrier, TRACE_PARENT);
     if (traceParent == null) {
       return SpanContext.getInvalid();

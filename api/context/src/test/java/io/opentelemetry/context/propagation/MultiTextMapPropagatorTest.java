@@ -30,8 +30,8 @@ class MultiTextMapPropagatorTest {
   @Mock private TextMapPropagator propagator2;
   @Mock private TextMapPropagator propagator3;
 
-  private static final TextMapPropagator.Getter<Map<String, String>> getter =
-      new TextMapPropagator.Getter<Map<String, String>>() {
+  private static final TextMapGetter<Map<String, String>> getter =
+      new TextMapGetter<Map<String, String>>() {
         @Override
         public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
@@ -84,7 +84,7 @@ class MultiTextMapPropagatorTest {
   void inject_allDelegated() {
     Map<String, String> carrier = new HashMap<>();
     Context context = mock(Context.class);
-    TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
+    TextMapSetter<Map<String, String>> setter = Map::put;
 
     TextMapPropagator prop = new MultiTextMapPropagator(propagator1, propagator2, propagator3);
     prop.inject(context, carrier, setter);

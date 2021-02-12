@@ -7,7 +7,9 @@ package io.opentelemetry.extension.trace.propagation;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -122,12 +124,12 @@ public final class B3Propagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, @Nullable C carrier, Setter<C> setter) {
+  public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
     b3PropagatorInjector.inject(context, carrier, setter);
   }
 
   @Override
-  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     return Stream.<Supplier<Optional<Context>>>of(
             () -> singleHeaderExtractor.extract(context, carrier, getter),
             () -> multipleHeadersExtractor.extract(context, carrier, getter),

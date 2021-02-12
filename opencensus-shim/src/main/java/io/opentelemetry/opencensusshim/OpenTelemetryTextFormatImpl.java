@@ -11,6 +11,7 @@ import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.propagation.TextFormat;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +44,7 @@ class OpenTelemetryTextFormatImpl extends TextFormat {
         propagator.extract(
             Context.current(),
             carrier,
-            new TextMapPropagator.Getter<C>() {
+            new TextMapGetter<C>() {
               // OC Getter cannot return keys for an object, but users should not need it either.
               @Override
               public Iterable<String> keys(C carrier) {
