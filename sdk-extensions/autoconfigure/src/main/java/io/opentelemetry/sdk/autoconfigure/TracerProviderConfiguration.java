@@ -39,11 +39,12 @@ final class TracerProviderConfiguration {
     }
 
     String exporterName = config.getString("otel.traces.exporter");
-    if (exporterName != null) {
-      SpanExporter exporter = SpanExporterConfiguration.configureExporter(exporterName, config);
-      if (exporter != null) {
-        tracerProviderBuilder.addSpanProcessor(configureSpanProcessor(config, exporter));
-      }
+    if (exporterName == null) {
+      exporterName = "otlp";
+    }
+    SpanExporter exporter = SpanExporterConfiguration.configureExporter(exporterName, config);
+    if (exporter != null) {
+      tracerProviderBuilder.addSpanProcessor(configureSpanProcessor(config, exporter));
     }
 
     SdkTracerProvider tracerProvider = tracerProviderBuilder.build();

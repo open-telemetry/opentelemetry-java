@@ -44,9 +44,10 @@ public final class OpenTelemetrySdkAutoConfiguration {
         SdkMeterProvider.builder().setResource(resource).buildAndRegisterGlobal();
 
     String exporterName = config.getString("otel.metrics.exporter");
-    if (exporterName != null) {
-      MetricExporterConfiguration.configureExporter(exporterName, config, meterProvider);
+    if (exporterName == null) {
+      exporterName = "otlp";
     }
+    MetricExporterConfiguration.configureExporter(exporterName, config, meterProvider);
   }
 
   private OpenTelemetrySdkAutoConfiguration() {}
