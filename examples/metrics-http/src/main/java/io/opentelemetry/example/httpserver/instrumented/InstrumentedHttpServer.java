@@ -34,7 +34,7 @@ public class InstrumentedHttpServer {
           // not their own code.  This allows downstream filtering/altering of "built-in" metrics
           // a bit easier, as you can find/filter what you need from various sources, similar to
           // "Logger.getLogger(name)" in logging libraries.
-          .getMeter("io.opentelemetry.example.metrics-http", "0.1.0");
+          .getMeter("io.opentelemetry.example.metrics-http.server", "0.1.0");
 
   /** The description of the metric where we'll be storing durations values. */
   private static final LongValueRecorder durationMetric =
