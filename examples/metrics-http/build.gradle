@@ -9,6 +9,8 @@ ext.moduleName = "io.opentelemetry.examples.metrics-http"
 application {
   mainClass = 'io.oopentelemetry.example.httpserver.application.Application'
 }
+// Shadow jar requires this here for some reason.
+mainClassName = 'io.oopentelemetry.example.httpserver.application.Application'
 dependencies {
     implementation("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-api-metrics:${openTelemetryAlphaVersion}")
