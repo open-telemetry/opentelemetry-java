@@ -5,10 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
-
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.metrics.common.Labels;
@@ -20,6 +16,8 @@ import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
+import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 

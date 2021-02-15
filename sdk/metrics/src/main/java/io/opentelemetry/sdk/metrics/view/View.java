@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.view;
 
 import com.google.auto.value.AutoValue;
@@ -19,7 +24,9 @@ public abstract class View {
   @AutoValue.Builder
   public abstract static class Builder {
     public abstract Builder setAggregatorFactory(AggregatorFactory aggregatorFactory);
-    public abstract Builder setLabelsProcessorFactory(LabelsProcessorFactory labelsProcessorFactory);
+
+    public abstract Builder setLabelsProcessorFactory(
+        LabelsProcessorFactory labelsProcessorFactory);
 
     public abstract View build();
   }

@@ -24,11 +24,13 @@ import java.util.regex.Pattern;
  * never blocked.
  */
 final class ViewRegistry {
-  private static final LinkedHashMap<Pattern, View> EMPTY_CONFIG =
-      new LinkedHashMap<>();
-  static final View CUMULATIVE_SUM = View.builder().setAggregatorFactory(AggregatorFactory.sum(true)).build();
-  static final View SUMMARY = View.builder().setAggregatorFactory(AggregatorFactory.minMaxSumCount()).build();
-  static final View LAST_VALUE = View.builder().setAggregatorFactory(AggregatorFactory.lastValue()).build();
+  private static final LinkedHashMap<Pattern, View> EMPTY_CONFIG = new LinkedHashMap<>();
+  static final View CUMULATIVE_SUM =
+      View.builder().setAggregatorFactory(AggregatorFactory.sum(true)).build();
+  static final View SUMMARY =
+      View.builder().setAggregatorFactory(AggregatorFactory.minMaxSumCount()).build();
+  static final View LAST_VALUE =
+      View.builder().setAggregatorFactory(AggregatorFactory.lastValue()).build();
 
   // The lock is used to ensure only one updated to the configuration happens at any moment.
   private final ReentrantLock lock = new ReentrantLock();
@@ -62,8 +64,7 @@ final class ViewRegistry {
   }
 
   View findView(InstrumentDescriptor descriptor) {
-    LinkedHashMap<Pattern, View> configPerType =
-        configuration.get(descriptor.getType());
+    LinkedHashMap<Pattern, View> configPerType = configuration.get(descriptor.getType());
     for (Map.Entry<Pattern, View> entry : configPerType.entrySet()) {
       if (entry.getKey().matcher(descriptor.getName()).matches()) {
         return entry.getValue();
@@ -89,9 +90,7 @@ final class ViewRegistry {
   }
 
   private static LinkedHashMap<Pattern, View> newLinkedHashMap(
-      Pattern pattern,
-      View aggregatorFactory,
-      LinkedHashMap<Pattern, View> parentConfiguration) {
+      Pattern pattern, View aggregatorFactory, LinkedHashMap<Pattern, View> parentConfiguration) {
     LinkedHashMap<Pattern, View> result = new LinkedHashMap<>();
     result.put(pattern, aggregatorFactory);
     result.putAll(parentConfiguration);

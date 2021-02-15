@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.sdk.metrics.view.View;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
@@ -14,6 +12,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.View;
 import org.junit.jupiter.api.Test;
 
 class ViewRegistryTest {
@@ -33,7 +32,7 @@ class ViewRegistryTest {
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(factory);
+        .isEqualTo(view);
     // this one hasn't been configured, so it gets the default still.
     assertThat(
             viewRegistry.findView(
@@ -58,7 +57,7 @@ class ViewRegistryTest {
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isSameAs(factory);
+        .isSameAs(view);
     // this one hasn't been configured, so it gets the default still.
     assertThat(
             viewRegistry.findView(
@@ -92,12 +91,12 @@ class ViewRegistryTest {
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(factory2);
+        .isEqualTo(view2);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(factory1);
+        .isEqualTo(view1);
   }
 
   @Test
@@ -117,12 +116,12 @@ class ViewRegistryTest {
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(factory);
+        .isEqualTo(view);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
                     "overrides", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
-        .isEqualTo(factory);
+        .isEqualTo(view);
     // this one hasn't been configured, so it gets the default still..
     assertThat(
             viewRegistry.findView(

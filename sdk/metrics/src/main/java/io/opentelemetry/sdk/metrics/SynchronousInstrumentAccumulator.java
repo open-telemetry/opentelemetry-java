@@ -38,7 +38,9 @@ final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
   }
 
   SynchronousInstrumentAccumulator(
-      Aggregator<T> aggregator, InstrumentProcessor<T> instrumentProcessor, LabelsProcessor labelsProcessor) {
+      Aggregator<T> aggregator,
+      InstrumentProcessor<T> instrumentProcessor,
+      LabelsProcessor labelsProcessor) {
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
     this.aggregator = aggregator;
