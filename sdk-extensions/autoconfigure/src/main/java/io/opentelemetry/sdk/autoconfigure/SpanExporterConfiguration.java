@@ -23,9 +23,11 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.annotation.Nullable;
 
 final class SpanExporterConfiguration {
 
+  @Nullable
   static SpanExporter configureExporter(String name, ConfigProperties config) {
     Map<String, SpanExporter> spiExporters =
         StreamSupport.stream(
@@ -38,7 +40,6 @@ final class SpanExporterConfiguration {
 
     switch (name) {
       case "otlp":
-      case "otlp_span":
         return configureOtlpSpans(config);
       case "jaeger":
         return configureJaeger(config);
@@ -50,6 +51,8 @@ final class SpanExporterConfiguration {
             "Logging Trace Exporter",
             "opentelemetry-exporter-logging");
         return new LoggingSpanExporter();
+      case "none":
+        return null;
       default:
         SpanExporter spiExporter = spiExporters.get(name);
         if (spiExporter == null) {

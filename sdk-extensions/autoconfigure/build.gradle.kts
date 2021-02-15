@@ -74,8 +74,6 @@ tasks {
 
     val testFullConfig by existing(Test::class) {
         environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
-        environment("OTEL_TRACES_EXPORTER", "otlp")
-        environment("OTEL_METRICS_EXPORTER", "otlp")
         environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
         environment("OTEL_BSP_SCHEDULE_DELAY", "10")
         environment("OTEL_IMR_EXPORT_INTERVAL", "10")
@@ -86,21 +84,25 @@ tasks {
 
     val testJaeger by existing(Test::class) {
         environment("OTEL_TRACES_EXPORTER", "jaeger")
+        environment("OTEL_METRICS_EXPORTER", "none")
         environment("OTEL_BSP_SCHEDULE_DELAY", "10")
     }
 
     val testOtlpTls by existing(Test::class) {
         environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
         environment("OTEL_TRACES_EXPORTER", "otlp")
+        environment("OTEL_METRICS_EXPORTER", "none")
         environment("OTEL_BSP_SCHEDULE_DELAY", "10")
     }
 
     val testZipkin by existing(Test::class) {
         environment("OTEL_TRACES_EXPORTER", "zipkin")
+        environment("OTEL_METRICS_EXPORTER", "none")
         environment("OTEL_BSP_SCHEDULE_DELAY", "10")
     }
 
     val testPrometheus by existing(Test::class) {
+        environment("OTEL_TRACES_EXPORTER", "none")
         environment("OTEL_METRICS_EXPORTER", "prometheus")
         environment("OTEL_IMR_EXPORT_INTERVAL", "10")
     }
