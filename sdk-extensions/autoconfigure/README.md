@@ -28,8 +28,8 @@ The following configuration properties are common to all exporters:
 
 | System property | Environment variable | Purpose                                                                                                                                                 |
 |-----------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| otel.traces.exporter   | OTEL_TRACES_EXPORTER        | The exporter to be used for tracing. Default is `otlp`. `none` means no exporter. |
-| otel.metrics.exporter   | OTEL_METRICS_EXPORTER        | The exporter to be used for metrics. Default is `otlp`. `none` means no exporter. |
+| otel.traces.exporter   | OTEL_TRACES_EXPORTER        | The exporter to be used for tracing. Default is `otlp`. `none` means no autoconfigured exporter. |
+| otel.metrics.exporter   | OTEL_METRICS_EXPORTER        | The exporter to be used for metrics. Default is `otlp`. `none` means no autoconfigured exporter. |
 
 ### OTLP exporter (both span and metric exporters)
 
@@ -74,6 +74,9 @@ The [Prometheus](https://github.com/prometheus/docs/blob/master/content/docs/ins
 | otel.exporter.prometheus.port | OTEL_EXPORTER_PROMETHEUS_PORT | The local port used to bind the prometheus metric server. Default is `9464`.       |
 | otel.exporter.prometheus.host | OTEL_EXPORTER_PROMETHEUS_HOST | The local address used to bind the prometheus metric server. Default is `0.0.0.0`. |
 
+Note that this is a pull exporter - it opens up a server on the local process listening on the specified host and port, which
+a Prometheus server scrapes from.
+
 ### Logging exporter
 
 The logging exporter prints the name of the span along with its attributes to stdout. It's mainly used for testing and debugging.
@@ -110,6 +113,10 @@ is a representation of the entity producing telemetry.
 | System property          | Environment variable     | Description                                                                        |
 |--------------------------|--------------------------|------------------------------------------------------------------------------------|
 | otel.resource.attributes | OTEL_RESOURCE_ATTRIBUTES | Specify resource attributes in the following format: key1=val1,key2=val2,key3=val3 |
+
+You almost always want to specify the [`service.name`](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/resource/semantic_conventions#service) for your application.
+It corresponds to how you describe the application, for example `authservice` could be an application that authenticates requests, and `cats` could be an application that returns information about [cats](https://en.wikipedia.org/wiki/Cat).
+This means you would specify resource attributes something like `OTEL_RESOURCE_ATTRIBUTES=service.name=authservice`, or `-Dotel.resource.attributes=service.name=cats,service.namespace=mammals`.
 
 ## Batch span processor
 
