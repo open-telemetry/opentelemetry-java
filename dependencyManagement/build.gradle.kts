@@ -90,6 +90,7 @@ val DEPENDENCIES = listOf(
         "nl.jqno.equalsverifier:equalsverifier:3.5.2",
         "org.assertj:assertj-core:3.19.0",
         "org.awaitility:awaitility:4.0.3",
+        "org.codehaus.mojo:animal-sniffer-annotations:1.20",
         "org.curioswitch.curiostack:protobuf-jackson:1.2.0",
         "org.junit-pioneer:junit-pioneer:1.3.0",
         "org.skyscreamer:jsonassert:1.5.0",
