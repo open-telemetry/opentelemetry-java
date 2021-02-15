@@ -2,6 +2,8 @@ subprojects {
     // https://github.com/gradle/gradle/issues/847
     group = "io.opentelemetry.exporters"
     plugins.withId("java") {
-        archivesBaseName = "opentelemetry-exporter-${project.name}"
+        configure<BasePluginConvention> {
+            archivesBaseName = "opentelemetry-exporter-${project.name}"
+        }
     }
 }
