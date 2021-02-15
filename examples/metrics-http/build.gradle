@@ -7,7 +7,7 @@ description = 'OpenTelemetry Example HTTP server showcasing metrics API/SDK'
 ext.moduleName = "io.opentelemetry.examples.metrics-http"
 
 application {
-  mainClass = 'io.oopentelemetry.example.httpserver.application.Application'
+  mainClass = 'io.oopsentelemetry.example.httpserver.application.Application'
 }
 // Shadow jar requires this here for some reason.
 mainClassName = 'io.oopentelemetry.example.httpserver.application.Application'
