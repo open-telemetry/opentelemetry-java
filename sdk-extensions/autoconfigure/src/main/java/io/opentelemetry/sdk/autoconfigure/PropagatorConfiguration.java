@@ -62,7 +62,7 @@ final class PropagatorConfiguration {
       case "jaeger":
         return JaegerPropagator.getInstance();
         // NB: https://github.com/open-telemetry/opentelemetry-specification/pull/1406
-      case "ottracer":
+      case "ottrace":
         return OtTracePropagator.getInstance();
       default:
         TextMapPropagator spiPropagator = spiPropagators.get(name);
