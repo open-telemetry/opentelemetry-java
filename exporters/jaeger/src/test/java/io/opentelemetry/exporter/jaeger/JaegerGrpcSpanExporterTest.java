@@ -286,6 +286,16 @@ class JaegerGrpcSpanExporterTest {
     assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("endpoint");
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint(""))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must be a URL: http://");
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint("gopher://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid scheme, must be http or https: gopher://localhost");
   }
 
   static class MockCollectorService extends CollectorServiceGrpc.CollectorServiceImplBase {
