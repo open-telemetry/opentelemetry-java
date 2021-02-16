@@ -19,7 +19,7 @@ import java.net.InetSocketAddress;
  * are using to write HTTP servers. This code is expected to be written by library authors, not by
  * Application developers.
  *
- * <p>For example, if using spring-web, this code woudl already been written by Spring framework and
+ * <p>For example, if using spring-web, this code would already been written by Spring framework and
  * not live in the user's application code at all. We pretend this Handler class is part of the
  * public API of some framework.
  */
