@@ -23,6 +23,7 @@ import java.util.List;
  * modify the {@link SpanData} that will be exported, for example by creating a delegating {@link
  * io.opentelemetry.sdk.trace.export.SpanExporter} which wraps {@link SpanData} with a custom
  * implementation.
+ *
  * <pre>{@code
  * // class SpanDataWithClientType extends DelegatingSpanData {
  * //
