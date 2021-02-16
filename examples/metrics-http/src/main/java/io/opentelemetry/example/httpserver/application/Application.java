@@ -53,7 +53,7 @@ public class Application {
     final InstrumentedHttpServer server = new InstrumentedHttpServer(8080);
     Runtime.getRuntime().addShutdownHook(new Thread(() -> server.stop(0)));
     // Register HTTP handlers.
-    server.creeateContext("/", new HelloHandler());
+    server.createContext("/", new HelloHandler());
     server.start();
   }
 

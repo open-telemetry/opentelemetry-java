@@ -15,7 +15,7 @@ import java.net.InetSocketAddress;
  * An instrumented version of an HttpServer.
  *
  * <p>This class demonstrates how someone could instrument the sun http library with metrics that
- * are later coonsumed by a client. Theoretically this would be an API (like spring-web) that users
+ * are later consumed by a client. Theoretically this would be an API (like spring-web) that users
  * are using to write HTTP servers. This code is expected to be written by library authors, not by
  * Application developers.
  *
@@ -49,7 +49,7 @@ public class InstrumentedHttpServer {
   }
 
   /** Registers a handler for a given HTTP resource path. */
-  public void creeateContext(String path, HttpHandler handler) {
+  public void createContext(String path, HttpHandler handler) {
     this.actualServer.createContext(path, new InstrumentedHttpHandler(handler));
   }
 
