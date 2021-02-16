@@ -44,10 +44,10 @@ class OpenTelemetrySdkTest {
   @Test
   void testRegisterGlobal() {
     OpenTelemetrySdk sdk = OpenTelemetrySdk.builder().buildAndRegisterGlobal();
-    assertThat(sdk).isSameAs(GlobalOpenTelemetry.get());
-    assertThat(GlobalOpenTelemetry.get()).isSameAs(sdk);
-    assertThat(((OpenTelemetrySdk) GlobalOpenTelemetry.get()).getSdkTracerProvider().get(""))
-        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""));
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(sdk);
+    assertThat(sdk.getTracerProvider().get(""))
+        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""))
+        .isSameAs(GlobalOpenTelemetry.get().getTracer(""));
   }
 
   @Test
