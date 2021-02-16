@@ -29,7 +29,7 @@ class DoubleMinMaxSumCountAggregatorTest {
   private static final DoubleMinMaxSumCountAggregator aggregator =
       new DoubleMinMaxSumCountAggregator(
           Resource.getDefault(),
-          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name",
               "description",

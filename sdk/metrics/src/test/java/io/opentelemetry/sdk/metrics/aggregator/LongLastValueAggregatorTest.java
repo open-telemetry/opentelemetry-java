@@ -24,7 +24,7 @@ class LongLastValueAggregatorTest {
   private static final LongLastValueAggregator aggregator =
       new LongLastValueAggregator(
           Resource.getDefault(),
-          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name",
               "description",
@@ -76,7 +76,7 @@ class LongLastValueAggregatorTest {
         .isEqualTo(
             MetricData.createLongGauge(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 "name",
                 "description",
                 "unit",

@@ -121,7 +121,7 @@ class TraceMarshalerTest {
             testSpanDataWithInstrumentationLibrary(InstrumentationLibraryInfo.create("name", "")),
             testSpanDataWithInstrumentationLibrary(
                 InstrumentationLibraryInfo.create("name", "version")),
-            testSpanDataWithInstrumentationLibrary(InstrumentationLibraryInfo.getEmpty()),
+            testSpanDataWithInstrumentationLibrary(InstrumentationLibraryInfo.empty()),
             testSpanDataWithInstrumentationLibrary(InstrumentationLibraryInfo.create("", ""))));
   }
 

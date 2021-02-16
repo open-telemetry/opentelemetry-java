@@ -24,7 +24,7 @@ class DoubleLastValueAggregatorTest {
   private static final DoubleLastValueAggregator aggregator =
       new DoubleLastValueAggregator(
           Resource.getDefault(),
-          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name",
               "description",
@@ -76,7 +76,7 @@ class DoubleLastValueAggregatorTest {
         .isEqualTo(
             MetricData.createDoubleGauge(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 "name",
                 "description",
                 "unit",

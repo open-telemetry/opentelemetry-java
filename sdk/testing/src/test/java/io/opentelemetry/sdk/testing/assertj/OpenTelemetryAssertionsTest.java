@@ -159,12 +159,11 @@ class OpenTelemetryAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasParentSpanId("foo"))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(() -> assertThat(SPAN1).hasResource(Resource.getEmpty()))
+    assertThatThrownBy(() -> assertThat(SPAN1).hasResource(Resource.empty()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
-                assertThat(SPAN1)
-                    .hasInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty()))
+                assertThat(SPAN1).hasInstrumentationLibraryInfo(InstrumentationLibraryInfo.empty()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasName("foo")).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasKind(SpanKind.SERVER))

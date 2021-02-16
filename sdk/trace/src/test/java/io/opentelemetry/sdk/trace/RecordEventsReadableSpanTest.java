@@ -70,7 +70,7 @@ class RecordEventsReadableSpanTest {
   private final String parentSpanId = idsGenerator.generateSpanId();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
-  private final Resource resource = Resource.getEmpty();
+  private final Resource resource = Resource.empty();
   private final InstrumentationLibraryInfo instrumentationLibraryInfo =
       InstrumentationLibraryInfo.create("theName", null);
   private final Map<AttributeKey, Object> attributes = new HashMap<>();

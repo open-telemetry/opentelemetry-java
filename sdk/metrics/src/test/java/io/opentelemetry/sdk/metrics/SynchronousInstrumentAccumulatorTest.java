@@ -26,8 +26,7 @@ public class SynchronousInstrumentAccumulatorTest {
   private final TestClock testClock = TestClock.create();
   private final Aggregator<Long> aggregator =
       AggregatorFactory.lastValue()
-          .create(
-              Resource.getEmpty(), InstrumentationLibraryInfo.create("test", "1.0"), DESCRIPTOR);
+          .create(Resource.empty(), InstrumentationLibraryInfo.create("test", "1.0"), DESCRIPTOR);
 
   @Test
   void sameAggregator_ForSameLabelSet() {

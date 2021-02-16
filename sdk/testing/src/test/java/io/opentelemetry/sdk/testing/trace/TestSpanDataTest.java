@@ -36,7 +36,7 @@ class TestSpanDataTest {
     assertThat(spanData.getEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
     assertThat(spanData.getInstrumentationLibraryInfo())
-        .isSameAs(InstrumentationLibraryInfo.getEmpty());
+        .isSameAs(InstrumentationLibraryInfo.empty());
   }
 
   @Test

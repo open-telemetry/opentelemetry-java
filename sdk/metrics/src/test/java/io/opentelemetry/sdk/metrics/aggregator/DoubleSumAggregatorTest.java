@@ -25,7 +25,7 @@ class DoubleSumAggregatorTest {
   private static final DoubleSumAggregator aggregator =
       new DoubleSumAggregator(
           Resource.getDefault(),
-          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE),
           /* stateful= */ true);
@@ -89,7 +89,7 @@ class DoubleSumAggregatorTest {
         .isEqualTo(
             MetricData.createDoubleSum(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 "name",
                 "description",
                 "unit",
