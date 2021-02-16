@@ -13,7 +13,9 @@ import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -32,7 +34,11 @@ final class PropagatorConfiguration {
                     ConfigurablePropagatorProvider::getPropagator));
 
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();
-    for (String propagatorName : config.getCommaSeparatedValues("otel.propagators")) {
+    List<String> requestedPropagators = config.getCommaSeparatedValues("otel.propagators");
+    if (requestedPropagators.isEmpty()) {
+      requestedPropagators = Arrays.asList("tracecontext", "baggage");
+    }
+    for (String propagatorName : requestedPropagators) {
       propagators.add(getPropagator(propagatorName, spiPropagators));
     }
 
