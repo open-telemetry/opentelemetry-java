@@ -1,4 +1,4 @@
-package io.oopentelemetry.example.httpserver.application;
+package io.opentelemetry.example.httpserver.application;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
