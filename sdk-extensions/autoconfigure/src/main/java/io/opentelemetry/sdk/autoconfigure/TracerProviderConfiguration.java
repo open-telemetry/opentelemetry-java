@@ -11,14 +11,23 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanLimitsBuilder;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 final class TracerProviderConfiguration {
+
+  /** A set of the exporter names that should use the SimpleSpanProcessor. */
+  private static final Set<String> SPAN_EXPORTER_USING_SIMPLE_SPAN_PROCESSOR =
+      new HashSet<>(Collections.singletonList("logging"));
 
   static SdkTracerProvider configureTracerProvider(Resource resource, ConfigProperties config) {
     SdkTracerProviderBuilder tracerProviderBuilder =
@@ -44,12 +53,22 @@ final class TracerProviderConfiguration {
     }
     SpanExporter exporter = SpanExporterConfiguration.configureExporter(exporterName, config);
     if (exporter != null) {
-      tracerProviderBuilder.addSpanProcessor(configureSpanProcessor(config, exporter));
+      tracerProviderBuilder.addSpanProcessor(
+          configureSpanProcessor(config, exporter, exporterName));
     }
 
     SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
     Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::shutdown));
     return tracerProvider;
+  }
+
+  // VisibleForTesting
+  static SpanProcessor configureSpanProcessor(
+      ConfigProperties config, SpanExporter exporter, String exporterName) {
+    if (SPAN_EXPORTER_USING_SIMPLE_SPAN_PROCESSOR.contains(exporterName)) {
+      return SimpleSpanProcessor.create(exporter);
+    }
+    return configureSpanProcessor(config, exporter);
   }
 
   // VisibleForTesting
