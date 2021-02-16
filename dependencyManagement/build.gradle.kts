@@ -12,13 +12,13 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
-        "com.linecorp.armeria:armeria-bom:1.3.0",
+        "com.linecorp.armeria:armeria-bom:1.5.0",
         "io.grpc:grpc-bom:1.35.0",
         "io.zipkin.brave:brave-bom:5.13.3",
         "com.google.guava:guava-bom:30.1-jre",
         "com.google.protobuf:protobuf-bom:3.14.0",
         "com.fasterxml.jackson:jackson-bom:2.12.1",
-        "org.junit:junit-bom:5.7.0",
+        "org.junit:junit-bom:5.7.1",
         "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3"
 )
 
@@ -65,7 +65,7 @@ val DEPENDENCY_SETS = listOf(
         ),
         DependencySet(
                 "org.testcontainers",
-                "1.15.1",
+                "1.15.2",
                 listOf("testcontainers", "junit-jupiter")
         )
 )
@@ -77,7 +77,7 @@ val DEPENDENCIES = listOf(
         "com.google.guava:guava-beta-checker:1.0",
         "com.lmax:disruptor:3.4.2",
         "com.sparkjava:spark-core:2.9.3",
-        "com.squareup.okhttp3:okhttp:4.9.0",
+        "com.squareup.okhttp3:okhttp:4.9.1",
         "com.sun.net.httpserver:http:20070405",
         "com.tngtech.archunit:archunit-junit4:0.16.0",
         "edu.berkeley.cs.jqf:jqf-fuzz:1.6",
@@ -86,8 +86,8 @@ val DEPENDENCIES = listOf(
         "io.jaegertracing:jaeger-client:1.5.0",
         "io.opentracing:opentracing-api:0.33.0",
         "io.zipkin.zipkin2:zipkin-junit:2.23.2",
-        "junit:junit:4.13.1",
-        "nl.jqno.equalsverifier:equalsverifier:3.5.2",
+        "junit:junit:4.13.2",
+        "nl.jqno.equalsverifier:equalsverifier:3.5.4",
         "org.assertj:assertj-core:3.19.0",
         "org.awaitility:awaitility:4.0.3",
         "org.codehaus.mojo:animal-sniffer-annotations:1.20",
