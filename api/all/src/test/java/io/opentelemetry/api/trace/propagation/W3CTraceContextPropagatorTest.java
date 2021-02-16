@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 class W3CTraceContextPropagatorTest {
 
   private static final TraceState TRACE_STATE =
-      TraceState.builder().set("foo", "bar").set("bar", "baz").build();
+      TraceState.builder().put("foo", "bar").put("bar", "baz").build();
   private static final String TRACE_ID_BASE16 = "ff000000000000000000000000000041";
   private static final String SPAN_ID_BASE16 = "ff00000000000041";
   private static final String TRACEPARENT_HEADER_SAMPLED =
@@ -97,7 +97,7 @@ class W3CTraceContextPropagatorTest {
                 TraceId.getInvalid(),
                 SpanId.getInvalid(),
                 TraceFlags.getSampled(),
-                TraceState.builder().set("foo", "bar").build()),
+                TraceState.builder().put("foo", "bar").build()),
             Context.current()),
         carrier,
         setter);

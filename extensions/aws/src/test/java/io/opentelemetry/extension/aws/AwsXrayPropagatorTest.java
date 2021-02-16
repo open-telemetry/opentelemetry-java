@@ -82,7 +82,7 @@ class AwsXrayPropagatorTest {
                 TRACE_ID,
                 SPAN_ID,
                 TraceFlags.getDefault(),
-                TraceState.builder().set("foo", "bar").build()),
+                TraceState.builder().put("foo", "bar").build()),
             Context.current()),
         carrier,
         setter);
