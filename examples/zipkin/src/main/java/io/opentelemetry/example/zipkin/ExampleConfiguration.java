@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-import java.util.concurrent.TimeUnit;
 
 /**
  * All SDK management takes place here, away from the instrumentation code, which should only access
