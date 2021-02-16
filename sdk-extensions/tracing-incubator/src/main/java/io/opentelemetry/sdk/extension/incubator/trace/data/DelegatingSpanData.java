@@ -23,27 +23,25 @@ import java.util.List;
  * modify the {@link SpanData} that will be exported, for example by creating a delegating {@link
  * io.opentelemetry.sdk.trace.export.SpanExporter} which wraps {@link SpanData} with a custom
  * implementation.
- *
  * <pre>{@code
- * SpanDataWithClientType extends DelegatingSpanData {
- *
- *   private final Attributes attributes;
- *
- *   SpanDataWithClientType(SpanData delegate) {
- *     super(delegate);
- *     String clientType = ClientConfig.parseUserAgent(
- *       delegate.getAttributes().get(SemanticAttributes.HTTP_USER_AGENT).getStringValue());
- *     Attributes.Builder newAttributes = Attributes.builder(delegate.getAttributes());
- *     newAttributes.setAttribute("client_type", clientType);
- *     attributes = newAttributes.build();
- *   }
- *
- *   {@literal @}Override
- *   public Attributes getAttributes() {
- *     return attributes;
- *   }
- * }
- *
+ * // class SpanDataWithClientType extends DelegatingSpanData {
+ * //
+ * //   private final Attributes attributes;
+ * //
+ * //   SpanDataWithClientType(SpanData delegate) {
+ * //     super(delegate);
+ * //     String clientType = ClientConfig.parseUserAgent(
+ * //       delegate.getAttributes().get(SemanticAttributes.HTTP_USER_AGENT).getStringValue());
+ * //     Attributes.Builder newAttributes = Attributes.builder(delegate.getAttributes());
+ * //     newAttributes.setAttribute("client_type", clientType);
+ * //     attributes = newAttributes.build();
+ * //   }
+ * //
+ * //   @Override
+ * //   public Attributes getAttributes() {
+ * //     return attributes;
+ * //   }
+ * // }
  * }</pre>
  */
 public abstract class DelegatingSpanData implements SpanData {

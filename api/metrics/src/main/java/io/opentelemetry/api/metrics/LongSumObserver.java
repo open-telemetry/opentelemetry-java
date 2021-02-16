@@ -21,28 +21,28 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Example:
  *
  * <pre>{@code
- * class YourClass {
- *
- *   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
- *   private static final LongSumObserver cpuObserver =
- *       meter.
- *           .longSumObserverBuilder("cpu_time")
- *           .setDescription("System CPU usage")
- *           .setUnit("ms")
- *           .build();
- *
- *   void init() {
- *     cpuObserver.setUpdater(
- *         new LongSumObserver.Callback<LongResult>() {
- *          {@literal @}Override
- *           public void update(LongResult result) {
- *             // Get system cpu usage
- *             result.observe(cpuIdle, "state", "idle");
- *             result.observe(cpuUser, "state", "user");
- *           }
- *         });
- *   }
- * }
+ * // class YourClass {
+ * //
+ * //   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
+ * //   private static final LongSumObserver cpuObserver =
+ * //       meter.
+ * //           .longSumObserverBuilder("cpu_time")
+ * //           .setDescription("System CPU usage")
+ * //           .setUnit("ms")
+ * //           .build();
+ * //
+ * //   void init() {
+ * //     cpuObserver.setUpdater(
+ * //         new LongSumObserver.Callback<LongResult>() {
+ * //          @Override
+ * //           public void update(LongResult result) {
+ * //             // Get system cpu usage
+ * //             result.observe(cpuIdle, "state", "idle");
+ * //             result.observe(cpuUser, "state", "user");
+ * //           }
+ * //         });
+ * //   }
+ * // }
  * }</pre>
  */
 @ThreadSafe
