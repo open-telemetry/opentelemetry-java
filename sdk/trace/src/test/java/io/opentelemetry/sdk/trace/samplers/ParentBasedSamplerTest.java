@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.sdk.trace.samplers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,9 +14,9 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
+import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.Collections;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
 class ParentBasedSamplerTest {
@@ -406,5 +406,10 @@ class ParentBasedSamplerTest {
             "ParentBased{root:AlwaysOnSampler,remoteParentSampled:AlwaysOnSampler,"
                 + "remoteParentNotSampled:AlwaysOffSampler,localParentSampled:AlwaysOnSampler,"
                 + "localParentNotSampled:AlwaysOffSampler}");
+  }
+
+  @Test
+  void equals() {
+    EqualsVerifier.forClass(ParentBasedSampler.class).verify();
   }
 }
