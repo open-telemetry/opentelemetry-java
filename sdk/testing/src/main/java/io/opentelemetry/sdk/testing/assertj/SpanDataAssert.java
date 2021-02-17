@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
 
 /** Assertions for an exported {@link SpanData}. */
-public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
+public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
 
   SpanDataAssert(SpanData actual) {
     super(actual, SpanDataAssert.class);

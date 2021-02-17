@@ -14,7 +14,7 @@ import org.assertj.core.api.Assertions;
  * static import any {@code assertThat} method in this class instead of {@code
  * Assertions.assertThat}.
  */
-public class OpenTelemetryAssertions extends Assertions {
+public final class OpenTelemetryAssertions extends Assertions {
 
   /** Returns an assertion for {@link Attributes}. */
   public static AttributesAssert assertThat(Attributes attributes) {
@@ -26,5 +26,5 @@ public class OpenTelemetryAssertions extends Assertions {
     return new SpanDataAssert(spanData);
   }
 
-  protected OpenTelemetryAssertions() {}
+  private OpenTelemetryAssertions() {}
 }
