@@ -76,42 +76,16 @@ public final class B3Propagator implements TextMapPropagator {
       new B3PropagatorExtractorMultipleHeaders();
   private final B3PropagatorInjector b3PropagatorInjector;
 
-  private B3Propagator(B3PropagatorInjector b3PropagatorInjector) {
+  B3Propagator(B3PropagatorInjector b3PropagatorInjector) {
     this.b3PropagatorInjector = b3PropagatorInjector;
   }
 
   /**
-   * Returns a new {@link B3Propagator.Builder} instance for configuring injection option for {@link
+   * Returns a new {@link B3PropagatorBuilder} instance for configuring injection option for {@link
    * B3Propagator}.
    */
-  public static B3Propagator.Builder builder() {
-    return new Builder();
-  }
-
-  /**
-   * Enables the creation of an {@link B3Propagator} instance with the ability to switch injector
-   * from single header (default) to multiple headers.
-   */
-  public static class Builder {
-    private boolean injectSingleHeader;
-
-    private Builder() {
-      injectSingleHeader = true;
-    }
-
-    public Builder injectMultipleHeaders() {
-      this.injectSingleHeader = false;
-      return this;
-    }
-
-    /** Create the {@link B3Propagator} with selected injector type. */
-    public B3Propagator build() {
-      if (injectSingleHeader) {
-        return new B3Propagator(new B3PropagatorInjectorSingleHeader());
-      } else {
-        return new B3Propagator(new B3PropagatorInjectorMultipleHeaders());
-      }
-    }
+  public static B3PropagatorBuilder builder() {
+    return new B3PropagatorBuilder();
   }
 
   public static B3Propagator getInstance() {
