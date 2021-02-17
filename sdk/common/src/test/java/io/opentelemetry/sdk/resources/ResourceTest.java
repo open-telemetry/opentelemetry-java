@@ -153,7 +153,7 @@ class ResourceTest {
     Attributes expectedAttributes =
         Attributes.of(stringKey("a"), "1", stringKey("b"), "3", stringKey("c"), "4");
 
-    Resource resource = Resource.getEmpty().merge(resource1).merge(resource2);
+    Resource resource = Resource.empty().merge(resource1).merge(resource2);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 
@@ -161,7 +161,7 @@ class ResourceTest {
   void testMergeResources_Resource1() {
     Attributes expectedAttributes = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
 
-    Resource resource = Resource.getEmpty().merge(resource1);
+    Resource resource = Resource.empty().merge(resource1);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 
@@ -173,14 +173,14 @@ class ResourceTest {
             stringKey("b"), "3",
             stringKey("c"), "4");
 
-    Resource resource = Resource.getEmpty().merge(null).merge(resource2);
+    Resource resource = Resource.empty().merge(null).merge(resource2);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 
   @Test
   void testMergeResources_Resource2_Null() {
     Attributes expectedAttributes = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
-    Resource resource = Resource.getEmpty().merge(resource1).merge(null);
+    Resource resource = Resource.empty().merge(resource1).merge(null);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 
