@@ -260,11 +260,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         return this;
       }
       if (attributes == null) {
-        attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
+        attributes = new AttributesMap(spanLimits.getSpanAttributeLimit());
       }
 
       if (spanLimits.shouldTruncateStringAttributeValues()) {
-        value = StringUtils.truncateToSize(key, value, spanLimits.getMaxLengthOfAttributeValues());
+        value = StringUtils.truncateToSize(key, value, spanLimits.getAttributeValueLengthLimit());
       }
 
       attributes.put(key, value);
@@ -303,7 +303,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         EventData.create(
             clock.now(),
             name,
-            copyAndLimitAttributes(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
+            copyAndLimitAttributes(attributes, spanLimits.getEventAttributeLimit()),
             totalAttributeCount));
     return this;
   }
@@ -321,7 +321,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         EventData.create(
             unit.toNanos(timestamp),
             name,
-            copyAndLimitAttributes(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
+            copyAndLimitAttributes(attributes, spanLimits.getEventAttributeLimit()),
             totalAttributeCount));
     return this;
   }
@@ -350,7 +350,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
-      if (events.size() < spanLimits.getMaxNumberOfEvents()) {
+      if (events.size() < spanLimits.getSpanEventLimit()) {
         events.add(timedEvent);
       }
       totalRecordedEvents++;

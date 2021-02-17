@@ -44,19 +44,19 @@ public abstract class SpanLimits {
   }
 
   static SpanLimits create(
-      int maxNumAttributes,
-      int maxNumEvents,
-      int maxNumLinks,
-      int maxNumAttributesPerEvent,
-      int maxNumAttributesPerLink,
-      int maxAttributeLength) {
+      int spanAttributeLimit,
+      int spanEventLimit,
+      int spanLinkLimit,
+      int eventAttributeLimit,
+      int eventLinkLimit,
+      int attributeValueLengthLimit) {
     return new AutoValue_SpanLimits(
-        maxNumAttributes,
-        maxNumEvents,
-        maxNumLinks,
-        maxNumAttributesPerEvent,
-        maxNumAttributesPerLink,
-        maxAttributeLength);
+        spanAttributeLimit,
+        spanEventLimit,
+        spanLinkLimit,
+        eventAttributeLimit,
+        eventLinkLimit,
+        attributeValueLengthLimit);
   }
 
   /**
@@ -64,35 +64,35 @@ public abstract class SpanLimits {
    *
    * @return the global default max number of attributes per {@link Span}.
    */
-  public abstract int getMaxNumberOfAttributes();
+  public abstract int getSpanAttributeLimit();
 
   /**
    * Returns the global default max number of events per {@link Span}.
    *
    * @return the global default max number of events per {@code Span}.
    */
-  public abstract int getMaxNumberOfEvents();
+  public abstract int getSpanEventLimit();
 
   /**
    * Returns the global default max number of links per {@link Span}.
    *
    * @return the global default max number of links per {@code Span}.
    */
-  public abstract int getMaxNumberOfLinks();
+  public abstract int getSpanLinkLimit();
 
   /**
    * Returns the global default max number of attributes per event.
    *
    * @return the global default max number of attributes per event.
    */
-  public abstract int getMaxNumberOfAttributesPerEvent();
+  public abstract int getEventAttributeLimit();
 
   /**
    * Returns the global default max number of attributes per link.
    *
    * @return the global default max number of attributes per link.
    */
-  public abstract int getMaxNumberOfAttributesPerLink();
+  public abstract int getLinkAttributeLimit();
 
   /**
    * Returns the global default max length of string attribute value in characters.
@@ -100,10 +100,10 @@ public abstract class SpanLimits {
    * @return the global default max length of string attribute value in characters.
    * @see #shouldTruncateStringAttributeValues()
    */
-  public abstract int getMaxLengthOfAttributeValues();
+  public abstract int getAttributeValueLengthLimit();
 
   public boolean shouldTruncateStringAttributeValues() {
-    return getMaxLengthOfAttributeValues() != UNLIMITED_ATTRIBUTE_LENGTH;
+    return getAttributeValueLengthLimit() != UNLIMITED_ATTRIBUTE_LENGTH;
   }
 
   /**
@@ -115,11 +115,11 @@ public abstract class SpanLimits {
    */
   public SpanLimitsBuilder toBuilder() {
     return new SpanLimitsBuilder()
-        .setMaxNumberOfAttributes(getMaxNumberOfAttributes())
-        .setMaxNumberOfEvents(getMaxNumberOfEvents())
-        .setMaxNumberOfLinks(getMaxNumberOfLinks())
-        .setMaxNumberOfAttributesPerEvent(getMaxNumberOfAttributesPerEvent())
-        .setMaxNumberOfAttributesPerLink(getMaxNumberOfAttributesPerLink())
-        .setMaxLengthOfAttributeValues(getMaxLengthOfAttributeValues());
+        .setSpanAttributeLimit(getSpanAttributeLimit())
+        .setSpanEventLimit(getSpanEventLimit())
+        .setSpanLinkLimit(getSpanLinkLimit())
+        .setMaxNumberOfAttributesPerEvent(getEventAttributeLimit())
+        .setMaxNumberOfAttributesPerLink(getLinkAttributeLimit())
+        .setMaxLengthOfAttributeValues(getAttributeValueLengthLimit());
   }
 }

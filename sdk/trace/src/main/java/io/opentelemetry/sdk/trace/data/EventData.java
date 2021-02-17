@@ -63,8 +63,7 @@ public interface EventData {
   /**
    * The total number of attributes that were recorded on this Event. This number may be larger than
    * the number of attributes that are attached to this span, if the total number recorded was
-   * greater than the configured maximum value. See: {@link
-   * SpanLimits#getMaxNumberOfAttributesPerEvent()}
+   * greater than the configured maximum value. See: {@link SpanLimits#getEventAttributeLimit()}
    *
    * @return The total number of attributes on this event.
    */

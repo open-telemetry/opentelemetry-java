@@ -14,28 +14,28 @@ class SpanLimitsTest {
 
   @Test
   void defaultSpanLimits() {
-    assertThat(SpanLimits.getDefault().getMaxNumberOfAttributes()).isEqualTo(128);
-    assertThat(SpanLimits.getDefault().getMaxNumberOfEvents()).isEqualTo(128);
-    assertThat(SpanLimits.getDefault().getMaxNumberOfLinks()).isEqualTo(128);
-    assertThat(SpanLimits.getDefault().getMaxNumberOfAttributesPerEvent()).isEqualTo(128);
-    assertThat(SpanLimits.getDefault().getMaxNumberOfAttributesPerLink()).isEqualTo(128);
+    assertThat(SpanLimits.getDefault().getSpanAttributeLimit()).isEqualTo(128);
+    assertThat(SpanLimits.getDefault().getSpanEventLimit()).isEqualTo(128);
+    assertThat(SpanLimits.getDefault().getSpanLinkLimit()).isEqualTo(128);
+    assertThat(SpanLimits.getDefault().getEventAttributeLimit()).isEqualTo(128);
+    assertThat(SpanLimits.getDefault().getLinkAttributeLimit()).isEqualTo(128);
   }
 
   @Test
   void updateSpanLimits_All() {
     SpanLimits spanLimits =
         SpanLimits.builder()
-            .setMaxNumberOfAttributes(8)
-            .setMaxNumberOfEvents(10)
-            .setMaxNumberOfLinks(11)
+            .setSpanAttributeLimit(8)
+            .setSpanEventLimit(10)
+            .setSpanLinkLimit(11)
             .setMaxNumberOfAttributesPerEvent(1)
             .setMaxNumberOfAttributesPerLink(2)
             .build();
-    assertThat(spanLimits.getMaxNumberOfAttributes()).isEqualTo(8);
-    assertThat(spanLimits.getMaxNumberOfEvents()).isEqualTo(10);
-    assertThat(spanLimits.getMaxNumberOfLinks()).isEqualTo(11);
-    assertThat(spanLimits.getMaxNumberOfAttributesPerEvent()).isEqualTo(1);
-    assertThat(spanLimits.getMaxNumberOfAttributesPerLink()).isEqualTo(2);
+    assertThat(spanLimits.getSpanAttributeLimit()).isEqualTo(8);
+    assertThat(spanLimits.getSpanEventLimit()).isEqualTo(10);
+    assertThat(spanLimits.getSpanLinkLimit()).isEqualTo(11);
+    assertThat(spanLimits.getEventAttributeLimit()).isEqualTo(1);
+    assertThat(spanLimits.getLinkAttributeLimit()).isEqualTo(2);
 
     // Preserves values
     SpanLimits spanLimitsDupe = spanLimits.toBuilder().build();

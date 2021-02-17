@@ -33,7 +33,7 @@ public final class SpanLimitsBuilder {
    *     must be positive otherwise {@link #build()} will throw an exception.
    * @return this.
    */
-  public SpanLimitsBuilder setMaxNumberOfAttributes(int maxNumberOfAttributes) {
+  public SpanLimitsBuilder setSpanAttributeLimit(int maxNumberOfAttributes) {
     Utils.checkArgument(maxNumberOfAttributes > 0, "maxNumberOfAttributes must be greater than 0");
     this.maxNumAttributes = maxNumberOfAttributes;
     return this;
@@ -46,7 +46,7 @@ public final class SpanLimitsBuilder {
    *     positive otherwise {@link #build()} will throw an exception.
    * @return this.
    */
-  public SpanLimitsBuilder setMaxNumberOfEvents(int maxNumberOfEvents) {
+  public SpanLimitsBuilder setSpanEventLimit(int maxNumberOfEvents) {
     Utils.checkArgument(maxNumberOfEvents > 0, "maxNumberOfEvents must be greater than 0");
     this.maxNumEvents = maxNumberOfEvents;
     return this;
@@ -59,7 +59,7 @@ public final class SpanLimitsBuilder {
    *     positive otherwise {@link #build()} will throw an exception.
    * @return this.
    */
-  public SpanLimitsBuilder setMaxNumberOfLinks(int maxNumberOfLinks) {
+  public SpanLimitsBuilder setSpanLinkLimit(int maxNumberOfLinks) {
     Utils.checkArgument(maxNumberOfLinks > 0, "maxNumberOfLinks must be greater than 0");
     this.maxNumLinks = maxNumberOfLinks;
     return this;

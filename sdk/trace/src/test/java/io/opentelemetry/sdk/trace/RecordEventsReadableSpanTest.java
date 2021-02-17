@@ -531,7 +531,7 @@ class RecordEventsReadableSpanTest {
   void droppingAttributes() {
     final int maxNumberOfAttributes = 8;
     SpanLimits spanLimits =
-        SpanLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
+        SpanLimits.builder().setSpanAttributeLimit(maxNumberOfAttributes).build();
     RecordEventsReadableSpan span = createTestSpan(spanLimits);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
@@ -566,7 +566,7 @@ class RecordEventsReadableSpanTest {
   void droppingAndAddingAttributes() {
     final int maxNumberOfAttributes = 8;
     SpanLimits spanLimits =
-        SpanLimits.builder().setMaxNumberOfAttributes(maxNumberOfAttributes).build();
+        SpanLimits.builder().setSpanAttributeLimit(maxNumberOfAttributes).build();
     RecordEventsReadableSpan span = createTestSpan(spanLimits);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
@@ -600,7 +600,7 @@ class RecordEventsReadableSpanTest {
   @Test
   void droppingEvents() {
     final int maxNumberOfEvents = 8;
-    SpanLimits spanLimits = SpanLimits.builder().setMaxNumberOfEvents(maxNumberOfEvents).build();
+    SpanLimits spanLimits = SpanLimits.builder().setSpanEventLimit(maxNumberOfEvents).build();
     RecordEventsReadableSpan span = createTestSpan(spanLimits);
     try {
       for (int i = 0; i < 2 * maxNumberOfEvents; i++) {
@@ -756,7 +756,7 @@ class RecordEventsReadableSpanTest {
   private RecordEventsReadableSpan createTestSpanWithAttributes(
       Map<AttributeKey, Object> attributes) {
     AttributesMap attributesMap =
-        new AttributesMap(SpanLimits.getDefault().getMaxNumberOfAttributes());
+        new AttributesMap(SpanLimits.getDefault().getSpanAttributeLimit());
     attributes.forEach(attributesMap::put);
     return createTestSpan(
         SpanKind.INTERNAL,

@@ -65,8 +65,7 @@ public interface LinkData {
   /**
    * The total number of attributes that were recorded on this Link. This number may be larger than
    * the number of attributes that are attached to this span, if the total number recorded was
-   * greater than the configured maximum value. See: {@link
-   * SpanLimits#getMaxNumberOfAttributesPerLink()}
+   * greater than the configured maximum value. See: {@link SpanLimits#getLinkAttributeLimit()}
    *
    * @return The number of attributes on this link.
    */

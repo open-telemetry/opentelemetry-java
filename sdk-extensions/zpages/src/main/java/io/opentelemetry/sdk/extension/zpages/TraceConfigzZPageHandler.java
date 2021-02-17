@@ -129,8 +129,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         /* rowName= */ "MaxNumberOfAttributes to",
         /* paramName= */ QUERY_STRING_MAX_NUM_OF_ATTRIBUTES,
         /* inputPlaceHolder= */ "",
-        /* paramDefaultValue= */ Integer.toString(
-            SpanLimits.getDefault().getMaxNumberOfAttributes()),
+        /* paramDefaultValue= */ Integer.toString(SpanLimits.getDefault().getSpanAttributeLimit()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitChangeTableRow(
@@ -138,7 +137,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         /* rowName= */ "MaxNumberOfEvents to",
         /* paramName= */ QUERY_STRING_MAX_NUM_OF_EVENTS,
         /* inputPlaceHolder= */ "",
-        /* paramDefaultValue= */ Integer.toString(SpanLimits.getDefault().getMaxNumberOfEvents()),
+        /* paramDefaultValue= */ Integer.toString(SpanLimits.getDefault().getSpanEventLimit()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitChangeTableRow(
@@ -146,7 +145,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         /* rowName= */ "MaxNumberOfLinks to",
         /* paramName= */ QUERY_STRING_MAX_NUM_OF_LINKS,
         /* inputPlaceHolder= */ "",
-        /* paramDefaultValue= */ Integer.toString(SpanLimits.getDefault().getMaxNumberOfLinks()),
+        /* paramDefaultValue= */ Integer.toString(SpanLimits.getDefault().getSpanLinkLimit()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitChangeTableRow(
@@ -154,8 +153,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         /* rowName= */ "MaxNumberOfAttributesPerEvent to",
         /* paramName= */ QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_EVENT,
         /* inputPlaceHolder= */ "",
-        /* paramDefaultValue= */ Integer.toString(
-            SpanLimits.getDefault().getMaxNumberOfAttributesPerEvent()),
+        /* paramDefaultValue= */ Integer.toString(SpanLimits.getDefault().getEventAttributeLimit()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitChangeTableRow(
@@ -163,8 +161,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
         /* rowName= */ "MaxNumberOfAttributesPerLink to",
         /* paramName= */ QUERY_STRING_MAX_NUM_OF_ATTRIBUTES_PER_LINK,
         /* inputPlaceHolder= */ "",
-        /* paramDefaultValue= */ Integer.toString(
-            SpanLimits.getDefault().getMaxNumberOfAttributesPerLink()),
+        /* paramDefaultValue= */ Integer.toString(SpanLimits.getDefault().getLinkAttributeLimit()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     out.print("</table>");
@@ -216,31 +213,31 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributes",
-        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfAttributes()),
+        /* paramValue=*/ Integer.toString(configSupplier.get().getSpanAttributeLimit()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfEvents",
-        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfEvents()),
+        /* paramValue=*/ Integer.toString(configSupplier.get().getSpanEventLimit()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfLinks",
-        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfLinks()),
+        /* paramValue=*/ Integer.toString(configSupplier.get().getSpanLinkLimit()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ true);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributesPerEvent",
-        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfAttributesPerEvent()),
+        /* paramValue=*/ Integer.toString(configSupplier.get().getEventAttributeLimit()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe= */ false);
     emitActiveTableRow(
         /* out= */ out,
         /* paramName= */ "MaxNumOfAttributesPerLink",
-        /* paramValue=*/ Integer.toString(configSupplier.get().getMaxNumberOfAttributesPerLink()),
+        /* paramValue=*/ Integer.toString(configSupplier.get().getLinkAttributeLimit()),
         /* zebraStripeColor= */ ZEBRA_STRIPE_COLOR,
         /* zebraStripe=*/ true);
     out.print("</table>");
@@ -374,7 +371,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       if (maxNumOfAttributesStr != null) {
         try {
           int maxNumOfAttributes = Integer.parseInt(maxNumOfAttributesStr);
-          newConfigBuilder.setMaxNumberOfAttributes(maxNumOfAttributes);
+          newConfigBuilder.setSpanAttributeLimit(maxNumOfAttributes);
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException("MaxNumOfAttributes must be of the type integer", e);
         }
@@ -383,7 +380,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       if (maxNumOfEventsStr != null) {
         try {
           int maxNumOfEvents = Integer.parseInt(maxNumOfEventsStr);
-          newConfigBuilder.setMaxNumberOfEvents(maxNumOfEvents);
+          newConfigBuilder.setSpanEventLimit(maxNumOfEvents);
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException("MaxNumOfEvents must be of the type integer", e);
         }
@@ -392,7 +389,7 @@ final class TraceConfigzZPageHandler extends ZPageHandler {
       if (maxNumOfLinksStr != null) {
         try {
           int maxNumOfLinks = Integer.parseInt(maxNumOfLinksStr);
-          newConfigBuilder.setMaxNumberOfLinks(maxNumOfLinks);
+          newConfigBuilder.setSpanLinkLimit(maxNumOfLinks);
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException("MaxNumOfLinks must be of the type integer", e);
         }

@@ -140,7 +140,7 @@ public interface SpanData {
    * The total number of {@link EventData} events that were recorded on this span. This number may
    * be larger than the number of events that are attached to this span, if the total number
    * recorded was greater than the configured maximum value. See: {@link
-   * SpanLimits#getMaxNumberOfEvents()}
+   * SpanLimits#getSpanEventLimit()}
    *
    * @return The total number of events recorded on this span.
    */
@@ -149,7 +149,7 @@ public interface SpanData {
   /**
    * The total number of {@link LinkData} links that were recorded on this span. This number may be
    * larger than the number of links that are attached to this span, if the total number recorded
-   * was greater than the configured maximum value. See: {@link SpanLimits#getMaxNumberOfLinks()}
+   * was greater than the configured maximum value. See: {@link SpanLimits#getSpanLinkLimit()}
    *
    * @return The total number of links recorded on this span.
    */
@@ -158,7 +158,7 @@ public interface SpanData {
   /**
    * The total number of attributes that were recorded on this span. This number may be larger than
    * the number of attributes that are attached to this span, if the total number recorded was
-   * greater than the configured maximum value. See: {@link SpanLimits#getMaxNumberOfAttributes()}
+   * greater than the configured maximum value. See: {@link SpanLimits#getSpanAttributeLimit()}
    *
    * @return The total number of attributes on this span.
    */

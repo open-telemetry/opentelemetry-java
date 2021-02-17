@@ -148,9 +148,9 @@ class TracerProviderConfigurationTest {
 
     SpanLimits config =
         TracerProviderConfiguration.configureSpanLimits(ConfigProperties.createForTest(properties));
-    assertThat(config.getMaxNumberOfAttributes()).isEqualTo(5);
-    assertThat(config.getMaxNumberOfEvents()).isEqualTo(4);
-    assertThat(config.getMaxNumberOfLinks()).isEqualTo(3);
+    assertThat(config.getSpanAttributeLimit()).isEqualTo(5);
+    assertThat(config.getSpanEventLimit()).isEqualTo(4);
+    assertThat(config.getSpanLinkLimit()).isEqualTo(3);
   }
 
   @Test
