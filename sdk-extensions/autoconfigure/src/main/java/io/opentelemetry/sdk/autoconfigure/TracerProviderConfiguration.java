@@ -18,16 +18,9 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.ServiceLoader;
-import java.util.Set;
 
 final class TracerProviderConfiguration {
-
-  /** A set of the exporter names that should use the SimpleSpanProcessor. */
-  private static final Set<String> SPAN_EXPORTER_USING_SIMPLE_SPAN_PROCESSOR =
-      new HashSet<>(Collections.singletonList("logging"));
 
   static SdkTracerProvider configureTracerProvider(Resource resource, ConfigProperties config) {
     SdkTracerProviderBuilder tracerProviderBuilder =
@@ -65,7 +58,7 @@ final class TracerProviderConfiguration {
   // VisibleForTesting
   static SpanProcessor configureSpanProcessor(
       ConfigProperties config, SpanExporter exporter, String exporterName) {
-    if (SPAN_EXPORTER_USING_SIMPLE_SPAN_PROCESSOR.contains(exporterName)) {
+    if (exporterName.equals("logging")) {
       return SimpleSpanProcessor.create(exporter);
     }
     return configureSpanProcessor(config, exporter);
