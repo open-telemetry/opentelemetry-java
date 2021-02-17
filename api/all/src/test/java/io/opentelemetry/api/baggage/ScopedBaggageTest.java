@@ -51,7 +51,7 @@ class ScopedBaggageTest {
         Baggage.builder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = scopedBaggage.makeCurrent()) {
       Baggage newEntries =
-          Baggage.builder().put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION).build();
+          Baggage.current().toBuilder().put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION).build();
       assertThat(newEntries.asMap())
           .containsOnly(
               entry(KEY_1, ImmutableEntry.create(VALUE_1, METADATA_UNLIMITED_PROPAGATION)),
@@ -80,7 +80,7 @@ class ScopedBaggageTest {
         Baggage.builder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope1 = scopedBaggage.makeCurrent()) {
       Baggage innerBaggage =
-          Baggage.builder().put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION).build();
+          Baggage.current().toBuilder().put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION).build();
       try (Scope scope2 = innerBaggage.makeCurrent()) {
         assertThat(Baggage.current().asMap())
             .containsOnly(
@@ -101,7 +101,7 @@ class ScopedBaggageTest {
             .build();
     try (Scope scope1 = scopedBaggage.makeCurrent()) {
       Baggage innerBaggage =
-          Baggage.builder()
+          Baggage.current().toBuilder()
               .put(KEY_3, VALUE_3, METADATA_NO_PROPAGATION)
               .put(KEY_2, VALUE_4, METADATA_NO_PROPAGATION)
               .build();
@@ -115,23 +115,5 @@ class ScopedBaggageTest {
       }
       assertThat(Baggage.current()).isSameAs(scopedBaggage);
     }
-  }
-
-  @Test
-  void setNoParent_doesNotInheritContext() {
-    assertThat(Baggage.current().isEmpty()).isTrue();
-    Baggage scopedBaggage =
-        Baggage.builder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
-    try (Scope scope = scopedBaggage.makeCurrent()) {
-      Baggage innerBaggage =
-          Baggage.builder()
-              .setNoParent()
-              .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
-              .build();
-      assertThat(innerBaggage.asMap())
-          .containsOnly(
-              entry(KEY_2, ImmutableEntry.create(VALUE_2, METADATA_UNLIMITED_PROPAGATION)));
-    }
-    assertThat(Baggage.current().isEmpty()).isTrue();
   }
 }

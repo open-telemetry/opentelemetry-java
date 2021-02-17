@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.baggage;
 
-import io.opentelemetry.context.Context;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -62,38 +61,6 @@ public class BaggageBenchmark {
     Baggage baggage = Baggage.empty();
     for (int i = 0; i < itemsToAdd; i++) {
       baggage = baggage.toBuilder().put(keys.get(i), values.get(i)).build();
-    }
-    return baggage;
-  }
-
-  @Benchmark
-  @BenchmarkMode({Mode.AverageTime})
-  @Fork(1)
-  @Measurement(iterations = 15, time = 1)
-  @OutputTimeUnit(TimeUnit.NANOSECONDS)
-  @Warmup(iterations = 5, time = 1)
-  public Baggage baggageParentBenchmark() {
-    Baggage baggage = Baggage.empty();
-    Context context = Context.root().with(baggage);
-    for (int i = 0; i < itemsToAdd; i++) {
-      baggage = Baggage.builder().put(keys.get(i), values.get(i)).setParent(context).build();
-      context = context.with(baggage);
-    }
-    return baggage;
-  }
-
-  @Benchmark
-  @BenchmarkMode({Mode.AverageTime})
-  @Fork(1)
-  @Measurement(iterations = 15, time = 1)
-  @OutputTimeUnit(TimeUnit.NANOSECONDS)
-  @Warmup(iterations = 5, time = 1)
-  public Baggage baggageParentBenchmark_noContent() {
-    Baggage baggage = Baggage.empty();
-    Context context = Context.root().with(baggage);
-    for (int i = 0; i < itemsToAdd; i++) {
-      baggage = Baggage.builder().setParent(context).build();
-      context = context.with(baggage);
     }
     return baggage;
   }
