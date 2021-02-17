@@ -77,9 +77,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       }
     } catch (Exception e) {
       // don't crash the caller if there was a problem reading nics.
-      if (logger.isLoggable(Level.FINE)) {
-        logger.log(Level.FINE, "error reading nics", e);
-      }
+      logger.log(Level.FINE, "error reading nics", e);
     }
     return null;
   }
