@@ -171,7 +171,7 @@ class ZipkinSpanExporterTest {
 
   @Test
   void generateSpan_defaultResourceServiceName() {
-    SpanData data = buildStandardSpan().setResource(Resource.getEmpty()).build();
+    SpanData data = buildStandardSpan().setResource(Resource.empty()).build();
 
     Endpoint expectedEndpoint =
         Endpoint.newBuilder()
