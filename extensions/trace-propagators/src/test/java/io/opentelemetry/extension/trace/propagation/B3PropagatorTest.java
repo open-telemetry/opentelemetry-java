@@ -50,8 +50,8 @@ class B3PropagatorTest {
           return carrier.get(key);
         }
       };
-  private final B3Propagator b3Propagator = B3Propagator.builder().injectMultipleHeaders().build();
-  private final B3Propagator b3PropagatorSingleHeader = B3Propagator.getInstance();
+  private final B3Propagator b3Propagator = B3Propagator.injectingMultiHeaders();
+  private final B3Propagator b3PropagatorSingleHeader = B3Propagator.injectingSingleHeader();
 
   private static SpanContext getSpanContext(Context context) {
     return Span.fromContext(context).getSpanContext();

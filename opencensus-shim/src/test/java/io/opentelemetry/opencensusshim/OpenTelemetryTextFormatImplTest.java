@@ -112,7 +112,7 @@ class OpenTelemetryTextFormatImplTest {
   @Test
   void testInjectAndExtractWithB3() {
     OpenTelemetryTextFormatImpl textFormatImpl =
-        new OpenTelemetryTextFormatImpl(B3Propagator.builder().injectMultipleHeaders().build());
+        new OpenTelemetryTextFormatImpl(B3Propagator.injectingMultiHeaders());
     Map<String, String> carrier = new LinkedHashMap<>();
 
     textFormatImpl.inject(SPAN_CONTEXT, carrier, SETTER);

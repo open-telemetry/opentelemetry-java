@@ -120,7 +120,7 @@ class FullConfigTest {
     List<String> keys = new ArrayList<>();
     keys.addAll(W3CTraceContextPropagator.getInstance().fields());
     keys.addAll(W3CBaggagePropagator.getInstance().fields());
-    keys.addAll(B3Propagator.getInstance().fields());
+    keys.addAll(B3Propagator.injectingSingleHeader().fields());
     keys.addAll(JaegerPropagator.getInstance().fields());
     keys.addAll(OtTracePropagator.getInstance().fields());
     keys.addAll(AwsXrayPropagator.getInstance().fields());

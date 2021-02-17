@@ -62,9 +62,9 @@ final class PropagatorConfiguration {
 
     switch (name) {
       case "b3":
-        return B3Propagator.getInstance();
+        return B3Propagator.injectingSingleHeader();
       case "b3multi":
-        return B3Propagator.builder().injectMultipleHeaders().build();
+        return B3Propagator.injectingMultiHeaders();
       case "jaeger":
         return JaegerPropagator.getInstance();
         // NB: https://github.com/open-telemetry/opentelemetry-specification/pull/1406
