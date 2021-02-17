@@ -24,6 +24,7 @@ get the `Baggage` instance from the `Context` and call `toBuilder()` on it in or
 - `OpenTelemetry.getPropagating()` has been renamed to `OpenTelemetry.propagating()`.
 - `TracerProvider.getDefault()` has been renamed to `TracerProvider.noop()`
 - `Tracer.getDefault()` has been removed.
+- `TraceId.getTraceIdRandomPart(CharSequence)` has been removed.
 
 ### SDK
 
