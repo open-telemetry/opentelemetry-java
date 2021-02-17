@@ -6,6 +6,7 @@
 package io.opentelemetry.api.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +42,13 @@ class ImmutableKeyValuePairsTest {
     assertThat(new TestPairs(new Object[] {"one", 55}).toString()).isEqualTo("{one=55}");
     assertThat(new TestPairs(new Object[] {"one", 55, "two", "b"}).toString())
         .isEqualTo("{one=55, two=\"b\"}");
+  }
+
+  @Test
+  void doesNotCrash() {
+    TestPairs pairs = new TestPairs(new Object[0]);
+    assertThat(pairs.get(null)).isNull();
+    assertThatCode(() -> pairs.forEach(null)).doesNotThrowAnyException();
   }
 
   static class TestPairs extends ImmutableKeyValuePairs<String, Object> {
