@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.internal.BigendianEncoding;
 import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 

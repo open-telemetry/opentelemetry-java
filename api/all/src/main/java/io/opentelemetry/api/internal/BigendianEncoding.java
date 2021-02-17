@@ -3,14 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.trace;
+package io.opentelemetry.api.internal;
 
-import io.opentelemetry.api.internal.Utils;
 import java.util.Arrays;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class BigendianEncoding {
+public final class BigendianEncoding {
   static final int LONG_BYTES = Long.SIZE / Byte.SIZE;
   static final int BYTE_BASE16 = 2;
   static final int LONG_BASE16 = BYTE_BASE16 * LONG_BYTES;
@@ -45,7 +44,7 @@ final class BigendianEncoding {
    * @param chars the base16 representation of the {@code long}.
    * @param offset the starting offset in the {@code CharSequence}.
    */
-  static long longFromBase16String(CharSequence chars, int offset) {
+  public static long longFromBase16String(CharSequence chars, int offset) {
     return (byteFromBase16(chars.charAt(offset), chars.charAt(offset + 1)) & 0xFFL) << 56
         | (byteFromBase16(chars.charAt(offset + 2), chars.charAt(offset + 3)) & 0xFFL) << 48
         | (byteFromBase16(chars.charAt(offset + 4), chars.charAt(offset + 5)) & 0xFFL) << 40
@@ -63,7 +62,7 @@ final class BigendianEncoding {
    * @param dest the destination char array.
    * @param destOffset the starting offset in the destination char array.
    */
-  static void longToBase16String(long value, char[] dest, int destOffset) {
+  public static void longToBase16String(long value, char[] dest, int destOffset) {
     byteToBase16((byte) (value >> 56 & 0xFFL), dest, destOffset);
     byteToBase16((byte) (value >> 48 & 0xFFL), dest, destOffset + BYTE_BASE16);
     byteToBase16((byte) (value >> 40 & 0xFFL), dest, destOffset + 2 * BYTE_BASE16);
@@ -74,7 +73,8 @@ final class BigendianEncoding {
     byteToBase16((byte) (value & 0xFFL), dest, destOffset + 7 * BYTE_BASE16);
   }
 
-  static byte[] bytesFromBase16(CharSequence value, int length) {
+  /** Returns the {@code byte[]} decoded from the given hex {@link CharSequence}. */
+  public static byte[] bytesFromBase16(CharSequence value, int length) {
     byte[] result = new byte[length / 2];
     for (int i = 0; i < length; i += 2) {
       result[i / 2] = byteFromBase16(value.charAt(i), value.charAt(i + 1));
@@ -82,7 +82,8 @@ final class BigendianEncoding {
     return result;
   }
 
-  static void bytesToBase16(byte[] bytes, char[] dest) {
+  /** Fills {@code dest} with the hex encoding of {@code bytes}. */
+  public static void bytesToBase16(byte[] bytes, char[] dest) {
     for (int i = 0; i < bytes.length; i++) {
       byteToBase16(bytes[i], dest, i * 2);
     }
@@ -95,7 +96,7 @@ final class BigendianEncoding {
    * @param dest the destination char array.
    * @param destOffset the starting offset in the destination char array.
    */
-  static void byteToBase16(byte value, char[] dest, int destOffset) {
+  public static void byteToBase16(byte value, char[] dest, int destOffset) {
     int b = value & 0xFF;
     dest[destOffset] = ENCODING[b];
     dest[destOffset + 1] = ENCODING[b | 0x100];
@@ -108,7 +109,7 @@ final class BigendianEncoding {
    * @param second the second hex character.
    * @return the resulting {@code byte}
    */
-  static byte byteFromBase16(char first, char second) {
+  public static byte byteFromBase16(char first, char second) {
     Utils.checkArgument(
         first < ASCII_CHARACTERS && DECODING[first] != -1, "invalid character " + first);
     Utils.checkArgument(
@@ -117,7 +118,8 @@ final class BigendianEncoding {
     return (byte) decoded;
   }
 
-  static boolean isValidBase16String(CharSequence value) {
+  /** Returns whether the {@link CharSequence} is a valid hex string. */
+  public static boolean isValidBase16String(CharSequence value) {
     for (int i = 0; i < value.length(); i++) {
       char b = value.charAt(i);
       // 48..57 && 97..102 are valid
