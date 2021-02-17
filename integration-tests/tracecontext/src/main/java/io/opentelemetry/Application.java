@@ -34,7 +34,7 @@ public class Application {
 
   static {
     openTelemetry =
-        OpenTelemetry.getPropagating(
+        OpenTelemetry.propagating(
             ContextPropagators.create(W3CTraceContextPropagator.getInstance()));
   }
 
