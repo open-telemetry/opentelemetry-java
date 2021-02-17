@@ -9,7 +9,6 @@ extra["moduleName"] = "io.opentelemetry.sdk.testing"
 dependencies {
     api(project(":api:all"))
     api(project(":sdk:all"))
-    api(project(":sdk:metrics"))
 
     compileOnly("org.assertj:assertj-core")
     compileOnly("junit:junit")
