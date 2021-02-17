@@ -18,7 +18,7 @@ public interface TraceStateBuilder {
    * @param value the value for the {@code Entry} to be added.
    * @return this.
    */
-  TraceStateBuilder set(String key, String value);
+  TraceStateBuilder put(String key, String value);
 
   /**
    * Removes the {@code Entry} that has the given {@code key} if it is present.

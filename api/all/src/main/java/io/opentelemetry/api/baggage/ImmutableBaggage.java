@@ -5,11 +5,8 @@
 
 package io.opentelemetry.api.baggage;
 
-import static java.util.Objects.requireNonNull;
-
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import io.opentelemetry.api.internal.StringUtils;
-import io.opentelemetry.context.Context;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -42,9 +39,7 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
 
   @Override
   public BaggageBuilder toBuilder() {
-    Builder builder = new Builder(new ArrayList<>(data()));
-    builder.noImplicitParent = true;
-    return builder;
+    return new Builder(new ArrayList<>(data()));
   }
 
   private static Baggage sortAndFilterToBaggage(Object[] data) {
@@ -55,8 +50,6 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
   // @AutoValue.Builder
   static class Builder implements BaggageBuilder {
 
-    @Nullable private Baggage parent;
-    private boolean noImplicitParent;
     private final List<Object> data;
 
     Builder() {
@@ -65,20 +58,6 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
 
     Builder(List<Object> data) {
       this.data = data;
-    }
-
-    @Override
-    public BaggageBuilder setParent(Context context) {
-      requireNonNull(context, "context");
-      parent = Baggage.fromContext(context);
-      return this;
-    }
-
-    @Override
-    public BaggageBuilder setNoParent() {
-      this.parent = null;
-      noImplicitParent = true;
-      return this;
     }
 
     @Override
@@ -104,25 +83,6 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
 
     @Override
     public Baggage build() {
-      if (parent == null && !noImplicitParent) {
-        parent = Baggage.current();
-      }
-
-      List<Object> data = this.data;
-      if (parent != null && !parent.isEmpty()) {
-        List<Object> merged = new ArrayList<>(parent.size() * 2 + data.size());
-        if (parent instanceof ImmutableBaggage) {
-          merged.addAll(((ImmutableBaggage) parent).data());
-        } else {
-          parent.forEach(
-              (key, entry) -> {
-                merged.add(key);
-                merged.add(entry);
-              });
-        }
-        merged.addAll(data);
-        data = merged;
-      }
       return sortAndFilterToBaggage(data.toArray());
     }
   }

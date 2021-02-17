@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 // try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
 class DefaultTracerTest {
-  private static final Tracer defaultTracer = Tracer.getDefault();
+  private static final Tracer defaultTracer = DefaultTracer.getInstance();
   private static final String SPAN_NAME = "MySpanName";
   private static final SpanContext spanContext =
       SpanContext.create(

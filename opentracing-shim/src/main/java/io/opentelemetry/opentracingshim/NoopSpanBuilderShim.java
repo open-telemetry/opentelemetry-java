@@ -6,12 +6,17 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.tag.Tag;
 
 final class NoopSpanBuilderShim extends BaseShimObject implements SpanBuilder {
+
+  private static final Tracer TRACER =
+      TracerProvider.noop().get("io.opentelemetry.opentracingshim");
+
   private final String spanName;
 
   public NoopSpanBuilderShim(TelemetryInfo telemetryInfo, String spanName) {
@@ -66,6 +71,6 @@ final class NoopSpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public Span start() {
-    return new SpanShim(telemetryInfo, Tracer.getDefault().spanBuilder(spanName).startSpan());
+    return new SpanShim(telemetryInfo, TRACER.spanBuilder(spanName).startSpan());
   }
 }

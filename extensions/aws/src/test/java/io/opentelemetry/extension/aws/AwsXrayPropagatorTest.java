@@ -13,7 +13,8 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,9 +26,9 @@ class AwsXrayPropagatorTest {
   private static final String TRACE_ID = "8a3c60f7d188f8fa79d48a391a778fa6";
   private static final String SPAN_ID = "53995c3f42cd8ad8";
 
-  private static final TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
-  private static final TextMapPropagator.Getter<Map<String, String>> getter =
-      new TextMapPropagator.Getter<Map<String, String>>() {
+  private static final TextMapSetter<Map<String, String>> setter = Map::put;
+  private static final TextMapGetter<Map<String, String>> getter =
+      new TextMapGetter<Map<String, String>>() {
         @Override
         public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
@@ -82,7 +83,7 @@ class AwsXrayPropagatorTest {
                 TRACE_ID,
                 SPAN_ID,
                 TraceFlags.getDefault(),
-                TraceState.builder().set("foo", "bar").build()),
+                TraceState.builder().put("foo", "bar").build()),
             Context.current()),
         carrier,
         setter);

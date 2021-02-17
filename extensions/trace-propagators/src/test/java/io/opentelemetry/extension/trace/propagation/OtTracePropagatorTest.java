@@ -15,8 +15,8 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
-import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -31,9 +31,9 @@ class OtTracePropagatorTest {
   private static final String SHORT_TRACE_ID = "ff00000000000000";
   private static final String SHORT_TRACE_ID_FULL = "0000000000000000ff00000000000000";
   private static final String SPAN_ID = "ff00000000000041";
-  private static final Setter<Map<String, String>> setter = Map::put;
-  private static final Getter<Map<String, String>> getter =
-      new Getter<Map<String, String>>() {
+  private static final TextMapSetter<Map<String, String>> setter = Map::put;
+  private static final TextMapGetter<Map<String, String>> getter =
+      new TextMapGetter<Map<String, String>>() {
         @Override
         public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
@@ -64,7 +64,7 @@ class OtTracePropagatorTest {
                 TraceId.getInvalid(),
                 SpanId.getInvalid(),
                 TraceFlags.getSampled(),
-                TraceState.builder().set("foo", "bar").build()),
+                TraceState.builder().put("foo", "bar").build()),
             Context.current()),
         carrier,
         setter);
@@ -93,7 +93,7 @@ class OtTracePropagatorTest {
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()),
             Context.current()),
         null,
-        (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
+        (TextMapSetter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
     assertThat(carrier).containsEntry(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID_RIGHT_PART);
     assertThat(carrier).containsEntry(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
     assertThat(carrier).containsEntry(OtTracePropagator.SAMPLED_HEADER, "true");

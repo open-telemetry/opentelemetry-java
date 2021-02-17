@@ -17,11 +17,11 @@ import javax.annotation.concurrent.ThreadSafe;
 final class DefaultOpenTelemetry implements OpenTelemetry {
   private static final OpenTelemetry NO_OP = new DefaultOpenTelemetry(ContextPropagators.noop());
 
-  static OpenTelemetry noop() {
+  static OpenTelemetry getNoop() {
     return NO_OP;
   }
 
-  static OpenTelemetry propagating(ContextPropagators propagators) {
+  static OpenTelemetry getPropagating(ContextPropagators propagators) {
     return new DefaultOpenTelemetry(propagators);
   }
 
@@ -33,7 +33,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
 
   @Override
   public TracerProvider getTracerProvider() {
-    return TracerProvider.getDefault();
+    return TracerProvider.noop();
   }
 
   @Override

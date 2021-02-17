@@ -8,8 +8,9 @@ package io.opentelemetry.api.trace.propagation;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,8 +43,8 @@ public class W3CTraceContextPropagatorBenchmark {
           "00-68ec932c33b3f2ee68ec932c33b3f2ee-68ec932c33b3f2ee-00");
   private final TextMapPropagator w3cTraceContextPropagator =
       W3CTraceContextPropagator.getInstance();
-  private final Getter<Map<String, String>> getter =
-      new Getter<Map<String, String>>() {
+  private final TextMapGetter<Map<String, String>> getter =
+      new TextMapGetter<Map<String, String>>() {
         @Override
         public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
@@ -55,7 +56,7 @@ public class W3CTraceContextPropagatorBenchmark {
         }
       };
   private final Map<String, String> carrier = new HashMap<>();
-  private final TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
+  private final TextMapSetter<Map<String, String>> setter = Map::put;
 
   private static final List<Map<String, String>> carriers =
       getCarrierForHeader(traceparentsHeaders);

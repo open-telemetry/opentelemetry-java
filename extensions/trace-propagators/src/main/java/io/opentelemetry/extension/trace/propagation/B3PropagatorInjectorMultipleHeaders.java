@@ -8,14 +8,14 @@ package io.opentelemetry.extension.trace.propagation;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
 final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector {
   @Override
-  public <C> void inject(Context context, C carrier, TextMapPropagator.Setter<C> setter) {
+  public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 

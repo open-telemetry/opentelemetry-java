@@ -129,7 +129,7 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void fullOpenTelemetrySdkConfigurationDemo() {
-    SpanLimits newConfig = SpanLimits.builder().setMaxLengthOfAttributeValues(128).build();
+    SpanLimits newConfig = SpanLimits.builder().setMaxNumberOfAttributes(512).build();
 
     OpenTelemetrySdkBuilder sdkBuilder =
         OpenTelemetrySdk.builder()
@@ -140,7 +140,7 @@ class OpenTelemetrySdkTest {
                     .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                     .setClock(mock(Clock.class))
                     .setIdGenerator(mock(IdGenerator.class))
-                    .setResource(Resource.getEmpty())
+                    .setResource(Resource.empty())
                     .setSpanLimits(newConfig)
                     .build());
 

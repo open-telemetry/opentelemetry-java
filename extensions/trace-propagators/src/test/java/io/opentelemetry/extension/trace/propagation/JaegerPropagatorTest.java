@@ -25,8 +25,8 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collections;
@@ -47,9 +47,9 @@ class JaegerPropagatorTest {
   private static final String SPAN_ID = "0000000000017c29";
   private static final long SPAN_ID_LONG = 97321L;
   private static final long DEPRECATED_PARENT_SPAN_LONG = 0L;
-  private static final TextMapPropagator.Setter<Map<String, String>> setter = Map::put;
-  private static final TextMapPropagator.Getter<Map<String, String>> getter =
-      new TextMapPropagator.Getter<Map<String, String>>() {
+  private static final TextMapSetter<Map<String, String>> setter = Map::put;
+  private static final TextMapGetter<Map<String, String>> getter =
+      new TextMapGetter<Map<String, String>>() {
         @Override
         public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
@@ -81,7 +81,7 @@ class JaegerPropagatorTest {
                 TraceId.getInvalid(),
                 SpanId.getInvalid(),
                 TraceFlags.getSampled(),
-                TraceState.builder().set("foo", "bar").build()),
+                TraceState.builder().put("foo", "bar").build()),
             Context.current()),
         carrier,
         setter);
@@ -113,7 +113,7 @@ class JaegerPropagatorTest {
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()),
             Context.current()),
         null,
-        (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
+        (TextMapSetter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
 
     assertThat(carrier)
         .containsEntry(

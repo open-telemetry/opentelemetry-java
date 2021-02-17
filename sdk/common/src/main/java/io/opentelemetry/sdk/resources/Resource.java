@@ -81,7 +81,7 @@ public abstract class Resource {
    *
    * @return an empty {@code Resource}.
    */
-  public static Resource getEmpty() {
+  public static Resource empty() {
     return EMPTY;
   }
 

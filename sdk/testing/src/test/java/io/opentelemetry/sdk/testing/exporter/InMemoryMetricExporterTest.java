@@ -29,8 +29,8 @@ class InMemoryMetricExporterTest {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return MetricData.createLongSum(
-        Resource.getEmpty(),
-        InstrumentationLibraryInfo.getEmpty(),
+        Resource.empty(),
+        InstrumentationLibraryInfo.empty(),
         "name",
         "description",
         "1",

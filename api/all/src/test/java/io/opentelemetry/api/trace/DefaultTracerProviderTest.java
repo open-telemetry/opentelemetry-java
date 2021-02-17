@@ -13,7 +13,7 @@ class DefaultTracerProviderTest {
 
   @Test
   void returnsDefaultTracer() {
-    assertThat(TracerProvider.getDefault().get("test")).isInstanceOf(DefaultTracer.class);
-    assertThat(TracerProvider.getDefault().get("test", "1.0")).isInstanceOf(DefaultTracer.class);
+    assertThat(TracerProvider.noop().get("test")).isInstanceOf(DefaultTracer.class);
+    assertThat(TracerProvider.noop().get("test", "1.0")).isInstanceOf(DefaultTracer.class);
   }
 }

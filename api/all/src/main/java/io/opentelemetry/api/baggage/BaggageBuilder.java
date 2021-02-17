@@ -5,43 +5,12 @@
 
 package io.opentelemetry.api.baggage;
 
-import io.opentelemetry.context.Context;
-
 /**
  * A builder of {@link Baggage}.
  *
  * @see Baggage#builder()
  */
 public interface BaggageBuilder {
-
-  /**
-   * Sets the parent {@link Baggage} to use from the specified {@code Context}. If no parent {@link
-   * Baggage} is provided, the value of {@link Baggage#current()} at {@link #build()} time will be
-   * used as parent, unless {@link #setNoParent()} was called.
-   *
-   * <p>If no parent {@link Baggage} is available in the specified {@code Context}, the resulting
-   * {@link Baggage} will become a root instance, as if {@link #setNoParent()} had been called.
-   *
-   * <p>This <b>must</b> be used to create a {@link Baggage} when manual Context propagation is
-   * used.
-   *
-   * <p>If called multiple times, only the last specified value will be used.
-   *
-   * @param context the {@code Context}.
-   * @return this.
-   * @throws NullPointerException if {@code context} is {@code null}.
-   * @see #setNoParent()
-   */
-  BaggageBuilder setParent(Context context);
-
-  /**
-   * Sets the option to become a root {@link Baggage} with no parent. If <b>not</b> called, the
-   * value provided using {@link #setParent(Context)} or otherwise {@link Baggage#current()} at
-   * {@link #build()} time will be used as parent.
-   *
-   * @return this.
-   */
-  BaggageBuilder setNoParent();
 
   /**
    * Adds the key/value pair and metadata regardless of whether the key is present.

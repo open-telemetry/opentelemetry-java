@@ -15,9 +15,9 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
-import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -29,16 +29,16 @@ import org.junit.jupiter.api.Test;
 class W3CTraceContextPropagatorTest {
 
   private static final TraceState TRACE_STATE =
-      TraceState.builder().set("foo", "bar").set("bar", "baz").build();
+      TraceState.builder().put("foo", "bar").put("bar", "baz").build();
   private static final String TRACE_ID_BASE16 = "ff000000000000000000000000000041";
   private static final String SPAN_ID_BASE16 = "ff00000000000041";
   private static final String TRACEPARENT_HEADER_SAMPLED =
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01";
   private static final String TRACEPARENT_HEADER_NOT_SAMPLED =
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00";
-  private static final Setter<Map<String, String>> setter = Map::put;
-  private static final Getter<Map<String, String>> getter =
-      new Getter<Map<String, String>>() {
+  private static final TextMapSetter<Map<String, String>> setter = Map::put;
+  private static final TextMapGetter<Map<String, String>> getter =
+      new TextMapGetter<Map<String, String>>() {
         @Override
         public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
@@ -83,7 +83,7 @@ class W3CTraceContextPropagatorTest {
     w3cTraceContextPropagator.inject(
         context,
         null,
-        (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
+        (TextMapSetter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
     assertThat(carrier)
         .containsExactly(entry(W3CTraceContextPropagator.TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED));
   }
@@ -97,7 +97,7 @@ class W3CTraceContextPropagatorTest {
                 TraceId.getInvalid(),
                 SpanId.getInvalid(),
                 TraceFlags.getSampled(),
-                TraceState.builder().set("foo", "bar").build()),
+                TraceState.builder().put("foo", "bar").build()),
             Context.current()),
         carrier,
         setter);

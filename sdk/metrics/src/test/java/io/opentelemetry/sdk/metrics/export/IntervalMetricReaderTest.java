@@ -42,7 +42,7 @@ class IntervalMetricReaderTest {
 
   private static final MetricData METRIC_DATA =
       MetricData.createLongSum(
-          Resource.getEmpty(),
+          Resource.empty(),
           InstrumentationLibraryInfo.create("IntervalMetricReaderTest", null),
           "my metric",
           "my metric description",
