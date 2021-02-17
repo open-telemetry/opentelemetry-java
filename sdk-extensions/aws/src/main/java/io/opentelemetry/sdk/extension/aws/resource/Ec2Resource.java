@@ -72,7 +72,7 @@ public final class Ec2Resource {
     String identity = fetchIdentity(identityDocumentUrl, token);
     if (identity.isEmpty()) {
       // If no identity document, assume we are not actually running on EC2.
-      return Resource.getEmpty();
+      return Resource.empty();
     }
 
     String hostname = fetchHostname(hostnameUrl, token);
@@ -114,7 +114,7 @@ public final class Ec2Resource {
       }
     } catch (IOException e) {
       logger.log(Level.WARNING, "Could not parse identity document, resource not filled.", e);
-      return Resource.getEmpty();
+      return Resource.empty();
     }
 
     attrBuilders.put(ResourceAttributes.HOST_NAME, hostname);
