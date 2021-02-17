@@ -33,7 +33,7 @@ class SpanConverterTest {
                 traceIdHex,
                 spanIdHex,
                 TraceFlags.getSampled(),
-                TraceState.builder().set(traceStateKey, traceStateValue).build()));
+                TraceState.builder().put(traceStateKey, traceStateValue).build()));
 
     io.opencensus.trace.Span ocSPan = SpanConverter.fromOtelSpan(otelSpan);
 

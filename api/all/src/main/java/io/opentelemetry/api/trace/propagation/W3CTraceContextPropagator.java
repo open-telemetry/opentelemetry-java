@@ -235,7 +235,7 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
       String listMember = listMembers[i];
       int index = listMember.indexOf(TRACESTATE_KEY_VALUE_DELIMITER);
       checkArgument(index != -1, "Invalid TraceState list-member format.");
-      traceStateBuilder.set(listMember.substring(0, index), listMember.substring(index + 1));
+      traceStateBuilder.put(listMember.substring(0, index), listMember.substring(index + 1));
     }
     return traceStateBuilder.build();
   }

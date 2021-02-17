@@ -32,7 +32,7 @@ class OpenTelemetryAssertionsTest {
   private static final String TRACE_ID = "00000000000000010000000000000002";
   private static final String SPAN_ID1 = "0000000000000003";
   private static final String SPAN_ID2 = "0000000000000004";
-  private static final TraceState TRACE_STATE = TraceState.builder().set("cat", "meow").build();
+  private static final TraceState TRACE_STATE = TraceState.builder().put("cat", "meow").build();
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("dog", "bark").build());
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =

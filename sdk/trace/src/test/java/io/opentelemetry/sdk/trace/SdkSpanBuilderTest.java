@@ -581,7 +581,7 @@ class SdkSpanBuilderTest {
 
                           @Override
                           public TraceState getUpdatedTraceState(TraceState parentTraceState) {
-                            return parentTraceState.toBuilder().set("newkey", "newValue").build();
+                            return parentTraceState.toBuilder().put("newkey", "newValue").build();
                           }
                         };
                       }
@@ -600,7 +600,7 @@ class SdkSpanBuilderTest {
       assertThat(span.getSpanContext().isSampled()).isTrue();
       assertThat(span.toSpanData().getAttributes().get(samplerAttributeKey)).isNotNull();
       assertThat(span.toSpanData().getSpanContext().getTraceState())
-          .isEqualTo(TraceState.builder().set("newkey", "newValue").build());
+          .isEqualTo(TraceState.builder().put("newkey", "newValue").build());
     } finally {
       span.end();
     }
