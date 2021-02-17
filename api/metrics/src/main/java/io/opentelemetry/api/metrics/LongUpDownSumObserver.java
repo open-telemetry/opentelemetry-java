@@ -21,28 +21,28 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Example:
  *
  * <pre>{@code
- * class YourClass {
- *
- *   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
- *   private static final LongUpDownSumObserver memoryObserver =
- *       meter.
- *           .longUpDownSumObserverBuilder("memory_usage")
- *           .setDescription("System memory usage")
- *           .setUnit("by")
- *           .build();
- *
- *   void init() {
- *     memoryObserver.setUpdater(
- *         new LongUpDownSumObserver.Callback<LongResult>() {
- *          {@literal @}Override
- *           public void update(LongResult result) {
- *             // Get system memory usage
- *             result.observe(memoryUsed, "state", "used");
- *             result.observe(memoryFree, "state", "free");
- *           }
- *         });
- *   }
- * }
+ * // class YourClass {
+ * //
+ * //   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
+ * //   private static final LongUpDownSumObserver memoryObserver =
+ * //       meter.
+ * //           .longUpDownSumObserverBuilder("memory_usage")
+ * //           .setDescription("System memory usage")
+ * //           .setUnit("by")
+ * //           .build();
+ * //
+ * //   void init() {
+ * //     memoryObserver.setUpdater(
+ * //         new LongUpDownSumObserver.Callback<LongResult>() {
+ * //          @Override
+ * //           public void update(LongResult result) {
+ * //             // Get system memory usage
+ * //             result.observe(memoryUsed, "state", "used");
+ * //             result.observe(memoryFree, "state", "free");
+ * //           }
+ * //         });
+ * //   }
+ * // }
  * }</pre>
  */
 @ThreadSafe
