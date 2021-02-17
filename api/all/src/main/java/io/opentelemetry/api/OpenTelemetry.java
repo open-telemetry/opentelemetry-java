@@ -21,8 +21,8 @@ import io.opentelemetry.context.propagation.ContextPropagators;
  * @see ContextPropagators
  */
 public interface OpenTelemetry {
-  /** Returns a default, completely no-op {@link OpenTelemetry}. */
-  static OpenTelemetry getDefault() {
+  /** Returns a completely no-op {@link OpenTelemetry}. */
+  static OpenTelemetry noop() {
     return DefaultOpenTelemetry.noop();
   }
 
@@ -31,7 +31,7 @@ public interface OpenTelemetry {
    * io.opentelemetry.context.Context} using the provided {@link ContextPropagators} and is no-op
    * otherwise.
    */
-  static OpenTelemetry getPropagating(ContextPropagators propagators) {
+  static OpenTelemetry propagating(ContextPropagators propagators) {
     return DefaultOpenTelemetry.propagating(propagators);
   }
 

@@ -33,7 +33,7 @@ final class DefaultOpenTelemetry implements OpenTelemetry {
 
   @Override
   public TracerProvider getTracerProvider() {
-    return TracerProvider.getDefault();
+    return TracerProvider.noop();
   }
 
   @Override

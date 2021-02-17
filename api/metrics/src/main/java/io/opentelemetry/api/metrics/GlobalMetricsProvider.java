@@ -23,7 +23,7 @@ public class GlobalMetricsProvider {
     if (meterProvider == null) {
       synchronized (mutex) {
         if (globalMeterProvider.get() == null) {
-          return MeterProvider.getDefault();
+          return MeterProvider.noop();
         }
       }
     }

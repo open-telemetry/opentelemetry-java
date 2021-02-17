@@ -23,7 +23,7 @@ final class DefaultMeterProvider implements MeterProvider {
 
   @Override
   public Meter get(String instrumentationName, String instrumentationVersion) {
-    return Meter.getDefault();
+    return DefaultMeter.getInstance();
   }
 
   private DefaultMeterProvider() {}

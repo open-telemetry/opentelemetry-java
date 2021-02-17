@@ -29,23 +29,22 @@ class OpenTelemetryTest {
 
   @Test
   void testDefault() {
-    assertThat(OpenTelemetry.getDefault().getTracerProvider())
-        .isSameAs(TracerProvider.getDefault());
-    assertThat(OpenTelemetry.getDefault().getPropagators()).isSameAs(ContextPropagators.noop());
+    assertThat(OpenTelemetry.noop().getTracerProvider()).isSameAs(TracerProvider.noop());
+    assertThat(OpenTelemetry.noop().getPropagators()).isSameAs(ContextPropagators.noop());
   }
 
   @Test
   void propagating() {
     ContextPropagators contextPropagators = mock(ContextPropagators.class);
-    OpenTelemetry openTelemetry = OpenTelemetry.getPropagating(contextPropagators);
+    OpenTelemetry openTelemetry = OpenTelemetry.propagating(contextPropagators);
 
-    assertThat(openTelemetry.getTracerProvider()).isSameAs(TracerProvider.getDefault());
+    assertThat(openTelemetry.getTracerProvider()).isSameAs(TracerProvider.noop());
     assertThat(openTelemetry.getPropagators()).isSameAs(contextPropagators);
   }
 
   @Test
   void testGlobalBeforeSet() {
-    assertThat(GlobalOpenTelemetry.getTracerProvider()).isSameAs(TracerProvider.getDefault());
+    assertThat(GlobalOpenTelemetry.getTracerProvider()).isSameAs(TracerProvider.noop());
     assertThat(GlobalOpenTelemetry.getTracerProvider())
         .isSameAs(GlobalOpenTelemetry.getTracerProvider());
     assertThat(GlobalOpenTelemetry.getPropagators()).isSameAs(GlobalOpenTelemetry.getPropagators());
@@ -54,9 +53,9 @@ class OpenTelemetryTest {
   @Test
   void independentNonGlobalPropagators() {
     ContextPropagators propagators1 = mock(ContextPropagators.class);
-    OpenTelemetry otel1 = OpenTelemetry.getPropagating(propagators1);
+    OpenTelemetry otel1 = OpenTelemetry.propagating(propagators1);
     ContextPropagators propagators2 = mock(ContextPropagators.class);
-    OpenTelemetry otel2 = OpenTelemetry.getPropagating(propagators2);
+    OpenTelemetry otel2 = OpenTelemetry.propagating(propagators2);
 
     assertThat(otel1.getPropagators()).isSameAs(propagators1);
     assertThat(otel2.getPropagators()).isSameAs(propagators2);
@@ -65,7 +64,7 @@ class OpenTelemetryTest {
   @Test
   void setThenSet() {
     setOpenTelemetry();
-    assertThatThrownBy(() -> GlobalOpenTelemetry.set(OpenTelemetry.getDefault()))
+    assertThatThrownBy(() -> GlobalOpenTelemetry.set(OpenTelemetry.noop()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("GlobalOpenTelemetry.set has already been called")
         .hasStackTraceContaining("setOpenTelemetry");
@@ -74,14 +73,14 @@ class OpenTelemetryTest {
   @Test
   void getThenSet() {
     assertThat(getOpenTelemetry()).isInstanceOf(DefaultOpenTelemetry.class);
-    assertThatThrownBy(() -> GlobalOpenTelemetry.set(OpenTelemetry.getDefault()))
+    assertThatThrownBy(() -> GlobalOpenTelemetry.set(OpenTelemetry.noop()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("GlobalOpenTelemetry.set has already been called")
         .hasStackTraceContaining("getOpenTelemetry");
   }
 
   private static void setOpenTelemetry() {
-    GlobalOpenTelemetry.set(OpenTelemetry.getDefault());
+    GlobalOpenTelemetry.set(OpenTelemetry.noop());
   }
 
   private static OpenTelemetry getOpenTelemetry() {

@@ -57,8 +57,8 @@ public final class GlobalOpenTelemetry {
             return autoConfigured;
           }
 
-          set(OpenTelemetry.getDefault());
-          return OpenTelemetry.getDefault();
+          set(OpenTelemetry.noop());
+          return OpenTelemetry.noop();
         }
       }
     }
