@@ -39,6 +39,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -290,12 +291,16 @@ class JaegerGrpcSpanExporterTest {
     assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
-    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint(""))
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint("😺://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid endpoint, must be a URL: http://");
+        .hasMessage("Invalid endpoint, must be a URL: 😺://localhost")
+        .hasCauseInstanceOf(URISyntaxException.class);
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint("localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: localhost");
     assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint("gopher://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid scheme, must be http or https: gopher://localhost");
+        .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
   }
 
   static class MockCollectorService extends CollectorServiceGrpc.CollectorServiceImplBase {

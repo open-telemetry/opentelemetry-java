@@ -87,9 +87,12 @@ class OtlpGrpcMetricExporterTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Invalid endpoint, must be a URL: 😺://localhost")
         .hasCauseInstanceOf(URISyntaxException.class);
-    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint("ftp://localhost"))
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint("localhost"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid scheme, must be http or https: ftp://localhost");
+        .hasMessage("Invalid endpoint, must start with http:// or https://: localhost");
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint("gopher://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
   }
 
   @Test
