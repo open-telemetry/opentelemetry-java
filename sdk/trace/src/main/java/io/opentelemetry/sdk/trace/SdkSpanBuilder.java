@@ -144,10 +144,6 @@ final class SdkSpanBuilder implements SpanBuilder {
       attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
     }
 
-    if (spanLimits.shouldTruncateStringAttributeValues()) {
-      value = StringUtils.truncateToSize(key, value, spanLimits.getMaxLengthOfAttributeValues());
-    }
-
     attributes.put(key, value);
     return this;
   }

@@ -21,13 +21,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class SpanLimits {
 
-  /**
-   * Value for attribute length which indicates attributes should not be truncated.
-   *
-   * @see SpanLimitsBuilder#setMaxLengthOfAttributeValues(int)
-   */
-  public static final int UNLIMITED_ATTRIBUTE_LENGTH = -1;
-
   // These values are the default values for all the global parameters.
   // TODO: decide which default sampler to use
 
@@ -48,15 +41,13 @@ public abstract class SpanLimits {
       int maxNumEvents,
       int maxNumLinks,
       int maxNumAttributesPerEvent,
-      int maxNumAttributesPerLink,
-      int maxAttributeLength) {
+      int maxNumAttributesPerLink) {
     return new AutoValue_SpanLimits(
         maxNumAttributes,
         maxNumEvents,
         maxNumLinks,
         maxNumAttributesPerEvent,
-        maxNumAttributesPerLink,
-        maxAttributeLength);
+        maxNumAttributesPerLink);
   }
 
   /**
@@ -95,18 +86,6 @@ public abstract class SpanLimits {
   public abstract int getMaxNumberOfAttributesPerLink();
 
   /**
-   * Returns the global default max length of string attribute value in characters.
-   *
-   * @return the global default max length of string attribute value in characters.
-   * @see #shouldTruncateStringAttributeValues()
-   */
-  public abstract int getMaxLengthOfAttributeValues();
-
-  public boolean shouldTruncateStringAttributeValues() {
-    return getMaxLengthOfAttributeValues() != UNLIMITED_ATTRIBUTE_LENGTH;
-  }
-
-  /**
    * Returns a {@link SpanLimitsBuilder} initialized to the same property values as the current
    * instance.
    *
@@ -119,7 +98,6 @@ public abstract class SpanLimits {
         .setMaxNumberOfEvents(getMaxNumberOfEvents())
         .setMaxNumberOfLinks(getMaxNumberOfLinks())
         .setMaxNumberOfAttributesPerEvent(getMaxNumberOfAttributesPerEvent())
-        .setMaxNumberOfAttributesPerLink(getMaxNumberOfAttributesPerLink())
-        .setMaxLengthOfAttributeValues(getMaxLengthOfAttributeValues());
+        .setMaxNumberOfAttributesPerLink(getMaxNumberOfAttributesPerLink());
   }
 }
