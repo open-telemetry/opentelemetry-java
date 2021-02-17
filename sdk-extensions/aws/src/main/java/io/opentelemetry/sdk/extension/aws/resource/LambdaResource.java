@@ -36,7 +36,7 @@ public final class LambdaResource {
     String functionVersion = environmentVariables.getOrDefault("AWS_LAMBDA_FUNCTION_VERSION", "");
 
     if (!isLambda(functionName, functionVersion)) {
-      return Resource.getEmpty();
+      return Resource.empty();
     }
 
     AttributesBuilder builder =
