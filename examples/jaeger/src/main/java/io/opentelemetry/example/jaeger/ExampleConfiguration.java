@@ -54,7 +54,7 @@ class ExampleConfiguration {
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
 
     // it's always a good idea to shut down the SDK cleanly at JVM exit.
-    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::shutdown));
+    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
 
     return openTelemetry;
   }

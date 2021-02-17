@@ -733,9 +733,13 @@ class RecordEventsReadableSpanTest {
     span.updateName(null);
     span.addEvent(null);
     span.addEvent(null, 0, null);
+    span.addEvent("event", 0, null);
     span.addEvent(null, (Attributes) null);
+    span.addEvent("event", (Attributes) null);
     span.addEvent(null, (Instant) null);
     span.addEvent(null, null, 0, null);
+    span.addEvent("event", null, 0, TimeUnit.MILLISECONDS);
+    span.addEvent("event", Attributes.empty(), 0, null);
     span.addEvent(null, null, null);
     span.recordException(null);
     span.end(0, TimeUnit.NANOSECONDS);

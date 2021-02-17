@@ -24,7 +24,6 @@ final class MetricExporterConfiguration {
       String name, ConfigProperties config, SdkMeterProvider meterProvider) {
     switch (name) {
       case "otlp":
-      case "otlp_metrics":
         configureOtlpMetrics(config, meterProvider);
         return;
       case "prometheus":

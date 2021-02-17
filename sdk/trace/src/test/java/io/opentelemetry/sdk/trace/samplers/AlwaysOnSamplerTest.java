@@ -69,4 +69,9 @@ class AlwaysOnSamplerTest {
   void getDescription() {
     assertThat(Sampler.alwaysOn().getDescription()).isEqualTo("AlwaysOnSampler");
   }
+
+  @Test
+  void string() {
+    assertThat(Sampler.alwaysOn().toString()).isEqualTo("AlwaysOnSampler");
+  }
 }
