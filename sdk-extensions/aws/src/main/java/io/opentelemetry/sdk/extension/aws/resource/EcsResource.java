@@ -42,7 +42,7 @@ public final class EcsResource {
   // Visible for testing
   static Resource buildResource(Map<String, String> sysEnv, DockerHelper dockerHelper) {
     if (!isOnEcs(sysEnv)) {
-      return Resource.getEmpty();
+      return Resource.empty();
     }
 
     AttributesBuilder attrBuilders = Attributes.builder();
