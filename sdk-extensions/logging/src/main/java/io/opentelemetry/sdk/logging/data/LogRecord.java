@@ -7,8 +7,6 @@ package io.opentelemetry.sdk.logging.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /**
@@ -18,6 +16,24 @@ import javax.annotation.Nullable;
  */
 @AutoValue
 public abstract class LogRecord {
+
+  public static LogRecordBuilder builder() {
+    return new LogRecordBuilder();
+  }
+
+  static LogRecord create(
+      long timeUnixNano,
+      String traceId,
+      String spanId,
+      int flags,
+      Severity severity,
+      String severityText,
+      String name,
+      AnyValue body,
+      Attributes attributes) {
+    return new AutoValue_LogRecord(
+        timeUnixNano, traceId, spanId, flags, severity, severityText, name, body, attributes);
+  }
 
   public abstract long getTimeUnixNano();
 
@@ -75,96 +91,6 @@ public abstract class LogRecord {
 
     public int getSeverityNumber() {
       return severityNumber;
-    }
-  }
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  public static class Builder {
-    private long timeUnixNano;
-    private String traceId = "";
-    private String spanId = "";
-    private int flags;
-    private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
-    private String severityText;
-    private String name;
-    private AnyValue body = AnyValue.stringAnyValue("");
-    private final AttributesBuilder attributeBuilder = Attributes.builder();
-
-    public Builder setUnixTimeNano(long timestamp) {
-      this.timeUnixNano = timestamp;
-      return this;
-    }
-
-    public Builder setUnixTimeMillis(long timestamp) {
-      return setUnixTimeNano(TimeUnit.MILLISECONDS.toNanos(timestamp));
-    }
-
-    public Builder setTraceId(String traceId) {
-      this.traceId = traceId;
-      return this;
-    }
-
-    public Builder setSpanId(String spanId) {
-      this.spanId = spanId;
-      return this;
-    }
-
-    public Builder setFlags(int flags) {
-      this.flags = flags;
-      return this;
-    }
-
-    public Builder setSeverity(Severity severity) {
-      this.severity = severity;
-      return this;
-    }
-
-    public Builder setSeverityText(String severityText) {
-      this.severityText = severityText;
-      return this;
-    }
-
-    public Builder setName(String name) {
-      this.name = name;
-      return this;
-    }
-
-    public Builder setBody(AnyValue body) {
-      this.body = body;
-      return this;
-    }
-
-    public Builder setBody(String body) {
-      return setBody(AnyValue.stringAnyValue(body));
-    }
-
-    public Builder setAttributes(Attributes attributes) {
-      this.attributeBuilder.putAll(attributes);
-      return this;
-    }
-
-    /**
-     * Build a LogRecord instance.
-     *
-     * @return value object being built
-     */
-    public LogRecord build() {
-      if (timeUnixNano == 0) {
-        timeUnixNano = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
-      }
-      return new AutoValue_LogRecord(
-          timeUnixNano,
-          traceId,
-          spanId,
-          flags,
-          severity,
-          severityText,
-          name,
-          body,
-          attributeBuilder.build());
     }
   }
 }

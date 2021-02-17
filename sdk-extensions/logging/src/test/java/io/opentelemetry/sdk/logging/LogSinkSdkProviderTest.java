@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 class LogSinkSdkProviderTest {
 
   private static LogRecord createLog(LogRecord.Severity severity, String message) {
-    return new LogRecord.Builder()
+    return LogRecord.builder()
         .setUnixTimeMillis(System.currentTimeMillis())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
@@ -43,7 +43,7 @@ class LogSinkSdkProviderTest {
   void testLogSinkSdkProvider() {
     TestLogExporter exporter = new TestLogExporter();
     LogProcessor processor = BatchLogProcessor.builder(exporter).build();
-    LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
+    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
     provider.addLogProcessor(processor);
     LogSink sink = provider.get("test", "0.1a");
     LogRecord log = createLog(LogRecord.Severity.ERROR, "test");
@@ -64,7 +64,7 @@ class LogSinkSdkProviderTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
+    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
     provider.addLogProcessor(processor);
     LogSink sink = provider.get("test", "0.1a");
 
@@ -96,7 +96,7 @@ class LogSinkSdkProviderTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
+    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
     provider.addLogProcessor(processor);
     LogSink sink = provider.get("test", "0.1a");
 
@@ -115,7 +115,7 @@ class LogSinkSdkProviderTest {
   void testMultipleProcessors() {
     TestLogProcessor processorOne = new TestLogProcessor();
     TestLogProcessor processorTwo = new TestLogProcessor();
-    LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
+    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
     provider.addLogProcessor(processorOne);
     provider.addLogProcessor(processorTwo);
     LogSink sink = provider.get("test", "0.1");
