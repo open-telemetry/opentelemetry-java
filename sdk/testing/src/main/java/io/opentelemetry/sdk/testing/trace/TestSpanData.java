@@ -47,6 +47,8 @@ public abstract class TestSpanData implements SpanData {
         .setTotalAttributeCount(0);
   }
 
+  TestSpanData() {}
+
   abstract boolean getInternalHasEnded();
 
   @Override

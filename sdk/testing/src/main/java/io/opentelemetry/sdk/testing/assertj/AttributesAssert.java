@@ -15,7 +15,7 @@ import java.util.Objects;
 import org.assertj.core.api.AbstractAssert;
 
 /** Assertions for {@link Attributes}. */
-public class AttributesAssert extends AbstractAssert<AttributesAssert, Attributes> {
+public final class AttributesAssert extends AbstractAssert<AttributesAssert, Attributes> {
   AttributesAssert(Attributes actual) {
     super(actual, AttributesAssert.class);
   }
