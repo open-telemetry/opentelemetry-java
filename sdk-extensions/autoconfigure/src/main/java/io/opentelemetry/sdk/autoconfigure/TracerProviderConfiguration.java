@@ -48,7 +48,7 @@ final class TracerProviderConfiguration {
     }
 
     SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
-    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::shutdown));
+    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
     return tracerProvider;
   }
 
