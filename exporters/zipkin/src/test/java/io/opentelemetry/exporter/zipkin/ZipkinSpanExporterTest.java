@@ -170,6 +170,23 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
+  void generateSpan_defaultResourceServiceName() {
+    SpanData data = buildStandardSpan().setResource(Resource.getEmpty()).build();
+
+    Endpoint expectedEndpoint =
+        Endpoint.newBuilder()
+            .serviceName(Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME))
+            .ip(exporter.getLocalAddressForTest())
+            .build();
+    Span expectedZipkinSpan =
+        buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+            .localEndpoint(expectedEndpoint)
+            .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+            .build();
+    assertThat(exporter.generateSpan(data)).isEqualTo(expectedZipkinSpan);
+  }
+
+  @Test
   void generateSpan_WithAttributes() {
     Attributes attributes =
         Attributes.builder()
