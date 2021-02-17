@@ -374,52 +374,6 @@ class SdkSpanBuilderTest {
   }
 
   @Test
-  public void tooLargeAttributeValuesAreTruncated() {
-    SpanLimits spanLimits = SpanLimits.builder().setMaxLengthOfAttributeValues(10).build();
-    TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
-    // Verify methods do not crash.
-    SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
-    spanBuilder.setAttribute("builderStringNull", null);
-    spanBuilder.setAttribute("builderStringSmall", "small");
-    spanBuilder.setAttribute("builderStringLarge", "very large string that we have to cut");
-    spanBuilder.setAttribute("builderLong", 42L);
-    spanBuilder.setAttribute(
-        stringKey("builderStringLargeValue"), "very large string that we have to cut");
-    spanBuilder.setAttribute(
-        stringArrayKey("builderStringArray"),
-        Arrays.asList("small", null, "very large string that we have to cut"));
-
-    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
-    span.setAttribute("spanStringSmall", "small");
-    span.setAttribute("spanStringLarge", "very large string that we have to cut");
-    span.setAttribute("spanLong", 42L);
-    span.setAttribute(stringKey("spanStringLarge"), "very large string that we have to cut");
-    span.setAttribute(
-        stringArrayKey("spanStringArray"),
-        Arrays.asList("small", null, "very large string that we have to cut"));
-
-    try {
-      Attributes attrs = span.toSpanData().getAttributes();
-      assertThat(attrs.get(stringKey("builderStringNull"))).isEqualTo(null);
-      assertThat(attrs.get(stringKey("builderStringSmall"))).isEqualTo("small");
-      assertThat(attrs.get(stringKey("builderStringLarge"))).isEqualTo("very large");
-      assertThat(attrs.get(longKey("builderLong"))).isEqualTo(42L);
-      assertThat(attrs.get(stringKey("builderStringLargeValue"))).isEqualTo("very large");
-      assertThat(attrs.get(stringArrayKey("builderStringArray")))
-          .isEqualTo(Arrays.asList("small", null, "very large"));
-
-      assertThat(attrs.get(stringKey("spanStringSmall"))).isEqualTo("small");
-      assertThat(attrs.get(stringKey("spanStringLarge"))).isEqualTo("very large");
-      assertThat(attrs.get(longKey("spanLong"))).isEqualTo(42L);
-      assertThat(attrs.get(stringKey("spanStringLarge"))).isEqualTo("very large");
-      assertThat(attrs.get(stringArrayKey("spanStringArray")))
-          .isEqualTo(Arrays.asList("small", null, "very large"));
-    } finally {
-      span.end();
-    }
-  }
-
-  @Test
   void addAttributes_OnlyViaSampler() {
 
     Sampler sampler =

@@ -129,7 +129,7 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void fullOpenTelemetrySdkConfigurationDemo() {
-    SpanLimits newConfig = SpanLimits.builder().setMaxLengthOfAttributeValues(128).build();
+    SpanLimits newConfig = SpanLimits.builder().setMaxNumberOfAttributes(512).build();
 
     OpenTelemetrySdkBuilder sdkBuilder =
         OpenTelemetrySdk.builder()
