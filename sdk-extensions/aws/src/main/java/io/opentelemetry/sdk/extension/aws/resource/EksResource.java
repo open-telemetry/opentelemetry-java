@@ -22,8 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A {@link Resource} which provides information about the current ECS container if running on AWS
- * EKS.
+ * A factory of a {@link Resource} which provides information about the current ECS container if
+ * running on AWS EKS.
  */
 public final class EksResource {
   private static final Logger logger = Logger.getLogger(EksResource.class.getName());
@@ -40,10 +40,10 @@ public final class EksResource {
       "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
 
   /**
-   * Returns a {@link Resource} which provides information about the current ECS container if
-   * running on AWS EKS.
+   * Returns a factory of a {@link Resource} which provides information about the current ECS
+   * container if running on AWS EKS.
    */
-  public static Resource getInstance() {
+  public static Resource get() {
     return INSTANCE;
   }
 

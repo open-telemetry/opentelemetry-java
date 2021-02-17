@@ -77,7 +77,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
       result = result.merge(resourceProvider.createResource(config));
     }
 
-    result = result.merge(EnvironmentResource.getInstance());
+    result = result.merge(EnvironmentResource.create(config));
 
     return result;
   }

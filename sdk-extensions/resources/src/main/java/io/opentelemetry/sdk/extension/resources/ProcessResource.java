@@ -14,13 +14,16 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
-/** {@link Resource} which provides information about the current running process. */
+/** Factory of a {@link Resource} which provides information about the current running process. */
 public final class ProcessResource {
 
   private static final Resource INSTANCE = buildResource();
 
-  /** Returns a {@link Resource} which provides information about the current running process. */
-  public static Resource getInstance() {
+  /**
+   * Returns a factory of a {@link Resource} which provides information about the current running
+   * process.
+   */
+  public static Resource get() {
     return INSTANCE;
   }
 

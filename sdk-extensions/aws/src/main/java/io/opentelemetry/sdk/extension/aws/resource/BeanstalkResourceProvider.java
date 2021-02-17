@@ -13,6 +13,6 @@ import io.opentelemetry.sdk.resources.Resource;
 public final class BeanstalkResourceProvider implements ResourceProvider {
   @Override
   public Resource createResource(ConfigProperties config) {
-    return BeanstalkResource.getInstance();
+    return BeanstalkResource.get();
   }
 }

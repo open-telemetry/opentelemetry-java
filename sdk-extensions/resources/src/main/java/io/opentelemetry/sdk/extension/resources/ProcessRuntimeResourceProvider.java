@@ -13,6 +13,6 @@ import io.opentelemetry.sdk.resources.Resource;
 public final class ProcessRuntimeResourceProvider implements ResourceProvider {
   @Override
   public Resource createResource(ConfigProperties config) {
-    return ProcessRuntimeResource.getInstance();
+    return ProcessRuntimeResource.get();
   }
 }

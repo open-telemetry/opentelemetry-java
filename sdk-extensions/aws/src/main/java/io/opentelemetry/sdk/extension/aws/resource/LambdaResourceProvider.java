@@ -13,6 +13,6 @@ import io.opentelemetry.sdk.resources.Resource;
 public final class LambdaResourceProvider implements ResourceProvider {
   @Override
   public Resource createResource(ConfigProperties config) {
-    return LambdaResource.getInstance();
+    return LambdaResource.get();
   }
 }

@@ -11,13 +11,16 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import javax.annotation.Nullable;
 
-/** {@link Resource} which provides information about the current operating system. */
+/** Factory of a {@link Resource} which provides information about the current operating system. */
 public final class OsResource {
 
   private static final Resource INSTANCE = buildResource();
 
-  /** Returns a {@link Resource} which provides information about the current operating system. */
-  public static Resource getInstance() {
+  /**
+   * Returns a factory of a {@link Resource} which provides information about the current operating
+   * system.
+   */
+  public static Resource get() {
     return INSTANCE;
   }
 

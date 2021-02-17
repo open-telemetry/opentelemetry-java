@@ -21,8 +21,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A {@link Resource} which provides information about the current EC2 instance if running on AWS
- * EC2.
+ * A factory of a {@link Resource} which provides information about the current EC2 instance if
+ * running on AWS EC2.
  */
 public final class Ec2Resource {
 
@@ -38,7 +38,7 @@ public final class Ec2Resource {
    * Returns a @link Resource} which provides information about the current EC2 instance if running
    * on AWS EC2.
    */
-  public static Resource getInstance() {
+  public static Resource get() {
     return INSTANCE;
   }
 

@@ -11,17 +11,11 @@ import io.opentelemetry.sdk.resources.Resource;
 
 final class EnvironmentResource {
 
-  private static final Resource INSTANCE = buildResource();
-
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
 
-  static Resource getInstance() {
-    return INSTANCE;
-  }
-
-  private static Resource buildResource() {
-    return Resource.create(getAttributes(ConfigProperties.get()));
+  static Resource create(ConfigProperties config) {
+    return Resource.create(getAttributes(config));
   }
 
   // visible for testing

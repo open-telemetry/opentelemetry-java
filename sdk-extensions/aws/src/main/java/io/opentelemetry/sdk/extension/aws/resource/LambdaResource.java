@@ -12,13 +12,16 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Map;
 import java.util.stream.Stream;
 
-/** A {@link Resource} which provides information about the AWS Lambda function. */
+/** A factory of a {@link Resource} which provides information about the AWS Lambda function. */
 public final class LambdaResource {
 
   private static final Resource INSTANCE = buildResource();
 
-  /** Returns a {@link Resource} which provides information about the AWS Lambda function. */
-  public static Resource getInstance() {
+  /**
+   * Returns a factory of a {@link Resource} which provides information about the AWS Lambda
+   * function.
+   */
+  public static Resource get() {
     return INSTANCE;
   }
 

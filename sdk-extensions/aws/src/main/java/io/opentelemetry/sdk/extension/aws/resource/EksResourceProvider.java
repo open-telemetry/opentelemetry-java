@@ -13,6 +13,6 @@ import io.opentelemetry.sdk.resources.Resource;
 public final class EksResourceProvider implements ResourceProvider {
   @Override
   public Resource createResource(ConfigProperties config) {
-    return EksResource.getInstance();
+    return EksResource.get();
   }
 }

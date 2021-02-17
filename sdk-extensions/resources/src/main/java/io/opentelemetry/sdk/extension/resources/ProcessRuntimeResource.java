@@ -12,13 +12,13 @@ import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.PR
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 
-/** {@link Resource} which provides information about the Java runtime. */
+/** Factory of a {@link Resource} which provides information about the Java runtime. */
 public final class ProcessRuntimeResource {
 
   private static final Resource INSTANCE = buildResource();
 
-  /** Returns a {@link Resource} which provides information about the Java runtime. */
-  public static Resource getInstance() {
+  /** Returns a factory of a {@link Resource} which provides information about the Java runtime. */
+  public static Resource get() {
     return INSTANCE;
   }
 

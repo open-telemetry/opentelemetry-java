@@ -16,8 +16,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A {@link Resource} which provides information about the current ECS container if running on AWS
- * ECS.
+ * A factory of a {@link Resource} which provides information about the current ECS container if
+ * running on AWS ECS.
  */
 public final class EcsResource {
   private static final Logger logger = Logger.getLogger(EcsResource.class.getName());
@@ -28,10 +28,10 @@ public final class EcsResource {
   private static final String ECS_METADATA_KEY_V3 = "ECS_CONTAINER_METADATA_URI";
 
   /**
-   * Returns a {@link Resource} which provides information about the current ECS container if
-   * running on AWS ECS.
+   * Returns a factory of a {@link Resource} which provides information about the current ECS
+   * container if running on AWS ECS.
    */
-  public static Resource getInstance() {
+  public static Resource get() {
     return INSTANCE;
   }
 

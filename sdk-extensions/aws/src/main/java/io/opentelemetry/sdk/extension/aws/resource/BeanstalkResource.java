@@ -18,8 +18,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A {@link Resource} which provides information about the current EC2 instance if running on AWS
- * Elastic Beanstalk.
+ * A factory of a {@link Resource} which provides information about the current EC2 instance if
+ * running on AWS Elastic Beanstalk.
  */
 public final class BeanstalkResource {
 
@@ -34,10 +34,10 @@ public final class BeanstalkResource {
   private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
   /**
-   * Returns a {@link Resource} which provides information about the current EC2 instance if running
-   * on AWS Elastic Beanstalk.
+   * Returns a factory of a {@link Resource} which provides information about the current EC2
+   * instance if running on AWS Elastic Beanstalk.
    */
-  public static Resource getInstance() {
+  public static Resource get() {
     return INSTANCE;
   }
 
