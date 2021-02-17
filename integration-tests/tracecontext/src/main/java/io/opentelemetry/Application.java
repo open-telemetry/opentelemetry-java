@@ -28,7 +28,7 @@ import spark.Response;
 import spark.Route;
 import spark.Spark;
 
-public class Application {
+public final class Application {
   private static final Logger logger = Logger.getLogger(Application.class.getName());
   private static final OpenTelemetry openTelemetry;
 
