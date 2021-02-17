@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.mock;
 
@@ -43,11 +44,29 @@ class OpenTelemetrySdkTest {
 
   @Test
   void testRegisterGlobal() {
-    OpenTelemetrySdk sdk = OpenTelemetrySdk.builder().buildAndRegisterGlobal();
+    OpenTelemetrySdk sdk =
+        OpenTelemetrySdk.builder().setPropagators(propagators).buildAndRegisterGlobal();
     assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(sdk);
     assertThat(sdk.getTracerProvider().get(""))
         .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""))
         .isSameAs(GlobalOpenTelemetry.get().getTracer(""));
+
+    assertThat(GlobalOpenTelemetry.getPropagators())
+        .isSameAs(GlobalOpenTelemetry.get().getPropagators())
+        .isSameAs(sdk.getPropagators())
+        .isSameAs(propagators);
+  }
+
+  @Test
+  void castingGlobalToSdkFails() {
+    OpenTelemetrySdk.builder().buildAndRegisterGlobal();
+
+    assertThatThrownBy(
+            () -> {
+              @SuppressWarnings("unused")
+              OpenTelemetrySdk shouldFail = (OpenTelemetrySdk) GlobalOpenTelemetry.get();
+            })
+        .isInstanceOf(ClassCastException.class);
   }
 
   @Test
