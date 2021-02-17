@@ -16,11 +16,13 @@ public final class OsResource {
 
   private static final Resource INSTANCE = buildResource();
 
+  /** Returns a {@link Resource} which provides information about the current operating system. */
   public static Resource getInstance() {
     return INSTANCE;
   }
 
-  private static Resource buildResource() {
+  // Visible for testing
+  static Resource buildResource() {
 
     final String os;
     try {

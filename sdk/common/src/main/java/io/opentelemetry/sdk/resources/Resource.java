@@ -17,12 +17,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -38,12 +34,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class Resource {
-
-  private static final String OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_PROPERTY_KEY =
-      "otel.java.disabled.resource-providers";
-
-  private static final String OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_ENV_KEY =
-      "OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS";
 
   private static final int MAX_LENGTH = 255;
   private static final String ERROR_MESSAGE_INVALID_CHARS =
@@ -72,75 +62,28 @@ public abstract class Resource {
                 .build());
   }
 
-  private static final Resource DEFAULT =
-      MANDATORY.merge(TELEMETRY_SDK.merge(readResourceFromProviders()));
-
-  @Nullable
-  private static String readVersion() {
-    Properties properties = new Properties();
-    try {
-      properties.load(
-          Resource.class.getResourceAsStream("/io/opentelemetry/sdk/version.properties"));
-    } catch (Exception e) {
-      // we left the attribute empty
-      return "unknown";
-    }
-    return properties.getProperty("sdk.version");
-  }
-
-  private static Resource readResourceFromProviders() {
-    String disabledResourceProvidersConfig =
-        System.getProperty(OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_PROPERTY_KEY, "");
-    if (disabledResourceProvidersConfig == null) {
-      disabledResourceProvidersConfig =
-          System.getenv(OTEL_JAVA_DISABLED_RESOURCES_PROVIDERS_ENV_KEY);
-    }
-    Set<String> disabledResourceProviders =
-        Arrays.stream(disabledResourceProvidersConfig.split(","))
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .collect(Collectors.toSet());
-
-    Resource result = Resource.EMPTY;
-    for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
-      if (disabledResourceProviders.contains(resourceProvider.getClass().getName())) {
-        continue;
-      }
-      result = result.merge(resourceProvider.create());
-    }
-    return result;
-  }
-
-  Resource() {}
+  private static final Resource DEFAULT = MANDATORY.merge(TELEMETRY_SDK);
 
   /**
-   * Returns an empty {@link Resource}.
+   * Returns the default {@link Resource}. This resource contains the default attributes provided by
+   * the SDK.
+   *
+   * @return a {@code Resource}.
+   */
+  public static Resource getDefault() {
+    return DEFAULT;
+  }
+
+  /**
+   * Returns an empty {@link Resource}. When creating a {@link Resource}, it is strongly recommended
+   * to start with {@link Resource#getDefault()} instead of this method to include SDK required
+   * attributes.
    *
    * @return an empty {@code Resource}.
    */
   public static Resource getEmpty() {
     return EMPTY;
   }
-
-  /**
-   * Returns the telemetry sdk {@link Resource}.
-   *
-   * @return a {@code Resource} with telemetry sdk attributes.
-   */
-  public static Resource getTelemetrySdk() {
-    return TELEMETRY_SDK;
-  }
-
-  /**
-   * Returns a map of attributes that describe the resource.
-   *
-   * @return a map of attributes.
-   */
-  public abstract Attributes getAttributes();
-
-  @Memoized
-  @Override
-  public abstract int hashCode();
 
   /**
    * Returns a {@link Resource}.
@@ -156,15 +99,31 @@ public abstract class Resource {
     return new AutoValue_Resource(attributes);
   }
 
-  /**
-   * Returns the default {@link Resource}. This resource contains the default attributes provided by
-   * the SDK.
-   *
-   * @return a {@code Resource}.
-   */
-  public static Resource getDefault() {
-    return DEFAULT;
+  @Nullable
+  private static String readVersion() {
+    Properties properties = new Properties();
+    try {
+      properties.load(
+          Resource.class.getResourceAsStream("/io/opentelemetry/sdk/version.properties"));
+    } catch (Exception e) {
+      // we left the attribute empty
+      return "unknown";
+    }
+    return properties.getProperty("sdk.version");
   }
+
+  Resource() {}
+
+  /**
+   * Returns a map of attributes that describe the resource.
+   *
+   * @return a map of attributes.
+   */
+  public abstract Attributes getAttributes();
+
+  @Memoized
+  @Override
+  public abstract int hashCode();
 
   /**
    * Returns a new, merged {@link Resource} by merging the current {@code Resource} with the {@code

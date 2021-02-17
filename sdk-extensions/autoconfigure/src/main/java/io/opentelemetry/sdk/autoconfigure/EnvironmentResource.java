@@ -7,21 +7,29 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 
-public class EnvironmentResource extends ResourceProvider {
+final class EnvironmentResource {
 
+  private static final Resource INSTANCE = buildResource();
+
+  // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
 
-  @Override
-  protected Attributes getAttributes() {
-    return getAttributes(ConfigProperties.get());
+  static Resource getInstance() {
+    return INSTANCE;
+  }
+
+  private static Resource buildResource() {
+    return Resource.create(getAttributes(ConfigProperties.get()));
   }
 
   // visible for testing
-  Attributes getAttributes(ConfigProperties configProperties) {
+  static Attributes getAttributes(ConfigProperties configProperties) {
     AttributesBuilder resourceAttributes = Attributes.builder();
     configProperties.getCommaSeparatedMap(ATTRIBUTE_PROPERTY).forEach(resourceAttributes::put);
     return resourceAttributes.build();
   }
+
+  private EnvironmentResource() {}
 }

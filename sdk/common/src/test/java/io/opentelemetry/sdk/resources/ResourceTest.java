@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,6 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Resource}. */
 class ResourceTest {
-  private static final Resource DEFAULT_RESOURCE = Resource.create(Attributes.empty());
   private Resource resource1;
   private Resource resource2;
 
@@ -153,7 +153,7 @@ class ResourceTest {
     Attributes expectedAttributes =
         Attributes.of(stringKey("a"), "1", stringKey("b"), "3", stringKey("c"), "4");
 
-    Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(resource2);
+    Resource resource = Resource.getEmpty().merge(resource1).merge(resource2);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 
@@ -161,7 +161,7 @@ class ResourceTest {
   void testMergeResources_Resource1() {
     Attributes expectedAttributes = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
 
-    Resource resource = DEFAULT_RESOURCE.merge(resource1);
+    Resource resource = Resource.getEmpty().merge(resource1);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 
@@ -173,23 +173,24 @@ class ResourceTest {
             stringKey("b"), "3",
             stringKey("c"), "4");
 
-    Resource resource = DEFAULT_RESOURCE.merge(null).merge(resource2);
+    Resource resource = Resource.getEmpty().merge(null).merge(resource2);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 
   @Test
   void testMergeResources_Resource2_Null() {
     Attributes expectedAttributes = Attributes.of(stringKey("a"), "1", stringKey("b"), "2");
-    Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(null);
+    Resource resource = Resource.getEmpty().merge(resource1).merge(null);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 
   @Test
-  void testSdkTelemetryResources() {
-    Resource resource = Resource.getTelemetrySdk();
+  void testDefaultResources() {
+    Resource resource = Resource.getDefault();
     Attributes attributes = resource.getAttributes();
-    assertThat(attributes.get(stringKey("telemetry.sdk.name"))).isEqualTo("opentelemetry");
-    assertThat(attributes.get(stringKey("telemetry.sdk.language"))).isEqualTo("java");
-    assertThat(attributes.get(stringKey("telemetry.sdk.version"))).isNotNull();
+    assertThat(attributes.get(ResourceAttributes.SERVICE_NAME)).isEqualTo("unknown_service:java");
+    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_NAME)).isEqualTo("opentelemetry");
+    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
+    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_VERSION)).isNotNull();
   }
 }

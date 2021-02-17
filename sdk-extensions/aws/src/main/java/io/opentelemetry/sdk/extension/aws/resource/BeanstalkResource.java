@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
 import java.io.IOException;
@@ -18,12 +18,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A {@link ResourceProvider} which provides information about the current EC2 instance if running
- * on AWS Elastic Beanstalk.
+ * A {@link Resource} which provides information about the current EC2 instance if running on AWS
+ * Elastic Beanstalk.
  */
-public final class BeanstalkResource extends ResourceProvider {
+public final class BeanstalkResource {
 
   private static final Logger logger = Logger.getLogger(BeanstalkResource.class.getName());
+
+  private static final Resource INSTANCE = buildResource();
 
   private static final String DEVELOPMENT_ID = "deployment_id";
   private static final String VERSION_LABEL = "version_label";
@@ -31,26 +33,23 @@ public final class BeanstalkResource extends ResourceProvider {
   private static final String BEANSTALK_CONF_PATH = "/var/elasticbeanstalk/xray/environment.conf";
   private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
-  private final String configPath;
-
   /**
-   * Returns a {@link BeanstalkResource} which attempts to compute information about the Beanstalk
-   * environment if available.
+   * Returns a {@link Resource} which provides information about the current EC2 instance if running
+   * on AWS Elastic Beanstalk.
    */
-  public BeanstalkResource() {
-    this(BEANSTALK_CONF_PATH);
+  public static Resource getInstance() {
+    return INSTANCE;
+  }
+
+  private static Resource buildResource() {
+    return buildResource(BEANSTALK_CONF_PATH);
   }
 
   // Visible for testing
-  BeanstalkResource(String configPath) {
-    this.configPath = configPath;
-  }
-
-  @Override
-  public Attributes getAttributes() {
+  static Resource buildResource(String configPath) {
     File configFile = new File(configPath);
     if (!configFile.exists()) {
-      return Attributes.empty();
+      return Resource.getEmpty();
     }
 
     AttributesBuilder attrBuilders = Attributes.builder();
@@ -59,7 +58,7 @@ public final class BeanstalkResource extends ResourceProvider {
 
       if (!parser.isExpectedStartObjectToken()) {
         logger.log(Level.WARNING, "Invalid Beanstalk config: ", configPath);
-        return attrBuilders.build();
+        return Resource.create(attrBuilders.build());
       }
 
       while (parser.nextToken() != JsonToken.END_OBJECT) {
@@ -81,11 +80,13 @@ public final class BeanstalkResource extends ResourceProvider {
       }
     } catch (IOException e) {
       logger.log(Level.WARNING, "Could not parse Beanstalk config.", e);
-      return Attributes.empty();
+      return Resource.getEmpty();
     }
 
     attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 
-    return attrBuilders.build();
+    return Resource.create(attrBuilders.build());
   }
+
+  private BeanstalkResource() {}
 }

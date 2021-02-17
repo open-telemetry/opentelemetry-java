@@ -7,32 +7,33 @@ package io.opentelemetry.sdk.extension.aws.resource;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Map;
 import java.util.stream.Stream;
 
-/** A {@link ResourceProvider} which provides information about the AWS Lambda function. */
-public final class LambdaResource extends ResourceProvider {
-  private final Map<String, String> environmentVariables;
+/** A {@link Resource} which provides information about the AWS Lambda function. */
+public final class LambdaResource {
 
-  public LambdaResource() {
-    this(System.getenv());
+  private static final Resource INSTANCE = buildResource();
+
+  /** Returns a {@link Resource} which provides information about the AWS Lambda function. */
+  public static Resource getInstance() {
+    return INSTANCE;
+  }
+
+  private static Resource buildResource() {
+    return buildResource(System.getenv());
   }
 
   // Visible for testing
-  LambdaResource(Map<String, String> environmentVariables) {
-    this.environmentVariables = environmentVariables;
-  }
-
-  @Override
-  protected Attributes getAttributes() {
+  static Resource buildResource(Map<String, String> environmentVariables) {
     String region = environmentVariables.getOrDefault("AWS_REGION", "");
     String functionName = environmentVariables.getOrDefault("AWS_LAMBDA_FUNCTION_NAME", "");
     String functionVersion = environmentVariables.getOrDefault("AWS_LAMBDA_FUNCTION_VERSION", "");
 
     if (!isLambda(functionName, functionVersion)) {
-      return Attributes.empty();
+      return Resource.getEmpty();
     }
 
     AttributesBuilder builder =
@@ -49,10 +50,12 @@ public final class LambdaResource extends ResourceProvider {
       builder.put(ResourceAttributes.FAAS_VERSION, functionVersion);
     }
 
-    return builder.build();
+    return Resource.create(builder.build());
   }
 
   private static boolean isLambda(String... envVariables) {
     return Stream.of(envVariables).anyMatch(v -> !v.isEmpty());
   }
+
+  private LambdaResource() {}
 }

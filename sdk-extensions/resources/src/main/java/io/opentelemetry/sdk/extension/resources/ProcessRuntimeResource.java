@@ -17,6 +17,7 @@ public final class ProcessRuntimeResource {
 
   private static final Resource INSTANCE = buildResource();
 
+  /** Returns a {@link Resource} which provides information about the Java runtime. */
   public static Resource getInstance() {
     return INSTANCE;
   }
@@ -32,15 +33,18 @@ public final class ProcessRuntimeResource {
               + " "
               + System.getProperty("java.vm.version");
 
-      return Resource.create(Attributes.of(
-          PROCESS_RUNTIME_NAME,
-          name,
-          PROCESS_RUNTIME_VERSION,
-          version,
-          PROCESS_RUNTIME_DESCRIPTION,
-          description));
+      return Resource.create(
+          Attributes.of(
+              PROCESS_RUNTIME_NAME,
+              name,
+              PROCESS_RUNTIME_VERSION,
+              version,
+              PROCESS_RUNTIME_DESCRIPTION,
+              description));
     } catch (SecurityException ignored) {
       return Resource.getEmpty();
     }
   }
+
+  private ProcessRuntimeResource() {}
 }

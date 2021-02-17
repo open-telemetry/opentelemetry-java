@@ -19,11 +19,13 @@ public final class ProcessResource {
 
   private static final Resource INSTANCE = buildResource();
 
+  /** Returns a {@link Resource} which provides information about the current running process. */
   public static Resource getInstance() {
     return INSTANCE;
   }
 
-  private static Resource buildResource() {
+  // Visible for testing
+  static Resource buildResource() {
     try {
       return doBuildResource();
     } catch (LinkageError t) {
@@ -87,4 +89,6 @@ public final class ProcessResource {
 
     return Resource.create(attributes.build());
   }
+
+  private ProcessResource() {}
 }

@@ -19,7 +19,7 @@ class EnvironmentResourceTest {
   @Test
   void resourceFromConfig_empty() {
     Attributes attributes =
-        new EnvironmentResource().getAttributes(ConfigProperties.createForTest(emptyMap()));
+        EnvironmentResource.getAttributes(ConfigProperties.createForTest(emptyMap()));
 
     assertThat(attributes).isEqualTo(Attributes.empty());
   }
@@ -27,12 +27,11 @@ class EnvironmentResourceTest {
   @Test
   void resourceFromConfig() {
     Attributes attributes =
-        new EnvironmentResource()
-            .getAttributes(
-                ConfigProperties.createForTest(
-                    singletonMap(
-                        EnvironmentResource.ATTRIBUTE_PROPERTY,
-                        "service.name=myService,appName=MyApp")));
+        EnvironmentResource.getAttributes(
+            ConfigProperties.createForTest(
+                singletonMap(
+                    EnvironmentResource.ATTRIBUTE_PROPERTY,
+                    "service.name=myService,appName=MyApp")));
 
     assertThat(attributes)
         .isEqualTo(
@@ -46,10 +45,9 @@ class EnvironmentResourceTest {
   @Test
   void resourceFromConfig_emptyEnvVar() {
     Attributes attributes =
-        new EnvironmentResource()
-            .getAttributes(
-                ConfigProperties.createForTest(
-                    singletonMap(EnvironmentResource.ATTRIBUTE_PROPERTY, "")));
+        EnvironmentResource.getAttributes(
+            ConfigProperties.createForTest(
+                singletonMap(EnvironmentResource.ATTRIBUTE_PROPERTY, "")));
 
     assertThat(attributes).isEqualTo(Attributes.empty());
   }
