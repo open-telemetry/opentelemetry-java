@@ -15,8 +15,8 @@ class InstrumentationLibraryInfoTest {
 
   @Test
   void emptyLibraryInfo() {
-    assertThat(InstrumentationLibraryInfo.getEmpty().getName()).isEmpty();
-    assertThat(InstrumentationLibraryInfo.getEmpty().getVersion()).isNull();
+    assertThat(InstrumentationLibraryInfo.empty().getName()).isEmpty();
+    assertThat(InstrumentationLibraryInfo.empty().getVersion()).isNull();
   }
 
   @Test

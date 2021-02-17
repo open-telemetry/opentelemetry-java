@@ -29,7 +29,7 @@ class LongMinMaxSumCountAggregatorTest {
   private static final LongMinMaxSumCountAggregator aggregator =
       new LongMinMaxSumCountAggregator(
           Resource.getDefault(),
-          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name",
               "description",

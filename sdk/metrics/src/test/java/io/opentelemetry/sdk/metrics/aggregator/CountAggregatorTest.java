@@ -25,7 +25,7 @@ class CountAggregatorTest {
   private static final CountAggregator cumulativeAggregator =
       new CountAggregator(
           Resource.getDefault(),
-          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name",
               "description",
@@ -36,7 +36,7 @@ class CountAggregatorTest {
   private static final CountAggregator deltaAggregator =
       new CountAggregator(
           Resource.getDefault(),
-          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name",
               "description",
@@ -87,7 +87,7 @@ class CountAggregatorTest {
         .isEqualTo(
             MetricData.createLongSum(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 "name",
                 "description",
                 "1",
@@ -112,7 +112,7 @@ class CountAggregatorTest {
         .isEqualTo(
             MetricData.createLongSum(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 "name",
                 "description",
                 "1",

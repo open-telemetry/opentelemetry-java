@@ -54,7 +54,7 @@ class ResourceAdapterTest {
 
   @Test
   void toProtoResource_Empty() {
-    assertThat(ResourceAdapter.toProtoResource(Resource.getEmpty()))
+    assertThat(ResourceAdapter.toProtoResource(Resource.empty()))
         .isEqualTo(io.opentelemetry.proto.resource.v1.Resource.newBuilder().build());
   }
 }

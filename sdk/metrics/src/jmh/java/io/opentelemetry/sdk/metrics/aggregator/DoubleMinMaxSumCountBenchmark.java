@@ -28,7 +28,7 @@ public class DoubleMinMaxSumCountBenchmark {
       AggregatorFactory.minMaxSumCount()
           .create(
               Resource.getDefault(),
-              InstrumentationLibraryInfo.getEmpty(),
+              InstrumentationLibraryInfo.empty(),
               InstrumentDescriptor.create(
                   "name",
                   "description",

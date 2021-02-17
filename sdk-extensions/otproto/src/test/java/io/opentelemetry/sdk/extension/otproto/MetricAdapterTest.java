@@ -211,8 +211,8 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toProtoMetric(
                 MetricData.createLongSum(
-                    Resource.getEmpty(),
-                    InstrumentationLibraryInfo.getEmpty(),
+                    Resource.empty(),
+                    InstrumentationLibraryInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -246,8 +246,8 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toProtoMetric(
                 MetricData.createDoubleSum(
-                    Resource.getEmpty(),
-                    InstrumentationLibraryInfo.getEmpty(),
+                    Resource.empty(),
+                    InstrumentationLibraryInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -286,8 +286,8 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toProtoMetric(
                 MetricData.createLongSum(
-                    Resource.getEmpty(),
-                    InstrumentationLibraryInfo.getEmpty(),
+                    Resource.empty(),
+                    InstrumentationLibraryInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -321,8 +321,8 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toProtoMetric(
                 MetricData.createDoubleSum(
-                    Resource.getEmpty(),
-                    InstrumentationLibraryInfo.getEmpty(),
+                    Resource.empty(),
+                    InstrumentationLibraryInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -361,8 +361,8 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toProtoMetric(
                 MetricData.createLongGauge(
-                    Resource.getEmpty(),
-                    InstrumentationLibraryInfo.getEmpty(),
+                    Resource.empty(),
+                    InstrumentationLibraryInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -392,8 +392,8 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toProtoMetric(
                 MetricData.createDoubleGauge(
-                    Resource.getEmpty(),
-                    InstrumentationLibraryInfo.getEmpty(),
+                    Resource.empty(),
+                    InstrumentationLibraryInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -428,8 +428,8 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toProtoMetric(
                 MetricData.createDoubleSummary(
-                    Resource.getEmpty(),
-                    InstrumentationLibraryInfo.getEmpty(),
+                    Resource.empty(),
+                    InstrumentationLibraryInfo.empty(),
                     "name",
                     "description",
                     "1",
@@ -529,7 +529,7 @@ class MetricAdapterTest {
                             Collections.singletonList(
                                 DoublePointData.create(123, 456, Labels.of("k", "v"), 5.0)))),
                     MetricData.createDoubleSum(
-                        Resource.getEmpty(),
+                        Resource.empty(),
                         instrumentationLibraryInfo,
                         "name",
                         "description",
@@ -540,8 +540,8 @@ class MetricAdapterTest {
                             Collections.singletonList(
                                 DoublePointData.create(123, 456, Labels.of("k", "v"), 5.0)))),
                     MetricData.createDoubleSum(
-                        Resource.getEmpty(),
-                        InstrumentationLibraryInfo.getEmpty(),
+                        Resource.empty(),
+                        InstrumentationLibraryInfo.empty(),
                         "name",
                         "description",
                         "1",

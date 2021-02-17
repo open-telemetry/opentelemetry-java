@@ -24,7 +24,7 @@ public enum TestSdk {
         @Override
         Meter build() {
           MeterProviderSharedState meterProviderSharedState =
-              MeterProviderSharedState.create(SystemClock.getInstance(), Resource.getEmpty());
+              MeterProviderSharedState.create(SystemClock.getInstance(), Resource.empty());
           InstrumentationLibraryInfo instrumentationLibraryInfo =
               InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics", null);
 

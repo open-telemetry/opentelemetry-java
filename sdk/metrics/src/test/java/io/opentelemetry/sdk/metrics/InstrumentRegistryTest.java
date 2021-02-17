@@ -28,8 +28,7 @@ class InstrumentRegistryTest {
 
   @Test
   void register() {
-    MeterSharedState meterSharedState =
-        MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
+    MeterSharedState meterSharedState = MeterSharedState.create(InstrumentationLibraryInfo.empty());
     TestInstrument testInstrument = new TestInstrument(INSTRUMENT_DESCRIPTOR);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
@@ -44,8 +43,7 @@ class InstrumentRegistryTest {
 
   @Test
   void register_OtherDescriptor() {
-    MeterSharedState meterSharedState =
-        MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
+    MeterSharedState meterSharedState = MeterSharedState.create(InstrumentationLibraryInfo.empty());
     TestInstrument testInstrument = new TestInstrument(INSTRUMENT_DESCRIPTOR);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
@@ -61,8 +59,7 @@ class InstrumentRegistryTest {
 
   @Test
   void register_OtherInstance() {
-    MeterSharedState meterSharedState =
-        MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
+    MeterSharedState meterSharedState = MeterSharedState.create(InstrumentationLibraryInfo.empty());
     TestInstrument testInstrument = new TestInstrument(INSTRUMENT_DESCRIPTOR);
     assertThat(meterSharedState.getInstrumentRegistry().register(testInstrument))
         .isSameAs(testInstrument);
