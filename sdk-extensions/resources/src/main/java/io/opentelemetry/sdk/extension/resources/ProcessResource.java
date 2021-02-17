@@ -34,7 +34,7 @@ public final class ProcessResource {
     } catch (LinkageError t) {
       // Will only happen on Android, where these attributes generally don't make much sense
       // anyways.
-      return Resource.getEmpty();
+      return Resource.empty();
     }
   }
 
