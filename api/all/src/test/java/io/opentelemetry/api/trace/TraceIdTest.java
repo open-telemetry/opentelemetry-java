@@ -31,18 +31,6 @@ class TraceIdTest {
   }
 
   @Test
-  void testGetRandomTracePart() {
-    String traceId = "0102030405060708090a0b0c0d0e0f00";
-    assertThat(TraceId.getTraceIdRandomPart(traceId)).isEqualTo(0x090A0B0C0D0E0F00L);
-  }
-
-  @Test
-  void testGetRandomTracePart_NegativeLongRepresentation() {
-    String traceId = "ff01020304050600ff0a0b0c0d0e0f00";
-    assertThat(TraceId.getTraceIdRandomPart(traceId)).isEqualTo(0xFF0A0B0C0D0E0F00L);
-  }
-
-  @Test
   void fromLongs() {
     assertThat(TraceId.fromLongs(0, 0)).isEqualTo(TraceId.getInvalid());
     assertThat(TraceId.fromLongs(0, 0x61)).isEqualTo(first);

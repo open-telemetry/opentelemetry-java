@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.trace;
 
-import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -106,19 +105,6 @@ public final class TraceId {
     BigendianEncoding.longToBase16String(traceIdLongHighPart, chars, 0);
     BigendianEncoding.longToBase16String(traceIdLongLowPart, chars, 16);
     return new String(chars);
-  }
-
-  /**
-   * Returns the rightmost 8 bytes of the trace-id as a long value. This is used in {@code
-   * TraceIdRatioBasedSampler}.
-   *
-   * <p>This method is marked as internal and subject to change.
-   *
-   * @return the rightmost 8 bytes of the trace-id as a long value.
-   */
-  public static long getTraceIdRandomPart(CharSequence traceId) {
-    Objects.requireNonNull(traceId, "traceId");
-    return BigendianEncoding.longFromBase16String(traceId, BigendianEncoding.LONG_BASE16);
   }
 
   private static char[] getTemporaryBuffer() {

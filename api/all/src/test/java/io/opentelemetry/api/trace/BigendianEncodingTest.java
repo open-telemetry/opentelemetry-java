@@ -8,7 +8,6 @@ package io.opentelemetry.api.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.nio.CharBuffer;
 import org.junit.jupiter.api.Test;
 
 class BigendianEncodingTest {
@@ -42,53 +41,12 @@ class BigendianEncodingTest {
   }
 
   @Test
-  void longFromBase16String_InputTooSmall() {
-    // Valid base16 strings always have an even length.
-    assertThatThrownBy(() -> BigendianEncoding.longFromBase16String("12345678", 1))
-        .isInstanceOf(StringIndexOutOfBoundsException.class);
-  }
-
-  @Test
-  void longFromBase16String_UnrecognizedCharacters() {
-    // These contain bytes not in the decoding.
-    assertThatThrownBy(() -> BigendianEncoding.longFromBase16String("0123456789gbcdef", 0))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("invalid character g");
-  }
-
-  @Test
   void validHex() {
     assertThat(BigendianEncoding.isValidBase16String("abcdef1234567890")).isTrue();
     assertThat(BigendianEncoding.isValidBase16String("abcdefg1234567890")).isFalse();
     assertThat(BigendianEncoding.isValidBase16String("<abcdef1234567890")).isFalse();
     assertThat(BigendianEncoding.isValidBase16String("(abcdef1234567890")).isFalse();
     assertThat(BigendianEncoding.isValidBase16String("abcdef1234567890B")).isFalse();
-  }
-
-  @Test
-  void longFromBase16String() {
-    assertThat(BigendianEncoding.longFromBase16String(CharBuffer.wrap(FIRST_CHAR_ARRAY), 0))
-        .isEqualTo(FIRST_LONG);
-
-    assertThat(BigendianEncoding.longFromBase16String(CharBuffer.wrap(SECOND_CHAR_ARRAY), 0))
-        .isEqualTo(SECOND_LONG);
-
-    assertThat(BigendianEncoding.longFromBase16String(CharBuffer.wrap(BOTH_CHAR_ARRAY), 0))
-        .isEqualTo(FIRST_LONG);
-
-    assertThat(
-            BigendianEncoding.longFromBase16String(
-                CharBuffer.wrap(BOTH_CHAR_ARRAY), BigendianEncoding.LONG_BASE16))
-        .isEqualTo(SECOND_LONG);
-  }
-
-  @Test
-  void toFromBase16String() {
-    toFromBase16StringValidate(0x8000000000000000L);
-    toFromBase16StringValidate(-1);
-    toFromBase16StringValidate(0);
-    toFromBase16StringValidate(1);
-    toFromBase16StringValidate(0x7FFFFFFFFFFFFFFFL);
   }
 
   @Test
@@ -106,11 +64,5 @@ class BigendianEncodingTest {
     assertThatThrownBy(() -> BigendianEncoding.byteFromBase16('f', '\u0129'))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid character \u0129");
-  }
-
-  private static void toFromBase16StringValidate(long value) {
-    char[] dest = new char[BigendianEncoding.LONG_BASE16];
-    BigendianEncoding.longToBase16String(value, dest, 0);
-    assertThat(BigendianEncoding.longFromBase16String(CharBuffer.wrap(dest), 0)).isEqualTo(value);
   }
 }
