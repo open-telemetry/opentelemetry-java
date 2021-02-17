@@ -18,7 +18,7 @@ import javax.swing.filechooser.FileSystemView;
 /**
  * Example of using {@link LongCounter} and {@link BoundLongCounter} to count searched directories.
  */
-public class LongCounterExample {
+public final class LongCounterExample {
   private static final OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
   private static final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.metrics", "0.13.1");

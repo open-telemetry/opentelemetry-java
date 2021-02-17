@@ -22,7 +22,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 
-public class HttpServer {
+public final class HttpServer {
   // It's important to initialize your OpenTelemetry SDK as early in your application's lifecycle as
   // possible.
   private static final OpenTelemetry openTelemetry = ExampleConfiguration.initOpenTelemetry();

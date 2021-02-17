@@ -20,7 +20,7 @@ import io.opentelemetry.context.Scope;
  * default port. There is a docker-compose configuration for doing this in the docker subdirectory
  * of this module.
  */
-public class OtlpExporterExample {
+public final class OtlpExporterExample {
 
   public static void main(String[] args) throws InterruptedException {
     // this will make sure that a proper service.name attribute is set on all the spans/metrics.

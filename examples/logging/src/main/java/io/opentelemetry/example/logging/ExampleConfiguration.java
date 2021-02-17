@@ -14,7 +14,7 @@ import java.util.Collections;
  * All SDK management takes place here, away from the instrumentation code, which should only access
  * the OpenTelemetry APIs.
  */
-public class ExampleConfiguration {
+public final class ExampleConfiguration {
 
   /** The number of milliseconds between metric exports. */
   private static final long METRIC_EXPORT_INTERVAL_MS = 800L;

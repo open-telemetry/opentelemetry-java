@@ -10,7 +10,7 @@ import io.opentelemetry.api.trace.Tracer;
  * An example of using {@link io.opentelemetry.exporter.logging.LoggingSpanExporter} and {@link
  * io.opentelemetry.exporter.logging.LoggingMetricExporter}.
  */
-public class LoggingExporterExample {
+public final class LoggingExporterExample {
   private static final String INSTRUMENTATION_NAME = LoggingExporterExample.class.getName();
 
   private final Tracer tracer;

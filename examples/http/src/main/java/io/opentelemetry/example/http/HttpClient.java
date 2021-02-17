@@ -22,7 +22,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 
-public class HttpClient {
+public final class HttpClient {
 
   // it's important to initialize the OpenTelemetry SDK as early in your applications lifecycle as
   // possible.

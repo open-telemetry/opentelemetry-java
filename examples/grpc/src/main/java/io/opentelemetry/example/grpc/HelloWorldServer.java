@@ -26,7 +26,7 @@ import java.net.InetSocketAddress;
 import java.util.logging.Logger;
 
 /** Server that manages startup/shutdown of a {@code Greeter} server. */
-public class HelloWorldServer {
+public final class HelloWorldServer {
   private static final Logger logger = Logger.getLogger(HelloWorldServer.class.getName());
 
   private static final int PORT = 50051;

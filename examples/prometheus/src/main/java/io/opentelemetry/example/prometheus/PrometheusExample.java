@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * awaiting processing. The {@link LongValueObserver} Updater gets executed every collection
  * interval.
  */
-public class PrometheusExample {
+public final class PrometheusExample {
   private long incomingMessageCount;
 
   public PrometheusExample(MeterProvider meterProvider) {

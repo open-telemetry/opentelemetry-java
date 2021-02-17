@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class HelloWorldClientStream {
+public final class HelloWorldClientStream {
   private static final Logger logger = Logger.getLogger(HelloWorldClientStream.class.getName());
   private final ManagedChannel channel;
   private final String serverHostname;
@@ -145,7 +145,7 @@ public class HelloWorldClientStream {
     }
   }
 
-  public class OpenTelemetryClientInterceptor implements ClientInterceptor {
+  public final class OpenTelemetryClientInterceptor implements ClientInterceptor {
 
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
