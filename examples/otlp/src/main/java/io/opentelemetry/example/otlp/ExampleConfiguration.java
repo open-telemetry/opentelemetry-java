@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * All SDK management takes place here, away from the instrumentation code, which should only access
  * the OpenTelemetry APIs.
  */
-public class ExampleConfiguration {
+public final class ExampleConfiguration {
 
   /**
    * Adds a BatchSpanProcessor initialized with OtlpGrpcSpanExporter to the TracerSdkProvider.

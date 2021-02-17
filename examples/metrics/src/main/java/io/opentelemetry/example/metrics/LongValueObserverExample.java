@@ -10,7 +10,7 @@ import io.opentelemetry.api.metrics.common.Labels;
  * {@link LongValueObserver} updater sets a callback that gets executed every collection interval.
  * Useful for expensive measurements that would be wastefully to calculate each request.
  */
-public class LongValueObserverExample {
+public final class LongValueObserverExample {
 
   public static void main(String[] args) {
     Meter sampleMeter =
