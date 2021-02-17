@@ -25,7 +25,7 @@ import org.curioswitch.common.protobuf.json.MessageMarshaller;
  * A {@link MetricExporter} which writes {@linkplain MetricData spans} to a {@link Logger} in OTLP
  * JSON format. Each log line will include a single {@link ResourceMetrics}.
  */
-public class OtlpJsonLoggingMetricExporter implements MetricExporter {
+public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   private static final MessageMarshaller marshaller =
       MessageMarshaller.builder()

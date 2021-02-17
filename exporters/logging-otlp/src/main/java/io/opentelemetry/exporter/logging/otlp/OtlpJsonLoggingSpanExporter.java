@@ -23,7 +23,7 @@ import org.curioswitch.common.protobuf.json.MessageMarshaller;
  * A {@link SpanExporter} which writes {@linkplain SpanData spans} to a {@link Logger} in OTLP JSON
  * format. Each log line will include a single {@link ResourceSpans}.
  */
-public class OtlpJsonLoggingSpanExporter implements SpanExporter {
+public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
 
   private static final MessageMarshaller marshaller =
       MessageMarshaller.builder()

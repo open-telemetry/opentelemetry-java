@@ -31,9 +31,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class JaegerThriftSpanExporter implements SpanExporter {
 
-  public static final String DEFAULT_HOST_NAME = "unknown";
-  public static final String DEFAULT_ENDPOINT = "http://localhost:14268/api/traces";
-  public static final String DEFAULT_SERVICE_NAME = DEFAULT_HOST_NAME;
+  private static final String DEFAULT_HOST_NAME = "unknown";
+  static final String DEFAULT_ENDPOINT = "http://localhost:14268/api/traces";
 
   private static final Logger logger = Logger.getLogger(JaegerThriftSpanExporter.class.getName());
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
