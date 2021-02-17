@@ -6,7 +6,6 @@
 package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
@@ -24,12 +23,6 @@ class DefaultTracerTest {
           "0000000000000061",
           TraceFlags.getDefault(),
           TraceState.getDefault());
-
-  @Test
-  void spanBuilderWithName_NullName() {
-    assertThatThrownBy(() -> defaultTracer.spanBuilder(null))
-        .isInstanceOf(NullPointerException.class);
-  }
 
   @Test
   void defaultSpanBuilderWithName() {
@@ -63,12 +56,6 @@ class DefaultTracerTest {
   }
 
   @Test
-  void testSpanContextPropagation_nullContext() {
-    assertThatThrownBy(() -> defaultTracer.spanBuilder(SPAN_NAME).setParent(null))
-        .isInstanceOf(NullPointerException.class);
-  }
-
-  @Test
   void testSpanContextPropagation_fromContext() {
     Context context = Context.current().with(Span.wrap(spanContext));
 
@@ -91,4 +78,7 @@ class DefaultTracerTest {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).setNoParent().startSpan();
     assertThat(span.getSpanContext()).isEqualTo(SpanContext.getInvalid());
   }
+
+  @Test
+  void doesNotCrash() {}
 }
