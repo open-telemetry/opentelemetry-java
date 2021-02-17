@@ -15,7 +15,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /** A builder for {@link JaegerRemoteSampler}. */
-public class JaegerRemoteSamplerBuilder {
+public final class JaegerRemoteSamplerBuilder {
   private static final String DEFAULT_ENDPOINT = "localhost:14250";
   private static final int DEFAULT_POLLING_INTERVAL_MILLIS = 60000;
   private static final Sampler INITIAL_SAMPLER =
