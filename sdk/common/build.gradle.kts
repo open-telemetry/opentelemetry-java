@@ -3,12 +3,18 @@ plugins {
     id("maven-publish")
 
     id("ru.vyarus.animalsniffer")
+    id("org.unbroken-dome.test-sets")
 }
 
 description = "OpenTelemetry SDK Common"
 extra["moduleName"] = "io.opentelemetry.sdk.common"
 
 val mrJarVersions = listOf(9)
+
+testSets {
+    create("testResourceDisabledByProperty")
+    create("testResourceDisabledByEnv")
+}
 
 dependencies {
     api(project(":api:all"))
@@ -19,6 +25,7 @@ dependencies {
     testAnnotationProcessor("com.google.auto.value:auto-value")
 
     testImplementation(project(":sdk:testing"))
+    testImplementation(project(":sdk-extensions:resources"))
     testImplementation("com.google.guava:guava-testlib")
 }
 
@@ -78,5 +85,16 @@ tasks {
         manifest.attributes(
                 "Multi-Release" to "true"
         )
+    }
+
+    named<Test>("testResourceDisabledByProperty") {
+        jvmArgs("-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResource,io.opentelemetry.sdk.extension.resources.ProcessResource")
+        // Properties win, this is ignored.
+        environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.ProcessRuntimeResource")
+    }
+
+    named<Test>("testResourceDisabledByEnv") {
+        environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.OsResource,io.opentelemetry.sdk.extension.resources.ProcessResource")
+
     }
 }

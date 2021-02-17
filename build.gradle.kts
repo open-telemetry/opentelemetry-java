@@ -372,7 +372,7 @@ subprojects {
 
         plugins.withId("ru.vyarus.animalsniffer") {
             dependencies {
-                add(AnimalSnifferPlugin.SIGNATURE_CONF, "com.toasttab.android:gummy-bears-api-24:0.3.0:coreLib@signature")
+                add(AnimalSnifferPlugin.SIGNATURE_CONF, "com.toasttab.android:gummy-bears-api-21:0.3.0:coreLib@signature")
             }
 
             configure<AnimalSnifferExtension> {

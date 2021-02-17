@@ -38,10 +38,6 @@ The first step is to get a handle to an instance of the `OpenTelemetry` interfac
 If you are an application developer, you need to configure an instance of the `OpenTelemetrySdk` as
 early as possible in your application. This can be done using the `OpenTelemetrySdk.builder()` method.
 
-If you want to enable auto-configuration, via the standard set of environment variables, system
-properties or pre-build java SPI implementations, you will want to additionally have your project
-depend on the `opentelemetry-sdk-extension-autoconfigure` module.
-
 For example:
 
 ```java
@@ -434,15 +430,7 @@ properties, you can use the `opentelemetry-sdk-extension-autoconfigure` module.
   OpenTelemetrySdk sdk = OpenTelemetrySdkAutoConfiguration.initialize();
 ```
 
-Some of the supported system properties and environment variables:
-
-| System property                  | Environment variable             | Purpose                                                                                             | 
-|----------------------------------|----------------------------------|-----------------------------------------------------------------------------------------------------|       
-| otel.trace.sampler               | OTEL_TRACE_SAMPLER               | Which sampler to use (`parentbased_traceidratio` for example)
-| otel.trace.sampler.arg           | OTEL_TRACE_SAMPLER_ARG           | Used to configured the ratio for the ratio-based sampler (default: 1)                                     |                        
-| otel.span.attribute.count.limit  | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT  | Max number of attributes per span, extra will be dropped (default: 1000)                              |                        
-| otel.span.event.count.limit      | OTEL_SPAN_EVENT_COUNT_LIMIT      | Max number of Events per span, extra will be dropped (default: 1000)                                 |                        
-| otel.span.link.count.limit       | OTEL_SPAN_LINK_COUNT_LIMIT       | Max number of Link entries per span, extra will be dropped (default: 1000)                            |
+See the supported configuration options in the module's [README](./sdk-extensions/autoconfigure/README.md).
 
 [AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L29
 [AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L40

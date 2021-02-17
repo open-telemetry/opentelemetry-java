@@ -69,4 +69,9 @@ class AlwaysOffSamplerTest {
   void getDescription() {
     assertThat(Sampler.alwaysOff().getDescription()).isEqualTo("AlwaysOffSampler");
   }
+
+  @Test
+  void string() {
+    assertThat(Sampler.alwaysOff().toString()).isEqualTo("AlwaysOffSampler");
+  }
 }

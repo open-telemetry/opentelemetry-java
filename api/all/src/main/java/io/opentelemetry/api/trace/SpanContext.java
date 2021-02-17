@@ -36,6 +36,11 @@ public interface SpanContext {
   /**
    * Creates a new {@code SpanContext} with the given identifiers and options.
    *
+   * <p>If the traceId or the spanId are invalid (ie. do not conform to the requirements for
+   * hexadecimal ids of the appropriate lengths), both will be replaced with the standard "invalid"
+   * versions (i.e. all '0's). See {@link SpanId#isValid(CharSequence)} and {@link
+   * TraceId#isValid(CharSequence)} for details.
+   *
    * @param traceIdHex the trace identifier of the {@code SpanContext}.
    * @param spanIdHex the span identifier of the {@code SpanContext}.
    * @param traceFlags the trace flags of the {@code SpanContext}.
@@ -51,6 +56,11 @@ public interface SpanContext {
   /**
    * Creates a new {@code SpanContext} that was propagated from a remote parent, with the given
    * identifiers and options.
+   *
+   * <p>If the traceId or the spanId are invalid (ie. do not conform to the requirements for
+   * hexadecimal ids of the appropriate lengths), both will be replaced with the standard "invalid"
+   * versions (i.e. all '0's). See {@link SpanId#isValid(CharSequence)} and {@link
+   * TraceId#isValid(CharSequence)} for details.
    *
    * @param traceIdHex the trace identifier of the {@code SpanContext}.
    * @param spanIdHex the span identifier of the {@code SpanContext}.

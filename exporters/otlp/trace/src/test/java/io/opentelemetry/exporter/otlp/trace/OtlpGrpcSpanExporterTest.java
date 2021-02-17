@@ -70,11 +70,6 @@ class OtlpGrpcSpanExporterTest {
   }
 
   @Test
-  void legacyEndpointConfig() {
-    OtlpGrpcSpanExporter.builder().setEndpoint("localhost:4317");
-  }
-
-  @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void invalidConfig() {
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
@@ -90,12 +85,15 @@ class OtlpGrpcSpanExporterTest {
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
-    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint(""))
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("😺://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid endpoint, must be a URL: http://");
+        .hasMessage("Invalid endpoint, must be a URL: 😺://localhost");
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: localhost");
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("gopher://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid scheme, must be http or https: gopher://localhost");
+        .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
   }
 
   @Test

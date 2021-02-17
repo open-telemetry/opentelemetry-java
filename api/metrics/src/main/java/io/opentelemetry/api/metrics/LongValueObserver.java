@@ -18,27 +18,27 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Example:
  *
  * <pre>{@code
- * class YourClass {
- *
- *   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
- *   private static final LongValueObserver cpuObserver =
- *       meter.
- *           .longValueObserverBuilder("cpu_fan_speed")
- *           .setDescription("System CPU fan speed")
- *           .setUnit("ms")
- *           .build();
- *
- *   void init() {
- *     cpuObserver.setUpdater(
- *         new LongValueObserver.Callback<LongResult>() {
- *          {@literal @}Override
- *           public void update(LongResult result) {
- *             // Get system cpu fan speed
- *             result.observe(cpuFanSpeed);
- *           }
- *         });
- *   }
- * }
+ * // class YourClass {
+ * //
+ * //   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
+ * //   private static final LongValueObserver cpuObserver =
+ * //       meter.
+ * //           .longValueObserverBuilder("cpu_fan_speed")
+ * //           .setDescription("System CPU fan speed")
+ * //           .setUnit("ms")
+ * //           .build();
+ * //
+ * //   void init() {
+ * //     cpuObserver.setUpdater(
+ * //         new LongValueObserver.Callback<LongResult>() {
+ * //          @Override
+ * //           public void update(LongResult result) {
+ * //             // Get system cpu fan speed
+ * //             result.observe(cpuFanSpeed);
+ * //           }
+ * //         });
+ * //   }
+ * // }
  * }</pre>
  */
 @ThreadSafe

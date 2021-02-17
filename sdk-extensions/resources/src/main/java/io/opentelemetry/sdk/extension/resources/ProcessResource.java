@@ -12,6 +12,7 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 /** {@link Resource} which provides information about the current running process. */
 public final class ProcessResource {
@@ -23,6 +24,17 @@ public final class ProcessResource {
   }
 
   private static Resource buildResource() {
+    try {
+      return doBuildResource();
+    } catch (LinkageError t) {
+      // Will only happen on Android, where these attributes generally don't make much sense
+      // anyways.
+      return Resource.getEmpty();
+    }
+  }
+
+  @IgnoreJRERequirement
+  private static Resource doBuildResource() {
     AttributesBuilder attributes = Attributes.builder();
 
     // TODO(anuraaga): Use reflection to get more stable values on Java 9+

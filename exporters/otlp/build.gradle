@@ -1,5 +1,0 @@
-subprojects {
-    plugins.withId("java") {
-        archivesBaseName = "opentelemetry-exporter-otlp-${project.name}"
-    }
-}

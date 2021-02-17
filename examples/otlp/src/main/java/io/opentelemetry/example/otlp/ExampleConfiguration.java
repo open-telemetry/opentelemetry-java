@@ -45,7 +45,7 @@ public class ExampleConfiguration {
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
 
-    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::shutdown));
+    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
 
     return openTelemetrySdk;
   }

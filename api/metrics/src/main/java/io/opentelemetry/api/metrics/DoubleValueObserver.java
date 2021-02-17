@@ -18,27 +18,27 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Example:
  *
  * <pre>{@code
- * class YourClass {
- *
- *   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
- *   private static final DoubleValueObserver cpuObserver =
- *       meter.
- *           .doubleValueObserverBuilder("cpu_temperature")
- *           .setDescription("System CPU temperature")
- *           .setUnit("ms")
- *           .build();
- *
- *   void init() {
- *     cpuObserver.setUpdater(
- *         new DoubleValueObserver.Callback<DoubleResult>() {
- *          {@literal @}Override
- *           public void update(DoubleResult result) {
- *             // Get system cpu temperature
- *             result.observe(cpuTemperature);
- *           }
- *         });
- *   }
- * }
+ * // class YourClass {
+ * //
+ * //   private static final Meter meter = OpenTelemetry.getMeterProvider().get("my_library_name");
+ * //   private static final DoubleValueObserver cpuObserver =
+ * //       meter.
+ * //           .doubleValueObserverBuilder("cpu_temperature")
+ * //           .setDescription("System CPU temperature")
+ * //           .setUnit("ms")
+ * //           .build();
+ * //
+ * //   void init() {
+ * //     cpuObserver.setUpdater(
+ * //         new DoubleValueObserver.Callback<DoubleResult>() {
+ * //          @Override
+ * //           public void update(DoubleResult result) {
+ * //             // Get system cpu temperature
+ * //             result.observe(cpuTemperature);
+ * //           }
+ * //         });
+ * //   }
+ * // }
  * }</pre>
  */
 @ThreadSafe

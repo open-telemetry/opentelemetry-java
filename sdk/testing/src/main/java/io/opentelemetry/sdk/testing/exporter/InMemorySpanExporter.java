@@ -18,26 +18,27 @@ import java.util.List;
  *
  * <p>Example usage:
  *
- * <pre><code>
- * class MyClassTest {
- *   private final Tracer tracer = new TracerSdk();
- *   private final InMemorySpanExporter testExporter = InMemorySpanExporter.create();
- *
- *   {@literal @}Before
- *   public void setup() {
- *     tracer.addSpanProcessor(SimpleSampledSpansProcessor.builder(testExporter).build());
- *   }
- *
- *   {@literal @}Test
- *   public void getFinishedSpanData() {
- *     tracer.spanBuilder("span").startSpan().end();
- *
- *     List&lt;Span&gt; spanItems = exporter.getFinishedSpanItems();
- *     assertThat(spanItems).isNotNull();
- *     assertThat(spanItems.size()).isEqualTo(1);
- *     assertThat(spanItems.get(0).getName()).isEqualTo("span");
- *   }
- * </code></pre>
+ * <pre>{@code
+ * // class MyClassTest {
+ * //   private final Tracer tracer = new TracerSdk();
+ * //   private final InMemorySpanExporter testExporter = InMemorySpanExporter.create();
+ * //
+ * //   @Before
+ * //   public void setup() {
+ * //     tracer.addSpanProcessor(SimpleSampledSpansProcessor.builder(testExporter).build());
+ * //   }
+ * //
+ * //   @Test
+ * //   public void getFinishedSpanData() {
+ * //     tracer.spanBuilder("span").startSpan().end();
+ * //
+ * //     List<Span> spanItems = exporter.getFinishedSpanItems();
+ * //     assertThat(spanItems).isNotNull();
+ * //     assertThat(spanItems.size()).isEqualTo(1);
+ * //     assertThat(spanItems.get(0).getName()).isEqualTo("span");
+ * //   }
+ * // }
+ * }</pre>
  */
 public final class InMemorySpanExporter implements SpanExporter {
   private final List<SpanData> finishedSpanItems = new ArrayList<>();

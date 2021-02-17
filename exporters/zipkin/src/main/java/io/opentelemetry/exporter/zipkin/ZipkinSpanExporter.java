@@ -11,7 +11,6 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -78,9 +77,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       }
     } catch (Exception e) {
       // don't crash the caller if there was a problem reading nics.
-      if (logger.isLoggable(Level.FINE)) {
-        logger.log(Level.FINE, "error reading nics", e);
-      }
+      logger.log(Level.FINE, "error reading nics", e);
     }
     return null;
   }
@@ -155,23 +152,18 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   @Nullable
   private static Span.Kind toSpanKind(SpanData spanData) {
-    // This is a hack because the Span API did not have SpanKind.
-    if (spanData.getKind() == SpanKind.SERVER) {
-      return Span.Kind.SERVER;
+    switch (spanData.getKind()) {
+      case SERVER:
+        return Span.Kind.SERVER;
+      case CLIENT:
+        return Span.Kind.CLIENT;
+      case PRODUCER:
+        return Span.Kind.PRODUCER;
+      case CONSUMER:
+        return Span.Kind.CONSUMER;
+      case INTERNAL:
+        return null;
     }
-
-    // This is a hack because the Span API did not have SpanKind.
-    if (spanData.getKind() == SpanKind.CLIENT || spanData.getName().startsWith("Sent.")) {
-      return Span.Kind.CLIENT;
-    }
-
-    if (spanData.getKind() == SpanKind.PRODUCER) {
-      return Span.Kind.PRODUCER;
-    }
-    if (spanData.getKind() == SpanKind.CONSUMER) {
-      return Span.Kind.CONSUMER;
-    }
-
     return null;
   }
 
@@ -179,7 +171,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     return NANOSECONDS.toMicros(epochNanos);
   }
 
-  private static <T> String valueToString(AttributeKey<?> key, Object attributeValue) {
+  private static String valueToString(AttributeKey<?> key, Object attributeValue) {
     AttributeType type = key.getType();
     switch (type) {
       case STRING:

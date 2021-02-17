@@ -6,6 +6,7 @@
 package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.entry;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
@@ -299,5 +300,11 @@ class TraceStateTest {
   @Test
   void traceState_ToString() {
     assertThat(TraceState.getDefault().toString()).isEqualTo("ArrayBasedTraceState{entries=[]}");
+  }
+
+  @Test
+  void doesNotCrash() {
+    assertThat(TraceState.getDefault().get(null)).isNull();
+    assertThatCode(() -> TraceState.getDefault().forEach(null)).doesNotThrowAnyException();
   }
 }

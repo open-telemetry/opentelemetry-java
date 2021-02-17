@@ -17,15 +17,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** Builder utility for this exporter. */
 public final class OtlpGrpcMetricExporterBuilder {
-
-  private static final Logger logger =
-      Logger.getLogger(OtlpGrpcMetricExporterBuilder.class.getName());
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
@@ -75,24 +70,20 @@ public final class OtlpGrpcMetricExporterBuilder {
    */
   public OtlpGrpcMetricExporterBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
-    final URI uri;
+
+    URI uri;
     try {
       uri = new URI(endpoint);
     } catch (URISyntaxException e) {
       throw new IllegalArgumentException("Invalid endpoint, must be a URL: " + endpoint, e);
     }
-    // TODO(anuraaga): Remove after announcing deprecation of schemaless URLs.
-    if (uri.getScheme() != null) {
-      if (!uri.getScheme().equals("http") && !uri.getScheme().equals("https")) {
-        throw new IllegalArgumentException("Invalid scheme, must be http or https: " + endpoint);
-      }
-    } else {
-      logger.log(
-          Level.WARNING,
-          "Endpoints must have a scheme of http:// or https://. Endpoints without schemes will "
-              + "not be permitted in a future version of the SDK.",
-          new Throwable());
+
+    if (uri.getScheme() == null
+        || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
+      throw new IllegalArgumentException(
+          "Invalid endpoint, must start with http:// or https://: " + uri);
     }
+
     this.endpoint = uri;
     return this;
   }
