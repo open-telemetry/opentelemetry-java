@@ -42,7 +42,7 @@ public final class ProcessRuntimeResource {
               PROCESS_RUNTIME_DESCRIPTION,
               description));
     } catch (SecurityException ignored) {
-      return Resource.getEmpty();
+      return Resource.empty();
     }
   }
 
