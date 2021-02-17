@@ -78,7 +78,4 @@ class DefaultTracerTest {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).setNoParent().startSpan();
     assertThat(span.getSpanContext()).isEqualTo(SpanContext.getInvalid());
   }
-
-  @Test
-  void doesNotCrash() {}
 }
