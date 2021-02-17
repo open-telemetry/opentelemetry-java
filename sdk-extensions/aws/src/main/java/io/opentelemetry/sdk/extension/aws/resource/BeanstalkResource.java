@@ -49,7 +49,7 @@ public final class BeanstalkResource {
   static Resource buildResource(String configPath) {
     File configFile = new File(configPath);
     if (!configFile.exists()) {
-      return Resource.getEmpty();
+      return Resource.empty();
     }
 
     AttributesBuilder attrBuilders = Attributes.builder();
@@ -80,7 +80,7 @@ public final class BeanstalkResource {
       }
     } catch (IOException e) {
       logger.log(Level.WARNING, "Could not parse Beanstalk config.", e);
-      return Resource.getEmpty();
+      return Resource.empty();
     }
 
     attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
