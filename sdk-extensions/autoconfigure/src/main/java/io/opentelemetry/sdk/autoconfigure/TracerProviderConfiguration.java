@@ -11,8 +11,10 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanLimitsBuilder;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorBuilder;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
@@ -44,12 +46,22 @@ final class TracerProviderConfiguration {
     }
     SpanExporter exporter = SpanExporterConfiguration.configureExporter(exporterName, config);
     if (exporter != null) {
-      tracerProviderBuilder.addSpanProcessor(configureSpanProcessor(config, exporter));
+      tracerProviderBuilder.addSpanProcessor(
+          configureSpanProcessor(config, exporter, exporterName));
     }
 
     SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
     Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
     return tracerProvider;
+  }
+
+  // VisibleForTesting
+  static SpanProcessor configureSpanProcessor(
+      ConfigProperties config, SpanExporter exporter, String exporterName) {
+    if (exporterName.equals("logging")) {
+      return SimpleSpanProcessor.create(exporter);
+    }
+    return configureSpanProcessor(config, exporter);
   }
 
   // VisibleForTesting
