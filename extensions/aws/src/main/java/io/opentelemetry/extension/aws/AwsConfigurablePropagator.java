@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
  * A {@link ConfigurablePropagatorProvider} which allows enabling the {@link AwsXrayPropagator} with
  * the propagator name {@code xray}.
  */
-public class AwsConfigurablePropagator implements ConfigurablePropagatorProvider {
+public final class AwsConfigurablePropagator implements ConfigurablePropagatorProvider {
   @Override
   public TextMapPropagator getPropagator() {
     return AwsXrayPropagator.getInstance();
