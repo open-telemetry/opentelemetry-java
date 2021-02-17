@@ -10,9 +10,14 @@ import io.opentelemetry.context.Context;
 
 public interface LabelsProcessor {
   /**
-   * Called when bind() method is called. Allows to manipulate labels which this instrument is bound
-   * to. Particular use case includes enriching lables and/or adding more labels depending on the
-   * Context
+   * Called when bound synchronous instrument is created or metrics are recorded for non-bound
+   * synchronous instrument. Allows to manipulate labels which this instrument is bound to in case
+   * of binding operation or labels used for recording values in case of non-bound synchronous
+   * instrument. Particular use case includes enriching labels and/or adding more labels depending
+   * on the Context
+   *
+   * <p>Please note, this is an experimental API. In case of bound instruments, it will be only
+   * invoked upon instrument binding and not when measurements are recorded.
    *
    * @param ctx context of the operation
    * @param labels immutable labels. When processors are chained output labels of the previous one

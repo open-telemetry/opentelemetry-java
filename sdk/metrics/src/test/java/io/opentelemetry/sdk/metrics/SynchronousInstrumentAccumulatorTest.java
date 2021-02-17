@@ -30,7 +30,10 @@ public class SynchronousInstrumentAccumulatorTest {
       AggregatorFactory.lastValue()
           .create(
               Resource.getEmpty(), InstrumentationLibraryInfo.create("test", "1.0"), DESCRIPTOR);
-  private final LabelsProcessor labelsProcessor = LabelsProcessorFactory.noop().create();
+  private final LabelsProcessor labelsProcessor =
+      LabelsProcessorFactory.noop()
+          .create(
+              Resource.getEmpty(), InstrumentationLibraryInfo.create("test", "1.0"), DESCRIPTOR);
 
   @Test
   void sameAggregator_ForSameLabelSet() {

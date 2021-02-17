@@ -34,11 +34,16 @@ abstract class AbstractAccumulator {
   }
 
   static LabelsProcessor getLabelsProcessor(
-      MeterProviderSharedState meterProviderSharedState, InstrumentDescriptor descriptor) {
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      InstrumentDescriptor descriptor) {
     return meterProviderSharedState
         .getViewRegistry()
         .findView(descriptor)
         .getLabelsProcessorFactory()
-        .create();
+        .create(
+            meterProviderSharedState.getResource(),
+            meterSharedState.getInstrumentationLibraryInfo(),
+            descriptor);
   }
 }

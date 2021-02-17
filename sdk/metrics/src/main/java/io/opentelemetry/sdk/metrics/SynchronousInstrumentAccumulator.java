@@ -34,7 +34,7 @@ final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
     return new SynchronousInstrumentAccumulator<>(
         aggregator,
         new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos()),
-        getLabelsProcessor(meterProviderSharedState, descriptor));
+        getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor));
   }
 
   SynchronousInstrumentAccumulator(

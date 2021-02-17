@@ -9,7 +9,11 @@ import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.api.metrics.common.LabelsBuilder;
 import io.opentelemetry.context.Context;
 
-public class BaggageLabelsProcessor implements LabelsProcessor {
+/**
+ * A label processor which extracts labels from {@link io.opentelemetry.api.baggage.Baggage}.
+ * Delegates actual extraction implementation to {@link BaggageMetricsLabelsExtractor}
+ */
+public final class BaggageLabelsProcessor implements LabelsProcessor {
   private final BaggageMetricsLabelsExtractor baggageMetricsLabelsExtractor;
 
   public BaggageLabelsProcessor(BaggageMetricsLabelsExtractor baggageMetricsLabelsExtractor) {
