@@ -7,6 +7,17 @@ package io.opentelemetry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.time.Duration;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -19,7 +30,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
 /**
  * Integration test to verify that OpenTelemetry artefacts run in JRE 7.
@@ -37,53 +47,34 @@ class JaegerExporterIntegrationTest {
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final OkHttpClient client = new OkHttpClient();
 
-  private static final String ARCHIVE_NAME = System.getProperty("archive.name");
-  private static final String APP_NAME = "SendTraceToJaeger.jar";
-
   private static final int QUERY_PORT = 16686;
-  private static final int COLLECTOR_PORT = 14250;
+  private static final int JAEGER_API_PORT = 14250;
   private static final int HEALTH_PORT = 14269;
   private static final String SERVICE_NAME = "integration test";
-  private static final String JAEGER_HOSTNAME = "jaeger";
   private static final String JAEGER_URL = "http://localhost";
 
   private static final Network network = Network.SHARED;
 
-  @SuppressWarnings("rawtypes")
   @Container
-  public static GenericContainer jaegerContainer =
+  public static GenericContainer<?> jaegerContainer =
       new GenericContainer<>(
               DockerImageName.parse("ghcr.io/open-telemetry/java-test-containers:jaeger"))
-          .withNetwork(network)
-          .withNetworkAliases(JAEGER_HOSTNAME)
-          .withExposedPorts(COLLECTOR_PORT, QUERY_PORT, HEALTH_PORT)
+          .withExposedPorts(JAEGER_API_PORT, QUERY_PORT, HEALTH_PORT)
           .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));
-
-  @SuppressWarnings("rawtypes")
-  @Container
-  public static GenericContainer jaegerExampleAppContainer =
-      new GenericContainer(
-              DockerImageName.parse("ghcr.io/open-telemetry/java-test-containers:openjdk8"))
-          .withNetwork(network)
-          .withCopyFileToContainer(MountableFile.forHostPath(ARCHIVE_NAME), "/app/" + APP_NAME)
-          .withCommand(
-              "java",
-              "-cp",
-              "/app/" + APP_NAME,
-              "io.opentelemetry.SendTraceToJaeger",
-              JAEGER_HOSTNAME,
-              Integer.toString(COLLECTOR_PORT))
-          .waitingFor(Wait.forLogMessage(".*Bye.*", 1).withStartupTimeout(Duration.ofMinutes(2)))
-          .dependsOn(jaegerContainer);
 
   @Test
   void testJaegerExampleAppIntegration() {
+    OpenTelemetry openTelemetry =
+        initOpenTelemetry(
+            jaegerContainer.getHost(), jaegerContainer.getMappedPort(JAEGER_API_PORT));
+    myWonderfulUseCase(openTelemetry);
+
     Awaitility.await()
         .atMost(Duration.ofSeconds(30))
-        .until(JaegerExporterIntegrationTest::assertJaegerHaveTrace);
+        .until(JaegerExporterIntegrationTest::assertJaegerHasTheTrace);
   }
 
-  private static Boolean assertJaegerHaveTrace() {
+  private static Boolean assertJaegerHasTheTrace() {
     try {
       String url =
           String.format(
@@ -106,6 +97,54 @@ class JaegerExporterIntegrationTest {
       return json.get("data").get(0).get("traceID") != null;
     } catch (Exception e) {
       return false;
+    }
+  }
+
+  private static OpenTelemetry initOpenTelemetry(String ip, int port) {
+    // Create a channel towards Jaeger end point
+    ManagedChannel jaegerChannel =
+        ManagedChannelBuilder.forAddress(ip, port).usePlaintext().build();
+    // Export traces to Jaeger
+    JaegerGrpcSpanExporter jaegerExporter =
+        JaegerGrpcSpanExporter.builder()
+            .setChannel(jaegerChannel)
+            .setTimeout(Duration.ofSeconds(30))
+            .build();
+
+    // Set to process the spans by the Jaeger Exporter
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
+                .setResource(
+                    Resource.getDefault()
+                        .merge(
+                            Resource.create(
+                                Attributes.of(
+                                    ResourceAttributes.SERVICE_NAME, "integration test"))))
+                .build())
+        .buildAndRegisterGlobal();
+  }
+
+  private static void myWonderfulUseCase(OpenTelemetry openTelemetry) {
+    // Generate a span
+    Span span =
+        openTelemetry
+            .getTracer("io.opentelemetry.SendTraceToJaeger")
+            .spanBuilder("Start my wonderful use case")
+            .startSpan();
+    span.addEvent("Event 0");
+    // execute my use case - here we simulate a wait
+    doWait();
+    span.addEvent("Event 1");
+    span.end();
+  }
+
+  private static void doWait() {
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+      // catch
     }
   }
 }

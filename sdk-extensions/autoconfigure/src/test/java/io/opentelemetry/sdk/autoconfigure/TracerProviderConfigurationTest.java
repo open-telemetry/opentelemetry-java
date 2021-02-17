@@ -41,6 +41,7 @@ class TracerProviderConfigurationTest {
     Map<String, String> properties = new HashMap<>();
     properties.put("otel.bsp.schedule.delay", "100000");
     properties.put("otel.traces.sampler", "always_off");
+    properties.put("otel.traces.exporter", "none");
 
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     // We don't have any exporters on classpath for this test so check no-op case. Exporter cases

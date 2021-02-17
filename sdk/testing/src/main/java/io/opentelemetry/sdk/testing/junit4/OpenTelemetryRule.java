@@ -22,23 +22,23 @@ import org.junit.rules.ExternalResource;
  * tests. This rule cannot be used with {@link org.junit.ClassRule}.
  *
  * <pre>{@code
- * > public class CoolTest {
- * >   {@literal @}Rule
- * >   public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
- * >
- * >   private Tracer tracer;
- * >
- * >   {@literal @}Before
- * >   public void setUp() {
- * >       tracer = otelTesting.getOpenTelemetry().getTracer("test");
- * >   }
- * >
- * >   {@literal @}Test
- * >   public void test() {
- * >     tracer.spanBuilder("name").startSpan().end();
- * >     assertThat(otelTesting.getSpans()).containsExactly(expected);
- * >   }
- * >  }
+ * // public class CoolTest {
+ * //   @Rule
+ * //   public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+ * //
+ * //   private Tracer tracer;
+ * //
+ * //   @Before
+ * //   public void setUp() {
+ * //       tracer = otelTesting.getOpenTelemetry().getTracer("test");
+ * //   }
+ * //
+ * //   @Test
+ * //   public void test() {
+ * //     tracer.spanBuilder("name").startSpan().end();
+ * //     assertThat(otelTesting.getSpans()).containsExactly(expected);
+ * //   }
+ * //  }
  * }</pre>
  */
 public final class OpenTelemetryRule extends ExternalResource {
