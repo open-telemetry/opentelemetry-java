@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  * automatically in {@link io.opencensus.trace.unsafe.ContextHandleUtils} when the OpenCensus shim
  * library exists as a dependency.
  */
-public class OpenTelemetryContextManager implements ContextManager {
+public final class OpenTelemetryContextManager implements ContextManager {
 
   private static final Logger LOGGER =
       Logger.getLogger(OpenTelemetryContextManager.class.getName());

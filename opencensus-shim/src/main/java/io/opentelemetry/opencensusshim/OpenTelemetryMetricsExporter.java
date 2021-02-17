@@ -43,7 +43,7 @@ import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class OpenTelemetryMetricsExporter extends MetricExporter {
+public final class OpenTelemetryMetricsExporter extends MetricExporter {
   private static final Logger LOGGER =
       Logger.getLogger(OpenTelemetryMetricsExporter.class.getName());
 
