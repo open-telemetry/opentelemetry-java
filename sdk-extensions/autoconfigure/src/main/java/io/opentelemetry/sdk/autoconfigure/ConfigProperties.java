@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
  * for both of these will be normalized to be all lower case, and underscores will be replaced with
  * periods.
  */
-public class ConfigProperties {
+public final class ConfigProperties {
 
   private final Map<String, String> config;
 
