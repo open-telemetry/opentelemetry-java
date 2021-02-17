@@ -11,8 +11,8 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
-import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -60,7 +60,7 @@ public class Application {
                     .extract(
                         Context.current(),
                         request.raw(),
-                        new Getter<HttpServletRequest>() {
+                        new TextMapGetter<HttpServletRequest>() {
                           @Override
                           public Iterable<String> keys(HttpServletRequest carrier) {
                             return Collections.list(carrier.getHeaderNames());
@@ -114,7 +114,7 @@ public class Application {
                   .inject(
                       withSpanContext,
                       reqBuilder,
-                      new Setter<okhttp3.Request.Builder>() {
+                      new TextMapSetter<okhttp3.Request.Builder>() {
                         @Override
                         public void set(okhttp3.Request.Builder carrier, String key, String value) {
                           carrier.addHeader(key, value);

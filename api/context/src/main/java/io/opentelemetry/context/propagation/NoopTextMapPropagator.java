@@ -23,10 +23,10 @@ final class NoopTextMapPropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, @Nullable C carrier, Setter<C> setter) {}
+  public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {}
 
   @Override
-  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     return context;
   }
 }
