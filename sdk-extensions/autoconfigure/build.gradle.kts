@@ -15,6 +15,8 @@ testSets {
     create("testJaeger")
     create("testPrometheus")
     create("testOtlpTls")
+    create("testResourceDisabledByProperty")
+    create("testResourceDisabledByEnv")
     create("testZipkin")
 }
 
@@ -47,6 +49,7 @@ dependencies {
     add("testFullConfigImplementation", project(":exporters:prometheus"))
     add("testFullConfigImplementation", "io.prometheus:simpleclient_httpserver")
     add("testFullConfigImplementation", project(":exporters:zipkin"))
+    add("testFullConfigImplementation", project(":sdk-extensions:resources"))
 
     add("testOtlpTlsImplementation", project(":exporters:otlp:all"))
 
@@ -66,6 +69,9 @@ dependencies {
 
     add("testPrometheusImplementation", project(":exporters:prometheus"))
     add("testPrometheusImplementation", "io.prometheus:simpleclient_httpserver")
+
+    add("testResourceDisabledByPropertyImplementation", project(":sdk-extensions:resources"))
+    add("testResourceDisabledByEnvImplementation", project(":sdk-extensions:resources"))
 }
 
 tasks {
@@ -107,7 +113,25 @@ tasks {
         environment("OTEL_IMR_EXPORT_INTERVAL", "10")
     }
 
+    val testResourceDisabledByProperty by existing(Test::class) {
+        jvmArgs("-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
+        // Properties win, this is ignored.
+        environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.ProcessRuntimeResourceProvider")
+    }
+
+    val testResourceDisabledByEnv by existing(Test::class) {
+        environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
+    }
+
     val check by existing {
-        dependsOn(testConfigError, testFullConfig, testJaeger, testPrometheus, testZipkin)
+        dependsOn(
+                testConfigError,
+                testFullConfig,
+                testJaeger,
+                testPrometheus,
+                testZipkin,
+                testResourceDisabledByProperty,
+                testResourceDisabledByEnv
+        )
     }
 }

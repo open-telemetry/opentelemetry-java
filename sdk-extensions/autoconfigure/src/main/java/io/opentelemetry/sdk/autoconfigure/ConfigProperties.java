@@ -42,7 +42,8 @@ public class ConfigProperties {
     environmentVariables.forEach(
         (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
     systemProperties.forEach(
-        (key, value) -> config.put(((String) key).toLowerCase(Locale.ROOT), (String) value));
+        (key, value) ->
+            config.put(((String) key).toLowerCase(Locale.ROOT).replace('-', '.'), (String) value));
 
     this.config = config;
   }

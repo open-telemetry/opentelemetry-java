@@ -86,15 +86,4 @@ tasks {
                 "Multi-Release" to "true"
         )
     }
-
-    named<Test>("testResourceDisabledByProperty") {
-        jvmArgs("-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResource,io.opentelemetry.sdk.extension.resources.ProcessResource")
-        // Properties win, this is ignored.
-        environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.ProcessRuntimeResource")
-    }
-
-    named<Test>("testResourceDisabledByEnv") {
-        environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.OsResource,io.opentelemetry.sdk.extension.resources.ProcessResource")
-
-    }
 }
