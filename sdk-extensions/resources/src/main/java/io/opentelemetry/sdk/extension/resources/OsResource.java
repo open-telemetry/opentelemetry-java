@@ -32,11 +32,11 @@ public final class OsResource {
       os = System.getProperty("os.name");
     } catch (SecurityException t) {
       // Security manager enabled, can't provide much os information.
-      return Resource.getEmpty();
+      return Resource.empty();
     }
 
     if (os == null) {
-      return Resource.getEmpty();
+      return Resource.empty();
     }
 
     AttributesBuilder attributes = Attributes.builder();
