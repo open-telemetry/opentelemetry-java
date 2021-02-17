@@ -58,7 +58,7 @@ public final class EksResource {
       String k8sTokenPath,
       String k8sKeystorePath) {
     if (!isEks(k8sTokenPath, k8sKeystorePath, jdkHttpClient)) {
-      return Resource.getEmpty();
+      return Resource.empty();
     }
 
     AttributesBuilder attrBuilders = Attributes.builder();
