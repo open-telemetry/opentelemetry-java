@@ -42,10 +42,14 @@ class TraceIdTest {
 
   @Test
   void fromBytes() {
-    assertThat(TraceId.fromBytes(null)).isEqualTo(TraceId.getInvalid());
-
     String traceId = "0102030405060708090a0b0c0d0e0f00";
     assertThat(TraceId.fromBytes(OtelEncodingUtils.bytesFromBase16(traceId, TraceId.getLength())))
         .isEqualTo(traceId);
+  }
+
+  @Test
+  void fromBytes_Invalid() {
+    assertThat(SpanId.fromBytes(null)).isEqualTo(SpanId.getInvalid());
+    assertThat(SpanId.fromBytes(new byte[] {0, 1, 2, 3, 4})).isEqualTo(SpanId.getInvalid());
   }
 }
