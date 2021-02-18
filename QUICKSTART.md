@@ -207,8 +207,8 @@ The following presents an example of an outgoing HTTP request using `HttpURLConn
  
 ```java
 // Tell OpenTelemetry to inject the context in the HTTP headers
-TextMapPropagator.Setter<HttpURLConnection> setter =
-  new TextMapPropagator.Setter<HttpURLConnection>() {
+TextMapSetter<HttpURLConnection> setter =
+  new TextMapSetter<HttpURLConnection>() {
     @Override
     public void set(HttpURLConnection carrier, String key, String value) {
         // Insert the context as Header
@@ -238,8 +238,8 @@ The following presents an example of processing an incoming HTTP request using
 [HttpExchange](https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpExchange.html).
 
 ```java
-TextMapPropagator.Getter<HttpExchange> getter =
-  new TextMapPropagator.Getter<>() {
+TextMapGetter<HttpExchange> getter =
+  new TextMapGetter<>() {
     @Override
     public String get(HttpExchange carrier, String key) {
       if (carrier.getRequestHeaders().containsKey(key)) {

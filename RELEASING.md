@@ -87,11 +87,6 @@ After it is merged, Run the patch release workflow again, but leave the commits 
 The release will be made with the current state of the release branch, which is what you prepared
 above.
 
-## Release candidates
-
-Release candidate artifacts are released using the same process described above. The version schema for release candidates
-is`v1.2.3-RC$`, where `$` denotes a release candidate version, e.g. `v1.2.3-RC1`.
-
 ## Credentials
 
 The following credentials are required for publishing (and automatically set in Circle CI):
