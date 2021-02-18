@@ -9,7 +9,7 @@ import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.WaitStrategy;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 
-/** Builder class for {@link DisruptorAsyncSpanProcessor}. */
+/** Builder for {@link DisruptorAsyncSpanProcessor}. */
 public final class DisruptorAsyncSpanProcessorBuilder {
 
   // Number of events that can be enqueued at any one time. If more than this are enqueued,
