@@ -130,7 +130,7 @@ repositories {
 }
 
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:0.15.0-SNAPSHOT")
+  implementation platform("io.opentelemetry:opentelemetry-bom:0.18.0-SNAPSHOT")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
