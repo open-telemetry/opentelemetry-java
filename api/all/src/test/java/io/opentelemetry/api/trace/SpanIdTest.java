@@ -7,7 +7,7 @@ package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.internal.BigendianEncoding;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanId}. */
@@ -43,7 +43,7 @@ class SpanIdTest {
     assertThat(SpanId.fromBytes(null)).isEqualTo(SpanId.getInvalid());
 
     String spanId = "090a0b0c0d0e0f00";
-    assertThat(SpanId.fromBytes(BigendianEncoding.bytesFromBase16(spanId, SpanId.getLength())))
+    assertThat(SpanId.fromBytes(OtelEncodingUtils.bytesFromBase16(spanId, SpanId.getLength())))
         .isEqualTo(spanId);
   }
 }

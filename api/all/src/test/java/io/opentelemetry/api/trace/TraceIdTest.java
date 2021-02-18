@@ -7,7 +7,7 @@ package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.internal.BigendianEncoding;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceId}. */
@@ -45,7 +45,7 @@ class TraceIdTest {
     assertThat(TraceId.fromBytes(null)).isEqualTo(TraceId.getInvalid());
 
     String traceId = "0102030405060708090a0b0c0d0e0f00";
-    assertThat(TraceId.fromBytes(BigendianEncoding.bytesFromBase16(traceId, TraceId.getLength())))
+    assertThat(TraceId.fromBytes(OtelEncodingUtils.bytesFromBase16(traceId, TraceId.getLength())))
         .isEqualTo(traceId);
   }
 }

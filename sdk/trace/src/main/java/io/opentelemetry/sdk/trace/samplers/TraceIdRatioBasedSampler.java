@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.trace.samplers;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.internal.BigendianEncoding;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -90,6 +90,6 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
   }
 
   private static long getTraceIdRandomPart(String traceId) {
-    return BigendianEncoding.longFromBase16String(traceId, 16);
+    return OtelEncodingUtils.longFromBase16String(traceId, 16);
   }
 }

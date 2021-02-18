@@ -9,7 +9,7 @@ import java.util.Arrays;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-public final class BigendianEncoding {
+public final class OtelEncodingUtils {
   static final int LONG_BYTES = Long.SIZE / Byte.SIZE;
   static final int BYTE_BASE16 = 2;
   static final int LONG_BASE16 = BYTE_BASE16 * LONG_BYTES;
@@ -138,5 +138,5 @@ public final class BigendianEncoding {
     return 48 <= b && b <= 57;
   }
 
-  private BigendianEncoding() {}
+  private OtelEncodingUtils() {}
 }
