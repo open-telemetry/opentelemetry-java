@@ -4,11 +4,11 @@
  */
 
 /**
- * OpenTelemetry semantic attributes.
+ * OpenTelemetry semantic attributes for resources.
  *
- * @see io.opentelemetry.semconv.trace.attributes.SemanticAttributes
+ * @see io.opentelemetry.semconv.resource.attributes.ResourceAttributes
  */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.api.trace.attributes;
+package io.opentelemetry.semconv.resource.attributes;
 
 import javax.annotation.ParametersAreNonnullByDefault;
