@@ -83,8 +83,8 @@ public final class OtelEncodingUtils {
   }
 
   /** Fills {@code dest} with the hex encoding of {@code bytes}. */
-  public static void bytesToBase16(byte[] bytes, char[] dest) {
-    for (int i = 0; i < bytes.length; i++) {
+  public static void bytesToBase16(byte[] bytes, char[] dest, int length) {
+    for (int i = 0; i < length; i++) {
       byteToBase16(bytes[i], dest, i * 2);
     }
   }

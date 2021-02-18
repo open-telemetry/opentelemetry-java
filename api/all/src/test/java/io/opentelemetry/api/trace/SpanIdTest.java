@@ -40,10 +40,14 @@ class SpanIdTest {
 
   @Test
   void fromBytes() {
-    assertThat(SpanId.fromBytes(null)).isEqualTo(SpanId.getInvalid());
-
     String spanId = "090a0b0c0d0e0f00";
     assertThat(SpanId.fromBytes(OtelEncodingUtils.bytesFromBase16(spanId, SpanId.getLength())))
         .isEqualTo(spanId);
+  }
+
+  @Test
+  void fromBytes_Invalid() {
+    assertThat(SpanId.fromBytes(null)).isEqualTo(SpanId.getInvalid());
+    assertThat(SpanId.fromBytes(new byte[] {0, 1, 2, 3, 4})).isEqualTo(SpanId.getInvalid());
   }
 }

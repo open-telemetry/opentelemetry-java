@@ -27,7 +27,8 @@ import javax.annotation.concurrent.Immutable;
 public final class TraceId {
   private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
 
-  private static final int HEX_LENGTH = 32;
+  private static final int BYTES_LENGTH = 16;
+  private static final int HEX_LENGTH = 2 * BYTES_LENGTH;
   private static final String INVALID = "00000000000000000000000000000000";
 
   private TraceId() {}
@@ -66,18 +67,20 @@ public final class TraceId {
 
   /**
    * Returns the lowercase hex (base16) representation of the {@code TraceId} converted from the
-   * given bytes representation, or {@link #getInvalid()} if input is {@code null}.
+   * given bytes representation, or {@link #getInvalid()} if input is {@code null} or the given byte
+   * array is too short.
+   *
+   * <p>It converts the first 26 bytes of the given byte array.
    *
    * @param traceIdBytes the bytes (16-byte array) representation of the {@code TraceId}.
    * @return the lowercase hex (base16) representation of the {@code TraceId}.
-   * @throws IndexOutOfBoundsException if {@code traceIdBytes} too short.
    */
   public static String fromBytes(byte[] traceIdBytes) {
-    if (traceIdBytes == null) {
+    if (traceIdBytes == null || traceIdBytes.length < BYTES_LENGTH) {
       return INVALID;
     }
     char[] result = getTemporaryBuffer();
-    OtelEncodingUtils.bytesToBase16(traceIdBytes, result);
+    OtelEncodingUtils.bytesToBase16(traceIdBytes, result, BYTES_LENGTH);
     return new String(result);
   }
 
