@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -56,7 +57,7 @@ public final class SpanId {
     return spanId != null
         && spanId.length() == HEX_LENGTH
         && !INVALID.contentEquals(spanId)
-        && BigendianEncoding.isValidBase16String(spanId);
+        && OtelEncodingUtils.isValidBase16String(spanId);
   }
 
   /**
@@ -72,7 +73,7 @@ public final class SpanId {
       return INVALID;
     }
     char[] result = getTemporaryBuffer();
-    BigendianEncoding.bytesToBase16(spanIdBytes, result);
+    OtelEncodingUtils.bytesToBase16(spanIdBytes, result);
     return new String(result);
   }
 
@@ -95,7 +96,7 @@ public final class SpanId {
       return getInvalid();
     }
     char[] result = getTemporaryBuffer();
-    BigendianEncoding.longToBase16String(id, result, 0);
+    OtelEncodingUtils.longToBase16String(id, result, 0);
     return new String(result);
   }
 

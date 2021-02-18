@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.trace.samplers;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
@@ -74,7 +74,7 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
     // while allowing for a (very) small chance of *not* sampling if the id == Long.MAX_VALUE.
     // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
     // code is executed in-line for every Span creation).
-    return Math.abs(TraceId.getTraceIdRandomPart(traceId)) < getIdUpperBound()
+    return Math.abs(getTraceIdRandomPart(traceId)) < getIdUpperBound()
         ? getPositiveSamplingResult()
         : getNegativeSamplingResult();
   }
@@ -87,5 +87,9 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
   @Override
   public final String toString() {
     return getDescription();
+  }
+
+  private static long getTraceIdRandomPart(String traceId) {
+    return OtelEncodingUtils.longFromBase16String(traceId, 16);
   }
 }

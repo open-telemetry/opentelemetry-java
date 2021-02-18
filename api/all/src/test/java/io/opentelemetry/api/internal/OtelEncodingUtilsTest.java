@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.trace;
+package io.opentelemetry.api.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.nio.CharBuffer;
 import org.junit.jupiter.api.Test;
 
-class BigendianEncodingTest {
+class OtelEncodingUtilsTest {
 
   private static final long FIRST_LONG = 0x1213141516171819L;
   private static final char[] FIRST_CHAR_ARRAY =
@@ -27,58 +27,58 @@ class BigendianEncodingTest {
 
   @Test
   void longToBase16String() {
-    char[] chars1 = new char[BigendianEncoding.LONG_BASE16];
-    BigendianEncoding.longToBase16String(FIRST_LONG, chars1, 0);
+    char[] chars1 = new char[OtelEncodingUtils.LONG_BASE16];
+    OtelEncodingUtils.longToBase16String(FIRST_LONG, chars1, 0);
     assertThat(chars1).isEqualTo(FIRST_CHAR_ARRAY);
 
-    char[] chars2 = new char[BigendianEncoding.LONG_BASE16];
-    BigendianEncoding.longToBase16String(SECOND_LONG, chars2, 0);
+    char[] chars2 = new char[OtelEncodingUtils.LONG_BASE16];
+    OtelEncodingUtils.longToBase16String(SECOND_LONG, chars2, 0);
     assertThat(chars2).isEqualTo(SECOND_CHAR_ARRAY);
 
-    char[] chars3 = new char[2 * BigendianEncoding.LONG_BASE16];
-    BigendianEncoding.longToBase16String(FIRST_LONG, chars3, 0);
-    BigendianEncoding.longToBase16String(SECOND_LONG, chars3, BigendianEncoding.LONG_BASE16);
+    char[] chars3 = new char[2 * OtelEncodingUtils.LONG_BASE16];
+    OtelEncodingUtils.longToBase16String(FIRST_LONG, chars3, 0);
+    OtelEncodingUtils.longToBase16String(SECOND_LONG, chars3, OtelEncodingUtils.LONG_BASE16);
     assertThat(chars3).isEqualTo(BOTH_CHAR_ARRAY);
   }
 
   @Test
   void longFromBase16String_InputTooSmall() {
     // Valid base16 strings always have an even length.
-    assertThatThrownBy(() -> BigendianEncoding.longFromBase16String("12345678", 1))
+    assertThatThrownBy(() -> OtelEncodingUtils.longFromBase16String("12345678", 1))
         .isInstanceOf(StringIndexOutOfBoundsException.class);
   }
 
   @Test
   void longFromBase16String_UnrecognizedCharacters() {
     // These contain bytes not in the decoding.
-    assertThatThrownBy(() -> BigendianEncoding.longFromBase16String("0123456789gbcdef", 0))
+    assertThatThrownBy(() -> OtelEncodingUtils.longFromBase16String("0123456789gbcdef", 0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid character g");
   }
 
   @Test
   void validHex() {
-    assertThat(BigendianEncoding.isValidBase16String("abcdef1234567890")).isTrue();
-    assertThat(BigendianEncoding.isValidBase16String("abcdefg1234567890")).isFalse();
-    assertThat(BigendianEncoding.isValidBase16String("<abcdef1234567890")).isFalse();
-    assertThat(BigendianEncoding.isValidBase16String("(abcdef1234567890")).isFalse();
-    assertThat(BigendianEncoding.isValidBase16String("abcdef1234567890B")).isFalse();
+    assertThat(OtelEncodingUtils.isValidBase16String("abcdef1234567890")).isTrue();
+    assertThat(OtelEncodingUtils.isValidBase16String("abcdefg1234567890")).isFalse();
+    assertThat(OtelEncodingUtils.isValidBase16String("<abcdef1234567890")).isFalse();
+    assertThat(OtelEncodingUtils.isValidBase16String("(abcdef1234567890")).isFalse();
+    assertThat(OtelEncodingUtils.isValidBase16String("abcdef1234567890B")).isFalse();
   }
 
   @Test
   void longFromBase16String() {
-    assertThat(BigendianEncoding.longFromBase16String(CharBuffer.wrap(FIRST_CHAR_ARRAY), 0))
+    assertThat(OtelEncodingUtils.longFromBase16String(CharBuffer.wrap(FIRST_CHAR_ARRAY), 0))
         .isEqualTo(FIRST_LONG);
 
-    assertThat(BigendianEncoding.longFromBase16String(CharBuffer.wrap(SECOND_CHAR_ARRAY), 0))
+    assertThat(OtelEncodingUtils.longFromBase16String(CharBuffer.wrap(SECOND_CHAR_ARRAY), 0))
         .isEqualTo(SECOND_LONG);
 
-    assertThat(BigendianEncoding.longFromBase16String(CharBuffer.wrap(BOTH_CHAR_ARRAY), 0))
+    assertThat(OtelEncodingUtils.longFromBase16String(CharBuffer.wrap(BOTH_CHAR_ARRAY), 0))
         .isEqualTo(FIRST_LONG);
 
     assertThat(
-            BigendianEncoding.longFromBase16String(
-                CharBuffer.wrap(BOTH_CHAR_ARRAY), BigendianEncoding.LONG_BASE16))
+            OtelEncodingUtils.longFromBase16String(
+                CharBuffer.wrap(BOTH_CHAR_ARRAY), OtelEncodingUtils.LONG_BASE16))
         .isEqualTo(SECOND_LONG);
   }
 
@@ -94,23 +94,23 @@ class BigendianEncodingTest {
   @Test
   @SuppressWarnings("checkstyle:AvoidEscapedUnicodeCharacters")
   void invalidBytes() {
-    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16('g', 'f'))
+    assertThatThrownBy(() -> OtelEncodingUtils.byteFromBase16('g', 'f'))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid character g");
-    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16('\u0129', 'f'))
+    assertThatThrownBy(() -> OtelEncodingUtils.byteFromBase16('\u0129', 'f'))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid character \u0129");
-    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16('f', 'g'))
+    assertThatThrownBy(() -> OtelEncodingUtils.byteFromBase16('f', 'g'))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid character g");
-    assertThatThrownBy(() -> BigendianEncoding.byteFromBase16('f', '\u0129'))
+    assertThatThrownBy(() -> OtelEncodingUtils.byteFromBase16('f', '\u0129'))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid character \u0129");
   }
 
   private static void toFromBase16StringValidate(long value) {
-    char[] dest = new char[BigendianEncoding.LONG_BASE16];
-    BigendianEncoding.longToBase16String(value, dest, 0);
-    assertThat(BigendianEncoding.longFromBase16String(CharBuffer.wrap(dest), 0)).isEqualTo(value);
+    char[] dest = new char[OtelEncodingUtils.LONG_BASE16];
+    OtelEncodingUtils.longToBase16String(value, dest, 0);
+    assertThat(OtelEncodingUtils.longFromBase16String(CharBuffer.wrap(dest), 0)).isEqualTo(value);
   }
 }

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -88,7 +89,7 @@ public interface SpanContext {
    * @return the trace identifier associated with this {@link SpanContext} as 16-byte array.
    */
   default byte[] getTraceIdBytes() {
-    return BigendianEncoding.bytesFromBase16(getTraceId(), TraceId.getLength());
+    return OtelEncodingUtils.bytesFromBase16(getTraceId(), TraceId.getLength());
   }
 
   /**
@@ -106,7 +107,7 @@ public interface SpanContext {
    * @return the span identifier associated with this {@link SpanContext} as 8-byte array.
    */
   default byte[] getSpanIdBytes() {
-    return BigendianEncoding.bytesFromBase16(getSpanId(), SpanId.getLength());
+    return OtelEncodingUtils.bytesFromBase16(getSpanId(), SpanId.getLength());
   }
 
   /** Whether the span in this context is sampled. */
