@@ -100,7 +100,7 @@ public class PropagatorContextInjectBenchmark {
   /** Benchmark for injecting trace context into a single B3 header. */
   public static class B3SingleHeaderContextInjectBenchmark extends AbstractContextInjectBenchmark {
 
-    private final B3Propagator b3Propagator = B3Propagator.getInstance();
+    private final B3Propagator b3Propagator = B3Propagator.injectingSingleHeader();
     private final TextMapSetter<Map<String, String>> setter =
         new TextMapSetter<Map<String, String>>() {
           @Override
@@ -119,8 +119,7 @@ public class PropagatorContextInjectBenchmark {
   public static class B3MultipleHeaderContextInjectBenchmark
       extends AbstractContextInjectBenchmark {
 
-    private final B3Propagator b3Propagator =
-        B3Propagator.builder().injectMultipleHeaders().build();
+    private final B3Propagator b3Propagator = B3Propagator.injectingMultiHeaders();
     private final TextMapSetter<Map<String, String>> setter =
         new TextMapSetter<Map<String, String>>() {
           @Override

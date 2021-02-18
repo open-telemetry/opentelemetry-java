@@ -202,7 +202,7 @@ public class PropagatorContextExtractBenchmark {
           }
         };
 
-    private final B3Propagator b3Propagator = B3Propagator.getInstance();
+    private final B3Propagator b3Propagator = B3Propagator.injectingSingleHeader();
 
     @Override
     protected Context doExtract() {
@@ -253,7 +253,7 @@ public class PropagatorContextExtractBenchmark {
           }
         };
 
-    private final B3Propagator b3Propagator = B3Propagator.getInstance();
+    private final B3Propagator b3Propagator = B3Propagator.injectingSingleHeader();
 
     @Override
     protected Context doExtract() {

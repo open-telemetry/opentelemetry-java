@@ -13,7 +13,7 @@ import io.opentelemetry.extension.trace.propagation.B3Propagator;
 class OpenTelemetryPropagationComponentImpl extends PropagationComponentImpl {
 
   private final TextFormat b3Format =
-      new OpenTelemetryTextFormatImpl(B3Propagator.builder().injectMultipleHeaders().build());
+      new OpenTelemetryTextFormatImpl(B3Propagator.injectingMultiHeaders());
   private final TextFormat traceContextFormat =
       new OpenTelemetryTextFormatImpl(W3CTraceContextPropagator.getInstance());
 
