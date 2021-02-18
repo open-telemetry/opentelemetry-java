@@ -22,7 +22,8 @@ public final class ProcessRuntimeResource {
     return INSTANCE;
   }
 
-  private static Resource buildResource() {
+  // Visible for testing
+  static Resource buildResource() {
     try {
       String name = System.getProperty("java.runtime.name");
       String version = System.getProperty("java.runtime.version");

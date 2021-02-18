@@ -9,7 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junitpioneer.jupiter.SetSystemProperty;
 
 class ProcessResourceTest {
@@ -38,5 +41,16 @@ class ProcessResourceTest {
         .endsWith(".exe");
     assertThat(attributes.get(ResourceAttributes.PROCESS_COMMAND_LINE))
         .contains(attributes.get(ResourceAttributes.PROCESS_EXECUTABLE_PATH));
+  }
+
+  @Nested
+  @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+  @ExtendWith(SecurityManagerExtension.class)
+  static class SecurityManagerEnabled {
+    @Test
+    void empty() {
+      Attributes attributes = ProcessResource.buildResource().getAttributes();
+      assertThat(attributes.asMap()).containsOnlyKeys(ResourceAttributes.PROCESS_PID);
+    }
   }
 }
