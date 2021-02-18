@@ -16,5 +16,6 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-sdk-metrics")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp-metrics")
 
+    //external dependency for the grpc transport implementation
     implementation "io.grpc:grpc-netty-shaded"
 }

@@ -32,9 +32,9 @@ subprojects {
     }
 
     dependencies {
-        compile platform("io.opentelemetry:opentelemetry-bom:${openTelemetryVersion}")
-        compile platform("io.opentelemetry:opentelemetry-bom-alpha:${openTelemetryAlphaVersion}")
-        compile platform("io.grpc:grpc-bom:${grpcVersion}")
+        implementation platform("io.opentelemetry:opentelemetry-bom:${openTelemetryVersion}")
+        implementation platform("io.opentelemetry:opentelemetry-bom-alpha:${openTelemetryAlphaVersion}")
+        implementation platform("io.grpc:grpc-bom:${grpcVersion}")
     }
 
     spotless {
