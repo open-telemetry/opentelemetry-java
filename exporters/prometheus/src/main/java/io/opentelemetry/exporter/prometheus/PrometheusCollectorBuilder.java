@@ -9,7 +9,7 @@ import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.prometheus.client.Collector;
 import java.util.Objects;
 
-/** Builder utility for this exporter. */
+/** Builder for {@link PrometheusCollector}. */
 public class PrometheusCollectorBuilder {
   private MetricProducer metricProducer;
 
