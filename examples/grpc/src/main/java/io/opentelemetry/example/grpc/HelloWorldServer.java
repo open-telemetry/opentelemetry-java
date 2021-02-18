@@ -20,6 +20,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -36,8 +37,8 @@ public final class HelloWorldServer {
   private static final OpenTelemetry openTelemetry = ExampleConfiguration.initOpenTelemetry();
 
   // Extract the Distributed Context from the gRPC metadata
-  private static final TextMapPropagator.Getter<Metadata> getter =
-      new TextMapPropagator.Getter<>() {
+  private static final TextMapGetter<Metadata> getter =
+      new TextMapGetter<>() {
         @Override
         public Iterable<String> keys(Metadata carrier) {
           return carrier.keys();

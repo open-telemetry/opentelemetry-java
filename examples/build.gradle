@@ -15,8 +15,8 @@ subprojects {
     version = "0.1.0-SNAPSHOT"
 
     ext {
-        openTelemetryVersion = "0.16.0"
-        openTelemetryAlphaVersion = "0.16.0-alpha"
+        openTelemetryVersion = "0.17.0"
+        openTelemetryAlphaVersion = "0.17.0-alpha"
         grpcVersion = '1.34.1'
         protobufVersion = '3.11.4'
         protocVersion = protobufVersion
@@ -33,6 +33,7 @@ subprojects {
 
     dependencies {
         compile platform("io.opentelemetry:opentelemetry-bom:${openTelemetryVersion}")
+        compile platform("io.opentelemetry:opentelemetry-bom-alpha:${openTelemetryAlphaVersion}")
         compile platform("io.grpc:grpc-bom:${grpcVersion}")
     }
 

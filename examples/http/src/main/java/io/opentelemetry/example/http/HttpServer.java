@@ -16,6 +16,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,8 +34,8 @@ public final class HttpServer {
   private final com.sun.net.httpserver.HttpServer server;
 
   // Extract the context from http headers
-  private static final TextMapPropagator.Getter<HttpExchange> getter =
-      new TextMapPropagator.Getter<>() {
+  private static final TextMapGetter<HttpExchange> getter =
+      new TextMapGetter<>() {
         @Override
         public Iterable<String> keys(HttpExchange carrier) {
           return carrier.getRequestHeaders().keySet();

@@ -13,6 +13,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,8 +36,7 @@ public final class HttpClient {
 
   // Export traces to log
   // Inject the span context into the request
-  private static final TextMapPropagator.Setter<HttpURLConnection> setter =
-      URLConnection::setRequestProperty;
+  private static final TextMapSetter<HttpURLConnection> setter = URLConnection::setRequestProperty;
 
   private void makeRequest() throws IOException {
     int port = 8080;

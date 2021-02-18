@@ -27,6 +27,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -56,7 +57,7 @@ public final class HelloWorldClientStream {
   private final TextMapPropagator textFormat =
       openTelemetry.getPropagators().getTextMapPropagator();
   // Inject context into the gRPC request metadata
-  private final TextMapPropagator.Setter<Metadata> setter =
+  private final TextMapSetter<Metadata> setter =
       (carrier, key, value) ->
           carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
 
