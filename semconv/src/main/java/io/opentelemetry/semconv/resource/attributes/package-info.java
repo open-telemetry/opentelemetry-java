@@ -6,7 +6,7 @@
 /**
  * OpenTelemetry semantic attributes for resources.
  *
- * @see io.opentelemetry.semconv.trace.attributes.SemanticAttributes
+ * @see io.opentelemetry.semconv.resource.attributes.ResourceAttributes
  */
 @ParametersAreNonnullByDefault
 package io.opentelemetry.semconv.resource.attributes;
