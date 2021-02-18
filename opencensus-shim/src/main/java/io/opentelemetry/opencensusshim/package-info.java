@@ -3,12 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/**
- * The OpenTelemetry SDK implementation of tracing.
- *
- * @see io.opentelemetry.sdk.trace.SdkTracerProvider
- */
+/** The OpenCensus to OpenTelemetry shim. */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.opencensusshim;
 
 import javax.annotation.ParametersAreNonnullByDefault;
