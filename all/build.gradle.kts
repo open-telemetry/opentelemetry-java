@@ -70,8 +70,7 @@ tasks.named<JacocoReport>("jacocoTestReport") {
                     !it.absolutePath.contains("io/opentelemetry/proto/") &&
                     !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/proto/") &&
                     !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/") &&
-                    !it.absolutePath.contains("io/opentelemetry/api/trace/attributes/SemanticAttributes") &&
-                    !it.absolutePath.contains("io/opentelemetry/semconv/trace/attributes/SemanticAttributes") &&
+                    !it.absolutePath.contains("io/opentelemetry/semconv/trace/attributes/") &&
                     !it.absolutePath.contains("AutoValue_") &&
                     // TODO(anuraaga): Remove exclusion after enabling coverage for jfr-events
                     !it.absolutePath.contains("io/opentelemetry/sdk/extension/jfr")
