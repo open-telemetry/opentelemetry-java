@@ -101,6 +101,12 @@ import java.util.concurrent.TimeUnit;
  * }
  * }</pre>
  *
+ * <p>When inserting attributes, {@code null} keys and values are prohibited, and in that case the
+ * behavior is undefined.
+ *
+ * <p>When adding links, {@code null} span contexts and attributes are prohibited, and in that case
+ * the behavior is undefined.
+ *
  * <p>see {@link SpanBuilder#startSpan} for usage examples.
  */
 public interface SpanBuilder {
@@ -140,7 +146,6 @@ public interface SpanBuilder {
    *
    * @param spanContext the context of the linked {@code Span}.
    * @return this.
-   * @throws NullPointerException if {@code spanContext} is {@code null}.
    */
   SpanBuilder addLink(SpanContext spanContext);
 
@@ -154,8 +159,6 @@ public interface SpanBuilder {
    * @param spanContext the context of the linked {@code Span}.
    * @param attributes the attributes of the {@code Link}.
    * @return this.
-   * @throws NullPointerException if {@code spanContext} is {@code null}.
-   * @throws NullPointerException if {@code attributes} is {@code null}.
    */
   SpanBuilder addLink(SpanContext spanContext, Attributes attributes);
 
@@ -172,7 +175,6 @@ public interface SpanBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
-   * @throws NullPointerException if {@code key} is {@code null}.
    */
   SpanBuilder setAttribute(String key, String value);
 
@@ -186,7 +188,6 @@ public interface SpanBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
-   * @throws NullPointerException if {@code key} is {@code null}.
    */
   SpanBuilder setAttribute(String key, long value);
 
@@ -200,7 +201,6 @@ public interface SpanBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
-   * @throws NullPointerException if {@code key} is {@code null}.
    */
   SpanBuilder setAttribute(String key, double value);
 
@@ -214,7 +214,6 @@ public interface SpanBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
-   * @throws NullPointerException if {@code key} is {@code null}.
    */
   SpanBuilder setAttribute(String key, boolean value);
 
@@ -227,8 +226,6 @@ public interface SpanBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
-   * @throws NullPointerException if {@code key} is {@code null}.
-   * @throws NullPointerException if {@code value} is {@code null}.
    */
   <T> SpanBuilder setAttribute(AttributeKey<T> key, T value);
 
@@ -236,7 +233,8 @@ public interface SpanBuilder {
    * Sets the {@link SpanKind} for the newly created {@code Span}. If not called, the implementation
    * will provide a default value {@link SpanKind#INTERNAL}.
    *
-   * @param spanKind the kind of the newly created {@code Span}.
+   * @param spanKind the kind of the newly created {@code Span}. {@code null} is prohibited, and in
+   *     that case the behavior is undefined.
    * @return this.
    */
   SpanBuilder setSpanKind(SpanKind spanKind);
@@ -252,7 +250,8 @@ public interface SpanBuilder {
    *
    * @param startTimestamp the explicit start timestamp from the epoch of the newly created {@code
    *     Span}.
-   * @param unit the unit of the timestamp.
+   * @param unit the unit of the timestamp. {@code null} is prohibited, and in that case the
+   *     behavior is undefined.
    * @return this.
    */
   SpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit);
@@ -265,16 +264,16 @@ public interface SpanBuilder {
    *
    * <p>Important this is NOT equivalent with System.nanoTime().
    *
-   * @param startTimestamp the explicit start timestamp from the epoch of the newly created {@code
-   *     Span}.
+   * @param timestamp the explicit start timestamp from the epoch of the newly created {@code Span}.
+   *     {@code null} indicates calling time of {@link #startSpan()} should be used.
    * @return this.
    */
-  default SpanBuilder setStartTimestamp(Instant startTimestamp) {
-    if (startTimestamp == null) {
+  default SpanBuilder setStartTimestamp(Instant timestamp) {
+    if (timestamp == null) {
       return this;
     }
     return setStartTimestamp(
-        SECONDS.toNanos(startTimestamp.getEpochSecond()) + startTimestamp.getNano(), NANOSECONDS);
+        SECONDS.toNanos(timestamp.getEpochSecond()) + timestamp.getNano(), NANOSECONDS);
   }
 
   /**
@@ -291,7 +290,7 @@ public interface SpanBuilder {
    *
    * <pre>{@code
    * class MyClass {
-   *   private static final Tracer tracer = OpenTelemetry.get().getTracer("com.example.rpc");
+   *   private static final Tracer tracer = GlobalOpenTelemetry.get().getTracer("com.example.rpc");
    *
    *   void doWork(Span parent) {
    *     Span childSpan = tracer.spanBuilder("MyChildSpan")

@@ -22,6 +22,12 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>Spans are created by the {@link SpanBuilder#startSpan} method.
  *
+ * <p>When inserting attributes, {@code null} keys and values are prohibited, and in that case the
+ * behavior is undefined.
+ *
+ * <p>When adding events, {@code null} names, attributes, units and timestamps, and in that case the
+ * behavior is undefined.
+ *
  * <p>{@code Span} <b>must</b> be ended by calling {@link #end()}.
  */
 @ThreadSafe
@@ -274,7 +280,8 @@ public interface Span extends ImplicitContextKeyed {
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
    * previous calls.
    *
-   * @param statusCode the {@link StatusCode} to set.
+   * @param statusCode the {@link StatusCode} to set. {@code null} is prohibited, and in that case
+   *     the behavior is undefined.
    * @return this.
    */
   default Span setStatus(StatusCode statusCode) {
@@ -290,8 +297,10 @@ public interface Span extends ImplicitContextKeyed {
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
    * previous calls.
    *
-   * @param statusCode the {@link StatusCode} to set.
-   * @param description the description of the {@code Status}.
+   * @param statusCode the {@link StatusCode} to set. {@code null} is prohibited, and in that case
+   *     the behavior is undefined.
+   * @param description the description of the {@code Status}. {@code null} is prohibited, and in
+   *     that case the behavior is undefined.
    * @return this.
    */
   Span setStatus(StatusCode statusCode, String description);
@@ -303,7 +312,8 @@ public interface Span extends ImplicitContextKeyed {
    * this function. You should record this attribute manually using {@link
    * #recordException(Throwable, Attributes)} if you know that an exception is escaping.
    *
-   * @param exception the {@link Throwable} to record.
+   * @param exception the {@link Throwable} to record. {@code null} is prohibited, and in that case
+   *     the behavior is undefined.
    * @return this.
    */
   default Span recordException(Throwable exception) {
@@ -313,8 +323,10 @@ public interface Span extends ImplicitContextKeyed {
   /**
    * Records information about the {@link Throwable} to the {@link Span}.
    *
-   * @param exception the {@link Throwable} to record.
-   * @param additionalAttributes the additional {@link Attributes} to record.
+   * @param exception the {@link Throwable} to record. {@code null} is prohibited, and in that case
+   *     the behavior is undefined.
+   * @param additionalAttributes the additional {@link Attributes} to record. {@code null} is
+   *     prohibited, and in that case the behavior is undefined.
    * @return this.
    */
   Span recordException(Throwable exception, Attributes additionalAttributes);
@@ -327,7 +339,8 @@ public interface Span extends ImplicitContextKeyed {
    * <p>Upon this update, any sampling behavior based on {@code Span} name will depend on the
    * implementation.
    *
-   * @param name the {@code Span} name.
+   * @param name the {@code Span} name. {@code null} is prohibited, and in that case the behavior is
+   *     undefined.
    * @return this.
    */
   Span updateName(String name);
@@ -351,7 +364,8 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @param timestamp the explicit timestamp from the epoch, for this {@code Span}. {@code 0}
    *     indicates current time should be used.
-   * @param unit the unit of the timestamp
+   * @param unit the unit of the timestamp. {@code null} is prohibited, and in that case the
+   *     behavior is undefined.
    */
   void end(long timestamp, TimeUnit unit);
 
@@ -364,7 +378,7 @@ public interface Span extends ImplicitContextKeyed {
    * <p>Use this method for specifying explicit end options, such as end {@code Timestamp}. When no
    * explicit values are required, use {@link #end()}.
    *
-   * @param timestamp the explicit timestamp from the epoch, for this {@code Span}. {@code 0}
+   * @param timestamp the explicit timestamp from the epoch, for this {@code Span}. {@code null}
    *     indicates current time should be used.
    */
   default void end(Instant timestamp) {

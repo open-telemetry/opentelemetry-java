@@ -63,9 +63,9 @@ public interface Tracer {
    *
    * <p>See {@link SpanBuilder} for usage examples.
    *
-   * @param spanName The name of the returned Span.
+   * @param spanName The name of the returned Span. {@code null} is prohibited, and in that case the
+   *     behavior is undefined.
    * @return a {@code Span.Builder} to create and start a new {@code Span}.
-   * @throws NullPointerException if {@code spanName} is {@code null}.
    */
   SpanBuilder spanBuilder(String spanName);
 }
