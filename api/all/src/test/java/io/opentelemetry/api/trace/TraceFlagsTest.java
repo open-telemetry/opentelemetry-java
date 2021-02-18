@@ -33,8 +33,17 @@ class TraceFlagsTest {
       if (hex.length() == 1) {
         hex = "0" + hex;
       }
-      assertThat(TraceFlags.fromHex(hex, 0).asHex()).isEqualTo(hex);
+      TraceFlags traceFlags = TraceFlags.fromHex(hex, 0);
+      assertThat(traceFlags).isNotNull();
+      assertThat(traceFlags.asHex()).isEqualTo(hex);
     }
+  }
+
+  @Test
+  void toFromHex_Invalid() {
+    assertThat(TraceFlags.fromHex(null, 0)).isNull();
+    assertThat(TraceFlags.fromHex("hex", 0)).isNull();
+    assertThat(TraceFlags.fromHex("aa", 1)).isNull();
   }
 
   @Test

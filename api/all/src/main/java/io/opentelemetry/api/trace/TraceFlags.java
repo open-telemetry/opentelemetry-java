@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.internal.OtelEncodingUtils;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -45,16 +47,21 @@ public interface TraceFlags {
   }
 
   /**
-   * Returns the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
+   * Returns the {@link TraceFlags} converted from the given lowercase hex (base16) representation,
+   * or {@code null} if input is {@code null}, too short, or has invalid characters.
    *
    * @param src the buffer where the hex (base16) representation of the {@link TraceFlags} is.
    * @param srcOffset the offset int buffer.
    * @return the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
-   * @throws NullPointerException if {@code src} is null.
-   * @throws IndexOutOfBoundsException if {@code src} is too short.
-   * @throws IllegalArgumentException if invalid characters in the {@code src}.
    */
+  @Nullable
   static TraceFlags fromHex(CharSequence src, int srcOffset) {
+    // TODO: Avoid calling `subSequence`.
+    if (src == null
+        || src.length() < srcOffset + 2
+        || !OtelEncodingUtils.isValidBase16String(src.subSequence(srcOffset, srcOffset + 2))) {
+      return null;
+    }
     return ImmutableTraceFlags.fromHex(src, srcOffset);
   }
 
