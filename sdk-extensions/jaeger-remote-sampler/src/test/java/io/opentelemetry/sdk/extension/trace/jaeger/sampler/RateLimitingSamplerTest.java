@@ -25,13 +25,7 @@ class RateLimitingSamplerTest {
   private static final SpanKind SPAN_KIND = SpanKind.INTERNAL;
   private static final String TRACE_ID = "12345678876543211234567887654321";
   private static final String PARENT_SPAN_ID = "8765432112345678";
-  private static final Context sampledSpanContext =
-      Context.root()
-          .with(
-              Span.wrap(
-                  SpanContext.create(
-                      TRACE_ID, PARENT_SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault())));
-  private static final Context notSampledSpanContext =
+  private static final Context spanContext =
       Context.root()
           .with(
               Span.wrap(
@@ -39,38 +33,11 @@ class RateLimitingSamplerTest {
                       TRACE_ID, PARENT_SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault())));
 
   @Test
-  void alwaysSampleSampledContext() {
-    RateLimitingSampler sampler = new RateLimitingSampler(1);
-    assertThat(
-            sampler
-                .shouldSample(
-                    sampledSpanContext,
-                    TRACE_ID,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
-    assertThat(
-            sampler
-                .shouldSample(
-                    sampledSpanContext,
-                    TRACE_ID,
-                    SPAN_NAME,
-                    SPAN_KIND,
-                    Attributes.empty(),
-                    Collections.emptyList())
-                .getDecision())
-        .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
-  }
-
-  @Test
   void sampleOneTrace() {
     RateLimitingSampler sampler = new RateLimitingSampler(1);
     SamplingResult samplingResult =
         sampler.shouldSample(
-            notSampledSpanContext,
+            spanContext,
             TRACE_ID,
             SPAN_NAME,
             SPAN_KIND,
@@ -80,7 +47,7 @@ class RateLimitingSamplerTest {
     assertThat(
             sampler
                 .shouldSample(
-                    notSampledSpanContext,
+                    spanContext,
                     TRACE_ID,
                     SPAN_NAME,
                     SPAN_KIND,
