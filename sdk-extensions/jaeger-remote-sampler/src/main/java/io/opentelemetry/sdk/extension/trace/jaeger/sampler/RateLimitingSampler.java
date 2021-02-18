@@ -10,7 +10,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.SystemClock;
@@ -57,17 +56,6 @@ class RateLimitingSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-
-    if (Span.fromContext(parentContext).getSpanContext().isSampled()) {
-      return Sampler.alwaysOn()
-          .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
-    }
-    for (LinkData parentLink : parentLinks) {
-      if (parentLink.getSpanContext().isSampled()) {
-        return Sampler.alwaysOn()
-            .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
-      }
-    }
     return this.rateLimiter.checkCredit(1.0) ? onSamplingResult : offSamplingResult;
   }
 
