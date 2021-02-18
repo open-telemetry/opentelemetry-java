@@ -6,9 +6,10 @@ description = 'OpenTelemetry Examples for Jaeger Exporter'
 ext.moduleName = "io.opentelemetry.examples.jaeger"
 
 dependencies {
-    compile("io.opentelemetry:opentelemetry-api")
-    compile("io.opentelemetry:opentelemetry-sdk")
-    compile("io.opentelemetry:opentelemetry-exporter-jaeger")
-    compile("io.grpc:grpc-protobuf")
-    compile("io.grpc:grpc-netty-shaded")
+    implementation("io.opentelemetry:opentelemetry-api")
+    implementation("io.opentelemetry:opentelemetry-sdk")
+    implementation("io.opentelemetry:opentelemetry-exporter-jaeger")
+
+    implementation("io.grpc:grpc-protobuf")
+    implementation("io.grpc:grpc-netty-shaded")
 }
