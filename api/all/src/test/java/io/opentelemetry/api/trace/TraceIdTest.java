@@ -49,7 +49,7 @@ class TraceIdTest {
 
   @Test
   void fromBytes_Invalid() {
-    assertThat(SpanId.fromBytes(null)).isEqualTo(SpanId.getInvalid());
-    assertThat(SpanId.fromBytes(new byte[] {0, 1, 2, 3, 4})).isEqualTo(SpanId.getInvalid());
+    assertThat(TraceId.fromBytes(null)).isEqualTo(TraceId.getInvalid());
+    assertThat(TraceId.fromBytes(new byte[] {0, 1, 2, 3, 4})).isEqualTo(TraceId.getInvalid());
   }
 }
