@@ -19,5 +19,5 @@ dependencies {
     testImplementation(project(":sdk:testing"))
 
     testImplementation("io.grpc:grpc-testing")
-    testRuntime("io.grpc:grpc-netty-shaded")
+    testRuntimeOnly("io.grpc:grpc-netty-shaded")
 }
