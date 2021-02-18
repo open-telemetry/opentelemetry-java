@@ -6,7 +6,6 @@
 package io.opentelemetry.api.common;
 
 import java.util.List;
-import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -24,7 +23,6 @@ public interface AttributeKey<T> {
   String getKey();
 
   /** Returns the type of attribute for this key. Useful for building switch statements. */
-  @Nonnull
   AttributeType getType();
 
   /** Returns a new AttributeKey for String valued attributes. */
