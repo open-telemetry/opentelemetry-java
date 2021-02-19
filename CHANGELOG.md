@@ -2,6 +2,11 @@
 
 ## Unreleased:
 
+## Version 0.17.1 - 2021-02-19
+
+- Removed the unused `ResourceProvider` interface from the SDK. This interface is still available 
+in the `opentelemetry-sdk-extension-autoconfigure` module, where it is actually used.
+
 ## Version 0.17.0 - 2021-02-17 - RC#3
 
 ### General
