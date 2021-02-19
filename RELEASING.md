@@ -2,7 +2,7 @@
 
 ## Starting the Release
 
-Open the release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3A%22Release+Build%22).
+Open the release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/release-build.yml).
 
 You will see a button that says "Run workflow". Press the button, enter the version number you want
 to release in the input field that pops up, and then press "Run workflow".
@@ -43,7 +43,7 @@ Create a PR to mark the new release in README.md and CHANGELOG.md on the main br
 All patch releases should include only bug-fixes, and must avoid
 adding/modifying the public APIs. 
 
-Open the patch release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3A%22Patch+Release+Build%22).
+Open the patch release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/patch-release-build.yml).
 
 You will see a button that says "Run workflow". Press the button, enter the version number you want
 to release in the input field for version that pops up and the commits you want to cherrypick for the
