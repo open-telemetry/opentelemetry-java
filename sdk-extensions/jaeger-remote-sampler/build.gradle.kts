@@ -12,7 +12,6 @@ extra["moduleName"] = "io.opentelemetry.sdk.extension.trace.jaeger"
 dependencies {
     api(project(":sdk:all"))
 
-    implementation(project(":sdk-extensions:otproto"))
     implementation(project(":sdk:all"))
     implementation("io.grpc:grpc-api")
     implementation("io.grpc:grpc-protobuf")
