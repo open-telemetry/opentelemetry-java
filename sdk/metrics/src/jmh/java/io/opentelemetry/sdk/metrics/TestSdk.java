@@ -5,13 +5,13 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import com.google.errorprone.annotations.Immutable;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 
+@SuppressWarnings("ImmutableEnumChecker")
 public enum TestSdk {
   API_ONLY(
       new SdkBuilder() {
@@ -43,7 +43,6 @@ public enum TestSdk {
     return sdkBuilder.build();
   }
 
-  @Immutable
   private abstract static class SdkBuilder {
     abstract Meter build();
   }

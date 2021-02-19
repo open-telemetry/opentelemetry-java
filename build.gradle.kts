@@ -312,7 +312,6 @@ subprojects {
             }
 
             add(COMPILE_ONLY_CONFIGURATION_NAME, "com.google.auto.value:auto-value-annotations")
-            add(COMPILE_ONLY_CONFIGURATION_NAME, "com.google.errorprone:error_prone_annotations")
             add(COMPILE_ONLY_CONFIGURATION_NAME, "com.google.code.findbugs:jsr305")
 
             add(TEST_COMPILE_ONLY_CONFIGURATION_NAME, "com.google.auto.value:auto-value-annotations")
