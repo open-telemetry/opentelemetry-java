@@ -35,9 +35,14 @@ Backwards incompatible changes to `internal` packages are expected. Versions of 
 are expected to be aligned by using BOMs we publish. We will always provide BOMs to allow alignment
 of versions.
 
+Changes may be made that require changes to the an app's dependency declarations aside from just
+incrementing the version on `MINOR` version updates. For example, code may be separated out to a
+new artifact which requires adding the new artifact to dependency declarations.
+
 As a user, if you always depend on the latest version of the BOM for a given `MAJOR` version, and
 you do not use classes in the `internal` package (which you MUST NOT do), you can be assured that
-your app will always function and have the latest features of OpenTelemetry.
+your app will always function and have access to the latest features of OpenTelemetry without needing 
+any changes to code.
 
 ## API vs SDK
 
