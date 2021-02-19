@@ -36,7 +36,7 @@ dependencies {
         isTransitive = false
     }
     // explicitly adding the opentelemetry-exporter-otlp dependencies
-    jmh(project(":sdk-extensions:otproto")) {
+    jmh(project(":exporters:otlp:common")) {
         isTransitive = false
     }
     jmh(project(":proto"))
