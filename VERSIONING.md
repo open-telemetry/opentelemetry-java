@@ -41,7 +41,7 @@ new artifact which requires adding the new artifact to dependency declarations.
 
 As a user, if you always depend on the latest version of the BOM for a given `MAJOR` version, and
 you do not use classes in the `internal` package (which you MUST NOT do), you can be assured that
-your app will always function and have access tothe latest features of OpenTelemetry without needing 
+your app will always function and have access to the latest features of OpenTelemetry without needing 
 any changes to code.
 
 ## API vs SDK
