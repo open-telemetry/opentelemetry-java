@@ -13,7 +13,6 @@ dependencies {
     api(project(":sdk:all"))
     api("io.grpc:grpc-api")
 
-    implementation(project(":sdk-extensions:otproto"))
     implementation(project(":sdk:all"))
     implementation(project(":semconv"))
 
