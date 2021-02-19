@@ -25,11 +25,6 @@ import javax.annotation.concurrent.Immutable;
 /**
  * {@link Resource} represents a resource, which capture identifying information about the entities
  * for which signals (stats or traces) are reported.
- *
- * <p>To disable any {@link ResourceProvider} found on the classpath from being recognized, set the
- * fully qualified class names of the {@link ResourceProvider} implementations as a comma separated
- * list to the system property {@code -Dotel.java.disabled.resource_providers} or the {@code
- * OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS} environment variable.
  */
 @Immutable
 @AutoValue
