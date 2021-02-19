@@ -96,7 +96,7 @@ final class Adapter {
               .build());
     }
 
-    if (span.getStatus().getDescription() != null) {
+    if (!span.getStatus().getDescription().isEmpty()) {
       target.addTags(
           Model.KeyValue.newBuilder()
               .setKey(KEY_SPAN_STATUS_MESSAGE)

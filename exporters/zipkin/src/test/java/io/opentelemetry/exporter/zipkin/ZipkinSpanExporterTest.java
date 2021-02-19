@@ -278,12 +278,12 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
-  void generateSpan_WithRpcErrorStatus_WithNullErrorDescription() {
+  void generateSpan_WithRpcErrorStatus_WithEmptyErrorDescription() {
     Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(StatusData.create(StatusCode.ERROR, null))
+            .setStatus(StatusData.create(StatusCode.ERROR, ""))
             .setAttributes(attributeMap)
             .build();
 
@@ -302,7 +302,7 @@ class ZipkinSpanExporterTest {
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(StatusData.create(StatusCode.UNSET, null))
+            .setStatus(StatusData.create(StatusCode.UNSET, ""))
             .setAttributes(attributeMap)
             .build();
 
