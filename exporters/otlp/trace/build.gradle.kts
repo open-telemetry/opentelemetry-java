@@ -22,7 +22,7 @@ dependencies {
     compileOnly("io.grpc:grpc-netty")
     compileOnly("io.grpc:grpc-netty-shaded")
 
-    implementation(project(":sdk-extensions:otproto"))
+    implementation(project(":exporters:otlp:common"))
     implementation("io.grpc:grpc-api")
     implementation("io.grpc:grpc-protobuf")
     implementation("io.grpc:grpc-stub")

@@ -11,7 +11,7 @@ extra["moduleName"] = "io.opentelemetry.exporter.otlp.metrics"
 dependencies {
     api(project(":sdk:metrics"))
 
-    implementation(project(":sdk-extensions:otproto"))
+    implementation(project(":exporters:otlp:common"))
 
     implementation("io.grpc:grpc-api")
     implementation("io.grpc:grpc-protobuf")

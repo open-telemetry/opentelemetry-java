@@ -5,6 +5,6 @@
 
 /** Utilities for working with the OTLP format. */
 @ParametersAreNonnullByDefault
-package io.opentelemetry.sdk.extension.otproto;
+package io.opentelemetry.exporter.otlp.internal;
 
 import javax.annotation.ParametersAreNonnullByDefault;

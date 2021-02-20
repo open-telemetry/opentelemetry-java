@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry Protocol Exporter"
-extra["moduleName"] = "io.opentelemetry.exporters.otprotocol"
+extra["moduleName"] = "io.opentelemetry.exporter.otlp.internal"
 
 dependencies {
     api(project(":api:all"))
