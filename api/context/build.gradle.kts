@@ -34,6 +34,9 @@ dependencies {
 
     add("strictContextEnabledTestImplementation", project(":api:all"))
 
+    // MustBeClosed
+    compileOnly("com.google.errorprone:error_prone_annotations")
+
     testImplementation("org.awaitility:awaitility")
     testImplementation("com.google.guava:guava")
     testImplementation("org.junit-pioneer:junit-pioneer")
