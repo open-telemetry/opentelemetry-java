@@ -81,7 +81,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
 
   /** Iterates over all the key-value pairs of labels contained by this instance. */
   @SuppressWarnings("unchecked")
-  public final void forEach(BiConsumer<K, V> consumer) {
+  public final void forEach(BiConsumer<? super K, ? super V> consumer) {
     if (consumer == null) {
       return;
     }

@@ -55,7 +55,7 @@ val DEPENDENCY_SETS = listOf(
         ),
         DependencySet(
                 "org.openjdk.jmh",
-                "1.26",
+                "1.27",
                 listOf("jmh-core", "jmh-generator-bytecode")
         ),
         DependencySet(

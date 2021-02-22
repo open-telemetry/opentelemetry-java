@@ -127,20 +127,22 @@ subprojects {
             withType(JavaCompile::class) {
                 options.release.set(8)
 
-                options.compilerArgs.addAll(listOf(
-                        "-Xlint:all",
-                        // We suppress the "try" warning because it disallows managing an auto-closeable with
-                        // try-with-resources without referencing the auto-closeable within the try block.
-                        "-Xlint:-try",
-                        // We suppress the "processing" warning as suggested in
-                        // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
-                        "-Xlint:-processing",
-                        // We suppress the "options" warning because it prevents compilation on modern JDKs
-                        "-Xlint:-options",
+                if (name != "jmhCompileGeneratedClasses") {
+                    options.compilerArgs.addAll(listOf(
+                            "-Xlint:all",
+                            // We suppress the "try" warning because it disallows managing an auto-closeable with
+                            // try-with-resources without referencing the auto-closeable within the try block.
+                            "-Xlint:-try",
+                            // We suppress the "processing" warning as suggested in
+                            // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
+                            "-Xlint:-processing",
+                            // We suppress the "options" warning because it prevents compilation on modern JDKs
+                            "-Xlint:-options",
 
-                        // Fail build on any warning
-                        "-Werror"
-                ))
+                            // Fail build on any warning
+                            "-Werror"
+                    ))
+                }
 
                 options.encoding = "UTF-8"
 
@@ -384,6 +386,7 @@ subprojects {
             // Always include the jmhreport plugin and run it after jmh task.
             plugins.apply("io.morethan.jmhreport")
             dependencies {
+                add("jmh", platform(project(":dependencyManagement")))
                 add("jmh", "org.openjdk.jmh:jmh-core")
                 add("jmh", "org.openjdk.jmh:jmh-generator-bytecode")
             }
