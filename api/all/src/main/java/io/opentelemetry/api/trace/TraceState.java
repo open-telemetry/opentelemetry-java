@@ -70,7 +70,7 @@ public interface TraceState {
   boolean isEmpty();
 
   /** Iterates over all the key-value entries contained in this {@link TraceState}. */
-  void forEach(BiConsumer<String, String> consumer);
+  void forEach(BiConsumer<? super String, ? super String> consumer);
 
   /** Returns a read-only view of this {@link TraceState} as a {@link Map}. */
   Map<String, String> asMap();

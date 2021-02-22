@@ -44,7 +44,7 @@ abstract class ArrayBasedTraceState implements TraceState {
   }
 
   @Override
-  public void forEach(BiConsumer<String, String> consumer) {
+  public void forEach(BiConsumer<? super String, ? super String> consumer) {
     List<String> entries = getEntries();
     for (int i = 0; i < entries.size(); i += 2) {
       consumer.accept(entries.get(i), entries.get(i + 1));

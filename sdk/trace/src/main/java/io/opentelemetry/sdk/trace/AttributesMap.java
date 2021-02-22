@@ -67,11 +67,11 @@ final class AttributesMap implements Attributes {
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
-  public void forEach(BiConsumer<AttributeKey<?>, Object> consumer) {
+  public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer) {
     for (Map.Entry<AttributeKey<?>, Object> entry : data.entrySet()) {
       AttributeKey key = entry.getKey();
       Object value = entry.getValue();
-      consumer.accept(key, value);
+      consumer.accept((AttributeKey<?>) key, value);
     }
   }
 
