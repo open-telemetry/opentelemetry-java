@@ -65,7 +65,6 @@ public interface Tracer {
    *
    * @param spanName The name of the returned Span.
    * @return a {@code Span.Builder} to create and start a new {@code Span}.
-   * @throws NullPointerException if {@code spanName} is {@code null}.
    */
   SpanBuilder spanBuilder(String spanName);
 }
