@@ -69,7 +69,7 @@ final class AttributesMap implements Attributes {
   @Override
   public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer) {
     for (Map.Entry<AttributeKey<?>, Object> entry : data.entrySet()) {
-      AttributeKey key = entry.getKey();
+      AttributeKey<?> key = entry.getKey();
       Object value = entry.getValue();
       consumer.accept((AttributeKey<?>) key, value);
     }
