@@ -13,13 +13,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-/**
- * A map with a fixed capacity that drops attributes when the map gets full.
- *
- * <p>Note: this doesn't implement the Map interface, but behaves very similarly to one.
- */
+/** A map with a fixed capacity that drops attributes when the map gets full. */
 @SuppressWarnings({"rawtypes", "unchecked"})
 final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements Attributes {
+
+  private static final long serialVersionUID = -5072696312123632376L;
 
   private final long capacity;
   private int totalAddedValues = 0;
@@ -55,7 +53,7 @@ final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements At
     for (Map.Entry<AttributeKey<?>, Object> entry : entrySet()) {
       AttributeKey key = entry.getKey();
       Object value = entry.getValue();
-      consumer.accept(key, value);
+      consumer.accept((AttributeKey<?>) key, value);
     }
   }
 
@@ -73,7 +71,7 @@ final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements At
   public String toString() {
     return "AttributesMap{"
         + "data="
-        + this
+        + super.toString()
         + ", capacity="
         + capacity
         + ", totalAddedValues="
