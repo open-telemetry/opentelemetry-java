@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
@@ -47,11 +48,21 @@ final class MetricDataUtils {
   }
 
   static List<DoubleHistogramPointData> toDoubleHistogramPointList(
-      Map<Labels, HistogramAccumulation> accumulationMap, long startEpochNanos, long epochNanos) {
+      Map<Labels, HistogramAccumulation> accumulationMap,
+      long startEpochNanos,
+      long epochNanos,
+      ImmutableDoubleArray boundaries) {
     List<DoubleHistogramPointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, aggregator) ->
-            points.add(aggregator.toPoint(startEpochNanos, epochNanos, labels)));
+            points.add(DoubleHistogramPointData.create(
+                startEpochNanos,
+                epochNanos,
+                labels,
+                aggregator.getSum(),
+                aggregator.getCount(),
+                boundaries,
+                aggregator.getCounts())));
     return points;
   }
 }

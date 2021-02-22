@@ -17,15 +17,9 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
 
 final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumulation> {
-  private static final Logger logger = Logger.getLogger(DoubleHistogramAggregator.class.getName());
-
-  private static volatile boolean loggedMergingInvalidBoundaries = false;
-
   private final ImmutableDoubleArray boundaries;
 
   DoubleHistogramAggregator(
@@ -43,24 +37,13 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
     return new Handle(this.boundaries);
   }
 
+  /**
+   * Return the result of the merge of two histogram accumulations.
+   * As long as one Aggregator instance produces all Accumulations with constant boundaries we
+   * don't need to worry about merging accumulations with different boundaries.
+   */
   @Override
   public final HistogramAccumulation merge(HistogramAccumulation x, HistogramAccumulation y) {
-    if (!x.getBoundaries().equals(y.getBoundaries())) {
-      // If this happens, it's a pretty severe bug in the SDK.
-      if (!loggedMergingInvalidBoundaries) {
-        logger.log(
-            Level.SEVERE,
-            "can't merge histograms with different boundaries, something's very wrong: "
-                + "x.boundaries="
-                + x.getBoundaries()
-                + " y.boundaries="
-                + y.getBoundaries());
-        loggedMergingInvalidBoundaries = true;
-      }
-      return HistogramAccumulation.create(
-          0, 0, ImmutableDoubleArray.copyOf(new double[0]), ImmutableLongArray.of(0));
-    }
-
     long[] mergedCounts = new long[x.getCounts().length()];
     for (int i = 0; i < x.getCounts().length(); ++i) {
       mergedCounts[i] = x.getCounts().get(i) + y.getCounts().get(i);
@@ -68,7 +51,6 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
     return HistogramAccumulation.create(
         x.getCount() + y.getCount(),
         x.getSum() + y.getSum(),
-        x.getBoundaries(),
         ImmutableLongArray.copyOf(mergedCounts));
   }
 
@@ -89,19 +71,20 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
             MetricDataUtils.toDoubleHistogramPointList(
                 accumulationByLabels,
                 isStateful() ? startEpochNanos : lastCollectionEpoch,
-                epochNanos)));
+                epochNanos,
+                boundaries)));
   }
 
   @Override
   public HistogramAccumulation accumulateDouble(double value) {
     return HistogramAccumulation.create(
-        1, value, ImmutableDoubleArray.copyOf(new double[0]), ImmutableLongArray.of(1));
+        1, value, ImmutableLongArray.of(1));
   }
 
   @Override
   public HistogramAccumulation accumulateLong(long value) {
     return HistogramAccumulation.create(
-        1, value, ImmutableDoubleArray.copyOf(new double[0]), ImmutableLongArray.of(1));
+        1, value, ImmutableLongArray.of(1));
   }
 
   static final class Handle extends AggregatorHandle<HistogramAccumulation> {
@@ -146,7 +129,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
         totalCount += counts.get(i);
       }
 
-      return HistogramAccumulation.create(totalCount, sum, boundaries, counts);
+      return HistogramAccumulation.create(totalCount, sum, counts);
     }
 
     @Override
