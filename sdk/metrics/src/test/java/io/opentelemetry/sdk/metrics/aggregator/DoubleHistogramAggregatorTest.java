@@ -96,7 +96,7 @@ public class DoubleHistogramAggregatorTest {
     assertThat(aggregator.merge(x, y))
         .isEqualTo(
             HistogramAccumulation.create(
-                0, 0, ImmutableDoubleArray.of(), ImmutableLongArray.of(0)));
+                0, 0, ImmutableDoubleArray.copyOf(new double[0]), ImmutableLongArray.of(0)));
   }
 
   @Test
@@ -121,11 +121,11 @@ public class DoubleHistogramAggregatorTest {
     assertThat(aggregator.accumulateDouble(2.0))
         .isEqualTo(
             HistogramAccumulation.create(
-                1, 2.0, ImmutableDoubleArray.of(), ImmutableLongArray.of(1)));
+                1, 2.0, ImmutableDoubleArray.copyOf(new double[0]), ImmutableLongArray.of(1)));
     assertThat(aggregator.accumulateLong(10))
         .isEqualTo(
             HistogramAccumulation.create(
-                1, 10.0, ImmutableDoubleArray.of(), ImmutableLongArray.of(1)));
+                1, 10.0, ImmutableDoubleArray.copyOf(new double[0]), ImmutableLongArray.of(1)));
   }
 
   @Test

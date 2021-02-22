@@ -58,7 +58,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
         loggedMergingInvalidBoundaries = true;
       }
       return HistogramAccumulation.create(
-          0, 0, ImmutableDoubleArray.of(), ImmutableLongArray.of(0));
+          0, 0, ImmutableDoubleArray.copyOf(new double[0]), ImmutableLongArray.of(0));
     }
 
     long[] mergedCounts = new long[x.getCounts().length()];
@@ -95,13 +95,13 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   @Override
   public HistogramAccumulation accumulateDouble(double value) {
     return HistogramAccumulation.create(
-        1, value, ImmutableDoubleArray.of(), ImmutableLongArray.of(1));
+        1, value, ImmutableDoubleArray.copyOf(new double[0]), ImmutableLongArray.of(1));
   }
 
   @Override
   public HistogramAccumulation accumulateLong(long value) {
     return HistogramAccumulation.create(
-        1, value, ImmutableDoubleArray.of(), ImmutableLongArray.of(1));
+        1, value, ImmutableDoubleArray.copyOf(new double[0]), ImmutableLongArray.of(1));
   }
 
   static final class Handle extends AggregatorHandle<HistogramAccumulation> {

@@ -13,11 +13,6 @@ import javax.annotation.concurrent.Immutable;
 public class ImmutableDoubleArray {
   private static final ImmutableDoubleArray EMPTY = new ImmutableDoubleArray(new double[0]);
 
-  /** Returns the empty array. */
-  public static ImmutableDoubleArray of() {
-    return EMPTY;
-  }
-
   /** Returns an immutable array containing the given values, in order. */
   public static ImmutableDoubleArray copyOf(double[] values) {
     return values.length == 0
