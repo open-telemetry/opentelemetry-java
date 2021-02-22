@@ -173,6 +173,24 @@ class JaegerPropagatorTest {
   }
 
   @Test
+  void inject_nullContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    jaegerPropagator.inject(null, carrier, setter);
+    assertThat(carrier).isEmpty();
+  }
+
+  @Test
+  void inject_nullSetter() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    Context context =
+        withSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()),
+            Context.current());
+    jaegerPropagator.inject(context, carrier, null);
+    assertThat(carrier).isEmpty();
+  }
+
+  @Test
   void extract_Nothing() {
     // Context remains untouched.
     assertThat(
@@ -427,6 +445,21 @@ class JaegerPropagatorTest {
                 .put("meta", "meta-value")
                 .put("foo", "bar")
                 .build());
+  }
+
+  @Test
+  void extract_nullContext() {
+    assertThat(jaegerPropagator.extract(null, Collections.emptyMap(), getter))
+        .isSameAs(Context.root());
+  }
+
+  @Test
+  void extract_nullGetter() {
+    Context context =
+        withSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()),
+            Context.current());
+    assertThat(jaegerPropagator.extract(context, Collections.emptyMap(), null)).isSameAs(context);
   }
 
   private static String generateTraceIdHeaderValue(

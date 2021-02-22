@@ -8,9 +8,9 @@ package io.opentelemetry.extension.trace.propagation;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -19,14 +19,19 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
       Logger.getLogger(B3PropagatorExtractorSingleHeader.class.getName());
 
   @Override
-  public <C> Optional<Context> extract(Context context, C carrier, TextMapGetter<C> getter) {
-    Objects.requireNonNull(carrier, "carrier");
-    Objects.requireNonNull(getter, "getter");
+  public <C> Optional<Context> extract(
+      Context context, @Nullable C carrier, TextMapGetter<C> getter) {
+    if (context == null) {
+      return Optional.of(Context.root());
+    }
+    if (getter == null) {
+      return Optional.of(context);
+    }
     return extractSpanContextFromSingleHeader(context, carrier, getter);
   }
 
   private static <C> Optional<Context> extractSpanContextFromSingleHeader(
-      Context context, C carrier, TextMapGetter<C> getter) {
+      Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     String value = getter.get(carrier, B3Propagator.COMBINED_HEADER);
     if (StringUtils.isNullOrEmpty(value)) {
       return Optional.empty();
