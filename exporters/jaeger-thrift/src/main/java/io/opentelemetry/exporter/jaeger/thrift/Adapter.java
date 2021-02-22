@@ -96,7 +96,7 @@ final class Adapter {
               .setVStr(span.getKind().name().toLowerCase(Locale.ROOT)));
     }
 
-    if (span.getStatus().getDescription() != null) {
+    if (!span.getStatus().getDescription().isEmpty()) {
       tags.add(
           new Tag(KEY_SPAN_STATUS_MESSAGE, TagType.STRING)
               .setVStr(span.getStatus().getDescription()));

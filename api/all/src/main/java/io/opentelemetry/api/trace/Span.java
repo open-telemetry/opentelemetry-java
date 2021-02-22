@@ -278,7 +278,7 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span setStatus(StatusCode statusCode) {
-    return setStatus(statusCode, null);
+    return setStatus(statusCode, "");
   }
 
   /**
