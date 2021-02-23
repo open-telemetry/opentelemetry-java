@@ -117,7 +117,6 @@ public interface SpanBuilder {
    *
    * @param context the {@code Context}.
    * @return this.
-   * @throws NullPointerException if {@code context} is {@code null}.
    */
   SpanBuilder setParent(Context context);
 
@@ -140,7 +139,6 @@ public interface SpanBuilder {
    *
    * @param spanContext the context of the linked {@code Span}.
    * @return this.
-   * @throws NullPointerException if {@code spanContext} is {@code null}.
    */
   SpanBuilder addLink(SpanContext spanContext);
 
@@ -154,8 +152,6 @@ public interface SpanBuilder {
    * @param spanContext the context of the linked {@code Span}.
    * @param attributes the attributes of the {@code Link}.
    * @return this.
-   * @throws NullPointerException if {@code spanContext} is {@code null}.
-   * @throws NullPointerException if {@code attributes} is {@code null}.
    */
   SpanBuilder addLink(SpanContext spanContext, Attributes attributes);
 
@@ -172,7 +168,6 @@ public interface SpanBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
-   * @throws NullPointerException if {@code key} is {@code null}.
    */
   SpanBuilder setAttribute(String key, String value);
 
@@ -186,7 +181,6 @@ public interface SpanBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
-   * @throws NullPointerException if {@code key} is {@code null}.
    */
   SpanBuilder setAttribute(String key, long value);
 
@@ -200,7 +194,6 @@ public interface SpanBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
-   * @throws NullPointerException if {@code key} is {@code null}.
    */
   SpanBuilder setAttribute(String key, double value);
 
@@ -214,7 +207,6 @@ public interface SpanBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
-   * @throws NullPointerException if {@code key} is {@code null}.
    */
   SpanBuilder setAttribute(String key, boolean value);
 
@@ -227,8 +219,6 @@ public interface SpanBuilder {
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @return this.
-   * @throws NullPointerException if {@code key} is {@code null}.
-   * @throws NullPointerException if {@code value} is {@code null}.
    */
   <T> SpanBuilder setAttribute(AttributeKey<T> key, T value);
 
