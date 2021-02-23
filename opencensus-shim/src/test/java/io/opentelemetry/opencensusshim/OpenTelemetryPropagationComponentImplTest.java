@@ -33,8 +33,8 @@ public class OpenTelemetryPropagationComponentImplTest {
 
   @Test
   public void implementationOfBinary() {
-    assertThat(propagationComponent.getBinaryFormat())
-        .isInstanceOf(OpenTelemetryBinaryFormatImpl.class);
+    assertThat(propagationComponent.getBinaryFormat().getClass().getName())
+        .isEqualTo("io.opencensus.implcore.trace.propagation.BinaryFormatImpl");
   }
 
   @Test

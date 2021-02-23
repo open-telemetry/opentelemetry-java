@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
@@ -26,8 +26,7 @@ public class SynchronousInstrumentAccumulatorTest {
   private final TestClock testClock = TestClock.create();
   private final Aggregator<Long> aggregator =
       AggregatorFactory.lastValue()
-          .create(
-              Resource.getEmpty(), InstrumentationLibraryInfo.create("test", "1.0"), DESCRIPTOR);
+          .create(Resource.empty(), InstrumentationLibraryInfo.create("test", "1.0"), DESCRIPTOR);
 
   @Test
   void sameAggregator_ForSameLabelSet() {

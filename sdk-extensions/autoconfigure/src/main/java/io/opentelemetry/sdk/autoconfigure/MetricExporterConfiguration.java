@@ -5,12 +5,14 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReaderBuilder;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
@@ -22,15 +24,27 @@ final class MetricExporterConfiguration {
       String name, ConfigProperties config, SdkMeterProvider meterProvider) {
     switch (name) {
       case "otlp":
-      case "otlp_metrics":
         configureOtlpMetrics(config, meterProvider);
         return;
       case "prometheus":
         configurePrometheusMetrics(config, meterProvider);
         return;
+      case "logging":
+        ClasspathUtil.checkClassExists(
+            "io.opentelemetry.exporter.logging.LoggingMetricExporter",
+            "Logging Metrics Exporter",
+            "opentelemetry-exporter-logging");
+        configureLoggingMetrics(config, meterProvider);
+        return;
       default:
         return;
     }
+  }
+
+  private static void configureLoggingMetrics(
+      ConfigProperties config, SdkMeterProvider meterProvider) {
+    MetricExporter exporter = new LoggingMetricExporter();
+    configureIntervalMetricReader(config, meterProvider, exporter);
   }
 
   // Visible for testing
@@ -56,6 +70,13 @@ final class MetricExporterConfiguration {
 
     OtlpGrpcMetricExporter exporter = builder.build();
 
+    configureIntervalMetricReader(config, meterProvider, exporter);
+
+    return exporter;
+  }
+
+  private static void configureIntervalMetricReader(
+      ConfigProperties config, SdkMeterProvider meterProvider, MetricExporter exporter) {
     IntervalMetricReaderBuilder readerBuilder =
         IntervalMetricReader.builder()
             .setMetricProducers(Collections.singleton(meterProvider))
@@ -66,8 +87,6 @@ final class MetricExporterConfiguration {
     }
     IntervalMetricReader reader = readerBuilder.build();
     Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
-
-    return exporter;
   }
 
   private static void configurePrometheusMetrics(

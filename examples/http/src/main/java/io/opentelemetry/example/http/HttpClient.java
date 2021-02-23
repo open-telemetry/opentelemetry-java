@@ -7,11 +7,13 @@ package io.opentelemetry.example.http;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,7 +23,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 
-public class HttpClient {
+public final class HttpClient {
 
   // it's important to initialize the OpenTelemetry SDK as early in your applications lifecycle as
   // possible.
@@ -34,8 +36,7 @@ public class HttpClient {
 
   // Export traces to log
   // Inject the span context into the request
-  private static final TextMapPropagator.Setter<HttpURLConnection> setter =
-      URLConnection::setRequestProperty;
+  private static final TextMapSetter<HttpURLConnection> setter = URLConnection::setRequestProperty;
 
   private void makeRequest() throws IOException {
     int port = 8080;
@@ -47,7 +48,7 @@ public class HttpClient {
 
     // Name convention for the Span is not yet defined.
     // See: https://github.com/open-telemetry/opentelemetry-specification/issues/270
-    Span span = tracer.spanBuilder("/").setSpanKind(Span.Kind.CLIENT).startSpan();
+    Span span = tracer.spanBuilder("/").setSpanKind(SpanKind.CLIENT).startSpan();
     try (Scope scope = span.makeCurrent()) {
       span.setAttribute(SemanticAttributes.HTTP_METHOD, "GET");
       span.setAttribute("component", "http");

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,10 +14,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-class ConfigProperties {
+/**
+ * Properties to be used for auto-configuration of the OpenTelemetry SDK components. These
+ * properties will be a combination of system properties and environment variables. The properties
+ * for both of these will be normalized to be all lower case, and underscores will be replaced with
+ * periods.
+ */
+public final class ConfigProperties {
 
   private final Map<String, String> config;
 
@@ -34,19 +42,31 @@ class ConfigProperties {
     environmentVariables.forEach(
         (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
     systemProperties.forEach(
-        (key, value) -> config.put(((String) key).toLowerCase(Locale.ROOT), (String) value));
+        (key, value) ->
+            config.put(((String) key).toLowerCase(Locale.ROOT).replace('-', '.'), (String) value));
 
     this.config = config;
   }
 
+  /**
+   * Returns a string-valued configuration property.
+   *
+   * @return null if the property has not been configured.
+   */
   @Nullable
-  String getString(String name) {
+  public String getString(String name) {
     return config.get(name);
   }
 
+  /**
+   * Returns a integer-valued configuration property.
+   *
+   * @return null if the property has not been configured.
+   * @throws NumberFormatException if the property is not a valid integer.
+   */
   @Nullable
   @SuppressWarnings("UnusedException")
-  Integer getInt(String name) {
+  public Integer getInt(String name) {
     String value = config.get(name);
     if (value == null || value.isEmpty()) {
       return null;
@@ -58,9 +78,15 @@ class ConfigProperties {
     }
   }
 
+  /**
+   * Returns a long-valued configuration property.
+   *
+   * @return null if the property has not been configured.
+   * @throws NumberFormatException if the property is not a valid long.
+   */
   @Nullable
   @SuppressWarnings("UnusedException")
-  Long getLong(String name) {
+  public Long getLong(String name) {
     String value = config.get(name);
     if (value == null || value.isEmpty()) {
       return null;
@@ -72,9 +98,15 @@ class ConfigProperties {
     }
   }
 
+  /**
+   * Returns a double-valued configuration property.
+   *
+   * @return null if the property has not been configured.
+   * @throws NumberFormatException if the property is not a valid double.
+   */
   @Nullable
   @SuppressWarnings("UnusedException")
-  Double getDouble(String name) {
+  public Double getDouble(String name) {
     String value = config.get(name);
     if (value == null || value.isEmpty()) {
       return null;
@@ -86,7 +118,13 @@ class ConfigProperties {
     }
   }
 
-  List<String> getCommaSeparatedValues(String name) {
+  /**
+   * Returns a list-valued configuration property. The format of the original value must be
+   * comma-separated. Empty values will be removed.
+   *
+   * @return an empty list if the property has not been configured.
+   */
+  public List<String> getCommaSeparatedValues(String name) {
     String value = config.get(name);
     if (value == null) {
       return Collections.emptyList();
@@ -94,7 +132,64 @@ class ConfigProperties {
     return filterBlanksAndNulls(value.split(","));
   }
 
-  Map<String, String> getCommaSeparatedMap(String name) {
+  /**
+   * Returns a duration property from the map, or {@code null} if it cannot be found or it has a
+   * wrong type.
+   *
+   * <p>Durations can be of the form "{number}{unit}", where unit is one of:
+   *
+   * <ul>
+   *   <li>ms
+   *   <li>s
+   *   <li>m
+   *   <li>h
+   *   <li>d
+   * </ul>
+   *
+   * <p>If no unit is specified, milliseconds is the assumed duration unit.
+   *
+   * @param name The property name
+   * @return the {@link Duration} value of the property, {@code null} if the property cannot be
+   *     found.
+   * @throws ConfigurationException for malformed duration strings.
+   */
+  @Nullable
+  @SuppressWarnings("UnusedException")
+  public Duration getDuration(String name) {
+    String value = config.get(name);
+    if (value == null || value.isEmpty()) {
+      return null;
+    }
+    String unitString = getUnitString(value);
+    // TODO: Environment variables have unknown encoding.  `trim()` may cut codepoints oddly
+    // but likely we'll fail for malformed unit string either way.
+    String numberString = value.substring(0, value.length() - unitString.length());
+    try {
+      long rawNumber = Long.parseLong(numberString.trim());
+      TimeUnit unit = getDurationUnit(unitString.trim());
+      return Duration.ofMillis(TimeUnit.MILLISECONDS.convert(rawNumber, unit));
+    } catch (NumberFormatException ex) {
+      throw new ConfigurationException(
+          "Invalid duration property "
+              + name
+              + "="
+              + value
+              + ". Expected number, found: "
+              + numberString);
+    } catch (ConfigurationException ex) {
+      throw new ConfigurationException(
+          "Invalid duration property " + name + "=" + value + ". " + ex.getMessage());
+    }
+  }
+
+  /**
+   * Returns a map-valued configuration property. The format of the original value must be
+   * comma-separated for each key, with an '=' separating the key and value. For instance, <code>
+   * service.name=Greatest Service,host.name=localhost</code> Empty values will be removed.
+   *
+   * @return an empty list if the property has not been configured.
+   */
+  public Map<String, String> getCommaSeparatedMap(String name) {
     return getCommaSeparatedValues(name).stream()
         .map(keyValuePair -> filterBlanksAndNulls(keyValuePair.split("=", 2)))
         .map(
@@ -113,7 +208,13 @@ class ConfigProperties {
                 Map.Entry::getKey, Map.Entry::getValue, (first, next) -> next, LinkedHashMap::new));
   }
 
-  boolean getBoolean(String name) {
+  /**
+   * Returns a boolean-valued configuration property. Uses the same rules as {@link
+   * Boolean#parseBoolean(String)} for handling the values.
+   *
+   * @return false if the property has not been configured.
+   */
+  public boolean getBoolean(String name) {
     return Boolean.parseBoolean(config.get(name));
   }
 
@@ -128,5 +229,42 @@ class ConfigProperties {
         .map(String::trim)
         .filter(s -> !s.isEmpty())
         .collect(Collectors.toList());
+  }
+
+  /** Returns the TimeUnit associated with a unit string. Defaults to milliseconds. */
+  private static TimeUnit getDurationUnit(String unitString) {
+    switch (unitString) {
+      case "": // Falllthrough expected
+      case "ms":
+        return TimeUnit.MILLISECONDS;
+      case "s":
+        return TimeUnit.SECONDS;
+      case "m":
+        return TimeUnit.MINUTES;
+      case "h":
+        return TimeUnit.HOURS;
+      case "d":
+        return TimeUnit.DAYS;
+      default:
+        throw new ConfigurationException("Invalid duration string, found: " + unitString);
+    }
+  }
+
+  /**
+   * Fragments the 'units' portion of a config value from the 'value' portion.
+   *
+   * <p>E.g. "1ms" would return the string "ms".
+   */
+  private static String getUnitString(String rawValue) {
+    int lastDigitIndex = rawValue.length() - 1;
+    while (lastDigitIndex >= 0) {
+      char c = rawValue.charAt(lastDigitIndex);
+      if (Character.isDigit(c)) {
+        break;
+      }
+      lastDigitIndex -= 1;
+    }
+    // Pull everything after the last digit.
+    return rawValue.substring(lastDigitIndex + 1);
   }
 }

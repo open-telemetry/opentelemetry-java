@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.export;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -42,7 +42,7 @@ class IntervalMetricReaderTest {
 
   private static final MetricData METRIC_DATA =
       MetricData.createLongSum(
-          Resource.getEmpty(),
+          Resource.empty(),
           InstrumentationLibraryInfo.create("IntervalMetricReaderTest", null),
           "my metric",
           "my metric description",
@@ -51,7 +51,6 @@ class IntervalMetricReaderTest {
               /* isMonotonic= */ true, AggregationTemporality.CUMULATIVE, LONG_POINT_LIST));
 
   @Mock private MetricProducer metricProducer;
-  @Mock private MetricExporter metricExporter;
 
   @BeforeEach
   void setup() {

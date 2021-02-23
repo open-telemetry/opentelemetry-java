@@ -20,7 +20,6 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
-import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyParameters;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.Sampling.SamplingStrategyType;
 import io.opentelemetry.sdk.extension.trace.jaeger.proto.api_v2.SamplingManagerGrpc;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -93,7 +92,7 @@ class JaegerRemoteSamplerTest {
 
   @Test
   void connectionWorks() throws Exception {
-    ArgumentCaptor<SamplingStrategyParameters> requestCaptor =
+    ArgumentCaptor<Sampling.SamplingStrategyParameters> requestCaptor =
         ArgumentCaptor.forClass(Sampling.SamplingStrategyParameters.class);
 
     JaegerRemoteSampler sampler =

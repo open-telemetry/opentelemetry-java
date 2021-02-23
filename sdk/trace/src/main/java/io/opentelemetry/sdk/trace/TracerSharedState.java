@@ -8,11 +8,10 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 
 // Represents the shared state/config between all Tracers created by the same TracerProvider.
 final class TracerSharedState {
@@ -21,23 +20,24 @@ final class TracerSharedState {
   private final IdGenerator idGenerator;
   private final Resource resource;
 
-  private final Supplier<TraceConfig> traceConfigSupplier;
+  private final Supplier<SpanLimits> spanLimitsSupplier;
+  private final Sampler sampler;
   private final SpanProcessor activeSpanProcessor;
 
-  @GuardedBy("lock")
-  @Nullable
-  private volatile CompletableResultCode shutdownResult = null;
+  @Nullable private volatile CompletableResultCode shutdownResult = null;
 
   TracerSharedState(
       Clock clock,
       IdGenerator idGenerator,
       Resource resource,
-      Supplier<TraceConfig> traceConfigSupplier,
+      Supplier<SpanLimits> spanLimitsSupplier,
+      Sampler sampler,
       List<SpanProcessor> spanProcessors) {
     this.clock = clock;
     this.idGenerator = idGenerator;
     this.resource = resource;
-    this.traceConfigSupplier = traceConfigSupplier;
+    this.spanLimitsSupplier = spanLimitsSupplier;
+    this.sampler = sampler;
     activeSpanProcessor = SpanProcessor.composite(spanProcessors);
   }
 
@@ -53,13 +53,14 @@ final class TracerSharedState {
     return resource;
   }
 
-  /**
-   * Returns the active {@code TraceConfig}.
-   *
-   * @return the active {@code TraceConfig}.
-   */
-  TraceConfig getActiveTraceConfig() {
-    return traceConfigSupplier.get();
+  /** Returns the current {@link SpanLimits}. */
+  SpanLimits getSpanLimits() {
+    return spanLimitsSupplier.get();
+  }
+
+  /** Returns the configured {@link Sampler}. */
+  Sampler getSampler() {
+    return sampler;
   }
 
   /**
@@ -72,18 +73,17 @@ final class TracerSharedState {
   }
 
   /**
-   * Returns {@code true} if tracing is stopped.
+   * Returns {@code true} if tracing has been shut down.
    *
-   * @return {@code true} if tracing is stopped.
+   * @return {@code true} if tracing has been shut down.
    */
-  boolean isStopped() {
-    synchronized (lock) {
-      return shutdownResult != null && shutdownResult.isSuccess();
-    }
+  boolean hasBeenShutdown() {
+    return shutdownResult != null;
   }
 
   /**
-   * Stops tracing, including shutting down processors and set to {@code true} {@link #isStopped()}.
+   * Stops tracing, including shutting down processors and set to {@code true} {@link
+   * #hasBeenShutdown()}.
    *
    * @return a {@link CompletableResultCode} that will be completed when the span processor is shut
    *     down.

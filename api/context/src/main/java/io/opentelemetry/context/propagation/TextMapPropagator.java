@@ -82,7 +82,7 @@ public interface TextMapPropagator {
 
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
-   * before calling {@link #inject(Context, Object, Setter)} )}.
+   * before calling {@link #inject(Context, Object, TextMapSetter)} )}.
    *
    * <p>For example, if the carrier is a single-use or immutable request object, you don't need to
    * clear fields as they couldn't have been set before. If it is a mutable, retryable object,
@@ -97,39 +97,15 @@ public interface TextMapPropagator {
 
   /**
    * Injects the value downstream, for example as HTTP headers. The carrier may be null to
-   * facilitate calling this method with a lambda for the {@link Setter}, in which case that null
-   * will be passed to the {@link Setter} implementation.
+   * facilitate calling this method with a lambda for the {@link TextMapSetter}, in which case that
+   * null will be passed to the {@link TextMapSetter} implementation.
    *
    * @param context the {@code Context} containing the value to be injected.
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param setter invoked for each propagation key to add or remove.
    * @param <C> carrier of propagation fields, such as an http request
    */
-  <C> void inject(Context context, @Nullable C carrier, Setter<C> setter);
-
-  /**
-   * Class that allows a {@code TextMapPropagator} to set propagated fields into a carrier.
-   *
-   * <p>{@code Setter} is stateless and allows to be saved as a constant to avoid runtime
-   * allocations.
-   *
-   * @param <C> carrier of propagation fields, such as an http request
-   */
-  interface Setter<C> {
-
-    /**
-     * Replaces a propagated field with the given value.
-     *
-     * <p>For example, a setter for an {@link java.net.HttpURLConnection} would be the method
-     * reference {@link java.net.HttpURLConnection#addRequestProperty(String, String)}
-     *
-     * @param carrier holds propagation fields. For example, an outgoing message or http request. To
-     *     facilitate implementations as java lambdas, this parameter may be null.
-     * @param key the key of the field.
-     * @param value the value of the field.
-     */
-    void set(@Nullable C carrier, String key, String value);
-  }
+  <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter);
 
   /**
    * Extracts the value from upstream. For example, as http headers.
@@ -144,34 +120,5 @@ public interface TextMapPropagator {
    * @param <C> carrier of propagation fields, such as an http request.
    * @return the {@code Context} containing the extracted value.
    */
-  <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter);
-
-  /**
-   * Interface that allows a {@code TextMapPropagator} to read propagated fields from a carrier.
-   *
-   * <p>{@code Getter} is stateless and allows to be saved as a constant to avoid runtime
-   * allocations.
-   *
-   * @param <C> carrier of propagation fields, such as an http request.
-   */
-  interface Getter<C> {
-
-    /**
-     * Returns all the keys in the given carrier.
-     *
-     * @param carrier carrier of propagation fields, such as an http request.
-     * @since 0.10.0
-     */
-    Iterable<String> keys(C carrier);
-
-    /**
-     * Returns the first value of the given propagation {@code key} or returns {@code null}.
-     *
-     * @param carrier carrier of propagation fields, such as an http request.
-     * @param key the key of the field.
-     * @return the first value of the given propagation {@code key} or returns {@code null}.
-     */
-    @Nullable
-    String get(@Nullable C carrier, String key);
-  }
+  <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter);
 }

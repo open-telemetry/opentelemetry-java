@@ -11,7 +11,9 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -38,16 +40,16 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, C carrier, Setter<C> setter) {
+  public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
     Baggage baggage = Baggage.fromContext(context);
     if (baggage.isEmpty()) {
       return;
     }
     StringBuilder headerContent = new StringBuilder();
     baggage.forEach(
-        (key, value, metadata) -> {
-          headerContent.append(key).append("=").append(value);
-          String metadataValue = metadata.getValue();
+        (key, baggageEntry) -> {
+          headerContent.append(key).append("=").append(baggageEntry.getValue());
+          String metadataValue = baggageEntry.getMetadata().getValue();
           if (metadataValue != null && !metadataValue.isEmpty()) {
             headerContent.append(";").append(metadataValue);
           }
@@ -60,7 +62,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     String baggageHeader = getter.get(carrier, FIELD);
     if (baggageHeader == null) {
       return context;
@@ -72,13 +74,12 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     BaggageBuilder baggageBuilder = Baggage.builder();
     try {
       extractEntries(baggageHeader, baggageBuilder);
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       return context.with(Baggage.empty());
     }
     return context.with(baggageBuilder.build());
   }
 
-  @SuppressWarnings("StringSplitter")
   private static void extractEntries(String baggageHeader, BaggageBuilder baggageBuilder) {
     // todo: optimize this implementation; it can probably done with a single pass through the
     // string.

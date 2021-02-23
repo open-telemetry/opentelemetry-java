@@ -7,14 +7,16 @@ package io.opentelemetry.sdk.trace.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.SpanLimits;
+import javax.annotation.concurrent.Immutable;
 
 /**
- * Data representation of a Link.
+ * Data representation of a link.
  *
  * <p>Used (for example) in batching operations, where a single batch handler processes multiple
  * requests from different traces. Link can be also used to reference spans from the same trace.
  */
+@Immutable
 public interface LinkData {
 
   /**
@@ -64,7 +66,7 @@ public interface LinkData {
    * The total number of attributes that were recorded on this Link. This number may be larger than
    * the number of attributes that are attached to this span, if the total number recorded was
    * greater than the configured maximum value. See: {@link
-   * TraceConfig#getMaxNumberOfAttributesPerLink()}
+   * SpanLimits#getMaxNumberOfAttributesPerLink()}
    *
    * @return The number of attributes on this link.
    */

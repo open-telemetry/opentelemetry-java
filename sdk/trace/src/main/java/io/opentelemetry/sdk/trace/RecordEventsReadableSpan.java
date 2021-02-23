@@ -10,12 +10,12 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -42,7 +42,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private static final Logger logger = Logger.getLogger(RecordEventsReadableSpan.class.getName());
 
   // The config used when constructing this Span.
-  private final TraceConfig traceConfig;
+  private final SpanLimits spanLimits;
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
   // The parent SpanContext of this span. Invalid if this is a root span.
@@ -55,7 +55,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   // Number of links recorded.
   private final int totalRecordedLinks;
   // The kind of the span.
-  private final Kind kind;
+  private final SpanKind kind;
   // The clock used to get the time.
   private final Clock clock;
   // The resource associated with this span.
@@ -94,9 +94,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       SpanContext context,
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      Kind kind,
+      SpanKind kind,
       SpanContext parentSpanContext,
-      TraceConfig traceConfig,
+      SpanLimits spanLimits,
       SpanProcessor spanProcessor,
       Clock clock,
       Resource resource,
@@ -118,7 +118,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
     this.events = new ArrayList<>();
-    this.traceConfig = traceConfig;
+    this.spanLimits = spanLimits;
   }
 
   /**
@@ -129,7 +129,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param kind the span kind.
    * @param parentSpanContext the parent span context, or {@link SpanContext#getInvalid()} if this
    *     span is a root span.
-   * @param traceConfig trace parameters like sampler and probability.
+   * @param spanLimits trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
    * @param clock the clock used to get the time.
    * @param resource the resource associated with this span.
@@ -141,10 +141,10 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       SpanContext context,
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      Kind kind,
+      SpanKind kind,
       @Nullable SpanContext parentSpanContext,
       @Nonnull Context parentContext,
-      TraceConfig traceConfig,
+      SpanLimits spanLimits,
       SpanProcessor spanProcessor,
       Clock clock,
       Resource resource,
@@ -159,7 +159,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             instrumentationLibraryInfo,
             kind,
             parentSpanContext,
-            traceConfig,
+            spanLimits,
             spanProcessor,
             clock,
             resource,
@@ -260,11 +260,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         return this;
       }
       if (attributes == null) {
-        attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
-      }
-
-      if (traceConfig.shouldTruncateStringAttributeValues()) {
-        value = StringUtils.truncateToSize(key, value, traceConfig.getMaxLengthOfAttributeValues());
+        attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
       }
 
       attributes.put(key, value);
@@ -283,7 +279,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public ReadWriteSpan addEvent(String name, long timestamp, TimeUnit unit) {
-    if (name == null) {
+    if (name == null || unit == null) {
       return this;
     }
     addTimedEvent(EventData.create(unit.toNanos(timestamp), name, Attributes.empty(), 0));
@@ -295,27 +291,33 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (name == null) {
       return this;
     }
+    if (attributes == null) {
+      attributes = Attributes.empty();
+    }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         EventData.create(
             clock.now(),
             name,
-            copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
+            copyAndLimitAttributes(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
     return this;
   }
 
   @Override
   public ReadWriteSpan addEvent(String name, Attributes attributes, long timestamp, TimeUnit unit) {
-    if (name == null) {
+    if (name == null || unit == null) {
       return this;
+    }
+    if (attributes == null) {
+      attributes = Attributes.empty();
     }
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         EventData.create(
             unit.toNanos(timestamp),
             name,
-            copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
+            copyAndLimitAttributes(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
     return this;
   }
@@ -344,7 +346,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
-      if (events.size() < traceConfig.getMaxNumberOfEvents()) {
+      if (events.size() < spanLimits.getMaxNumberOfEvents()) {
         events.add(timedEvent);
       }
       totalRecordedEvents++;
@@ -463,7 +465,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
-  public Kind getKind() {
+  public SpanKind getKind() {
     return kind;
   }
 
@@ -514,9 +516,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
     StringBuilder sb = new StringBuilder();
     sb.append("RecordEventsReadableSpan{traceId=");
-    sb.append(context.getTraceIdAsHexString());
+    sb.append(context.getTraceId());
     sb.append(", spanId=");
-    sb.append(context.getSpanIdAsHexString());
+    sb.append(context.getSpanId());
     sb.append(", parentSpanContext=");
     sb.append(parentSpanContext);
     sb.append(", name=");

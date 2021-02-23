@@ -24,7 +24,7 @@ class AggregatorFactoryTest {
     assertThat(
             count.create(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
@@ -35,7 +35,7 @@ class AggregatorFactoryTest {
     assertThat(
             count.create(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
@@ -51,7 +51,7 @@ class AggregatorFactoryTest {
     assertThat(
             lastValue.create(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
@@ -62,7 +62,7 @@ class AggregatorFactoryTest {
     assertThat(
             lastValue.create(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
@@ -78,7 +78,7 @@ class AggregatorFactoryTest {
     assertThat(
             minMaxSumCount.create(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
@@ -89,7 +89,7 @@ class AggregatorFactoryTest {
     assertThat(
             minMaxSumCount.create(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
@@ -105,7 +105,7 @@ class AggregatorFactoryTest {
     assertThat(
             sum.create(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
@@ -116,7 +116,7 @@ class AggregatorFactoryTest {
     assertThat(
             sum.create(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
@@ -134,7 +134,7 @@ class AggregatorFactoryTest {
     assertThat(
             histogram.create(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
@@ -145,7 +145,7 @@ class AggregatorFactoryTest {
     assertThat(
             histogram.create(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name",
                     "description",
@@ -158,7 +158,7 @@ class AggregatorFactoryTest {
             histogram
                 .create(
                     Resource.getDefault(),
-                    InstrumentationLibraryInfo.getEmpty(),
+                    InstrumentationLibraryInfo.empty(),
                     InstrumentDescriptor.create(
                         "name",
                         "description",
@@ -172,7 +172,7 @@ class AggregatorFactoryTest {
                     ImmutableDoubleArray.copyOf(new double[] {1.0}), /* stateful= */ true)
                 .create(
                     Resource.getDefault(),
-                    InstrumentationLibraryInfo.getEmpty(),
+                    InstrumentationLibraryInfo.empty(),
                     InstrumentDescriptor.create(
                         "name",
                         "description",

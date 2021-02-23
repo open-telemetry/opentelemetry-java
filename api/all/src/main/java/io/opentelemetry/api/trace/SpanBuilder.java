@@ -13,7 +13,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nonnull;
 
 /**
  * {@link SpanBuilder} is used to construct {@link Span} instances which define arbitrary scopes of
@@ -175,7 +174,7 @@ public interface SpanBuilder {
    * @return this.
    * @throws NullPointerException if {@code key} is {@code null}.
    */
-  SpanBuilder setAttribute(String key, @Nonnull String value);
+  SpanBuilder setAttribute(String key, String value);
 
   /**
    * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
@@ -231,16 +230,16 @@ public interface SpanBuilder {
    * @throws NullPointerException if {@code key} is {@code null}.
    * @throws NullPointerException if {@code value} is {@code null}.
    */
-  <T> SpanBuilder setAttribute(AttributeKey<T> key, @Nonnull T value);
+  <T> SpanBuilder setAttribute(AttributeKey<T> key, T value);
 
   /**
-   * Sets the {@link Span.Kind} for the newly created {@code Span}. If not called, the
-   * implementation will provide a default value {@link Span.Kind#INTERNAL}.
+   * Sets the {@link SpanKind} for the newly created {@code Span}. If not called, the implementation
+   * will provide a default value {@link SpanKind#INTERNAL}.
    *
    * @param spanKind the kind of the newly created {@code Span}.
    * @return this.
    */
-  SpanBuilder setSpanKind(Span.Kind spanKind);
+  SpanBuilder setSpanKind(SpanKind spanKind);
 
   /**
    * Sets an explicit start timestamp for the newly created {@code Span}.

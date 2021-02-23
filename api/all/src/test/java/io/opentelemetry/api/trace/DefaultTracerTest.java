@@ -6,7 +6,6 @@
 package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
@@ -16,23 +15,14 @@ import org.junit.jupiter.api.Test;
 // try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
 class DefaultTracerTest {
-  private static final Tracer defaultTracer = Tracer.getDefault();
+  private static final Tracer defaultTracer = DefaultTracer.getInstance();
   private static final String SPAN_NAME = "MySpanName";
-  private static final byte[] firstBytes =
-      new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
-  private static final byte[] spanBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final SpanContext spanContext =
       SpanContext.create(
-          TraceId.bytesToHex(firstBytes),
-          SpanId.bytesToHex(spanBytes),
+          "00000000000000000000000000000061",
+          "0000000000000061",
           TraceFlags.getDefault(),
           TraceState.getDefault());
-
-  @Test
-  void spanBuilderWithName_NullName() {
-    assertThatThrownBy(() -> defaultTracer.spanBuilder(null))
-        .isInstanceOf(NullPointerException.class);
-  }
 
   @Test
   void defaultSpanBuilderWithName() {
@@ -63,12 +53,6 @@ class DefaultTracerTest {
   void noSpanContextMakesInvalidSpans() {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
     assertThat(span.getSpanContext()).isSameAs(SpanContext.getInvalid());
-  }
-
-  @Test
-  void testSpanContextPropagation_nullContext() {
-    assertThatThrownBy(() -> defaultTracer.spanBuilder(SPAN_NAME).setParent(null))
-        .isInstanceOf(NullPointerException.class);
   }
 
   @Test

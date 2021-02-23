@@ -2,6 +2,191 @@
 
 ## Unreleased:
 
+## Version 0.17.1 - 2021-02-19
+
+- Removed the unused `ResourceProvider` interface from the SDK. This interface is still available 
+in the `opentelemetry-sdk-extension-autoconfigure` module, where it is actually used.
+
+## Version 0.17.0 - 2021-02-17 - RC#3
+
+### General
+
+Note: In an effort to accelerate our work toward a 1.0.0 release, we have skipped the deprecation phase
+on a number of breaking changes. We apologize for the inconvenience this may have caused. We are very
+aware that these changes will impact users. If you need assistance in migrating from previous releases,
+please open a [discussion topic](https://github.com/opentelemetry/opentelemetry-java/discussions) at
+[https://github.com/opentelemetry/opentelemetry-java/discussions](https://github.com/opentelemetry/opentelemetry-java/discussions).
+
+####
+
+Many classes have been made final that previously were not. Please reach out if you have a need to 
+provide extended functionality, and we can figure out how best to solve your use-case.
+
+### API
+
+#### Breaking Changes
+
+- `TraceStateBuilder.set(String, String)` has been renamed to `TraceStateBuilder.put(String, String)`.
+- `BaggageBuilder.setParent()` and `BaggageBuilder.setNoParent()` have been removed from the Baggage APIs. 
+In addition, Baggage will no longer be implicitly generated from Baggage that is in the current context. You now must explicitly
+get the `Baggage` instance from the `Context` and call `toBuilder()` on it in order to get the entries pre-populated in your builder.
+- `TextMapPropagator.Setter` and `TextMapPropagator.Getter` have been moved to the top level and renamed to 
+`TextMapSetter` and `TextMapGetter` respectively.
+- `OpenTelemetry.getDefault()` has been renamed to `OpenTelemetry.noop()`.
+- `OpenTelemetry.getPropagating()` has been renamed to `OpenTelemetry.propagating()`.
+- `TracerProvider.getDefault()` has been renamed to `TracerProvider.noop()`
+- `Tracer.getDefault()` has been removed.
+- `TraceId.getTraceIdRandomPart(CharSequence)` has been removed.
+- The `B3Propagator.getInstance()` has been renamed to `B3Propagator.injectingSingleHeader()`.
+- The `B3Propagator.builder()` method has been removed. As a replacement, you can use `B3Propagator.injectingMultiHeaders()` directly.
+
+### SDK
+
+#### Breaking Changes
+
+- The SPI for configuring Resource auto-populators has been removed from the SDK and moved to the `opentelemetry-sdk-extension-autoconfigure` module. 
+This means that `Resource.getDefault()` will no longer be populated via SPI, but only include the bare minimum values from the SDK itself.
+In order to get the auto-configured Resource attributes, you will need to use the `opentelemetry-sdk-extension-autoconfigure` module directly.
+- `InstrumentationLibraryInfo.getEmpty()` has been renamed to `InstrumentationLibraryInfo.empty()`.
+- `Resource.getEmpty()` has been renamed to `Resource.empty()`.
+- When specifying the endpoints for grpc-based exporters, you now are required to specify the protocol. Hence, you must include
+the `http://` or `https://` in front of your endpoint.
+- The option on `SpanLimits` to truncate String-valued Span attributes has been removed (this is still pending in the specification). 
+- The `InMemoryMetricsExporter` has been removed from the `opentelemetry-sdk-testing` module.
+
+#### Miscellaneous
+
+- The default values for SpanLimits have been changed to 128, from 1000, to match the spec.
+
+### Extensions
+
+#### Breaking Changes
+
+- In the `opentelemetry-sdk-extension-autoconfigure` module, we have changed the system property used to exclude some Resource auto-populators to be
+`otel.java.disabled.resource-providers` instead of `otel.java.disabled.resource_providers`.
+- In the `opentelemetry-sdk-extension-autoconfigure` module, you now specify the `OtTracePropagator` with the `"ottrace"` option, rather than `"ottracer"`.
+- In the `opentelemetry-sdk-extension-autoconfigure` module, the default exporters are now set to be `"otlp"`, as required by the 1.0.0 specification.
+- In the `opentelemetry-sdk-extension-autoconfigure` module, the default propagators are now set to be `"tracecontext,baggage"`, as required by the 1.0.0 specification.
+- The `CommonProperties` class has been removed from the `opentelemetry-sdk-extension-otproto` module.
+
+### Metrics (alpha)
+
+#### API
+
+- `Meter.getDefault()` has been removed.
+- `MeterProvider.getDefault()` has been renamed to `MeterProvider.noop()`.
+
+
+## Version 0.16.0 - 2021-02-08 - RC#2
+
+### General
+
+Note: In an effort to accelerate our work toward a 1.0.0 release, we have skipped the deprecation phase
+on a number of breaking changes. We apologize for the inconvenience this may have caused. We are very
+aware that these changes will impact users. If you need assistance in migrating from previous releases,
+please open a [discussion topic](https://github.com/opentelemetry/opentelemetry-java/discussions) at 
+[https://github.com/opentelemetry/opentelemetry-java/discussions](https://github.com/opentelemetry/opentelemetry-java/discussions).
+
+#### Breaking Changes
+
+- Methods and classes deprecated in 0.15.0 have been removed.
+
+### API
+
+#### Breaking Changes
+
+- The `Span.Kind` enum has been moved to the top level, and named `SpanKind`.
+- `DefaultOpenTelemetry` is no longer a public class. If you need the functionality previously provided by this
+implementation, it can be accessed via new static methods on the `OpenTelemetry` interface itself.
+- The `TraceFlags` interface has been re-introduced. This is now used, rather than a bare `byte` wherever
+trace flags is used. In particular, `SpanContext.create()`, `SpanContext.createFromRemoteParent()` now require
+a `TraceFlags` instance, and `SpanContext.getTraceFlags()` returns a `TraceFlags` instance.
+- The names of static methods on `TraceFlags` have been normalized to match other similar classes, and now 
+return `TraceFlags` instead of `byte` where appropriate.
+- The `Labels` interface and related classes have been moved into the alpha metrics modules and repackaged.
+- `TraceId.copyHexInto(byte[] traceId, char[] dest, int destOffset)` has been removed.
+- `SpanContext.getTraceIdAsHexString()` has been renamed to `SpanContext.getTraceId()`
+- `SpanContext.getSpanIdAsHexString()` has been renamed to `SpanContext.getSpanId()`
+- `BaggageEntry.getEntryMetadata()` has been renamed to `BaggageEntry.getMetadata()`
+- `BaggageConsumer` has been removed in favor of a standard `java.util.function.BiConsumer<String, BaggageEntry>`
+- `TraceFlags.isSampledFromHex(CharSequence src, int srcOffset)` has been removed.
+- `SpanId` and `TraceId` methods that had a `String` parameter now accept `CharSequence`
+and assume the id starts at the beginning.
+- `SpanId.getSize()` and `TraceId.getSize()` have been removed. 
+- `SpanId.bytesFromHex()` has been removed.
+- `SpanId.asLong(CharSequence)` has been removed.
+- `SpanId.asBytes(CharSequence)` has been removed.
+- `SpanId.getHexLength()` has been renamed to `SpanId.getLength()`
+- `SpanId.bytesToHex()` has been renamed to `SpanId.fromBytes()`
+- `TraceId.bytesFromHex()` has been removed.
+- `TraceId.traceIdLowBytesAsLong(CharSequence)` has been removed.
+- `TraceId.traceIdHighBytesAsLong(CharSequence)` has been removed.
+- `TraceId.asBytes(CharSequence)` has been removed.
+- `TraceId.getHexLength()` has been renamed to `TraceId.getLength()`
+- `TraceId.bytesToHex()` has been renamed to `TraceId.fromBytes()`
+- `StrictContextStorage` has been made private. Use -Dio.opentelemetry.context.enableStrictContext=true` to enable it
+- `AwsXrayPropagator` has been moved to the `opentelemetry-extension-aws` artifact
+
+#### Enhancements
+
+- The `W3CTraceContextPropagator` class now directly implements the `TextMapPropagator` interface.
+- The `OpenTelemetry` interface now has a `getDefault()` method which will return a completely no-op implementation.
+- The `OpenTelmmetry` interface now has a `getPropagating(ContextPropagators propagators)` method which will
+return an implementation that contains propagators, but is otherwise no-op. 
+
+#### Misc Notes
+
+- The internal `StringUtils` class has had metrics-related methods removed from it. But, you weren't using
+internal classes, were you?
+- The internal `AbstractWeakConcurrentMap` class has been made non-public. See the line above about internal classes.
+
+### Extensions
+
+#### Breaking Changes
+
+- The `OtTracerPropagator` has been renamed to `OtTracePropagator` in the trace-propagators extension module.
+
+### SDK
+
+#### Breaking Changes
+
+- `TraceConfig` has been renamed to `SpanLimits` and relocated to the `io.opentelemetry.sdk.tracing` package.
+All related method names have been renamed to match.
+- `SpanData.getTraceState()` has been removed. The TraceState is still available via the SpanContext accessor.
+- `SpanData.isSampled()` has been removed. The isSampled property is still available via the SpanContext accessor.
+
+#### Enhancements
+
+- `SpanData` now directly exposes the underlying `SpanContext` instance.
+
+### SDK Extensions
+
+#### Breaking Changes
+
+- In the `opentelemetry-autoconfigure` module, three environment variables/system properties 
+have been renamed to match the spec:
+  * `OTEL_TRACE_EXPORTER`/`otel.trace.exporter` has been replaced with `OTEL_TRACES_EXPORTER`/`otel.traces.exporter`
+  * `OTEL_TRACE_SAMPLER`/`otel.trace.sampler` has been replaced with `OTEL_TRACES_SAMPLER`/`otel_traces_sampler`
+  * `OTEL_TRACE_SAMPLER_ARG`/`otel.trace.sampler.arg` has been replaced with `OTEL_TRACES_SAMPLER_ARG`/`otel.traces.sampler.arg` 
+
+#### Enhancements
+
+- The `opentelemetry-autoconfigure` module now supports using non-millisecond values for duration & 
+interval configuration options. See the javadoc on the `io.opentelemetry.sdk.autoconfigure.ConfigProperties.getDuration(String)` 
+method for details on supported formats.
+- The `opentelemetry-autoconfigure` module now provides automatic SPI-based parsing of the `OTEL_RESOURCE_ATTRIBUTES` env var
+(and the corresponding `otel.resource.attributes` system property). If you include this module on your
+classpath, it will automatically update the `Resource.getDefault()` instance with that configuration.
+
+### Metrics (alpha)
+
+#### API
+
+- The `Labels` interface has been moved into the metrics API module and repackaged into the 
+`io.opentelemetry.api.metrics.common` package.
+
+## Version 0.15.0 - 2021-01-29 - RC#1
+
 ### General
 
 #### Breaking Changes
@@ -34,6 +219,7 @@ generated semantic attributes to be used in creating `Resource`s.
 - The default Resource (accessible via `Resource.getDefault()`) now includes a fallback `service.name` attribute. The implication
 of this is that exporters that have configured fallback service names will only use them if the SDK is intentionally 
 configured with a Resource that does not utilize the default Resource for its underlying Resource data.
+- The `Sampler` is now specified when building the SdkTracerProvider directly, rather than being a part of the TraceConfig. 
 
 #### Bugfixes
 
@@ -71,6 +257,8 @@ should acquire the fallback from the default resource, rather than having it con
 
 - The `opentelemetry-sdk-extension-autoconfigure` module will now additionally register the auto-configured
 SDK as the instance of `GlobalOpenTelemetry` when used.
+- The `opentelemetry-sdk-extension-autoconfigure` module now supports the `otel.exporter.otlp.certificate` configuration
+property for specifying a path to a trusted certificate for the OTLP exporters.
 
 ---
 

@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 
-public class ExampleConfiguration {
+public final class ExampleConfiguration {
   private static HTTPServer server;
 
   /**

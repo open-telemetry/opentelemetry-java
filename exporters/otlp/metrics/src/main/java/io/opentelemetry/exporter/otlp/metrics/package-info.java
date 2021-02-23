@@ -36,4 +36,7 @@
  *
  * In both cases, if a property is missing, the name without "metric" is used to resolve the value.
  */
+@ParametersAreNonnullByDefault
 package io.opentelemetry.exporter.otlp.metrics;
+
+import javax.annotation.ParametersAreNonnullByDefault;

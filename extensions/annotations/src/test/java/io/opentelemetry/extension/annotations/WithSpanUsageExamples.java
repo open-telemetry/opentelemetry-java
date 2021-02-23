@@ -6,7 +6,7 @@
 package io.opentelemetry.extension.annotations;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 
 /**
  * This class is not a classical test. It's just a demonstration of possible usages of {@link
@@ -29,9 +29,9 @@ public class WithSpanUsageExamples {
   public void method2() {}
 
   /**
-   * A {@link Span} with the default name, and a {@link Kind} of {@link Kind#CONSUMER} will be
-   * created for this method.
+   * A {@link Span} with the default name, and a {@link SpanKind} of {@link SpanKind#CONSUMER} will
+   * be created for this method.
    */
-  @WithSpan(kind = Kind.CONSUMER)
+  @WithSpan(kind = SpanKind.CONSUMER)
   public void consume() {}
 }

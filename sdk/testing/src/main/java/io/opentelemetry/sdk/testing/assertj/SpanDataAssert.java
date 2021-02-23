@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.testing.assertj;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
 
 /** Assertions for an exported {@link SpanData}. */
-public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
+public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
 
   SpanDataAssert(SpanData actual) {
     super(actual, SpanDataAssert.class);
@@ -63,7 +63,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span is sampled. */
   public SpanDataAssert isSampled() {
     isNotNull();
-    if (!actual.isSampled()) {
+    if (!actual.getSpanContext().isSampled()) {
       failWithMessage("Expected span [%s] to be sampled but was not.", actual.getName());
     }
     return this;
@@ -72,7 +72,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span is not sampled. */
   public SpanDataAssert isNotSampled() {
     isNotNull();
-    if (actual.isSampled()) {
+    if (actual.getSpanContext().isSampled()) {
       failWithMessage("Expected span [%s] to not be sampled but it was.", actual.getName());
     }
     return this;
@@ -81,14 +81,14 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   /** Asserts the span has the given {@link TraceState}. */
   public SpanDataAssert hasTraceState(TraceState traceState) {
     isNotNull();
-    if (!actual.getTraceState().equals(traceState)) {
+    if (!actual.getSpanContext().getTraceState().equals(traceState)) {
       failWithActualExpectedAndMessage(
-          actual.getTraceState(),
+          actual.getSpanContext().getTraceState(),
           traceState,
           "Expected span [%s] to have trace state <%s> but was <%s>",
           actual.getName(),
           traceState,
-          actual.getTraceState());
+          actual.getSpanContext().getTraceState());
     }
     return this;
   }
@@ -155,7 +155,7 @@ public class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanData> {
   }
 
   /** Asserts the span has the given kind. */
-  public SpanDataAssert hasKind(Span.Kind kind) {
+  public SpanDataAssert hasKind(SpanKind kind) {
     isNotNull();
     if (!actual.getKind().equals(kind)) {
       failWithActualExpectedAndMessage(

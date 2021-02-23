@@ -37,7 +37,7 @@ class ExampleConfiguration {
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .build();
 
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> sdk.getTracerManagement().shutdown()));
+    Runtime.getRuntime().addShutdownHook(new Thread(sdkTracerProvider::close));
     return sdk;
   }
 }

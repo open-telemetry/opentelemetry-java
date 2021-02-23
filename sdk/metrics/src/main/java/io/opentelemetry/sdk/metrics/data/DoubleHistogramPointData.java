@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
 import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
 import javax.annotation.concurrent.Immutable;

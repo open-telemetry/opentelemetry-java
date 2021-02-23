@@ -5,11 +5,11 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
@@ -46,7 +46,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
   private static final String SPAN_PROCESSOR_TYPE_VALUE = BatchSpanProcessor.class.getSimpleName();
 
   private final Worker worker;
-  private final boolean sampled;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
@@ -62,7 +61,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   BatchSpanProcessor(
       SpanExporter spanExporter,
-      boolean sampled,
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
@@ -76,7 +74,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
             new ArrayBlockingQueue<>(maxQueueSize));
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
-    this.sampled = sampled;
   }
 
   @Override
@@ -89,7 +86,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (sampled && !span.getSpanContext().isSampled()) {
+    if (!span.getSpanContext().isSampled()) {
       return;
     }
     worker.addSpan(span);
@@ -249,8 +246,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
-      this.flushRequested.compareAndSet(null, flushResult);
-      return this.flushRequested.get();
+      // we set the atomic here to trigger the worker loop to do a flush on its next iteration.
+      flushRequested.compareAndSet(null, flushResult);
+      CompletableResultCode possibleResult = flushRequested.get();
+      // there's a race here where the flush happening in the worker loop could complete before we
+      // get what's in the atomic. In that case, just return success, since we know it succeeded in
+      // the interim.
+      return possibleResult == null ? CompletableResultCode.ofSuccess() : possibleResult;
     }
 
     private void exportCurrentBatch() {
@@ -266,7 +268,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
         } else {
           logger.log(Level.FINE, "Exporter failed");
         }
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         logger.log(Level.WARNING, "Exporter threw an Exception", e);
       } finally {
         batch.clear();

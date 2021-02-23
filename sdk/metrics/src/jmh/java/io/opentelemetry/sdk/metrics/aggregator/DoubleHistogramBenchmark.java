@@ -30,7 +30,7 @@ public class DoubleHistogramBenchmark {
               ImmutableDoubleArray.copyOf(new double[] {10, 100, 1_000}), /* stateful= */ false)
           .create(
               Resource.getDefault(),
-              InstrumentationLibraryInfo.getEmpty(),
+              InstrumentationLibraryInfo.empty(),
               InstrumentDescriptor.create(
                   "name",
                   "description",

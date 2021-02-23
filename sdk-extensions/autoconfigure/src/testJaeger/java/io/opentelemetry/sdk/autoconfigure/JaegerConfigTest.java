@@ -57,7 +57,7 @@ class JaegerConfigTest {
 
   @Test
   void configures() {
-    String endpoint = "localhost:" + server.httpPort();
+    String endpoint = "http://localhost:" + server.httpPort();
 
     System.setProperty("otel.exporter.jaeger.endpoint", endpoint);
 

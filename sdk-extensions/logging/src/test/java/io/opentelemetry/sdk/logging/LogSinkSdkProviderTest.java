@@ -15,7 +15,6 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logging.data.LogRecord;
-import io.opentelemetry.sdk.logging.data.LogRecord.Severity;
 import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logging.util.TestLogExporter;
 import io.opentelemetry.sdk.logging.util.TestLogProcessor;
@@ -27,11 +26,11 @@ import org.junit.jupiter.api.Test;
 class LogSinkSdkProviderTest {
 
   private static LogRecord createLog(LogRecord.Severity severity, String message) {
-    return new LogRecord.Builder()
+    return LogRecord.builder()
         .setUnixTimeMillis(System.currentTimeMillis())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
-        .setFlags(TraceFlags.getDefault())
+        .setFlags(TraceFlags.getDefault().asByte())
         .setSeverity(severity)
         .setSeverityText("really severe")
         .setName("log1")
@@ -44,15 +43,16 @@ class LogSinkSdkProviderTest {
   void testLogSinkSdkProvider() {
     TestLogExporter exporter = new TestLogExporter();
     LogProcessor processor = BatchLogProcessor.builder(exporter).build();
-    LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
+    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
     provider.addLogProcessor(processor);
     LogSink sink = provider.get("test", "0.1a");
-    LogRecord log = createLog(Severity.ERROR, "test");
+    LogRecord log = createLog(LogRecord.Severity.ERROR, "test");
     sink.offer(log);
     provider.forceFlush().join(500, TimeUnit.MILLISECONDS);
     List<LogRecord> records = exporter.getRecords();
     assertThat(records).singleElement().isEqualTo(log);
-    assertThat(log.getSeverity().getSeverityNumber()).isEqualTo(Severity.ERROR.getSeverityNumber());
+    assertThat(log.getSeverity().getSeverityNumber())
+        .isEqualTo(LogRecord.Severity.ERROR.getSeverityNumber());
   }
 
   @Test
@@ -64,12 +64,12 @@ class LogSinkSdkProviderTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
+    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
     provider.addLogProcessor(processor);
     LogSink sink = provider.get("test", "0.1a");
 
     for (int i = 0; i < 7; i++) {
-      sink.offer(createLog(Severity.WARN, "test #" + i));
+      sink.offer(createLog(LogRecord.Severity.WARN, "test #" + i));
     }
     // Ensure that more than batch size kicks off a flush
     await().atMost(Duration.ofSeconds(5)).until(() -> exporter.getRecords().size() > 0);
@@ -96,14 +96,14 @@ class LogSinkSdkProviderTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
+    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
     provider.addLogProcessor(processor);
     LogSink sink = provider.get("test", "0.1a");
 
     long start = System.currentTimeMillis();
     int testRecordCount = 700;
     for (int i = 0; i < testRecordCount; i++) {
-      sink.offer(createLog(Severity.WARN, "test #" + i));
+      sink.offer(createLog(LogRecord.Severity.WARN, "test #" + i));
     }
     long end = System.currentTimeMillis();
     assertThat(end - start).isLessThan(250L);
@@ -115,7 +115,7 @@ class LogSinkSdkProviderTest {
   void testMultipleProcessors() {
     TestLogProcessor processorOne = new TestLogProcessor();
     TestLogProcessor processorTwo = new TestLogProcessor();
-    LogSinkSdkProvider provider = new LogSinkSdkProvider.Builder().build();
+    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
     provider.addLogProcessor(processorOne);
     provider.addLogProcessor(processorTwo);
     LogSink sink = provider.get("test", "0.1");

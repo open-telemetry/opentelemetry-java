@@ -8,49 +8,86 @@ package io.opentelemetry.api.trace;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Helper methods for dealing with trace flags options. These options are propagated to all child
- * {@link Span spans}. These determine features such as whether a {@code Span} should be traced. It
- * is implemented as a bitmask.
+ * A valid trace flags is a byte or 2 character lowercase hex (base16) String.
+ *
+ * <p>These options are propagated to all child {@link Span spans}. These determine features such as
+ * whether a {@code Span} should be traced.
  */
 @Immutable
-public final class TraceFlags {
-  private TraceFlags() {}
-
-  // Bit to represent whether trace is sampled or not.
-  private static final byte IS_SAMPLED = 0x1;
-  // the default flags are a 0 byte.
-  private static final byte DEFAULT = 0x0;
-
-  private static final int SIZE = 1;
-  private static final int BASE16_SIZE = 2 * SIZE;
-
-  /** Returns the size in Hex of trace flags. */
-  public static int getHexLength() {
-    return BASE16_SIZE;
+public interface TraceFlags {
+  /**
+   * Returns the length of the lowercase hex (base16) representation of the {@link TraceFlags}.
+   *
+   * @return the length of the lowercase hex (base16) representation of the {@link TraceFlags}.
+   */
+  static int getLength() {
+    return ImmutableTraceFlags.HEX_LENGTH;
   }
 
   /**
-   * Returns the default {@code TraceFlags}.
+   * Returns the default (with all flag bits off) byte representation of the {@link TraceFlags}.
    *
-   * @return the default {@code TraceFlags}.
+   * @return the default (with all flag bits off) byte representation of the {@link TraceFlags}.
    */
-  public static byte getDefault() {
-    return DEFAULT;
+  static TraceFlags getDefault() {
+    return ImmutableTraceFlags.DEFAULT;
   }
 
-  /** Extract the sampled flag from hex-based trace-flags. */
-  public static boolean isSampledFromHex(CharSequence src, int srcOffset) {
-    // todo bypass the byte conversion and look directly at the hex.
-    byte b = BigendianEncoding.byteFromBase16String(src, srcOffset);
-    return (b & IS_SAMPLED) != 0;
+  /**
+   * Returns the lowercase hex (base16) representation of the {@link TraceFlags} with the sampling
+   * flag bit on.
+   *
+   * @return the lowercase hex (base16) representation of the {@link TraceFlags} with the sampling
+   *     flag bit on.
+   */
+  static TraceFlags getSampled() {
+    return ImmutableTraceFlags.SAMPLED;
   }
 
-  /** Extract the byte representation of the flags from a hex-representation. */
-  public static byte byteFromHex(CharSequence src, int srcOffset) {
-    return BigendianEncoding.byteFromBase16String(src, srcOffset);
+  /**
+   * Returns the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
+   *
+   * @param src the buffer where the hex (base16) representation of the {@link TraceFlags} is.
+   * @param srcOffset the offset int buffer.
+   * @return the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
+   * @throws NullPointerException if {@code src} is null.
+   * @throws IndexOutOfBoundsException if {@code src} is too short.
+   * @throws IllegalArgumentException if invalid characters in the {@code src}.
+   */
+  static TraceFlags fromHex(CharSequence src, int srcOffset) {
+    return ImmutableTraceFlags.fromHex(src, srcOffset);
   }
 
-  public static byte getSampled() {
-    return IS_SAMPLED;
+  /**
+   * Returns the {@link TraceFlags} converted from the given byte representation.
+   *
+   * @param traceFlagsByte the byte representation of the {@link TraceFlags}.
+   * @return the {@link TraceFlags} converted from the given byte representation.
+   */
+  static TraceFlags fromByte(byte traceFlagsByte) {
+    return ImmutableTraceFlags.fromByte(traceFlagsByte);
   }
+
+  /**
+   * Returns {@code true} if the sampling bit is on for this {@link TraceFlags}, otherwise {@code
+   * false}.
+   *
+   * @return {@code true} if the sampling bit is on for this {@link TraceFlags}, otherwise {@code *
+   *     false}.
+   */
+  boolean isSampled();
+
+  /**
+   * Returns the lowercase hex (base16) representation of this {@link TraceFlags}.
+   *
+   * @return the byte representation of the {@link TraceFlags}.
+   */
+  String asHex();
+
+  /**
+   * Returns the byte representation of this {@link TraceFlags}.
+   *
+   * @return the byte representation of the {@link TraceFlags}.
+   */
+  byte asByte();
 }

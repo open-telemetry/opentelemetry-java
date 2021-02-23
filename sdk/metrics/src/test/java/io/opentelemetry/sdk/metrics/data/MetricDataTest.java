@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.data;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
 import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
@@ -59,8 +59,8 @@ class MetricDataTest {
   void metricData_Getters() {
     MetricData metricData =
         MetricData.createDoubleGauge(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -69,9 +69,9 @@ class MetricDataTest {
     assertThat(metricData.getDescription()).isEqualTo("metric_description");
     assertThat(metricData.getUnit()).isEqualTo("ms");
     assertThat(metricData.getType()).isEqualTo(MetricDataType.DOUBLE_GAUGE);
-    assertThat(metricData.getResource()).isEqualTo(Resource.getEmpty());
+    assertThat(metricData.getResource()).isEqualTo(Resource.empty());
     assertThat(metricData.getInstrumentationLibraryInfo())
-        .isEqualTo(InstrumentationLibraryInfo.getEmpty());
+        .isEqualTo(InstrumentationLibraryInfo.empty());
     assertThat(metricData.isEmpty()).isTrue();
   }
 
@@ -84,8 +84,8 @@ class MetricDataTest {
     assertThat(LONG_POINT.getValue()).isEqualTo(LONG_VALUE);
     MetricData metricData =
         MetricData.createLongGauge(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -94,8 +94,8 @@ class MetricDataTest {
     assertThat(metricData.getLongGaugeData().getPoints()).containsExactly(LONG_POINT);
     metricData =
         MetricData.createLongSum(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -116,8 +116,8 @@ class MetricDataTest {
     assertThat(DOUBLE_POINT.getValue()).isEqualTo(DOUBLE_VALUE);
     MetricData metricData =
         MetricData.createDoubleGauge(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -126,8 +126,8 @@ class MetricDataTest {
     assertThat(metricData.getDoubleGaugeData().getPoints()).containsExactly(DOUBLE_POINT);
     metricData =
         MetricData.createDoubleSum(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -151,8 +151,8 @@ class MetricDataTest {
         .isEqualTo(Arrays.asList(MINIMUM_VALUE, MAXIMUM_VALUE));
     MetricData metricData =
         MetricData.createDoubleSummary(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -184,8 +184,8 @@ class MetricDataTest {
 
     MetricData metricData =
         MetricData.createDoubleHistogram(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -198,8 +198,8 @@ class MetricDataTest {
   void metricData_GetDefault() {
     MetricData metricData =
         MetricData.createDoubleSummary(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -213,8 +213,8 @@ class MetricDataTest {
 
     metricData =
         MetricData.createDoubleGauge(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",

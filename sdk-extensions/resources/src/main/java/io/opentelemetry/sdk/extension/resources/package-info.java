@@ -4,8 +4,8 @@
  */
 
 /**
- * {@link io.opentelemetry.sdk.resources.ResourceProvider} implementations for common resource
- * information.
+ * {@link io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider} implementations for common
+ * resource information.
  */
 @ParametersAreNonnullByDefault
 package io.opentelemetry.sdk.extension.resources;

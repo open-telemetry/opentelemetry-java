@@ -40,7 +40,7 @@ public final class ErrorReportingTest {
     Span span = tracer.spanBuilder("one").startSpan();
     try (Scope ignored = span.makeCurrent()) {
       throw new RuntimeException("Invalid state");
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       span.setStatus(StatusCode.ERROR);
     } finally {
       span.end();
@@ -61,7 +61,7 @@ public final class ErrorReportingTest {
         () -> {
           try (Scope ignored = span.makeCurrent()) {
             throw new RuntimeException("Invalid state");
-          } catch (Exception exc) {
+          } catch (RuntimeException exc) {
             span.setStatus(StatusCode.ERROR);
           } finally {
             span.end();
@@ -88,7 +88,7 @@ public final class ErrorReportingTest {
       while (retries++ < maxRetries) {
         try {
           throw new RuntimeException("No url could be fetched");
-        } catch (final Exception exc) {
+        } catch (RuntimeException exc) {
           span.addEvent("error");
         }
       }
@@ -120,7 +120,7 @@ public final class ErrorReportingTest {
               () -> {
                 try {
                   throw new RuntimeException("Invalid state");
-                } catch (Exception exc) {
+                } catch (RuntimeException exc) {
                   Span.current().setStatus(StatusCode.ERROR);
                 } finally {
                   Span.current().end();

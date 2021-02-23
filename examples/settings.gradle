@@ -1,6 +1,7 @@
 pluginManagement {
     plugins {
         id "com.diffplug.spotless" version "5.6.1"
+        id "com.github.johnrengelman.shadow" version "6.1.0"
         id 'com.google.protobuf' version '0.8.8'
     }
 
@@ -18,7 +19,8 @@ include ":opentelemetry-examples-grpc",
         ":opentelemetry-examples-prometheus",
         ":opentelemetry-examples-otlp",
         ":opentelemetry-examples-sdk-usage",
-        ":opentelemetry-examples-zipkin"
+        ":opentelemetry-examples-zipkin",
+        ":opentelemetry-examples-logging"
 
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name

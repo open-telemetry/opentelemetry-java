@@ -13,10 +13,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -40,13 +42,17 @@ class LoggingSpanExporterTest {
   private static final SpanData SPAN1 =
       TestSpanData.builder()
           .setHasEnded(true)
-          .setTraceId(TraceId.fromLongs(1234L, 6789L))
-          .setSpanId(SpanId.fromLong(9876L))
+          .setSpanContext(
+              SpanContext.create(
+                  "12345678876543211234567887654321",
+                  "8765432112345678",
+                  TraceFlags.getSampled(),
+                  TraceState.getDefault()))
           .setStartEpochNanos(100)
           .setEndEpochNanos(100 + 1000)
           .setStatus(StatusData.ok())
           .setName("testSpan1")
-          .setKind(Kind.INTERNAL)
+          .setKind(SpanKind.INTERNAL)
           .setAttributes(Attributes.of(stringKey("animal"), "cat", longKey("lives"), 9L))
           .setEvents(
               Collections.singletonList(
@@ -56,18 +62,24 @@ class LoggingSpanExporterTest {
                       Attributes.of(booleanKey("important"), true))))
           .setTotalRecordedEvents(1)
           .setTotalRecordedLinks(0)
+          .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("tracer1", null))
           .build();
 
   private static final SpanData SPAN2 =
       TestSpanData.builder()
           .setHasEnded(false)
-          .setTraceId(TraceId.fromLongs(20L, 30L))
-          .setSpanId(SpanId.fromLong(15L))
+          .setSpanContext(
+              SpanContext.create(
+                  "12340000000043211234000000004321",
+                  "8765000000005678",
+                  TraceFlags.getSampled(),
+                  TraceState.getDefault()))
           .setStartEpochNanos(500)
           .setEndEpochNanos(500 + 1001)
           .setStatus(StatusData.error())
           .setName("testSpan2")
-          .setKind(Kind.CLIENT)
+          .setKind(SpanKind.CLIENT)
+          .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("tracer2", "1.0"))
           .build();
 
   @RegisterExtension
@@ -94,10 +106,13 @@ class LoggingSpanExporterTest {
         .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
     assertThat(logs.getEvents().get(0).getMessage())
         .isEqualTo(
-            "'testSpan1' : 00000000000004d20000000000001a85 0000000000002694 "
+            "'testSpan1' : 12345678876543211234567887654321 8765432112345678 "
+                + "INTERNAL [tracer: tracer1:] "
                 + "{animal=\"cat\", lives=9}");
     assertThat(logs.getEvents().get(1).getMessage())
-        .isEqualTo("'testSpan2' : 0000000000000014000000000000001e 000000000000000f {}");
+        .isEqualTo(
+            "'testSpan2' : 12340000000043211234000000004321 8765000000005678 "
+                + "CLIENT [tracer: tracer2:1.0] {}");
   }
 
   @Test
@@ -106,13 +121,17 @@ class LoggingSpanExporterTest {
     SpanData spanData =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setTraceId(TraceId.fromLongs(1234L, 6789L))
-            .setSpanId(SpanId.fromLong(9876L))
+            .setSpanContext(
+                SpanContext.create(
+                    "12345678876543211234567887654321",
+                    "8765432112345678",
+                    TraceFlags.getSampled(),
+                    TraceState.getDefault()))
             .setStartEpochNanos(epochNanos)
             .setEndEpochNanos(epochNanos + 1000)
             .setStatus(StatusData.ok())
             .setName("testSpan")
-            .setKind(Kind.INTERNAL)
+            .setKind(SpanKind.INTERNAL)
             .setEvents(
                 Collections.singletonList(
                     EventData.create(

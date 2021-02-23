@@ -21,4 +21,9 @@ class ZPageServerTest {
     assertThat(ZPageServer.getTracezTraceConfigSupplier())
         .isInstanceOf(TracezTraceConfigSupplier.class);
   }
+
+  @Test
+  void testSampler() {
+    assertThat(ZPageServer.getTracezSampler()).isInstanceOf(TracezTraceConfigSupplier.class);
+  }
 }

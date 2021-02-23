@@ -6,12 +6,11 @@
 package io.opentelemetry.sdk.trace.data;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -22,29 +21,26 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface SpanData {
 
+  /** Returns the {@link SpanContext} of the Span. */
+  SpanContext getSpanContext();
+
   /**
    * Gets the trace id for this span.
    *
    * @return the trace id.
    */
-  String getTraceId();
+  default String getTraceId() {
+    return getSpanContext().getTraceId();
+  }
 
   /**
    * Gets the span id for this span.
    *
    * @return the span id.
    */
-  String getSpanId();
-
-  /** Whether the 'sampled' option set on this span. */
-  boolean isSampled();
-
-  /**
-   * Gets the {@code TraceState} for this span.
-   *
-   * @return the {@code TraceState} for this span.
-   */
-  TraceState getTraceState();
+  default String getSpanId() {
+    return getSpanContext().getSpanId();
+  }
 
   /**
    * Returns the parent {@link SpanContext}. If the span is a root span, the {@link SpanContext}
@@ -59,7 +55,7 @@ public interface SpanData {
    * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
    */
   default String getParentSpanId() {
-    return getParentSpanContext().getSpanIdAsHexString();
+    return getParentSpanContext().getSpanId();
   }
 
   /**
@@ -89,7 +85,7 @@ public interface SpanData {
    *
    * @return the kind of this {@code Span}.
    */
-  Kind getKind();
+  SpanKind getKind();
 
   /**
    * Returns the start epoch timestamp in nanos of this {@code Span}.
@@ -144,7 +140,7 @@ public interface SpanData {
    * The total number of {@link EventData} events that were recorded on this span. This number may
    * be larger than the number of events that are attached to this span, if the total number
    * recorded was greater than the configured maximum value. See: {@link
-   * TraceConfig#getMaxNumberOfEvents()}
+   * SpanLimits#getMaxNumberOfEvents()}
    *
    * @return The total number of events recorded on this span.
    */
@@ -153,7 +149,7 @@ public interface SpanData {
   /**
    * The total number of {@link LinkData} links that were recorded on this span. This number may be
    * larger than the number of links that are attached to this span, if the total number recorded
-   * was greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfLinks()}
+   * was greater than the configured maximum value. See: {@link SpanLimits#getMaxNumberOfLinks()}
    *
    * @return The total number of links recorded on this span.
    */
@@ -162,7 +158,7 @@ public interface SpanData {
   /**
    * The total number of attributes that were recorded on this span. This number may be larger than
    * the number of attributes that are attached to this span, if the total number recorded was
-   * greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfAttributes()}
+   * greater than the configured maximum value. See: {@link SpanLimits#getMaxNumberOfAttributes()}
    *
    * @return The total number of attributes on this span.
    */

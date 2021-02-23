@@ -5,22 +5,22 @@
 
 package io.opentelemetry.api.baggage;
 
-import static java.util.Objects.requireNonNull;
-
-import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import io.opentelemetry.api.internal.StringUtils;
-import io.opentelemetry.context.Context;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry>
+final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry>
     implements Baggage {
 
   private static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
+
+  private ImmutableBaggage(Object[] data) {
+    super(data);
+  }
 
   static Baggage empty() {
     return EMPTY;
@@ -28,28 +28,6 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
 
   static BaggageBuilder builder() {
     return new Builder();
-  }
-
-  @AutoValue
-  @Immutable
-  abstract static class ArrayBackedBaggage extends ImmutableBaggage {
-    ArrayBackedBaggage() {}
-
-    @Override
-    protected abstract List<Object> data();
-
-    @Override
-    public BaggageBuilder toBuilder() {
-      return new ImmutableBaggage.Builder(new ArrayList<>(data()));
-    }
-  }
-
-  @Override
-  public void forEach(BaggageConsumer consumer) {
-    for (int i = 0; i < data().size(); i += 2) {
-      Entry entry = (Entry) data().get(i + 1);
-      consumer.accept((String) data().get(i), entry.getValue(), entry.getEntryMetadata());
-    }
   }
 
   @Nullable
@@ -61,22 +39,17 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
 
   @Override
   public BaggageBuilder toBuilder() {
-    Builder builder = new Builder(data());
-    builder.noImplicitParent = true;
-    return builder;
+    return new Builder(new ArrayList<>(data()));
   }
 
   private static Baggage sortAndFilterToBaggage(Object[] data) {
-    return new AutoValue_ImmutableBaggage_ArrayBackedBaggage(
-        sortAndFilter(data, /* filterNullValues= */ true));
+    return new ImmutableBaggage(data);
   }
 
   // TODO: Migrate to AutoValue.Builder
   // @AutoValue.Builder
   static class Builder implements BaggageBuilder {
 
-    @Nullable private Baggage parent;
-    private boolean noImplicitParent;
     private final List<Object> data;
 
     Builder() {
@@ -84,21 +57,7 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
     }
 
     Builder(List<Object> data) {
-      this.data = new ArrayList<>(data);
-    }
-
-    @Override
-    public BaggageBuilder setParent(Context context) {
-      requireNonNull(context, "context");
-      parent = Baggage.fromContext(context);
-      return this;
-    }
-
-    @Override
-    public BaggageBuilder setNoParent() {
-      this.parent = null;
-      noImplicitParent = true;
-      return this;
+      this.data = data;
     }
 
     @Override
@@ -107,7 +66,7 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
         return this;
       }
       data.add(key);
-      data.add(Entry.create(value, entryMetadata));
+      data.add(ImmutableEntry.create(value, entryMetadata));
 
       return this;
     }
@@ -124,21 +83,6 @@ abstract class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEn
 
     @Override
     public Baggage build() {
-      if (parent == null && !noImplicitParent) {
-        parent = Baggage.current();
-      }
-
-      List<Object> data = this.data;
-      if (parent != null && !parent.isEmpty()) {
-        List<Object> merged = new ArrayList<>(parent.size() * 2 + data.size());
-        parent.forEach(
-            (key, value, metadata) -> {
-              merged.add(key);
-              merged.add(Entry.create(value, metadata));
-            });
-        merged.addAll(data);
-        data = merged;
-      }
       return sortAndFilterToBaggage(data.toArray());
     }
   }

@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -28,8 +28,7 @@ import javax.annotation.Nullable;
  * OpenTelemetry}. However, if you need a custom implementation of the factory, you can create one
  * as needed.
  */
-@SuppressWarnings("deprecation") // Remove when SdkTracerManagement is removed
-public final class SdkTracerProvider implements TracerProvider, SdkTracerManagement, Closeable {
+public final class SdkTracerProvider implements TracerProvider, Closeable {
   private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "unknown";
   private final TracerSharedState sharedState;
@@ -48,10 +47,12 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
       Clock clock,
       IdGenerator idsGenerator,
       Resource resource,
-      Supplier<TraceConfig> traceConfigSupplier,
+      Supplier<SpanLimits> spanLimitsSupplier,
+      Sampler sampler,
       List<SpanProcessor> spanProcessors) {
     this.sharedState =
-        new TracerSharedState(clock, idsGenerator, resource, traceConfigSupplier, spanProcessors);
+        new TracerSharedState(
+            clock, idsGenerator, resource, spanLimitsSupplier, sampler, spanProcessors);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkTracer(sharedState, instrumentationLibraryInfo));
@@ -72,10 +73,14 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
     return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
   }
 
-  /** Returns the active {@link TraceConfig}. */
-  @Override
-  public TraceConfig getActiveTraceConfig() {
-    return sharedState.getActiveTraceConfig();
+  /** Returns the {@link SpanLimits} that are currently applied to created spans. */
+  public SpanLimits getSpanLimits() {
+    return sharedState.getSpanLimits();
+  }
+
+  /** Returns the configured {@link Sampler}. */
+  public Sampler getSampler() {
+    return sharedState.getSampler();
   }
 
   /**
@@ -94,9 +99,8 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
    * @return a {@link CompletableResultCode} which is completed when all the span processors have
    *     been shut down.
    */
-  @Override
   public CompletableResultCode shutdown() {
-    if (sharedState.isStopped()) {
+    if (sharedState.hasBeenShutdown()) {
       logger.log(Level.WARNING, "Calling shutdown() multiple times.");
       return CompletableResultCode.ofSuccess();
     }
@@ -109,7 +113,6 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
    *
    * @see SpanProcessor#forceFlush()
    */
-  @Override
   public CompletableResultCode forceFlush() {
     return sharedState.getActiveSpanProcessor().forceFlush();
   }

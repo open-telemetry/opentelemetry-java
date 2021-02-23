@@ -7,63 +7,47 @@ package io.opentelemetry.api.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Random;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanId}. */
 class SpanIdTest {
-  private static final byte[] firstBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
-  private static final byte[] secondBytes = new byte[] {(byte) 0xFF, 0, 0, 0, 0, 0, 0, 'A'};
+  private static final String first = "0000000000000061";
+  private static final String second = "ff00000000000041";
+
+  @Test
+  void invalid() {
+    assertThat(SpanId.getInvalid()).isEqualTo("0000000000000000");
+  }
 
   @Test
   void isValid() {
-    assertThat(SpanId.isValid(SpanId.getInvalid())).isFalse();
-    assertThat(SpanId.isValid(SpanId.bytesToHex(firstBytes))).isTrue();
-    assertThat(SpanId.isValid(SpanId.bytesToHex(secondBytes))).isTrue();
+    assertThat(SpanId.isValid(null)).isFalse();
+    assertThat(SpanId.isValid("001")).isFalse();
     assertThat(SpanId.isValid("000000000000z000")).isFalse();
+    assertThat(SpanId.isValid(SpanId.getInvalid())).isFalse();
+
+    assertThat(SpanId.isValid(first)).isTrue();
+    assertThat(SpanId.isValid(second)).isTrue();
   }
 
   @Test
-  void fromLowerBase16() {
-    assertThat(SpanId.bytesToHex(SpanId.bytesFromHex("0000000000000000", 0)))
-        .isEqualTo(SpanId.getInvalid());
-    assertThat(SpanId.bytesFromHex("0000000000000061", 0)).isEqualTo(firstBytes);
-    assertThat(SpanId.bytesFromHex("ff00000000000041", 0)).isEqualTo(secondBytes);
+  void fromLong() {
+    assertThat(SpanId.fromLong(0)).isEqualTo(SpanId.getInvalid());
+    assertThat(SpanId.fromLong(0x61)).isEqualTo(first);
+    assertThat(SpanId.fromLong(0xff00000000000041L)).isEqualTo(second);
   }
 
   @Test
-  void fromLowerBase16_WithOffset() {
-    assertThat(SpanId.bytesToHex(SpanId.bytesFromHex("XX0000000000000000AA", 2)))
-        .isEqualTo(SpanId.getInvalid());
-    assertThat(SpanId.bytesFromHex("YY0000000000000061BB", 2)).isEqualTo(firstBytes);
-    assertThat(SpanId.bytesFromHex("ZZff00000000000041CC", 2)).isEqualTo(secondBytes);
+  void fromBytes() {
+    String spanId = "090a0b0c0d0e0f00";
+    assertThat(SpanId.fromBytes(OtelEncodingUtils.bytesFromBase16(spanId, SpanId.getLength())))
+        .isEqualTo(spanId);
   }
 
   @Test
-  public void toLowerBase16() {
-    assertThat(SpanId.getInvalid()).isEqualTo("0000000000000000");
-    assertThat(SpanId.bytesToHex(firstBytes)).isEqualTo("0000000000000061");
-    assertThat(SpanId.bytesToHex(secondBytes)).isEqualTo("ff00000000000041");
-  }
-
-  @Test
-  void spanId_ToString() {
-    assertThat(SpanId.getInvalid()).contains("0000000000000000");
-    assertThat(SpanId.bytesToHex(firstBytes)).contains("0000000000000061");
-    assertThat(SpanId.bytesToHex(secondBytes)).contains("ff00000000000041");
-  }
-
-  @Test
-  void toAndFromLong() {
-    Random random = new Random();
-    for (int i = 0; i < 1000; i++) {
-      long id = random.nextLong();
-      assertThat(SpanId.asLong(SpanId.fromLong(id))).isEqualTo(id);
-    }
-  }
-
-  @Test
-  void size() {
-    assertThat(SpanId.getSize()).isEqualTo(8);
+  void fromBytes_Invalid() {
+    assertThat(SpanId.fromBytes(null)).isEqualTo(SpanId.getInvalid());
+    assertThat(SpanId.fromBytes(new byte[] {0, 1, 2, 3, 4})).isEqualTo(SpanId.getInvalid());
   }
 }

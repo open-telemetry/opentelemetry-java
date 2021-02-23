@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
 import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
@@ -38,9 +38,9 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   }
 
   /**
-   * Return the result of the merge of two histogram accumulations.
-   * As long as one Aggregator instance produces all Accumulations with constant boundaries we
-   * don't need to worry about merging accumulations with different boundaries.
+   * Return the result of the merge of two histogram accumulations. As long as one Aggregator
+   * instance produces all Accumulations with constant boundaries we don't need to worry about
+   * merging accumulations with different boundaries.
    */
   @Override
   public final HistogramAccumulation merge(HistogramAccumulation x, HistogramAccumulation y) {
@@ -77,14 +77,12 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
   @Override
   public HistogramAccumulation accumulateDouble(double value) {
-    return HistogramAccumulation.create(
-        1, value, ImmutableLongArray.of(1));
+    return HistogramAccumulation.create(1, value, ImmutableLongArray.of(1));
   }
 
   @Override
   public HistogramAccumulation accumulateLong(long value) {
-    return HistogramAccumulation.create(
-        1, value, ImmutableLongArray.of(1));
+    return HistogramAccumulation.create(1, value, ImmutableLongArray.of(1));
   }
 
   static final class Handle extends AggregatorHandle<HistogramAccumulation> {

@@ -16,16 +16,18 @@ import io.grpc.ServerCallHandler;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.logging.Logger;
 
 /** Server that manages startup/shutdown of a {@code Greeter} server. */
-public class HelloWorldServer {
+public final class HelloWorldServer {
   private static final Logger logger = Logger.getLogger(HelloWorldServer.class.getName());
 
   private static final int PORT = 50051;
@@ -34,16 +36,9 @@ public class HelloWorldServer {
   // lifecycle.
   private static final OpenTelemetry openTelemetry = ExampleConfiguration.initOpenTelemetry();
 
-  private Server server;
-
-  private final Tracer tracer =
-      openTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
-  private final TextMapPropagator textFormat =
-      openTelemetry.getPropagators().getTextMapPropagator();
-
   // Extract the Distributed Context from the gRPC metadata
-  TextMapPropagator.Getter<Metadata> getter =
-      new TextMapPropagator.Getter<>() {
+  private static final TextMapGetter<Metadata> getter =
+      new TextMapGetter<>() {
         @Override
         public Iterable<String> keys(Metadata carrier) {
           return carrier.keys();
@@ -58,6 +53,13 @@ public class HelloWorldServer {
           return "";
         }
       };
+
+  private Server server;
+
+  private final Tracer tracer =
+      openTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
+  private final TextMapPropagator textFormat =
+      openTelemetry.getPropagators().getTextMapPropagator();
 
   private void start() throws IOException {
     /* The port on which the server should run */
@@ -143,7 +145,7 @@ public class HelloWorldServer {
           tracer
               .spanBuilder("helloworld.Greeter/SayHello")
               .setParent(extractedContext)
-              .setSpanKind(Span.Kind.SERVER)
+              .setSpanKind(SpanKind.SERVER)
               .startSpan();
       try (Scope innerScope = span.makeCurrent()) {
         span.setAttribute("component", "grpc");

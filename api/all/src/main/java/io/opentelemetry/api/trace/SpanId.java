@@ -5,97 +5,110 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Helper methods for dealing with a span identifier. A valid span identifier is an 8-byte array
- * with at least one non-zero byte. In base-16 representation, a 16 character hex String, where at
- * least one of the characters is not a '0'.
+ * Helper methods for dealing with a span identifier. A valid span identifier is a 16 character
+ * lowercase hex (base16) String, where at least one of the characters is not a "0".
+ *
+ * <p>There are two more other representation that this class helps with:
+ *
+ * <ul>
+ *   <li>Bytes: a 8-byte array, where valid means that at least one of the bytes is not `\0`.
+ *   <li>Long: a {@code long} value, where valid means that the value is non-zero.
+ * </ul>
  */
 @Immutable
 public final class SpanId {
-
   private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
-  private static final int SIZE = 8;
-  private static final int HEX_SIZE = 2 * SIZE;
 
+  private static final int BYTES_LENGTH = 8;
+  private static final int HEX_LENGTH = 2 * BYTES_LENGTH;
   private static final String INVALID = "0000000000000000";
 
   private SpanId() {}
 
   /**
-   * Returns the size in bytes of the {@code SpanId}.
+   * Returns the length of the lowercase hex (base16) representation of the {@code SpanId}.
    *
-   * @return the size in bytes of the {@code SpanId}.
+   * @return the length of the lowercase hex (base16) representation of the {@code SpanId}.
    */
-  public static int getSize() {
-    return SIZE;
-  }
-
-  /** Returns the length of the base16 (hex) representation of the {@code SpanId}. */
-  public static int getHexLength() {
-    return HEX_SIZE;
+  public static int getLength() {
+    return HEX_LENGTH;
   }
 
   /**
-   * Returns the invalid {@code SpanId}. All bytes are 0.
+   * Returns the invalid {@code SpanId} in lowercase hex (base16) representation. All characters are
+   * "0".
    *
-   * @return the invalid {@code SpanId}.
+   * @return the invalid {@code SpanId} lowercase in hex (base16) representation.
    */
   public static String getInvalid() {
     return INVALID;
   }
 
-  /** Generate a valid {@link SpanId} from the given long value. */
-  public static String fromLong(long id) {
+  /**
+   * Returns whether the span identifier is valid. A valid span identifier is a 16 character hex
+   * String, where at least one of the characters is not a '0'.
+   *
+   * @return {@code true} if the span identifier is valid.
+   */
+  public static boolean isValid(CharSequence spanId) {
+    return spanId != null
+        && spanId.length() == HEX_LENGTH
+        && !INVALID.contentEquals(spanId)
+        && OtelEncodingUtils.isValidBase16String(spanId);
+  }
+
+  /**
+   * Returns the lowercase hex (base16) representation of the {@code SpanId} converted from the
+   * given bytes representation, or {@link #getInvalid()} if input is {@code null} or the given byte
+   * array is too short.
+   *
+   * <p>It converts the first 8 bytes of the given byte array.
+   *
+   * @param spanIdBytes the bytes (8-byte array) representation of the {@code SpanId}.
+   * @return the lowercase hex (base16) representation of the {@code SpanId}.
+   */
+  public static String fromBytes(byte[] spanIdBytes) {
+    if (spanIdBytes == null || spanIdBytes.length < BYTES_LENGTH) {
+      return INVALID;
+    }
     char[] result = getTemporaryBuffer();
-    BigendianEncoding.longToBase16String(id, result, 0);
+    OtelEncodingUtils.bytesToBase16(spanIdBytes, result, BYTES_LENGTH);
+    return new String(result);
+  }
+
+  /**
+   * Returns the lowercase hex (base16) representation of the {@code SpanId} converted from the
+   * given {@code long} value representation.
+   *
+   * <p>There is no restriction on the specified values, other than the already established validity
+   * rules applying to {@code SpanId}. Specifying 0 for the long value will effectively return
+   * {@link #getInvalid()}.
+   *
+   * <p>This is equivalent to calling {@link #fromBytes(byte[])} with the specified value stored as
+   * big-endian.
+   *
+   * @param id {@code long} value representation of the {@code SpanId}.
+   * @return the lowercase hex (base16) representation of the {@code SpanId}.
+   */
+  public static String fromLong(long id) {
+    if (id == 0) {
+      return getInvalid();
+    }
+    char[] result = getTemporaryBuffer();
+    OtelEncodingUtils.longToBase16String(id, result, 0);
     return new String(result);
   }
 
   private static char[] getTemporaryBuffer() {
     char[] chars = charBuffer.get();
     if (chars == null) {
-      chars = new char[HEX_SIZE];
+      chars = new char[HEX_LENGTH];
       charBuffer.set(chars);
     }
     return chars;
-  }
-
-  /**
-   * Returns a {@code SpanId} built from a lowercase base16 representation.
-   *
-   * @param src the lowercase base16 representation.
-   * @param srcOffset the offset in the buffer where the representation of the {@code SpanId}
-   *     begins.
-   * @return a {@code SpanId} built from a lowercase base16 representation.
-   * @throws NullPointerException if {@code src} is null.
-   * @throws IllegalArgumentException if not enough characters in the {@code src} from the {@code
-   *     srcOffset}.
-   */
-  public static byte[] bytesFromHex(String src, int srcOffset) {
-    return BigendianEncoding.bytesFromBase16(src, srcOffset, HEX_SIZE);
-  }
-
-  /**
-   * Returns whether the span identifier is valid. A valid span identifier is an 8-byte array with
-   * at least one non-zero byte.
-   *
-   * @return {@code true} if the span identifier is valid.
-   */
-  public static boolean isValid(String spanId) {
-    return (spanId.length() == HEX_SIZE)
-        && !INVALID.equals(spanId)
-        && BigendianEncoding.isValidBase16String(spanId);
-  }
-
-  /** Encode the bytes as base-16 (hex), padded with '0's on the left. */
-  public static String bytesToHex(byte[] spanId) {
-    return BigendianEncoding.toLowerBase16(spanId);
-  }
-
-  /** Convert the the given hex spanId into a long representation. */
-  public static long asLong(CharSequence src) {
-    return BigendianEncoding.longFromBase16String(src, 0);
   }
 }

@@ -36,7 +36,7 @@ class ExampleConfiguration {
                 () -> {
                   System.err.println(
                       "*** forcing the Span Exporter to shutdown and process the remaining spans");
-                  openTelemetrySdk.getTracerManagement().shutdown();
+                  sdkTracerProvider.shutdown();
                   System.err.println("*** Trace Exporter shut down");
                 }));
 

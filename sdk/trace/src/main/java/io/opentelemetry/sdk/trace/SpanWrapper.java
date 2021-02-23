@@ -7,9 +7,8 @@ package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -81,23 +80,8 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public String getTraceId() {
-    return delegate().getSpanContext().getTraceIdAsHexString();
-  }
-
-  @Override
-  public String getSpanId() {
-    return delegate().getSpanContext().getSpanIdAsHexString();
-  }
-
-  @Override
-  public boolean isSampled() {
-    return delegate().getSpanContext().isSampled();
-  }
-
-  @Override
-  public TraceState getTraceState() {
-    return delegate().getSpanContext().getTraceState();
+  public SpanContext getSpanContext() {
+    return delegate().getSpanContext();
   }
 
   @Override
@@ -121,7 +105,7 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public Kind getKind() {
+  public SpanKind getKind() {
     return delegate().getKind();
   }
 
@@ -173,5 +157,58 @@ abstract class SpanWrapper implements SpanData {
   @Override
   public int getTotalAttributeCount() {
     return totalAttributeCount();
+  }
+
+  @Override
+  public final String toString() {
+    return "SpanData{"
+        + "spanContext="
+        + getSpanContext()
+        + ", "
+        + "parentSpanContext="
+        + getParentSpanContext()
+        + ", "
+        + "resource="
+        + getResource()
+        + ", "
+        + "instrumentationLibraryInfo="
+        + getInstrumentationLibraryInfo()
+        + ", "
+        + "name="
+        + getName()
+        + ", "
+        + "kind="
+        + getKind()
+        + ", "
+        + "startEpochNanos="
+        + getStartEpochNanos()
+        + ", "
+        + "endEpochNanos="
+        + getEndEpochNanos()
+        + ", "
+        + "attributes="
+        + getAttributes()
+        + ", "
+        + "totalAttributeCount="
+        + getTotalAttributeCount()
+        + ", "
+        + "events="
+        + getEvents()
+        + ", "
+        + "totalRecordedEvents="
+        + getTotalRecordedEvents()
+        + ", "
+        + "links="
+        + getLinks()
+        + ", "
+        + "totalRecordedLinks="
+        + getTotalRecordedLinks()
+        + ", "
+        + "status="
+        + getStatus()
+        + ", "
+        + "hasEnded="
+        + hasEnded()
+        + "}";
   }
 }

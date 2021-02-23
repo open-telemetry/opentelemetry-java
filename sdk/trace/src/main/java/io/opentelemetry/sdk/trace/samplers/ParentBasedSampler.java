@@ -7,12 +7,11 @@ package io.opentelemetry.sdk.trace.samplers;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
-import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -53,7 +52,7 @@ final class ParentBasedSampler implements Sampler {
       Context parentContext,
       String traceId,
       String name,
-      Kind spanKind,
+      SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
     SpanContext parentSpanContext = Span.fromContext(parentContext).getSpanContext();
@@ -104,28 +103,20 @@ final class ParentBasedSampler implements Sampler {
 
     ParentBasedSampler that = (ParentBasedSampler) o;
 
-    if (!Objects.equals(root, that.root)) {
-      return false;
-    }
-    if (!Objects.equals(remoteParentSampled, that.remoteParentSampled)) {
-      return false;
-    }
-    if (!Objects.equals(remoteParentNotSampled, that.remoteParentNotSampled)) {
-      return false;
-    }
-    if (!Objects.equals(localParentSampled, that.localParentSampled)) {
-      return false;
-    }
-    return Objects.equals(localParentNotSampled, that.localParentNotSampled);
+    return root.equals(that.root)
+        && remoteParentSampled.equals(that.remoteParentSampled)
+        && remoteParentNotSampled.equals(that.remoteParentNotSampled)
+        && localParentSampled.equals(that.localParentSampled)
+        && localParentNotSampled.equals(that.localParentNotSampled);
   }
 
   @Override
   public int hashCode() {
-    int result = root != null ? root.hashCode() : 0;
-    result = 31 * result + (remoteParentSampled != null ? remoteParentSampled.hashCode() : 0);
-    result = 31 * result + (remoteParentNotSampled != null ? remoteParentNotSampled.hashCode() : 0);
-    result = 31 * result + (localParentSampled != null ? localParentSampled.hashCode() : 0);
-    result = 31 * result + (localParentNotSampled != null ? localParentNotSampled.hashCode() : 0);
+    int result = root.hashCode();
+    result = 31 * result + remoteParentSampled.hashCode();
+    result = 31 * result + remoteParentNotSampled.hashCode();
+    result = 31 * result + localParentSampled.hashCode();
+    result = 31 * result + localParentNotSampled.hashCode();
     return result;
   }
 }

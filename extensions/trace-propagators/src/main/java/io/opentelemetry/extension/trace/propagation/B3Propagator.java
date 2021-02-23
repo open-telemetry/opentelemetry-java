@@ -7,7 +7,9 @@ package io.opentelemetry.extension.trace.propagation;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,23 +27,23 @@ import javax.annotation.concurrent.Immutable;
  * href=https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/context/api-propagators.md#b3-requirements>B3
  * Requirements</a>
  *
- * <p>To register the default B3 propagator, which injects a single header, use the default instance
+ * <p>To register the default B3 propagator, which injects a single header, use:
  *
  * <pre>{@code
  * OpenTelemetry.setPropagators(
  *   DefaultContextPropagators
  *     .builder()
- *     .addTextMapPropagator(B3Propagator.getInstance())
+ *     .addTextMapPropagator(B3Propagator.injectingSingleHeader())
  *     .build());
  * }</pre>
  *
- * <p>To register a B3 propagator that injects multiple headers, use the builder
+ * <p>To register a B3 propagator that injects multiple headers, use:
  *
  * <pre>{@code
  * OpenTelemetry.setPropagators(
  *   DefaultContextPropagators
  *     .builder()
- *     .addTextMapPropagator(B3Propagator.builder().injectMultipleHeaders().build())
+ *     .addTextMapPropagator(B3Propagator.injectingMultiHeaders())
  *     .build());
  * }</pre>
  */
@@ -66,7 +68,10 @@ public final class B3Propagator implements TextMapPropagator {
       Collections.unmodifiableList(
           Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER, COMBINED_HEADER));
 
-  private static final B3Propagator INSTANCE = B3Propagator.builder().build();
+  private static final B3Propagator SINGLE_HEADER_INSTANCE =
+      new B3Propagator(new B3PropagatorInjectorSingleHeader());
+  private static final B3Propagator MULTI_HEADERS_INSTANCE =
+      new B3Propagator(new B3PropagatorInjectorMultipleHeaders());
 
   private final B3PropagatorExtractor singleHeaderExtractor =
       new B3PropagatorExtractorSingleHeader();
@@ -79,41 +84,27 @@ public final class B3Propagator implements TextMapPropagator {
   }
 
   /**
-   * Returns a new {@link B3Propagator.Builder} instance for configuring injection option for {@link
-   * B3Propagator}.
+   * Returns an instance of the {@link B3Propagator} that injects multi headers format.
+   *
+   * <p>This instance extracts both formats, in the order: single header, multi header.
+   *
+   * @return an instance of the {@link B3Propagator} that injects multi headers format.
    */
-  public static B3Propagator.Builder builder() {
-    return new Builder();
+  public static B3Propagator injectingMultiHeaders() {
+    return MULTI_HEADERS_INSTANCE;
   }
 
   /**
-   * Enables the creation of an {@link B3Propagator} instance with the ability to switch injector
-   * from single header (default) to multiple headers.
+   * Returns an instance of the {@link B3Propagator} that injects single header format.
+   *
+   * <p>This instance extracts both formats, in the order: single header, multi header.
+   *
+   * <p>This is the default instance for {@link B3Propagator}.
+   *
+   * @return an instance of the {@link B3Propagator} that injects single header format.
    */
-  public static class Builder {
-    private boolean injectSingleHeader;
-
-    private Builder() {
-      injectSingleHeader = true;
-    }
-
-    public Builder injectMultipleHeaders() {
-      this.injectSingleHeader = false;
-      return this;
-    }
-
-    /** Create the {@link B3Propagator} with selected injector type. */
-    public B3Propagator build() {
-      if (injectSingleHeader) {
-        return new B3Propagator(new B3PropagatorInjectorSingleHeader());
-      } else {
-        return new B3Propagator(new B3PropagatorInjectorMultipleHeaders());
-      }
-    }
-  }
-
-  public static B3Propagator getInstance() {
-    return INSTANCE;
+  public static B3Propagator injectingSingleHeader() {
+    return SINGLE_HEADER_INSTANCE;
   }
 
   @Override
@@ -122,12 +113,12 @@ public final class B3Propagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, @Nullable C carrier, Setter<C> setter) {
+  public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
     b3PropagatorInjector.inject(context, carrier, setter);
   }
 
   @Override
-  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     return Stream.<Supplier<Optional<Context>>>of(
             () -> singleHeaderExtractor.extract(context, carrier, getter),
             () -> multipleHeadersExtractor.extract(context, carrier, getter),

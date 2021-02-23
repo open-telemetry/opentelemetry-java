@@ -59,14 +59,6 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface Tracer {
 
   /**
-   * Returns a no-op {@link Tracer} that only creates no-op {@link Span}s which do not record nor
-   * are emitted.
-   */
-  static Tracer getDefault() {
-    return DefaultTracer.getInstance();
-  }
-
-  /**
    * Returns a {@link SpanBuilder} to create and start a new {@link Span}.
    *
    * <p>See {@link SpanBuilder} for usage examples.

@@ -13,9 +13,7 @@ import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
@@ -36,10 +34,8 @@ class ExportTest {
   private static final List<SpanData> SPANS =
       Collections.singletonList(
           TestSpanData.builder()
-              .setTraceId(TraceId.getInvalid())
-              .setSpanId(SpanId.getInvalid())
               .setName("name")
-              .setKind(Span.Kind.CLIENT)
+              .setKind(SpanKind.CLIENT)
               .setStartEpochNanos(1)
               .setEndEpochNanos(2)
               .setStatus(StatusData.ok())

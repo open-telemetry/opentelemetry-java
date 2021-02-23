@@ -9,7 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;

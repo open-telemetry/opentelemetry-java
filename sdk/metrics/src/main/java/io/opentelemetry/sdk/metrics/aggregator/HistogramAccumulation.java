@@ -17,8 +17,7 @@ abstract class HistogramAccumulation {
    *
    * @return a new {@link HistogramAccumulation} with the given values.
    */
-  static HistogramAccumulation create(
-      long count, double sum, ImmutableLongArray counts) {
+  static HistogramAccumulation create(long count, double sum, ImmutableLongArray counts) {
     return new AutoValue_HistogramAccumulation(count, sum, counts);
   }
 

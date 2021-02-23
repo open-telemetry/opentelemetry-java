@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
@@ -15,7 +14,6 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** The SDK implementation of {@link OpenTelemetry}. */
 @ThreadSafe
-@SuppressWarnings("deprecation") // Remove when SdkTracerManagement is removed
 public final class OpenTelemetrySdk implements OpenTelemetry {
   private final ObfuscatedTracerProvider tracerProvider;
   private final ContextPropagators propagators;
@@ -33,32 +31,6 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     return new OpenTelemetrySdkBuilder();
   }
 
-  /**
-   * Returns the global {@link OpenTelemetrySdk}.
-   *
-   * @deprecated Will be removed without replacement
-   */
-  @Deprecated
-  public static OpenTelemetrySdk get() {
-    return (OpenTelemetrySdk) GlobalOpenTelemetry.get();
-  }
-
-  /**
-   * Returns the global {@link io.opentelemetry.sdk.trace.SdkTracerManagement}.
-   *
-   * @deprecated Will be removed without replacement
-   */
-  @Deprecated
-  public static io.opentelemetry.sdk.trace.SdkTracerManagement getGlobalTracerManagement() {
-    TracerProvider tracerProvider = GlobalOpenTelemetry.get().getTracerProvider();
-    if (!(tracerProvider instanceof ObfuscatedTracerProvider)) {
-      throw new IllegalStateException(
-          "Trying to access global SdkTracerManagement but global TracerProvider is not an "
-              + "instance created by this SDK.");
-    }
-    return ((ObfuscatedTracerProvider) tracerProvider).unobfuscate();
-  }
-
   @Override
   public TracerProvider getTracerProvider() {
     return tracerProvider;
@@ -72,17 +44,6 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
   @Override
   public ContextPropagators getPropagators() {
     return propagators;
-  }
-
-  /**
-   * Returns the {@link io.opentelemetry.sdk.trace.SdkTracerManagement} for this {@link
-   * OpenTelemetrySdk}.
-   *
-   * @deprecated Use {@link #getSdkTracerProvider()}
-   */
-  @Deprecated
-  public io.opentelemetry.sdk.trace.SdkTracerManagement getTracerManagement() {
-    return tracerProvider.unobfuscate();
   }
 
   /**

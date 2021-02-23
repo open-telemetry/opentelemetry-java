@@ -52,6 +52,6 @@ class BaggageContextTest {
   void testGetBaggageWithoutDefault_ExplicitContext() {
     Baggage baggage = Baggage.empty();
     Context context = Context.root().with(baggage);
-    assertThat(Baggage.fromContext(context)).isSameAs(baggage);
+    assertThat(Baggage.fromContextOrNull(context)).isSameAs(baggage);
   }
 }

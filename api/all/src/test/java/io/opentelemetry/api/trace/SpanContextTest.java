@@ -11,22 +11,14 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanContext}. */
 class SpanContextTest {
-  private static final byte[] firstTraceIdBytes =
-      new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
-  private static final String FIRST_TRACE_ID = TraceId.bytesToHex(firstTraceIdBytes);
-  private static final byte[] secondTraceIdBytes =
-      new byte[] {0, 0, 0, 0, 0, 0, 0, '0', 0, 0, 0, 0, 0, 0, 0, 0};
-  private static final String SECOND_TRACE_ID = TraceId.bytesToHex(secondTraceIdBytes);
-
-  private static final byte[] firstSpanIdBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
-  private static final String FIRST_SPAN_ID = SpanId.bytesToHex(firstSpanIdBytes);
-  private static final byte[] secondSpanIdBytes = new byte[] {'0', 0, 0, 0, 0, 0, 0, 0};
-  private static final String SECOND_SPAN_ID = SpanId.bytesToHex(secondSpanIdBytes);
+  private static final String FIRST_TRACE_ID = "00000000000000000000000000000061";
+  private static final String SECOND_TRACE_ID = "00000000000000300000000000000000";
+  private static final String FIRST_SPAN_ID = "0000000000000061";
+  private static final String SECOND_SPAN_ID = "3000000000000000";
   private static final TraceState FIRST_TRACE_STATE =
-      TraceState.builder().set("foo", "bar").build();
+      TraceState.builder().put("foo", "bar").build();
   private static final TraceState SECOND_TRACE_STATE =
-      TraceState.builder().set("foo", "baz").build();
-  private static final TraceState EMPTY_TRACE_STATE = TraceState.builder().build();
+      TraceState.builder().put("foo", "baz").build();
   private static final SpanContext first =
       SpanContext.create(FIRST_TRACE_ID, FIRST_SPAN_ID, TraceFlags.getDefault(), FIRST_TRACE_STATE);
   private static final SpanContext second =
@@ -34,12 +26,12 @@ class SpanContextTest {
           SECOND_TRACE_ID, SECOND_SPAN_ID, TraceFlags.getSampled(), SECOND_TRACE_STATE);
   private static final SpanContext remote =
       SpanContext.createFromRemoteParent(
-          SECOND_TRACE_ID, SECOND_SPAN_ID, TraceFlags.getSampled(), EMPTY_TRACE_STATE);
+          SECOND_TRACE_ID, SECOND_SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
 
   @Test
   void invalidSpanContext() {
-    assertThat(SpanContext.getInvalid().getTraceIdAsHexString()).isEqualTo(TraceId.getInvalid());
-    assertThat(SpanContext.getInvalid().getSpanIdAsHexString()).isEqualTo(SpanId.getInvalid());
+    assertThat(SpanContext.getInvalid().getTraceId()).isEqualTo(TraceId.getInvalid());
+    assertThat(SpanContext.getInvalid().getSpanId()).isEqualTo(SpanId.getInvalid());
     assertThat(SpanContext.getInvalid().getTraceFlags()).isEqualTo(TraceFlags.getDefault());
   }
 
@@ -48,12 +40,18 @@ class SpanContextTest {
     assertThat(SpanContext.getInvalid().isValid()).isFalse();
     assertThat(
             SpanContext.create(
-                    FIRST_TRACE_ID, SpanId.getInvalid(), TraceFlags.getDefault(), EMPTY_TRACE_STATE)
+                    FIRST_TRACE_ID,
+                    SpanId.getInvalid(),
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault())
                 .isValid())
         .isFalse();
     assertThat(
             SpanContext.create(
-                    TraceId.getInvalid(), FIRST_SPAN_ID, TraceFlags.getDefault(), EMPTY_TRACE_STATE)
+                    TraceId.getInvalid(),
+                    FIRST_SPAN_ID,
+                    TraceFlags.getDefault(),
+                    TraceState.getDefault())
                 .isValid())
         .isFalse();
     assertThat(first.isValid()).isTrue();
@@ -62,14 +60,14 @@ class SpanContextTest {
 
   @Test
   void getTraceId() {
-    assertThat(first.getTraceIdAsHexString()).isEqualTo(FIRST_TRACE_ID);
-    assertThat(second.getTraceIdAsHexString()).isEqualTo(SECOND_TRACE_ID);
+    assertThat(first.getTraceId()).isEqualTo(FIRST_TRACE_ID);
+    assertThat(second.getTraceId()).isEqualTo(SECOND_TRACE_ID);
   }
 
   @Test
   void getSpanId() {
-    assertThat(first.getSpanIdAsHexString()).isEqualTo(FIRST_SPAN_ID);
-    assertThat(second.getSpanIdAsHexString()).isEqualTo(SECOND_SPAN_ID);
+    assertThat(first.getSpanId()).isEqualTo(FIRST_SPAN_ID);
+    assertThat(second.getSpanId()).isEqualTo(SECOND_SPAN_ID);
   }
 
   @Test

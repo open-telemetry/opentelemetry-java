@@ -17,8 +17,8 @@ import io.opencensus.metrics.export.Point;
 import io.opencensus.metrics.export.Summary;
 import io.opencensus.metrics.export.Summary.Snapshot;
 import io.opencensus.metrics.export.TimeSeries;
-import io.opentelemetry.api.common.Labels;
-import io.opentelemetry.api.common.LabelsBuilder;
+import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.metrics.common.LabelsBuilder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
@@ -43,7 +43,7 @@ import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class OpenTelemetryMetricsExporter extends MetricExporter {
+public final class OpenTelemetryMetricsExporter extends MetricExporter {
   private static final Logger LOGGER =
       Logger.getLogger(OpenTelemetryMetricsExporter.class.getName());
 

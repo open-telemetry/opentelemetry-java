@@ -1,13 +1,13 @@
 package io.opentelemetry.example.metrics;
 
-import io.opentelemetry.api.DefaultOpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
@@ -20,8 +20,8 @@ import javax.swing.filechooser.FileSystemView;
  * Example of using {@link DoubleCounter} to count disk space used by files with specific
  * extensions.
  */
-public class DoubleCounterExample {
-  private static final OpenTelemetry openTelemetry = DefaultOpenTelemetry.builder().build();
+public final class DoubleCounterExample {
+  private static final OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
   private static final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.metrics", "0.13.1");
   private static final Meter sampleMeter =
@@ -36,7 +36,7 @@ public class DoubleCounterExample {
           .build();
 
   public static void main(String[] args) {
-    Span span = tracer.spanBuilder("calculate space").setSpanKind(Kind.INTERNAL).startSpan();
+    Span span = tracer.spanBuilder("calculate space").setSpanKind(SpanKind.INTERNAL).startSpan();
     DoubleCounterExample example = new DoubleCounterExample();
     try (Scope scope = span.makeCurrent()) {
       List<String> extensionsToFind = new ArrayList<>();

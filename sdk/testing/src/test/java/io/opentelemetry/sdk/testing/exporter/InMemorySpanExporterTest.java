@@ -7,9 +7,7 @@ package io.opentelemetry.sdk.testing.exporter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -98,10 +96,8 @@ class InMemorySpanExporterTest {
   static SpanData makeBasicSpan() {
     return TestSpanData.builder()
         .setHasEnded(true)
-        .setTraceId(TraceId.getInvalid())
-        .setSpanId(SpanId.getInvalid())
         .setName("span")
-        .setKind(Kind.SERVER)
+        .setKind(SpanKind.SERVER)
         .setStartEpochNanos(100_000_000_100L)
         .setStatus(StatusData.ok())
         .setEndEpochNanos(200_000_000_200L)

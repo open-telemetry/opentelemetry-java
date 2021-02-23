@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -25,7 +25,7 @@ class LongSumAggregatorTest {
   private static final LongSumAggregator aggregator =
       new LongSumAggregator(
           Resource.getDefault(),
-          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG),
           /* stateful= */ true);
@@ -91,7 +91,7 @@ class LongSumAggregatorTest {
         .isEqualTo(
             MetricData.createLongSum(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 "name",
                 "description",
                 "unit",

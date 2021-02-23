@@ -8,7 +8,7 @@ package io.opentelemetry.opentracingshim.testbed;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public final class TestUtils {
   }
 
   /** Returns a {@code List} with the {@code Span} matching the specified kind. */
-  public static List<SpanData> getByKind(List<SpanData> spans, final Kind kind) {
+  public static List<SpanData> getByKind(List<SpanData> spans, final SpanKind kind) {
     return getByCondition(spans, span -> span.getKind() == kind);
   }
 
@@ -52,7 +52,7 @@ public final class TestUtils {
    * instance being matched, an {@code IllegalArgumentException} will be thrown.
    */
   @Nullable
-  public static SpanData getOneByKind(List<SpanData> spans, final Kind kind) {
+  public static SpanData getOneByKind(List<SpanData> spans, final SpanKind kind) {
 
     List<SpanData> found = getByKind(spans, kind);
     if (found.size() > 1) {

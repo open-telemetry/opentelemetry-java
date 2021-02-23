@@ -7,9 +7,8 @@ package io.opentelemetry.sdk.testing.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -36,18 +35,19 @@ public abstract class TestSpanData implements SpanData {
    */
   public static Builder builder() {
     return new AutoValue_TestSpanData.Builder()
+        .setSpanContext(SpanContext.getInvalid())
         .setParentSpanContext(SpanContext.getInvalid())
-        .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
+        .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.empty())
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setAttributes(Attributes.empty())
         .setEvents(Collections.emptyList())
         .setTotalRecordedEvents(0)
-        .setResource(Resource.getEmpty())
-        .setTraceState(TraceState.getDefault())
-        .setSampled(false)
+        .setResource(Resource.empty())
         .setTotalAttributeCount(0);
   }
+
+  TestSpanData() {}
 
   abstract boolean getInternalHasEnded();
 
@@ -79,30 +79,12 @@ public abstract class TestSpanData implements SpanData {
     }
 
     /**
-     * Set the trace id on this builder.
+     * Set the {@code SpanContext} on this builder.
      *
-     * @param traceId the trace id.
+     * @param spanContext the {@code SpanContext}.
      * @return this builder (for chaining).
      */
-    public abstract Builder setTraceId(String traceId);
-
-    /**
-     * Set the span id on this builder.
-     *
-     * @param spanId the span id.
-     * @return this builder (for chaining).
-     */
-    public abstract Builder setSpanId(String spanId);
-
-    public abstract Builder setSampled(boolean isSampled);
-
-    /**
-     * Set the {@link TraceState} on this builder.
-     *
-     * @param traceState the {@code TraceState}.
-     * @return this.
-     */
-    public abstract Builder setTraceState(TraceState traceState);
+    public abstract Builder setSpanContext(SpanContext spanContext);
 
     /**
      * The parent span context associated for this span, which may be null.
@@ -186,7 +168,7 @@ public abstract class TestSpanData implements SpanData {
      * @param kind The Kind of span.
      * @return this
      */
-    public abstract Builder setKind(Kind kind);
+    public abstract Builder setKind(SpanKind kind);
 
     /**
      * Set the links associated with this span. Must not be null, may be empty.

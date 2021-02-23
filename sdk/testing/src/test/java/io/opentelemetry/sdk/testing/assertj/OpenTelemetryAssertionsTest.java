@@ -10,11 +10,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -31,10 +29,10 @@ import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("PreferJavaTimeOverload")
 class OpenTelemetryAssertionsTest {
-  private static final String TRACE_ID = TraceId.fromLongs(1, 2);
-  private static final String SPAN_ID1 = SpanId.fromLong(3);
-  private static final String SPAN_ID2 = SpanId.fromLong(4);
-  private static final TraceState TRACE_STATE = TraceState.builder().set("cat", "meow").build();
+  private static final String TRACE_ID = "00000000000000010000000000000002";
+  private static final String SPAN_ID1 = "0000000000000003";
+  private static final String SPAN_ID2 = "0000000000000004";
+  private static final TraceState TRACE_STATE = TraceState.builder().put("cat", "meow").build();
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("dog", "bark").build());
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
@@ -71,17 +69,13 @@ class OpenTelemetryAssertionsTest {
   static {
     TestSpanData.Builder spanDataBuilder =
         TestSpanData.builder()
-            .setTraceId(TRACE_ID)
-            .setSpanId(SPAN_ID1)
-            .setSampled(true)
-            .setTraceState(TRACE_STATE)
             .setParentSpanContext(
                 SpanContext.create(
                     TRACE_ID, SPAN_ID2, TraceFlags.getDefault(), TraceState.getDefault()))
             .setResource(RESOURCE)
             .setInstrumentationLibraryInfo(INSTRUMENTATION_LIBRARY_INFO)
             .setName("span")
-            .setKind(Span.Kind.CLIENT)
+            .setKind(SpanKind.CLIENT)
             .setStartEpochNanos(100)
             .setAttributes(ATTRIBUTES)
             .setEvents(EVENTS)
@@ -93,9 +87,18 @@ class OpenTelemetryAssertionsTest {
             .setTotalRecordedLinks(400)
             .setTotalAttributeCount(500);
 
-    SPAN1 = spanDataBuilder.build();
+    SPAN1 =
+        spanDataBuilder
+            .setSpanContext(
+                SpanContext.create(TRACE_ID, SPAN_ID1, TraceFlags.getSampled(), TRACE_STATE))
+            .build();
 
-    SPAN2 = spanDataBuilder.setSampled(false).setHasEnded(false).build();
+    SPAN2 =
+        spanDataBuilder
+            .setSpanContext(
+                SpanContext.create(TRACE_ID, SPAN_ID1, TraceFlags.getDefault(), TRACE_STATE))
+            .setHasEnded(false)
+            .build();
   }
 
   @Test
@@ -109,7 +112,7 @@ class OpenTelemetryAssertionsTest {
         .hasResource(RESOURCE)
         .hasInstrumentationLibraryInfo(INSTRUMENTATION_LIBRARY_INFO)
         .hasName("span")
-        .hasKind(Span.Kind.CLIENT)
+        .hasKind(SpanKind.CLIENT)
         .startsAt(100)
         .startsAt(100, TimeUnit.NANOSECONDS)
         .startsAt(Instant.ofEpochSecond(0, 100))
@@ -156,15 +159,14 @@ class OpenTelemetryAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasParentSpanId("foo"))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(() -> assertThat(SPAN1).hasResource(Resource.getEmpty()))
+    assertThatThrownBy(() -> assertThat(SPAN1).hasResource(Resource.empty()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
-                assertThat(SPAN1)
-                    .hasInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty()))
+                assertThat(SPAN1).hasInstrumentationLibraryInfo(InstrumentationLibraryInfo.empty()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasName("foo")).isInstanceOf(AssertionError.class);
-    assertThatThrownBy(() -> assertThat(SPAN1).hasKind(Span.Kind.SERVER))
+    assertThatThrownBy(() -> assertThat(SPAN1).hasKind(SpanKind.SERVER))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).startsAt(10)).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).startsAt(10, TimeUnit.NANOSECONDS))

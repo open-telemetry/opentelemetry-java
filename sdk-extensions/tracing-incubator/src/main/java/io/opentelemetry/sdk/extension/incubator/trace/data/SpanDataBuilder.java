@@ -7,9 +7,8 @@ package io.opentelemetry.sdk.extension.incubator.trace.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -48,10 +47,7 @@ public abstract class SpanDataBuilder implements SpanData {
    */
   public static SpanDataBuilder.Builder builder(SpanData spanData) {
     return new AutoValue_SpanDataBuilder.Builder()
-        .setTraceId(spanData.getTraceId())
-        .setSpanId(spanData.getSpanId())
-        .setSampled(spanData.isSampled())
-        .setTraceState(spanData.getTraceState())
+        .setSpanContext(spanData.getSpanContext())
         .setParentSpanContext(spanData.getParentSpanContext())
         .setResource(spanData.getResource())
         .setInstrumentationLibraryInfo(spanData.getInstrumentationLibraryInfo())
@@ -93,10 +89,7 @@ public abstract class SpanDataBuilder implements SpanData {
 
     if (o instanceof SpanData) {
       SpanData that = (SpanData) o;
-      return getTraceId().equals(that.getTraceId())
-          && getSpanId().equals(that.getSpanId())
-          && isSampled() == that.isSampled()
-          && getTraceState().equals(that.getTraceState())
+      return getSpanContext().equals(that.getSpanContext())
           && getParentSpanContext().equals(that.getParentSpanContext())
           && getResource().equals(that.getResource())
           && getInstrumentationLibraryInfo().equals(that.getInstrumentationLibraryInfo())
@@ -126,13 +119,7 @@ public abstract class SpanDataBuilder implements SpanData {
 
     abstract SpanDataBuilder autoBuild();
 
-    public abstract Builder setTraceId(String traceId);
-
-    public abstract Builder setSpanId(String spanId);
-
-    public abstract Builder setSampled(boolean isSampled);
-
-    public abstract Builder setTraceState(TraceState traceState);
+    public abstract Builder setSpanContext(SpanContext spanContext);
 
     public abstract Builder setParentSpanContext(SpanContext parentSpanContext);
 
@@ -153,7 +140,7 @@ public abstract class SpanDataBuilder implements SpanData {
 
     public abstract Builder setStatus(StatusData status);
 
-    public abstract Builder setKind(Kind kind);
+    public abstract Builder setKind(SpanKind kind);
 
     public abstract Builder setLinks(List<LinkData> links);
 

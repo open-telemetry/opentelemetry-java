@@ -14,7 +14,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ImplicitContextKeyed;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -76,37 +75,6 @@ public interface Span extends ImplicitContextKeyed {
   }
 
   /**
-   * Type of span. Can be used to specify additional relationships between spans in addition to a
-   * parent/child relationship.
-   */
-  enum Kind {
-    /** Default value. Indicates that the span is used internally. */
-    INTERNAL,
-
-    /** Indicates that the span covers server-side handling of an RPC or other remote request. */
-    SERVER,
-
-    /**
-     * Indicates that the span covers the client-side wrapper around an RPC or other remote request.
-     */
-    CLIENT,
-
-    /**
-     * Indicates that the span describes producer sending a message to a broker. Unlike client and
-     * server, there is no direct critical path latency relationship between producer and consumer
-     * spans.
-     */
-    PRODUCER,
-
-    /**
-     * Indicates that the span describes consumer receiving a message from a broker. Unlike client
-     * and server, there is no direct critical path latency relationship between producer and
-     * consumer spans.
-     */
-    CONSUMER
-  }
-
-  /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
@@ -120,7 +88,7 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  default Span setAttribute(String key, @Nonnull String value) {
+  default Span setAttribute(String key, String value) {
     return setAttribute(AttributeKey.stringKey(key), value);
   }
 
@@ -179,7 +147,7 @@ public interface Span extends ImplicitContextKeyed {
    * @param value the value for this attribute.
    * @return this.
    */
-  <T> Span setAttribute(AttributeKey<T> key, @Nonnull T value);
+  <T> Span setAttribute(AttributeKey<T> key, T value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -310,7 +278,7 @@ public interface Span extends ImplicitContextKeyed {
    * @return this.
    */
   default Span setStatus(StatusCode statusCode) {
-    return setStatus(statusCode, null);
+    return setStatus(statusCode, "");
   }
 
   /**

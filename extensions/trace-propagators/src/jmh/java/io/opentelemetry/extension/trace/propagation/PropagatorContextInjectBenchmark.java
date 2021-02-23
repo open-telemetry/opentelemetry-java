@@ -10,7 +10,8 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
+import io.opentelemetry.extension.aws.AwsXrayPropagator;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -74,8 +75,7 @@ public class PropagatorContextInjectBenchmark {
     }
 
     private static SpanContext createTestSpanContext(String traceId, String spanId) {
-      TraceState traceStateDefault = TraceState.builder().build();
-      return SpanContext.create(traceId, spanId, TraceFlags.getSampled(), traceStateDefault);
+      return SpanContext.create(traceId, spanId, TraceFlags.getSampled(), TraceState.getDefault());
     }
   }
 
@@ -83,8 +83,8 @@ public class PropagatorContextInjectBenchmark {
   public static class JaegerContextInjectBenchmark extends AbstractContextInjectBenchmark {
 
     private final JaegerPropagator jaegerPropagator = JaegerPropagator.getInstance();
-    private final TextMapPropagator.Setter<Map<String, String>> setter =
-        new TextMapPropagator.Setter<Map<String, String>>() {
+    private final TextMapSetter<Map<String, String>> setter =
+        new TextMapSetter<Map<String, String>>() {
           @Override
           public void set(Map<String, String> carrier, String key, String value) {
             carrier.put(key, value);
@@ -100,9 +100,9 @@ public class PropagatorContextInjectBenchmark {
   /** Benchmark for injecting trace context into a single B3 header. */
   public static class B3SingleHeaderContextInjectBenchmark extends AbstractContextInjectBenchmark {
 
-    private final B3Propagator b3Propagator = B3Propagator.getInstance();
-    private final TextMapPropagator.Setter<Map<String, String>> setter =
-        new TextMapPropagator.Setter<Map<String, String>>() {
+    private final B3Propagator b3Propagator = B3Propagator.injectingSingleHeader();
+    private final TextMapSetter<Map<String, String>> setter =
+        new TextMapSetter<Map<String, String>>() {
           @Override
           public void set(Map<String, String> carrier, String key, String value) {
             carrier.put(key, value);
@@ -119,10 +119,9 @@ public class PropagatorContextInjectBenchmark {
   public static class B3MultipleHeaderContextInjectBenchmark
       extends AbstractContextInjectBenchmark {
 
-    private final B3Propagator b3Propagator =
-        B3Propagator.builder().injectMultipleHeaders().build();
-    private final TextMapPropagator.Setter<Map<String, String>> setter =
-        new TextMapPropagator.Setter<Map<String, String>>() {
+    private final B3Propagator b3Propagator = B3Propagator.injectingMultiHeaders();
+    private final TextMapSetter<Map<String, String>> setter =
+        new TextMapSetter<Map<String, String>>() {
           @Override
           public void set(Map<String, String> carrier, String key, String value) {
             carrier.put(key, value);
@@ -138,8 +137,8 @@ public class PropagatorContextInjectBenchmark {
   /** Benchmark for injecting trace context into AWS X-Ray headers. */
   public static class AwsXrayPropagatorInjectBenchmark extends AbstractContextInjectBenchmark {
     private final AwsXrayPropagator xrayPropagator = AwsXrayPropagator.getInstance();
-    private final TextMapPropagator.Setter<Map<String, String>> setter =
-        new TextMapPropagator.Setter<Map<String, String>>() {
+    private final TextMapSetter<Map<String, String>> setter =
+        new TextMapSetter<Map<String, String>>() {
           @Override
           public void set(Map<String, String> carrier, String key, String value) {
             carrier.put(key, value);

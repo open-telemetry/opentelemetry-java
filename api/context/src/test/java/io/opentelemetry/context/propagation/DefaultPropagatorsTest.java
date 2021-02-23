@@ -112,7 +112,7 @@ class DefaultPropagatorsTest {
     }
 
     @Override
-    public <C> void inject(Context context, C carrier, Setter<C> setter) {
+    public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
       Object payload = context.get(key);
       if (payload != null) {
         setter.set(carrier, name, payload.toString());
@@ -120,7 +120,7 @@ class DefaultPropagatorsTest {
     }
 
     @Override
-    public <C> Context extract(Context context, C carrier, Getter<C> getter) {
+    public <C> Context extract(Context context, C carrier, TextMapGetter<C> getter) {
       String payload = getter.get(carrier, name);
       if (payload != null) {
         context = context.with(key, payload);
@@ -130,7 +130,7 @@ class DefaultPropagatorsTest {
     }
   }
 
-  private static final class MapSetter implements TextMapPropagator.Setter<Map<String, String>> {
+  private static final class MapSetter implements TextMapSetter<Map<String, String>> {
     private static final MapSetter INSTANCE = new MapSetter();
 
     @Override
@@ -141,7 +141,7 @@ class DefaultPropagatorsTest {
     private MapSetter() {}
   }
 
-  private static final class MapGetter implements TextMapPropagator.Getter<Map<String, String>> {
+  private static final class MapGetter implements TextMapGetter<Map<String, String>> {
     private static final MapGetter INSTANCE = new MapGetter();
 
     @Override
