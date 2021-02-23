@@ -11,10 +11,10 @@ extra["moduleName"] = "io.opentelemetry.sdk.trace"
 
 dependencies {
     api(project(":api:all"))
-    api(project(":semconv"))
     api(project(":sdk:common"))
 
     implementation(project(":api:metrics"))
+    implementation(project(":semconv"))
 
     annotationProcessor("com.google.auto.value:auto-value")
 
