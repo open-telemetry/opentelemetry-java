@@ -18,7 +18,8 @@ testSets {
 
 dependencies {
     api(project(":api:all"))
-    api(project(":semconv"))
+
+    implementation(project(":semconv"))
 
     annotationProcessor("com.google.auto.value:auto-value")
 

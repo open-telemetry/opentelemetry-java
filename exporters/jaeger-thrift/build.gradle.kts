@@ -12,6 +12,7 @@ dependencies {
     api(project(":sdk:all"))
 
     implementation(project(":sdk:all"))
+    implementation(project(":semconv"))
 
     implementation("io.jaegertracing:jaeger-client")
 
@@ -19,6 +20,6 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("com.squareup.okhttp3:okhttp")
     testImplementation("com.google.guava:guava-testlib")
-    
+
     testImplementation(project(":sdk:testing"))
 }

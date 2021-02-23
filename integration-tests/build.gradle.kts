@@ -8,6 +8,7 @@ extra["moduleName"] = "io.opentelemetry.integration.tests"
 dependencies {
     implementation(project(":sdk:all"))
     implementation(project(":exporters:jaeger"))
+    implementation(project(":semconv"))
 
     implementation("io.grpc:grpc-protobuf")
     implementation("com.google.protobuf:protobuf-java")

@@ -24,6 +24,8 @@ dependencies {
     api(project(":sdk:all"))
     api(project(":sdk:metrics"))
 
+    implementation(project(":semconv"))
+
     compileOnly(project(":extensions:trace-propagators"))
     compileOnly(project(":exporters:jaeger"))
     compileOnly(project(":exporters:logging"))
