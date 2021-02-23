@@ -122,11 +122,11 @@ public final class B3Propagator implements TextMapPropagator {
     return Stream.<Supplier<Optional<Context>>>of(
             () -> singleHeaderExtractor.extract(context, carrier, getter),
             () -> multipleHeadersExtractor.extract(context, carrier, getter),
-            () -> Optional.of(context))
+            () -> Optional.ofNullable(context))
         .map(Supplier::get)
         .filter(Optional::isPresent)
         .map(Optional::get)
         .findFirst()
-        .get();
+        .orElse(Context.root());
   }
 }

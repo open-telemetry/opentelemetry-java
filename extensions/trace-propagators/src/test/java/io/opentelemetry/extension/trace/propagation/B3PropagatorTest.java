@@ -71,9 +71,18 @@ class B3PropagatorTest {
                 SpanId.getInvalid(),
                 TraceFlags.getSampled(),
                 TraceState.builder().put("foo", "bar").build()),
-            Context.current()),
+            Context.root()),
         carrier,
         setter);
+    assertThat(carrier).hasSize(0);
+  }
+
+  @Test
+  void inject_nullContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    b3Propagator.inject(null, carrier, setter);
+    assertThat(carrier).hasSize(0);
+    b3PropagatorSingleHeader.inject(null, carrier, setter);
     assertThat(carrier).hasSize(0);
   }
 
@@ -122,9 +131,16 @@ class B3PropagatorTest {
   @Test
   void extract_Nothing() {
     // Context remains untouched.
-    assertThat(
-            b3Propagator.extract(Context.current(), Collections.<String, String>emptyMap(), getter))
+    assertThat(b3Propagator.extract(Context.current(), Collections.emptyMap(), getter))
         .isSameAs(Context.current());
+  }
+
+  @Test
+  void extract_nullParameters() {
+    // null context doesn't fail
+    assertThat(b3Propagator.extract(null, Collections.emptyMap(), null)).isSameAs(Context.root());
+    assertThat(b3PropagatorSingleHeader.extract(null, Collections.emptyMap(), null))
+        .isSameAs(Context.root());
   }
 
   @Test

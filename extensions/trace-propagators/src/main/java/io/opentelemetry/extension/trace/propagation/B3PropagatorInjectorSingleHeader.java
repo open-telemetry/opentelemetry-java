@@ -11,7 +11,6 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapSetter;
-import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -25,11 +24,12 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
       SPAN_ID_OFFSET + SPAN_ID_HEX_SIZE + COMBINED_HEADER_DELIMITER_SIZE;
   private static final int COMBINED_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
 
+  @SuppressWarnings("ConstantConditions")
   @Override
   public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
-    Objects.requireNonNull(context, "context");
-    Objects.requireNonNull(setter, "setter");
-
+    if (context == null || setter == null) {
+      return;
+    }
     SpanContext spanContext = Span.fromContext(context).getSpanContext();
     if (!spanContext.isValid()) {
       return;

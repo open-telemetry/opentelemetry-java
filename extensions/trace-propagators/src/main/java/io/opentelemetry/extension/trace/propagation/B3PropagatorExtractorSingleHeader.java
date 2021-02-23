@@ -8,7 +8,6 @@ package io.opentelemetry.extension.trace.propagation;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
@@ -18,10 +17,12 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
   private static final Logger logger =
       Logger.getLogger(B3PropagatorExtractorSingleHeader.class.getName());
 
+  @SuppressWarnings("ConstantConditions")
   @Override
   public <C> Optional<Context> extract(Context context, C carrier, TextMapGetter<C> getter) {
-    Objects.requireNonNull(carrier, "carrier");
-    Objects.requireNonNull(getter, "getter");
+    if (context == null || getter == null) {
+      return Optional.empty();
+    }
     return extractSpanContextFromSingleHeader(context, carrier, getter);
   }
 
