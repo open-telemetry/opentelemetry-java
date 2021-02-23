@@ -10,7 +10,8 @@ extra["moduleName"] = "io.opentelemetry.sdk.extension.resources"
 
 dependencies {
     api(project(":sdk:common"))
-    api(project(":semconv"))
+    
+    implementation(project(":semconv"))
 
     compileOnly(project(":sdk-extensions:autoconfigure"))
 

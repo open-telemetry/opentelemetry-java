@@ -14,6 +14,7 @@ dependencies {
     api(project(":api:all"))
     api(project(":sdk:all"))
 
+    implementation(project(":semconv"))
 
     annotationProcessor("com.google.auto.value:auto-value")
     testImplementation(project(":sdk:testing"))

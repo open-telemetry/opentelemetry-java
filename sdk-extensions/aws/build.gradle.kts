@@ -14,6 +14,8 @@ dependencies {
 
     compileOnly(project(":sdk-extensions:autoconfigure"))
 
+    implementation(project(":semconv"))
+
     implementation("com.fasterxml.jackson.core:jackson-core")
     implementation("com.fasterxml.jackson.core:jackson-databind")
 

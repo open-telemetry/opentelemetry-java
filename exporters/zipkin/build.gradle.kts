@@ -17,6 +17,8 @@ dependencies {
 
     annotationProcessor("com.google.auto.value:auto-value")
 
+    implementation(project(":semconv"))
+
     implementation("io.zipkin.reporter2:zipkin-sender-okhttp3")
 
     testImplementation(project(":sdk:testing"))

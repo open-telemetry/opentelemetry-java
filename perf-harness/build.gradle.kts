@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":sdk:testing"))
     implementation(project(":exporters:otlp:trace"))
     implementation(project(":exporters:logging"))
+    implementation(project(":semconv"))
 
     implementation("eu.rekawek.toxiproxy:toxiproxy-java")
     implementation("org.testcontainers:junit-jupiter")
