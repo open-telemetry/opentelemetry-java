@@ -3,14 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.common;
+package io.opentelemetry.sdk.metrics.aggregator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-public class ImmutableDoubleArray {
+class ImmutableDoubleArray {
   private static final ImmutableDoubleArray EMPTY = new ImmutableDoubleArray(new double[0]);
 
   /** Returns an immutable array containing the given values, in order. */
@@ -24,6 +26,15 @@ public class ImmutableDoubleArray {
 
   private ImmutableDoubleArray(double[] array) {
     this.array = array;
+  }
+
+  /** Returns a copy of the underlying data as list. */
+  public List<Double> toList() {
+    List<Double> result = new ArrayList<>(array.length);
+    for (double v : array) {
+      result.add(v);
+    }
+    return result;
   }
 
   /** Returns the number of values in this array. */

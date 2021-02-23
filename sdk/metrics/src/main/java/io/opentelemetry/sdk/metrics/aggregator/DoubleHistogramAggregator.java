@@ -7,8 +7,6 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
-import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
@@ -72,7 +70,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
                 accumulationByLabels,
                 isStateful() ? startEpochNanos : lastCollectionEpoch,
                 epochNanos,
-                boundaries)));
+                boundaries.toList())));
   }
 
   @Override

@@ -3,14 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.common;
+package io.opentelemetry.sdk.metrics.aggregator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-public class ImmutableLongArray {
+class ImmutableLongArray {
   private static final ImmutableLongArray EMPTY = new ImmutableLongArray(new long[0]);
 
   /** Returns an immutable array containing a single value. */
@@ -29,6 +31,15 @@ public class ImmutableLongArray {
 
   private ImmutableLongArray(long[] array) {
     this.array = array;
+  }
+
+  /** Returns a copy of the underlying data as list. */
+  public List<Long> toList() {
+    List<Long> result = new ArrayList<>(array.length);
+    for (long v : array) {
+      result.add(v);
+    }
+    return result;
   }
 
   /** Returns the number of values in this array. */

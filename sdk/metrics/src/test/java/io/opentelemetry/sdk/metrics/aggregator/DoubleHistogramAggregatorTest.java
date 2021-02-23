@@ -10,8 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
-import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;

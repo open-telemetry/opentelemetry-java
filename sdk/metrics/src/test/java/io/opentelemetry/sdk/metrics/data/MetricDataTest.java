@@ -10,8 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.ImmutableDoubleArray;
-import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,8 +50,8 @@ class MetricDataTest {
           Labels.of("key", "value"),
           DOUBLE_VALUE,
           LONG_VALUE,
-          ImmutableDoubleArray.copyOf(new double[] {1}),
-          ImmutableLongArray.copyOf(new long[] {1, 1}));
+          ImmutableList.of(1.0),
+          ImmutableList.of(1L, 1L));
 
   @Test
   void metricData_Getters() {
@@ -168,9 +166,8 @@ class MetricDataTest {
     assertThat(HISTOGRAM_POINT.getLabels().get("key")).isEqualTo("value");
     assertThat(HISTOGRAM_POINT.getCount()).isEqualTo(LONG_VALUE);
     assertThat(HISTOGRAM_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
-    assertThat(HISTOGRAM_POINT.getBoundaries())
-        .isEqualTo(ImmutableDoubleArray.copyOf(new double[] {1}));
-    assertThat(HISTOGRAM_POINT.getCounts()).isEqualTo(ImmutableLongArray.copyOf(new long[] {1, 1}));
+    assertThat(HISTOGRAM_POINT.getBoundaries()).isEqualTo(ImmutableList.of(1.0));
+    assertThat(HISTOGRAM_POINT.getCounts()).isEqualTo(ImmutableList.of(1L, 1L));
 
     List<Double> boundaries = new ArrayList<>();
     List<Long> counts = new ArrayList<>();

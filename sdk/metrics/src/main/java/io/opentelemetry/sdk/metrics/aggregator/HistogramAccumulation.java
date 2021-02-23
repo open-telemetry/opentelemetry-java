@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.common.ImmutableLongArray;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
