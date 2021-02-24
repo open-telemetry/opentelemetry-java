@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class AggregatorFactoryTest {
@@ -122,5 +123,74 @@ class AggregatorFactoryTest {
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE)))
         .isInstanceOf(DoubleSumAggregator.class);
+  }
+
+  @Test
+  void getHistogramAggregatorFactory() {
+    AggregatorFactory histogram =
+        AggregatorFactory.histogram(new double[] {1.0}, /* stateful= */ false);
+    assertThat(
+            histogram.create(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.empty(),
+                InstrumentDescriptor.create(
+                    "name",
+                    "description",
+                    "unit",
+                    InstrumentType.VALUE_RECORDER,
+                    InstrumentValueType.LONG)))
+        .isInstanceOf(DoubleHistogramAggregator.class);
+    assertThat(
+            histogram.create(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.empty(),
+                InstrumentDescriptor.create(
+                    "name",
+                    "description",
+                    "unit",
+                    InstrumentType.VALUE_RECORDER,
+                    InstrumentValueType.DOUBLE)))
+        .isInstanceOf(DoubleHistogramAggregator.class);
+
+    assertThat(
+            histogram
+                .create(
+                    Resource.getDefault(),
+                    InstrumentationLibraryInfo.empty(),
+                    InstrumentDescriptor.create(
+                        "name",
+                        "description",
+                        "unit",
+                        InstrumentType.VALUE_RECORDER,
+                        InstrumentValueType.LONG))
+                .isStateful())
+        .isFalse();
+    assertThat(
+            AggregatorFactory.histogram(new double[] {1.0}, /* stateful= */ true)
+                .create(
+                    Resource.getDefault(),
+                    InstrumentationLibraryInfo.empty(),
+                    InstrumentDescriptor.create(
+                        "name",
+                        "description",
+                        "unit",
+                        InstrumentType.VALUE_RECORDER,
+                        InstrumentValueType.DOUBLE))
+                .isStateful())
+        .isTrue();
+
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            AggregatorFactory.histogram(
+                new double[] {Double.NEGATIVE_INFINITY}, /* stateful= */ false));
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            AggregatorFactory.histogram(
+                new double[] {1, Double.POSITIVE_INFINITY}, /* stateful= */ false));
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () -> AggregatorFactory.histogram(new double[] {2, 1, 3}, /* stateful= */ false));
   }
 }
