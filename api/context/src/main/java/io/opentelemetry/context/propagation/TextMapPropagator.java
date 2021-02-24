@@ -100,7 +100,7 @@ public interface TextMapPropagator {
   Collection<String> fields();
 
   /**
-   * Injects the value downstream, for example as HTTP headers. The carrier may be null to
+   * Injects data for downstream consumers, for example as HTTP headers. The carrier may be null to
    * facilitate calling this method with a lambda for the {@link TextMapSetter}, in which case that
    * null will be passed to the {@link TextMapSetter} implementation.
    *
@@ -112,17 +112,17 @@ public interface TextMapPropagator {
   <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter);
 
   /**
-   * Extracts the value from upstream. For example, as http headers.
+   * Extracts data from upstream. For example, from incoming http headers. The returned Context
+   * should contain the extracted data, if any, merged with the data from the passed-in Context.
    *
-   * <p>If the value could not be parsed, the underlying implementation will decide to set an object
-   * representing either an empty value, an invalid value, or a valid value. Implementation must not
-   * set {@code null}.
+   * <p>If the incoming information could not be parsed, implementations MUST return the original
+   * Context, unaltered.
    *
    * @param context the {@code Context} used to store the extracted value.
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
-   * @param getter invoked for each propagation key to get.
-   * @param <C> carrier of propagation fields, such as an http request.
-   * @return the {@code Context} containing the extracted value.
+   * @param getter invoked for each propagation key to get data from the carrier.
+   * @param <C> the type of carrier of the propagation fields, such as an http request.
+   * @return the {@code Context} containing the extracted data.
    */
   <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter);
 }
