@@ -9,7 +9,7 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
 ## Contents
 
 * [Exporters](#exporters)
-  + [OTLP exporter (both span and metric exporters)](#otlp-exporter--both-span-and-metric-exporters-)
+  + [OTLP exporter (both span and metric exporters)](#otlp-exporter-both-span-and-metric-exporters)
   + [Jaeger exporter](#jaeger-exporter)
   + [Zipkin exporter](#zipkin-exporter)
   + [Prometheus exporter](#prometheus-exporter)
