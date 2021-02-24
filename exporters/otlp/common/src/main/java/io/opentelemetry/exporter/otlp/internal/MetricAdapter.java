@@ -149,6 +149,9 @@ public final class MetricAdapter {
                 .addAllDataPoints(toDoubleDataPoints(doubleGaugeData.getPoints()))
                 .build());
         break;
+      case HISTOGRAM:
+        // no-op, will add in the following PRs
+        break;
     }
     return builder.build();
   }
