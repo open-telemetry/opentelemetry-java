@@ -114,9 +114,9 @@ public interface TextMapPropagator {
   /**
    * Extracts the value from upstream. For example, as http headers.
    *
-   * <p>If the value could not be parsed, the underlying implementation will decide to set an object
-   * representing either an empty value, an invalid value, or a valid value. Implementation must not
-   * set {@code null}.
+   * <p>If a value can not be parsed from the carrier, for a cross-cutting concern, the
+   * implementation must not throw an exception and must not store a new value in the Context, in
+   * order to preserve any previously existing valid value.
    *
    * @param context the {@code Context} used to store the extracted value.
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
