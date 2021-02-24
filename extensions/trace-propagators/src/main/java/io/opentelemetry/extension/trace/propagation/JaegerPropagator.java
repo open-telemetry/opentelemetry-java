@@ -21,7 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -81,9 +80,13 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
-    Objects.requireNonNull(context, "context");
-    Objects.requireNonNull(setter, "setter");
+  public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
+    if (context == null) {
+      return;
+    }
+    if (setter == null) {
+      return;
+    }
 
     SpanContext spanContext = Span.fromContext(context).getSpanContext();
     if (spanContext.isValid()) {
@@ -93,7 +96,8 @@ public final class JaegerPropagator implements TextMapPropagator {
     injectBaggage(Baggage.fromContext(context), carrier, setter);
   }
 
-  private static <C> void injectSpan(SpanContext spanContext, C carrier, TextMapSetter<C> setter) {
+  private static <C> void injectSpan(
+      SpanContext spanContext, @Nullable C carrier, TextMapSetter<C> setter) {
 
     char[] chars = new char[PROPAGATION_HEADER_SIZE];
 
@@ -115,14 +119,20 @@ public final class JaegerPropagator implements TextMapPropagator {
     setter.set(carrier, PROPAGATION_HEADER, new String(chars));
   }
 
-  private static <C> void injectBaggage(Baggage baggage, C carrier, TextMapSetter<C> setter) {
+  private static <C> void injectBaggage(
+      Baggage baggage, @Nullable C carrier, TextMapSetter<C> setter) {
     baggage.forEach(
         (key, baggageEntry) -> setter.set(carrier, BAGGAGE_PREFIX + key, baggageEntry.getValue()));
   }
 
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
-    Objects.requireNonNull(getter, "getter");
+    if (context == null) {
+      return Context.root();
+    }
+    if (getter == null) {
+      return context;
+    }
 
     SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
     if (spanContext.isValid()) {
@@ -137,7 +147,8 @@ public final class JaegerPropagator implements TextMapPropagator {
     return context;
   }
 
-  private static <C> SpanContext getSpanContextFromHeader(C carrier, TextMapGetter<C> getter) {
+  private static <C> SpanContext getSpanContextFromHeader(
+      @Nullable C carrier, TextMapGetter<C> getter) {
     String value = getter.get(carrier, PROPAGATION_HEADER);
     if (StringUtils.isNullOrEmpty(value)) {
       return SpanContext.getInvalid();

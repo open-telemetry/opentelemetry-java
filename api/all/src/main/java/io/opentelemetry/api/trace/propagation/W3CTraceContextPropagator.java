@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -100,8 +99,9 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
-    Objects.requireNonNull(context, "context");
-    Objects.requireNonNull(setter, "setter");
+    if (context == null || setter == null) {
+      return;
+    }
 
     SpanContext spanContext = Span.fromContext(context).getSpanContext();
     if (!spanContext.isValid()) {
@@ -148,8 +148,12 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
 
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
-    Objects.requireNonNull(context, "context");
-    Objects.requireNonNull(getter, "getter");
+    if (context == null) {
+      return Context.root();
+    }
+    if (getter == null) {
+      return context;
+    }
 
     SpanContext spanContext = extractImpl(carrier, getter);
     if (!spanContext.isValid()) {

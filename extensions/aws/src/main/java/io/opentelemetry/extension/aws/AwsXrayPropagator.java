@@ -17,7 +17,6 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -82,8 +81,12 @@ public final class AwsXrayPropagator implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
-    Objects.requireNonNull(context, "context");
-    Objects.requireNonNull(setter, "setter");
+    if (context == null) {
+      return;
+    }
+    if (setter == null) {
+      return;
+    }
 
     Span span = Span.fromContext(context);
     if (!span.getSpanContext().isValid()) {
@@ -120,7 +123,12 @@ public final class AwsXrayPropagator implements TextMapPropagator {
 
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
-    Objects.requireNonNull(getter, "getter");
+    if (context == null) {
+      return Context.root();
+    }
+    if (getter == null) {
+      return context;
+    }
 
     SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
     if (!spanContext.isValid()) {
@@ -130,7 +138,8 @@ public final class AwsXrayPropagator implements TextMapPropagator {
     return context.with(Span.wrap(spanContext));
   }
 
-  private static <C> SpanContext getSpanContextFromHeader(C carrier, TextMapGetter<C> getter) {
+  private static <C> SpanContext getSpanContextFromHeader(
+      @Nullable C carrier, TextMapGetter<C> getter) {
     String traceHeader = getter.get(carrier, TRACE_HEADER_KEY);
     if (traceHeader == null || traceHeader.isEmpty()) {
       return SpanContext.getInvalid();
