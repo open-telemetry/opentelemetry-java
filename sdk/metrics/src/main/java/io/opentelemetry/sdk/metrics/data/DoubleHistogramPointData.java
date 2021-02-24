@@ -67,7 +67,7 @@ public abstract class DoubleHistogramPointData implements PointData {
 
   /**
    * The bucket boundaries. For a Histogram with N defined boundaries, e.g, [x, y, z]. There are N+1
-   * counts: [-inf, x), [x, y), [y, z), [z, +inf].
+   * counts: (-inf, x], (x, y], (y, z], (z, +inf).
    *
    * @return the read-only bucket boundaries in increasing order. <b>do not mutate</b> the returned
    *     object.
