@@ -11,10 +11,8 @@ import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
@@ -168,16 +166,6 @@ class MetricDataTest {
     assertThat(HISTOGRAM_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
     assertThat(HISTOGRAM_POINT.getBoundaries()).isEqualTo(ImmutableList.of(1.0));
     assertThat(HISTOGRAM_POINT.getCounts()).isEqualTo(ImmutableList.of(1L, 1L));
-
-    List<Double> boundaries = new ArrayList<>();
-    List<Long> counts = new ArrayList<>();
-    HISTOGRAM_POINT.forEach(
-        (b, c) -> {
-          boundaries.add(b);
-          counts.add(c);
-        });
-    assertThat(boundaries).isEqualTo(Arrays.asList(1.0, Double.POSITIVE_INFINITY));
-    assertThat(counts).isEqualTo(ImmutableList.of(1L, 1L));
 
     MetricData metricData =
         MetricData.createDoubleHistogram(

@@ -20,13 +20,6 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class DoubleHistogramPointData implements PointData {
   /**
-   * Functional interface for consuming bucket boundaries and counts as a sequence of pair values.
-   */
-  public interface BucketConsumer {
-    void accept(double upperBound, long count);
-  }
-
-  /**
    * Creates a DoubleHistogramPointData.
    *
    * @return a DoubleHistogramPointData.
@@ -80,14 +73,4 @@ public abstract class DoubleHistogramPointData implements PointData {
    * @return the read-only counts in each bucket. <b>do not mutate</b> the returned object.
    */
   public abstract List<Long> getCounts();
-
-  /** Iterates over all the bucket boundaries and counts in this histogram. */
-  public void forEach(BucketConsumer action) {
-    List<Double> boundaries = getBoundaries();
-    List<Long> counts = getCounts();
-    for (int i = 0; i < boundaries.size(); ++i) {
-      action.accept(boundaries.get(i), counts.get(i));
-    }
-    action.accept(Double.POSITIVE_INFINITY, counts.get(boundaries.size()));
-  }
 }
