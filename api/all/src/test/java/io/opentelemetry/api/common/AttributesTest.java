@@ -52,6 +52,21 @@ class AttributesTest {
     assertThat(entriesSeen).containsExactly(entry(stringKey("key"), "value"));
   }
 
+  @Test
+  void putAll() {
+    Attributes attributes = Attributes.of(stringKey("key1"), "value1", longKey("key2"), 333L);
+    assertThat(Attributes.builder().put(booleanKey("key3"), true).putAll(attributes).build())
+        .isEqualTo(
+            Attributes.of(
+                stringKey("key1"), "value1", longKey("key2"), 333L, booleanKey("key3"), true));
+  }
+
+  @Test
+  void putAll_null() {
+    assertThat(Attributes.builder().put(booleanKey("key3"), true).putAll(null).build())
+        .isEqualTo(Attributes.of(booleanKey("key3"), true));
+  }
+
   @SuppressWarnings("CollectionIncompatibleType")
   @Test
   void asMap() {
