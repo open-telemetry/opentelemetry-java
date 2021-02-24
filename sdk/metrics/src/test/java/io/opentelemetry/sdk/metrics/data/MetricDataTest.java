@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link io.opentelemetry.sdk.metrics.data.MetricData}. */
@@ -47,7 +48,6 @@ class MetricDataTest {
           EPOCH_NANOS,
           Labels.of("key", "value"),
           DOUBLE_VALUE,
-          LONG_VALUE,
           ImmutableList.of(1.0),
           ImmutableList.of(1L, 1L));
 
@@ -162,7 +162,7 @@ class MetricDataTest {
     assertThat(HISTOGRAM_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
     assertThat(HISTOGRAM_POINT.getLabels().size()).isEqualTo(1);
     assertThat(HISTOGRAM_POINT.getLabels().get("key")).isEqualTo("value");
-    assertThat(HISTOGRAM_POINT.getCount()).isEqualTo(LONG_VALUE);
+    assertThat(HISTOGRAM_POINT.getCount()).isEqualTo(2L);
     assertThat(HISTOGRAM_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
     assertThat(HISTOGRAM_POINT.getBoundaries()).isEqualTo(ImmutableList.of(1.0));
     assertThat(HISTOGRAM_POINT.getCounts()).isEqualTo(ImmutableList.of(1L, 1L));
@@ -177,6 +177,32 @@ class MetricDataTest {
             DoubleHistogramData.create(
                 AggregationTemporality.DELTA, Collections.singleton(HISTOGRAM_POINT)));
     assertThat(metricData.getDoubleHistogramData().getPoints()).containsExactly(HISTOGRAM_POINT);
+
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            DoubleHistogramPointData.create(
+                0, 0, Labels.empty(), 0.0, ImmutableList.of(), ImmutableList.of()));
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            DoubleHistogramPointData.create(
+                0,
+                0,
+                Labels.empty(),
+                0.0,
+                ImmutableList.of(1.0, 1.0),
+                ImmutableList.of(0L, 0L, 0L)));
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            DoubleHistogramPointData.create(
+                0,
+                0,
+                Labels.empty(),
+                0.0,
+                ImmutableList.of(Double.NEGATIVE_INFINITY),
+                ImmutableList.of(0L, 0L)));
   }
 
   @Test
