@@ -8,7 +8,7 @@ pluginManagement {
         id("de.undercouch.download") version "4.1.1"
         id("io.codearte.nexus-staging") version "0.22.0"
         id("io.morethan.jmhreport") version "0.9.0"
-        id("me.champeau.gradle.jmh") version "0.5.2"
+        id("me.champeau.gradle.jmh") version "0.5.3"
         id("nebula.release") version "15.3.0"
         id("net.ltgt.errorprone") version "1.3.0"
         id("org.jetbrains.kotlin.jvm") version "1.4.21"
