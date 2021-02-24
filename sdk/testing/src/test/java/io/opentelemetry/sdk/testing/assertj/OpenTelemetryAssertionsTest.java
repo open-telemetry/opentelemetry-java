@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -121,6 +123,8 @@ class OpenTelemetryAssertionsTest {
             attributes ->
                 assertThat(attributes)
                     .containsEntry(AttributeKey.stringKey("bear"), "mya")
+                    .hasEntrySatisfying(
+                        AttributeKey.stringKey("bear"), value -> assertThat(value).hasSize(3))
                     .containsEntry("bear", "mya")
                     .containsEntry("warm", true)
                     .containsEntry("temperature", 30)
@@ -132,10 +136,30 @@ class OpenTelemetryAssertionsTest {
                     .containsEntry("scores", 0L, 1L)
                     .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
                     .containsEntry("coins", 0.01, 0.05, 0.1)
-                    .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1)))
+                    .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
+                    .containsOnly(
+                        attributeEntry("bear", "mya"),
+                        attributeEntry("warm", true),
+                        attributeEntry("temperature", 30),
+                        attributeEntry("length", 1.2),
+                        attributeEntry("colors", "red", "blue"),
+                        attributeEntry("conditions", false, true),
+                        attributeEntry("scores", 0L, 1L),
+                        attributeEntry("coins", 0.01, 0.05, 0.1)))
         .hasEvents(EVENTS)
         .hasEvents(EVENTS.toArray(new EventData[0]))
-        .hasEventsSatisfying(events -> assertThat(events).hasSize(EVENTS.size()))
+        .hasEventsSatisfying(
+            events -> {
+              assertThat(events).hasSize(EVENTS.size());
+              assertThat(events.get(0))
+                  .hasName("event")
+                  .hasTimestamp(10)
+                  .hasTimestamp(10, TimeUnit.NANOSECONDS)
+                  .hasTimestamp(Instant.ofEpochSecond(0, 10))
+                  .hasAttributes(Attributes.empty())
+                  .hasAttributesSatisfying(
+                      attributes -> assertThat(attributes).isEqualTo(Attributes.empty()));
+            })
         .hasLinks(LINKS)
         .hasLinks(LINKS.toArray(new LinkData[0]))
         .hasLinksSatisfying(links -> assertThat(links).hasSize(LINKS.size()))
@@ -147,6 +171,8 @@ class OpenTelemetryAssertionsTest {
         .hasTotalRecordedEvents(300)
         .hasTotalRecordedLinks(400)
         .hasTotalAttributeCount(500);
+
+    assertThat(RESOURCE.getAttributes()).containsOnly(entry(AttributeKey.stringKey("dog"), "bark"));
   }
 
   @Test
@@ -181,11 +207,60 @@ class OpenTelemetryAssertionsTest {
                     .hasAttributesSatisfying(
                         attributes -> assertThat(attributes).containsEntry("cat", "bark")))
         .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasAttributesSatisfying(
+                        attributes ->
+                            assertThat(attributes)
+                                .hasEntrySatisfying(
+                                    AttributeKey.stringKey("bear"),
+                                    value -> assertThat(value).hasSize(2))))
+        .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasEvents()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasEvents(Collections.emptyList()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
-            () -> assertThat(SPAN1).hasEventsSatisfying(events -> assertThat(events).isEmpty()))
+        () -> assertThat(SPAN1).hasEventsSatisfying(events -> assertThat(events).isEmpty()));
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(events -> assertThat(events.get(0)).hasName("notevent")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(events -> assertThat(events.get(0)).hasTimestamp(1)))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(
+                        events -> assertThat(events.get(0)).hasTimestamp(1, TimeUnit.NANOSECONDS)))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(
+                        events ->
+                            assertThat(events.get(0)).hasTimestamp(Instant.ofEpochSecond(0, 1))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(
+                        events ->
+                            assertThat(events.get(0)).hasAttributes(RESOURCE.getAttributes())))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(
+                        events ->
+                            assertThat(events.get(0))
+                                .hasAttributesSatisfying(
+                                    attributes ->
+                                        assertThat(attributes).containsEntry("dogs", "meow"))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasLinks()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasLinks(Collections.emptyList()))
@@ -210,5 +285,18 @@ class OpenTelemetryAssertionsTest {
 
     assertThatThrownBy(() -> assertThat(SPAN2).isSampled()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN2).hasEnded()).isInstanceOf(AssertionError.class);
+
+    assertThatThrownBy(
+            () ->
+                assertThat(RESOURCE.getAttributes())
+                    .containsOnly(
+                        entry(AttributeKey.stringKey("dog"), "bark"),
+                        entry(AttributeKey.stringKey("cat"), "meow")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(RESOURCE.getAttributes())
+                    .containsOnly(entry(AttributeKey.stringKey("cat"), "meow")))
+        .isInstanceOf(AssertionError.class);
   }
 }
