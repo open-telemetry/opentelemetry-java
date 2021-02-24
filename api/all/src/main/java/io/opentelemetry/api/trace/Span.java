@@ -41,6 +41,9 @@ public interface Span extends ImplicitContextKeyed {
    * {@link Span} if there is no span in the context.
    */
   static Span fromContext(Context context) {
+    if (context == null) {
+      return Span.getInvalid();
+    }
     Span span = context.get(SpanContextKey.KEY);
     return span == null ? getInvalid() : span;
   }
@@ -51,6 +54,9 @@ public interface Span extends ImplicitContextKeyed {
    */
   @Nullable
   static Span fromContextOrNull(Context context) {
+    if (context == null) {
+      return null;
+    }
     return context.get(SpanContextKey.KEY);
   }
 

@@ -66,4 +66,10 @@ class SpanTest {
     }
     assertThat(Span.current().getSpanContext().isValid()).isFalse();
   }
+
+  @Test
+  void fromContext_null() {
+    assertThat(Span.fromContext(null)).isEqualTo(Span.getInvalid());
+    assertThat(Span.fromContextOrNull(null)).isNull();
+  }
 }

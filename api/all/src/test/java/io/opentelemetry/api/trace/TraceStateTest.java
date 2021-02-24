@@ -65,6 +65,8 @@ class TraceStateTest {
     // Reverse order of input.
     assertThat(entries)
         .containsExactly(entry(SECOND_KEY, SECOND_VALUE), entry(FIRST_KEY, FIRST_VALUE));
+
+    assertThatCode(() -> firstTraceState.forEach(null)).doesNotThrowAnyException();
   }
 
   @Test
