@@ -81,12 +81,12 @@ public interface AggregatorFactory {
    * Returns an {@code AggregatorFactory} that calculates an approximation of the distribution of
    * the measurements taken.
    *
-   * @param stateful configures if the aggregator is stateful.
+   * @param temporality configures what temporality to be produced for the Histogram metrics.
    * @param boundaries configures the fixed bucket boundaries.
    * @return an {@code AggregationFactory} that calculates histogram of recorded measurements.
    */
-  static AggregatorFactory histogram(double[] boundaries, boolean stateful) {
-    return new HistogramAggregatorFactory(boundaries, stateful);
+  static AggregatorFactory histogram(double[] boundaries, AggregationTemporality temporality) {
+    return new HistogramAggregatorFactory(boundaries, temporality);
   }
 
   /**

@@ -7,15 +7,16 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
 
 final class HistogramAggregatorFactory implements AggregatorFactory {
   private final ImmutableDoubleArray boundaries;
-  private final boolean stateful;
+  private final AggregationTemporality temporality;
 
-  HistogramAggregatorFactory(double[] boundaries, boolean stateful) {
+  HistogramAggregatorFactory(double[] boundaries, AggregationTemporality temporality) {
     this.boundaries = ImmutableDoubleArray.copyOf(boundaries);
-    this.stateful = stateful;
+    this.temporality = temporality;
 
     for (int i = 1; i < this.boundaries.length(); ++i) {
       if (Double.compare(this.boundaries.get(i - 1), this.boundaries.get(i)) >= 0) {
@@ -42,12 +43,13 @@ final class HistogramAggregatorFactory implements AggregatorFactory {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor) {
+    final boolean stateful = this.temporality == AggregationTemporality.CUMULATIVE;
     switch (descriptor.getValueType()) {
       case LONG:
       case DOUBLE:
         return (Aggregator<T>)
             new DoubleHistogramAggregator(
-                resource, instrumentationLibraryInfo, descriptor, this.boundaries, this.stateful);
+                resource, instrumentationLibraryInfo, descriptor, this.boundaries, stateful);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

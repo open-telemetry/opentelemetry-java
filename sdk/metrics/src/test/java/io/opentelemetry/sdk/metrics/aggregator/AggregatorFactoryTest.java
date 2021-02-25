@@ -128,7 +128,7 @@ class AggregatorFactoryTest {
   @Test
   void getHistogramAggregatorFactory() {
     AggregatorFactory histogram =
-        AggregatorFactory.histogram(new double[] {1.0}, /* stateful= */ false);
+        AggregatorFactory.histogram(new double[] {1.0}, AggregationTemporality.DELTA);
     assertThat(
             histogram.create(
                 Resource.getDefault(),
@@ -166,7 +166,7 @@ class AggregatorFactoryTest {
                 .isStateful())
         .isFalse();
     assertThat(
-            AggregatorFactory.histogram(new double[] {1.0}, /* stateful= */ true)
+            AggregatorFactory.histogram(new double[] {1.0}, AggregationTemporality.CUMULATIVE)
                 .create(
                     Resource.getDefault(),
                     InstrumentationLibraryInfo.empty(),
@@ -183,14 +183,14 @@ class AggregatorFactoryTest {
         IllegalArgumentException.class,
         () ->
             AggregatorFactory.histogram(
-                new double[] {Double.NEGATIVE_INFINITY}, /* stateful= */ false));
+                new double[] {Double.NEGATIVE_INFINITY}, AggregationTemporality.DELTA));
     Assertions.assertThrows(
         IllegalArgumentException.class,
         () ->
             AggregatorFactory.histogram(
-                new double[] {1, Double.POSITIVE_INFINITY}, /* stateful= */ false));
+                new double[] {1, Double.POSITIVE_INFINITY}, AggregationTemporality.DELTA));
     Assertions.assertThrows(
         IllegalArgumentException.class,
-        () -> AggregatorFactory.histogram(new double[] {2, 1, 3}, /* stateful= */ false));
+        () -> AggregatorFactory.histogram(new double[] {2, 1, 3}, AggregationTemporality.DELTA));
   }
 }
