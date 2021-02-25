@@ -8,11 +8,11 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.concurrent.GuardedBy;
@@ -56,14 +56,19 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    // effectively no-op, will convert to histogram data in other PRs
-    return MetricData.createDoubleGauge(
+    return MetricData.createDoubleHistogram(
         getResource(),
         getInstrumentationLibraryInfo(),
         getInstrumentDescriptor().getName(),
         getInstrumentDescriptor().getDescription(),
         getInstrumentDescriptor().getUnit(),
-        DoubleGaugeData.create(Collections.emptyList()));
+        DoubleHistogramData.create(
+            isStateful() ? AggregationTemporality.CUMULATIVE : AggregationTemporality.DELTA,
+            MetricDataUtils.toDoubleHistogramPointList(
+                accumulationByLabels,
+                isStateful() ? startEpochNanos : lastCollectionEpoch,
+                epochNanos,
+                boundaries.toList())));
   }
 
   @Override

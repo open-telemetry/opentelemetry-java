@@ -8,12 +8,17 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
@@ -76,6 +81,23 @@ public class DoubleHistogramAggregatorTest {
         .isEqualTo(HistogramAccumulation.create(2.0, ImmutableLongArray.of(1)));
     assertThat(aggregator.accumulateLong(10))
         .isEqualTo(HistogramAccumulation.create(10.0, ImmutableLongArray.of(1)));
+  }
+
+  @Test
+  void toMetricData() {
+    AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    aggregatorHandle.recordLong(10);
+
+    MetricData metricData =
+        aggregator.toMetricData(
+            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
+            0,
+            10,
+            100);
+    assertThat(metricData).isNotNull();
+    assertThat(metricData.getType()).isEqualTo(MetricDataType.HISTOGRAM);
+    assertThat(metricData.getDoubleHistogramData().getAggregationTemporality())
+        .isEqualTo(AggregationTemporality.DELTA);
   }
 
   @Test
