@@ -40,8 +40,8 @@ public final class ConfigProperties {
   private ConfigProperties(Map<?, ?> systemProperties, Map<String, String> environmentVariables) {
     Map<String, String> config = new HashMap<>();
     systemProperties.forEach(
-            (key, value) ->
-                    config.put(((String) key).toLowerCase(Locale.ROOT).replace('-', '.'), (String) value));
+        (key, value) ->
+            config.put(((String) key).toLowerCase(Locale.ROOT).replace('-', '.'), (String) value));
     environmentVariables.forEach(
         (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
 
