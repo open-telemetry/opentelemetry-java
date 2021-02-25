@@ -37,7 +37,7 @@ public class DoubleHistogramAggregatorTest {
               "unit",
               InstrumentType.VALUE_RECORDER,
               InstrumentValueType.LONG),
-          ImmutableDoubleArray.copyOf(new double[] {10.0, 100.0, 1000.0}),
+          new double[] {10.0, 100.0, 1000.0},
           /* stateful= */ false);
 
   @Test

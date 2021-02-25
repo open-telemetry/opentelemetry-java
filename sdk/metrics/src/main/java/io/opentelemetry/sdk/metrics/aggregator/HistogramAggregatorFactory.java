@@ -11,27 +11,24 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
 
 final class HistogramAggregatorFactory implements AggregatorFactory {
-  private final ImmutableDoubleArray boundaries;
+  private final double[] boundaries;
   private final AggregationTemporality temporality;
 
   HistogramAggregatorFactory(double[] boundaries, AggregationTemporality temporality) {
-    this.boundaries = ImmutableDoubleArray.copyOf(boundaries);
+    this.boundaries = boundaries;
     this.temporality = temporality;
 
-    for (int i = 1; i < this.boundaries.length(); ++i) {
-      if (Double.compare(this.boundaries.get(i - 1), this.boundaries.get(i)) >= 0) {
+    for (int i = 1; i < this.boundaries.length; ++i) {
+      if (Double.compare(this.boundaries[i - 1], this.boundaries[i]) >= 0) {
         throw new IllegalArgumentException(
-            "invalid bucket boundary: "
-                + this.boundaries.get(i - 1)
-                + " >= "
-                + this.boundaries.get(i));
+            "invalid bucket boundary: " + this.boundaries[i - 1] + " >= " + this.boundaries[i]);
       }
     }
-    if (this.boundaries.length() > 0) {
-      if (this.boundaries.get(0) == Double.NEGATIVE_INFINITY) {
+    if (this.boundaries.length > 0) {
+      if (this.boundaries[0] == Double.NEGATIVE_INFINITY) {
         throw new IllegalArgumentException("invalid bucket boundary: -Inf");
       }
-      if (this.boundaries.get(this.boundaries.length() - 1) == Double.POSITIVE_INFINITY) {
+      if (this.boundaries[this.boundaries.length - 1] == Double.POSITIVE_INFINITY) {
         throw new IllegalArgumentException("invalid bucket boundary: +Inf");
       }
     }

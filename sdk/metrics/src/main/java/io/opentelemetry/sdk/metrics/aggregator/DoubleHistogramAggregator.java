@@ -12,19 +12,21 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.concurrent.GuardedBy;
 
 final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumulation> {
-  private final ImmutableDoubleArray boundaries;
+  private final double[] boundaries;
 
   DoubleHistogramAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
-      ImmutableDoubleArray boundaries,
+      double[] boundaries,
       boolean stateful) {
     super(resource, instrumentationLibraryInfo, instrumentDescriptor, stateful);
     this.boundaries = boundaries;
@@ -56,6 +58,10 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
+    List<Double> boundaries = new ArrayList<>(this.boundaries.length);
+    for (double v : this.boundaries) {
+      boundaries.add(v);
+    }
     return MetricData.createDoubleHistogram(
         getResource(),
         getInstrumentationLibraryInfo(),
@@ -68,7 +74,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
                 accumulationByLabels,
                 isStateful() ? startEpochNanos : lastCollectionEpoch,
                 epochNanos,
-                boundaries.toList())));
+                boundaries)));
   }
 
   @Override
@@ -82,27 +88,27 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   }
 
   static final class Handle extends AggregatorHandle<HistogramAccumulation> {
-    private final ImmutableDoubleArray boundaries;
+    private final double[] boundaries;
 
     private final ReentrantLock lock = new ReentrantLock();
 
     @GuardedBy("lock")
     private final State current;
 
-    Handle(ImmutableDoubleArray boundaries) {
+    Handle(double[] boundaries) {
       this.boundaries = boundaries;
-      this.current = new State(this.boundaries.length() + 1);
+      this.current = new State(this.boundaries.length + 1);
     }
 
     // Benchmark shows that linear search performs better than binary search with ordinary
     // buckets.
     private int findBucketIndex(double value) {
-      for (int i = 0; i < boundaries.length(); ++i) {
-        if (Double.compare(value, boundaries.get(i)) <= 0) {
+      for (int i = 0; i < boundaries.length; ++i) {
+        if (Double.compare(value, boundaries[i]) <= 0) {
           return i;
         }
       }
-      return boundaries.length();
+      return boundaries.length;
     }
 
     @Override
