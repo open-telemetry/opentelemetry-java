@@ -25,7 +25,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
   private static final Resource RESOURCE = buildResource();
 
   /** Returns the automatically configured {@link Resource}. */
-  public static Resource getResource() {
+  public static Resource  getResource() {
     return RESOURCE;
   }
 

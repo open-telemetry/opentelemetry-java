@@ -117,12 +117,12 @@ tasks {
 
     val testResourceDisabledByProperty by existing(Test::class) {
         jvmArgs("-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
-        // Properties win, this is ignored.
-        environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.ProcessRuntimeResourceProvider")
     }
 
     val testResourceDisabledByEnv by existing(Test::class) {
         environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
+        // Environment variables win, this is ignored.
+        jvmArgs("-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider")
     }
 
     val check by existing {
