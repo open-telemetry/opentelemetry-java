@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -24,6 +25,9 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
   private final double[] boundaries;
 
+  // a cache for converting to MetricData
+  private final List<Double> boundaryList;
+
   DoubleHistogramAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
@@ -32,6 +36,12 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       boolean stateful) {
     super(resource, instrumentationLibraryInfo, instrumentDescriptor, stateful);
     this.boundaries = boundaries;
+
+    List<Double> boundaryList = new ArrayList<>(this.boundaries.length);
+    for (double v : this.boundaries) {
+      boundaryList.add(v);
+    }
+    this.boundaryList = Collections.unmodifiableList(boundaryList);
   }
 
   @Override
@@ -59,10 +69,6 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    List<Double> boundaries = new ArrayList<>(this.boundaries.length);
-    for (double v : this.boundaries) {
-      boundaries.add(v);
-    }
     return MetricData.createDoubleHistogram(
         getResource(),
         getInstrumentationLibraryInfo(),
@@ -75,7 +81,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
                 accumulationByLabels,
                 isStateful() ? startEpochNanos : lastCollectionEpoch,
                 epochNanos,
-                boundaries)));
+                boundaryList)));
   }
 
   @Override

@@ -9,13 +9,14 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Arrays;
 
 final class HistogramAggregatorFactory implements AggregatorFactory {
   private final double[] boundaries;
   private final AggregationTemporality temporality;
 
   HistogramAggregatorFactory(double[] boundaries, AggregationTemporality temporality) {
-    this.boundaries = boundaries;
+    this.boundaries = Arrays.copyOf(boundaries, boundaries.length);
     this.temporality = temporality;
 
     for (int i = 1; i < this.boundaries.length; ++i) {
