@@ -53,15 +53,15 @@ final class MetricDataUtils {
       List<Double> boundaries) {
     List<DoubleHistogramPointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
-        (labels, aggregator) ->
-            points.add(
-                DoubleHistogramPointData.create(
-                    startEpochNanos,
-                    epochNanos,
-                    labels,
-                    aggregator.getSum(),
-                    boundaries,
-                    aggregator.getCounts().toList())));
+        (labels, aggregator) -> {
+          List<Long> counts = new ArrayList<>(aggregator.getCounts().length);
+          for (long v : aggregator.getCounts()) {
+            counts.add(v);
+          }
+          points.add(
+              DoubleHistogramPointData.create(
+                  startEpochNanos, epochNanos, labels, aggregator.getSum(), boundaries, counts));
+        });
     return points;
   }
 }

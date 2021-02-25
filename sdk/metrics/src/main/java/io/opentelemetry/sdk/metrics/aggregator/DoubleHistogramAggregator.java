@@ -20,6 +20,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.concurrent.GuardedBy;
 
 final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumulation> {
+  private static final long[] countsOfOne = new long[] {1};
+
   private final double[] boundaries;
 
   DoubleHistogramAggregator(
@@ -44,12 +46,11 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
    */
   @Override
   public final HistogramAccumulation merge(HistogramAccumulation x, HistogramAccumulation y) {
-    long[] mergedCounts = new long[x.getCounts().length()];
-    for (int i = 0; i < x.getCounts().length(); ++i) {
-      mergedCounts[i] = x.getCounts().get(i) + y.getCounts().get(i);
+    long[] mergedCounts = new long[x.getCounts().length];
+    for (int i = 0; i < x.getCounts().length; ++i) {
+      mergedCounts[i] = x.getCounts()[i] + y.getCounts()[i];
     }
-    return HistogramAccumulation.create(
-        x.getSum() + y.getSum(), ImmutableLongArray.copyOf(mergedCounts));
+    return HistogramAccumulation.create(x.getSum() + y.getSum(), mergedCounts);
   }
 
   @Override
@@ -79,12 +80,12 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
   @Override
   public HistogramAccumulation accumulateDouble(double value) {
-    return HistogramAccumulation.create(value, ImmutableLongArray.of(1));
+    return HistogramAccumulation.create(value, countsOfOne);
   }
 
   @Override
   public HistogramAccumulation accumulateLong(long value) {
-    return HistogramAccumulation.create(value, ImmutableLongArray.of(1));
+    return HistogramAccumulation.create(value, countsOfOne);
   }
 
   static final class Handle extends AggregatorHandle<HistogramAccumulation> {
@@ -116,7 +117,8 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       lock.lock();
       try {
         HistogramAccumulation acc =
-            HistogramAccumulation.create(current.sum, ImmutableLongArray.copyOf(current.counts));
+            HistogramAccumulation.create(
+                current.sum, Arrays.copyOf(current.counts, current.counts.length));
         current.reset();
         return acc;
       } finally {

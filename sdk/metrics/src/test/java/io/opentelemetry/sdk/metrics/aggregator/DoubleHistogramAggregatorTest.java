@@ -53,8 +53,7 @@ public class DoubleHistogramAggregatorTest {
     aggregatorHandle.recordLong(150);
     aggregatorHandle.recordLong(2000);
     assertThat(aggregatorHandle.accumulateThenReset())
-        .isEqualTo(
-            HistogramAccumulation.create(2175, ImmutableLongArray.copyOf(new long[] {1, 1, 1, 1})));
+        .isEqualTo(HistogramAccumulation.create(2175, new long[] {1, 1, 1, 1}));
   }
 
   @Test
@@ -64,23 +63,21 @@ public class DoubleHistogramAggregatorTest {
 
     aggregatorHandle.recordLong(100);
     assertThat(aggregatorHandle.accumulateThenReset())
-        .isEqualTo(
-            HistogramAccumulation.create(100, ImmutableLongArray.copyOf(new long[] {0, 1, 0, 0})));
+        .isEqualTo(HistogramAccumulation.create(100, new long[] {0, 1, 0, 0}));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
     aggregatorHandle.recordLong(0);
     assertThat(aggregatorHandle.accumulateThenReset())
-        .isEqualTo(
-            HistogramAccumulation.create(0, ImmutableLongArray.copyOf(new long[] {1, 0, 0, 0})));
+        .isEqualTo(HistogramAccumulation.create(0, new long[] {1, 0, 0, 0}));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
 
   @Test
   void accumulateData() {
     assertThat(aggregator.accumulateDouble(2.0))
-        .isEqualTo(HistogramAccumulation.create(2.0, ImmutableLongArray.of(1)));
+        .isEqualTo(HistogramAccumulation.create(2.0, new long[] {1}));
     assertThat(aggregator.accumulateLong(10))
-        .isEqualTo(HistogramAccumulation.create(10.0, ImmutableLongArray.of(1)));
+        .isEqualTo(HistogramAccumulation.create(10.0, new long[] {1}));
   }
 
   @Test
@@ -141,9 +138,7 @@ public class DoubleHistogramAggregatorTest {
     summarizer.process(aggregatorHandle.accumulateThenReset());
 
     assertThat(summarizer.accumulation)
-        .isEqualTo(
-            HistogramAccumulation.create(
-                101000, ImmutableLongArray.copyOf(new long[] {5000, 5000, 0, 0})));
+        .isEqualTo(HistogramAccumulation.create(101000, new long[] {5000, 5000, 0, 0}));
   }
 
   private static final class Histogram {
