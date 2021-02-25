@@ -95,16 +95,22 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   }
 
   static final class Handle extends AggregatorHandle<HistogramAccumulation> {
+    // read-only
     private final double[] boundaries;
+
+    @GuardedBy("lock")
+    private double sum;
+
+    @GuardedBy("lock")
+    private final long[] counts;
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    @GuardedBy("lock")
-    private final State current;
-
     Handle(double[] boundaries) {
       this.boundaries = boundaries;
-      this.current = new State(this.boundaries.length + 1);
+      this.counts = new long[this.boundaries.length + 1];
+      this.sum = 0;
+      Arrays.fill(this.counts, 0);
     }
 
     // Benchmark shows that linear search performs better than binary search with ordinary
@@ -123,9 +129,9 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       lock.lock();
       try {
         HistogramAccumulation acc =
-            HistogramAccumulation.create(
-                current.sum, Arrays.copyOf(current.counts, current.counts.length));
-        current.reset();
+            HistogramAccumulation.create(sum, Arrays.copyOf(counts, counts.length));
+        this.sum = 0;
+        Arrays.fill(this.counts, 0);
         return acc;
       } finally {
         lock.unlock();
@@ -138,7 +144,8 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
       lock.lock();
       try {
-        current.record(bucketIndex, value);
+        this.sum += value;
+        this.counts[bucketIndex]++;
       } finally {
         lock.unlock();
       }
@@ -147,26 +154,6 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
     @Override
     protected void doRecordLong(long value) {
       doRecordDouble((double) value);
-    }
-
-    private static final class State {
-      private double sum;
-      private final long[] counts;
-
-      public State(int bucketSize) {
-        this.counts = new long[bucketSize];
-        reset();
-      }
-
-      private void reset() {
-        this.sum = 0;
-        Arrays.fill(this.counts, 0);
-      }
-
-      private void record(int bucketIndex, double value) {
-        this.sum += value;
-        this.counts[bucketIndex]++;
-      }
     }
   }
 }
