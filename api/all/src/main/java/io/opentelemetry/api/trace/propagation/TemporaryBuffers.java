@@ -24,10 +24,7 @@ final class TemporaryBuffers {
    */
   static char[] chars(int len) {
     char[] buffer = CHAR_ARRAY.get();
-    if (buffer == null) {
-      buffer = new char[len];
-      CHAR_ARRAY.set(buffer);
-    } else if (buffer.length < len) {
+    if (buffer == null || buffer.length < len) {
       buffer = new char[len];
       CHAR_ARRAY.set(buffer);
     }
