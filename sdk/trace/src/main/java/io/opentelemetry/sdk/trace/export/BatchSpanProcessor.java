@@ -18,6 +18,7 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -261,7 +262,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
       }
 
       try {
-        final CompletableResultCode result = spanExporter.export(batch);
+        final CompletableResultCode result =
+            spanExporter.export(Collections.unmodifiableList(batch));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         if (result.isSuccess()) {
           exportedSpans.add(batch.size());
