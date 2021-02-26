@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 public class DoubleHistogramAggregatorTest {
+  private static final double[] boundaries = new double[] {10.0, 100.0, 1000.0};
   private static final DoubleHistogramAggregator aggregator =
       new DoubleHistogramAggregator(
           Resource.getDefault(),
@@ -37,7 +38,7 @@ public class DoubleHistogramAggregatorTest {
               "unit",
               InstrumentType.VALUE_RECORDER,
               InstrumentValueType.LONG),
-          new double[] {10.0, 100.0, 1000.0},
+          boundaries,
           /* stateful= */ false);
 
   @Test
@@ -74,10 +75,10 @@ public class DoubleHistogramAggregatorTest {
 
   @Test
   void accumulateData() {
-    assertThat(aggregator.accumulateDouble(2.0))
-        .isEqualTo(HistogramAccumulation.create(2.0, new long[] {1}));
+    assertThat(aggregator.accumulateDouble(11.1))
+        .isEqualTo(HistogramAccumulation.create(11.1, new long[] {0, 1, 0, 0}));
     assertThat(aggregator.accumulateLong(10))
-        .isEqualTo(HistogramAccumulation.create(10.0, new long[] {1}));
+        .isEqualTo(HistogramAccumulation.create(10.0, new long[] {1, 0, 0, 0}));
   }
 
   @Test
@@ -95,6 +96,19 @@ public class DoubleHistogramAggregatorTest {
     assertThat(metricData.getType()).isEqualTo(MetricDataType.HISTOGRAM);
     assertThat(metricData.getDoubleHistogramData().getAggregationTemporality())
         .isEqualTo(AggregationTemporality.DELTA);
+  }
+
+  @Test
+  void testHistogramCounts() {
+    assertThat(aggregator.accumulateDouble(1.1).getCounts().length)
+        .isEqualTo(boundaries.length + 1);
+    assertThat(aggregator.accumulateLong(1).getCounts().length).isEqualTo(boundaries.length + 1);
+
+    AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    aggregatorHandle.recordDouble(1.1);
+    HistogramAccumulation histogramAccumulation = aggregatorHandle.accumulateThenReset();
+    assertThat(histogramAccumulation).isNotNull();
+    assertThat(histogramAccumulation.getCounts().length).isEqualTo(boundaries.length + 1);
   }
 
   @Test
