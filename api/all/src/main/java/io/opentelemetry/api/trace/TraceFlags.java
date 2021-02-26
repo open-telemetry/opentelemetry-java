@@ -46,13 +46,12 @@ public interface TraceFlags {
 
   /**
    * Returns the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
+   * If the input cannot be parsed, a {@link TraceFlags} will be returned where {@link
+   * TraceFlags#isValid()} returns {@code false}.
    *
    * @param src the buffer where the hex (base16) representation of the {@link TraceFlags} is.
    * @param srcOffset the offset int buffer.
    * @return the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
-   * @throws NullPointerException if {@code src} is null.
-   * @throws IndexOutOfBoundsException if {@code src} is too short.
-   * @throws IllegalArgumentException if invalid characters in the {@code src}.
    */
   static TraceFlags fromHex(CharSequence src, int srcOffset) {
     return ImmutableTraceFlags.fromHex(src, srcOffset);
@@ -90,4 +89,10 @@ public interface TraceFlags {
    * @return the byte representation of the {@link TraceFlags}.
    */
   byte asByte();
+
+  /**
+   * Returns whether this {@link TraceFlags} is valid. An invalid {@link TraceFlags} should
+   * generally be discarded.
+   */
+  boolean isValid();
 }
