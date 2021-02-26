@@ -46,7 +46,7 @@ public class LongMinMaxSumCountBenchmark {
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
-  @OutputTimeUnit(TimeUnit.MILLISECONDS)
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Threads(value = 10)
   public void aggregate_10Threads() {
     aggregatorHandle.recordLong(100);
@@ -56,7 +56,7 @@ public class LongMinMaxSumCountBenchmark {
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
-  @OutputTimeUnit(TimeUnit.MILLISECONDS)
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Threads(value = 5)
   public void aggregate_5Threads() {
     aggregatorHandle.recordLong(100);
@@ -66,7 +66,7 @@ public class LongMinMaxSumCountBenchmark {
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
-  @OutputTimeUnit(TimeUnit.MILLISECONDS)
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Threads(value = 1)
   public void aggregate_1Threads() {
     aggregatorHandle.recordLong(100);
