@@ -122,20 +122,17 @@ public final class OtelEncodingUtils {
   public static boolean isValidBase16String(CharSequence value) {
     for (int i = 0; i < value.length(); i++) {
       char b = value.charAt(i);
-      // 48..57 && 97..102 are valid
-      if (!isDigit(b) && !isLowercaseHexCharacter(b)) {
+      if (!isValidBase16Character(b)) {
         return false;
       }
     }
     return true;
   }
 
-  private static boolean isLowercaseHexCharacter(char b) {
-    return 97 <= b && b <= 102;
-  }
-
-  private static boolean isDigit(char b) {
-    return 48 <= b && b <= 57;
+  /** Returns whether the given {@code char} is a valid hex character. */
+  public static boolean isValidBase16Character(char b) {
+    // 48..57 && 97..102 are valid
+    return (48 <= b && b <= 57) || (97 <= b && b <= 102);
   }
 
   private OtelEncodingUtils() {}
