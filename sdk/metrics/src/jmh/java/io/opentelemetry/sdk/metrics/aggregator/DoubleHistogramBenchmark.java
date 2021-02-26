@@ -13,9 +13,11 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
@@ -47,6 +49,7 @@ public class DoubleHistogramBenchmark {
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
+  @BenchmarkMode(Mode.AverageTime)
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Threads(value = 10)
   public void aggregate_10Threads() {
@@ -57,6 +60,7 @@ public class DoubleHistogramBenchmark {
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
+  @BenchmarkMode(Mode.AverageTime)
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Threads(value = 5)
   public void aggregate_5Threads() {
@@ -67,6 +71,7 @@ public class DoubleHistogramBenchmark {
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
+  @BenchmarkMode(Mode.AverageTime)
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Threads(value = 1)
   public void aggregate_1Threads() {
