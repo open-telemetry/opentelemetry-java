@@ -10,6 +10,9 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-exporter-jaeger")
 
+    //alpha module
+    implementation "io.opentelemetry:opentelemetry-semconv"
+
     implementation("io.grpc:grpc-protobuf")
     implementation("io.grpc:grpc-netty-shaded")
 }
