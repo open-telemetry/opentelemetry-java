@@ -2,6 +2,35 @@
 
 ## Unreleased:
 
+## Version 1.0.0 - 2021-02-26
+
+### General
+
+This releases marks the first stable release for the tracing, baggage and context APIs and the SDK. 
+Please see the [Versioning](VERSIONING.md) document for stability guarantees.
+
+The best source of lsit of the now stable packages can be found in the 
+[opentelemetry-bom](https://repo1.maven.org/maven2/io/opentelemetry/opentelemetry-bom/1.0.0/opentelemetry-bom-1.0.0.pom)
+artifact in maven central.
+
+Javadoc is available at javadoc.io. 
+For example, [javadoc.io](https://javadoc.io/doc/io.opentelemetry/opentelemetry-api/1.0.0/index.html) for
+the API module.
+
+#### Changes
+
+- The `opentelemetry-proto` module is now versioned as an `alpha` module, as it contains non-stable
+metrics and logs signals. It has hence been removed from the main BOM.
+- The `opentelemetry-sdk-extension-otproto` module has been removed. The classes in it have been moved
+to a new `opentelemetry-exporter-otlp-common` module but have been repackaged into an unsupported,
+internal package.
+
+### Metrics (alpha)
+
+#### Breaking Changes
+
+- `PrometheusCollector.Builder` inner class has been moved to the top level as `PrometheusCollectorBuilder`.
+
 ## Version 0.17.1 - 2021-02-19
 
 - Removed the unused `ResourceProvider` interface from the SDK. This interface is still available 
@@ -16,8 +45,6 @@ on a number of breaking changes. We apologize for the inconvenience this may hav
 aware that these changes will impact users. If you need assistance in migrating from previous releases,
 please open a [discussion topic](https://github.com/opentelemetry/opentelemetry-java/discussions) at
 [https://github.com/opentelemetry/opentelemetry-java/discussions](https://github.com/opentelemetry/opentelemetry-java/discussions).
-
-####
 
 Many classes have been made final that previously were not. Please reach out if you have a need to 
 provide extended functionality, and we can figure out how best to solve your use-case.
