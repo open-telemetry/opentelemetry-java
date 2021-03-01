@@ -46,7 +46,7 @@ final class ViewRegistry {
     configuration.put(InstrumentType.VALUE_OBSERVER, EMPTY_CONFIG);
   }
 
-  void registerView(InstrumentSelector selector, View aggregatorFactory) {
+  void registerView(InstrumentSelector selector, View view) {
     lock.lock();
     try {
       EnumMap<InstrumentType, LinkedHashMap<Pattern, View>> newConfiguration =
@@ -55,7 +55,7 @@ final class ViewRegistry {
           selector.getInstrumentType(),
           newLinkedHashMap(
               selector.getInstrumentNamePattern(),
-              aggregatorFactory,
+              view,
               newConfiguration.get(selector.getInstrumentType())));
       configuration = newConfiguration;
     } finally {
@@ -90,9 +90,9 @@ final class ViewRegistry {
   }
 
   private static LinkedHashMap<Pattern, View> newLinkedHashMap(
-      Pattern pattern, View aggregatorFactory, LinkedHashMap<Pattern, View> parentConfiguration) {
+      Pattern pattern, View view, LinkedHashMap<Pattern, View> parentConfiguration) {
     LinkedHashMap<Pattern, View> result = new LinkedHashMap<>();
-    result.put(pattern, aggregatorFactory);
+    result.put(pattern, view);
     result.putAll(parentConfiguration);
     return result;
   }

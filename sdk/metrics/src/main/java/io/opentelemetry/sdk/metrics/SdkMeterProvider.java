@@ -95,11 +95,11 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
    *   .buildInstrument();
    *
    * // create a specification of how you want the metrics aggregated:
-   * AggregationFactory aggregationFactory = AggregationFactory.minMaxSumCount();
+   * AggregatorFactory aggregatorFactory = AggregatorFactory.minMaxSumCount();
    *
    * //register the view with the MeterSdkProvider
    * meterProvider.registerView(instrumentSelector, View.builder()
-   *   .setAggregatorFactory(factory).build());
+   *   .setAggregatorFactory(aggregatorFactory).build());
    * }</pre>
    */
   public void registerView(InstrumentSelector selector, View view) {

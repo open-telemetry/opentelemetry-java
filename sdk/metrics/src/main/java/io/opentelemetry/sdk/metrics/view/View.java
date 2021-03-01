@@ -9,19 +9,17 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import javax.annotation.concurrent.Immutable;
 
+/** TODO: javadoc. */
 @AutoValue
 @Immutable
 public abstract class View {
   public abstract AggregatorFactory getAggregatorFactory();
 
-  public static Builder builder() {
-    return new AutoValue_View.Builder();
+  public static ViewBuilder builder() {
+    return new ViewBuilder();
   }
 
-  @AutoValue.Builder
-  public abstract static class Builder {
-    public abstract Builder setAggregatorFactory(AggregatorFactory aggregatorFactory);
-
-    public abstract View build();
+  static View create(AggregatorFactory aggregatorFactory) {
+    return new AutoValue_View(aggregatorFactory);
   }
 }
