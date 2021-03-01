@@ -9,18 +9,23 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Arrays;
+import java.util.List;
 
 final class HistogramAggregatorFactory implements AggregatorFactory {
   private final double[] boundaries;
   private final AggregationTemporality temporality;
 
-  HistogramAggregatorFactory(double[] boundaries, AggregationTemporality temporality) {
-    this.boundaries = Arrays.copyOf(boundaries, boundaries.length);
+  HistogramAggregatorFactory(List<Double> boundaries, AggregationTemporality temporality) {
+    this.boundaries = boundaries.stream().mapToDouble(i -> i).toArray();
     this.temporality = temporality;
 
+    for (double v : this.boundaries) {
+      if (Double.isNaN(v)) {
+        throw new IllegalArgumentException("invalid bucket boundary: NaN");
+      }
+    }
     for (int i = 1; i < this.boundaries.length; ++i) {
-      if (Double.compare(this.boundaries[i - 1], this.boundaries[i]) >= 0) {
+      if (this.boundaries[i - 1] >= this.boundaries[i]) {
         throw new IllegalArgumentException(
             "invalid bucket boundary: " + this.boundaries[i - 1] + " >= " + this.boundaries[i]);
       }

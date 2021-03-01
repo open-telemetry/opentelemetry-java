@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /** Factory class for {@link Aggregator}. */
@@ -85,7 +86,7 @@ public interface AggregatorFactory {
    * @param boundaries configures the fixed bucket boundaries.
    * @return an {@code AggregationFactory} that calculates histogram of recorded measurements.
    */
-  static AggregatorFactory histogram(double[] boundaries, AggregationTemporality temporality) {
+  static AggregatorFactory histogram(List<Double> boundaries, AggregationTemporality temporality) {
     return new HistogramAggregatorFactory(boundaries, temporality);
   }
 

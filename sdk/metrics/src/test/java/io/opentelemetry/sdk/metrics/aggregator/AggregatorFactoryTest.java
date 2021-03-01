@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -13,7 +14,8 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
-import org.junit.jupiter.api.Assertions;
+import java.util.Arrays;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class AggregatorFactoryTest {
@@ -128,7 +130,7 @@ class AggregatorFactoryTest {
   @Test
   void getHistogramAggregatorFactory() {
     AggregatorFactory histogram =
-        AggregatorFactory.histogram(new double[] {1.0}, AggregationTemporality.DELTA);
+        AggregatorFactory.histogram(Collections.singletonList(1.0), AggregationTemporality.DELTA);
     assertThat(
             histogram.create(
                 Resource.getDefault(),
@@ -166,7 +168,8 @@ class AggregatorFactoryTest {
                 .isStateful())
         .isFalse();
     assertThat(
-            AggregatorFactory.histogram(new double[] {1.0}, AggregationTemporality.CUMULATIVE)
+            AggregatorFactory.histogram(
+                    Collections.singletonList(1.0), AggregationTemporality.CUMULATIVE)
                 .create(
                     Resource.getDefault(),
                     InstrumentationLibraryInfo.empty(),
@@ -179,18 +182,30 @@ class AggregatorFactoryTest {
                 .isStateful())
         .isTrue();
 
-    Assertions.assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            AggregatorFactory.histogram(
-                new double[] {Double.NEGATIVE_INFINITY}, AggregationTemporality.DELTA));
-    Assertions.assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            AggregatorFactory.histogram(
-                new double[] {1, Double.POSITIVE_INFINITY}, AggregationTemporality.DELTA));
-    Assertions.assertThrows(
-        IllegalArgumentException.class,
-        () -> AggregatorFactory.histogram(new double[] {2, 1, 3}, AggregationTemporality.DELTA));
+    assertThatThrownBy(
+            () ->
+                AggregatorFactory.histogram(
+                    Collections.singletonList(Double.NEGATIVE_INFINITY),
+                    AggregationTemporality.DELTA))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid bucket boundary: -Inf");
+    assertThatThrownBy(
+            () ->
+                AggregatorFactory.histogram(
+                    Arrays.asList(1.0, Double.POSITIVE_INFINITY), AggregationTemporality.DELTA))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid bucket boundary: +Inf");
+    assertThatThrownBy(
+            () ->
+                AggregatorFactory.histogram(
+                    Arrays.asList(1.0, Double.NaN), AggregationTemporality.DELTA))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid bucket boundary: NaN");
+    assertThatThrownBy(
+            () ->
+                AggregatorFactory.histogram(
+                    Arrays.asList(2.0, 1.0, 3.0), AggregationTemporality.DELTA))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("invalid bucket boundary: 2.0 >= 1.0");
   }
 }
