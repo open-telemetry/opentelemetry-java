@@ -25,6 +25,8 @@ import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
@@ -150,7 +152,13 @@ public final class MetricAdapter {
                 .build());
         break;
       case HISTOGRAM:
-        // no-op, will add in the following PRs
+        DoubleHistogramData doubleHistogramData = metricData.getDoubleHistogramData();
+        builder.setDoubleHistogram(
+            DoubleHistogram.newBuilder()
+                .setAggregationTemporality(
+                    mapToTemporality(doubleHistogramData.getAggregationTemporality()))
+                .addAllDataPoints(toDoubleHistogramDataPoints(doubleHistogramData.getPoints()))
+                .build());
         break;
     }
     return builder.build();
@@ -219,6 +227,30 @@ public final class MetricAdapter {
       // allocations if empty list.
       if (!doubleSummaryPoint.getPercentileValues().isEmpty()) {
         addBucketValues(doubleSummaryPoint.getPercentileValues(), builder);
+      }
+      result.add(builder.build());
+    }
+    return result;
+  }
+
+  static Collection<DoubleHistogramDataPoint> toDoubleHistogramDataPoints(
+      Collection<DoubleHistogramPointData> points) {
+    List<DoubleHistogramDataPoint> result = new ArrayList<>(points.size());
+    for (DoubleHistogramPointData doubleHistogramPoint : points) {
+      DoubleHistogramDataPoint.Builder builder =
+          DoubleHistogramDataPoint.newBuilder()
+              .setStartTimeUnixNano(doubleHistogramPoint.getStartEpochNanos())
+              .setTimeUnixNano(doubleHistogramPoint.getEpochNanos())
+              .setCount(doubleHistogramPoint.getCount())
+              .setSum(doubleHistogramPoint.getSum())
+              .addAllBucketCounts(doubleHistogramPoint.getCounts());
+      List<Double> boundaries = doubleHistogramPoint.getBoundaries();
+      if (!boundaries.isEmpty()) {
+        builder.addAllExplicitBounds(boundaries);
+      }
+      Collection<StringKeyValue> labels = toProtoLabels(doubleHistogramPoint.getLabels());
+      if (!labels.isEmpty()) {
+        builder.addAllLabels(labels);
       }
       result.add(builder.build());
     }
