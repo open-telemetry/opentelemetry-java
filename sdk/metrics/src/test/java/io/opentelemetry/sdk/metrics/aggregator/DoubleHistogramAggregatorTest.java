@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.errorprone.annotations.concurrent.GuardedBy;
+import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -17,12 +17,11 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -112,69 +111,54 @@ public class DoubleHistogramAggregatorTest {
   }
 
   @Test
-  void testMultithreadedUpdates() throws Exception {
+  void testMultithreadedUpdates() throws InterruptedException {
     final AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
     final Histogram summarizer = new Histogram();
-    int numberOfThreads = 10;
-    final long[] updates = new long[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
-    final int numberOfUpdates = 1000;
-    final CountDownLatch starter = new CountDownLatch(numberOfThreads);
-    List<Thread> workers = new ArrayList<>();
-    for (int i = 0; i < numberOfThreads; i++) {
-      final int index = i;
-      Thread t =
-          new Thread(
-              () -> {
-                long update = updates[index];
-                try {
-                  starter.await();
-                } catch (InterruptedException e) {
-                  throw new RuntimeException(e);
-                }
-                for (int j = 0; j < numberOfUpdates; j++) {
-                  aggregatorHandle.recordLong(update);
-                  if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                    summarizer.process(aggregatorHandle.accumulateThenReset());
-                  }
-                }
-              });
-      workers.add(t);
-      t.start();
-    }
-    for (int i = 0; i <= numberOfThreads; i++) {
-      starter.countDown();
-    }
+    final ImmutableList<Long> updates =
+        ImmutableList.of(1L, 2L, 3L, 5L, 7L, 11L, 13L, 17L, 19L, 23L);
+    final int numberOfThreads = updates.size();
+    final int numberOfUpdates = 10000;
+    final ThreadPoolExecutor executor =
+        (ThreadPoolExecutor) Executors.newFixedThreadPool(numberOfThreads);
 
-    for (Thread worker : workers) {
-      worker.join();
-    }
+    executor.invokeAll(
+        updates.stream()
+            .map(
+                v ->
+                    Executors.callable(
+                        () -> {
+                          for (int j = 0; j < numberOfUpdates; j++) {
+                            aggregatorHandle.recordLong(v);
+                            if (ThreadLocalRandom.current().nextInt(10) == 0) {
+                              summarizer.process(aggregatorHandle.accumulateThenReset());
+                            }
+                          }
+                        }))
+            .collect(Collectors.toList()));
+
     // make sure everything gets merged when all the aggregation is done.
     summarizer.process(aggregatorHandle.accumulateThenReset());
 
     assertThat(summarizer.accumulation)
-        .isEqualTo(HistogramAccumulation.create(101000, new long[] {5000, 5000, 0, 0}));
+        .isEqualTo(HistogramAccumulation.create(1010000, new long[] {50000, 50000, 0, 0}));
   }
 
   private static final class Histogram {
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final Object mutex = new Object();
 
-    @GuardedBy("lock")
-    @Nullable
-    private HistogramAccumulation accumulation;
+    @Nullable private HistogramAccumulation accumulation;
 
     void process(@Nullable HistogramAccumulation other) {
       if (other == null) {
         return;
       }
-      lock.writeLock().lock();
-      try {
+
+      synchronized (mutex) {
         if (accumulation == null) {
           accumulation = other;
           return;
         }
         accumulation = aggregator.merge(accumulation, other);
-      } finally {
-        lock.writeLock().unlock();
       }
     }
   }
