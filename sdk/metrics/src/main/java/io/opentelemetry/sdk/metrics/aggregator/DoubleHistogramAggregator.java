@@ -98,7 +98,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   // buckets.
   private static int findBucketIndex(double[] boundaries, double value) {
     for (int i = 0; i < boundaries.length; ++i) {
-      if (Double.compare(value, boundaries[i]) <= 0) {
+      if (value <= boundaries[i]) {
         return i;
       }
     }
