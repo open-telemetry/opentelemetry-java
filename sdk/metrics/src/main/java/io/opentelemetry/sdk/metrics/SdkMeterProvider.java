@@ -9,10 +9,10 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -98,10 +98,11 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
    * AggregationFactory aggregationFactory = AggregationFactory.minMaxSumCount();
    *
    * //register the view with the MeterSdkProvider
-   * meterProvider.registerView(instrumentSelector, aggregationFactory);
+   * meterProvider.registerView(instrumentSelector, View.builder()
+   *   .setAggregatorFactory(factory).build());
    * }</pre>
    */
-  public void registerView(InstrumentSelector selector, AggregatorFactory aggregatorFactory) {
-    sharedState.getViewRegistry().registerView(selector, aggregatorFactory);
+  public void registerView(InstrumentSelector selector, View view) {
+    sharedState.getViewRegistry().registerView(selector, view);
   }
 }
