@@ -97,7 +97,7 @@ class DoubleMinMaxSumCountAggregatorTest {
     int numberOfThreads = 10;
     final double[] updates = new double[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
     final int numberOfUpdates = 1000;
-    final CountDownLatch startingGun = new CountDownLatch(numberOfThreads);
+    final CountDownLatch starter = new CountDownLatch(numberOfThreads);
     List<Thread> workers = new ArrayList<>();
     for (int i = 0; i < numberOfThreads; i++) {
       final int index = i;
@@ -106,7 +106,7 @@ class DoubleMinMaxSumCountAggregatorTest {
               () -> {
                 double update = updates[index];
                 try {
-                  startingGun.await();
+                  starter.await();
                 } catch (InterruptedException e) {
                   throw new RuntimeException(e);
                 }
@@ -121,7 +121,7 @@ class DoubleMinMaxSumCountAggregatorTest {
       t.start();
     }
     for (int i = 0; i <= numberOfThreads; i++) {
-      startingGun.countDown();
+      starter.countDown();
     }
 
     for (Thread worker : workers) {
