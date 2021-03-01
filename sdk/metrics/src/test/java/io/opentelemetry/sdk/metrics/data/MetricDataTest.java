@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.metrics.common.Labels;
@@ -14,7 +15,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link io.opentelemetry.sdk.metrics.data.MetricData}. */
@@ -178,31 +178,31 @@ class MetricDataTest {
                 AggregationTemporality.DELTA, Collections.singleton(HISTOGRAM_POINT)));
     assertThat(metricData.getDoubleHistogramData().getPoints()).containsExactly(HISTOGRAM_POINT);
 
-    Assertions.assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            DoubleHistogramPointData.create(
-                0, 0, Labels.empty(), 0.0, ImmutableList.of(), ImmutableList.of()));
-    Assertions.assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            DoubleHistogramPointData.create(
-                0,
-                0,
-                Labels.empty(),
-                0.0,
-                ImmutableList.of(1.0, 1.0),
-                ImmutableList.of(0L, 0L, 0L)));
-    Assertions.assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            DoubleHistogramPointData.create(
-                0,
-                0,
-                Labels.empty(),
-                0.0,
-                ImmutableList.of(Double.NEGATIVE_INFINITY),
-                ImmutableList.of(0L, 0L)));
+    assertThatThrownBy(
+            () ->
+                DoubleHistogramPointData.create(
+                    0, 0, Labels.empty(), 0.0, ImmutableList.of(), ImmutableList.of()))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+            () ->
+                DoubleHistogramPointData.create(
+                    0,
+                    0,
+                    Labels.empty(),
+                    0.0,
+                    ImmutableList.of(1.0, 1.0),
+                    ImmutableList.of(0L, 0L, 0L)))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+            () ->
+                DoubleHistogramPointData.create(
+                    0,
+                    0,
+                    Labels.empty(),
+                    0.0,
+                    ImmutableList.of(Double.NEGATIVE_INFINITY),
+                    ImmutableList.of(0L, 0L)))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

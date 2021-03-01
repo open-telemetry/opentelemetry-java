@@ -9,7 +9,9 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -25,9 +27,9 @@ import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark)
-public class DoubleMinMaxSumCountBenchmark {
-  private static final Aggregator<MinMaxSumCountAccumulation> aggregator =
-      AggregatorFactory.minMaxSumCount()
+public class DoubleHistogramBenchmark {
+  private static final Aggregator<HistogramAccumulation> aggregator =
+      AggregatorFactory.histogram(Arrays.asList(10.0, 100.0, 1_000.0), AggregationTemporality.DELTA)
           .create(
               Resource.getDefault(),
               InstrumentationLibraryInfo.empty(),
@@ -37,7 +39,7 @@ public class DoubleMinMaxSumCountBenchmark {
                   "1",
                   InstrumentType.VALUE_RECORDER,
                   InstrumentValueType.DOUBLE));
-  private AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle;
+  private AggregatorHandle<HistogramAccumulation> aggregatorHandle;
 
   @Setup(Level.Trial)
   public final void setup() {
