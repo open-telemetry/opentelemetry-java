@@ -34,22 +34,31 @@ public final class IntervalMetricReader {
   private final ScheduledExecutorService scheduler;
 
   /** Stops the scheduled task and calls export one more time. */
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
+    final CompletableResultCode result = new CompletableResultCode();
     scheduler.shutdown();
     try {
       scheduler.awaitTermination(5, TimeUnit.SECONDS);
-      CompletableResultCode result = exporter.forceFlush();
-      if (result != null) {
-        result.join(5, TimeUnit.SECONDS);
-      }
+      final CompletableResultCode flushResult = exporter.forceFlush();
+      exporter.run();
+      flushResult.join(5, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
       // force a shutdown if the export hasn't finished.
       scheduler.shutdownNow();
       // reset the interrupted status
       Thread.currentThread().interrupt();
     } finally {
-      exporter.shutdown();
+      final CompletableResultCode shutdownResult = exporter.shutdown();
+      shutdownResult.whenComplete(
+          () -> {
+            if (!shutdownResult.isSuccess()) {
+              result.fail();
+            } else {
+              result.succeed();
+            }
+          });
     }
+    return result;
   }
 
   /**
@@ -77,7 +86,7 @@ public final class IntervalMetricReader {
 
     private final InternalState internalState;
     private final AtomicBoolean exportAvailable = new AtomicBoolean(true);
-    private final AtomicReference<CompletableResultCode> exportResult = new AtomicReference<>();
+    private final AtomicReference<CompletableResultCode> flushResult = new AtomicReference<>();
 
     private Exporter(InternalState internalState) {
       this.internalState = internalState;
@@ -88,20 +97,22 @@ public final class IntervalMetricReader {
     public void run() {
       if (exportAvailable.compareAndSet(true, false)) {
         try {
+          if (flushResult.get() != null) {
+            flush();
+            return;
+          }
           List<MetricData> metricsList = new ArrayList<>();
           for (MetricProducer metricProducer : internalState.getMetricProducers()) {
             metricsList.addAll(metricProducer.collectAllMetrics());
           }
           final CompletableResultCode result =
               internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
-          exportResult.set(result);
           result.whenComplete(
               () -> {
                 if (!result.isSuccess()) {
                   logger.log(Level.FINE, "Exporter failed");
                 }
                 exportAvailable.set(true);
-                exportResult.set(null);
               });
         } catch (RuntimeException e) {
           logger.log(Level.WARNING, "Exporter threw an Exception", e);
@@ -111,13 +122,32 @@ public final class IntervalMetricReader {
       }
     }
 
-    CompletableResultCode forceFlush() {
-      run();
-      return exportResult.get();
+    void flush() {
+      List<MetricData> metricsList = new ArrayList<>();
+      for (MetricProducer metricProducer : internalState.getMetricProducers()) {
+        metricsList.addAll(metricProducer.collectAllMetrics());
+      }
+      final CompletableResultCode result =
+          internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
+      result.whenComplete(
+          () -> {
+            if (!result.isSuccess()) {
+              logger.log(Level.FINE, "Exporter failed during flush");
+            }
+            flushResult.get().succeed();
+            flushResult.set(null);
+            exportAvailable.set(true);
+          });
     }
 
-    void shutdown() {
-      internalState.getMetricExporter().shutdown();
+    CompletableResultCode forceFlush() {
+      CompletableResultCode flushResult = new CompletableResultCode();
+      this.flushResult.compareAndSet(null, flushResult);
+      return this.flushResult.get();
+    }
+
+    CompletableResultCode shutdown() {
+      return internalState.getMetricExporter().shutdown();
     }
   }
 
