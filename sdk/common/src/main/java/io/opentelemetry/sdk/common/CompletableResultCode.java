@@ -136,8 +136,7 @@ public final class CompletableResultCode {
   }
 
   /**
-   * Waits for the specified amount of time for this {@link CompletableResultCode} to complete. If
-   * it times out or is interrupted, the {@link CompletableResultCode} is failed.
+   * Waits for the specified amount of time for this {@link CompletableResultCode} to complete.
    *
    * @return this {@link CompletableResultCode}
    */
@@ -149,11 +148,10 @@ public final class CompletableResultCode {
     whenComplete(latch::countDown);
     try {
       if (!latch.await(timeout, unit)) {
-        fail();
+        return this;
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      fail();
     }
     return this;
   }
