@@ -25,6 +25,7 @@ abstract class AbstractAccumulator {
     return meterProviderSharedState
         .getViewRegistry()
         .findView(descriptor)
+        .getAggregatorFactory()
         .create(
             meterProviderSharedState.getResource(),
             meterSharedState.getInstrumentationLibraryInfo(),
