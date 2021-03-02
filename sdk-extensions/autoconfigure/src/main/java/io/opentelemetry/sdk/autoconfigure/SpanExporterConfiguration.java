@@ -67,7 +67,7 @@ final class SpanExporterConfiguration {
     ClasspathUtil.checkClassExists(
         "io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter",
         "OTLP Trace Exporter",
-        "opentelemetry-exporter-otlp-trace");
+        "opentelemetry-exporter-otlp");
     OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder();
 
     String endpoint = config.getString("otel.exporter.otlp.endpoint");
