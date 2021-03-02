@@ -37,11 +37,11 @@ dependencyResolutionManagement {
 rootProject.name = "opentelemetry-java"
 include(":all")
 include(":api:all")
-include(":api:context")
 include(":api:metrics")
 include(":semconv")
 include(":bom")
 include(":bom-alpha")
+include(":context")
 include(":dependencyManagement")
 include(":extensions:annotations")
 include(":extensions:aws")

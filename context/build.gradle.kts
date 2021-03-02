@@ -9,7 +9,6 @@ plugins {
 
 description = "OpenTelemetry Context (Incubator)"
 extra["moduleName"] = "io.opentelemetry.context"
-base.archivesBaseName = "opentelemetry-context"
 
 testSets {
     create("grpcInOtelTest")
