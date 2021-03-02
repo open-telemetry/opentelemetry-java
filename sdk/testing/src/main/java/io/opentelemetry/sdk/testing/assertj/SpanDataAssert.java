@@ -198,7 +198,7 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
   /** Asserts the span has the given attributes. */
   public SpanDataAssert hasAttributes(Attributes attributes) {
     isNotNull();
-    if (!actual.getAttributes().equals(attributes)) {
+    if (!attributesAreEqual(attributes)) {
       failWithActualExpectedAndMessage(
           actual.getAttributes(),
           attributes,
@@ -208,6 +208,11 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
           actual.getAttributes());
     }
     return this;
+  }
+
+  private boolean attributesAreEqual(Attributes attributes) {
+    // compare as maps, since implementations do not have equals that work correctly across implementations.
+    return actual.getAttributes().asMap().equals(attributes.asMap());
   }
 
   /** Asserts the span has attributes satisfying the given condition. */
