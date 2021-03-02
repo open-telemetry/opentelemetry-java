@@ -58,7 +58,7 @@ final class MetricExporterConfiguration {
           "OTLP Metrics Exporter",
           "opentelemetry-exporter-otlp-metrics");
     } catch (ConfigurationException e) {
-      // Squash this for now, once metrics is stable and included in the `exporter-otlp` artifact
+      // Squash this for now, until metrics are stable and included in the `exporter-otlp` artifact
       // by default,
       return null;
     }
