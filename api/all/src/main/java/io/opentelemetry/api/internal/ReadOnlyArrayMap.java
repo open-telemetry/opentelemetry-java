@@ -32,7 +32,7 @@ import java.util.Set;
 
 /** A read-only view of an array of key-value pairs. */
 @SuppressWarnings("unchecked")
-public final class ReadOnlyArrayMap<K, V> implements Map<K, V> {
+public final class ReadOnlyArrayMap<K, V> extends AbstractMap<K, V> {
 
   /** Returns a read-only view of the given {@code array}. */
   public static <K, V> Map<K, V> wrap(List<Object> array) {
