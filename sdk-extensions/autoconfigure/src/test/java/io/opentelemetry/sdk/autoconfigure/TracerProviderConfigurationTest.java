@@ -7,8 +7,10 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
@@ -21,20 +23,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 // NB: We use AssertJ extracting to reflectively access implementation details to test configuration
 // because the use of BatchSpanProcessor makes it difficult to verify values through public means.
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class TracerProviderConfigurationTest {
 
   private static final ConfigProperties EMPTY =
       ConfigProperties.createForTest(Collections.emptyMap());
 
   @Mock private SpanExporter exporter;
+
+  @BeforeEach
+  void setUp() {
+    when(exporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+  }
 
   @Test
   void configureTracerProvider() {
