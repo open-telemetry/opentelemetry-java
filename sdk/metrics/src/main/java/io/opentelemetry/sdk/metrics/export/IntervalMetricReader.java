@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
@@ -38,7 +38,10 @@ public final class IntervalMetricReader {
     scheduler.shutdown();
     try {
       scheduler.awaitTermination(5, TimeUnit.SECONDS);
-      exporter.run();
+      CompletableResultCode result = exporter.forceFlush();
+      if (result != null) {
+        result.join(5, TimeUnit.SECONDS);
+      }
     } catch (InterruptedException e) {
       // force a shutdown if the export hasn't finished.
       scheduler.shutdownNow();
@@ -74,7 +77,7 @@ public final class IntervalMetricReader {
 
     private final InternalState internalState;
     private final AtomicBoolean exportAvailable = new AtomicBoolean(true);
-    private CountDownLatch latch = new CountDownLatch(0);
+    private final AtomicReference<CompletableResultCode> exportResult = new AtomicReference<>();
 
     private Exporter(InternalState internalState) {
       this.internalState = internalState;
@@ -84,7 +87,6 @@ public final class IntervalMetricReader {
     @SuppressWarnings("BooleanParameter")
     public void run() {
       if (exportAvailable.compareAndSet(true, false)) {
-        latch = new CountDownLatch(1);
         try {
           List<MetricData> metricsList = new ArrayList<>();
           for (MetricProducer metricProducer : internalState.getMetricProducers()) {
@@ -92,16 +94,16 @@ public final class IntervalMetricReader {
           }
           final CompletableResultCode result =
               internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
+          exportResult.set(result);
           result.whenComplete(
               () -> {
                 if (!result.isSuccess()) {
                   logger.log(Level.FINE, "Exporter failed");
                 }
                 exportAvailable.set(true);
-                latch.countDown();
+                exportResult.set(null);
               });
-        } catch (RuntimeException e) {
-          latch.countDown();
+          } catch (RuntimeException e) {
           logger.log(Level.WARNING, "Exporter threw an Exception", e);
         }
       } else {
@@ -109,12 +111,12 @@ public final class IntervalMetricReader {
       }
     }
 
+    CompletableResultCode forceFlush() {
+      run();
+      return exportResult.get();
+    }
+
     void shutdown() {
-      try {
-        latch.await(5, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-        logger.log(Level.WARNING, "Exporter shutdown threw an Exception", e);
-      }
       internalState.getMetricExporter().shutdown();
     }
   }
