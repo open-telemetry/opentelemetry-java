@@ -211,7 +211,8 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
   }
 
   private boolean attributesAreEqual(Attributes attributes) {
-    // compare as maps, since implementations do not have equals that work correctly across implementations.
+    // compare as maps, since implementations do not have equals that work correctly across
+    // implementations.
     return actual.getAttributes().asMap().equals(attributes.asMap());
   }
 
