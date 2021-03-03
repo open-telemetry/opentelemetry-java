@@ -141,7 +141,8 @@ class StrictContextStorageTest {
 
   @SuppressWarnings("ReturnValueIgnored")
   void decorator_close_withLeakedScope(Supplier<Scope> method, String methodName) throws Exception {
-    Thread thread = new Thread(method::get);
+    AtomicReference<Scope> scope = new AtomicReference<>();
+    Thread thread = new Thread(() -> scope.set(method.get()));
     thread.setName("t1");
     thread.start();
     thread.join();
