@@ -11,6 +11,8 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -66,16 +68,27 @@ public class SpanPipelineBenchmark {
 
       collector.start();
 
-      String address = collector.getHost() + ":" + collector.getMappedPort(EXPOSED_PORT);
+      SpanProcessor spanProcessor = makeSpanProcessor(collector);
 
       SdkTracerProvider tracerProvider =
           SdkTracerProvider.builder()
               .setSampler(Sampler.alwaysOn())
-              .addSpanProcessor(getSpanProcessor(address))
+              .addSpanProcessor(spanProcessor)
               .build();
 
       Tracer tracerSdk = tracerProvider.get("PipelineBenchmarkTracer");
       sdkSpanBuilder = (SdkSpanBuilder) tracerSdk.spanBuilder("PipelineBenchmarkSpan");
+    }
+
+    private SpanProcessor makeSpanProcessor(GenericContainer<?> collector) {
+      try {
+        String host = collector.getHost();
+        Integer port = collector.getMappedPort(EXPOSED_PORT);
+        String address = new URL("http", host, port, "").toString();
+        return getSpanProcessor(address);
+      } catch (MalformedURLException e) {
+        throw new IllegalStateException("can't make a url", e);
+      }
     }
 
     @Benchmark
