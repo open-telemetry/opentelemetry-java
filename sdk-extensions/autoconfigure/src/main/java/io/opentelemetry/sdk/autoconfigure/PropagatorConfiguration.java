@@ -9,12 +9,13 @@ import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.extension.trace.propagation.AwsXrayPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
-import io.opentelemetry.extension.trace.propagation.OtTracerPropagator;
+import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -33,7 +34,11 @@ final class PropagatorConfiguration {
                     ConfigurablePropagatorProvider::getPropagator));
 
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();
-    for (String propagatorName : config.getCommaSeparatedValues("otel.propagators")) {
+    List<String> requestedPropagators = config.getCommaSeparatedValues("otel.propagators");
+    if (requestedPropagators.isEmpty()) {
+      requestedPropagators = Arrays.asList("tracecontext", "baggage");
+    }
+    for (String propagatorName : requestedPropagators) {
       propagators.add(getPropagator(propagatorName, spiPropagators));
     }
 
@@ -57,15 +62,14 @@ final class PropagatorConfiguration {
 
     switch (name) {
       case "b3":
-        return B3Propagator.getInstance();
+        return B3Propagator.injectingSingleHeader();
       case "b3multi":
-        return B3Propagator.builder().injectMultipleHeaders().build();
+        return B3Propagator.injectingMultiHeaders();
       case "jaeger":
         return JaegerPropagator.getInstance();
-      case "ottracer":
-        return OtTracerPropagator.getInstance();
-      case "xray":
-        return AwsXrayPropagator.getInstance();
+        // NB: https://github.com/open-telemetry/opentelemetry-specification/pull/1406
+      case "ottrace":
+        return OtTracePropagator.getInstance();
       default:
         TextMapPropagator spiPropagator = spiPropagators.get(name);
         if (spiPropagator != null) {

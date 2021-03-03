@@ -14,10 +14,9 @@ import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.ServiceLoader;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -45,20 +44,14 @@ class Ec2ResourceTest {
 
   @RegisterExtension public static MockWebServerExtension server = new MockWebServerExtension();
 
-  private Ec2Resource populator;
-
-  @BeforeEach
-  public void setUp() {
-    populator = new Ec2Resource("localhost:" + server.httpPort());
-  }
-
   @Test
   void imdsv2() {
     server.enqueue(HttpResponse.of("token"));
     server.enqueue(HttpResponse.of(MediaType.JSON_UTF_8, IDENTITY_DOCUMENT));
     server.enqueue(HttpResponse.of("ec2-1-2-3-4"));
 
-    Attributes attributes = populator.getAttributes();
+    Attributes attributes =
+        Ec2Resource.buildResource("localhost:" + server.httpPort()).getAttributes();
     AttributesBuilder expectedAttrBuilders = Attributes.builder();
 
     expectedAttrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, "aws");
@@ -90,7 +83,8 @@ class Ec2ResourceTest {
     server.enqueue(HttpResponse.of(MediaType.JSON_UTF_8, IDENTITY_DOCUMENT));
     server.enqueue(HttpResponse.of("ec2-1-2-3-4"));
 
-    Attributes attributes = populator.getAttributes();
+    Attributes attributes =
+        Ec2Resource.buildResource("localhost:" + server.httpPort()).getAttributes();
 
     AttributesBuilder expectedAttrBuilders =
         Attributes.builder()
@@ -118,7 +112,8 @@ class Ec2ResourceTest {
     server.enqueue(HttpResponse.of(HttpStatus.NOT_FOUND));
     server.enqueue(HttpResponse.of(MediaType.JSON_UTF_8, "I'm not JSON"));
 
-    Attributes attributes = populator.getAttributes();
+    Attributes attributes =
+        Ec2Resource.buildResource("localhost:" + server.httpPort()).getAttributes();
     assertThat(attributes.isEmpty()).isTrue();
 
     AggregatedHttpRequest request1 = server.takeRequest().request();
@@ -134,6 +129,7 @@ class Ec2ResourceTest {
   void inServiceLoader() {
     // No practical way to test the attributes themselves so at least check the service loader picks
     // it up.
-    assertThat(ServiceLoader.load(ResourceProvider.class)).anyMatch(Ec2Resource.class::isInstance);
+    assertThat(ServiceLoader.load(ResourceProvider.class))
+        .anyMatch(Ec2ResourceProvider.class::isInstance);
   }
 }

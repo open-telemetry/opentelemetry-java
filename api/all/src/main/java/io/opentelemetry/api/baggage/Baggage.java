@@ -79,7 +79,7 @@ public interface Baggage extends ImplicitContextKeyed {
   }
 
   /** Iterates over all the entries in this {@link Baggage}. */
-  void forEach(BiConsumer<String, BaggageEntry> consumer);
+  void forEach(BiConsumer<? super String, ? super BaggageEntry> consumer);
 
   /** Returns a read-only view of this {@link Baggage} as a {@link Map}. */
   Map<String, BaggageEntry> asMap();

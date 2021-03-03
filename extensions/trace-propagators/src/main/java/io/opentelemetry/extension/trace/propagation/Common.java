@@ -12,10 +12,11 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * This set of common propagator utils is currently only used by the OtTracerPropagator and the
+ * This set of common propagator utils is currently only used by the OtTracePropagator and the
  * B3Propagator.
  */
 @Immutable
@@ -31,7 +32,7 @@ final class Common {
 
   static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {
     try {
-      byte traceFlags =
+      TraceFlags traceFlags =
           TRUE_INT.equals(sampled) || Boolean.parseBoolean(sampled) // accept either "1" or "true"
               ? TraceFlags.getSampled()
               : TraceFlags.getDefault();
@@ -47,13 +48,13 @@ final class Common {
     }
   }
 
-  static boolean isTraceIdValid(String value) {
+  static boolean isTraceIdValid(@Nullable String value) {
     return !(StringUtils.isNullOrEmpty(value)
         || (value.length() != MIN_TRACE_ID_LENGTH && value.length() != MAX_TRACE_ID_LENGTH)
         || !TraceId.isValid(StringUtils.padLeft(value, TraceId.getLength())));
   }
 
-  static boolean isSpanIdValid(String value) {
+  static boolean isSpanIdValid(@Nullable String value) {
     return !StringUtils.isNullOrEmpty(value) && SpanId.isValid(value);
   }
 }

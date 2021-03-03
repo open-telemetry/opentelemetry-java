@@ -8,4 +8,7 @@
  *
  * @see io.opentelemetry.sdk.trace.SdkTracerProvider
  */
+@ParametersAreNonnullByDefault
 package io.opentelemetry.sdk.trace;
+
+import javax.annotation.ParametersAreNonnullByDefault;

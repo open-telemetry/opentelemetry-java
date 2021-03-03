@@ -16,8 +16,8 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
-import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -36,9 +36,9 @@ class B3PropagatorTest {
   private static final String SPAN_ID = "ff00000000000041";
   private static final String EXTRA_SPAN_ID = "ff00000000000045";
   private static final String SPAN_ID_ALL_ZERO = "0000000000000000";
-  private static final Setter<Map<String, String>> setter = Map::put;
-  private static final Getter<Map<String, String>> getter =
-      new Getter<Map<String, String>>() {
+  private static final TextMapSetter<Map<String, String>> setter = Map::put;
+  private static final TextMapGetter<Map<String, String>> getter =
+      new TextMapGetter<Map<String, String>>() {
         @Override
         public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
@@ -50,8 +50,8 @@ class B3PropagatorTest {
           return carrier.get(key);
         }
       };
-  private final B3Propagator b3Propagator = B3Propagator.builder().injectMultipleHeaders().build();
-  private final B3Propagator b3PropagatorSingleHeader = B3Propagator.getInstance();
+  private final B3Propagator b3Propagator = B3Propagator.injectingMultiHeaders();
+  private final B3Propagator b3PropagatorSingleHeader = B3Propagator.injectingSingleHeader();
 
   private static SpanContext getSpanContext(Context context) {
     return Span.fromContext(context).getSpanContext();
@@ -70,7 +70,7 @@ class B3PropagatorTest {
                 TraceId.getInvalid(),
                 SpanId.getInvalid(),
                 TraceFlags.getSampled(),
-                TraceState.builder().set("foo", "bar").build()),
+                TraceState.builder().put("foo", "bar").build()),
             Context.current()),
         carrier,
         setter);
@@ -99,7 +99,7 @@ class B3PropagatorTest {
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()),
             Context.current()),
         null,
-        (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
+        (TextMapSetter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
     assertThat(carrier).containsEntry(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
     assertThat(carrier).containsEntry(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     assertThat(carrier).containsEntry(B3Propagator.SAMPLED_HEADER, "1");
@@ -117,6 +117,28 @@ class B3PropagatorTest {
     assertThat(carrier).containsEntry(B3Propagator.TRACE_ID_HEADER, TRACE_ID);
     assertThat(carrier).containsEntry(B3Propagator.SPAN_ID_HEADER, SPAN_ID);
     assertThat(carrier).containsEntry(B3Propagator.SAMPLED_HEADER, "0");
+  }
+
+  @Test
+  void inject_nullContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    b3Propagator.inject(null, carrier, setter);
+    assertThat(carrier).isEmpty();
+    b3PropagatorSingleHeader.inject(null, carrier, setter);
+    assertThat(carrier).isEmpty();
+  }
+
+  @Test
+  void inject_nullSetter() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    Context context =
+        withSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()),
+            Context.current());
+    b3Propagator.inject(context, carrier, null);
+    assertThat(carrier).isEmpty();
+    b3PropagatorSingleHeader.inject(context, carrier, null);
+    assertThat(carrier).isEmpty();
   }
 
   @Test
@@ -294,7 +316,7 @@ class B3PropagatorTest {
                 TraceId.getInvalid(),
                 SpanId.getInvalid(),
                 TraceFlags.getSampled(),
-                TraceState.builder().set("foo", "bar").build()),
+                TraceState.builder().put("foo", "bar").build()),
             Context.current()),
         carrier,
         setter);
@@ -573,6 +595,24 @@ class B3PropagatorTest {
 
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
+  }
+
+  @Test
+  void extract_nullContext() {
+    assertThat(b3Propagator.extract(null, Collections.emptyMap(), getter)).isSameAs(Context.root());
+    assertThat(b3PropagatorSingleHeader.extract(null, Collections.emptyMap(), getter))
+        .isSameAs(Context.root());
+  }
+
+  @Test
+  void extract_nullGetter() {
+    Context context =
+        withSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()),
+            Context.current());
+    assertThat(b3Propagator.extract(context, Collections.emptyMap(), null)).isSameAs(context);
+    assertThat(b3PropagatorSingleHeader.extract(context, Collections.emptyMap(), null))
+        .isSameAs(context);
   }
 
   @Test

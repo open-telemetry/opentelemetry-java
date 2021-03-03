@@ -32,6 +32,7 @@ import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
@@ -161,7 +162,7 @@ public class SdkMeterProviderTest {
   void collectAllSyncInstruments_OverwriteTemporality() {
     sdkMeterProvider.registerView(
         InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
-        AggregatorFactory.sum(false));
+        View.builder().setAggregatorFactory(AggregatorFactory.sum(false)).build());
 
     LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
     longCounter.add(10, Labels.empty());
@@ -671,7 +672,8 @@ public class SdkMeterProviderTest {
       SdkMeterProvider meterProvider, AggregatorFactory factory) {
     for (InstrumentType instrumentType : InstrumentType.values()) {
       meterProvider.registerView(
-          InstrumentSelector.builder().setInstrumentType(instrumentType).build(), factory);
+          InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
+          View.builder().setAggregatorFactory(factory).build());
     }
   }
 }

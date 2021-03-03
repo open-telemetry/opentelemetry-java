@@ -7,16 +7,39 @@ package io.opentelemetry.sdk.extension.resources;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
-/** {@link ResourceProvider} which provides information about the current running process. */
-public final class ProcessResource extends ResourceProvider {
-  @Override
-  protected Attributes getAttributes() {
+/** Factory of a {@link Resource} which provides information about the current running process. */
+public final class ProcessResource {
+
+  private static final Resource INSTANCE = buildResource();
+
+  /**
+   * Returns a factory of a {@link Resource} which provides information about the current running
+   * process.
+   */
+  public static Resource get() {
+    return INSTANCE;
+  }
+
+  // Visible for testing
+  static Resource buildResource() {
+    try {
+      return doBuildResource();
+    } catch (LinkageError t) {
+      // Will only happen on Android, where these attributes generally don't make much sense
+      // anyways.
+      return Resource.empty();
+    }
+  }
+
+  @IgnoreJRERequirement
+  private static Resource doBuildResource() {
     AttributesBuilder attributes = Attributes.builder();
 
     // TODO(anuraaga): Use reflection to get more stable values on Java 9+
@@ -67,6 +90,8 @@ public final class ProcessResource extends ResourceProvider {
       attributes.put(ResourceAttributes.PROCESS_COMMAND_LINE, commandLine.toString());
     }
 
-    return attributes.build();
+    return Resource.create(attributes.build());
   }
+
+  private ProcessResource() {}
 }

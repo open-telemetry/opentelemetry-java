@@ -8,47 +8,85 @@ package io.opentelemetry.api.trace;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Helper methods for dealing with trace flags options. These options are propagated to all child
- * {@link Span spans}. These determine features such as whether a {@code Span} should be traced. It
- * is implemented as a bitmask.
+ * A valid trace flags is a byte or 2 character lowercase hex (base16) String.
+ *
+ * <p>These options are propagated to all child {@link Span spans}. These determine features such as
+ * whether a {@code Span} should be traced.
  */
 @Immutable
-public final class TraceFlags {
-  private TraceFlags() {}
-
-  // Bit to represent whether trace is sampled or not.
-  private static final byte IS_SAMPLED = 0x1;
-  // the default flags are a 0 byte.
-  private static final byte DEFAULT = 0x0;
-
-  private static final int SIZE = 1;
-  private static final int HEX_SIZE = 2 * SIZE;
-
-  /** Returns the size in Hex of trace flags. */
-  public static int getHexLength() {
-    return HEX_SIZE;
+public interface TraceFlags {
+  /**
+   * Returns the length of the lowercase hex (base16) representation of the {@link TraceFlags}.
+   *
+   * @return the length of the lowercase hex (base16) representation of the {@link TraceFlags}.
+   */
+  static int getLength() {
+    return ImmutableTraceFlags.HEX_LENGTH;
   }
 
   /**
-   * Returns the default byte representation of the flags.
+   * Returns the default (with all flag bits off) byte representation of the {@link TraceFlags}.
    *
-   * @return the default byte representation of the flags.
+   * @return the default (with all flag bits off) byte representation of the {@link TraceFlags}.
    */
-  public static byte getDefault() {
-    return DEFAULT;
+  static TraceFlags getDefault() {
+    return ImmutableTraceFlags.DEFAULT;
   }
 
   /**
-   * Returns the byte representation of the flags with the sampling bit set to {@code 1}.
+   * Returns the lowercase hex (base16) representation of the {@link TraceFlags} with the sampling
+   * flag bit on.
    *
-   * @return the byte representation of the flags with the sampling bit set to {@code 1}.
+   * @return the lowercase hex (base16) representation of the {@link TraceFlags} with the sampling
+   *     flag bit on.
    */
-  public static byte getSampled() {
-    return IS_SAMPLED;
+  static TraceFlags getSampled() {
+    return ImmutableTraceFlags.SAMPLED;
   }
 
-  /** Extract the byte representation of the flags from a hex-representation. */
-  public static byte byteFromHex(CharSequence src, int srcOffset) {
-    return BigendianEncoding.byteFromBase16(src, srcOffset);
+  /**
+   * Returns the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
+   *
+   * <p>This may throw runtime exceptions if the input is invalid.
+   *
+   * @param src the buffer where the hex (base16) representation of the {@link TraceFlags} is.
+   * @param srcOffset the offset int buffer.
+   * @return the {@link TraceFlags} converted from the given lowercase hex (base16) representation.
+   */
+  static TraceFlags fromHex(CharSequence src, int srcOffset) {
+    return ImmutableTraceFlags.fromHex(src, srcOffset);
   }
+
+  /**
+   * Returns the {@link TraceFlags} converted from the given byte representation.
+   *
+   * @param traceFlagsByte the byte representation of the {@link TraceFlags}.
+   * @return the {@link TraceFlags} converted from the given byte representation.
+   */
+  static TraceFlags fromByte(byte traceFlagsByte) {
+    return ImmutableTraceFlags.fromByte(traceFlagsByte);
+  }
+
+  /**
+   * Returns {@code true} if the sampling bit is on for this {@link TraceFlags}, otherwise {@code
+   * false}.
+   *
+   * @return {@code true} if the sampling bit is on for this {@link TraceFlags}, otherwise {@code *
+   *     false}.
+   */
+  boolean isSampled();
+
+  /**
+   * Returns the lowercase hex (base16) representation of this {@link TraceFlags}.
+   *
+   * @return the byte representation of the {@link TraceFlags}.
+   */
+  String asHex();
+
+  /**
+   * Returns the byte representation of this {@link TraceFlags}.
+   *
+   * @return the byte representation of the {@link TraceFlags}.
+   */
+  byte asByte();
 }

@@ -17,11 +17,11 @@ class ImmutableStatusDataTest {
     StatusCode[] codes = StatusCode.values();
     assertThat(codes).hasSize(3);
     assertThat(StatusData.unset().getStatusCode()).isEqualTo(StatusCode.UNSET);
-    assertThat(StatusData.unset().getDescription()).isNull();
+    assertThat(StatusData.unset().getDescription()).isEmpty();
     assertThat(StatusData.ok().getStatusCode()).isEqualTo(StatusCode.OK);
-    assertThat(StatusData.ok().getDescription()).isNull();
+    assertThat(StatusData.ok().getDescription()).isEmpty();
     assertThat(StatusData.error().getStatusCode()).isEqualTo(StatusCode.ERROR);
-    assertThat(StatusData.error().getDescription()).isNull();
+    assertThat(StatusData.error().getDescription()).isEmpty();
   }
 
   @Test
@@ -31,7 +31,7 @@ class ImmutableStatusDataTest {
     for (StatusCode code : codes) {
       assertThat(ImmutableStatusData.codeToStatus.get(code)).isNotNull();
       assertThat(ImmutableStatusData.codeToStatus.get(code).getStatusCode()).isEqualTo(code);
-      assertThat(ImmutableStatusData.codeToStatus.get(code).getDescription()).isNull();
+      assertThat(ImmutableStatusData.codeToStatus.get(code).getDescription()).isEmpty();
     }
   }
 }

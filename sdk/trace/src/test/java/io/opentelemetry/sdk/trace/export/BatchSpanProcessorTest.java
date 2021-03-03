@@ -437,7 +437,7 @@ class BatchSpanProcessorTest {
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setScheduleDelay(10_000, TimeUnit.MILLISECONDS)
+                    .setScheduleDelay(10, TimeUnit.SECONDS)
                     .build())
             .build();
 

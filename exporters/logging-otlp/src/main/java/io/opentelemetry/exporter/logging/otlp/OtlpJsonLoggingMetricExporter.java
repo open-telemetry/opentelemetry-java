@@ -9,9 +9,9 @@ import static io.opentelemetry.exporter.logging.otlp.HexEncodingStringJsonGenera
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
+import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.extension.otproto.MetricAdapter;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import org.curioswitch.common.protobuf.json.MessageMarshaller;
  * A {@link MetricExporter} which writes {@linkplain MetricData spans} to a {@link Logger} in OTLP
  * JSON format. Each log line will include a single {@link ResourceMetrics}.
  */
-public class OtlpJsonLoggingMetricExporter implements MetricExporter {
+public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
   private static final MessageMarshaller marshaller =
       MessageMarshaller.builder()

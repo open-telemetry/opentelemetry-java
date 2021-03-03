@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.logging.export;
 
-import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -16,7 +15,6 @@ import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.logging.LogProcessor;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +27,7 @@ public final class BatchLogProcessor implements LogProcessor {
   private final Worker worker;
   private final Thread workerThread;
 
-  private BatchLogProcessor(
+  BatchLogProcessor(
       int maxQueueSize,
       long scheduleDelayMillis,
       int maxExportBatchSize,
@@ -46,8 +44,8 @@ public final class BatchLogProcessor implements LogProcessor {
     this.workerThread.start();
   }
 
-  public static Builder builder(LogExporter logExporter) {
-    return new Builder(logExporter);
+  public static BatchLogProcessorBuilder builder(LogExporter logExporter) {
+    return new BatchLogProcessorBuilder(logExporter);
   }
 
   @Override
@@ -214,116 +212,6 @@ public final class BatchLogProcessor implements LogProcessor {
       if (!queue.offer(record)) {
         queueFullRecordCounter.add(1);
       }
-    }
-  }
-
-  public static class Builder {
-    private static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 200;
-    private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
-    private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
-    private static final long DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
-
-    private final LogExporter logExporter;
-    private long scheduleDelayMillis = DEFAULT_SCHEDULE_DELAY_MILLIS;
-    private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
-    private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
-    private long exporterTimeoutMillis = DEFAULT_EXPORT_TIMEOUT_MILLIS;
-
-    private Builder(LogExporter logExporter) {
-      this.logExporter = Objects.requireNonNull(logExporter, "Exporter argument can not be null");
-    }
-
-    /**
-     * Build a BatchLogProcessor.
-     *
-     * @return configured processor
-     */
-    public BatchLogProcessor build() {
-      return new BatchLogProcessor(
-          maxQueueSize,
-          scheduleDelayMillis,
-          maxExportBatchSize,
-          exporterTimeoutMillis,
-          logExporter);
-    }
-
-    /**
-     * Sets the delay interval between two consecutive exports. The actual interval may be shorter
-     * if the batch size is getting larger than {@code maxQueuedSpans / 2}.
-     *
-     * <p>Default value is {@code 250}ms.
-     *
-     * @param scheduleDelayMillis the delay interval between two consecutive exports.
-     * @return this.
-     * @see BatchLogProcessor.Builder#DEFAULT_SCHEDULE_DELAY_MILLIS
-     */
-    public BatchLogProcessor.Builder setScheduleDelayMillis(long scheduleDelayMillis) {
-      this.scheduleDelayMillis = scheduleDelayMillis;
-      return this;
-    }
-
-    public long getScheduleDelayMillis() {
-      return scheduleDelayMillis;
-    }
-
-    /**
-     * Sets the maximum time an exporter will be allowed to run before being cancelled.
-     *
-     * <p>Default value is {@code 30000}ms
-     *
-     * @param exporterTimeoutMillis the timeout for exports in milliseconds.
-     * @return this
-     * @see BatchLogProcessor.Builder#DEFAULT_EXPORT_TIMEOUT_MILLIS
-     */
-    public Builder setExporterTimeoutMillis(int exporterTimeoutMillis) {
-      this.exporterTimeoutMillis = exporterTimeoutMillis;
-      return this;
-    }
-
-    public long getExporterTimeoutMillis() {
-      return exporterTimeoutMillis;
-    }
-
-    /**
-     * Sets the maximum number of Spans that are kept in the queue before start dropping.
-     *
-     * <p>See the BatchSampledSpansProcessor class description for a high-level design description
-     * of this class.
-     *
-     * <p>Default value is {@code 2048}.
-     *
-     * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
-     *     dropping.
-     * @return this.
-     * @see BatchLogProcessor.Builder#DEFAULT_MAX_QUEUE_SIZE
-     */
-    public Builder setMaxQueueSize(int maxQueueSize) {
-      this.maxQueueSize = maxQueueSize;
-      return this;
-    }
-
-    public int getMaxQueueSize() {
-      return maxQueueSize;
-    }
-
-    /**
-     * Sets the maximum batch size for every export. This must be smaller or equal to {@code
-     * maxQueuedSpans}.
-     *
-     * <p>Default value is {@code 512}.
-     *
-     * @param maxExportBatchSize the maximum batch size for every export.
-     * @return this.
-     * @see BatchLogProcessor.Builder#DEFAULT_MAX_EXPORT_BATCH_SIZE
-     */
-    public Builder setMaxExportBatchSize(int maxExportBatchSize) {
-      Utils.checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
-      this.maxExportBatchSize = maxExportBatchSize;
-      return this;
-    }
-
-    public int getMaxExportBatchSize() {
-      return maxExportBatchSize;
     }
   }
 }

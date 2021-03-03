@@ -6,6 +6,8 @@ description = 'OpenTelemetry Examples for metrics'
 ext.moduleName = "io.opentelemetry.examples.metrics"
 
 dependencies {
-    compile("io.opentelemetry:opentelemetry-api")
-    compile("io.opentelemetry:opentelemetry-api-metrics:${openTelemetryAlphaVersion}")
+    implementation("io.opentelemetry:opentelemetry-api")
+
+    //alpha modules
+    implementation("io.opentelemetry:opentelemetry-api-metrics")
 }

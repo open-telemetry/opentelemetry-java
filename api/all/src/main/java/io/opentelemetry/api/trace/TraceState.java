@@ -44,7 +44,7 @@ public interface TraceState {
    * @return the default {@code TraceState} with no entries.
    */
   static TraceState getDefault() {
-    return DefaultTraceState.get();
+    return ArrayBasedTraceStateBuilder.empty();
   }
 
   /** Returns an empty {@code TraceStateBuilder}. */

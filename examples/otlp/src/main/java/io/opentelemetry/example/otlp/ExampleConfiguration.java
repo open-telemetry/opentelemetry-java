@@ -10,9 +10,9 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.OpenTelemetrySdkAutoConfiguration;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.util.Collections;
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * All SDK management takes place here, away from the instrumentation code, which should only access
  * the OpenTelemetry APIs.
  */
-public class ExampleConfiguration {
+public final class ExampleConfiguration {
 
   /**
    * Adds a BatchSpanProcessor initialized with OtlpGrpcSpanExporter to the TracerSdkProvider.
@@ -40,12 +40,12 @@ public class ExampleConfiguration {
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(spanProcessor)
-            .setResource(Resource.getDefault())
+            .setResource(OpenTelemetrySdkAutoConfiguration.getResource())
             .build();
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
 
-    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::shutdown));
+    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
 
     return openTelemetrySdk;
   }

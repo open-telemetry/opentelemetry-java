@@ -8,7 +8,6 @@ package io.opentelemetry.opentracingshim;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 import java.util.HashMap;
@@ -16,19 +15,22 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 final class Propagation extends BaseShimObject {
+  private static final TextMapSetter SETTER_INSTANCE = new TextMapSetter();
+  private static final TextMapGetter GETTER_INSTANCE = new TextMapGetter();
+
   Propagation(TelemetryInfo telemetryInfo) {
     super(telemetryInfo);
   }
 
-  public void injectTextMap(SpanContextShim contextShim, TextMapInject carrier) {
+  void injectTextMap(SpanContextShim contextShim, TextMapInject carrier) {
     Context context = Context.current().with(Span.wrap(contextShim.getSpanContext()));
     context = context.with(contextShim.getBaggage());
 
-    propagators().getTextMapPropagator().inject(context, carrier, TextMapSetter.INSTANCE);
+    propagators().getTextMapPropagator().inject(context, carrier, SETTER_INSTANCE);
   }
 
   @Nullable
-  public SpanContextShim extractTextMap(TextMapExtract carrier) {
+  SpanContextShim extractTextMap(TextMapExtract carrier) {
     Map<String, String> carrierMap = new HashMap<>();
     for (Map.Entry<String, String> entry : carrier) {
       carrierMap.put(entry.getKey(), entry.getValue());
@@ -37,7 +39,7 @@ final class Propagation extends BaseShimObject {
     Context context =
         propagators()
             .getTextMapPropagator()
-            .extract(Context.current(), carrierMap, TextMapGetter.INSTANCE);
+            .extract(Context.current(), carrierMap, GETTER_INSTANCE);
 
     Span span = Span.fromContext(context);
     if (!span.getSpanContext().isValid()) {
@@ -47,10 +49,9 @@ final class Propagation extends BaseShimObject {
     return new SpanContextShim(telemetryInfo, span.getSpanContext(), Baggage.fromContext(context));
   }
 
-  static final class TextMapSetter implements TextMapPropagator.Setter<TextMapInject> {
+  static final class TextMapSetter
+      implements io.opentelemetry.context.propagation.TextMapSetter<TextMapInject> {
     private TextMapSetter() {}
-
-    public static final TextMapSetter INSTANCE = new TextMapSetter();
 
     @Override
     public void set(TextMapInject carrier, String key, String value) {
@@ -60,10 +61,9 @@ final class Propagation extends BaseShimObject {
 
   // We use Map<> instead of TextMap as we need to query a specified key, and iterating over
   // *all* values per key-query *might* be a bad idea.
-  static final class TextMapGetter implements TextMapPropagator.Getter<Map<String, String>> {
+  static final class TextMapGetter
+      implements io.opentelemetry.context.propagation.TextMapGetter<Map<String, String>> {
     private TextMapGetter() {}
-
-    public static final TextMapGetter INSTANCE = new TextMapGetter();
 
     @Nullable
     @Override

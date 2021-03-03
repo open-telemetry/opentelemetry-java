@@ -14,7 +14,7 @@ import java.util.stream.StreamSupport;
 import org.assertj.core.api.AbstractIterableAssert;
 
 /** Assertions for an exported trace, a list of {@link SpanData} with the same trace ID. */
-public class TraceAssert
+public final class TraceAssert
     extends AbstractIterableAssert<TraceAssert, List<SpanData>, SpanData, SpanDataAssert> {
 
   TraceAssert(List<SpanData> spanData) {

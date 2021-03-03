@@ -20,7 +20,7 @@ public interface MeterProvider {
    * Returns a {@link MeterProvider} that only creates no-op {@link Instrument}s that neither record
    * nor are emitted.
    */
-  static MeterProvider getDefault() {
+  static MeterProvider noop() {
     return DefaultMeterProvider.getInstance();
   }
 

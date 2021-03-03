@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /** Factory class for {@link Aggregator}. */
@@ -75,6 +76,18 @@ public interface AggregatorFactory {
    */
   static AggregatorFactory minMaxSumCount() {
     return MinMaxSumCountAggregatorFactory.INSTANCE;
+  }
+
+  /**
+   * Returns an {@code AggregatorFactory} that calculates an approximation of the distribution of
+   * the measurements taken.
+   *
+   * @param temporality configures what temporality to be produced for the Histogram metrics.
+   * @param boundaries configures the fixed bucket boundaries.
+   * @return an {@code AggregationFactory} that calculates histogram of recorded measurements.
+   */
+  static AggregatorFactory histogram(List<Double> boundaries, AggregationTemporality temporality) {
+    return new HistogramAggregatorFactory(boundaries, temporality);
   }
 
   /**

@@ -12,16 +12,18 @@ import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 
-public class HttpServer {
+public final class HttpServer {
   // It's important to initialize your OpenTelemetry SDK as early in your application's lifecycle as
   // possible.
   private static final OpenTelemetry openTelemetry = ExampleConfiguration.initOpenTelemetry();
@@ -32,8 +34,8 @@ public class HttpServer {
   private final com.sun.net.httpserver.HttpServer server;
 
   // Extract the context from http headers
-  private static final TextMapPropagator.Getter<HttpExchange> getter =
-      new TextMapPropagator.Getter<>() {
+  private static final TextMapGetter<HttpExchange> getter =
+      new TextMapGetter<>() {
         @Override
         public Iterable<String> keys(HttpExchange carrier) {
           return carrier.getRequestHeaders().keySet();
@@ -71,7 +73,7 @@ public class HttpServer {
       Context context = TEXT_MAP_PROPAGATOR.extract(Context.current(), exchange, getter);
 
       Span span =
-          tracer.spanBuilder("GET /").setParent(context).setSpanKind(Span.Kind.SERVER).startSpan();
+          tracer.spanBuilder("GET /").setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
 
       try (Scope scope = span.makeCurrent()) {
         // Set the Semantic Convention

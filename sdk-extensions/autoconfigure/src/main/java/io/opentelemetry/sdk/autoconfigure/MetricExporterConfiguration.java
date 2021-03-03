@@ -17,6 +17,7 @@ import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
+import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
 
@@ -24,7 +25,6 @@ final class MetricExporterConfiguration {
       String name, ConfigProperties config, SdkMeterProvider meterProvider) {
     switch (name) {
       case "otlp":
-      case "otlp_metrics":
         configureOtlpMetrics(config, meterProvider);
         return;
       case "prometheus":
@@ -49,12 +49,19 @@ final class MetricExporterConfiguration {
   }
 
   // Visible for testing
+  @Nullable
   static OtlpGrpcMetricExporter configureOtlpMetrics(
       ConfigProperties config, SdkMeterProvider meterProvider) {
-    ClasspathUtil.checkClassExists(
-        "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
-        "OTLP Metrics Exporter",
-        "opentelemetry-exporter-otlp-metrics");
+    try {
+      ClasspathUtil.checkClassExists(
+          "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
+          "OTLP Metrics Exporter",
+          "opentelemetry-exporter-otlp-metrics");
+    } catch (ConfigurationException e) {
+      // Squash this for now, until metrics are stable and included in the `exporter-otlp` artifact
+      // by default,
+      return null;
+    }
     OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
 
     String endpoint = config.getString("otel.exporter.otlp.endpoint");

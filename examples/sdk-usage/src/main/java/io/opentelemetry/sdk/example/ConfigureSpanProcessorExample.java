@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.util.concurrent.TimeUnit;
 
 /** This example shows how to instantiate different Span Processors. */
-public class ConfigureSpanProcessorExample {
+public final class ConfigureSpanProcessorExample {
 
   private static final LoggingSpanExporter exporter = new LoggingSpanExporter();
   private static final OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();

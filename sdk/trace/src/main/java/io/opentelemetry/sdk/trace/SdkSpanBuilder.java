@@ -144,10 +144,6 @@ final class SdkSpanBuilder implements SpanBuilder {
       attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
     }
 
-    if (spanLimits.shouldTruncateStringAttributeValues()) {
-      value = StringUtils.truncateToSize(key, value, spanLimits.getMaxLengthOfAttributeValues());
-    }
-
     attributes.put(key, value);
     return this;
   }
@@ -192,7 +188,11 @@ final class SdkSpanBuilder implements SpanBuilder {
     TraceState samplingResultTraceState =
         samplingResult.getUpdatedTraceState(parentSpanContext.getTraceState());
     SpanContext spanContext =
-        createSpanContext(traceId, spanId, samplingResultTraceState, isSampled(samplingDecision));
+        SpanContext.create(
+            traceId,
+            spanId,
+            isSampled(samplingDecision) ? TraceFlags.getSampled() : TraceFlags.getDefault(),
+            samplingResultTraceState);
 
     if (!isRecording(samplingDecision)) {
       return Span.wrap(spanContext);
@@ -225,12 +225,6 @@ final class SdkSpanBuilder implements SpanBuilder {
         immutableLinks,
         totalNumberOfLinksAdded,
         startEpochNanos);
-  }
-
-  private static SpanContext createSpanContext(
-      String traceId, String spanId, TraceState traceState, boolean isSampled) {
-    byte traceFlags = isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault();
-    return SpanContext.create(traceId, spanId, traceFlags, traceState);
   }
 
   private static Clock getClock(Span parent, Clock clock) {

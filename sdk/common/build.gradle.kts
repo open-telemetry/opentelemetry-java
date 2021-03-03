@@ -3,6 +3,7 @@ plugins {
     id("maven-publish")
 
     id("ru.vyarus.animalsniffer")
+    id("org.unbroken-dome.test-sets")
 }
 
 description = "OpenTelemetry SDK Common"
@@ -10,15 +11,22 @@ extra["moduleName"] = "io.opentelemetry.sdk.common"
 
 val mrJarVersions = listOf(9)
 
+testSets {
+    create("testResourceDisabledByProperty")
+    create("testResourceDisabledByEnv")
+}
+
 dependencies {
     api(project(":api:all"))
-    api(project(":semconv"))
+
+    implementation(project(":semconv"))
 
     annotationProcessor("com.google.auto.value:auto-value")
 
     testAnnotationProcessor("com.google.auto.value:auto-value")
 
     testImplementation(project(":sdk:testing"))
+    testImplementation(project(":sdk-extensions:resources"))
     testImplementation("com.google.guava:guava-testlib")
 }
 

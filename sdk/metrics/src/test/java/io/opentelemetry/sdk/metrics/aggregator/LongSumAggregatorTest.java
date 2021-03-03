@@ -25,7 +25,7 @@ class LongSumAggregatorTest {
   private static final LongSumAggregator aggregator =
       new LongSumAggregator(
           Resource.getDefault(),
-          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG),
           /* stateful= */ true);
@@ -91,7 +91,7 @@ class LongSumAggregatorTest {
         .isEqualTo(
             MetricData.createLongSum(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 "name",
                 "description",
                 "unit",

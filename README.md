@@ -16,7 +16,7 @@ project.
 This project contains the following top level components:
 
 * [OpenTelemetry API](api/):
-  * [stable apis](api/all/src/main/java/io/opentelemetry/api/all/) including `Tracer`, `Span`, `SpanContext`, and `Baggage`
+  * [stable apis](api/all/src/main/java/io/opentelemetry/api/) including `Tracer`, `Span`, `SpanContext`, and `Baggage`
   * [semantic conventions](semconv/) Generated code for the OpenTelemetry semantic conventions.
   * [context api](api/context/src/main/java/io/opentelemetry/context/) The OpenTelmetry Context implementation.
   * [metrics api](api/metrics/src/main/java/io/opentelemetry/api/metrics/) alpha code for the metrics API.
@@ -63,7 +63,7 @@ dependency versions in sync.
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>0.15.0</version>
+        <version>1.0.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -82,7 +82,7 @@ dependency versions in sync.
 
 ```groovy
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:0.15.0")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.0.0")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
@@ -107,7 +107,7 @@ We strongly recommend using our published BOM to keep all dependency versions in
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>0.16.0-SNAPSHOT</version>
+        <version>1.1.0-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -130,7 +130,7 @@ repositories {
 }
 
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:0.15.0-SNAPSHOT")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.1.0-SNAPSHOT")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
@@ -150,18 +150,19 @@ This is a **current** feature status list:
 
 | Component                   | Version |
 | --------------------------- | ------- |
-| Tracing API                 | v<!--VERSION_STABLE-->0.15.0<!--/VERSION_STABLE-->  |
-| Tracing SDK                 | v<!--VERSION_STABLE-->0.15.0<!--/VERSION_STABLE-->  |
-| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->0.15.0<!--/VERSION_STABLE-->  |
-| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->0.15.0<!--/VERSION_STABLE-->  |
-| Context Propagation         | v<!--VERSION_STABLE-->0.15.0<!--/VERSION_STABLE-->  |
-| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->0.15.0<!--/VERSION_STABLE-->  |
-| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->0.15.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Metrics API                 | v<!--VERSION_UNSTABLE-->0.15.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Metrics SDK                 | v<!--VERSION_UNSTABLE-->0.15.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->0.15.0-alpha<!--/VERSION_UNSTABLE-->  |
-| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->0.15.0-alpha<!--/VERSION_UNSTABLE-->  |
-| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->0.15.0-alpha<!--/VERSION_UNSTABLE-->  |
+| Trace API                   | v<!--VERSION_STABLE-->1.0.0<!--/VERSION_STABLE-->  |
+| Trace SDK                   | v<!--VERSION_STABLE-->1.0.0<!--/VERSION_STABLE-->  |
+| Context                     | v<!--VERSION_STABLE-->1.0.0<!--/VERSION_STABLE-->  |
+| Baggage                     | v<!--VERSION_STABLE-->1.0.0<!--/VERSION_STABLE-->  |
+| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.0.0<!--/VERSION_STABLE-->  |
+| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.0.0<!--/VERSION_STABLE-->  |
+| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.0.0<!--/VERSION_STABLE-->  |
+| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.0.0-alpha<!--/VERSION_UNSTABLE-->  |
+| Metrics API                 | v<!--VERSION_UNSTABLE-->1.0.0-alpha<!--/VERSION_UNSTABLE-->  |
+| Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.0.0-alpha<!--/VERSION_UNSTABLE-->  |
+| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.0.0-alpha<!--/VERSION_UNSTABLE-->  |
+| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->1.0.0-alpha<!--/VERSION_UNSTABLE-->  |
+| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->1.0.0-alpha<!--/VERSION_UNSTABLE-->  |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
 for details on upcoming releases. The dates and features described in issues

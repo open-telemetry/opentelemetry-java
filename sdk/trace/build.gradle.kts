@@ -11,10 +11,10 @@ extra["moduleName"] = "io.opentelemetry.sdk.trace"
 
 dependencies {
     api(project(":api:all"))
-    api(project(":semconv"))
     api(project(":sdk:common"))
 
     implementation(project(":api:metrics"))
+    implementation(project(":semconv"))
 
     annotationProcessor("com.google.auto.value:auto-value")
 
@@ -36,7 +36,7 @@ dependencies {
         isTransitive = false
     }
     // explicitly adding the opentelemetry-exporter-otlp dependencies
-    jmh(project(":sdk-extensions:otproto")) {
+    jmh(project(":exporters:otlp:common")) {
         isTransitive = false
     }
     jmh(project(":proto"))

@@ -37,15 +37,17 @@ public abstract class TestSpanData implements SpanData {
     return new AutoValue_TestSpanData.Builder()
         .setSpanContext(SpanContext.getInvalid())
         .setParentSpanContext(SpanContext.getInvalid())
-        .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
+        .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.empty())
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setAttributes(Attributes.empty())
         .setEvents(Collections.emptyList())
         .setTotalRecordedEvents(0)
-        .setResource(Resource.getEmpty())
+        .setResource(Resource.empty())
         .setTotalAttributeCount(0);
   }
+
+  TestSpanData() {}
 
   abstract boolean getInternalHasEnded();
 

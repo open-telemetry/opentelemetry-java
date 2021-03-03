@@ -11,7 +11,9 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -38,7 +40,10 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, C carrier, Setter<C> setter) {
+  public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
+    if (context == null || setter == null) {
+      return;
+    }
     Baggage baggage = Baggage.fromContext(context);
     if (baggage.isEmpty()) {
       return;
@@ -60,7 +65,14 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
+    if (context == null) {
+      return Context.root();
+    }
+    if (getter == null) {
+      return context;
+    }
+
     String baggageHeader = getter.get(carrier, FIELD);
     if (baggageHeader == null) {
       return context;

@@ -102,7 +102,7 @@ public interface Labels {
   }
 
   /** Iterates over all the key-value pairs of labels contained by this instance. */
-  void forEach(BiConsumer<String, String> consumer);
+  void forEach(BiConsumer<? super String, ? super String> consumer);
 
   /** The number of key-value pairs of labels in this instance. */
   int size();

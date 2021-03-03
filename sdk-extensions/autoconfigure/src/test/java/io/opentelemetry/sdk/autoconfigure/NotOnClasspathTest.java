@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -21,7 +22,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(() -> SpanExporterConfiguration.configureExporter("otlp", EMPTY))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "OTLP Trace Exporter enabled but opentelemetry-exporter-otlp-trace not found on "
+            "OTLP Trace Exporter enabled but opentelemetry-exporter-otlp not found on "
                 + "classpath");
   }
 
@@ -65,14 +66,11 @@ class NotOnClasspathTest {
 
   @Test
   void otlpMetrics() {
-    assertThatThrownBy(
+    assertThatCode(
             () ->
                 MetricExporterConfiguration.configureExporter(
                     "otlp", EMPTY, SdkMeterProvider.builder().build()))
-        .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining(
-            "OTLP Metrics Exporter enabled but opentelemetry-exporter-otlp-metrics not found on "
-                + "classpath");
+        .doesNotThrowAnyException();
   }
 
   @Test

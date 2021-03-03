@@ -170,6 +170,23 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
+  void generateSpan_defaultResourceServiceName() {
+    SpanData data = buildStandardSpan().setResource(Resource.empty()).build();
+
+    Endpoint expectedEndpoint =
+        Endpoint.newBuilder()
+            .serviceName(Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME))
+            .ip(exporter.getLocalAddressForTest())
+            .build();
+    Span expectedZipkinSpan =
+        buildZipkinSpan(Span.Kind.SERVER).toBuilder()
+            .localEndpoint(expectedEndpoint)
+            .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+            .build();
+    assertThat(exporter.generateSpan(data)).isEqualTo(expectedZipkinSpan);
+  }
+
+  @Test
   void generateSpan_WithAttributes() {
     Attributes attributes =
         Attributes.builder()
@@ -261,12 +278,12 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
-  void generateSpan_WithRpcErrorStatus_WithNullErrorDescription() {
+  void generateSpan_WithRpcErrorStatus_WithEmptyErrorDescription() {
     Attributes attributeMap = Attributes.of(SemanticAttributes.RPC_SERVICE, "my service name");
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(StatusData.create(StatusCode.ERROR, null))
+            .setStatus(StatusData.create(StatusCode.ERROR, ""))
             .setAttributes(attributeMap)
             .build();
 
@@ -285,7 +302,7 @@ class ZipkinSpanExporterTest {
 
     SpanData data =
         buildStandardSpan()
-            .setStatus(StatusData.create(StatusCode.UNSET, null))
+            .setStatus(StatusData.create(StatusCode.UNSET, ""))
             .setAttributes(attributeMap)
             .build();
 

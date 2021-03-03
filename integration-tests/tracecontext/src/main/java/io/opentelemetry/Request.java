@@ -7,7 +7,7 @@ package io.opentelemetry;
 
 import java.util.Arrays;
 
-public class Request {
+public final class Request {
   private String url;
   private Request[] arguments;
 

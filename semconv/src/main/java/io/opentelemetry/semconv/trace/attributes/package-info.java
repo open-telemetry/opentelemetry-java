@@ -4,7 +4,7 @@
  */
 
 /**
- * OpenTelemetry semantic attributes.
+ * OpenTelemetry semantic attributes for traces.
  *
  * @see io.opentelemetry.semconv.trace.attributes.SemanticAttributes
  */

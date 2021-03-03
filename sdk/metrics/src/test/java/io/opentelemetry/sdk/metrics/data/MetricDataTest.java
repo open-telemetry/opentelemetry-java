@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -40,13 +42,21 @@ class MetricDataTest {
           Arrays.asList(
               ValueAtPercentile.create(0.0, DOUBLE_VALUE),
               ValueAtPercentile.create(100, DOUBLE_VALUE)));
+  private static final DoubleHistogramPointData HISTOGRAM_POINT =
+      DoubleHistogramPointData.create(
+          START_EPOCH_NANOS,
+          EPOCH_NANOS,
+          Labels.of("key", "value"),
+          DOUBLE_VALUE,
+          ImmutableList.of(1.0),
+          ImmutableList.of(1L, 1L));
 
   @Test
   void metricData_Getters() {
     MetricData metricData =
         MetricData.createDoubleGauge(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -55,9 +65,9 @@ class MetricDataTest {
     assertThat(metricData.getDescription()).isEqualTo("metric_description");
     assertThat(metricData.getUnit()).isEqualTo("ms");
     assertThat(metricData.getType()).isEqualTo(MetricDataType.DOUBLE_GAUGE);
-    assertThat(metricData.getResource()).isEqualTo(Resource.getEmpty());
+    assertThat(metricData.getResource()).isEqualTo(Resource.empty());
     assertThat(metricData.getInstrumentationLibraryInfo())
-        .isEqualTo(InstrumentationLibraryInfo.getEmpty());
+        .isEqualTo(InstrumentationLibraryInfo.empty());
     assertThat(metricData.isEmpty()).isTrue();
   }
 
@@ -70,8 +80,8 @@ class MetricDataTest {
     assertThat(LONG_POINT.getValue()).isEqualTo(LONG_VALUE);
     MetricData metricData =
         MetricData.createLongGauge(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -80,8 +90,8 @@ class MetricDataTest {
     assertThat(metricData.getLongGaugeData().getPoints()).containsExactly(LONG_POINT);
     metricData =
         MetricData.createLongSum(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -102,8 +112,8 @@ class MetricDataTest {
     assertThat(DOUBLE_POINT.getValue()).isEqualTo(DOUBLE_VALUE);
     MetricData metricData =
         MetricData.createDoubleGauge(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -112,8 +122,8 @@ class MetricDataTest {
     assertThat(metricData.getDoubleGaugeData().getPoints()).containsExactly(DOUBLE_POINT);
     metricData =
         MetricData.createDoubleSum(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -137,8 +147,8 @@ class MetricDataTest {
         .isEqualTo(Arrays.asList(MINIMUM_VALUE, MAXIMUM_VALUE));
     MetricData metricData =
         MetricData.createDoubleSummary(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -147,11 +157,60 @@ class MetricDataTest {
   }
 
   @Test
+  void metricData_HistogramPoints() {
+    assertThat(HISTOGRAM_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
+    assertThat(HISTOGRAM_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
+    assertThat(HISTOGRAM_POINT.getLabels().size()).isEqualTo(1);
+    assertThat(HISTOGRAM_POINT.getLabels().get("key")).isEqualTo("value");
+    assertThat(HISTOGRAM_POINT.getCount()).isEqualTo(2L);
+    assertThat(HISTOGRAM_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
+    assertThat(HISTOGRAM_POINT.getBoundaries()).isEqualTo(ImmutableList.of(1.0));
+    assertThat(HISTOGRAM_POINT.getCounts()).isEqualTo(ImmutableList.of(1L, 1L));
+
+    MetricData metricData =
+        MetricData.createDoubleHistogram(
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
+            "metric_name",
+            "metric_description",
+            "ms",
+            DoubleHistogramData.create(
+                AggregationTemporality.DELTA, Collections.singleton(HISTOGRAM_POINT)));
+    assertThat(metricData.getDoubleHistogramData().getPoints()).containsExactly(HISTOGRAM_POINT);
+
+    assertThatThrownBy(
+            () ->
+                DoubleHistogramPointData.create(
+                    0, 0, Labels.empty(), 0.0, ImmutableList.of(), ImmutableList.of()))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+            () ->
+                DoubleHistogramPointData.create(
+                    0,
+                    0,
+                    Labels.empty(),
+                    0.0,
+                    ImmutableList.of(1.0, 1.0),
+                    ImmutableList.of(0L, 0L, 0L)))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+            () ->
+                DoubleHistogramPointData.create(
+                    0,
+                    0,
+                    Labels.empty(),
+                    0.0,
+                    ImmutableList.of(Double.NEGATIVE_INFINITY),
+                    ImmutableList.of(0L, 0L)))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
   void metricData_GetDefault() {
     MetricData metricData =
         MetricData.createDoubleSummary(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -160,12 +219,13 @@ class MetricDataTest {
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
+    assertThat(metricData.getDoubleHistogramData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSummaryData().getPoints()).containsExactly(SUMMARY_POINT);
 
     metricData =
         MetricData.createDoubleGauge(
-            Resource.getEmpty(),
-            InstrumentationLibraryInfo.getEmpty(),
+            Resource.empty(),
+            InstrumentationLibraryInfo.empty(),
             "metric_name",
             "metric_description",
             "ms",
@@ -174,6 +234,7 @@ class MetricDataTest {
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSumData().getPoints()).isEmpty();
     assertThat(metricData.getLongGaugeData().getPoints()).isEmpty();
+    assertThat(metricData.getDoubleHistogramData().getPoints()).isEmpty();
     assertThat(metricData.getDoubleSummaryData().getPoints()).isEmpty();
   }
 }

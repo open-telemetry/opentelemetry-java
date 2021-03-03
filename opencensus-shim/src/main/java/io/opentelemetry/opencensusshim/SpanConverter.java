@@ -19,12 +19,11 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TraceStateBuilder;
 import javax.annotation.Nullable;
 
-class SpanConverter {
-  public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_TYPE = "message.event.type";
-  public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_UNCOMPRESSED =
+final class SpanConverter {
+  static final String MESSAGE_EVENT_ATTRIBUTE_KEY_TYPE = "message.event.type";
+  static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_UNCOMPRESSED =
       "message.event.size.uncompressed";
-  public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_COMPRESSED =
-      "message.event.size.compressed";
+  static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_COMPRESSED = "message.event.size.compressed";
 
   private SpanConverter() {}
 
@@ -68,7 +67,7 @@ class SpanConverter {
 
   private static TraceState mapTracestate(Tracestate tracestate) {
     TraceStateBuilder builder = TraceState.builder();
-    tracestate.getEntries().forEach(entry -> builder.set(entry.getKey(), entry.getValue()));
+    tracestate.getEntries().forEach(entry -> builder.put(entry.getKey(), entry.getValue()));
     return builder.build();
   }
 

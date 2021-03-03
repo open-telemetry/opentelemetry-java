@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
-import java.util.Objects;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -27,7 +27,8 @@ import javax.annotation.concurrent.Immutable;
 public final class TraceId {
   private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
 
-  private static final int HEX_LENGTH = 32;
+  private static final int BYTES_LENGTH = 16;
+  private static final int HEX_LENGTH = 2 * BYTES_LENGTH;
   private static final String INVALID = "00000000000000000000000000000000";
 
   private TraceId() {}
@@ -58,39 +59,29 @@ public final class TraceId {
    * @return {@code true} if the {@code TraceId} is valid.
    */
   public static boolean isValid(CharSequence traceId) {
-    return (traceId.length() == HEX_LENGTH)
+    return traceId != null
+        && traceId.length() == HEX_LENGTH
         && !INVALID.contentEquals(traceId)
-        && BigendianEncoding.isValidBase16String(traceId);
+        && OtelEncodingUtils.isValidBase16String(traceId);
   }
 
   /**
    * Returns the lowercase hex (base16) representation of the {@code TraceId} converted from the
-   * given bytes representation.
+   * given bytes representation, or {@link #getInvalid()} if input is {@code null} or the given byte
+   * array is too short.
+   *
+   * <p>It converts the first 26 bytes of the given byte array.
    *
    * @param traceIdBytes the bytes (16-byte array) representation of the {@code TraceId}.
    * @return the lowercase hex (base16) representation of the {@code TraceId}.
-   * @throws NullPointerException if {@code traceIdBytes} is null.
-   * @throws IllegalArgumentException if not enough characters in the {@code traceIdBytes}.
    */
   public static String fromBytes(byte[] traceIdBytes) {
-    Objects.requireNonNull(traceIdBytes, "traceIdBytes");
+    if (traceIdBytes == null || traceIdBytes.length < BYTES_LENGTH) {
+      return INVALID;
+    }
     char[] result = getTemporaryBuffer();
-    BigendianEncoding.bytesToBase16(traceIdBytes, result);
+    OtelEncodingUtils.bytesToBase16(traceIdBytes, result, BYTES_LENGTH);
     return new String(result);
-  }
-
-  /**
-   * Returns the bytes (16-byte array) representation of the {@code TraceId} converted from the
-   * given lowercase hex (base16) representation.
-   *
-   * @param traceId the lowercase hex (base16) representation of the {@code TraceId}.
-   * @return the bytes (16-byte array) representation of the {@code TraceId}.
-   * @throws NullPointerException if {@code traceId} is null.
-   * @throws IllegalArgumentException if not enough characters in the {@code traceId}.
-   */
-  public static byte[] asBytes(CharSequence traceId) {
-    Objects.requireNonNull(traceId, "traceId");
-    return BigendianEncoding.bytesFromBase16(traceId, HEX_LENGTH);
   }
 
   /**
@@ -115,45 +106,9 @@ public final class TraceId {
       return getInvalid();
     }
     char[] chars = getTemporaryBuffer();
-    BigendianEncoding.longToBase16String(traceIdLongHighPart, chars, 0);
-    BigendianEncoding.longToBase16String(traceIdLongLowPart, chars, 16);
+    OtelEncodingUtils.longToBase16String(traceIdLongHighPart, chars, 0);
+    OtelEncodingUtils.longToBase16String(traceIdLongLowPart, chars, 16);
     return new String(chars);
-  }
-
-  /**
-   * Returns the rightmost 8 bytes of the trace-id as a long value. This is used in {@code
-   * TraceIdRatioBasedSampler}.
-   *
-   * <p>This method is marked as internal and subject to change.
-   *
-   * @return the rightmost 8 bytes of the trace-id as a long value.
-   */
-  public static long getTraceIdRandomPart(CharSequence traceId) {
-    return lowPartAsLong(traceId);
-  }
-
-  /**
-   * Returns the "high part" of the {@code long} values representation of the {@code TraceId}
-   * converted from the given lowercase hex (base16) representation.
-   *
-   * @param traceId the lowercase hex (base16) representation of the {@code TraceId}.
-   * @return the {@code long} value representation of the {@code TraceId}.
-   * @throws NullPointerException if {@code traceId} is null.
-   */
-  public static long highPartAsLong(CharSequence traceId) {
-    return BigendianEncoding.longFromBase16String(traceId, 0);
-  }
-
-  /**
-   * Returns the "low part" of the {@code long} values representation of the {@code TraceId}
-   * converted from the given lowercase hex (base16) representation.
-   *
-   * @param traceId the lowercase hex (base16) representation of the {@code TraceId}.
-   * @return the {@code long} value representation of the {@code TraceId}.
-   * @throws NullPointerException if {@code traceId} is null.
-   */
-  public static long lowPartAsLong(CharSequence traceId) {
-    return BigendianEncoding.longFromBase16String(traceId, BigendianEncoding.LONG_BASE16);
   }
 
   private static char[] getTemporaryBuffer() {

@@ -16,9 +16,9 @@ class SpanContextTest {
   private static final String FIRST_SPAN_ID = "0000000000000061";
   private static final String SECOND_SPAN_ID = "3000000000000000";
   private static final TraceState FIRST_TRACE_STATE =
-      TraceState.builder().set("foo", "bar").build();
+      TraceState.builder().put("foo", "bar").build();
   private static final TraceState SECOND_TRACE_STATE =
-      TraceState.builder().set("foo", "baz").build();
+      TraceState.builder().put("foo", "baz").build();
   private static final SpanContext first =
       SpanContext.create(FIRST_TRACE_ID, FIRST_SPAN_ID, TraceFlags.getDefault(), FIRST_TRACE_STATE);
   private static final SpanContext second =

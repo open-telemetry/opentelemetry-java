@@ -6,7 +6,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Scope;
 
-public class ZipkinExample {
+public final class ZipkinExample {
   // The Tracer we'll use for the example
   private final Tracer tracer;
 

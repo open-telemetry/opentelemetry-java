@@ -8,10 +8,9 @@ package io.opentelemetry.sdk.extension.aws.resource;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,26 +20,15 @@ import org.junit.jupiter.api.Test;
 class LambdaResourceTest {
   @Test
   void shouldNotCreateResourceForNotLambda() {
-    // given
-    ResourceProvider resource = new LambdaResource(emptyMap());
-
-    // when
-    Attributes attributes = resource.create().getAttributes();
-
-    // then
-    assertTrue(attributes.isEmpty());
+    Attributes attributes = LambdaResource.buildResource(emptyMap()).getAttributes();
+    assertThat(attributes.isEmpty()).isTrue();
   }
 
   @Test
   void shouldAddNonEmptyAttributes() {
-    // given
-    ResourceProvider resource =
-        new LambdaResource(singletonMap("AWS_LAMBDA_FUNCTION_NAME", "my-function"));
-
-    // when
-    Attributes attributes = resource.create().getAttributes();
-
-    // then
+    Attributes attributes =
+        LambdaResource.buildResource(singletonMap("AWS_LAMBDA_FUNCTION_NAME", "my-function"))
+            .getAttributes();
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
@@ -52,18 +40,13 @@ class LambdaResourceTest {
 
   @Test
   void shouldAddAllAttributes() {
-    // given
     Map<String, String> envVars = new HashMap<>();
     envVars.put("AWS_REGION", "us-east-1");
     envVars.put("AWS_LAMBDA_FUNCTION_NAME", "my-function");
     envVars.put("AWS_LAMBDA_FUNCTION_VERSION", "1.2.3");
 
-    ResourceProvider resource = new LambdaResource(envVars);
+    Attributes attributes = LambdaResource.buildResource(envVars).getAttributes();
 
-    // when
-    Attributes attributes = resource.create().getAttributes();
-
-    // then
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
@@ -82,6 +65,6 @@ class LambdaResourceTest {
     // No practical way to test the attributes themselves so at least check the service loader picks
     // it up.
     assertThat(ServiceLoader.load(ResourceProvider.class))
-        .anyMatch(LambdaResource.class::isInstance);
+        .anyMatch(LambdaResourceProvider.class::isInstance);
   }
 }

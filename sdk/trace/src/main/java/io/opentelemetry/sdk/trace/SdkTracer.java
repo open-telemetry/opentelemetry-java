@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 
 /** {@link SdkTracer} is SDK implementation of {@link Tracer}. */
@@ -27,7 +28,9 @@ final class SdkTracer implements Tracer {
       spanName = FALLBACK_SPAN_NAME;
     }
     if (sharedState.hasBeenShutdown()) {
-      return Tracer.getDefault().spanBuilder(spanName);
+      return TracerProvider.noop()
+          .get(instrumentationLibraryInfo.getName(), instrumentationLibraryInfo.getVersion())
+          .spanBuilder(spanName);
     }
     return new SdkSpanBuilder(
         spanName, instrumentationLibraryInfo, sharedState, sharedState.getSpanLimits());

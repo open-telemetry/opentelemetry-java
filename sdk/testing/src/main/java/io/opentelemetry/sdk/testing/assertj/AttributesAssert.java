@@ -11,11 +11,13 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
 
 /** Assertions for {@link Attributes}. */
-public class AttributesAssert extends AbstractAssert<AttributesAssert, Attributes> {
+public final class AttributesAssert extends AbstractAssert<AttributesAssert, Attributes> {
   AttributesAssert(Attributes actual) {
     super(actual, AttributesAssert.class);
   }
@@ -121,6 +123,23 @@ public class AttributesAssert extends AbstractAssert<AttributesAssert, Attribute
             "Expected attributes to have key <%s> with value <%s> but was <%s>",
             key, value, actualValue)
         .containsExactlyElementsOf(value);
+    return this;
+  }
+
+  /** Asserts the attributes have the given key with a value satisfying the given condition. */
+  public <T> AttributesAssert hasEntrySatisfying(AttributeKey<T> key, Consumer<T> valueCondition) {
+    isNotNull();
+    assertThat(actual.get(key)).as("value").satisfies(valueCondition);
+    return this;
+  }
+
+  /** Asserts the attributes only contain the given entries. */
+  // NB: SafeVarArgs requires final on the method even if it's on the class.
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final AttributesAssert containsOnly(Map.Entry<? extends AttributeKey<?>, ?>... entries) {
+    isNotNull();
+    assertThat(actual.asMap()).containsOnly(entries);
     return this;
   }
 }

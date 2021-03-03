@@ -16,7 +16,7 @@
   * [Sampler](#sampler)
   * [Span Processor](#span-processor)
   * [Exporter](#exporter)
-  * [TraceConfig](#traceconfig)
+- [Auto Configuration](#auto-configuration)
 - [Logging And Error Handling](#logging-and-error-handling)
   * [Examples](#examples)
 <!-- tocstop -->
@@ -37,10 +37,6 @@ The first step is to get a handle to an instance of the `OpenTelemetry` interfac
 
 If you are an application developer, you need to configure an instance of the `OpenTelemetrySdk` as
 early as possible in your application. This can be done using the `OpenTelemetrySdk.builder()` method.
-
-If you want to enable auto-configuration, via the standard set of environment variables, system
-properties or pre-build java SPI implementations, you will want to additionally have your project
-depend on the `opentelemetry-sdk-extension-autoconfigure` module.
 
 For example:
 
@@ -156,7 +152,7 @@ attributes specific to the represented operation. Attributes provide additional 
 about the specific operation it tracks, such as results or operation properties.
 
 ```java
-Span span = tracer.spanBuilder("/resource/path").setSpanKind(Span.Kind.CLIENT).startSpan();
+Span span = tracer.spanBuilder("/resource/path").setSpanKind(SpanKind.CLIENT).startSpan();
 span.setAttribute("http.method", "GET");
 span.setAttribute("http.url", url.toString());
 ```
@@ -211,8 +207,8 @@ The following presents an example of an outgoing HTTP request using `HttpURLConn
  
 ```java
 // Tell OpenTelemetry to inject the context in the HTTP headers
-TextMapPropagator.Setter<HttpURLConnection> setter =
-  new TextMapPropagator.Setter<HttpURLConnection>() {
+TextMapSetter<HttpURLConnection> setter =
+  new TextMapSetter<HttpURLConnection>() {
     @Override
     public void set(HttpURLConnection carrier, String key, String value) {
         // Insert the context as Header
@@ -221,7 +217,7 @@ TextMapPropagator.Setter<HttpURLConnection> setter =
 };
 
 URL url = new URL("http://127.0.0.1:8080/resource");
-Span outGoing = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.CLIENT).startSpan();
+Span outGoing = tracer.spanBuilder("/resource").setSpanKind(SpanKind.CLIENT).startSpan();
 try (Scope scope = outGoing.makeCurrent()) {
   // Semantic Convention.
   // (Note that to set these, Span does not *need* to be the current instance in Context or Scope.)
@@ -242,8 +238,8 @@ The following presents an example of processing an incoming HTTP request using
 [HttpExchange](https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpExchange.html).
 
 ```java
-TextMapPropagator.Getter<HttpExchange> getter =
-  new TextMapPropagator.Getter<>() {
+TextMapGetter<HttpExchange> getter =
+  new TextMapGetter<>() {
     @Override
     public String get(HttpExchange carrier, String key) {
       if (carrier.getRequestHeaders().containsKey(key)) {
@@ -265,7 +261,7 @@ public void handle(HttpExchange httpExchange) {
   try (Scope scope = extractedContext.makeCurrent()) {
     // Automatically use the extracted SpanContext as parent.
     Span serverSpan = tracer.spanBuilder("GET /resource")
-        .setSpanKind(Span.Kind.SERVER)
+        .setSpanKind(SpanKind.SERVER)
         .startSpan();
     try {
       // Add the attributes defined in the Semantic Conventions
@@ -434,15 +430,7 @@ properties, you can use the `opentelemetry-sdk-extension-autoconfigure` module.
   OpenTelemetrySdk sdk = OpenTelemetrySdkAutoConfiguration.initialize();
 ```
 
-Some of the supported system properties and environment variables:
-
-| System property                  | Environment variable             | Purpose                                                                                             | 
-|----------------------------------|----------------------------------|-----------------------------------------------------------------------------------------------------|       
-| otel.trace.sampler               | OTEL_TRACE_SAMPLER               | Which sampler to use (`parentbased_traceidratio` for example)
-| otel.trace.sampler.arg           | OTEL_TRACE_SAMPLER_ARG           | Used to configured the ratio for the ratio-based sampler (default: 1)                                     |                        
-| otel.span.attribute.count.limit  | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT  | Max number of attributes per span, extra will be dropped (default: 1000)                              |                        
-| otel.span.event.count.limit      | OTEL_SPAN_EVENT_COUNT_LIMIT      | Max number of Events per span, extra will be dropped (default: 1000)                                 |                        
-| otel.span.link.count.limit       | OTEL_SPAN_LINK_COUNT_LIMIT       | Max number of Link entries per span, extra will be dropped (default: 1000)                            |
+See the supported configuration options in the module's [README](./sdk-extensions/autoconfigure/README.md).
 
 [AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L29
 [AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L40

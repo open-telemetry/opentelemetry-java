@@ -36,7 +36,7 @@ public interface Attributes {
   <T> T get(AttributeKey<T> key);
 
   /** Iterates over all the key-value pairs of attributes contained by this instance. */
-  void forEach(BiConsumer<AttributeKey<?>, Object> consumer);
+  void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer);
 
   /** The number of attributes contained in this. */
   int size();

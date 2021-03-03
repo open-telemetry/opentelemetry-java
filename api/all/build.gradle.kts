@@ -11,7 +11,7 @@ extra["moduleName"] = "io.opentelemetry.api"
 base.archivesBaseName = "opentelemetry-api"
 
 dependencies {
-    api(project(":api:context"))
+    api(project(":context"))
 
     annotationProcessor("com.google.auto.value:auto-value")
 

@@ -1,14 +1,14 @@
 package io.opentelemetry.example.metrics;
 
-import io.opentelemetry.api.DefaultOpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
@@ -18,8 +18,8 @@ import javax.swing.filechooser.FileSystemView;
 /**
  * Example of using {@link LongCounter} and {@link BoundLongCounter} to count searched directories.
  */
-public class LongCounterExample {
-  private static final OpenTelemetry openTelemetry = DefaultOpenTelemetry.builder().build();
+public final class LongCounterExample {
+  private static final OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
   private static final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.metrics", "0.13.1");
 
@@ -37,7 +37,7 @@ public class LongCounterExample {
       directoryCounter.bind(Labels.of("root directory", homeDirectory.getName()));
 
   public static void main(String[] args) {
-    Span span = tracer.spanBuilder("workflow").setSpanKind(Kind.INTERNAL).startSpan();
+    Span span = tracer.spanBuilder("workflow").setSpanKind(SpanKind.INTERNAL).startSpan();
     LongCounterExample example = new LongCounterExample();
     try (Scope scope = span.makeCurrent()) {
       homeDirectoryCounter.add(1); // count root directory

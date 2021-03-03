@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
-import java.util.Objects;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -23,7 +23,8 @@ import javax.annotation.concurrent.Immutable;
 public final class SpanId {
   private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
 
-  private static final int HEX_LENGTH = 16;
+  private static final int BYTES_LENGTH = 8;
+  private static final int HEX_LENGTH = 2 * BYTES_LENGTH;
   private static final String INVALID = "0000000000000000";
 
   private SpanId() {}
@@ -54,39 +55,29 @@ public final class SpanId {
    * @return {@code true} if the span identifier is valid.
    */
   public static boolean isValid(CharSequence spanId) {
-    return (spanId.length() == HEX_LENGTH)
+    return spanId != null
+        && spanId.length() == HEX_LENGTH
         && !INVALID.contentEquals(spanId)
-        && BigendianEncoding.isValidBase16String(spanId);
+        && OtelEncodingUtils.isValidBase16String(spanId);
   }
 
   /**
    * Returns the lowercase hex (base16) representation of the {@code SpanId} converted from the
-   * given bytes representation.
+   * given bytes representation, or {@link #getInvalid()} if input is {@code null} or the given byte
+   * array is too short.
+   *
+   * <p>It converts the first 8 bytes of the given byte array.
    *
    * @param spanIdBytes the bytes (8-byte array) representation of the {@code SpanId}.
    * @return the lowercase hex (base16) representation of the {@code SpanId}.
-   * @throws NullPointerException if {@code spanIdBytes} is null.
-   * @throws IllegalArgumentException if not enough characters in the {@code spanIdBytes}.
    */
   public static String fromBytes(byte[] spanIdBytes) {
-    Objects.requireNonNull(spanIdBytes, "spanIdBytes");
+    if (spanIdBytes == null || spanIdBytes.length < BYTES_LENGTH) {
+      return INVALID;
+    }
     char[] result = getTemporaryBuffer();
-    BigendianEncoding.bytesToBase16(spanIdBytes, result);
+    OtelEncodingUtils.bytesToBase16(spanIdBytes, result, BYTES_LENGTH);
     return new String(result);
-  }
-
-  /**
-   * Returns the bytes (8-byte array) representation of the {@code SpanId} converted from the given
-   * lowercase hex (base16) representation.
-   *
-   * @param spanId the lowercase hex (base16) representation of the {@code SpanId}.
-   * @return the bytes (8-byte array) representation of the {@code SpanId}.
-   * @throws NullPointerException if {@code spanId} is null.
-   * @throws IllegalArgumentException if not enough characters in the {@code spanId}.
-   */
-  public static byte[] asBytes(CharSequence spanId) {
-    Objects.requireNonNull(spanId, "spanId");
-    return BigendianEncoding.bytesFromBase16(spanId, HEX_LENGTH);
   }
 
   /**
@@ -100,7 +91,7 @@ public final class SpanId {
    * <p>This is equivalent to calling {@link #fromBytes(byte[])} with the specified value stored as
    * big-endian.
    *
-   * @param id the higher part of the {@code TraceId}.
+   * @param id {@code long} value representation of the {@code SpanId}.
    * @return the lowercase hex (base16) representation of the {@code SpanId}.
    */
   public static String fromLong(long id) {
@@ -108,21 +99,8 @@ public final class SpanId {
       return getInvalid();
     }
     char[] result = getTemporaryBuffer();
-    BigendianEncoding.longToBase16String(id, result, 0);
+    OtelEncodingUtils.longToBase16String(id, result, 0);
     return new String(result);
-  }
-
-  /**
-   * Returns the {@code long} value representation of the {@code SpanId} converted from the given
-   * lowercase hex (base16) representation.
-   *
-   * @param spanId the lowercase hex (base16) representation of the {@code SpanId}.
-   * @return the {@code long} value representation of the {@code SpanId}.
-   * @throws NullPointerException if {@code spanId} is null.
-   */
-  public static long asLong(CharSequence spanId) {
-    Objects.requireNonNull(spanId, "spanId");
-    return BigendianEncoding.longFromBase16String(spanId, 0);
   }
 
   private static char[] getTemporaryBuffer() {

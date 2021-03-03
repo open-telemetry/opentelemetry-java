@@ -70,7 +70,7 @@ class RecordEventsReadableSpanTest {
   private final String parentSpanId = idsGenerator.generateSpanId();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
-  private final Resource resource = Resource.getEmpty();
+  private final Resource resource = Resource.empty();
   private final InstrumentationLibraryInfo instrumentationLibraryInfo =
       InstrumentationLibraryInfo.create("theName", null);
   private final Map<AttributeKey, Object> attributes = new HashMap<>();
@@ -733,9 +733,13 @@ class RecordEventsReadableSpanTest {
     span.updateName(null);
     span.addEvent(null);
     span.addEvent(null, 0, null);
+    span.addEvent("event", 0, null);
     span.addEvent(null, (Attributes) null);
+    span.addEvent("event", (Attributes) null);
     span.addEvent(null, (Instant) null);
     span.addEvent(null, null, 0, null);
+    span.addEvent("event", null, 0, TimeUnit.MILLISECONDS);
+    span.addEvent("event", Attributes.empty(), 0, null);
     span.addEvent(null, null, null);
     span.recordException(null);
     span.end(0, TimeUnit.NANOSECONDS);
@@ -839,7 +843,7 @@ class RecordEventsReadableSpanTest {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
-    assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
+    assertThat(spanData.getSpanContext().getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
     assertThat(spanData.getName()).isEqualTo(spanName);
@@ -926,7 +930,7 @@ class RecordEventsReadableSpanTest {
         StatusData.unset(),
         /* hasEnded= */ true);
     assertThat(result.getTotalRecordedLinks()).isEqualTo(1);
-    assertThat(result.isSampled()).isEqualTo(false);
+    assertThat(result.getSpanContext().isSampled()).isEqualTo(false);
   }
 
   @Test

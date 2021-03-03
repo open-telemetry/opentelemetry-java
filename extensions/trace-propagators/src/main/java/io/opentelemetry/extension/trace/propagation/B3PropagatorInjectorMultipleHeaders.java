@@ -8,16 +8,20 @@ package io.opentelemetry.extension.trace.propagation;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator;
-import java.util.Objects;
+import io.opentelemetry.context.propagation.TextMapSetter;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
 final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector {
   @Override
-  public <C> void inject(Context context, C carrier, TextMapPropagator.Setter<C> setter) {
-    Objects.requireNonNull(context, "context");
-    Objects.requireNonNull(setter, "setter");
+  public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
+    if (context == null) {
+      return;
+    }
+    if (setter == null) {
+      return;
+    }
 
     SpanContext spanContext = Span.fromContext(context).getSpanContext();
     if (!spanContext.isValid()) {

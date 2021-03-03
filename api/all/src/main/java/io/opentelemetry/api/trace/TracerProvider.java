@@ -20,7 +20,7 @@ public interface TracerProvider {
    * Returns a no-op {@link TracerProvider} which only creates no-op {@link Span}s which do not
    * record nor are emitted.
    */
-  static TracerProvider getDefault() {
+  static TracerProvider noop() {
     return DefaultTracerProvider.getInstance();
   }
 

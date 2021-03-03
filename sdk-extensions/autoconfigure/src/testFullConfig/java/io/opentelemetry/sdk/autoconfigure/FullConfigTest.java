@@ -17,10 +17,10 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.extension.trace.propagation.AwsXrayPropagator;
+import io.opentelemetry.extension.aws.AwsXrayPropagator;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
-import io.opentelemetry.extension.trace.propagation.OtTracerPropagator;
+import io.opentelemetry.extension.trace.propagation.OtTracePropagator;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
@@ -120,9 +120,9 @@ class FullConfigTest {
     List<String> keys = new ArrayList<>();
     keys.addAll(W3CTraceContextPropagator.getInstance().fields());
     keys.addAll(W3CBaggagePropagator.getInstance().fields());
-    keys.addAll(B3Propagator.getInstance().fields());
+    keys.addAll(B3Propagator.injectingSingleHeader().fields());
     keys.addAll(JaegerPropagator.getInstance().fields());
-    keys.addAll(OtTracerPropagator.getInstance().fields());
+    keys.addAll(OtTracePropagator.getInstance().fields());
     keys.addAll(AwsXrayPropagator.getInstance().fields());
     // Added by TestPropagatorProvider
     keys.add("test");

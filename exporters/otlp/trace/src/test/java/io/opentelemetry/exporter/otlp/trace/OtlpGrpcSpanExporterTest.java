@@ -21,12 +21,12 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.extension.otproto.SpanAdapter;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -70,11 +70,6 @@ class OtlpGrpcSpanExporterTest {
   }
 
   @Test
-  void legacyEndpointConfig() {
-    OtlpGrpcSpanExporter.builder().setEndpoint("localhost:4317");
-  }
-
-  @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void invalidConfig() {
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
@@ -90,12 +85,15 @@ class OtlpGrpcSpanExporterTest {
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
-    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint(""))
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("😺://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid endpoint, must be a URL: http://");
+        .hasMessage("Invalid endpoint, must be a URL: 😺://localhost");
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: localhost");
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("gopher://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid scheme, must be http or https: gopher://localhost");
+        .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
   }
 
   @Test

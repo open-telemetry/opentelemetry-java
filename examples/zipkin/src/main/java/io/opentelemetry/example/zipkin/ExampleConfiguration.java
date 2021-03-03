@@ -18,7 +18,7 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
  * All SDK management takes place here, away from the instrumentation code, which should only access
  * the OpenTelemetry APIs.
  */
-public class ExampleConfiguration {
+public final class ExampleConfiguration {
   // Zipkin API Endpoints for uploading spans
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
 
@@ -44,7 +44,7 @@ public class ExampleConfiguration {
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
 
     // add a shutdown hook to shut down the SDK
-    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::shutdown));
+    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
 
     // return the configured instance so it can be used for instrumentation.
     return openTelemetry;

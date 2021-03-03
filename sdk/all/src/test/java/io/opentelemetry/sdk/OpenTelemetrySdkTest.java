@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.mock;
 
@@ -43,11 +44,29 @@ class OpenTelemetrySdkTest {
 
   @Test
   void testRegisterGlobal() {
-    OpenTelemetrySdk sdk = OpenTelemetrySdk.builder().buildAndRegisterGlobal();
-    assertThat(sdk).isSameAs(GlobalOpenTelemetry.get());
-    assertThat(GlobalOpenTelemetry.get()).isSameAs(sdk);
-    assertThat(((OpenTelemetrySdk) GlobalOpenTelemetry.get()).getSdkTracerProvider().get(""))
-        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""));
+    OpenTelemetrySdk sdk =
+        OpenTelemetrySdk.builder().setPropagators(propagators).buildAndRegisterGlobal();
+    assertThat(GlobalOpenTelemetry.get()).extracting("delegate").isSameAs(sdk);
+    assertThat(sdk.getTracerProvider().get(""))
+        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get(""))
+        .isSameAs(GlobalOpenTelemetry.get().getTracer(""));
+
+    assertThat(GlobalOpenTelemetry.getPropagators())
+        .isSameAs(GlobalOpenTelemetry.get().getPropagators())
+        .isSameAs(sdk.getPropagators())
+        .isSameAs(propagators);
+  }
+
+  @Test
+  void castingGlobalToSdkFails() {
+    OpenTelemetrySdk.builder().buildAndRegisterGlobal();
+
+    assertThatThrownBy(
+            () -> {
+              @SuppressWarnings("unused")
+              OpenTelemetrySdk shouldFail = (OpenTelemetrySdk) GlobalOpenTelemetry.get();
+            })
+        .isInstanceOf(ClassCastException.class);
   }
 
   @Test
@@ -129,7 +148,7 @@ class OpenTelemetrySdkTest {
   // Demonstrates how clear or confusing is SDK configuration
   @Test
   void fullOpenTelemetrySdkConfigurationDemo() {
-    SpanLimits newConfig = SpanLimits.builder().setMaxLengthOfAttributeValues(128).build();
+    SpanLimits newConfig = SpanLimits.builder().setMaxNumberOfAttributes(512).build();
 
     OpenTelemetrySdkBuilder sdkBuilder =
         OpenTelemetrySdk.builder()
@@ -140,7 +159,7 @@ class OpenTelemetrySdkTest {
                     .addSpanProcessor(SimpleSpanProcessor.create(mock(SpanExporter.class)))
                     .setClock(mock(Clock.class))
                     .setIdGenerator(mock(IdGenerator.class))
-                    .setResource(Resource.getEmpty())
+                    .setResource(Resource.empty())
                     .setSpanLimits(newConfig)
                     .build());
 

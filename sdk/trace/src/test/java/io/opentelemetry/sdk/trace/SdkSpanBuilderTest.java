@@ -26,7 +26,6 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
@@ -58,8 +57,8 @@ class SdkSpanBuilderTest {
   private static final String SPAN_NAME = "span_name";
   private final SpanContext sampledSpanContext =
       SpanContext.create(
-          TraceId.fromLongs(1000, 1000),
-          SpanId.fromLong(3000),
+          "12345678876543211234567887654321",
+          "8765432112345678",
           TraceFlags.getSampled(),
           TraceState.getDefault());
 
@@ -162,8 +161,8 @@ class SdkSpanBuilderTest {
       // this test to pass.
       spanBuilder.addLink(
           SpanContext.create(
-              TraceId.fromLongs(2000, 2000),
-              SpanId.fromLong(4000),
+              "00000000000004d20000000000001a85",
+              "0000000000002694",
               TraceFlags.getSampled(),
               TraceState.getDefault()));
       assertThat(span.toSpanData().getLinks())
@@ -375,52 +374,6 @@ class SdkSpanBuilderTest {
   }
 
   @Test
-  public void tooLargeAttributeValuesAreTruncated() {
-    SpanLimits spanLimits = SpanLimits.builder().setMaxLengthOfAttributeValues(10).build();
-    TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
-    // Verify methods do not crash.
-    SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
-    spanBuilder.setAttribute("builderStringNull", null);
-    spanBuilder.setAttribute("builderStringSmall", "small");
-    spanBuilder.setAttribute("builderStringLarge", "very large string that we have to cut");
-    spanBuilder.setAttribute("builderLong", 42L);
-    spanBuilder.setAttribute(
-        stringKey("builderStringLargeValue"), "very large string that we have to cut");
-    spanBuilder.setAttribute(
-        stringArrayKey("builderStringArray"),
-        Arrays.asList("small", null, "very large string that we have to cut"));
-
-    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
-    span.setAttribute("spanStringSmall", "small");
-    span.setAttribute("spanStringLarge", "very large string that we have to cut");
-    span.setAttribute("spanLong", 42L);
-    span.setAttribute(stringKey("spanStringLarge"), "very large string that we have to cut");
-    span.setAttribute(
-        stringArrayKey("spanStringArray"),
-        Arrays.asList("small", null, "very large string that we have to cut"));
-
-    try {
-      Attributes attrs = span.toSpanData().getAttributes();
-      assertThat(attrs.get(stringKey("builderStringNull"))).isEqualTo(null);
-      assertThat(attrs.get(stringKey("builderStringSmall"))).isEqualTo("small");
-      assertThat(attrs.get(stringKey("builderStringLarge"))).isEqualTo("very large");
-      assertThat(attrs.get(longKey("builderLong"))).isEqualTo(42L);
-      assertThat(attrs.get(stringKey("builderStringLargeValue"))).isEqualTo("very large");
-      assertThat(attrs.get(stringArrayKey("builderStringArray")))
-          .isEqualTo(Arrays.asList("small", null, "very large"));
-
-      assertThat(attrs.get(stringKey("spanStringSmall"))).isEqualTo("small");
-      assertThat(attrs.get(stringKey("spanStringLarge"))).isEqualTo("very large");
-      assertThat(attrs.get(longKey("spanLong"))).isEqualTo(42L);
-      assertThat(attrs.get(stringKey("spanStringLarge"))).isEqualTo("very large");
-      assertThat(attrs.get(stringArrayKey("spanStringArray")))
-          .isEqualTo(Arrays.asList("small", null, "very large"));
-    } finally {
-      span.end();
-    }
-  }
-
-  @Test
   void addAttributes_OnlyViaSampler() {
 
     Sampler sampler =
@@ -545,7 +498,8 @@ class SdkSpanBuilderTest {
     try {
       assertThat(span.getSpanContext().isSampled()).isTrue();
       assertThat(span.toSpanData().getAttributes().get(samplerAttributeKey)).isNotNull();
-      assertThat(span.toSpanData().getTraceState()).isEqualTo(TraceState.getDefault());
+      assertThat(span.toSpanData().getSpanContext().getTraceState())
+          .isEqualTo(TraceState.getDefault());
     } finally {
       span.end();
     }
@@ -581,7 +535,7 @@ class SdkSpanBuilderTest {
 
                           @Override
                           public TraceState getUpdatedTraceState(TraceState parentTraceState) {
-                            return parentTraceState.toBuilder().set("newkey", "newValue").build();
+                            return parentTraceState.toBuilder().put("newkey", "newValue").build();
                           }
                         };
                       }
@@ -599,8 +553,8 @@ class SdkSpanBuilderTest {
     try {
       assertThat(span.getSpanContext().isSampled()).isTrue();
       assertThat(span.toSpanData().getAttributes().get(samplerAttributeKey)).isNotNull();
-      assertThat(span.toSpanData().getTraceState())
-          .isEqualTo(TraceState.builder().set("newkey", "newValue").build());
+      assertThat(span.toSpanData().getSpanContext().getTraceState())
+          .isEqualTo(TraceState.builder().put("newkey", "newValue").build());
     } finally {
       span.end();
     }
@@ -905,13 +859,13 @@ class SdkSpanBuilderTest {
             "SpanData\\{spanContext=ImmutableSpanContext\\{"
                 + "traceId=[0-9a-f]{32}, "
                 + "spanId=[0-9a-f]{16}, "
-                + "traceFlags=1, "
-                + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false}, "
+                + "traceFlags=01, "
+                + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false, valid=true}, "
                 + "parentSpanContext=ImmutableSpanContext\\{"
                 + "traceId=00000000000000000000000000000000, "
                 + "spanId=0000000000000000, "
-                + "traceFlags=0, "
-                + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false}, "
+                + "traceFlags=00, "
+                + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false, valid=false}, "
                 + "resource=Resource\\{attributes=\\{service.name=\"unknown_service:java\", "
                 + "telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", "
                 + "telemetry.sdk.version=\"\\d+.\\d+.\\d+(-SNAPSHOT)?\"}}, "
@@ -921,8 +875,7 @@ class SdkSpanBuilderTest {
                 + "kind=INTERNAL, "
                 + "startEpochNanos=[0-9]+, "
                 + "endEpochNanos=[0-9]+, "
-                + "attributes=AttributesMap\\{data=\\{http.status_code=500, "
-                + "http.url=https://opentelemetry.io}, capacity=1000, totalAddedValues=2}, "
+                + "attributes=AttributesMap\\{data=\\{[^}]*}, capacity=128, totalAddedValues=2}, "
                 + "totalAttributeCount=2, "
                 + "events=\\[], "
                 + "totalRecordedEvents=0, "

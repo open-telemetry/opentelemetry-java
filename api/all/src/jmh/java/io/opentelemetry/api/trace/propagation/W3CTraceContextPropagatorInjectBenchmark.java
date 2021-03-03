@@ -11,7 +11,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public class W3CTraceContextPropagatorInjectBenchmark {
   private final TextMapPropagator w3cTraceContextPropagator =
       W3CTraceContextPropagator.getInstance();
   private final Map<String, String> carrier = new HashMap<>();
-  private final Setter<Map<String, String>> setter = Map::put;
+  private final TextMapSetter<Map<String, String>> setter = Map::put;
   private final List<Context> contexts = createContexts(spanContexts);
 
   /** Benchmark for measuring inject with default trace state and sampled trace options. */

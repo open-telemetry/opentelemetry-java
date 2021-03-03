@@ -8,7 +8,6 @@ package io.opentelemetry.opentracingshim;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
-import io.opentelemetry.context.Context;
 import io.opentracing.SpanContext;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -42,9 +41,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
   }
 
   SpanContextShim newWithKeyValue(String key, String value) {
-    Context parentContext = Context.current().with(baggage);
-
-    BaggageBuilder builder = Baggage.builder().setParent(parentContext);
+    BaggageBuilder builder = baggage.toBuilder();
     builder.put(key, value, BaggageEntryMetadata.empty());
 
     return new SpanContextShim(telemetryInfo(), context, builder.build());

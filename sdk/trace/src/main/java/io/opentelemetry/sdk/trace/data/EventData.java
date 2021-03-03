@@ -7,7 +7,10 @@ package io.opentelemetry.sdk.trace.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.trace.SpanLimits;
+import javax.annotation.concurrent.Immutable;
 
+/** Data representation of a event. */
+@Immutable
 public interface EventData {
 
   /**

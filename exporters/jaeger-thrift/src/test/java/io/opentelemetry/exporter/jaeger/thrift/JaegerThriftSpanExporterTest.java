@@ -17,10 +17,8 @@ import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -45,8 +43,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class JaegerThriftSpanExporterTest {
 
   private static final String TRACE_ID = "a0000000000000000000000000abc123";
+  private static final long TRACE_ID_HIGH = 0xa000000000000000L;
+  private static final long TRACE_ID_LOW = 0x0000000000abc123L;
   private static final String SPAN_ID = "00000f0000def456";
+  private static final long SPAN_ID_LONG = 0x00000f0000def456L;
   private static final String SPAN_ID_2 = "00a0000000aef789";
+  private static final long SPAN_ID_2_LONG = 0x00a0000000aef789L;
   private static final SpanContext SPAN_CONTEXT =
       SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault());
   private static final SpanContext SPAN_CONTEXT_2 =
@@ -107,9 +109,9 @@ class JaegerThriftSpanExporterTest {
 
     Span expectedSpan =
         new Span()
-            .setTraceIdHigh(TraceId.highPartAsLong(TRACE_ID))
-            .setTraceIdLow(TraceId.lowPartAsLong(TRACE_ID))
-            .setSpanId(SpanId.asLong(SPAN_ID))
+            .setTraceIdHigh(TRACE_ID_HIGH)
+            .setTraceIdLow(TRACE_ID_LOW)
+            .setSpanId(SPAN_ID_LONG)
             .setOperationName("GET /api/endpoint")
             .setReferences(Collections.emptyList())
             .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
@@ -206,9 +208,9 @@ class JaegerThriftSpanExporterTest {
 
     Span expectedSpan1 =
         new Span()
-            .setTraceIdHigh(TraceId.highPartAsLong(TRACE_ID))
-            .setTraceIdLow(TraceId.lowPartAsLong(TRACE_ID))
-            .setSpanId(SpanId.asLong(SPAN_ID))
+            .setTraceIdHigh(TRACE_ID_HIGH)
+            .setTraceIdLow(TRACE_ID_LOW)
+            .setSpanId(SPAN_ID_LONG)
             .setOperationName("GET /api/endpoint/1")
             .setReferences(Collections.emptyList())
             .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
@@ -222,9 +224,9 @@ class JaegerThriftSpanExporterTest {
 
     Span expectedSpan2 =
         new Span()
-            .setTraceIdHigh(TraceId.highPartAsLong(TRACE_ID))
-            .setTraceIdLow(TraceId.lowPartAsLong(TRACE_ID))
-            .setSpanId(SpanId.asLong(SPAN_ID_2))
+            .setTraceIdHigh(TRACE_ID_HIGH)
+            .setTraceIdLow(TRACE_ID_LOW)
+            .setSpanId(SPAN_ID_2_LONG)
             .setOperationName("GET /api/endpoint/2")
             .setReferences(Collections.emptyList())
             .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))

@@ -17,7 +17,7 @@ import java.util.stream.StreamSupport;
 import org.assertj.core.api.AbstractIterableAssert;
 
 /** Assertions for a list of exported traces. */
-public class TracesAssert
+public final class TracesAssert
     extends AbstractIterableAssert<
         TracesAssert, List<List<SpanData>>, List<SpanData>, TraceAssert> {
 

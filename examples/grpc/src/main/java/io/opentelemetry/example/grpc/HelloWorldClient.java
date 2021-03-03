@@ -18,16 +18,18 @@ import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class HelloWorldClient {
+public final class HelloWorldClient {
   private static final Logger logger = Logger.getLogger(HelloWorldClient.class.getName());
   private final ManagedChannel channel;
   private final String serverHostname;
@@ -45,7 +47,7 @@ public class HelloWorldClient {
   private final TextMapPropagator textFormat =
       openTelemetry.getPropagators().getTextMapPropagator();
   // Inject context into the gRPC request metadata
-  private final TextMapPropagator.Setter<Metadata> setter =
+  private final TextMapSetter<Metadata> setter =
       (carrier, key, value) ->
           carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
 
@@ -75,7 +77,7 @@ public class HelloWorldClient {
 
     // Start a span
     Span span =
-        tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(Span.Kind.CLIENT).startSpan();
+        tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(SpanKind.CLIENT).startSpan();
     span.setAttribute("component", "grpc");
     span.setAttribute("rpc.service", "Greeter");
     span.setAttribute("net.peer.ip", this.serverHostname);
@@ -96,7 +98,7 @@ public class HelloWorldClient {
     }
   }
 
-  public class OpenTelemetryClientInterceptor implements ClientInterceptor {
+  public final class OpenTelemetryClientInterceptor implements ClientInterceptor {
 
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(

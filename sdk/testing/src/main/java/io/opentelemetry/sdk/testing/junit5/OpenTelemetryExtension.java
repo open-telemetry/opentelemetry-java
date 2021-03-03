@@ -32,18 +32,18 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * between tests.
  *
  * <pre>{@code
- * > class CoolTest {
- * >   {@literal @}RegisterExtension
- * >   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
- * >
- * >   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
- * >
- * >   {@literal @}Test
- * >   void test() {
- * >     tracer.spanBuilder("name").startSpan().end();
- * >     assertThat(otelTesting.getSpans()).containsExactly(expected);
- * >   }
- * >  }
+ * // class CoolTest {
+ * //   @RegisterExtension
+ * //   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+ * //
+ * //   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
+ * //
+ * //   @Test
+ * //   void test() {
+ * //     tracer.spanBuilder("name").startSpan().end();
+ * //     assertThat(otelTesting.getSpans()).containsExactly(expected);
+ * //   }
+ * //  }
  * }</pre>
  */
 public final class OpenTelemetryExtension
