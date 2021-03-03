@@ -127,10 +127,12 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private long nextExportTime;
 
     private final BlockingQueue<ReadableSpan> queue;
+    private final BlockingQueue<Object> signal;
 
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
-    private final ArrayList<SpanData> batch;
+    private final ArrayList<ReadableSpan> batch;
+    private final ArrayList<SpanData> batchData;
 
     private Worker(
         SpanExporter spanExporter,
@@ -143,6 +145,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
       this.queue = queue;
+      this.signal = new ArrayBlockingQueue<>(1);
       Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.sdk.trace");
       meter
           .longValueObserverBuilder("queueSize")
@@ -170,10 +173,15 @@ public final class BatchSpanProcessor implements SpanProcessor {
               Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE, "dropped", "false"));
 
       this.batch = new ArrayList<>(this.maxExportBatchSize);
+      this.batchData = new ArrayList<>(this.maxExportBatchSize);
     }
 
     private void addSpan(ReadableSpan span) {
-      if (!queue.offer(span)) {
+      if (queue.offer(span)) {
+        if (queue.size() >= maxExportBatchSize) {
+          signal.offer("GOGOGO");
+        }
+      } else {
         droppedSpans.add(1);
       }
     }
@@ -188,19 +196,20 @@ public final class BatchSpanProcessor implements SpanProcessor {
         }
 
         try {
-          ReadableSpan lastElement = queue.poll(100, TimeUnit.MILLISECONDS);
-          if (lastElement != null) {
-            batch.add(lastElement.toSpanData());
+          long pollTimeout = nextExportTime - System.nanoTime();
+
+          if (pollTimeout > 0) {
+            signal.poll(pollTimeout, TimeUnit.NANOSECONDS);
           }
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           return;
         }
 
-        if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
-          exportCurrentBatch();
-          updateNextExportTime();
-        }
+        queue.drainTo(batch, maxExportBatchSize);
+        exportCurrentBatch();
+
+        updateNextExportTime();
       }
     }
 
@@ -209,7 +218,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       while (spansToFlush > 0) {
         ReadableSpan span = queue.poll();
         assert span != null;
-        batch.add(span.toSpanData());
+        batch.add(span);
         spansToFlush--;
         if (batch.size() >= maxExportBatchSize) {
           exportCurrentBatch();
@@ -248,7 +257,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
       // we set the atomic here to trigger the worker loop to do a flush on its next iteration.
-      flushRequested.compareAndSet(null, flushResult);
+      if (flushRequested.compareAndSet(null, flushResult)) {
+        signal.offer("GOGOGO");
+      }
       CompletableResultCode possibleResult = flushRequested.get();
       // there's a race here where the flush happening in the worker loop could complete before we
       // get what's in the atomic. In that case, just return success, since we know it succeeded in
@@ -261,9 +272,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
         return;
       }
 
+      for (ReadableSpan span : batch) {
+        batchData.add(span.toSpanData());
+      }
+
       try {
         final CompletableResultCode result =
-            spanExporter.export(Collections.unmodifiableList(batch));
+            spanExporter.export(Collections.unmodifiableList(batchData));
         result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
         if (result.isSuccess()) {
           exportedSpans.add(batch.size());
@@ -274,6 +289,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
         logger.log(Level.WARNING, "Exporter threw an Exception", e);
       } finally {
         batch.clear();
+        batchData.clear();
       }
     }
   }
