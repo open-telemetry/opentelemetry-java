@@ -22,12 +22,15 @@ public final class BatchSpanProcessorBuilder {
   static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   // Visible for testing
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+  static final long DEFAULT_QUEUE_POLL_TIME_MILLIS = 100;
 
   private final SpanExporter spanExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
+  private long queuePollWaitTimeNanos =
+      TimeUnit.MILLISECONDS.toNanos(DEFAULT_QUEUE_POLL_TIME_MILLIS);
 
   BatchSpanProcessorBuilder(SpanExporter spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
@@ -58,6 +61,30 @@ public final class BatchSpanProcessorBuilder {
   // Visible for testing
   long getScheduleDelayNanos() {
     return scheduleDelayNanos;
+  }
+
+  /**
+   * Sets the queue poll wait time. If unset, defaults to {@value DEFAULT_QUEUE_POLL_TIME_MILLIS}ms.
+   */
+  public BatchSpanProcessorBuilder setQueuePollWaitTime(long queuePollWaitTime, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(queuePollWaitTime >= 0, "queue poll wait time must be non-negative");
+    queuePollWaitTimeNanos = unit.toNanos(queuePollWaitTime);
+    return this;
+  }
+
+  /**
+   * Sets the queue poll wait time. If unset, defaults to {@value DEFAULT_QUEUE_POLL_TIME_MILLIS}ms.
+   */
+  public BatchSpanProcessorBuilder setQueuePollWaitTime(Duration queuePollWaitTime) {
+    requireNonNull(queuePollWaitTime, "queuePollWaitTime");
+    setQueuePollWaitTime(queuePollWaitTime.toNanos(), TimeUnit.NANOSECONDS);
+    return this;
+  }
+
+  // Visible for testing
+  long getQueuePollWaitTimeNanos() {
+    return queuePollWaitTimeNanos;
   }
 
   /**
@@ -138,6 +165,11 @@ public final class BatchSpanProcessorBuilder {
    */
   public BatchSpanProcessor build() {
     return new BatchSpanProcessor(
-        spanExporter, scheduleDelayNanos, maxQueueSize, maxExportBatchSize, exporterTimeoutNanos);
+        spanExporter,
+        scheduleDelayNanos,
+        maxQueueSize,
+        maxExportBatchSize,
+        exporterTimeoutNanos,
+        queuePollWaitTimeNanos);
   }
 }

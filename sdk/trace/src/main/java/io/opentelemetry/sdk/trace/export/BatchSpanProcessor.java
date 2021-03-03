@@ -65,14 +65,16 @@ public final class BatchSpanProcessor implements SpanProcessor {
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
-      long exporterTimeoutNanos) {
+      long exporterTimeoutNanos,
+      long queuePollWaitTime) {
     this.worker =
         new Worker(
             spanExporter,
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
-            new ArrayBlockingQueue<>(maxQueueSize));
+            new ArrayBlockingQueue<>(maxQueueSize),
+            queuePollWaitTime);
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
   }
@@ -123,6 +125,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final long scheduleDelayNanos;
     private final int maxExportBatchSize;
     private final long exporterTimeoutNanos;
+    private final long queuePollWaitTimeNanos;
 
     private long nextExportTime;
 
@@ -137,11 +140,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
-        BlockingQueue<ReadableSpan> queue) {
+        BlockingQueue<ReadableSpan> queue,
+        long queuePollWaitTimeNanos) {
       this.spanExporter = spanExporter;
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
+      this.queuePollWaitTimeNanos = queuePollWaitTimeNanos;
       this.queue = queue;
       Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.sdk.trace");
       meter
@@ -188,7 +193,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
         }
 
         try {
-          ReadableSpan lastElement = queue.poll(100, TimeUnit.MILLISECONDS);
+          ReadableSpan lastElement = queue.poll(queuePollWaitTimeNanos, TimeUnit.NANOSECONDS);
           if (lastElement != null) {
             batch.add(lastElement.toSpanData());
           }

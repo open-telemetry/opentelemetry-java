@@ -73,6 +73,10 @@ class BatchSpanProcessorTest {
     assertThat(config.getScheduleDelayNanos())
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_SCHEDULE_DELAY_MILLIS));
+    assertThat(config.getQueuePollWaitTimeNanos())
+        .isEqualTo(
+            TimeUnit.MILLISECONDS.toNanos(
+                BatchSpanProcessorBuilder.DEFAULT_QUEUE_POLL_TIME_MILLIS));
     assertThat(config.getMaxQueueSize())
         .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_MAX_QUEUE_SIZE);
     assertThat(config.getMaxExportBatchSize())

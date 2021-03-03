@@ -40,6 +40,7 @@ class TracerProviderConfigurationTest {
   void configureTracerProvider() {
     Map<String, String> properties = new HashMap<>();
     properties.put("otel.bsp.schedule.delay", "100000");
+    properties.put("otel.bsp.queue.poll.wait.time", "100");
     properties.put("otel.traces.sampler", "always_off");
     properties.put("otel.traces.exporter", "none");
 
@@ -99,6 +100,7 @@ class TracerProviderConfigurationTest {
   void configureSpanProcessor_configured() {
     Map<String, String> properties = new HashMap<>();
     properties.put("otel.bsp.schedule.delay", "100000");
+    properties.put("otel.bsp.queue.poll.wait.time", "1000");
     properties.put("otel.bsp.max.queue.size", "2");
     properties.put("otel.bsp.max.export.batch.size", "3");
     properties.put("otel.bsp.export.timeout", "4");
@@ -125,6 +127,9 @@ class TracerProviderConfigurationTest {
                         ArrayBlockingQueue.class,
                         queue -> assertThat(queue.remainingCapacity()).isEqualTo(2));
                 assertThat(worker).extracting("spanExporter").isEqualTo(exporter);
+                assertThat(worker)
+                    .extracting("queuePollWaitTimeNanos")
+                    .isEqualTo(TimeUnit.MILLISECONDS.toNanos(1000));
               });
     } finally {
       processor.shutdown();

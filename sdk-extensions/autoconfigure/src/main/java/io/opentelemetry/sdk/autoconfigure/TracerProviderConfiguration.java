@@ -88,6 +88,11 @@ final class TracerProviderConfiguration {
       builder.setExporterTimeout(timeout);
     }
 
+    Duration queuePollWaitTime = config.getDuration("otel.bsp.queue.poll.wait.time");
+    if (queuePollWaitTime != null) {
+      builder.setQueuePollWaitTime(queuePollWaitTime);
+    }
+
     return builder.build();
   }
 
