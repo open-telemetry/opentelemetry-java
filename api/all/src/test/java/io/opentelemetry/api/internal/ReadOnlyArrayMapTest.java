@@ -5,8 +5,6 @@
 
 package io.opentelemetry.api.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.google.common.testing.EqualsTester;
 import java.util.Arrays;
 import java.util.Map;
@@ -21,8 +19,5 @@ class ReadOnlyArrayMapTest {
     Map<String, String> three = ReadOnlyArrayMap.wrap(Arrays.asList("c", "d"));
 
     new EqualsTester().addEqualityGroup(one, two).addEqualityGroup(three).testEquals();
-
-    assertThat(one.hashCode()).isEqualTo(two.hashCode());
-    assertThat(one.hashCode()).isNotEqualTo(three.hashCode());
   }
 }
