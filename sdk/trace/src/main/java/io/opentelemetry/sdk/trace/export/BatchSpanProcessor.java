@@ -111,6 +111,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
     return worker.forceFlush();
   }
 
+  // Visible for testing
+  ArrayList<SpanData> getBatch() {
+    return worker.batch;
+  }
+
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
   // the data.
   private static final class Worker implements Runnable {
