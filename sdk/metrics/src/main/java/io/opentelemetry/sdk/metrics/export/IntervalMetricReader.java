@@ -17,7 +17,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
@@ -39,8 +38,7 @@ public final class IntervalMetricReader {
     scheduler.shutdown();
     try {
       scheduler.awaitTermination(5, TimeUnit.SECONDS);
-      final CompletableResultCode flushResult = exporter.forceFlush();
-      exporter.run();
+      final CompletableResultCode flushResult = exporter.doRun();
       flushResult.join(5, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
       // force a shutdown if the export hasn't finished.
@@ -86,7 +84,6 @@ public final class IntervalMetricReader {
 
     private final InternalState internalState;
     private final AtomicBoolean exportAvailable = new AtomicBoolean(true);
-    private final AtomicReference<CompletableResultCode> flushResult = new AtomicReference<>();
 
     private Exporter(InternalState internalState) {
       this.internalState = internalState;
@@ -97,10 +94,6 @@ public final class IntervalMetricReader {
     public void run() {
       if (exportAvailable.compareAndSet(true, false)) {
         try {
-          if (flushResult.get() != null) {
-            flush();
-            return;
-          }
           List<MetricData> metricsList = new ArrayList<>();
           for (MetricProducer metricProducer : internalState.getMetricProducers()) {
             metricsList.addAll(metricProducer.collectAllMetrics());
@@ -122,28 +115,33 @@ public final class IntervalMetricReader {
       }
     }
 
-    void flush() {
-      List<MetricData> metricsList = new ArrayList<>();
-      for (MetricProducer metricProducer : internalState.getMetricProducers()) {
-        metricsList.addAll(metricProducer.collectAllMetrics());
+    CompletableResultCode doRun() {
+      final CompletableResultCode flushResult = new CompletableResultCode();
+      if (exportAvailable.compareAndSet(true, false)) {
+        try {
+          List<MetricData> metricsList = new ArrayList<>();
+          for (MetricProducer metricProducer : internalState.getMetricProducers()) {
+            metricsList.addAll(metricProducer.collectAllMetrics());
+          }
+          final CompletableResultCode result =
+              internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
+          result.whenComplete(
+              () -> {
+                if (!result.isSuccess()) {
+                  logger.log(Level.FINE, "Exporter failed");
+                }
+                flushResult.succeed();
+                exportAvailable.set(true);
+              });
+        } catch (RuntimeException e) {
+          logger.log(Level.WARNING, "Exporter threw an Exception", e);
+          flushResult.fail();
+        }
+      } else {
+        logger.log(Level.FINE, "Exporter busy. Dropping metrics.");
+        flushResult.fail();
       }
-      final CompletableResultCode result =
-          internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
-      result.whenComplete(
-          () -> {
-            if (!result.isSuccess()) {
-              logger.log(Level.FINE, "Exporter failed during flush");
-            }
-            flushResult.get().succeed();
-            flushResult.set(null);
-            exportAvailable.set(true);
-          });
-    }
-
-    CompletableResultCode forceFlush() {
-      CompletableResultCode flushResult = new CompletableResultCode();
-      this.flushResult.compareAndSet(null, flushResult);
-      return this.flushResult.get();
+      return flushResult;
     }
 
     CompletableResultCode shutdown() {
