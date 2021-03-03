@@ -136,7 +136,9 @@ public final class CompletableResultCode {
   }
 
   /**
-   * Waits for the specified amount of time for this {@link CompletableResultCode} to complete.
+   * Waits up to the specified amount of time for this {@link CompletableResultCode} to complete.
+   * Even after this method returns, the result may not be complete yet - you should always check
+   * {@link #isSuccess()} or {@link #isDone()} after calling this method to determine the result.
    *
    * @return this {@link CompletableResultCode}
    */
