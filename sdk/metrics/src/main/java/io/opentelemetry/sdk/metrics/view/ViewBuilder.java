@@ -11,7 +11,7 @@ import java.util.Objects;
 
 public final class ViewBuilder {
   private AggregatorFactory aggregatorFactory;
-  private LabelsProcessorFactory labelsProcessorFactory;
+  private LabelsProcessorFactory labelsProcessorFactory = LabelsProcessorFactory.noop();
 
   ViewBuilder() {}
 

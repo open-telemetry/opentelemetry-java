@@ -19,7 +19,7 @@ public abstract class View {
   public abstract LabelsProcessorFactory getLabelsProcessorFactory();
 
   public static ViewBuilder builder() {
-    return new ViewBuilder().setLabelsProcessorFactory(LabelsProcessorFactory.noop());
+    return new ViewBuilder();
   }
 
   static View create(
