@@ -44,9 +44,7 @@ public class LeakDetectingSpanProcessor implements SpanProcessor {
   private LeakDetectingSpanProcessor() {
     this(
         (message, throwable) ->
-            logger.log(
-                Level.WARNING,
-                "Span garbage collected before being ended.", throwable));
+            logger.log(Level.WARNING, "Span garbage collected before being ended.", throwable));
   }
 
   // Visible for testing
