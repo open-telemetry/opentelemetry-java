@@ -483,6 +483,12 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       return Collections.emptyList();
     }
 
+    // if the span has ended, then the events are unmodifiable
+    // so we can return them directly and save copying all the data.
+    if (hasEnded) {
+      return Collections.unmodifiableList(events);
+    }
+
     return Collections.unmodifiableList(new ArrayList<>(events));
   }
 
