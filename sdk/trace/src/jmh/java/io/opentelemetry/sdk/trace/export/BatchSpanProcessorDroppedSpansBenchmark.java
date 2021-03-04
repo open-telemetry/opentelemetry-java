@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -52,7 +51,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
-    private final MetricProducer metricProducer = ((SdkMeterProvider) GlobalMetricsProvider.get());
+    private final MetricProducer metricProducer = SdkMeterProvider.builder().buildAndRegisterGlobal();
     private BatchSpanProcessor processor;
     private Tracer tracer;
     private Collection<MetricData> allMetrics;
