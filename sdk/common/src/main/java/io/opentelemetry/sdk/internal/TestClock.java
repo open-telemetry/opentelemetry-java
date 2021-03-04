@@ -5,9 +5,9 @@
 
 package io.opentelemetry.sdk.internal;
 
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.Clock;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** A mutable {@link Clock} that allows the time to be set for testing. */
