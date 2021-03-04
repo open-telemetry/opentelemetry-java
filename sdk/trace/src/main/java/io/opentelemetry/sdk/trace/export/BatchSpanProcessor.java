@@ -130,9 +130,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final long exporterTimeoutNanos;
 
     private long nextExportTime;
-
     private final BlockingQueue<ReadableSpan> queue;
-
+    private final AtomicBoolean needSignal = new AtomicBoolean(false);
+    private final BlockingQueue<Boolean> signal;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
     private final ArrayList<SpanData> batch;
@@ -148,6 +148,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
       this.queue = queue;
+      this.signal = new ArrayBlockingQueue<>(1);
       Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.sdk.trace");
       meter
           .longValueObserverBuilder("queueSize")
@@ -180,6 +181,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private void addSpan(ReadableSpan span) {
       if (!queue.offer(span)) {
         droppedSpans.add(1);
+      } else {
+        if (queue.size() >= maxExportBatchSize && needSignal.get()) {
+          signal.offer(true);
+        }
       }
     }
 
@@ -191,20 +196,25 @@ public final class BatchSpanProcessor implements SpanProcessor {
         if (flushRequested.get() != null) {
           flush();
         }
-
-        try {
-          ReadableSpan lastElement = queue.poll(100, TimeUnit.MILLISECONDS);
-          if (lastElement != null) {
-            batch.add(lastElement.toSpanData());
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          return;
+        while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
+          batch.add(queue.poll().toSpanData());
         }
-
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
           exportCurrentBatch();
           updateNextExportTime();
+        }
+        if (queue.isEmpty()) {
+          try {
+            long pollWaitTime = nextExportTime - System.nanoTime();
+            if (pollWaitTime > 0) {
+              needSignal.set(true);
+              signal.poll(pollWaitTime, TimeUnit.NANOSECONDS);
+              needSignal.set(false);
+            }
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+          }
         }
       }
     }
@@ -252,8 +262,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
-      // we set the atomic here to trigger the worker loop to do a flush on its next iteration.
-      flushRequested.compareAndSet(null, flushResult);
+      // we set the atomic here to trigger the worker loop to do a flush of the entire queue.
+      if (flushRequested.compareAndSet(null, flushResult)) {
+        signal.offer(true);
+      }
       CompletableResultCode possibleResult = flushRequested.get();
       // there's a race here where the flush happening in the worker loop could complete before we
       // get what's in the atomic. In that case, just return success, since we know it succeeded in
