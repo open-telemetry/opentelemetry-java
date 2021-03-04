@@ -78,7 +78,7 @@ public class OtlpPipelineStressTest {
           .withLogConsumer(
               outputFrame -> {
                 String logline = outputFrame.getUtf8String();
-                String spanExportPrefix = "TraceExporter\t{\"#spans\": ";
+                String spanExportPrefix = "TracesExporter\t{\"#spans\": ";
                 int start = logline.indexOf(spanExportPrefix);
                 int end = logline.indexOf("}");
                 if (start > 0) {
@@ -244,7 +244,8 @@ public class OtlpPipelineStressTest {
                 .build());
 
     // set up the metric exporter and wire it into the SDK and a timed reader.
-    SdkMeterProvider meterProvider = SdkMeterProvider.builder().setResource(resource).build();
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().setResource(resource).buildAndRegisterGlobal();
 
     intervalMetricReader =
         IntervalMetricReader.builder()
@@ -257,7 +258,8 @@ public class OtlpPipelineStressTest {
     OtlpGrpcSpanExporter spanExporter =
         OtlpGrpcSpanExporter.builder()
             .setEndpoint(
-                toxiproxyContainer.getHost()
+                "http://"
+                    + toxiproxyContainer.getHost()
                     + ":"
                     + toxiproxyContainer.getMappedPort(COLLECTOR_PROXY_PORT))
             //            .setDeadlineMs(1000)
