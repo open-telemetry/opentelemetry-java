@@ -21,7 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A {@link SpanProcessor} which will detect spans that are never ended. It will both detect spans
+ * A {@link SpanProcessor} which will detect spans that are never ended. It will detect spans
  * that are garbage collected without ever having `end()` called on them.
  *
  * <p>Note: using this SpanProcessor will definitely impact the performance of your application. It
