@@ -99,6 +99,10 @@ public interface Context {
     return ArrayBasedContext.root();
   }
 
+  /**
+   * Returns an {@link Executor} which delegates to the provided {@code executor}, wrapping all
+   * invocations with the {@linkplain Context#current() current context} at the time of invocation.
+   */
   static Executor currentContextWrapping(Executor executor) {
     return command -> executor.execute(Context.current().wrap(command));
   }
