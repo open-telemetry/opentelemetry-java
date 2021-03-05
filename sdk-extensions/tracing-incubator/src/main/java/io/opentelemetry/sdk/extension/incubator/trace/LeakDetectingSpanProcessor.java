@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  * is not recommended for production use, as it uses additional memory for each span to track
  * where a leaked span was created.
  */
-public class LeakDetectingSpanProcessor implements SpanProcessor {
+public final class LeakDetectingSpanProcessor implements SpanProcessor {
   private static final Logger logger = Logger.getLogger(LeakDetectingSpanProcessor.class.getName());
 
   private final PendingSpans pendingSpans;
