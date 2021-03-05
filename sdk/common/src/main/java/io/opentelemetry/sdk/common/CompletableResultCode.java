@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.common;
 
+import io.opentelemetry.api.internal.GuardedBy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 
 /**
  * This class models JDK 8's CompletableFuture to afford migration should Open Telemetry's SDK

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.zpages;
 
 import com.sun.net.httpserver.HttpServer;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -14,7 +15,6 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
