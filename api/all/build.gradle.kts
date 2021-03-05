@@ -23,10 +23,20 @@ dependencies {
 
     testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
     testImplementation("com.google.guava:guava-testlib")
+
+    add("testLogsIfSdkFoundImplementation", project(":sdk:all"))
+    add("testDoesNotLogIfSdkFoundAndSuppressedImplementation", project(":sdk:all"))
 }
 
 tasks {
-    named<Test>("testDoesNotLogIfSdkFoundAndSuppressed") {
+    val testLogsIfSdkFound by existing(Test::class) {
+    }
+
+    val testDoesNotLogIfSdkFoundAndSuppressed by existing(Test::class) {
         jvmArgs("-Dotel.sdk.suppress-sdk-initialized-warning=true")
+    }
+
+    named("check") {
+        dependsOn(testLogsIfSdkFound, testDoesNotLogIfSdkFoundAndSuppressed)
     }
 }
