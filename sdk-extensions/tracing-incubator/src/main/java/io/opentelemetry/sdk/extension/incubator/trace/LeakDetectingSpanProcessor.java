@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  *
  * <p>Note: using this SpanProcessor will definitely impact the performance of your application. It
  * is not recommended for production use, as it uses additional memory for each span to track
- * whether the span has been ended.
+ * where a leaked span was created.
  */
 public class LeakDetectingSpanProcessor implements SpanProcessor {
   private static final Logger logger = Logger.getLogger(LeakDetectingSpanProcessor.class.getName());
