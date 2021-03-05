@@ -8,6 +8,7 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
 
 ## Contents
 
+* [General notes](#general-notes)
 * [Exporters](#exporters)
   + [OTLP exporter (both span and metric exporters)](#otlp-exporter-both-span-and-metric-exporters)
   + [Jaeger exporter](#jaeger-exporter)
@@ -21,6 +22,14 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
 * [Span limits](#span-limits)
 * [Interval metric reader](#interval-metric-reader)
 * [Customizing the OpenTelemetry SDK](#customizing-the-opentelemetry-sdk)
+
+## General notes
+
+- The autoconfigure module registers Java shutdown hooks to shut down the SDK when appropriate. Please note that since this project uses
+java.util.logging for all of it's logging, some of that logging may be suppressed during shutdown hooks. This is a bug in the JDK itself,
+and not something we can control. If you require logging during shutdown hooks, please consider using `System.out` rather than a logging framework
+that might shut itself down in a shutdown hook, thus suppressing your log messages. See this [JDK bug](https://bugs.openjdk.java.net/browse/JDK-8161253)
+for more details.
 
 ## Exporters
 
