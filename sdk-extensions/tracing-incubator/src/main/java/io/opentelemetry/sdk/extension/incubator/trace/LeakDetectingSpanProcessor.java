@@ -138,8 +138,6 @@ public final class LeakDetectingSpanProcessor implements SpanProcessor {
   }
 
   private static AssertionError callerError(CallerStackTrace caller) {
-    // Sometimes unit test runners truncate the cause of the exception.
-    // This flattens the exception as the caller of end() isn't important vs the one that leaked
     AssertionError toThrow =
         new AssertionError(
             "Span garbage collected before being ended. Thread: ["

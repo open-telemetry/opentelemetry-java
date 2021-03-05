@@ -18,7 +18,13 @@ import org.junit.jupiter.api.Test;
 public class LeakDetectingSpanProcessorTest {
 
   @Test
-  void garbageCollectedScope() {
+  void basics() {
+    assertThat(LeakDetectingSpanProcessor.create().isEndRequired()).isTrue();
+    assertThat(LeakDetectingSpanProcessor.create().isStartRequired()).isTrue();
+  }
+
+  @Test
+  void garbageCollectedUnendedSpan() {
     List<Throwable> logs = new ArrayList<>();
     LeakDetectingSpanProcessor spanProcessor =
         new LeakDetectingSpanProcessor((message, callerStackTrace) -> logs.add(callerStackTrace));
@@ -44,5 +50,22 @@ public class LeakDetectingSpanProcessorTest {
                                   "Span garbage collected before being ended\\. "
                                       + "Thread: \\[.*\\] started span : .*"));
             });
+  }
+
+  @Test
+  void garbageCollectedEndedSpan() {
+    List<Throwable> logs = new ArrayList<>();
+    LeakDetectingSpanProcessor spanProcessor =
+        new LeakDetectingSpanProcessor((message, callerStackTrace) -> logs.add(callerStackTrace));
+
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build();
+
+    Tracer tracer = tracerProvider.get("test");
+
+    tracer.spanBuilder("testSpan").startSpan().end();
+
+    System.gc();
+    assertThat(logs).isEmpty();
   }
 }
