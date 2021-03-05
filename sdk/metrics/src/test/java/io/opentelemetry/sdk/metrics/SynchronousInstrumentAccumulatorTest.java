@@ -21,7 +21,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -69,10 +68,8 @@ public class SynchronousInstrumentAccumulatorTest {
         .flatMap(m -> m.getLongGaugeData().getPoints().stream())
         .forEach(
             p ->
-                assertThat(new HashMap<>(p.getLabels().asMap()))
-                    .isEqualTo(
-                        new HashMap<>(
-                            labels.toBuilder().put("modifiedK", "modifiedV").build().asMap())));
+                assertThat(p.getLabels().asMap())
+                    .isEqualTo(labels.toBuilder().put("modifiedK", "modifiedV").build().asMap()));
   }
 
   @Test

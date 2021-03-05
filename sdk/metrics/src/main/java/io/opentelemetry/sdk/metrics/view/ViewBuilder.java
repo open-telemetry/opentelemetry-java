@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
-import java.util.Objects;
 
 public final class ViewBuilder {
   private AggregatorFactory aggregatorFactory;
@@ -22,7 +21,7 @@ public final class ViewBuilder {
    * @return this Builder.
    */
   public ViewBuilder setAggregatorFactory(AggregatorFactory aggregatorFactory) {
-    this.aggregatorFactory = Objects.requireNonNull(aggregatorFactory, "aggregatorFactory");
+    this.aggregatorFactory = aggregatorFactory;
     return this;
   }
 
@@ -33,8 +32,7 @@ public final class ViewBuilder {
    * @return this Builder.
    */
   public ViewBuilder setLabelsProcessorFactory(LabelsProcessorFactory labelsProcessorFactory) {
-    this.labelsProcessorFactory =
-        Objects.requireNonNull(labelsProcessorFactory, "labelsProcessorFactory");
+    this.labelsProcessorFactory = labelsProcessorFactory;
     return this;
   }
 
