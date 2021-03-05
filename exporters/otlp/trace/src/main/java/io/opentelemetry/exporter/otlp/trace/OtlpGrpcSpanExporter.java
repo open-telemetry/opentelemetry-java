@@ -106,7 +106,17 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
           @Override
           public void onFailure(Throwable t) {
             spansExportedFailure.add(spans.size());
-            logger.log(Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
+            if (t.getMessage().contains("UNIMPLEMENTED")) {
+              logger.log(
+                  Level.WARNING,
+                  "Failed to export spans. Server responded with UNIMPLEMENTED. "
+                      + "This usually means that your collector is not configured with an otlp "
+                      + "receiver in the \"pipelines\" section of the configuration. "
+                      + "Full error message: "
+                      + t.getMessage());
+            } else {
+              logger.log(Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
+            }
             logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
             result.fail();
           }

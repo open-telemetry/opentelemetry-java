@@ -78,7 +78,19 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
           @Override
           public void onFailure(Throwable t) {
-            logger.log(Level.WARNING, "Failed to export metrics", t);
+            if (t.getMessage().contains("UNIMPLEMENTED")) {
+              logger.log(
+                  Level.WARNING,
+                  "Failed to export metrics. Server responded with UNIMPLEMENTED. "
+                      + "This usually means that your collector is not configured with an otlp "
+                      + "receiver in the \"pipelines\" section of the configuration. "
+                      + "Full error message: "
+                      + t.getMessage());
+            } else {
+              logger.log(
+                  Level.WARNING, "Failed to export metrics. Error message: " + t.getMessage());
+            }
+            logger.log(Level.FINEST, "Failed to export metrics. Details follow: " + t);
             result.fail();
           }
         },
