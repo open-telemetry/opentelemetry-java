@@ -21,12 +21,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A {@link SpanProcessor} which will detect spans that are never ended. It will detect spans
- * that are garbage collected without ever having `end()` called on them.
+ * A {@link SpanProcessor} which will detect spans that are never ended. It will detect spans that
+ * are garbage collected without ever having `end()` called on them.
  *
  * <p>Note: using this SpanProcessor will definitely impact the performance of your application. It
- * is not recommended for production use, as it uses additional memory for each span to track
- * where a leaked span was created.
+ * is not recommended for production use, as it uses additional memory for each span to track where
+ * a leaked span was created.
  */
 public final class LeakDetectingSpanProcessor implements SpanProcessor {
   private static final Logger logger = Logger.getLogger(LeakDetectingSpanProcessor.class.getName());
