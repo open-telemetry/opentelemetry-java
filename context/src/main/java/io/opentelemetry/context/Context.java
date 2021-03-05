@@ -99,6 +99,19 @@ public interface Context {
     return ArrayBasedContext.root();
   }
 
+  static Executor currentContextWrapping(Executor executor) {
+    return command -> executor.execute(Context.current().wrap(command));
+  }
+
+  /**
+   * Returns an {@link ExecutorService} which delegates to the provided {@code executorService},
+   * wrapping all invocations with the {@linkplain Context#current() current context} at the time of
+   * invocation.
+   */
+  static ExecutorService currentContextWrapping(ExecutorService executorService) {
+    return new CurrentContextExecutorService(executorService);
+  }
+
   /**
    * Returns the value stored in this {@link Context} for the given {@link ContextKey}, or {@code
    * null} if there is no value for the key in this context.
