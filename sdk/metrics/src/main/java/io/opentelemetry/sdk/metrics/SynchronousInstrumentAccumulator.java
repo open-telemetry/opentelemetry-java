@@ -5,55 +5,52 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
+import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-final class SynchronousInstrumentAccumulator<T> {
+final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
   private final ConcurrentHashMap<Labels, AggregatorHandle<T>> aggregatorLabels;
   private final ReentrantLock collectLock;
   private final Aggregator<T> aggregator;
   private final InstrumentProcessor<T> instrumentProcessor;
+  private final LabelsProcessor labelsProcessor;
 
   static <T> SynchronousInstrumentAccumulator<T> create(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
-    AggregationConfiguration configuration =
-        meterProviderSharedState.getViewRegistry().findView(descriptor);
     Aggregator<T> aggregator =
-        configuration
-            .getAggregatorFactory()
-            .create(
-                meterProviderSharedState.getResource(),
-                meterSharedState.getInstrumentationLibraryInfo(),
-                descriptor);
+        getAggregator(meterProviderSharedState, meterSharedState, descriptor);
     return new SynchronousInstrumentAccumulator<>(
         aggregator,
-        InstrumentProcessor.create(
-            aggregator,
-            meterProviderSharedState.getStartEpochNanos(),
-            configuration.getTemporality()));
+        new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos()),
+        getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor));
   }
 
   SynchronousInstrumentAccumulator(
-      Aggregator<T> aggregator, InstrumentProcessor<T> instrumentProcessor) {
+      Aggregator<T> aggregator,
+      InstrumentProcessor<T> instrumentProcessor,
+      LabelsProcessor labelsProcessor) {
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
     this.aggregator = aggregator;
     this.instrumentProcessor = instrumentProcessor;
+    this.labelsProcessor = labelsProcessor;
   }
 
   AggregatorHandle<?> bind(Labels labels) {
     Objects.requireNonNull(labels, "labels");
+    labels = labelsProcessor.onLabelsBound(Context.current(), labels);
     AggregatorHandle<T> aggregatorHandle = aggregatorLabels.get(labels);
     if (aggregatorHandle != null && aggregatorHandle.acquire()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
@@ -79,10 +76,7 @@ final class SynchronousInstrumentAccumulator<T> {
     }
   }
 
-  /**
-   * Collects records from all the entries (labelSet, Bound) that changed since the last collect()
-   * call.
-   */
+  @Override
   List<MetricData> collectAll(long epochNanos) {
     collectLock.lock();
     try {

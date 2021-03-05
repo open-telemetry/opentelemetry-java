@@ -10,11 +10,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.time.Duration;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -60,7 +63,6 @@ class JaegerIntegrationTest {
             .build();
     SpanExporter jaegerExporter =
         JaegerGrpcSpanExporter.builder()
-            .setServiceName(SERVICE_NAME)
             .setChannel(jaegerChannel)
             .setTimeout(Duration.ofSeconds(30))
             .build();
@@ -68,6 +70,11 @@ class JaegerIntegrationTest {
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
+                .setResource(
+                    Resource.getDefault()
+                        .merge(
+                            Resource.create(
+                                Attributes.of(ResourceAttributes.SERVICE_NAME, SERVICE_NAME))))
                 .build())
         .build();
   }

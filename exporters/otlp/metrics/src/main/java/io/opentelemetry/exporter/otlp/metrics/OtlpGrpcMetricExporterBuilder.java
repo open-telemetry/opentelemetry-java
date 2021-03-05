@@ -13,6 +13,8 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -20,13 +22,13 @@ import javax.annotation.Nullable;
 /** Builder utility for this exporter. */
 public final class OtlpGrpcMetricExporterBuilder {
 
-  private static final String DEFAULT_ENDPOINT = "localhost:4317";
+  private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
+  private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
   private ManagedChannel channel;
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
-  private String endpoint = DEFAULT_ENDPOINT;
-  private boolean useTls = false;
+  private URI endpoint = DEFAULT_ENDPOINT;
 
   @Nullable private Metadata metadata;
 
@@ -63,25 +65,26 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
-   * Sets the OTLP endpoint to connect to. Optional, defaults to "localhost:4317".
-   *
-   * @param endpoint endpoint to connect to
-   * @return this builder's instance
+   * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT_URL}. The
+   * endpoint must start with either http:// or https://.
    */
   public OtlpGrpcMetricExporterBuilder setEndpoint(String endpoint) {
-    this.endpoint = endpoint;
-    return this;
-  }
+    requireNonNull(endpoint, "endpoint");
 
-  /**
-   * Sets use or not TLS, default is false. Optional. Applicable only if {@link
-   * OtlpGrpcMetricExporterBuilder#endpoint} is set to build channel.
-   *
-   * @param useTls use TLS or not
-   * @return this builder's instance
-   */
-  public OtlpGrpcMetricExporterBuilder setUseTls(boolean useTls) {
-    this.useTls = useTls;
+    URI uri;
+    try {
+      uri = new URI(endpoint);
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException("Invalid endpoint, must be a URL: " + endpoint, e);
+    }
+
+    if (uri.getScheme() == null
+        || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
+      throw new IllegalArgumentException(
+          "Invalid endpoint, must start with http:// or https://: " + uri);
+    }
+
+    this.endpoint = uri;
     return this;
   }
 
@@ -109,9 +112,9 @@ public final class OtlpGrpcMetricExporterBuilder {
   public OtlpGrpcMetricExporter build() {
     if (channel == null) {
       final ManagedChannelBuilder<?> managedChannelBuilder =
-          ManagedChannelBuilder.forTarget(endpoint);
+          ManagedChannelBuilder.forTarget(endpoint.getAuthority());
 
-      if (useTls) {
+      if (endpoint.getScheme().equals("https")) {
         managedChannelBuilder.useTransportSecurity();
       } else {
         managedChannelBuilder.usePlaintext();

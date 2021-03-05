@@ -9,40 +9,32 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-/**
- * A map with a fixed capacity that drops attributes when the map gets full.
- *
- * <p>Note: this doesn't implement the Map interface, but behaves very similarly to one.
- */
+/** A map with a fixed capacity that drops attributes when the map gets full. */
 @SuppressWarnings({"rawtypes", "unchecked"})
-final class AttributesMap implements Attributes {
-  private final Map<AttributeKey<?>, Object> data;
+final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements Attributes {
+
+  private static final long serialVersionUID = -5072696312123632376L;
 
   private final long capacity;
   private int totalAddedValues = 0;
 
-  private AttributesMap(long capacity, Map<AttributeKey<?>, Object> data) {
-    this.capacity = capacity;
-    this.data = data;
-  }
-
   AttributesMap(long capacity) {
-    this(capacity, new LinkedHashMap<>());
+    this.capacity = capacity;
   }
 
-  public <T> void put(AttributeKey<T> key, T value) {
+  <T> void put(AttributeKey<T> key, T value) {
     if (key == null || key.getKey() == null || value == null) {
       return;
     }
     totalAddedValues++;
-    if (data.size() >= capacity && !data.containsKey(key)) {
+    if (size() >= capacity && !containsKey(key)) {
       return;
     }
-    data.put(key, value);
+    super.put(key, value);
   }
 
   int getTotalAddedValues() {
@@ -52,32 +44,27 @@ final class AttributesMap implements Attributes {
   @SuppressWarnings("unchecked")
   @Override
   public <T> T get(AttributeKey<T> key) {
-    return (T) data.get(key);
-  }
-
-  @Override
-  public int size() {
-    return data.size();
-  }
-
-  @Override
-  public boolean isEmpty() {
-    return data.isEmpty();
+    return (T) super.get(key);
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
-  public void forEach(BiConsumer<AttributeKey<?>, Object> consumer) {
-    for (Map.Entry<AttributeKey<?>, Object> entry : data.entrySet()) {
+  public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer) {
+    for (Map.Entry<AttributeKey<?>, Object> entry : entrySet()) {
       AttributeKey key = entry.getKey();
       Object value = entry.getValue();
-      consumer.accept(key, value);
+      consumer.accept((AttributeKey<?>) key, value);
     }
   }
 
   @Override
   public Map<AttributeKey<?>, Object> asMap() {
-    return Collections.unmodifiableMap(data);
+    // Because Attributes is marked Immutable, IDEs may recognize this as redundant usage. However,
+    // this class is private and is actually mutable, so we need to wrap with unmodifiableMap
+    // anyways. We implement the immutable Attributes for this class to support the
+    // Attributes.builder().putAll usage - it is tricky but an implementation detail of this private
+    // class.
+    return Collections.unmodifiableMap(this);
   }
 
   @Override
@@ -89,7 +76,7 @@ final class AttributesMap implements Attributes {
   public String toString() {
     return "AttributesMap{"
         + "data="
-        + data
+        + super.toString()
         + ", capacity="
         + capacity
         + ", totalAddedValues="
@@ -98,7 +85,6 @@ final class AttributesMap implements Attributes {
   }
 
   Attributes immutableCopy() {
-    Map<AttributeKey<?>, Object> dataCopy = new LinkedHashMap<>(data);
-    return new AttributesMap(capacity, Collections.unmodifiableMap(dataCopy));
+    return Attributes.builder().putAll(this).build();
   }
 }

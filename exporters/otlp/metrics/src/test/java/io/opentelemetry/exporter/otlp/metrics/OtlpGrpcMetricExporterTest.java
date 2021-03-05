@@ -16,20 +16,21 @@ import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.extension.otproto.MetricAdapter;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,6 +79,20 @@ class OtlpGrpcMetricExporterTest {
     assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("endpoint");
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint("😺://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must be a URL: 😺://localhost")
+        .hasCauseInstanceOf(URISyntaxException.class);
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint("localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: localhost");
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint("gopher://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
   }
 
   @Test
@@ -244,8 +259,8 @@ class OtlpGrpcMetricExporterTest {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return MetricData.createLongSum(
-        Resource.getEmpty(),
-        InstrumentationLibraryInfo.getEmpty(),
+        Resource.empty(),
+        InstrumentationLibraryInfo.empty(),
         "name",
         "description",
         "1",

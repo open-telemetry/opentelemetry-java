@@ -16,7 +16,16 @@ public final class LogSinkSdkProvider {
   private final LogSink logSink = new SdkLogSink();
   private final List<LogProcessor> processors = new ArrayList<>();
 
-  private LogSinkSdkProvider() {}
+  /**
+   * Returns a new {@link LogSinkSdkProviderBuilder} for this class.
+   *
+   * @return a new {@link LogSinkSdkProviderBuilder} for this class.
+   */
+  static LogSinkSdkProviderBuilder builder() {
+    return new LogSinkSdkProviderBuilder();
+  }
+
+  LogSinkSdkProvider() {}
 
   public LogSink get(String instrumentationName, String instrumentationVersion) {
     // Currently there is no differentiation by instrumentation library
@@ -59,12 +68,6 @@ public final class LogSinkSdkProvider {
       for (LogProcessor processor : processors) {
         processor.addLogRecord(record);
       }
-    }
-  }
-
-  public static class Builder {
-    public LogSinkSdkProvider build() {
-      return new LogSinkSdkProvider();
     }
   }
 }

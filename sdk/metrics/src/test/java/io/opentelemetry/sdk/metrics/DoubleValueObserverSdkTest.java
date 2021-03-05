@@ -9,7 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
@@ -71,11 +71,7 @@ class DoubleValueObserverSdkTest {
                 "ms",
                 DoubleGaugeData.create(
                     Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Labels.of("k", "v"),
-                            12.1d)))));
+                        DoublePointData.create(0, testClock.now(), Labels.of("k", "v"), 12.1d)))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
@@ -87,10 +83,6 @@ class DoubleValueObserverSdkTest {
                 "ms",
                 DoubleGaugeData.create(
                     Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Labels.of("k", "v"),
-                            12.1d)))));
+                        DoublePointData.create(0, testClock.now(), Labels.of("k", "v"), 12.1d)))));
   }
 }

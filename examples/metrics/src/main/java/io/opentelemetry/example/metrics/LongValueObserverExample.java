@@ -1,16 +1,16 @@
 package io.opentelemetry.example.metrics;
 
-import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.common.Labels;
 
 /**
  * Example of using {@link LongValueObserver} to measure execution time of method. Setting the
  * {@link LongValueObserver} updater sets a callback that gets executed every collection interval.
  * Useful for expensive measurements that would be wastefully to calculate each request.
  */
-public class LongValueObserverExample {
+public final class LongValueObserverExample {
 
   public static void main(String[] args) {
     Meter sampleMeter =

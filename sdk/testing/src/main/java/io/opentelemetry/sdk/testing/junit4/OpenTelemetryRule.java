@@ -11,7 +11,6 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -23,23 +22,23 @@ import org.junit.rules.ExternalResource;
  * tests. This rule cannot be used with {@link org.junit.ClassRule}.
  *
  * <pre>{@code
- * > public class CoolTest {
- * >   {@literal @}Rule
- * >   public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
- * >
- * >   private Tracer tracer;
- * >
- * >   {@literal @}Before
- * >   public void setUp() {
- * >       tracer = otelTesting.getOpenTelemetry().getTracer("test");
- * >   }
- * >
- * >   {@literal @}Test
- * >   public void test() {
- * >     tracer.spanBuilder("name").startSpan().end();
- * >     assertThat(otelTesting.getSpans()).containsExactly(expected);
- * >   }
- * >  }
+ * // public class CoolTest {
+ * //   @Rule
+ * //   public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+ * //
+ * //   private Tracer tracer;
+ * //
+ * //   @Before
+ * //   public void setUp() {
+ * //       tracer = otelTesting.getOpenTelemetry().getTracer("test");
+ * //   }
+ * //
+ * //   @Test
+ * //   public void test() {
+ * //     tracer.spanBuilder("name").startSpan().end();
+ * //     assertThat(otelTesting.getSpans()).containsExactly(expected);
+ * //   }
+ * //  }
  * }</pre>
  */
 public final class OpenTelemetryRule extends ExternalResource {
@@ -68,8 +67,6 @@ public final class OpenTelemetryRule extends ExternalResource {
   private final OpenTelemetrySdk openTelemetry;
   private final InMemorySpanExporter spanExporter;
 
-  private volatile OpenTelemetry previousGlobalOpenTelemetry;
-
   private OpenTelemetryRule(OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {
     this.openTelemetry = openTelemetry;
     this.spanExporter = spanExporter;
@@ -78,11 +75,6 @@ public final class OpenTelemetryRule extends ExternalResource {
   /** Returns the {@link OpenTelemetrySdk} created by this extension. */
   public OpenTelemetry getOpenTelemetry() {
     return openTelemetry;
-  }
-
-  /** Returns the {@link SdkTracerManagement} created by this extension. */
-  public SdkTracerManagement getTracerManagement() {
-    return openTelemetry.getTracerManagement();
   }
 
   /** Returns all the exported {@link SpanData} so far. */
@@ -100,13 +92,12 @@ public final class OpenTelemetryRule extends ExternalResource {
 
   @Override
   protected void before() {
-    previousGlobalOpenTelemetry = GlobalOpenTelemetry.get();
     GlobalOpenTelemetry.set(openTelemetry);
     clearSpans();
   }
 
   @Override
   protected void after() {
-    GlobalOpenTelemetry.set(previousGlobalOpenTelemetry);
+    GlobalOpenTelemetry.resetForTest();
   }
 }

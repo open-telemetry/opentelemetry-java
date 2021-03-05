@@ -12,16 +12,18 @@ import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 class W3CBaggagePropagatorTest {
 
-  private static final Getter<Map<String, String>> getter =
-      new Getter<Map<String, String>>() {
+  private static final TextMapGetter<Map<String, String>> getter =
+      new TextMapGetter<Map<String, String>>() {
         @Override
         public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
@@ -155,6 +157,19 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  void extract_nullContext() {
+    assertThat(W3CBaggagePropagator.getInstance().extract(null, Collections.emptyMap(), getter))
+        .isSameAs(Context.root());
+  }
+
+  @Test
+  void extract_nullGetter() {
+    Context context = Context.current().with(Baggage.builder().put("cat", "meow").build());
+    assertThat(W3CBaggagePropagator.getInstance().extract(context, Collections.emptyMap(), null))
+        .isSameAs(context);
+  }
+
+  @Test
   void inject_noBaggage() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Map<String, String> carrier = new HashMap<>();
@@ -185,5 +200,20 @@ class W3CBaggagePropagatorTest {
         .containsExactlyInAnyOrderEntriesOf(
             singletonMap(
                 "baggage", "meta=meta-value;somemetadata; someother=foo,nometa=nometa-value"));
+  }
+
+  @Test
+  void inject_nullContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    W3CBaggagePropagator.getInstance().inject(null, carrier, Map::put);
+    assertThat(carrier).isEmpty();
+  }
+
+  @Test
+  void inject_nullSetter() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    Context context = Context.current().with(Baggage.builder().put("cat", "meow").build());
+    W3CBaggagePropagator.getInstance().inject(context, carrier, null);
+    assertThat(carrier).isEmpty();
   }
 }

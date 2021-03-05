@@ -15,18 +15,6 @@ OpenTelemetry Java provides first-party support for
 [Jaeger](https://github.com/jaegertracing/jaeger) propagators.  Issues with those propagators
 should be filed against this repo.
 
-This project also contains 3rd-party propagators for other formats. These propagators are here for 
-convenience and are not officially supported by the OpenTelemetry Java maintainers.
-
-Issues/support for these propagators is only provided as a minimal "best effort", and critical
-bugs should be filed with the respective vendors themselves.
-
-* AWS X-Ray (file an issue here and mention @anuraaga)
-* LightStep OpenTracing (file an issue here and mention @carlosalberto)
-
-Extension providers that do not receive adequate support/maintenance by their respective vendors 
-will become candidates for future removal.
-
 ---
 #### Running micro-benchmarks
 From the root of the repo run `./gradlew clean :opentelemetry-extension-trace-propagators:jmh` 

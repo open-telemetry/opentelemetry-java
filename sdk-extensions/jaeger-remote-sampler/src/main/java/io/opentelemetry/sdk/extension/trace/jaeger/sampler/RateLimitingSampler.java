@@ -10,12 +10,12 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.List;
 
@@ -44,9 +44,8 @@ class RateLimitingSampler implements Sampler {
     this.rateLimiter = new RateLimiter(maxTracesPerSecond, maxBalance, SystemClock.getInstance());
     Attributes attributes =
         Attributes.of(SAMPLER_TYPE, TYPE, SAMPLER_PARAM, (double) maxTracesPerSecond);
-    this.onSamplingResult =
-        SamplingResult.create(SamplingResult.Decision.RECORD_AND_SAMPLE, attributes);
-    this.offSamplingResult = SamplingResult.create(SamplingResult.Decision.DROP, attributes);
+    this.onSamplingResult = SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE, attributes);
+    this.offSamplingResult = SamplingResult.create(SamplingDecision.DROP, attributes);
   }
 
   @Override
@@ -54,20 +53,9 @@ class RateLimitingSampler implements Sampler {
       Context parentContext,
       String traceId,
       String name,
-      Kind spanKind,
+      SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-
-    if (Span.fromContext(parentContext).getSpanContext().isSampled()) {
-      return Sampler.alwaysOn()
-          .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
-    }
-    for (LinkData parentLink : parentLinks) {
-      if (parentLink.getSpanContext().isSampled()) {
-        return Sampler.alwaysOn()
-            .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
-      }
-    }
     return this.rateLimiter.checkCredit(1.0) ? onSamplingResult : offSamplingResult;
   }
 

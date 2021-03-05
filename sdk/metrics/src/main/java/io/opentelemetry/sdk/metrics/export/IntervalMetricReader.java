@@ -57,20 +57,6 @@ public final class IntervalMetricReader {
     return new IntervalMetricReaderBuilder(InternalState.builder());
   }
 
-  /**
-   * Returns a new {@link IntervalMetricReaderBuilder} for {@link IntervalMetricReader} reading the
-   * configuration values from the environment and from system properties. System properties
-   * override values defined in the environment. If a configuration value is missing, it uses the
-   * default value.
-   *
-   * @return a new {@link IntervalMetricReaderBuilder} for {@link IntervalMetricReader}.
-   * @deprecated Use {@link #builder()}
-   */
-  @Deprecated
-  public static IntervalMetricReaderBuilder builderFromDefaultSources() {
-    return builder();
-  }
-
   @SuppressWarnings("FutureReturnValueIgnored")
   IntervalMetricReader(InternalState internalState) {
     this.exporter = new Exporter(internalState);
@@ -110,7 +96,7 @@ public final class IntervalMetricReader {
                 }
                 exportAvailable.set(true);
               });
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
           logger.log(Level.WARNING, "Exporter threw an Exception", e);
         }
       } else {

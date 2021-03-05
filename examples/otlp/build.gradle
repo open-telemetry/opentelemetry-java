@@ -9,11 +9,13 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
     //pull in the autoconfigure extension so we parse the `otel.resource.attributes` system property used in the example.
     implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
+    implementation("io.opentelemetry:opentelemetry-api-metrics")
+    implementation("io.opentelemetry:opentelemetry-sdk-metrics")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp-metrics")
 
-    implementation("io.opentelemetry:opentelemetry-api-metrics:${openTelemetryVersion}-alpha")
-    implementation("io.opentelemetry:opentelemetry-sdk-metrics:${openTelemetryVersion}-alpha")
-    implementation("io.opentelemetry:opentelemetry-exporter-otlp-metrics:${openTelemetryVersion}-alpha")
+    //external dependency for the grpc transport implementation
     implementation "io.grpc:grpc-netty-shaded"
 }

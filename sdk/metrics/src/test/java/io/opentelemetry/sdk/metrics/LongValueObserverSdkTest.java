@@ -9,7 +9,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
@@ -69,11 +69,7 @@ class LongValueObserverSdkTest {
                 "1",
                 LongGaugeData.create(
                     Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Labels.of("k", "v"),
-                            12)))));
+                        LongPointData.create(0, testClock.now(), Labels.of("k", "v"), 12)))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
@@ -85,10 +81,6 @@ class LongValueObserverSdkTest {
                 "1",
                 LongGaugeData.create(
                     Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Labels.of("k", "v"),
-                            12)))));
+                        LongPointData.create(0, testClock.now(), Labels.of("k", "v"), 12)))));
   }
 }

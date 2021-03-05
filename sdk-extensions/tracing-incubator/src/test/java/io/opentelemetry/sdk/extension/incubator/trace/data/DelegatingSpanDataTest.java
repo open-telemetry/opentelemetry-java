@@ -12,9 +12,7 @@ import com.google.common.testing.EqualsTester;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -107,12 +105,10 @@ class DelegatingSpanDataTest {
   private static TestSpanData.Builder createBasicSpanBuilder() {
     return TestSpanData.builder()
         .setHasEnded(true)
-        .setSpanId(SpanId.getInvalid())
-        .setTraceId(TraceId.getInvalid())
         .setName("spanName")
         .setStartEpochNanos(100)
         .setEndEpochNanos(200)
-        .setKind(Kind.SERVER)
+        .setKind(SpanKind.SERVER)
         .setStatus(StatusData.ok())
         .setTotalRecordedEvents(0)
         .setTotalRecordedLinks(0);

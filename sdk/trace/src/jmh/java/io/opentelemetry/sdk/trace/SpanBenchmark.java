@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -36,9 +35,11 @@ public class SpanBenchmark {
 
   @Setup(Level.Trial)
   public final void setup() {
-    TraceConfig alwaysOn = TraceConfig.builder().setSampler(Sampler.alwaysOn()).build();
     SdkTracerProvider tracerProvider =
-        SdkTracerProvider.builder().setResource(serviceResource).setTraceConfig(alwaysOn).build();
+        SdkTracerProvider.builder()
+            .setResource(serviceResource)
+            .setSampler(Sampler.alwaysOn())
+            .build();
 
     Tracer tracerSdk = tracerProvider.get("benchmarkTracer");
     sdkSpanBuilder =

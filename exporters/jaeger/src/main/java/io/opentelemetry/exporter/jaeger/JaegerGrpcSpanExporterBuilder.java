@@ -10,30 +10,21 @@ import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /** Builder utility for this exporter. */
 public final class JaegerGrpcSpanExporterBuilder {
-  private static final String DEFAULT_ENDPOINT = "localhost:14250";
-  private static final String DEFAULT_SERVICE_NAME = "unknown";
+
+  private static final String DEFAULT_ENDPOINT_URL = "http://localhost:14250";
+  private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
-  private String serviceName = DEFAULT_SERVICE_NAME;
-  private String endpoint = DEFAULT_ENDPOINT;
+  private URI endpoint = DEFAULT_ENDPOINT;
   private ManagedChannel channel;
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
-
-  /**
-   * Sets the service name to be used by this exporter. Required.
-   *
-   * @param serviceName the service name.
-   * @return this.
-   */
-  public JaegerGrpcSpanExporterBuilder setServiceName(String serviceName) {
-    this.serviceName = serviceName;
-    return this;
-  }
 
   /**
    * Sets the managed channel to use when communicating with the backend. Takes precedence over
@@ -48,13 +39,26 @@ public final class JaegerGrpcSpanExporterBuilder {
   }
 
   /**
-   * Sets the Jaeger endpoint to connect to. Optional, defaults to "localhost:14250".
-   *
-   * @param endpoint The Jaeger endpoint URL, ex. "jaegerhost:14250".
-   * @return this.
+   * Sets the Jaeger endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT_URL}.
+   * The endpoint must start with either http:// or https://.
    */
   public JaegerGrpcSpanExporterBuilder setEndpoint(String endpoint) {
-    this.endpoint = endpoint;
+    requireNonNull(endpoint, "endpoint");
+
+    URI uri;
+    try {
+      uri = new URI(endpoint);
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException("Invalid endpoint, must be a URL: " + endpoint, e);
+    }
+
+    if (uri.getScheme() == null
+        || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
+      throw new IllegalArgumentException(
+          "Invalid endpoint, must start with http:// or https://: " + uri);
+    }
+
+    this.endpoint = uri;
     return this;
   }
 
@@ -85,9 +89,18 @@ public final class JaegerGrpcSpanExporterBuilder {
    */
   public JaegerGrpcSpanExporter build() {
     if (channel == null) {
-      channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
+      ManagedChannelBuilder<?> managedChannelBuilder =
+          ManagedChannelBuilder.forTarget(endpoint.getAuthority());
+
+      if (endpoint.getScheme().equals("https")) {
+        managedChannelBuilder.useTransportSecurity();
+      } else {
+        managedChannelBuilder.usePlaintext();
+      }
+
+      channel = managedChannelBuilder.build();
     }
-    return new JaegerGrpcSpanExporter(serviceName, channel, timeoutNanos);
+    return new JaegerGrpcSpanExporter(channel, timeoutNanos);
   }
 
   JaegerGrpcSpanExporterBuilder() {}

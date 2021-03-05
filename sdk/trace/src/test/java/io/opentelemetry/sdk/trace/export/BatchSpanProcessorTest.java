@@ -8,21 +8,23 @@ package io.opentelemetry.sdk.trace.export;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,15 +33,21 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @SuppressWarnings("PreferJavaTimeOverload")
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class BatchSpanProcessorTest {
 
   private static final String SPAN_NAME_1 = "MySpanName/1";
@@ -47,6 +55,14 @@ class BatchSpanProcessorTest {
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private SdkTracerProvider sdkTracerProvider;
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
+
+  @Mock private Sampler mockSampler;
+  @Mock private SpanExporter mockSpanExporter;
+
+  @BeforeEach
+  void setUp() {
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+  }
 
   @AfterEach
   void cleanup() {
@@ -76,8 +92,6 @@ class BatchSpanProcessorTest {
     assertThat(config.getExporterTimeoutNanos())
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(BatchSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
-    assertThat(config.getExportOnlySampled())
-        .isEqualTo(BatchSpanProcessorBuilder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }
 
   @Test
@@ -315,72 +329,68 @@ class BatchSpanProcessorTest {
 
   @Test
   @Timeout(5)
-  public void exporterTimesOut() throws InterruptedException {
-    final CountDownLatch interruptMarker = new CountDownLatch(1);
-    WaitingSpanExporter waitingSpanExporter =
-        new WaitingSpanExporter(1, new CompletableResultCode()) {
-          @Override
-          public CompletableResultCode export(Collection<SpanData> spans) {
-            CompletableResultCode result = super.export(spans);
-            Thread exporterThread =
-                new Thread(
-                    () -> {
-                      try {
-                        // sleep longer than the configured timeout of 100ms
-                        Thread.sleep(1000);
-                      } catch (InterruptedException e) {
-                        interruptMarker.countDown();
-                      }
-                    });
-            exporterThread.start();
-            result.whenComplete(
-                () -> {
-                  if (!result.isSuccess()) {
-                    exporterThread.interrupt();
-                  }
-                });
-            return result;
-          }
-        };
-
-    int exporterTimeoutMillis = 100;
-    sdkTracerProvider =
-        SdkTracerProvider.builder()
-            .addSpanProcessor(
-                BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setExporterTimeout(exporterTimeoutMillis, TimeUnit.MILLISECONDS)
-                    .setScheduleDelay(1, TimeUnit.MILLISECONDS)
-                    .setMaxQueueSize(1)
-                    .build())
+  public void continuesIfExporterTimesOut() throws InterruptedException {
+    int exporterTimeoutMillis = 10;
+    BatchSpanProcessor bsp =
+        BatchSpanProcessor.builder(mockSpanExporter)
+            .setExporterTimeout(exporterTimeoutMillis, TimeUnit.MILLISECONDS)
+            .setScheduleDelay(1, TimeUnit.MILLISECONDS)
+            .setMaxQueueSize(1)
             .build();
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(bsp).build();
 
-    ReadableSpan span = createEndedSpan(SPAN_NAME_1);
-    List<SpanData> exported = waitingSpanExporter.waitForExport();
-    assertThat(exported).containsExactly(span.toSpanData());
+    CountDownLatch exported = new CountDownLatch(1);
+    // We return a result we never complete, meaning it will timeout.
+    when(mockSpanExporter.export(
+            argThat(
+                spans -> {
+                  assertThat(spans)
+                      .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_1));
+                  exported.countDown();
+                  return true;
+                })))
+        .thenReturn(new CompletableResultCode());
+    createEndedSpan(SPAN_NAME_1);
+    exported.await();
+    // Timed out so the span was dropped.
+    await().untilAsserted(() -> assertThat(bsp.getBatch()).isEmpty());
 
-    // since the interrupt happens outside the execution of the test method, we'll block to make
-    // sure that the thread was actually interrupted due to the timeout.
-    interruptMarker.await();
+    // Still processing new spans.
+    CountDownLatch exportedAgain = new CountDownLatch(1);
+    reset(mockSpanExporter);
+    when(mockSpanExporter.export(
+            argThat(
+                spans -> {
+                  assertThat(spans)
+                      .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_2));
+                  exportedAgain.countDown();
+                  return true;
+                })))
+        .thenReturn(CompletableResultCode.ofSuccess());
+    createEndedSpan(SPAN_NAME_2);
+    exported.await();
+    await().untilAsserted(() -> assertThat(bsp.getBatch()).isEmpty());
   }
 
   @Test
   void exportNotSampledSpans() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
-    AtomicReference<TraceConfig> traceConfig =
-        new AtomicReference<>(TraceConfig.builder().setSampler(Sampler.alwaysOff()).build());
     sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
-            .setTraceConfig(traceConfig::get)
+            .setSampler(mockSampler)
             .build();
 
+    when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
+        .thenReturn(SamplingResult.create(SamplingDecision.DROP));
     sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_1).startSpan().end();
     sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_2).startSpan().end();
-    traceConfig.set(traceConfig.get().toBuilder().setSampler(Sampler.alwaysOn()).build());
+    when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
+        .thenReturn(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
     ReadableSpan span = createEndedSpan(SPAN_NAME_2);
     // Spans are recorded and exported in the same order as they are ended, we test that a non
     // sampled span is not exported by creating and ending a sampled span after a non sampled span
@@ -396,40 +406,21 @@ class BatchSpanProcessorTest {
   void exportNotSampledSpans_recordOnly() {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
-    AtomicReference<TraceConfig> traceConfig =
-        new AtomicReference<>(
-            TraceConfig.builder()
-                .setSampler(
-                    new Sampler() {
-                      @Override
-                      public SamplingResult shouldSample(
-                          Context parentContext,
-                          String traceId,
-                          String name,
-                          Span.Kind spanKind,
-                          Attributes attributes,
-                          List<LinkData> parentLinks) {
-                        return SamplingResult.create(SamplingResult.Decision.RECORD_ONLY);
-                      }
 
-                      @Override
-                      public String getDescription() {
-                        return null;
-                      }
-                    })
-                .build());
+    when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
+        .thenReturn(SamplingResult.create(SamplingDecision.RECORD_ONLY));
     sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
-                    .setExportOnlySampled(true)
                     .build())
-            .setTraceConfig(traceConfig::get)
+            .setSampler(mockSampler)
             .build();
 
     createEndedSpan(SPAN_NAME_1);
-    traceConfig.set(traceConfig.get().toBuilder().setSampler(Sampler.alwaysOn()).build());
+    when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
+        .thenReturn(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
     ReadableSpan span = createEndedSpan(SPAN_NAME_2);
 
     // Spans are recorded and exported in the same order as they are ended, we test that a non
@@ -453,7 +444,7 @@ class BatchSpanProcessorTest {
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setScheduleDelay(10_000, TimeUnit.MILLISECONDS)
+                    .setScheduleDelay(10, TimeUnit.SECONDS)
                     .build())
             .build();
 

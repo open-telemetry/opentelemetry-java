@@ -7,15 +7,15 @@ package io.opentelemetry.sdk.trace.samplers;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Sampler is used to make decisions on {@link Span} sampling. */
+/** A Sampler is used to make decisions on {@link Span} sampling. */
 @ThreadSafe
 public interface Sampler {
 
@@ -46,6 +46,8 @@ public interface Sampler {
    * whether or not to sample. If there is no parent, the Sampler uses the provided Sampler delegate
    * to determine the sampling decision.
    *
+   * <p>This method is equivalent to calling {@code #parentBasedBuilder(Sampler).build()}
+   *
    * @param root the {@code Sampler} which is used to make the sampling decisions if the parent does
    *     not exist.
    * @return a {@code Sampler} that follows the parent's sampling decision if one exists, otherwise
@@ -56,12 +58,14 @@ public interface Sampler {
   }
 
   /**
-   * Returns a {@link ParentBasedSamplerBuilder} that follows the parent's sampling decision if one
-   * exists, otherwise following the root sampler and other optional sampler's decision.
+   * Returns a {@link ParentBasedSamplerBuilder} that enables configuration of the parent-based
+   * sampling strategy. The parent's sampling decision is used if a parent span exists, otherwise
+   * this strategy uses the root sampler's decision. There are a several options available on the
+   * builder to control the precise behavior of how the decision will be made.
    *
    * @param root the required {@code Sampler} which is used to make the sampling decisions if the
    *     parent does not exist.
-   * @return a {@code ParentBased.Builder}
+   * @return a {@code ParentBasedSamplerBuilder}
    */
   static ParentBasedSamplerBuilder parentBasedBuilder(Sampler root) {
     return new ParentBasedSamplerBuilder(root);
@@ -70,6 +74,12 @@ public interface Sampler {
   /**
    * Returns a new TraceIdRatioBased {@link Sampler}. The ratio of sampling a trace is equal to that
    * of the specified ratio.
+   *
+   * <p>The algorithm used by the {@link Sampler} is undefined, notably it may or may not use parts
+   * of the trace ID when generating a sampling decision. Currently, only the ratio of traces that
+   * are sampled can be relied on, not how the sampled traces are determined. As such, it is
+   * recommended to only use this {@link Sampler} for root spans using {@link
+   * Sampler#parentBased(Sampler)}.
    *
    * @param ratio The desired ratio of sampling. Must be within [0.0, 1.0].
    * @return a new TraceIdRatioBased {@link Sampler}.
@@ -87,7 +97,7 @@ public interface Sampler {
    * @param traceId the {@link TraceId} for the new {@code Span}. This will be identical to that in
    *     the parentContext, unless this is a root span.
    * @param name the name of the new {@code Span}.
-   * @param spanKind the {@link Kind} of the {@code Span}.
+   * @param spanKind the {@link SpanKind} of the {@code Span}.
    * @param attributes {@link Attributes} associated with the span.
    * @param parentLinks the parentLinks associated with the new {@code Span}.
    * @return sampling samplingResult whether span should be sampled or not.
@@ -96,7 +106,7 @@ public interface Sampler {
       Context parentContext,
       String traceId,
       String name,
-      Kind spanKind,
+      SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks);
 

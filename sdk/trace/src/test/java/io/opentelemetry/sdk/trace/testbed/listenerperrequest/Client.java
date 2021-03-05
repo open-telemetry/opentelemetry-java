@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace.testbed.listenerperrequest;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,7 +32,7 @@ final class Client {
   }
 
   public Future<Object> send(final Object message) {
-    Span span = tracer.spanBuilder("send").setSpanKind(Kind.CLIENT).startSpan();
+    Span span = tracer.spanBuilder("send").setSpanKind(SpanKind.CLIENT).startSpan();
     return execute(message, new ResponseListener(span));
   }
 }

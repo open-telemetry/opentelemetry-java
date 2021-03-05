@@ -5,17 +5,13 @@
 
 package io.opentelemetry.api.common;
 
-import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
-import java.util.function.BiConsumer;
 import javax.annotation.concurrent.Immutable;
 
-@AutoValue
 @Immutable
-abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>, Object>
+final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>, Object>
     implements Attributes {
 
   // We only compare the key name, not type, when constructing, to allow deduping keys with the
@@ -25,23 +21,13 @@ abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey
 
   static final Attributes EMPTY = Attributes.builder().build();
 
-  ArrayBackedAttributes() {}
-
-  @Override
-  protected abstract List<Object> data();
+  private ArrayBackedAttributes(Object[] data, Comparator<AttributeKey<?>> keyComparator) {
+    super(data, keyComparator);
+  }
 
   @Override
   public AttributesBuilder toBuilder() {
     return new ArrayBackedAttributesBuilder(new ArrayList<>(data()));
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public void forEach(BiConsumer<AttributeKey<?>, Object> consumer) {
-    List<Object> data = data();
-    for (int i = 0; i < data.size(); i += 2) {
-      consumer.accept((AttributeKey<?>) data.get(i), data.get(i + 1));
-    }
   }
 
   @SuppressWarnings("unchecked")
@@ -59,7 +45,6 @@ abstract class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey
         data[i] = null;
       }
     }
-    return new AutoValue_ArrayBackedAttributes(
-        sortAndFilter(data, /* filterNullValues= */ true, KEY_COMPARATOR_FOR_CONSTRUCTION));
+    return new ArrayBackedAttributes(data, KEY_COMPARATOR_FOR_CONSTRUCTION);
   }
 }

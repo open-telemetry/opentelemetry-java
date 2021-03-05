@@ -4,8 +4,8 @@
  */
 
 /**
- * {@link io.opentelemetry.sdk.resources.ResourceProvider} implementations for inferring resource
- * information for AWS services.
+ * {@link io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider} implementations for inferring
+ * resource information for AWS services.
  */
 @ParametersAreNonnullByDefault
 package io.opentelemetry.sdk.extension.aws.resource;

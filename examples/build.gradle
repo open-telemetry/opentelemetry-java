@@ -1,5 +1,6 @@
 plugins {
     id "com.diffplug.spotless"
+    id "com.github.johnrengelman.shadow" apply false
 }
 
 subprojects {
@@ -8,12 +9,14 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'idea'
     apply plugin: 'com.diffplug.spotless'
+    apply plugin: 'com.github.johnrengelman.shadow'
 
     group = "io.opentelemetry"
     version = "0.1.0-SNAPSHOT"
 
     ext {
-        openTelemetryVersion = "0.14.1"
+        openTelemetryVersion = "1.0.0"
+        openTelemetryAlphaVersion = "1.0.0-alpha"
         grpcVersion = '1.34.1'
         protobufVersion = '3.11.4'
         protocVersion = protobufVersion
@@ -24,25 +27,19 @@ subprojects {
         jcenter()
         maven {
             // Add snapshot repository
-            url "https://oss.jfrog.org/artifactory/oss-snapshot-local"
+            url "https://oss.sonatype.org/content/repositories/snapshots"
         }
     }
 
     dependencies {
-        compile platform("io.opentelemetry:opentelemetry-bom:${openTelemetryVersion}")
-        compile platform("io.grpc:grpc-bom:${grpcVersion}")
+        implementation platform("io.opentelemetry:opentelemetry-bom:${openTelemetryVersion}")
+        implementation platform("io.opentelemetry:opentelemetry-bom-alpha:${openTelemetryAlphaVersion}")
+        implementation platform("io.grpc:grpc-bom:${grpcVersion}")
     }
 
     spotless {
         java {
             googleJavaFormat("1.9")
         }
-    }
-
-    //create a single Jar with all dependencies
-    task fatJar(type: Jar) {
-        archiveBaseName = project.name + '-all'
-        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-        with jar
     }
 }

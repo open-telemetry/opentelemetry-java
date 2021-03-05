@@ -7,7 +7,7 @@ package io.opentelemetry.api.metrics;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.api.metrics.internal.MetricsStringUtils;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +39,7 @@ class DoubleSumObserverTest {
 
   @Test
   void preventTooLongName() {
-    char[] chars = new char[StringUtils.METRIC_NAME_MAX_LENGTH + 1];
+    char[] chars = new char[MetricsStringUtils.METRIC_NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     assertThatThrownBy(() -> meter.doubleSumObserverBuilder(longName).build())

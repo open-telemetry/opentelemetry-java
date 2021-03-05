@@ -30,4 +30,10 @@ public enum MetricDataType {
    * value recorded, the sum of all measurements and the total number of measurements recorded.
    */
   SUMMARY,
+
+  /**
+   * A Histogram represents an approximate representation of the distribution of measurements
+   * recorded.
+   */
+  HISTOGRAM,
 }

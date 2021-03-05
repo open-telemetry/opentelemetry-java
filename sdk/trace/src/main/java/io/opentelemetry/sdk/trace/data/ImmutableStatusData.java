@@ -9,7 +9,6 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import java.util.EnumMap;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -25,13 +24,13 @@ abstract class ImmutableStatusData implements StatusData {
    * The operation has been validated by an Application developers or Operator to have completed
    * successfully.
    */
-  static final StatusData OK = createInternal(StatusCode.OK, null);
+  static final StatusData OK = createInternal(StatusCode.OK, "");
 
   /** The default status. */
-  static final StatusData UNSET = createInternal(StatusCode.UNSET, null);
+  static final StatusData UNSET = createInternal(StatusCode.UNSET, "");
 
   /** The operation contains an error. */
-  static final StatusData ERROR = createInternal(StatusCode.ERROR, null);
+  static final StatusData ERROR = createInternal(StatusCode.ERROR, "");
 
   // Visible for test
   static final EnumMap<StatusCode, StatusData> codeToStatus = new EnumMap<>(StatusCode.class);
@@ -47,7 +46,7 @@ abstract class ImmutableStatusData implements StatusData {
     for (StatusCode code : codes) {
       StatusData status = codeToStatus.get(code);
       if (status == null) {
-        codeToStatus.put(code, createInternal(code, null));
+        codeToStatus.put(code, createInternal(code, ""));
       }
     }
   }
@@ -58,14 +57,14 @@ abstract class ImmutableStatusData implements StatusData {
    * @param description the new description of the {@code Status}.
    * @return The newly created {@code Status} with the given description.
    */
-  public static StatusData create(StatusCode statusCode, @Nullable String description) {
-    if (description == null) {
+  static StatusData create(StatusCode statusCode, String description) {
+    if (description == null || description.isEmpty()) {
       return codeToStatus.get(statusCode);
     }
     return createInternal(statusCode, description);
   }
 
-  private static StatusData createInternal(StatusCode statusCode, @Nullable String description) {
+  private static StatusData createInternal(StatusCode statusCode, String description) {
     return new AutoValue_ImmutableStatusData(statusCode, description);
   }
 }

@@ -7,8 +7,9 @@ package io.opentelemetry.exporter.prometheus;
 
 import static io.prometheus.client.Collector.doubleToGoString;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
@@ -46,7 +47,9 @@ final class MetricAdapter {
 
   static final String SAMPLE_SUFFIX_COUNT = "_count";
   static final String SAMPLE_SUFFIX_SUM = "_sum";
+  static final String SAMPLE_SUFFIX_BUCKET = "_bucket";
   static final String LABEL_NAME_QUANTILE = "quantile";
+  static final String LABEL_NAME_LE = "le";
 
   // Converts a MetricData to a Prometheus MetricFamilySamples.
   static MetricFamilySamples toMetricFamilySamples(MetricData metricData) {
@@ -85,8 +88,10 @@ final class MetricAdapter {
         return Collector.Type.GAUGE;
       case SUMMARY:
         return Collector.Type.SUMMARY;
+      case HISTOGRAM:
+        return Collector.Type.HISTOGRAM;
     }
-    return Collector.Type.UNTYPED;
+    return Collector.Type.UNKNOWN;
   }
 
   private static final Function<String, String> sanitizer = new LabelNameSanitizer();
@@ -121,6 +126,10 @@ final class MetricAdapter {
         case SUMMARY:
           addSummarySamples(
               (DoubleSummaryPointData) pointData, name, labelNames, labelValues, samples);
+          break;
+        case HISTOGRAM:
+          addHistogramSamples(
+              (DoubleHistogramPointData) pointData, name, labelNames, labelValues, samples);
           break;
       }
     }
@@ -169,6 +178,42 @@ final class MetricAdapter {
     }
   }
 
+  private static void addHistogramSamples(
+      DoubleHistogramPointData doubleHistogramPointData,
+      String name,
+      List<String> labelNames,
+      List<String> labelValues,
+      List<Sample> samples) {
+    samples.add(
+        new Sample(
+            name + SAMPLE_SUFFIX_COUNT,
+            labelNames,
+            labelValues,
+            doubleHistogramPointData.getCount()));
+    samples.add(
+        new Sample(
+            name + SAMPLE_SUFFIX_SUM, labelNames, labelValues, doubleHistogramPointData.getSum()));
+
+    List<String> labelNamesWithLe = new ArrayList<>(labelNames.size() + 1);
+    labelNamesWithLe.addAll(labelNames);
+    labelNamesWithLe.add(LABEL_NAME_LE);
+
+    long cumulativeCount = 0;
+    List<Double> boundaries = doubleHistogramPointData.getBoundaries();
+    List<Long> counts = doubleHistogramPointData.getCounts();
+    for (int i = 0; i < counts.size(); i++) {
+      List<String> labelValuesWithLe = new ArrayList<>(labelValues.size() + 1);
+      labelValuesWithLe.addAll(labelValues);
+      labelValuesWithLe.add(
+          doubleToGoString(i < boundaries.size() ? boundaries.get(i) : Double.POSITIVE_INFINITY));
+
+      cumulativeCount += counts.get(i);
+      samples.add(
+          new Sample(
+              name + SAMPLE_SUFFIX_BUCKET, labelNamesWithLe, labelValuesWithLe, cumulativeCount));
+    }
+  }
+
   private static int estimateNumSamples(int numPoints, MetricDataType type) {
     if (type == MetricDataType.SUMMARY) {
       // count + sum + estimated 2 percentiles (default MinMaxSumCount aggregator).
@@ -189,6 +234,8 @@ final class MetricAdapter {
         return metricData.getLongSumData().getPoints();
       case SUMMARY:
         return metricData.getDoubleSummaryData().getPoints();
+      case HISTOGRAM:
+        return metricData.getDoubleHistogramData().getPoints();
     }
     return Collections.emptyList();
   }

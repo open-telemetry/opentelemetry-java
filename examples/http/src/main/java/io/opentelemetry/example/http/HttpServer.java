@@ -12,24 +12,21 @@ import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporter.logging.LoggingSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 
-public class HttpServer {
-  // OTel API
-  private static final OpenTelemetry openTelemetry = initOpenTelemetry(new LoggingSpanExporter());
+public final class HttpServer {
+  // It's important to initialize your OpenTelemetry SDK as early in your application's lifecycle as
+  // possible.
+  private static final OpenTelemetry openTelemetry = ExampleConfiguration.initOpenTelemetry();
   private static final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.http.HttpServer");
 
@@ -37,8 +34,8 @@ public class HttpServer {
   private final com.sun.net.httpserver.HttpServer server;
 
   // Extract the context from http headers
-  private static final TextMapPropagator.Getter<HttpExchange> getter =
-      new TextMapPropagator.Getter<>() {
+  private static final TextMapGetter<HttpExchange> getter =
+      new TextMapGetter<>() {
         @Override
         public Iterable<String> keys(HttpExchange carrier) {
           return carrier.getRequestHeaders().keySet();
@@ -65,32 +62,18 @@ public class HttpServer {
     System.out.println("Server ready on http://127.0.0.1:" + port);
   }
 
-  private static OpenTelemetry initOpenTelemetry(LoggingSpanExporter loggingExporter) {
-    // install the W3C Trace Context propagator
-    // Get the tracer management instance
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
-    // Set to process the the spans by the LogExporter
-    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(loggingExporter).build());
-
-    return OpenTelemetrySdk.builder()
-        .setTracerProvider(sdkTracerProvider)
-        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-        .build();
-  }
-
   private static class HelloHandler implements HttpHandler {
+
+    public static final TextMapPropagator TEXT_MAP_PROPAGATOR =
+        openTelemetry.getPropagators().getTextMapPropagator();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
       // Extract the context from the HTTP request
-      Context context =
-          openTelemetry
-              .getPropagators()
-              .getTextMapPropagator()
-              .extract(Context.current(), exchange, getter);
+      Context context = TEXT_MAP_PROPAGATOR.extract(Context.current(), exchange, getter);
 
       Span span =
-          tracer.spanBuilder("GET /").setParent(context).setSpanKind(Span.Kind.SERVER).startSpan();
+          tracer.spanBuilder("GET /").setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
 
       try (Scope scope = span.makeCurrent()) {
         // Set the Semantic Convention
@@ -114,17 +97,17 @@ public class HttpServer {
       }
     }
 
-    private void answer(HttpExchange he, Span span) throws IOException {
+    private void answer(HttpExchange exchange, Span span) throws IOException {
       // Generate an Event
       span.addEvent("Start Processing");
 
       // Process the request
       String response = "Hello World!";
-      he.sendResponseHeaders(200, response.length());
-      OutputStream os = he.getResponseBody();
+      exchange.sendResponseHeaders(200, response.length());
+      OutputStream os = exchange.getResponseBody();
       os.write(response.getBytes(Charset.defaultCharset()));
       os.close();
-      System.out.println("Served Client: " + he.getRemoteAddress());
+      System.out.println("Served Client: " + exchange.getRemoteAddress());
 
       // Generate an Event with an attribute
       Attributes eventAttributes = Attributes.of(stringKey("answer"), response);

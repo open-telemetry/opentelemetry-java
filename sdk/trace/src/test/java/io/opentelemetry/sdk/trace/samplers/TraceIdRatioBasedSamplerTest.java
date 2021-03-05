@@ -11,8 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.IdGenerator;
@@ -23,22 +23,22 @@ import org.junit.jupiter.api.Test;
 
 class TraceIdRatioBasedSamplerTest {
   private static final String SPAN_NAME = "MySpanName";
-  private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
+  private static final SpanKind SPAN_KIND = SpanKind.INTERNAL;
   private static final int NUM_SAMPLE_TRIES = 1000;
 
   private static final IdGenerator idsGenerator = IdGenerator.random();
 
   private final String traceId = idsGenerator.generateTraceId();
   private final String parentSpanId = idsGenerator.generateSpanId();
-  private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), traceState);
+      SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), TraceState.getDefault());
   private final Context sampledParentContext = Context.root().with(Span.wrap(sampledSpanContext));
   private final Context notSampledParentContext =
       Context.root()
           .with(
               Span.wrap(
-                  SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState)));
+                  SpanContext.create(
+                      traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())));
   private final Context invalidParentContext = Context.root().with(Span.getInvalid());
   private final LinkData sampledParentLink = LinkData.create(sampledSpanContext);
 
@@ -147,26 +147,7 @@ class TraceIdRatioBasedSamplerTest {
     final Sampler defaultProbability = Sampler.traceIdRatioBased(0.0001);
     // This traceId will not be sampled by the Probability Sampler because the last 8 bytes as long
     // is not less than probability * Long.MAX_VALUE;
-    String notSampledTraceId =
-        TraceId.bytesToHex(
-            new byte[] {
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              (byte) 0x8F,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF
-            });
+    String notSampledTraceId = "00000000000000008fffffffffffffff";
     SamplingResult samplingResult1 =
         defaultProbability.shouldSample(
             invalidParentContext,
@@ -175,29 +156,10 @@ class TraceIdRatioBasedSamplerTest {
             SPAN_KIND,
             Attributes.empty(),
             Collections.emptyList());
-    assertThat(samplingResult1.getDecision()).isEqualTo(SamplingResult.Decision.DROP);
+    assertThat(samplingResult1.getDecision()).isEqualTo(SamplingDecision.DROP);
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
-    String sampledTraceId =
-        TraceId.bytesToHex(
-            new byte[] {
-              (byte) 0x00,
-              (byte) 0x00,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              (byte) 0xFF,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0
-            });
+    String sampledTraceId = "0000ffffffffffff0000000000000000";
     SamplingResult samplingResult2 =
         defaultProbability.shouldSample(
             invalidParentContext,
@@ -206,7 +168,7 @@ class TraceIdRatioBasedSamplerTest {
             SPAN_KIND,
             Attributes.empty(),
             Collections.emptyList());
-    assertThat(samplingResult2.getDecision()).isEqualTo(SamplingResult.Decision.RECORD_AND_SAMPLE);
+    assertThat(samplingResult2.getDecision()).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
   }
 
   // Applies the given sampler to NUM_SAMPLE_TRIES random traceId.
@@ -223,7 +185,7 @@ class TraceIdRatioBasedSamplerTest {
               Attributes.empty(),
               parentLinks)
           .getDecision()
-          .equals(SamplingResult.Decision.RECORD_AND_SAMPLE)) {
+          .equals(SamplingDecision.RECORD_AND_SAMPLE)) {
         count++;
       }
     }

@@ -14,24 +14,24 @@ import javax.annotation.concurrent.Immutable;
 abstract class ImmutableSamplingResult implements SamplingResult {
 
   static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT =
-      ImmutableSamplingResult.createWithoutAttributes(SamplingResult.Decision.RECORD_AND_SAMPLE);
+      ImmutableSamplingResult.createWithoutAttributes(SamplingDecision.RECORD_AND_SAMPLE);
 
   static final SamplingResult EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT =
-      ImmutableSamplingResult.createWithoutAttributes(SamplingResult.Decision.DROP);
+      ImmutableSamplingResult.createWithoutAttributes(SamplingDecision.DROP);
 
   static final SamplingResult EMPTY_RECORDED_SAMPLING_RESULT =
-      ImmutableSamplingResult.createWithoutAttributes(SamplingResult.Decision.RECORD_ONLY);
+      ImmutableSamplingResult.createWithoutAttributes(SamplingDecision.RECORD_ONLY);
 
-  static SamplingResult createSamplingResult(Decision decision, Attributes attributes) {
+  static SamplingResult createSamplingResult(SamplingDecision decision, Attributes attributes) {
     return new AutoValue_ImmutableSamplingResult(decision, attributes);
   }
 
-  private static SamplingResult createWithoutAttributes(Decision decision) {
+  private static SamplingResult createWithoutAttributes(SamplingDecision decision) {
     return new AutoValue_ImmutableSamplingResult(decision, Attributes.empty());
   }
 
   @Override
-  public abstract Decision getDecision();
+  public abstract SamplingDecision getDecision();
 
   @Override
   public abstract Attributes getAttributes();

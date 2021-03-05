@@ -22,9 +22,12 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
@@ -34,7 +37,9 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -68,7 +73,7 @@ class JaegerGrpcSpanExporterTest {
     closer.register(server::shutdownNow);
 
     ManagedChannel channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
-    exporter = JaegerGrpcSpanExporter.builder().setServiceName("test").setChannel(channel).build();
+    exporter = JaegerGrpcSpanExporter.builder().setChannel(channel).build();
   }
 
   @AfterEach
@@ -89,13 +94,14 @@ class JaegerGrpcSpanExporterTest {
     SpanData span =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setTraceId(TRACE_ID)
-            .setSpanId(SPAN_ID)
+            .setSpanContext(
+                SpanContext.create(
+                    TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()))
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(StatusData.ok())
-            .setKind(Kind.CONSUMER)
+            .setKind(SpanKind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
@@ -104,7 +110,10 @@ class JaegerGrpcSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key"), "resource-attr-value")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName",
+                        AttributeKey.stringKey("resource-attr-key"),
+                        "resource-attr-value")))
             .build();
 
     // test
@@ -117,7 +126,7 @@ class JaegerGrpcSpanExporterTest {
 
     Model.Batch batch = requestCaptor.getValue().getBatch();
     assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint");
-    assertThat(SpanId.bytesToHex(batch.getSpans(0).getSpanId().toByteArray())).isEqualTo(SPAN_ID);
+    assertThat(SpanId.fromBytes(batch.getSpans(0).getSpanId().toByteArray())).isEqualTo(SPAN_ID);
 
     assertThat(
             getTagValue(batch.getProcess().getTagsList(), "resource-attr-key")
@@ -126,6 +135,7 @@ class JaegerGrpcSpanExporterTest {
         .isEqualTo("resource-attr-value");
 
     verifyBatch(batch);
+    assertThat(batch.getProcess().getServiceName()).isEqualTo("myServiceName");
   }
 
   @Test
@@ -136,13 +146,14 @@ class JaegerGrpcSpanExporterTest {
     SpanData span =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setTraceId(TRACE_ID)
-            .setSpanId(SPAN_ID)
+            .setSpanContext(
+                SpanContext.create(
+                    TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()))
             .setName("GET /api/endpoint/1")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(StatusData.ok())
-            .setKind(Kind.CONSUMER)
+            .setKind(SpanKind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
@@ -151,19 +162,23 @@ class JaegerGrpcSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key-1"), "resource-attr-value-1")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName1",
+                        AttributeKey.stringKey("resource-attr-key-1"),
+                        "resource-attr-value-1")))
             .build();
 
     SpanData span2 =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setTraceId(TRACE_ID)
-            .setSpanId(SPAN_ID_2)
+            .setSpanContext(
+                SpanContext.create(
+                    TRACE_ID, SPAN_ID_2, TraceFlags.getSampled(), TraceState.getDefault()))
             .setName("GET /api/endpoint/2")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(StatusData.ok())
-            .setKind(Kind.CONSUMER)
+            .setKind(SpanKind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
@@ -172,7 +187,10 @@ class JaegerGrpcSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key-2"), "resource-attr-value-2")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName2",
+                        AttributeKey.stringKey("resource-attr-key-2"),
+                        "resource-attr-value-2")))
             .build();
 
     // test
@@ -197,14 +215,16 @@ class JaegerGrpcSpanExporterTest {
       if (processTag.isPresent()) {
         assertThat(processTag2.isPresent()).isFalse();
         assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint/1");
-        assertThat(SpanId.bytesToHex(batch.getSpans(0).getSpanId().toByteArray()))
+        assertThat(SpanId.fromBytes(batch.getSpans(0).getSpanId().toByteArray()))
             .isEqualTo(SPAN_ID);
         assertThat(processTag.get().getVStr()).isEqualTo("resource-attr-value-1");
+        assertThat(batch.getProcess().getServiceName()).isEqualTo("myServiceName1");
       } else if (processTag2.isPresent()) {
         assertThat(batch.getSpans(0).getOperationName()).isEqualTo("GET /api/endpoint/2");
-        assertThat(SpanId.bytesToHex(batch.getSpans(0).getSpanId().toByteArray()))
+        assertThat(SpanId.fromBytes(batch.getSpans(0).getSpanId().toByteArray()))
             .isEqualTo(SPAN_ID_2);
         assertThat(processTag2.get().getVStr()).isEqualTo("resource-attr-value-2");
+        assertThat(batch.getProcess().getServiceName()).isEqualTo("myServiceName2");
       } else {
         fail("No process tag resource-attr-key-1 or resource-attr-key-2");
       }
@@ -213,10 +233,8 @@ class JaegerGrpcSpanExporterTest {
 
   private static void verifyBatch(Model.Batch batch) throws Exception {
     assertThat(batch.getSpansCount()).isEqualTo(1);
-    assertThat(TraceId.bytesToHex(batch.getSpans(0).getTraceId().toByteArray()))
-        .isEqualTo(TRACE_ID);
-    assertThat(batch.getProcess().getServiceName()).isEqualTo("test");
-    assertThat(batch.getProcess().getTagsCount()).isEqualTo(4);
+    assertThat(TraceId.fromBytes(batch.getSpans(0).getTraceId().toByteArray())).isEqualTo(TRACE_ID);
+    assertThat(batch.getProcess().getTagsCount()).isEqualTo(5);
 
     assertThat(
             getSpanTagValue(batch.getSpans(0), "otel.library.name")
@@ -269,6 +287,20 @@ class JaegerGrpcSpanExporterTest {
     assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("endpoint");
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint("😺://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must be a URL: 😺://localhost")
+        .hasCauseInstanceOf(URISyntaxException.class);
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint("localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: localhost");
+    assertThatThrownBy(() -> JaegerGrpcSpanExporter.builder().setEndpoint("gopher://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
   }
 
   static class MockCollectorService extends CollectorServiceGrpc.CollectorServiceImplBase {

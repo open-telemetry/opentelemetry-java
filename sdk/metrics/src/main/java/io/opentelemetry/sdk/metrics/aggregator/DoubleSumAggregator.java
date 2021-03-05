@@ -5,10 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -16,12 +15,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
 
-final class DoubleSumAggregator extends AbstractAggregator<Double> {
+final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
   DoubleSumAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor) {
-    super(resource, instrumentationLibraryInfo, descriptor);
+      InstrumentDescriptor descriptor,
+      boolean stateful) {
+    super(resource, instrumentationLibraryInfo, descriptor, stateful);
   }
 
   @Override
@@ -41,10 +41,10 @@ final class DoubleSumAggregator extends AbstractAggregator<Double> {
 
   @Override
   public MetricData toMetricData(
-      Map<Labels, Double> accumulationByLabels, long startEpochNanos, long epochNanos) {
-    boolean isMonotonic =
-        getInstrumentDescriptor().getType() == InstrumentType.COUNTER
-            || getInstrumentDescriptor().getType() == InstrumentType.SUM_OBSERVER;
+      Map<Labels, Double> accumulationByLabels,
+      long startEpochNanos,
+      long lastCollectionEpoch,
+      long epochNanos) {
     return MetricData.createDoubleSum(
         getResource(),
         getInstrumentationLibraryInfo(),
@@ -52,9 +52,14 @@ final class DoubleSumAggregator extends AbstractAggregator<Double> {
         getInstrumentDescriptor().getDescription(),
         getInstrumentDescriptor().getUnit(),
         DoubleSumData.create(
-            isMonotonic,
-            AggregationTemporality.CUMULATIVE,
-            MetricDataUtils.toDoublePointList(accumulationByLabels, startEpochNanos, epochNanos)));
+            isMonotonic(),
+            temporality(),
+            MetricDataUtils.toDoublePointList(
+                accumulationByLabels,
+                temporality() == AggregationTemporality.CUMULATIVE
+                    ? startEpochNanos
+                    : lastCollectionEpoch,
+                epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<Double> {

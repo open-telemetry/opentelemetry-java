@@ -7,32 +7,43 @@ package io.opentelemetry.sdk.extension.resources;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import javax.annotation.Nullable;
 
-/** {@link ResourceProvider} which provides information about the current operating system. */
-public final class OsResource extends ResourceProvider {
+/** Factory of a {@link Resource} which provides information about the current operating system. */
+public final class OsResource {
 
-  @Override
-  protected Attributes getAttributes() {
+  private static final Resource INSTANCE = buildResource();
+
+  /**
+   * Returns a factory of a {@link Resource} which provides information about the current operating
+   * system.
+   */
+  public static Resource get() {
+    return INSTANCE;
+  }
+
+  // Visible for testing
+  static Resource buildResource() {
+
     final String os;
     try {
       os = System.getProperty("os.name");
     } catch (SecurityException t) {
       // Security manager enabled, can't provide much os information.
-      return Attributes.empty();
+      return Resource.empty();
     }
 
     if (os == null) {
-      return Attributes.empty();
+      return Resource.empty();
     }
 
     AttributesBuilder attributes = Attributes.builder();
 
     String osName = getOs(os);
     if (osName != null) {
-      attributes.put(ResourceAttributes.OS_NAME, osName);
+      attributes.put(ResourceAttributes.OS_TYPE, osName);
     }
 
     String version = null;
@@ -44,35 +55,37 @@ public final class OsResource extends ResourceProvider {
     String osDescription = version != null ? os + ' ' + version : os;
     attributes.put(ResourceAttributes.OS_DESCRIPTION, osDescription);
 
-    return attributes.build();
+    return Resource.create(attributes.build());
   }
 
   @Nullable
   private static String getOs(String os) {
     os = os.toLowerCase();
     if (os.startsWith("windows")) {
-      return "WINDOWS";
+      return ResourceAttributes.OsTypeValues.WINDOWS;
     } else if (os.startsWith("linux")) {
-      return "LINUX";
+      return ResourceAttributes.OsTypeValues.LINUX;
     } else if (os.startsWith("mac")) {
-      return "DARWIN";
+      return ResourceAttributes.OsTypeValues.DARWIN;
     } else if (os.startsWith("freebsd")) {
-      return "FREEBSD";
+      return ResourceAttributes.OsTypeValues.FREEBSD;
     } else if (os.startsWith("netbsd")) {
-      return "NETBSD";
+      return ResourceAttributes.OsTypeValues.NETBSD;
     } else if (os.startsWith("openbsd")) {
-      return "OPENBSD";
+      return ResourceAttributes.OsTypeValues.OPENBSD;
     } else if (os.startsWith("dragonflybsd")) {
-      return "DRAGONFLYBSD";
+      return ResourceAttributes.OsTypeValues.DRAGONFLYBSD;
     } else if (os.startsWith("hp-ux")) {
-      return "HPUX";
+      return ResourceAttributes.OsTypeValues.HPUX;
     } else if (os.startsWith("aix")) {
-      return "AIX";
+      return ResourceAttributes.OsTypeValues.AIX;
     } else if (os.startsWith("solaris")) {
-      return "SOLARIS";
+      return ResourceAttributes.OsTypeValues.SOLARIS;
     } else if (os.startsWith("z/os")) {
-      return "ZOS";
+      return ResourceAttributes.OsTypeValues.ZOS;
     }
     return null;
   }
+
+  private OsResource() {}
 }

@@ -7,9 +7,9 @@ package io.opentelemetry.exporter.logging.otlp;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
+import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.extension.otproto.SpanAdapter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import org.curioswitch.common.protobuf.json.MessageMarshaller;
  * A {@link SpanExporter} which writes {@linkplain SpanData spans} to a {@link Logger} in OTLP JSON
  * format. Each log line will include a single {@link ResourceSpans}.
  */
-public class OtlpJsonLoggingSpanExporter implements SpanExporter {
+public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
 
   private static final MessageMarshaller marshaller =
       MessageMarshaller.builder()

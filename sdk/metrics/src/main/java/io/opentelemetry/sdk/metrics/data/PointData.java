@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable

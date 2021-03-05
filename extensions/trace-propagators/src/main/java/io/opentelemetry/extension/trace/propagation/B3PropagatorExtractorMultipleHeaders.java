@@ -7,32 +7,32 @@ package io.opentelemetry.extension.trace.propagation;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapPropagator;
-import java.util.Objects;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.Optional;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-@SuppressWarnings("deprecation") // Remove after StringUtils is made package-private
 final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtractor {
   private static final Logger logger =
       Logger.getLogger(B3PropagatorExtractorMultipleHeaders.class.getName());
 
   @Override
   public <C> Optional<Context> extract(
-      Context context, C carrier, TextMapPropagator.Getter<C> getter) {
-    Objects.requireNonNull(carrier, "carrier");
-    Objects.requireNonNull(getter, "getter");
+      Context context, @Nullable C carrier, TextMapGetter<C> getter) {
+    if (context == null) {
+      return Optional.of(Context.root());
+    }
+    if (getter == null) {
+      return Optional.of(context);
+    }
     return extractSpanContextFromMultipleHeaders(context, carrier, getter);
   }
 
   private static <C> Optional<Context> extractSpanContextFromMultipleHeaders(
-      Context context, C carrier, TextMapPropagator.Getter<C> getter) {
+      Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     String traceId = getter.get(carrier, B3Propagator.TRACE_ID_HEADER);
-    if (StringUtils.isNullOrEmpty(traceId)) {
-      return Optional.empty();
-    }
     if (!Common.isTraceIdValid(traceId)) {
       logger.fine(
           "Invalid TraceId in B3 header: " + traceId + "'. Returning INVALID span context.");

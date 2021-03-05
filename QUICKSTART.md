@@ -16,7 +16,7 @@
   * [Sampler](#sampler)
   * [Span Processor](#span-processor)
   * [Exporter](#exporter)
-  * [TraceConfig](#traceconfig)
+- [Auto Configuration](#auto-configuration)
 - [Logging And Error Handling](#logging-and-error-handling)
   * [Examples](#examples)
 <!-- tocstop -->
@@ -29,7 +29,7 @@ out the [OpenTelemetry Website].
 configuration must be provided by **Applications** which should also depend on the
 `opentelemetry-sdk` package, or any other implementation of the OpenTelemetry API. This way,
 libraries will obtain a real implementation only if the user application is configured for it. For
-more details, check out the [Library Guidelines].
+more details, check out the [Library Guidelines]. 
 
 ## Set up
 
@@ -41,16 +41,14 @@ early as possible in your application. This can be done using the `OpenTelemetry
 For example:
 
 ```java
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
-    sdkTracerProvider.addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build());
-    
+    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+        .addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build())
+        .build();
+
     OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
-      .setTracerProvider(sdkTracerProvider)
-      .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-      .build();
-    
-    //optionally set this instance as the global instance:
-    GlobalOpenTelemetry.set(openTelemetry);
+        .setTracerProvider(sdkTracerProvider)
+        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+        .buildAndRegisterGlobal();
 ```
 
 As an aside, if you are writing library instrumentation, it is strongly recommended that you provide your users
@@ -77,7 +75,7 @@ Tracer tracer =
 Important: the "name" and optional version of the tracer are purely informational. 
 All `Tracer`s that are created by a single `OpenTelemetry` instance will interoperate, regardless of name.
 
-### Create basic Span
+### Create a basic Span
 To create a basic span, you only need to specify the name of the span.
 The start and end time of the span is automatically set by the OpenTelemetry SDK.
 ```java
@@ -101,17 +99,17 @@ processes, see [Context Propagation](#context-propagation).
 
 For a method `a` calling a method `b`, the spans could be manually linked in the following way:
 ```java
-void a() {
-  Span parentSpan = tracer.spanBuilder("a").startSpan();
+void parentOne() {
+  Span parentSpan = tracer.spanBuilder("parent").startSpan();
   try {
-    b(parentSpan);
+    childOne(parentSpan);
   } finally {
     parentSpan.end();
   }
 }
 
-void b(Span parentSpan) {
-  Span childSpan = tracer.spanBuilder("b")
+void childOne(Span parentSpan) {
+  Span childSpan = tracer.spanBuilder("child")
         .setParent(Context.current().with(parentSpan))
         .startSpan();
   // do stuff
@@ -120,16 +118,16 @@ void b(Span parentSpan) {
 ```
 The OpenTelemetry API offers also an automated way to propagate the parent span on the current thread:
 ```java
-void a() {
-  Span parentSpan = tracer.spanBuilder("a").startSpan();
+void parentTwo() {
+  Span parentSpan = tracer.spanBuilder("parent").startSpan();
   try(Scope scope = parentSpan.makeCurrent()) {
-    b();
+    childTwo();
   } finally {
     parentSpan.end();
   }
 }
-void b() {
-  Span childSpan = tracer.spanBuilder("b")
+void childTwo() {
+  Span childSpan = tracer.spanBuilder("child")
     // NOTE: setParent(...) is not required; 
     // `Span.current()` is automatically added as the parent
     .startSpan();
@@ -154,7 +152,7 @@ attributes specific to the represented operation. Attributes provide additional 
 about the specific operation it tracks, such as results or operation properties.
 
 ```java
-Span span = tracer.spanBuilder("/resource/path").setSpanKind(Span.Kind.CLIENT).startSpan();
+Span span = tracer.spanBuilder("/resource/path").setSpanKind(SpanKind.CLIENT).startSpan();
 span.setAttribute("http.method", "GET");
 span.setAttribute("http.url", url.toString());
 ```
@@ -209,8 +207,8 @@ The following presents an example of an outgoing HTTP request using `HttpURLConn
  
 ```java
 // Tell OpenTelemetry to inject the context in the HTTP headers
-TextMapPropagator.Setter<HttpURLConnection> setter =
-  new TextMapPropagator.Setter<HttpURLConnection>() {
+TextMapSetter<HttpURLConnection> setter =
+  new TextMapSetter<HttpURLConnection>() {
     @Override
     public void set(HttpURLConnection carrier, String key, String value) {
         // Insert the context as Header
@@ -219,7 +217,7 @@ TextMapPropagator.Setter<HttpURLConnection> setter =
 };
 
 URL url = new URL("http://127.0.0.1:8080/resource");
-Span outGoing = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.CLIENT).startSpan();
+Span outGoing = tracer.spanBuilder("/resource").setSpanKind(SpanKind.CLIENT).startSpan();
 try (Scope scope = outGoing.makeCurrent()) {
   // Semantic Convention.
   // (Note that to set these, Span does not *need* to be the current instance in Context or Scope.)
@@ -240,8 +238,8 @@ The following presents an example of processing an incoming HTTP request using
 [HttpExchange](https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpExchange.html).
 
 ```java
-TextMapPropagator.Getter<HttpExchange> getter =
-  new TextMapPropagator.Getter<HttpExchange>() {
+TextMapGetter<HttpExchange> getter =
+  new TextMapGetter<>() {
     @Override
     public String get(HttpExchange carrier, String key) {
       if (carrier.getRequestHeaders().containsKey(key)) {
@@ -263,7 +261,7 @@ public void handle(HttpExchange httpExchange) {
   try (Scope scope = extractedContext.makeCurrent()) {
     // Automatically use the extracted SpanContext as parent.
     Span serverSpan = tracer.spanBuilder("GET /resource")
-        .setSpanKind(Span.Kind.SERVER)
+        .setSpanKind(SpanKind.SERVER)
         .startSpan();
     try {
       // Add the attributes defined in the Semantic Conventions
@@ -301,7 +299,7 @@ The following is an example of counter usage:
 
 ```java
 // Gets or creates a named meter instance
-Meter meter = meterProvider.getMeter("instrumentation-library-name", "1.0.0");
+Meter meter = meterProvider.get("instrumentation-library-name", "1.0.0");
 
 // Build counter e.g. LongCounter 
 LongCounter counter = meter
@@ -328,21 +326,15 @@ collecting metric data on demand, once per collection interval.
 The following is an example of observer usage:
 
 ```java
-// Build observer e.g. LongObserver
-LongObserver observer = meter
-        .observerLongBuilder("cpu_usage")
+// Build observer e.g. LongSumObserver
+    LongSumObserver observer = meter
+        .longSumObserverBuilder("cpu_usage")
         .setDescription("CPU Usage")
         .setUnit("ms")
+        .setUpdater(result -> {
+        result.observe(getCpuUsage(), Labels.of("Key", "SomeWork"));
+        })
         .build();
-
-observer.setCallback(
-        new LongObserver.Callback<LongObserver.ResultLongObserver>() {
-          @Override
-          public void update(ResultLongObserver result) {
-            // long getCpuUsage()
-            result.observe(getCpuUsage(), Labels.of("Key", "SomeWork"));
-          }
-        });
 ```
 
 ## Tracing SDK Configuration
@@ -358,8 +350,9 @@ For example, a basic configuration instantiates the SDK tracer provider and sets
 traces to a logging stream.
 
 ```java
-    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
-    tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(new LoggingSpanExporter()).build());
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
+      .addSpanProcessor(BatchSpanProcessor.builder(new LoggingSpanExporter()).build())
+      .build();
 ```
 
 ### Sampler
@@ -378,19 +371,13 @@ Additional samplers can be provided by implementing the `io.opentelemetry.sdk.tr
 interface.
 
 ```java
-TraceConfig alwaysOn = TraceConfig.getDefault().toBuilder().setSampler(
-        Sampler.alwaysOn()
-).build();
-TraceConfig alwaysOff = TraceConfig.getDefault().toBuilder().setSampler(
-        Sampler.alwaysOff()
-).build();
-TraceConfig half = TraceConfig.getDefault().toBuilder().setSampler(
-        Sampler.traceIdRatioBased(0.5)
-).build();
-// Configure the sampler to use
-tracerProvider.updateActiveTraceConfig(
-    half
-);
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
+      .setSampler(Sampler.alwaysOn())
+      //or 
+      .setSampler(Sampler.alwaysOff())
+      //or
+      .setSampler(Sampler.traceIdRatioBased(0.5))
+      .build();
 ```
 
 ### Span Processor
@@ -401,13 +388,10 @@ in bulk. Multiple Span processors can be configured to be active at the same tim
 `MultiSpanProcessor`.
 
 ```java
-    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
-    tracerProvider.addSpanProcessor(
-      MultiSpanProcessor.create(Arrays.asList(
-        SimpleSpanProcessor.builder(new LoggingSpanExporter()).build(),
-        BatchSpanProcessor.builder(new LoggingSpanExporter()).build()
-      ))
-    );
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
+      .addSpanProcessor(SimpleSpanProcessor.create(new LoggingSpanExporter()))
+      .addSpanProcessor(BatchSpanProcessor.builder(new LoggingSpanExporter()).build())
+      .build();
 ```
 
 ### Exporter
@@ -423,62 +407,43 @@ a particular backend. OpenTelemetry offers five exporters out of the box:
 Other exporters can be found in the [OpenTelemetry Registry].
 
 ```java
-ManagedChannel jaegerChannel =
-    ManagedChannelBuilder.forAddress([ip:String], [port:int]).usePlaintext().build();
-    JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
-      .setServiceName("example").setChannel(jaegerChannel).setDeadline(30000)
-      .build()
+    ManagedChannel jaegerChannel = ManagedChannelBuilder.forAddress("localhost", 3336)
+      .usePlaintext()
+      .build();
 
-    SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
-    tracerProvider.addSpanProcessor(BatchSpanProcessor.builder(jaegerExporter).build()));
+    JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.builder()
+      .setEndpoint("localhost:3336")
+      .setTimeout(30, TimeUnit.SECONDS)
+      .build();
+
+    SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
+      .addSpanProcessor(BatchSpanProcessor.builder(jaegerExporter).build())
+      .build();
 ```
 
-### TraceConfig
+### Auto Configuration
 
-The `TraceConfig` associated with a Tracer SDK can be updated via system properties, 
-environment variables and builder `set*` methods.  
+To configure the OpenTelemetry SDK based on the standard set of environment variables and system 
+properties, you can use the `opentelemetry-sdk-extension-autoconfigure` module.
 
 ```java
-  // Get TraceConfig Builder
-  TraceConfigBuilder builder = TraceConfig.builder();
-  
-  // Read configuration options from system properties
-  builder.readSystemProperties();
-  
-  // Read configuration options from environment variables
-  builder.readEnvironmentVariables()
-  
-  // Set options via builder.set* methods, e.g.
-  builder.setMaxNumberOfLinks(10);
-  
-  // Use the resulting TraceConfig instance
-  SdkTracerProvider tracerProvider = SdkTracerProvider.builder().setTraceConfig(traceConfig).build();
+  OpenTelemetrySdk sdk = OpenTelemetrySdkAutoConfiguration.initialize();
 ```
 
-Supported system properties and environment variables:
+See the supported configuration options in the module's [README](./sdk-extensions/autoconfigure/README.md).
 
-| System property                  | Environment variable             | Purpose                                                                                             | 
-|----------------------------------|----------------------------------|-----------------------------------------------------------------------------------------------------|       
-| otel.config.sampler.probability  | OTEL_CONFIG_SAMPLER_PROBABILITY  | Sampler which is used when constructing a new span (default: 1)                                     |                        
-| otel.span.attribute.count.limit  | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT  | Max number of attributes per span, extra will be dropped (default: 1000)                              |                        
-| otel.span.event.count.limit      | OTEL_SPAN_EVENT_COUNT_LIMIT      | Max number of Events per span, extra will be dropped (default: 1000)                                 |                        
-| otel.span.link.count.limit       | OTEL_SPAN_LINK_COUNT_LIMIT       | Max number of Link entries per span, extra will be dropped (default: 1000)                            |
-| otel.config.max.event.attrs      | OTEL_CONFIG_MAX_EVENT_ATTRS      | Max number of attributes per event, extra will be dropped (default: 32)                             |
-| otel.config.max.link.attrs       | OTEL_CONFIG_MAX_LINK_ATTRS       | Max number of attributes per link, extra will be dropped  (default: 32)                             |
-| otel.config.max.attr.length      | OTEL_CONFIG_MAX_ATTR_LENGTH      | Max length of string attribute value in characters, too long will be truncated (default: unlimited) |
-
-[AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L29
-[AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L40
-[ParentBased]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L54
-[TraceIdRatioBased]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L78
-[Library Guidelines]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/library-guidelines.md
+[AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L29
+[AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L40
+[ParentBased]:https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L54
+[TraceIdRatioBased]:https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk/tracing/src/main/java/io/opentelemetry/sdk/trace/samplers/Sampler.java#L78
+[Library Guidelines]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/library-guidelines.md
 [OpenTelemetry Collector]: https://github.com/open-telemetry/opentelemetry-collector
 [OpenTelemetry Registry]: https://opentelemetry.io/registry/?s=exporter
 [OpenTelemetry Website]: https://opentelemetry.io/
-[Obtaining a Tracer]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/api.md#get-a-tracer
-[Semantic Conventions]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions
-[Instrumentation Library]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/glossary.md#instrumentation-library
-[instrumented library]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/glossary.md#instrumented-library
+[Obtaining a Tracer]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/api.md#get-a-tracer
+[Semantic Conventions]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions
+[Instrumentation Library]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/glossary.md#instrumentation-library
+[instrumented library]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/glossary.md#instrumented-library
 
 ## Logging and Error Handling 
 

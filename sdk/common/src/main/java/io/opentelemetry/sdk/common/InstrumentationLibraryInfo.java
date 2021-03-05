@@ -39,7 +39,7 @@ public abstract class InstrumentationLibraryInfo {
    *
    * @return an "empty" {@code InstrumentationLibraryInfo}.
    */
-  public static InstrumentationLibraryInfo getEmpty() {
+  public static InstrumentationLibraryInfo empty() {
     return EMPTY;
   }
 

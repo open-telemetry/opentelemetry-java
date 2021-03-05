@@ -22,40 +22,18 @@ public final class BatchSpanProcessorBuilder {
   static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
   // Visible for testing
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
-  // Visible for testing
-  static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
 
   private final SpanExporter spanExporter;
   private long scheduleDelayNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_SCHEDULE_DELAY_MILLIS);
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
-  private boolean exportOnlySampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
   BatchSpanProcessorBuilder(SpanExporter spanExporter) {
     this.spanExporter = requireNonNull(spanExporter, "spanExporter");
   }
 
   // TODO: Consider to add support for constant Attributes and/or Resource.
-
-  /**
-   * Set whether only sampled spans should be reported.
-   *
-   * <p>Default value is {@code true}.
-   *
-   * @param exportOnlySampled if {@code true} report only sampled spans.
-   * @return this.
-   * @see BatchSpanProcessorBuilder#DEFAULT_EXPORT_ONLY_SAMPLED
-   */
-  public BatchSpanProcessorBuilder setExportOnlySampled(boolean exportOnlySampled) {
-    this.exportOnlySampled = exportOnlySampled;
-    return this;
-  }
-
-  // Visible for testing
-  boolean getExportOnlySampled() {
-    return exportOnlySampled;
-  }
 
   /**
    * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
@@ -75,22 +53,6 @@ public final class BatchSpanProcessorBuilder {
   public BatchSpanProcessorBuilder setScheduleDelay(Duration delay) {
     requireNonNull(delay, "delay");
     return setScheduleDelay(delay.toNanos(), TimeUnit.NANOSECONDS);
-  }
-
-  /**
-   * Sets the delay interval between two consecutive exports. The actual interval may be shorter if
-   * the batch size is getting larger than {@code maxQueuedSpans / 2}.
-   *
-   * <p>Default value is {@code 5000}ms.
-   *
-   * @param scheduleDelayMillis the delay interval between two consecutive exports.
-   * @return this.
-   * @see BatchSpanProcessorBuilder#DEFAULT_SCHEDULE_DELAY_MILLIS
-   * @deprecated Use {@link #setScheduleDelay(long, TimeUnit)}
-   */
-  @Deprecated
-  public BatchSpanProcessorBuilder setScheduleDelayMillis(long scheduleDelayMillis) {
-    return setScheduleDelay(Duration.ofMillis(scheduleDelayMillis));
   }
 
   // Visible for testing
@@ -116,21 +78,6 @@ public final class BatchSpanProcessorBuilder {
   public BatchSpanProcessorBuilder setExporterTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
     return setExporterTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
-  }
-
-  /**
-   * Sets the maximum time an exporter will be allowed to run before being cancelled.
-   *
-   * <p>Default value is {@code 30000}ms
-   *
-   * @param exporterTimeoutMillis the timeout for exports in milliseconds.
-   * @return this
-   * @see BatchSpanProcessorBuilder#DEFAULT_EXPORT_TIMEOUT_MILLIS
-   * @deprecated Use {@link #setExporterTimeout(long, TimeUnit)}
-   */
-  @Deprecated
-  public BatchSpanProcessorBuilder setExporterTimeoutMillis(int exporterTimeoutMillis) {
-    return setExporterTimeout(Duration.ofMillis(exporterTimeoutMillis));
   }
 
   // Visible for testing
@@ -191,11 +138,6 @@ public final class BatchSpanProcessorBuilder {
    */
   public BatchSpanProcessor build() {
     return new BatchSpanProcessor(
-        spanExporter,
-        exportOnlySampled,
-        scheduleDelayNanos,
-        maxQueueSize,
-        maxExportBatchSize,
-        exporterTimeoutNanos);
+        spanExporter, scheduleDelayNanos, maxQueueSize, maxExportBatchSize, exporterTimeoutNanos);
   }
 }

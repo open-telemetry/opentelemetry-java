@@ -11,7 +11,6 @@ import io.jaegertracing.thrift.internal.senders.ThriftSender;
 /** Builder utility for this exporter. */
 public final class JaegerThriftSpanExporterBuilder {
 
-  private String serviceName = JaegerThriftSpanExporter.DEFAULT_SERVICE_NAME;
   private String endpoint = JaegerThriftSpanExporter.DEFAULT_ENDPOINT;
   private ThriftSender thriftSender;
 
@@ -24,17 +23,6 @@ public final class JaegerThriftSpanExporterBuilder {
    */
   public JaegerThriftSpanExporterBuilder setThriftSender(ThriftSender thriftSender) {
     this.thriftSender = thriftSender;
-    return this;
-  }
-
-  /**
-   * Sets the service name to be used by this exporter. Required.
-   *
-   * @param serviceName the service name.
-   * @return this.
-   */
-  public JaegerThriftSpanExporterBuilder setServiceName(String serviceName) {
-    this.serviceName = serviceName;
     return this;
   }
 
@@ -60,7 +48,7 @@ public final class JaegerThriftSpanExporterBuilder {
     if (thriftSender == null) {
       thriftSender = new HttpSender.Builder(endpoint).build();
     }
-    return new JaegerThriftSpanExporter(thriftSender, serviceName);
+    return new JaegerThriftSpanExporter(thriftSender);
   }
 
   JaegerThriftSpanExporterBuilder() {}

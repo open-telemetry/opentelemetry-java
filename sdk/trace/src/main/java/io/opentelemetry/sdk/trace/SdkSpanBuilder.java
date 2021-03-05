@@ -14,18 +14,17 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.LinkData;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,14 +38,11 @@ final class SdkSpanBuilder implements SpanBuilder {
 
   private final String spanName;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
-  private final SpanProcessor spanProcessor;
-  private final TraceConfig traceConfig;
-  private final Resource resource;
-  private final IdGenerator idsGenerator;
-  private final Clock clock;
+  private final TracerSharedState tracerSharedState;
+  private final SpanLimits spanLimits;
 
   @Nullable private Context parent;
-  private Kind spanKind = Kind.INTERNAL;
+  private SpanKind spanKind = SpanKind.INTERNAL;
   @Nullable private AttributesMap attributes;
   @Nullable private List<LinkData> links;
   private int totalNumberOfLinksAdded = 0;
@@ -56,18 +52,12 @@ final class SdkSpanBuilder implements SpanBuilder {
   SdkSpanBuilder(
       String spanName,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      SpanProcessor spanProcessor,
-      TraceConfig traceConfig,
-      Resource resource,
-      IdGenerator idsGenerator,
-      Clock clock) {
+      TracerSharedState tracerSharedState,
+      SpanLimits spanLimits) {
     this.spanName = spanName;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    this.spanProcessor = spanProcessor;
-    this.traceConfig = traceConfig;
-    this.resource = resource;
-    this.idsGenerator = idsGenerator;
-    this.clock = clock;
+    this.tracerSharedState = tracerSharedState;
+    this.spanLimits = spanLimits;
   }
 
   @Override
@@ -86,7 +76,7 @@ final class SdkSpanBuilder implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder setSpanKind(Kind spanKind) {
+  public SpanBuilder setSpanKind(SpanKind spanKind) {
     this.spanKind = Objects.requireNonNull(spanKind, "spanKind");
     return this;
   }
@@ -104,7 +94,7 @@ final class SdkSpanBuilder implements SpanBuilder {
         LinkData.create(
             spanContext,
             RecordEventsReadableSpan.copyAndLimitAttributes(
-                attributes, traceConfig.getMaxNumberOfAttributesPerLink()),
+                attributes, spanLimits.getMaxNumberOfAttributesPerLink()),
             totalAttributeCount));
     return this;
   }
@@ -113,11 +103,11 @@ final class SdkSpanBuilder implements SpanBuilder {
     Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     if (links == null) {
-      links = new ArrayList<>(traceConfig.getMaxNumberOfLinks());
+      links = new ArrayList<>(spanLimits.getMaxNumberOfLinks());
     }
 
     // don't bother doing anything with any links beyond the max.
-    if (links.size() == traceConfig.getMaxNumberOfLinks()) {
+    if (links.size() == spanLimits.getMaxNumberOfLinks()) {
       return;
     }
 
@@ -151,11 +141,7 @@ final class SdkSpanBuilder implements SpanBuilder {
       return this;
     }
     if (attributes == null) {
-      attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
-    }
-
-    if (traceConfig.shouldTruncateStringAttributeValues()) {
-      value = StringUtils.truncateToSize(key, value, traceConfig.getMaxLengthOfAttributeValues());
+      attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
     }
 
     attributes.put(key, value);
@@ -177,13 +163,14 @@ final class SdkSpanBuilder implements SpanBuilder {
     final Span parentSpan = Span.fromContext(parentContext);
     final SpanContext parentSpanContext = parentSpan.getSpanContext();
     String traceId;
-    String spanId = idsGenerator.generateSpanId();
+    IdGenerator idGenerator = tracerSharedState.getIdGenerator();
+    String spanId = idGenerator.generateSpanId();
     if (!parentSpanContext.isValid()) {
       // New root span.
-      traceId = idsGenerator.generateTraceId();
+      traceId = idGenerator.generateTraceId();
     } else {
       // New child span.
-      traceId = parentSpanContext.getTraceIdAsHexString();
+      traceId = parentSpanContext.getTraceId();
     }
     List<LinkData> immutableLinks =
         links == null ? Collections.emptyList() : Collections.unmodifiableList(links);
@@ -192,16 +179,20 @@ final class SdkSpanBuilder implements SpanBuilder {
     links = null;
     Attributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
     SamplingResult samplingResult =
-        traceConfig
+        tracerSharedState
             .getSampler()
             .shouldSample(
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
-    SamplingResult.Decision samplingDecision = samplingResult.getDecision();
+    SamplingDecision samplingDecision = samplingResult.getDecision();
 
     TraceState samplingResultTraceState =
         samplingResult.getUpdatedTraceState(parentSpanContext.getTraceState());
     SpanContext spanContext =
-        createSpanContext(traceId, spanId, samplingResultTraceState, isSampled(samplingDecision));
+        SpanContext.create(
+            traceId,
+            spanId,
+            isSampled(samplingDecision) ? TraceFlags.getSampled() : TraceFlags.getDefault(),
+            samplingResultTraceState);
 
     if (!isRecording(samplingDecision)) {
       return Span.wrap(spanContext);
@@ -209,7 +200,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     Attributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
       if (attributes == null) {
-        attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
+        attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
       }
       samplingAttributes.forEach((key, value) -> attributes.put((AttributeKey) key, value));
     }
@@ -226,20 +217,14 @@ final class SdkSpanBuilder implements SpanBuilder {
         spanKind,
         parentSpanContext,
         parentContext,
-        traceConfig,
-        spanProcessor,
-        getClock(parentSpan, clock),
-        resource,
+        spanLimits,
+        tracerSharedState.getActiveSpanProcessor(),
+        getClock(parentSpan, tracerSharedState.getClock()),
+        tracerSharedState.getResource(),
         recordedAttributes,
         immutableLinks,
         totalNumberOfLinksAdded,
         startEpochNanos);
-  }
-
-  private static SpanContext createSpanContext(
-      String traceId, String spanId, TraceState traceState, boolean isSampled) {
-    byte traceFlags = isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault();
-    return SpanContext.create(traceId, spanId, traceFlags, traceState);
   }
 
   private static Clock getClock(Span parent, Clock clock) {
@@ -252,13 +237,13 @@ final class SdkSpanBuilder implements SpanBuilder {
   }
 
   // Visible for testing
-  static boolean isRecording(SamplingResult.Decision decision) {
-    return SamplingResult.Decision.RECORD_ONLY.equals(decision)
-        || SamplingResult.Decision.RECORD_AND_SAMPLE.equals(decision);
+  static boolean isRecording(SamplingDecision decision) {
+    return SamplingDecision.RECORD_ONLY.equals(decision)
+        || SamplingDecision.RECORD_AND_SAMPLE.equals(decision);
   }
 
   // Visible for testing
-  static boolean isSampled(SamplingResult.Decision decision) {
-    return SamplingResult.Decision.RECORD_AND_SAMPLE.equals(decision);
+  static boolean isSampled(SamplingDecision decision) {
+    return SamplingDecision.RECORD_AND_SAMPLE.equals(decision);
   }
 }

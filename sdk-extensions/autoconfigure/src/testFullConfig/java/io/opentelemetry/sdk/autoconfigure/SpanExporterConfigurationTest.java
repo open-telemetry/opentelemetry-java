@@ -15,9 +15,6 @@ import org.junit.jupiter.api.Test;
 
 class SpanExporterConfigurationTest {
 
-  private static final ConfigProperties EMPTY =
-      ConfigProperties.createForTest(Collections.emptyMap());
-
   // Timeout difficult to test using real exports so just check implementation detail here.
   @Test
   void configureOtlpTimeout() {
@@ -34,16 +31,6 @@ class SpanExporterConfigurationTest {
                   assertThat(otlp)
                       .extracting("timeoutNanos")
                       .isEqualTo(TimeUnit.MILLISECONDS.toNanos(10L)));
-    } finally {
-      exporter.shutdown();
-    }
-  }
-
-  @Test
-  void configureExporterOtlpSpan() {
-    SpanExporter exporter = SpanExporterConfiguration.configureExporter("otlp_span", EMPTY);
-    try {
-      assertThat(exporter).isInstanceOf(OtlpGrpcSpanExporter.class);
     } finally {
       exporter.shutdown();
     }

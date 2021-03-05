@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * IMPORTANT: This is a temporary class, and solution for the metrics package until it will be
  * marked as stable.
  */
-public class GlobalMetricsProvider {
+public final class GlobalMetricsProvider {
   private static final Object mutex = new Object();
   private static final AtomicReference<MeterProvider> globalMeterProvider = new AtomicReference<>();
 
@@ -23,7 +23,7 @@ public class GlobalMetricsProvider {
     if (meterProvider == null) {
       synchronized (mutex) {
         if (globalMeterProvider.get() == null) {
-          return MeterProvider.getDefault();
+          return MeterProvider.noop();
         }
       }
     }

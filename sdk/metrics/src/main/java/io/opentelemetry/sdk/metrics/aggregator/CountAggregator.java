@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -18,11 +18,19 @@ import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
 final class CountAggregator extends AbstractAggregator<Long> {
+  private final AggregationTemporality temporality;
+
   CountAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor) {
-    super(resource, instrumentationLibraryInfo, descriptor);
+      InstrumentDescriptor descriptor,
+      AggregationTemporality temporality) {
+    super(
+        resource,
+        instrumentationLibraryInfo,
+        descriptor,
+        temporality == AggregationTemporality.CUMULATIVE);
+    this.temporality = temporality;
   }
 
   @Override
@@ -47,7 +55,10 @@ final class CountAggregator extends AbstractAggregator<Long> {
 
   @Override
   public MetricData toMetricData(
-      Map<Labels, Long> accumulationByLabels, long startEpochNanos, long epochNanos) {
+      Map<Labels, Long> accumulationByLabels,
+      long startEpochNanos,
+      long lastCollectionEpoch,
+      long epochNanos) {
     return MetricData.createLongSum(
         getResource(),
         getInstrumentationLibraryInfo(),
@@ -56,8 +67,13 @@ final class CountAggregator extends AbstractAggregator<Long> {
         "1",
         LongSumData.create(
             /* isMonotonic= */ true,
-            AggregationTemporality.CUMULATIVE,
-            MetricDataUtils.toLongPointList(accumulationByLabels, startEpochNanos, epochNanos)));
+            temporality,
+            MetricDataUtils.toLongPointList(
+                accumulationByLabels,
+                temporality == AggregationTemporality.CUMULATIVE
+                    ? startEpochNanos
+                    : lastCollectionEpoch,
+                epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<Long> {

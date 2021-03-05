@@ -6,12 +6,16 @@ description = 'OpenTelemetry Examples for gRPC'
 ext.moduleName = "io.opentelemetry.examples.grpc"
 
 dependencies {
-    compile "io.opentelemetry:opentelemetry-api"
-    compile "io.opentelemetry:opentelemetry-sdk"
-    compile "io.opentelemetry:opentelemetry-exporter-logging"
-    compile "io.grpc:grpc-protobuf"
-    compile "io.grpc:grpc-stub"
-    compile "io.grpc:grpc-netty-shaded"
+    implementation "io.opentelemetry:opentelemetry-api"
+    implementation "io.opentelemetry:opentelemetry-sdk"
+    implementation "io.opentelemetry:opentelemetry-exporter-logging"
+
+    //alpha module
+    implementation "io.opentelemetry:opentelemetry-semconv"
+
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty-shaded"
 
     if (JavaVersion.current().isJava9Compatible()) {
         // Workaround for @javax.annotation.Generated

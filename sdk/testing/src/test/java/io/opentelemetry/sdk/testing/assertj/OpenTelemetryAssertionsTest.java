@@ -6,15 +6,15 @@
 package io.opentelemetry.sdk.testing.assertj;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.attributeEntry;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -31,10 +31,10 @@ import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("PreferJavaTimeOverload")
 class OpenTelemetryAssertionsTest {
-  private static final String TRACE_ID = TraceId.fromLongs(1, 2);
-  private static final String SPAN_ID1 = SpanId.fromLong(3);
-  private static final String SPAN_ID2 = SpanId.fromLong(4);
-  private static final TraceState TRACE_STATE = TraceState.builder().set("cat", "meow").build();
+  private static final String TRACE_ID = "00000000000000010000000000000002";
+  private static final String SPAN_ID1 = "0000000000000003";
+  private static final String SPAN_ID2 = "0000000000000004";
+  private static final TraceState TRACE_STATE = TraceState.builder().put("cat", "meow").build();
   private static final Resource RESOURCE =
       Resource.create(Attributes.builder().put("dog", "bark").build());
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
@@ -71,17 +71,13 @@ class OpenTelemetryAssertionsTest {
   static {
     TestSpanData.Builder spanDataBuilder =
         TestSpanData.builder()
-            .setTraceId(TRACE_ID)
-            .setSpanId(SPAN_ID1)
-            .setSampled(true)
-            .setTraceState(TRACE_STATE)
             .setParentSpanContext(
                 SpanContext.create(
                     TRACE_ID, SPAN_ID2, TraceFlags.getDefault(), TraceState.getDefault()))
             .setResource(RESOURCE)
             .setInstrumentationLibraryInfo(INSTRUMENTATION_LIBRARY_INFO)
             .setName("span")
-            .setKind(Span.Kind.CLIENT)
+            .setKind(SpanKind.CLIENT)
             .setStartEpochNanos(100)
             .setAttributes(ATTRIBUTES)
             .setEvents(EVENTS)
@@ -93,9 +89,18 @@ class OpenTelemetryAssertionsTest {
             .setTotalRecordedLinks(400)
             .setTotalAttributeCount(500);
 
-    SPAN1 = spanDataBuilder.build();
+    SPAN1 =
+        spanDataBuilder
+            .setSpanContext(
+                SpanContext.create(TRACE_ID, SPAN_ID1, TraceFlags.getSampled(), TRACE_STATE))
+            .build();
 
-    SPAN2 = spanDataBuilder.setSampled(false).setHasEnded(false).build();
+    SPAN2 =
+        spanDataBuilder
+            .setSpanContext(
+                SpanContext.create(TRACE_ID, SPAN_ID1, TraceFlags.getDefault(), TRACE_STATE))
+            .setHasEnded(false)
+            .build();
   }
 
   @Test
@@ -109,7 +114,7 @@ class OpenTelemetryAssertionsTest {
         .hasResource(RESOURCE)
         .hasInstrumentationLibraryInfo(INSTRUMENTATION_LIBRARY_INFO)
         .hasName("span")
-        .hasKind(Span.Kind.CLIENT)
+        .hasKind(SpanKind.CLIENT)
         .startsAt(100)
         .startsAt(100, TimeUnit.NANOSECONDS)
         .startsAt(Instant.ofEpochSecond(0, 100))
@@ -118,6 +123,8 @@ class OpenTelemetryAssertionsTest {
             attributes ->
                 assertThat(attributes)
                     .containsEntry(AttributeKey.stringKey("bear"), "mya")
+                    .hasEntrySatisfying(
+                        AttributeKey.stringKey("bear"), value -> assertThat(value).hasSize(3))
                     .containsEntry("bear", "mya")
                     .containsEntry("warm", true)
                     .containsEntry("temperature", 30)
@@ -129,10 +136,30 @@ class OpenTelemetryAssertionsTest {
                     .containsEntry("scores", 0L, 1L)
                     .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
                     .containsEntry("coins", 0.01, 0.05, 0.1)
-                    .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1)))
+                    .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
+                    .containsOnly(
+                        attributeEntry("bear", "mya"),
+                        attributeEntry("warm", true),
+                        attributeEntry("temperature", 30),
+                        attributeEntry("length", 1.2),
+                        attributeEntry("colors", "red", "blue"),
+                        attributeEntry("conditions", false, true),
+                        attributeEntry("scores", 0L, 1L),
+                        attributeEntry("coins", 0.01, 0.05, 0.1)))
         .hasEvents(EVENTS)
         .hasEvents(EVENTS.toArray(new EventData[0]))
-        .hasEventsSatisfying(events -> assertThat(events).hasSize(EVENTS.size()))
+        .hasEventsSatisfying(
+            events -> {
+              assertThat(events).hasSize(EVENTS.size());
+              assertThat(events.get(0))
+                  .hasName("event")
+                  .hasTimestamp(10)
+                  .hasTimestamp(10, TimeUnit.NANOSECONDS)
+                  .hasTimestamp(Instant.ofEpochSecond(0, 10))
+                  .hasAttributes(Attributes.empty())
+                  .hasAttributesSatisfying(
+                      attributes -> assertThat(attributes).isEqualTo(Attributes.empty()));
+            })
         .hasLinks(LINKS)
         .hasLinks(LINKS.toArray(new LinkData[0]))
         .hasLinksSatisfying(links -> assertThat(links).hasSize(LINKS.size()))
@@ -144,6 +171,8 @@ class OpenTelemetryAssertionsTest {
         .hasTotalRecordedEvents(300)
         .hasTotalRecordedLinks(400)
         .hasTotalAttributeCount(500);
+
+    assertThat(RESOURCE.getAttributes()).containsOnly(entry(AttributeKey.stringKey("dog"), "bark"));
   }
 
   @Test
@@ -156,15 +185,14 @@ class OpenTelemetryAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasParentSpanId("foo"))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(() -> assertThat(SPAN1).hasResource(Resource.getEmpty()))
+    assertThatThrownBy(() -> assertThat(SPAN1).hasResource(Resource.empty()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
-                assertThat(SPAN1)
-                    .hasInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty()))
+                assertThat(SPAN1).hasInstrumentationLibraryInfo(InstrumentationLibraryInfo.empty()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasName("foo")).isInstanceOf(AssertionError.class);
-    assertThatThrownBy(() -> assertThat(SPAN1).hasKind(Span.Kind.SERVER))
+    assertThatThrownBy(() -> assertThat(SPAN1).hasKind(SpanKind.SERVER))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).startsAt(10)).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).startsAt(10, TimeUnit.NANOSECONDS))
@@ -179,11 +207,60 @@ class OpenTelemetryAssertionsTest {
                     .hasAttributesSatisfying(
                         attributes -> assertThat(attributes).containsEntry("cat", "bark")))
         .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasAttributesSatisfying(
+                        attributes ->
+                            assertThat(attributes)
+                                .hasEntrySatisfying(
+                                    AttributeKey.stringKey("bear"),
+                                    value -> assertThat(value).hasSize(2))))
+        .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasEvents()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasEvents(Collections.emptyList()))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
-            () -> assertThat(SPAN1).hasEventsSatisfying(events -> assertThat(events).isEmpty()))
+        () -> assertThat(SPAN1).hasEventsSatisfying(events -> assertThat(events).isEmpty()));
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(events -> assertThat(events.get(0)).hasName("notevent")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(events -> assertThat(events.get(0)).hasTimestamp(1)))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(
+                        events -> assertThat(events.get(0)).hasTimestamp(1, TimeUnit.NANOSECONDS)))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(
+                        events ->
+                            assertThat(events.get(0)).hasTimestamp(Instant.ofEpochSecond(0, 1))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(
+                        events ->
+                            assertThat(events.get(0)).hasAttributes(RESOURCE.getAttributes())))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasEventsSatisfying(
+                        events ->
+                            assertThat(events.get(0))
+                                .hasAttributesSatisfying(
+                                    attributes ->
+                                        assertThat(attributes).containsEntry("dogs", "meow"))))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasLinks()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasLinks(Collections.emptyList()))
@@ -208,5 +285,18 @@ class OpenTelemetryAssertionsTest {
 
     assertThatThrownBy(() -> assertThat(SPAN2).isSampled()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN2).hasEnded()).isInstanceOf(AssertionError.class);
+
+    assertThatThrownBy(
+            () ->
+                assertThat(RESOURCE.getAttributes())
+                    .containsOnly(
+                        entry(AttributeKey.stringKey("dog"), "bark"),
+                        entry(AttributeKey.stringKey("cat"), "meow")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(RESOURCE.getAttributes())
+                    .containsOnly(entry(AttributeKey.stringKey("cat"), "meow")))
+        .isInstanceOf(AssertionError.class);
   }
 }

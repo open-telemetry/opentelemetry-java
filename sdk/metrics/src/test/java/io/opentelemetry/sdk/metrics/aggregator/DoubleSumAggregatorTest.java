@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -25,9 +25,10 @@ class DoubleSumAggregatorTest {
   private static final DoubleSumAggregator aggregator =
       new DoubleSumAggregator(
           Resource.getDefault(),
-          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
-              "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE));
+              "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE),
+          /* stateful= */ true);
 
   @Test
   void createHandle() {
@@ -82,12 +83,13 @@ class DoubleSumAggregatorTest {
         aggregator.toMetricData(
             Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
+            10,
             100);
     assertThat(metricData)
         .isEqualTo(
             MetricData.createDoubleSum(
                 Resource.getDefault(),
-                InstrumentationLibraryInfo.getEmpty(),
+                InstrumentationLibraryInfo.empty(),
                 "name",
                 "description",
                 "unit",

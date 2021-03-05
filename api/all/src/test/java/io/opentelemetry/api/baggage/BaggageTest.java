@@ -22,12 +22,9 @@ class BaggageTest {
   @Test
   void current() {
     try (Scope scope =
-        Context.root()
-            .with(Baggage.builder().put("foo", "bar").setNoParent().build())
-            .makeCurrent()) {
+        Context.root().with(Baggage.builder().put("foo", "bar").build()).makeCurrent()) {
       Baggage result = Baggage.current();
       assertThat(result.getEntryValue("foo")).isEqualTo("bar");
-      assertThat(result).isEqualTo(Baggage.builder().setNoParent().put("foo", "bar").build());
     }
   }
 }

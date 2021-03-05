@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
@@ -20,19 +21,19 @@ import org.junit.jupiter.api.Test;
 class AlwaysOffSamplerTest {
 
   private static final String SPAN_NAME = "MySpanName";
-  private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
+  private static final SpanKind SPAN_KIND = SpanKind.INTERNAL;
   private final IdGenerator idsGenerator = IdGenerator.random();
   private final String traceId = idsGenerator.generateTraceId();
   private final String parentSpanId = idsGenerator.generateSpanId();
-  private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), traceState);
+      SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), TraceState.getDefault());
   private final Context sampledParentContext = Context.root().with(Span.wrap(sampledSpanContext));
   private final Context notSampledParentContext =
       Context.root()
           .with(
               Span.wrap(
-                  SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState)));
+                  SpanContext.create(
+                      traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())));
 
   @Test
   void parentNotSampled() {
@@ -46,7 +47,7 @@ class AlwaysOffSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
   }
 
   @Test
@@ -61,11 +62,16 @@ class AlwaysOffSamplerTest {
                     Attributes.empty(),
                     Collections.emptyList())
                 .getDecision())
-        .isEqualTo(SamplingResult.Decision.DROP);
+        .isEqualTo(SamplingDecision.DROP);
   }
 
   @Test
   void getDescription() {
     assertThat(Sampler.alwaysOff().getDescription()).isEqualTo("AlwaysOffSampler");
+  }
+
+  @Test
+  void string() {
+    assertThat(Sampler.alwaysOff().toString()).isEqualTo("AlwaysOffSampler");
   }
 }

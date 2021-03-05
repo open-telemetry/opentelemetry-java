@@ -9,8 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -33,8 +33,7 @@ class EcsResourceTest {
     when(mockDockerHelper.getContainerId()).thenReturn("0123456789A");
     Map<String, String> mockSysEnv = new HashMap<>();
     mockSysEnv.put(ECS_METADATA_KEY_V3, "ecs_metadata_v3_uri");
-    EcsResource populator = new EcsResource(mockSysEnv, mockDockerHelper);
-    Attributes attributes = populator.getAttributes();
+    Attributes attributes = EcsResource.buildResource(mockSysEnv, mockDockerHelper).getAttributes();
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
@@ -51,8 +50,7 @@ class EcsResourceTest {
     Map<String, String> mockSysEnv = new HashMap<>();
     mockSysEnv.put(ECS_METADATA_KEY_V3, "");
     mockSysEnv.put(ECS_METADATA_KEY_V4, "");
-    EcsResource populator = new EcsResource(mockSysEnv, mockDockerHelper);
-    Attributes attributes = populator.getAttributes();
+    Attributes attributes = EcsResource.buildResource(mockSysEnv, mockDockerHelper).getAttributes();
     assertThat(attributes.isEmpty()).isTrue();
   }
 
@@ -61,8 +59,7 @@ class EcsResourceTest {
     when(mockDockerHelper.getContainerId()).thenReturn("");
     Map<String, String> mockSysEnv = new HashMap<>();
     mockSysEnv.put(ECS_METADATA_KEY_V4, "ecs_metadata_v4_uri");
-    EcsResource populator = new EcsResource(mockSysEnv, mockDockerHelper);
-    Attributes attributes = populator.getAttributes();
+    Attributes attributes = EcsResource.buildResource(mockSysEnv, mockDockerHelper).getAttributes();
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
@@ -76,6 +73,7 @@ class EcsResourceTest {
   void inServiceLoader() {
     // No practical way to test the attributes themselves so at least check the service loader picks
     // it up.
-    assertThat(ServiceLoader.load(ResourceProvider.class)).anyMatch(EcsResource.class::isInstance);
+    assertThat(ServiceLoader.load(ResourceProvider.class))
+        .anyMatch(EcsResourceProvider.class::isInstance);
   }
 }

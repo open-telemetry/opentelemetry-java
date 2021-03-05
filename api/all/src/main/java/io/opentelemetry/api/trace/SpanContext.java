@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -18,8 +19,8 @@ import javax.annotation.concurrent.Immutable;
  * equals/hashCode implementations. If an implementation does not strictly conform to these
  * requirements, behavior of the OpenTelemetry APIs and default SDK cannot be guaranteed. It is
  * strongly suggested that you use the implementation that is provided here via {@link
- * #create(String, String, byte, TraceState)} or {@link #createFromRemoteParent(String, String,
- * byte, TraceState)}.
+ * #create(String, String, TraceFlags, TraceState)} or {@link #createFromRemoteParent(String,
+ * String, TraceFlags, TraceState)}.
  */
 @Immutable
 public interface SpanContext {
@@ -30,20 +31,25 @@ public interface SpanContext {
    * @return the invalid {@code SpanContext}.
    */
   static SpanContext getInvalid() {
-    return ImmutableSpanContext.getInvalid();
+    return ImmutableSpanContext.INVALID;
   }
 
   /**
    * Creates a new {@code SpanContext} with the given identifiers and options.
    *
-   * @param traceIdHex the trace identifier of the span context.
-   * @param spanIdHex the span identifier of the span context.
-   * @param traceFlags the byte representation of the {@link TraceFlags}
-   * @param traceState the trace state for the span context.
+   * <p>If the traceId or the spanId are invalid (ie. do not conform to the requirements for
+   * hexadecimal ids of the appropriate lengths), both will be replaced with the standard "invalid"
+   * versions (i.e. all '0's). See {@link SpanId#isValid(CharSequence)} and {@link
+   * TraceId#isValid(CharSequence)} for details.
+   *
+   * @param traceIdHex the trace identifier of the {@code SpanContext}.
+   * @param spanIdHex the span identifier of the {@code SpanContext}.
+   * @param traceFlags the trace flags of the {@code SpanContext}.
+   * @param traceState the trace state for the {@code SpanContext}.
    * @return a new {@code SpanContext} with the given identifiers and options.
    */
   static SpanContext create(
-      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
+      String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
     return ImmutableSpanContext.create(
         traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ false);
   }
@@ -52,59 +58,69 @@ public interface SpanContext {
    * Creates a new {@code SpanContext} that was propagated from a remote parent, with the given
    * identifiers and options.
    *
-   * @param traceIdHex the trace identifier of the span context.
-   * @param spanIdHex the span identifier of the span context.
-   * @param traceFlags the byte representation of the {@link TraceFlags}
-   * @param traceState the trace state for the span context.
+   * <p>If the traceId or the spanId are invalid (ie. do not conform to the requirements for
+   * hexadecimal ids of the appropriate lengths), both will be replaced with the standard "invalid"
+   * versions (i.e. all '0's). See {@link SpanId#isValid(CharSequence)} and {@link
+   * TraceId#isValid(CharSequence)} for details.
+   *
+   * @param traceIdHex the trace identifier of the {@code SpanContext}.
+   * @param spanIdHex the span identifier of the {@code SpanContext}.
+   * @param traceFlags the trace flags of the {@code SpanContext}.
+   * @param traceState the trace state for the {@code SpanContext}.
    * @return a new {@code SpanContext} with the given identifiers and options.
    */
   static SpanContext createFromRemoteParent(
-      String traceIdHex, String spanIdHex, byte traceFlags, TraceState traceState) {
+      String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
     return ImmutableSpanContext.create(
         traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ true);
   }
 
   /**
-   * Returns the trace identifier associated with this {@code SpanContext}.
+   * Returns the trace identifier associated with this {@link SpanContext} as 32 character lowercase
+   * hex String.
    *
-   * @return the trace identifier associated with this {@code SpanContext}.
+   * @return the trace identifier associated with this {@link SpanContext} as lowercase hex.
    */
-  String getTraceIdAsHexString();
+  String getTraceId();
 
   /**
-   * Returns the byte[] representation of the trace identifier associated with this {@link
-   * SpanContext}.
+   * Returns the trace identifier associated with this {@link SpanContext} as 16-byte array.
+   *
+   * @return the trace identifier associated with this {@link SpanContext} as 16-byte array.
    */
   default byte[] getTraceIdBytes() {
-    return TraceId.bytesFromHex(getTraceIdAsHexString(), 0);
+    return OtelEncodingUtils.bytesFromBase16(getTraceId(), TraceId.getLength());
   }
 
   /**
-   * Returns the span identifier associated with this {@code SpanContext}.
+   * Returns the span identifier associated with this {@link SpanContext} as 16 character lowercase
+   * hex String.
    *
-   * @return the span identifier associated with this {@code SpanContext}.
+   * @return the span identifier associated with this {@link SpanContext} as 16 character lowercase
+   *     hex (base16) String.
    */
-  String getSpanIdAsHexString();
+  String getSpanId();
 
   /**
-   * Returns the byte[] representation of the span identifier associated with this {@link
-   * SpanContext}.
+   * Returns the span identifier associated with this {@link SpanContext} as 8-byte array.
+   *
+   * @return the span identifier associated with this {@link SpanContext} as 8-byte array.
    */
   default byte[] getSpanIdBytes() {
-    return SpanId.bytesFromHex(getSpanIdAsHexString(), 0);
+    return OtelEncodingUtils.bytesFromBase16(getSpanId(), SpanId.getLength());
   }
 
   /** Whether the span in this context is sampled. */
   default boolean isSampled() {
-    return (getTraceFlags() & 1) == 1;
+    return getTraceFlags().isSampled();
   }
 
-  /** The byte-representation of {@link TraceFlags}. */
-  byte getTraceFlags();
-
-  default void copyTraceFlagsHexTo(char[] dest, int destOffset) {
-    BigendianEncoding.byteToBase16String(getTraceFlags(), dest, destOffset);
-  }
+  /**
+   * Returns the trace flags associated with this {@link SpanContext}.
+   *
+   * @return the trace flags associated with this {@link SpanContext}.
+   */
+  TraceFlags getTraceFlags();
 
   /**
    * Returns the {@code TraceState} associated with this {@code SpanContext}.
@@ -119,7 +135,7 @@ public interface SpanContext {
    * @return {@code true} if this {@code SpanContext} is valid.
    */
   default boolean isValid() {
-    return TraceId.isValid(getTraceIdAsHexString()) && SpanId.isValid(getSpanIdAsHexString());
+    return TraceId.isValid(getTraceId()) && SpanId.isValid(getSpanId());
   }
 
   /**

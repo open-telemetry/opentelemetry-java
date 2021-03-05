@@ -10,13 +10,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,30 +44,70 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  void builder_HappyPath() {
-    assertThat(
-            SdkTracerProvider.builder()
-                .setClock(mock(Clock.class))
-                .setResource(mock(Resource.class))
-                .setIdGenerator(mock(IdGenerator.class))
-                .setTraceConfig(mock(TraceConfig.class))
-                .build())
-        .isNotNull();
+  void builder_defaultResource() {
+    Resource resourceWithDefaults = Resource.getDefault();
+
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .setClock(mock(Clock.class))
+            .setIdGenerator(mock(IdGenerator.class))
+            .build();
+
+    assertThat(tracerProvider).isNotNull();
+    assertThat(tracerProvider)
+        .extracting("sharedState")
+        .hasFieldOrPropertyWithValue("resource", resourceWithDefaults);
   }
 
   @Test
-  void builder_NullTraceConfig() {
-    assertThatThrownBy(() -> SdkTracerProvider.builder().setTraceConfig((TraceConfig) null))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("traceConfig");
+  void builder_defaultSampler() {
+    assertThat(SdkTracerProvider.builder().build().getSampler())
+        .isEqualTo(Sampler.parentBased(Sampler.alwaysOn()));
   }
 
   @Test
-  void builder_NullTraceConfigSupplier() {
-    assertThatThrownBy(
-            () -> SdkTracerProvider.builder().setTraceConfig((Supplier<TraceConfig>) null))
+  void builder_configureSampler() {
+    assertThat(SdkTracerProvider.builder().setSampler(Sampler.alwaysOff()).build().getSampler())
+        .isEqualTo(Sampler.alwaysOff());
+  }
+
+  @Test
+  void builder_configureSampler_null() {
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setSampler(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("traceConfig");
+        .hasMessage("sampler");
+  }
+
+  @Test
+  void builder_serviceNameProvided() {
+    Resource resource =
+        Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "mySpecialService"));
+
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .setClock(mock(Clock.class))
+            .setResource(resource)
+            .setIdGenerator(mock(IdGenerator.class))
+            .build();
+
+    assertThat(tracerProvider).isNotNull();
+    assertThat(tracerProvider)
+        .extracting("sharedState")
+        .hasFieldOrPropertyWithValue("resource", resource);
+  }
+
+  @Test
+  void builder_NullSpanLimits() {
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setSpanLimits((SpanLimits) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("spanLimits");
+  }
+
+  @Test
+  void builder_NullSpanLimitsSupplier() {
+    assertThatThrownBy(() -> SdkTracerProvider.builder().setSpanLimits((Supplier<SpanLimits>) null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("spanLimitsSupplier");
   }
 
   @Test
@@ -114,12 +156,12 @@ class SdkTracerProviderTest {
   }
 
   @Test
-  void build_traceConfig() {
-    TraceConfig initialTraceConfig = mock(TraceConfig.class);
+  void build_SpanLimits() {
+    SpanLimits initialSpanLimits = SpanLimits.builder().build();
     SdkTracerProvider sdkTracerProvider =
-        SdkTracerProvider.builder().setTraceConfig(initialTraceConfig).build();
+        SdkTracerProvider.builder().setSpanLimits(initialSpanLimits).build();
 
-    assertThat(sdkTracerProvider.getActiveTraceConfig()).isSameAs(initialTraceConfig);
+    assertThat(sdkTracerProvider.getSpanLimits()).isSameAs(initialSpanLimits);
   }
 
   @Test

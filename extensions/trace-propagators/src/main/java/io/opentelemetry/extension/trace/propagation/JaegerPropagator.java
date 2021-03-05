@@ -14,12 +14,13 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -31,7 +32,6 @@ import javax.annotation.concurrent.Immutable;
  * Format</a>.
  */
 @Immutable
-@SuppressWarnings("deprecation") // Remove after StringUtils is made package-private
 public final class JaegerPropagator implements TextMapPropagator {
 
   private static final Logger logger = Logger.getLogger(JaegerPropagator.class.getName());
@@ -43,16 +43,16 @@ public final class JaegerPropagator implements TextMapPropagator {
   static final char DEPRECATED_PARENT_SPAN = '0';
   static final char PROPAGATION_HEADER_DELIMITER = ':';
 
-  private static final int MAX_TRACE_ID_LENGTH = TraceId.getHexLength();
-  private static final int MAX_SPAN_ID_LENGTH = SpanId.getHexLength();
+  private static final int MAX_TRACE_ID_LENGTH = TraceId.getLength();
+  private static final int MAX_SPAN_ID_LENGTH = SpanId.getLength();
   private static final int MAX_FLAGS_LENGTH = 2;
 
   private static final char IS_SAMPLED_CHAR = '1';
   private static final char NOT_SAMPLED_CHAR = '0';
   private static final int PROPAGATION_HEADER_DELIMITER_SIZE = 1;
 
-  private static final int TRACE_ID_HEX_SIZE = TraceId.getHexLength();
-  private static final int SPAN_ID_HEX_SIZE = SpanId.getHexLength();
+  private static final int TRACE_ID_HEX_SIZE = TraceId.getLength();
+  private static final int SPAN_ID_HEX_SIZE = SpanId.getLength();
   private static final int PARENT_SPAN_ID_SIZE = 1;
   private static final int SAMPLED_FLAG_SIZE = 1;
 
@@ -63,11 +63,7 @@ public final class JaegerPropagator implements TextMapPropagator {
       PARENT_SPAN_ID_OFFSET + PARENT_SPAN_ID_SIZE + PROPAGATION_HEADER_DELIMITER_SIZE;
   private static final int PROPAGATION_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
 
-  private static final byte SAMPLED = TraceFlags.getSampled();
-  private static final byte NOT_SAMPLED = TraceFlags.getDefault();
-
   private static final Collection<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
-
   private static final JaegerPropagator INSTANCE = new JaegerPropagator();
 
   private JaegerPropagator() {
@@ -84,9 +80,13 @@ public final class JaegerPropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, C carrier, Setter<C> setter) {
-    Objects.requireNonNull(context, "context");
-    Objects.requireNonNull(setter, "setter");
+  public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
+    if (context == null) {
+      return;
+    }
+    if (setter == null) {
+      return;
+    }
 
     SpanContext spanContext = Span.fromContext(context).getSpanContext();
     if (spanContext.isValid()) {
@@ -96,17 +96,18 @@ public final class JaegerPropagator implements TextMapPropagator {
     injectBaggage(Baggage.fromContext(context), carrier, setter);
   }
 
-  private static <C> void injectSpan(SpanContext spanContext, C carrier, Setter<C> setter) {
+  private static <C> void injectSpan(
+      SpanContext spanContext, @Nullable C carrier, TextMapSetter<C> setter) {
 
     char[] chars = new char[PROPAGATION_HEADER_SIZE];
 
-    String traceId = spanContext.getTraceIdAsHexString();
+    String traceId = spanContext.getTraceId();
     for (int i = 0; i < traceId.length(); i++) {
       chars[i] = traceId.charAt(i);
     }
 
     chars[SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
-    String spanId = spanContext.getSpanIdAsHexString();
+    String spanId = spanContext.getSpanId();
     for (int i = 0; i < spanId.length(); i++) {
       chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
     }
@@ -118,16 +119,20 @@ public final class JaegerPropagator implements TextMapPropagator {
     setter.set(carrier, PROPAGATION_HEADER, new String(chars));
   }
 
-  private static <C> void injectBaggage(Baggage baggage, C carrier, Setter<C> setter) {
+  private static <C> void injectBaggage(
+      Baggage baggage, @Nullable C carrier, TextMapSetter<C> setter) {
     baggage.forEach(
-        (key, value, metadata) -> {
-          setter.set(carrier, BAGGAGE_PREFIX + key, value);
-        });
+        (key, baggageEntry) -> setter.set(carrier, BAGGAGE_PREFIX + key, baggageEntry.getValue()));
   }
 
   @Override
-  public <C> Context extract(Context context, @Nullable C carrier, Getter<C> getter) {
-    Objects.requireNonNull(getter, "getter");
+  public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
+    if (context == null) {
+      return Context.root();
+    }
+    if (getter == null) {
+      return context;
+    }
 
     SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
     if (spanContext.isValid()) {
@@ -142,8 +147,8 @@ public final class JaegerPropagator implements TextMapPropagator {
     return context;
   }
 
-  @SuppressWarnings("StringSplitter")
-  private static <C> SpanContext getSpanContextFromHeader(C carrier, Getter<C> getter) {
+  private static <C> SpanContext getSpanContextFromHeader(
+      @Nullable C carrier, TextMapGetter<C> getter) {
     String value = getter.get(carrier, PROPAGATION_HEADER);
     if (StringUtils.isNullOrEmpty(value)) {
       return SpanContext.getInvalid();
@@ -209,7 +214,7 @@ public final class JaegerPropagator implements TextMapPropagator {
     return buildSpanContext(traceId, spanId, flags);
   }
 
-  private static <C> Baggage getBaggageFromHeader(C carrier, Getter<C> getter) {
+  private static <C> Baggage getBaggageFromHeader(C carrier, TextMapGetter<C> getter) {
     BaggageBuilder builder = null;
 
     for (String key : getter.keys(carrier)) {
@@ -229,7 +234,6 @@ public final class JaegerPropagator implements TextMapPropagator {
     return builder == null ? null : builder.build();
   }
 
-  @SuppressWarnings("StringSplitter")
   private static BaggageBuilder parseBaggageHeader(String header, BaggageBuilder builder) {
     for (String part : header.split("\\s*,\\s*")) {
       String[] kv = part.split("\\s*=\\s*");
@@ -247,17 +251,15 @@ public final class JaegerPropagator implements TextMapPropagator {
 
   private static SpanContext buildSpanContext(String traceId, String spanId, String flags) {
     try {
-      int flagsInt = Integer.parseInt(flags);
-      byte traceFlags = ((flagsInt & 1) == 1) ? SAMPLED : NOT_SAMPLED;
-
       String otelTraceId = StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH);
       String otelSpanId = StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH);
-      if (!TraceId.isValid(otelTraceId) || !SpanId.isValid(otelSpanId)) {
-        return SpanContext.getInvalid();
-      }
+      int flagsInt = Integer.parseInt(flags);
       return SpanContext.createFromRemoteParent(
-          otelTraceId, otelSpanId, traceFlags, TraceState.getDefault());
-    } catch (Exception e) {
+          otelTraceId,
+          otelSpanId,
+          ((flagsInt & 1) == 1) ? TraceFlags.getSampled() : TraceFlags.getDefault(),
+          TraceState.getDefault());
+    } catch (RuntimeException e) {
       logger.log(
           Level.FINE,
           "Error parsing '" + PROPAGATION_HEADER + "' header. Returning INVALID span context.",

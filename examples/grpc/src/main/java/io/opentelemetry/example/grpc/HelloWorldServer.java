@@ -16,38 +16,29 @@ import io.grpc.ServerCallHandler;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporter.logging.LoggingSpanExporter;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.logging.Logger;
 
 /** Server that manages startup/shutdown of a {@code Greeter} server. */
-public class HelloWorldServer {
+public final class HelloWorldServer {
   private static final Logger logger = Logger.getLogger(HelloWorldServer.class.getName());
 
   private static final int PORT = 50051;
-  private static final LoggingSpanExporter exporter = new LoggingSpanExporter();
-  private static final OpenTelemetry openTelemetry = initOpenTelemetry(exporter);
 
-  private Server server;
-
-  private final Tracer tracer =
-      openTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
-  private final TextMapPropagator textFormat =
-      openTelemetry.getPropagators().getTextMapPropagator();
+  // it is important to initialize the OpenTelemetry SDK as early as possible in your application's
+  // lifecycle.
+  private static final OpenTelemetry openTelemetry = ExampleConfiguration.initOpenTelemetry();
 
   // Extract the Distributed Context from the gRPC metadata
-  TextMapPropagator.Getter<Metadata> getter =
-      new TextMapPropagator.Getter<>() {
+  private static final TextMapGetter<Metadata> getter =
+      new TextMapGetter<>() {
         @Override
         public Iterable<String> keys(Metadata carrier) {
           return carrier.keys();
@@ -62,6 +53,13 @@ public class HelloWorldServer {
           return "";
         }
       };
+
+  private Server server;
+
+  private final Tracer tracer =
+      openTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
+  private final TextMapPropagator textFormat =
+      openTelemetry.getPropagators().getTextMapPropagator();
 
   private void start() throws IOException {
     /* The port on which the server should run */
@@ -82,10 +80,6 @@ public class HelloWorldServer {
                   System.err.println("*** shutting down gRPC server since JVM is shutting down");
                   HelloWorldServer.this.stop();
                   System.err.println("*** server shut down");
-                  System.err.println(
-                      "*** forcing also the Tracer Exporter to shutdown and process the remaining traces");
-                  exporter.shutdown();
-                  System.err.println("*** Trace Exporter shut down");
                 }));
   }
 
@@ -151,7 +145,7 @@ public class HelloWorldServer {
           tracer
               .spanBuilder("helloworld.Greeter/SayHello")
               .setParent(extractedContext)
-              .setSpanKind(Span.Kind.SERVER)
+              .setSpanKind(SpanKind.SERVER)
               .startSpan();
       try (Scope innerScope = span.makeCurrent()) {
         span.setAttribute("component", "grpc");
@@ -164,18 +158,6 @@ public class HelloWorldServer {
         span.end();
       }
     }
-  }
-
-  private static OpenTelemetry initOpenTelemetry(LoggingSpanExporter exporter) {
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder().build();
-    // Set to process the the spans by the LogExporter
-    sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.builder(exporter).build());
-
-    return OpenTelemetrySdk.builder()
-        .setTracerProvider(sdkTracerProvider)
-        // install the W3C Trace Context propagator
-        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-        .build();
   }
 
   /** Main launches the server from the command line. */

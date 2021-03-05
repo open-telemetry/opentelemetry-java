@@ -7,31 +7,14 @@ package io.opentelemetry.sdk.testing.junit4;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
 public class OpenTelemetryRuleTest {
 
   @Rule public OpenTelemetryRule otelTesting = OpenTelemetryRule.create();
-
-  private static OpenTelemetry openTelemetryBeforeTest;
-
-  // Class callbacks happen outside the rule so we can verify the restoration behavior in them.
-  @BeforeClass
-  public static void beforeTest() {
-    openTelemetryBeforeTest = GlobalOpenTelemetry.get();
-  }
-
-  @AfterClass
-  public static void afterTest() {
-    assertThat(GlobalOpenTelemetry.get()).isSameAs(openTelemetryBeforeTest);
-  }
 
   private Tracer tracer;
 

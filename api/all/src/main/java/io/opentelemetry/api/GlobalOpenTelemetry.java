@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api;
 
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -13,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A global singleton for the entrypoint to telemetry functionality for tracing, metrics and
@@ -26,19 +28,20 @@ import javax.annotation.Nullable;
  * @see TracerProvider
  * @see ContextPropagators
  */
-@SuppressWarnings("deprecation") // Remove after deleting OpenTelemetry SPI
 public final class GlobalOpenTelemetry {
 
-  private static final OpenTelemetry NOOP = DefaultOpenTelemetry.builder().build();
+  private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
 
   private static final boolean suppressSdkCheck =
       Boolean.getBoolean("otel.sdk.suppress-sdk-initialized-warning");
 
-  private static final Logger logger = Logger.getLogger(GlobalOpenTelemetry.class.getName());
-
   private static final Object mutex = new Object();
 
-  @Nullable private static volatile OpenTelemetry globalOpenTelemetry;
+  @Nullable private static volatile ObfuscatedOpenTelemetry globalOpenTelemetry;
+
+  @GuardedBy("mutex")
+  @Nullable
+  private static Throwable setGlobalCaller;
 
   private GlobalOpenTelemetry() {}
 
@@ -49,13 +52,12 @@ public final class GlobalOpenTelemetry {
    *     interface FQCN but the specified provider cannot be found.
    */
   public static OpenTelemetry get() {
-    OpenTelemetry current = globalOpenTelemetry;
-    if (current == null) {
+    if (globalOpenTelemetry == null) {
       synchronized (mutex) {
         if (globalOpenTelemetry == null) {
+
           OpenTelemetry autoConfigured = maybeAutoConfigure();
           if (autoConfigured != null) {
-            set(autoConfigured);
             return autoConfigured;
           }
 
@@ -63,26 +65,38 @@ public final class GlobalOpenTelemetry {
             SdkChecker.logIfSdkFound();
           }
 
-          return NOOP;
+          set(OpenTelemetry.noop());
+          return OpenTelemetry.noop();
         }
       }
     }
-    return current;
+    return globalOpenTelemetry;
   }
 
   /**
    * Sets the {@link OpenTelemetry} that should be the global instance. Future calls to {@link
    * #get()} will return the provided {@link OpenTelemetry} instance. This should be called once as
    * early as possible in your application initialization logic, often in a {@code static} block in
-   * your main class.
+   * your main class. It should only be called once - an attempt to call it a second time will
+   * result in an error. If trying to set the global {@link OpenTelemetry} multiple times in tests,
+   * use {@link GlobalOpenTelemetry#resetForTest()} between them.
+   *
+   * <p>If you are using the OpenTelemetry SDK, you should generally use {@code
+   * OpenTelemetrySdk.builder().buildAndRegisterGlobal()} instead of calling this method directly.
    */
   public static void set(OpenTelemetry openTelemetry) {
-    globalOpenTelemetry = openTelemetry;
-  }
-
-  // for testing
-  static void reset() {
-    globalOpenTelemetry = null;
+    synchronized (mutex) {
+      if (globalOpenTelemetry != null) {
+        throw new IllegalStateException(
+            "GlobalOpenTelemetry.set has already been called. GlobalOpenTelemetry.set must be "
+                + "called only once before any calls to GlobalOpenTelemetry.get. If you are using "
+                + "the OpenTelemetrySdk, use OpenTelemetrySdkBuilder.buildAndRegisterGlobal "
+                + "instead. Previous invocation set to cause of this exception.",
+            setGlobalCaller);
+      }
+      globalOpenTelemetry = new ObfuscatedOpenTelemetry(openTelemetry);
+      setGlobalCaller = new Throwable();
+    }
   }
 
   /** Returns the globally registered {@link TracerProvider}. */
@@ -120,10 +134,45 @@ public final class GlobalOpenTelemetry {
   }
 
   /**
+   * Unsets the global {@link OpenTelemetry}. This is only meant to be used from tests which need to
+   * reconfigure {@link OpenTelemetry}.
+   */
+  public static void resetForTest() {
+    globalOpenTelemetry = null;
+  }
+
+  /**
    * Returns the globally registered {@link ContextPropagators} for remote propagation of a context.
    */
   public static ContextPropagators getPropagators() {
     return get().getPropagators();
+  }
+
+  @Nullable
+  private static OpenTelemetry maybeAutoConfigure() {
+    final Class<?> openTelemetrySdkAutoConfiguration;
+    try {
+      openTelemetrySdkAutoConfiguration =
+          Class.forName("io.opentelemetry.sdk.autoconfigure.OpenTelemetrySdkAutoConfiguration");
+    } catch (ClassNotFoundException e) {
+      return null;
+    }
+
+    try {
+      Method initialize = openTelemetrySdkAutoConfiguration.getMethod("initialize");
+      return (OpenTelemetry) initialize.invoke(null);
+    } catch (NoSuchMethodException | IllegalAccessException e) {
+      throw new IllegalStateException(
+          "OpenTelemetrySdkAutoConfiguration detected on classpath "
+              + "but could not invoke initialize method. This is a bug in OpenTelemetry.",
+          e);
+    } catch (InvocationTargetException t) {
+      logger.log(
+          Level.SEVERE,
+          "Error automatically configuring OpenTelemetry SDK. OpenTelemetry will not be enabled.",
+          t.getTargetException());
+      return null;
+    }
   }
 
   // Use an inner class that checks and logs in its static initializer to have log-once behavior
@@ -159,30 +208,28 @@ public final class GlobalOpenTelemetry {
     static void logIfSdkFound() {}
   }
 
-  @Nullable
-  private static OpenTelemetry maybeAutoConfigure() {
-    final Class<?> openTelemetrySdkAutoConfiguration;
-    try {
-      openTelemetrySdkAutoConfiguration =
-          Class.forName("io.opentelemetry.sdk.autoconfigure.OpenTelemetrySdkAutoConfiguration");
-    } catch (ClassNotFoundException e) {
-      return null;
+  /**
+   * Static global instances are obfuscated when they are returned from the API to prevent users
+   * from casting them to their SDK-specific implementation. For example, we do not want users to
+   * use patterns like {@code (OpenTelemetrySdk) GlobalOpenTelemetry.get()}.
+   */
+  @ThreadSafe
+  static class ObfuscatedOpenTelemetry implements OpenTelemetry {
+
+    private final OpenTelemetry delegate;
+
+    ObfuscatedOpenTelemetry(OpenTelemetry delegate) {
+      this.delegate = delegate;
     }
 
-    try {
-      Method initialize = openTelemetrySdkAutoConfiguration.getMethod("initialize");
-      return (OpenTelemetry) initialize.invoke(null);
-    } catch (NoSuchMethodException | IllegalAccessException e) {
-      throw new IllegalStateException(
-          "OpenTelemetrySdkAutoConfiguration detected on classpath "
-              + "but could not invoke initialize method. This is a bug in OpenTelemetry.",
-          e);
-    } catch (InvocationTargetException t) {
-      logger.log(
-          Level.SEVERE,
-          "Error automatically configuring OpenTelemetry SDK. OpenTelemetry will not be enabled.",
-          t.getTargetException());
-      return null;
+    @Override
+    public TracerProvider getTracerProvider() {
+      return delegate.getTracerProvider();
+    }
+
+    @Override
+    public ContextPropagators getPropagators() {
+      return delegate.getPropagators();
     }
   }
 }

@@ -15,9 +15,9 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
-import io.opentelemetry.context.propagation.TextMapPropagator.Setter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -28,19 +28,17 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link W3CTraceContextPropagator}. */
 class W3CTraceContextPropagatorTest {
 
-  private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
-  private static final TraceState TRACE_STATE_NOT_DEFAULT =
-      TraceState.builder().set("foo", "bar").set("bar", "baz").build();
+  private static final TraceState TRACE_STATE =
+      TraceState.builder().put("foo", "bar").put("bar", "baz").build();
   private static final String TRACE_ID_BASE16 = "ff000000000000000000000000000041";
   private static final String SPAN_ID_BASE16 = "ff00000000000041";
-  private static final byte SAMPLED_TRACE_OPTIONS = TraceFlags.getSampled();
   private static final String TRACEPARENT_HEADER_SAMPLED =
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01";
   private static final String TRACEPARENT_HEADER_NOT_SAMPLED =
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00";
-  private static final Setter<Map<String, String>> setter = Map::put;
-  private static final Getter<Map<String, String>> getter =
-      new Getter<Map<String, String>>() {
+  private static final TextMapSetter<Map<String, String>> setter = Map::put;
+  private static final TextMapGetter<Map<String, String>> getter =
+      new TextMapGetter<Map<String, String>>() {
         @Override
         public Iterable<String> keys(Map<String, String> carrier) {
           return carrier.keySet();
@@ -80,12 +78,12 @@ class W3CTraceContextPropagatorTest {
     Context context =
         withSpanContext(
             SpanContext.create(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TraceState.getDefault()),
             Context.current());
     w3cTraceContextPropagator.inject(
         context,
         null,
-        (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
+        (TextMapSetter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
     assertThat(carrier)
         .containsExactly(entry(W3CTraceContextPropagator.TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED));
   }
@@ -98,8 +96,8 @@ class W3CTraceContextPropagatorTest {
             SpanContext.create(
                 TraceId.getInvalid(),
                 SpanId.getInvalid(),
-                SAMPLED_TRACE_OPTIONS,
-                TraceState.builder().set("foo", "bar").build()),
+                TraceFlags.getSampled(),
+                TraceState.builder().put("foo", "bar").build()),
             Context.current()),
         carrier,
         setter);
@@ -112,7 +110,7 @@ class W3CTraceContextPropagatorTest {
     Context context =
         withSpanContext(
             SpanContext.create(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TraceState.getDefault()),
             Context.current());
     w3cTraceContextPropagator.inject(context, carrier, setter);
     assertThat(carrier)
@@ -125,7 +123,7 @@ class W3CTraceContextPropagatorTest {
     Context context =
         withSpanContext(
             SpanContext.create(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT),
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TraceState.getDefault()),
             Context.current());
     w3cTraceContextPropagator.inject(context, carrier, setter);
     assertThat(carrier)
@@ -139,7 +137,7 @@ class W3CTraceContextPropagatorTest {
     Context context =
         withSpanContext(
             SpanContext.create(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT),
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TRACE_STATE),
             Context.current());
     w3cTraceContextPropagator.inject(context, carrier, setter);
     assertThat(carrier)
@@ -154,13 +152,32 @@ class W3CTraceContextPropagatorTest {
     Context context =
         withSpanContext(
             SpanContext.create(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT),
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE),
             Context.current());
     w3cTraceContextPropagator.inject(context, carrier, setter);
     assertThat(carrier)
         .containsExactly(
             entry(W3CTraceContextPropagator.TRACE_PARENT, TRACEPARENT_HEADER_NOT_SAMPLED),
             entry(W3CTraceContextPropagator.TRACE_STATE, TRACESTATE_NOT_DEFAULT_ENCODING));
+  }
+
+  @Test
+  void inject_nullContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    w3cTraceContextPropagator.inject(null, carrier, setter);
+    assertThat(carrier).isEmpty();
+  }
+
+  @Test
+  void inject_nullSetter() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    Context context =
+        withSpanContext(
+            SpanContext.create(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE),
+            Context.current());
+    w3cTraceContextPropagator.inject(context, carrier, null);
+    assertThat(carrier).isEmpty();
   }
 
   @Test
@@ -178,7 +195,7 @@ class W3CTraceContextPropagatorTest {
             getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TraceState.getDefault()));
   }
 
   @Test
@@ -189,7 +206,7 @@ class W3CTraceContextPropagatorTest {
             getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TraceState.getDefault()));
   }
 
   @Test
@@ -211,7 +228,7 @@ class W3CTraceContextPropagatorTest {
             getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TraceState.getDefault()));
   }
 
   @Test
@@ -223,7 +240,7 @@ class W3CTraceContextPropagatorTest {
             getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TRACE_STATE));
   }
 
   @Test
@@ -235,7 +252,7 @@ class W3CTraceContextPropagatorTest {
             getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE));
   }
 
   @Test
@@ -248,7 +265,7 @@ class W3CTraceContextPropagatorTest {
             getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TraceState.getDefault()));
   }
 
   @Test
@@ -260,7 +277,7 @@ class W3CTraceContextPropagatorTest {
             getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TraceState.getDefault()));
   }
 
   @Test
@@ -272,7 +289,7 @@ class W3CTraceContextPropagatorTest {
             getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE));
   }
 
   @Test
@@ -401,7 +418,7 @@ class W3CTraceContextPropagatorTest {
                 w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TraceState.getDefault()));
   }
 
   @Test
@@ -416,7 +433,7 @@ class W3CTraceContextPropagatorTest {
                 w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TraceState.getDefault()));
   }
 
   @Test
@@ -431,7 +448,7 @@ class W3CTraceContextPropagatorTest {
                 w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TraceState.getDefault()));
   }
 
   @Test
@@ -469,7 +486,7 @@ class W3CTraceContextPropagatorTest {
                 w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TraceState.getDefault()));
   }
 
   @Test
@@ -492,5 +509,22 @@ class W3CTraceContextPropagatorTest {
             getSpanContext(
                 w3cTraceContextPropagator.extract(Context.current(), emptyHeaders, getter)))
         .isSameAs(SpanContext.getInvalid());
+  }
+
+  @Test
+  void extract_nullContext() {
+    assertThat(w3cTraceContextPropagator.extract(null, Collections.emptyMap(), getter))
+        .isSameAs(Context.root());
+  }
+
+  @Test
+  void extract_nullGetter() {
+    Context context =
+        withSpanContext(
+            SpanContext.create(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getDefault(), TraceState.getDefault()),
+            Context.current());
+    assertThat(w3cTraceContextPropagator.extract(context, Collections.emptyMap(), null))
+        .isSameAs(context);
   }
 }

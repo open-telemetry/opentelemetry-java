@@ -8,9 +8,8 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.view.AggregationConfiguration;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.View;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,23 +24,17 @@ import java.util.regex.Pattern;
  * never blocked.
  */
 final class ViewRegistry {
-  private static final LinkedHashMap<Pattern, AggregationConfiguration> EMPTY_CONFIG =
-      new LinkedHashMap<>();
-  private static final AggregationConfiguration CUMULATIVE_SUM =
-      AggregationConfiguration.create(AggregatorFactory.sum(), AggregationTemporality.CUMULATIVE);
-  private static final AggregationConfiguration DELTA_SUMMARY =
-      AggregationConfiguration.create(
-          AggregatorFactory.minMaxSumCount(), AggregationTemporality.DELTA);
-  private static final AggregationConfiguration CUMULATIVE_LAST_VALUE =
-      AggregationConfiguration.create(
-          AggregatorFactory.lastValue(), AggregationTemporality.CUMULATIVE);
-  private static final AggregationConfiguration DELTA_LAST_VALUE =
-      AggregationConfiguration.create(AggregatorFactory.lastValue(), AggregationTemporality.DELTA);
+  private static final LinkedHashMap<Pattern, View> EMPTY_CONFIG = new LinkedHashMap<>();
+  static final View CUMULATIVE_SUM =
+      View.builder().setAggregatorFactory(AggregatorFactory.sum(true)).build();
+  static final View SUMMARY =
+      View.builder().setAggregatorFactory(AggregatorFactory.minMaxSumCount()).build();
+  static final View LAST_VALUE =
+      View.builder().setAggregatorFactory(AggregatorFactory.lastValue()).build();
 
   // The lock is used to ensure only one updated to the configuration happens at any moment.
   private final ReentrantLock lock = new ReentrantLock();
-  private volatile EnumMap<InstrumentType, LinkedHashMap<Pattern, AggregationConfiguration>>
-      configuration;
+  private volatile EnumMap<InstrumentType, LinkedHashMap<Pattern, View>> configuration;
 
   ViewRegistry() {
     this.configuration = new EnumMap<>(InstrumentType.class);
@@ -53,16 +46,16 @@ final class ViewRegistry {
     configuration.put(InstrumentType.VALUE_OBSERVER, EMPTY_CONFIG);
   }
 
-  void registerView(InstrumentSelector selector, AggregationConfiguration specification) {
+  void registerView(InstrumentSelector selector, View view) {
     lock.lock();
     try {
-      EnumMap<InstrumentType, LinkedHashMap<Pattern, AggregationConfiguration>> newConfiguration =
+      EnumMap<InstrumentType, LinkedHashMap<Pattern, View>> newConfiguration =
           new EnumMap<>(configuration);
       newConfiguration.put(
           selector.getInstrumentType(),
           newLinkedHashMap(
               selector.getInstrumentNamePattern(),
-              specification,
+              view,
               newConfiguration.get(selector.getInstrumentType())));
       configuration = newConfiguration;
     } finally {
@@ -70,10 +63,9 @@ final class ViewRegistry {
     }
   }
 
-  AggregationConfiguration findView(InstrumentDescriptor descriptor) {
-    LinkedHashMap<Pattern, AggregationConfiguration> configPerType =
-        configuration.get(descriptor.getType());
-    for (Map.Entry<Pattern, AggregationConfiguration> entry : configPerType.entrySet()) {
+  View findView(InstrumentDescriptor descriptor) {
+    LinkedHashMap<Pattern, View> configPerType = configuration.get(descriptor.getType());
+    for (Map.Entry<Pattern, View> entry : configPerType.entrySet()) {
       if (entry.getKey().matcher(descriptor.getName()).matches()) {
         return entry.getValue();
       }
@@ -82,28 +74,25 @@ final class ViewRegistry {
     return getDefaultSpecification(descriptor);
   }
 
-  private static AggregationConfiguration getDefaultSpecification(InstrumentDescriptor descriptor) {
+  private static View getDefaultSpecification(InstrumentDescriptor descriptor) {
     switch (descriptor.getType()) {
       case COUNTER:
       case UP_DOWN_COUNTER:
-        return CUMULATIVE_SUM;
-      case VALUE_RECORDER:
-        return DELTA_SUMMARY;
-      case VALUE_OBSERVER:
-        return DELTA_LAST_VALUE;
       case SUM_OBSERVER:
       case UP_DOWN_SUM_OBSERVER:
-        return CUMULATIVE_LAST_VALUE;
+        return CUMULATIVE_SUM;
+      case VALUE_RECORDER:
+        return SUMMARY;
+      case VALUE_OBSERVER:
+        return LAST_VALUE;
     }
     throw new IllegalArgumentException("Unknown descriptor type: " + descriptor.getType());
   }
 
-  private static LinkedHashMap<Pattern, AggregationConfiguration> newLinkedHashMap(
-      Pattern pattern,
-      AggregationConfiguration aggregationConfiguration,
-      LinkedHashMap<Pattern, AggregationConfiguration> parentConfiguration) {
-    LinkedHashMap<Pattern, AggregationConfiguration> result = new LinkedHashMap<>();
-    result.put(pattern, aggregationConfiguration);
+  private static LinkedHashMap<Pattern, View> newLinkedHashMap(
+      Pattern pattern, View view, LinkedHashMap<Pattern, View> parentConfiguration) {
+    LinkedHashMap<Pattern, View> result = new LinkedHashMap<>();
+    result.put(pattern, view);
     result.putAll(parentConfiguration);
     return result;
   }

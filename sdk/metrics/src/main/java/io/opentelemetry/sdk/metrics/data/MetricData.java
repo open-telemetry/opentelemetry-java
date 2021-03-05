@@ -29,6 +29,8 @@ public abstract class MetricData {
           /* isMonotonic= */ false, AggregationTemporality.CUMULATIVE, Collections.emptyList());
   private static final DoubleSummaryData DEFAULT_DOUBLE_SUMMARY_DATA =
       DoubleSummaryData.create(Collections.emptyList());
+  private static final DoubleHistogramData DEFAULT_DOUBLE_HISTOGRAM_DATA =
+      DoubleHistogramData.create(AggregationTemporality.CUMULATIVE, Collections.emptyList());
 
   /**
    * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
@@ -137,6 +139,28 @@ public abstract class MetricData {
         description,
         unit,
         MetricDataType.SUMMARY,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData with a {@link MetricDataType#HISTOGRAM} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#HISTOGRAM} type.
+   */
+  public static MetricData createDoubleHistogram(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      DoubleHistogramData data) {
+    return new AutoValue_MetricData(
+        resource,
+        instrumentationLibraryInfo,
+        name,
+        description,
+        unit,
+        MetricDataType.HISTOGRAM,
         data);
   }
 
@@ -264,5 +288,19 @@ public abstract class MetricData {
       return (DoubleSummaryData) getData();
     }
     return DEFAULT_DOUBLE_SUMMARY_DATA;
+  }
+
+  /**
+   * Returns the {@code DoubleHistogramData} if type is {@link MetricDataType#HISTOGRAM}, otherwise
+   * a default empty data.
+   *
+   * @return the {@code DoubleHistogramData} if type is {@link MetricDataType#HISTOGRAM}, otherwise
+   *     a default empty data.
+   */
+  public final DoubleHistogramData getDoubleHistogramData() {
+    if (getType() == MetricDataType.HISTOGRAM) {
+      return (DoubleHistogramData) getData();
+    }
+    return DEFAULT_DOUBLE_HISTOGRAM_DATA;
   }
 }

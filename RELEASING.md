@@ -2,7 +2,7 @@
 
 ## Starting the Release
 
-Open the release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3A%22Release+Build%22).
+Open the release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/release-build.yml).
 
 You will see a button that says "Run workflow". Press the button, enter the version number you want
 to release in the input field that pops up, and then press "Run workflow".
@@ -22,7 +22,7 @@ or the Github [compare tool](https://github.com/open-telemetry/opentelemetry-jav
 to view a summary of all commits since last release as a reference.
 
 In addition, you can refer to
-[CHANGELOG.md](https://github.com/open-telemetry/opentelemetry-java/blob/master/CHANGELOG.md)
+[CHANGELOG.md](https://github.com/open-telemetry/opentelemetry-java/blob/main/CHANGELOG.md)
 for a list of major changes since last release.
 
 ## Update release versions in documentations and CHANGELOG files
@@ -34,16 +34,16 @@ After releasing is done, you need to first update the docs.
 ```
 
 Next, update the
-[CHANGELOG.md](https://github.com/open-telemetry/opentelemetry-java/blob/master/CHANGELOG.md).
+[CHANGELOG.md](https://github.com/open-telemetry/opentelemetry-java/blob/main/CHANGELOG.md).
 
-Create a PR to mark the new release in README.md and CHANGELOG.md on the master branch.
+Create a PR to mark the new release in README.md and CHANGELOG.md on the main branch.
 
 ## Patch Release
 
 All patch releases should include only bug-fixes, and must avoid
 adding/modifying the public APIs. 
 
-Open the patch release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3A%22Patch+Release+Build%22).
+Open the patch release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/patch-release-build.yml).
 
 You will see a button that says "Run workflow". Press the button, enter the version number you want
 to release in the input field for version that pops up and the commits you want to cherrypick for the
@@ -87,30 +87,28 @@ After it is merged, Run the patch release workflow again, but leave the commits 
 The release will be made with the current state of the release branch, which is what you prepared
 above.
 
-## Release candidates
-
-Release candidate artifacts are released using the same process described above. The version schema for release candidates
-is`v1.2.3-RC$`, where `$` denotes a release candidate version, e.g. `v1.2.3-RC1`.
-
 ## Credentials
 
 The following credentials are required for publishing (and automatically set in Circle CI):
 
-* `BINTRAY_USER` and `BINTRAY_KEY`: Bintray username and API Key.
-  See [this](https://www.jfrog.com/confluence/display/BT/Bintray+Security#BintraySecurity-APIKeys).
+* `GPG_PRIVATE_KEY` and `GPG_PASSWORD`: GPG private key and password for signing
+  - Note, currently only @anuraaga has this and we need to find a way to safely share secrets in the
+    OpenTelemetry project, for example with a password manager. In the worst case if you need to
+    release manually and cannot get a hold of it, you can generate a new key but don't forget to
+    upload the public key to keyservers.
 
 * `SONATYPE_USER` and `SONATYPE_KEY`: Sonatype username and password.
 
 ## Releasing from the local setup
 
 Releasing from the local setup can be done providing the previously mentioned four credential values, i.e.
-`BINTRAY_KEY`, `BINTRAY_USER`, `SONATYPE_USER` and `SONATYPE_KEY`:
+`GPG_PRIVATE_KEY`, `GPG_PASSWORD`, `SONATYPE_USER` and `SONATYPE_KEY`:
 
 ```sh
-export BINTRAY_USER=my_bintray_user
-export BINTRAY_KEY=my_user_api_key
 export SONATYPE_USER=my_maven_user
 export SONATYPE_KEY=my_maven_password
+export GPG_PRIVATE_KEY=$(cat ~/tmp/gpg.key.txt)
+export GPG_PASSWORD=<gpg password>
 export RELEASE_VERSION=2.4.5 # Set version you want to release
 ./gradlew final -Prelease.version=${RELEASE_VERSION}
 ```

@@ -16,15 +16,17 @@ import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Span.Kind;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -41,19 +43,23 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class JaegerThriftSpanExporterTest {
 
   private static final String TRACE_ID = "a0000000000000000000000000abc123";
+  private static final long TRACE_ID_HIGH = 0xa000000000000000L;
+  private static final long TRACE_ID_LOW = 0x0000000000abc123L;
   private static final String SPAN_ID = "00000f0000def456";
+  private static final long SPAN_ID_LONG = 0x00000f0000def456L;
   private static final String SPAN_ID_2 = "00a0000000aef789";
+  private static final long SPAN_ID_2_LONG = 0x00a0000000aef789L;
+  private static final SpanContext SPAN_CONTEXT =
+      SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault());
+  private static final SpanContext SPAN_CONTEXT_2 =
+      SpanContext.create(TRACE_ID, SPAN_ID_2, TraceFlags.getDefault(), TraceState.getDefault());
 
   private JaegerThriftSpanExporter exporter;
   @Mock private ThriftSender thriftSender;
 
   @BeforeEach
   void beforeEach() {
-    exporter =
-        JaegerThriftSpanExporter.builder()
-            .setThriftSender(thriftSender)
-            .setServiceName("myservice.name")
-            .build();
+    exporter = JaegerThriftSpanExporter.builder().setThriftSender(thriftSender).build();
   }
 
   @Test
@@ -64,13 +70,12 @@ class JaegerThriftSpanExporterTest {
     SpanData span =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setTraceId(TRACE_ID)
-            .setSpanId(SPAN_ID)
+            .setSpanContext(SPAN_CONTEXT)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(StatusData.ok())
-            .setKind(Kind.CONSUMER)
+            .setKind(SpanKind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
@@ -79,7 +84,10 @@ class JaegerThriftSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key"), "resource-attr-value")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName",
+                        AttributeKey.stringKey("resource-attr-key"),
+                        "resource-attr-value")))
             .build();
 
     // test
@@ -88,7 +96,7 @@ class JaegerThriftSpanExporterTest {
     assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
-    Process expectedProcess = new Process("myservice.name");
+    Process expectedProcess = new Process("myServiceName");
     expectedProcess.addToTags(
         new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
     expectedProcess.addToTags(
@@ -97,12 +105,13 @@ class JaegerThriftSpanExporterTest {
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
     expectedProcess.addToTags(
         new Tag("resource-attr-key", TagType.STRING).setVStr("resource-attr-value"));
+    expectedProcess.addToTags(new Tag("service.name", TagType.STRING).setVStr("myServiceName"));
 
     Span expectedSpan =
         new Span()
-            .setTraceIdHigh(TraceId.traceIdHighBytesAsLong(TRACE_ID))
-            .setTraceIdLow(TraceId.traceIdLowBytesAsLong(TRACE_ID))
-            .setSpanId(SpanId.asLong(SPAN_ID))
+            .setTraceIdHigh(TRACE_ID_HIGH)
+            .setTraceIdLow(TRACE_ID_LOW)
+            .setSpanId(SPAN_ID_LONG)
             .setOperationName("GET /api/endpoint")
             .setReferences(Collections.emptyList())
             .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
@@ -126,13 +135,12 @@ class JaegerThriftSpanExporterTest {
     SpanData span =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setTraceId(TRACE_ID)
-            .setSpanId(SPAN_ID)
+            .setSpanContext(SPAN_CONTEXT)
             .setName("GET /api/endpoint/1")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(StatusData.ok())
-            .setKind(Kind.CONSUMER)
+            .setKind(SpanKind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
@@ -141,19 +149,21 @@ class JaegerThriftSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key-1"), "resource-attr-value-1")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName1",
+                        AttributeKey.stringKey("resource-attr-key-1"),
+                        "resource-attr-value-1")))
             .build();
 
     SpanData span2 =
         TestSpanData.builder()
             .setHasEnded(true)
-            .setTraceId(TRACE_ID)
-            .setSpanId(SPAN_ID_2)
+            .setSpanContext(SPAN_CONTEXT_2)
             .setName("GET /api/endpoint/2")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(StatusData.ok())
-            .setKind(Kind.CONSUMER)
+            .setKind(SpanKind.CONSUMER)
             .setLinks(Collections.emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
@@ -162,7 +172,10 @@ class JaegerThriftSpanExporterTest {
             .setResource(
                 Resource.create(
                     Attributes.of(
-                        AttributeKey.stringKey("resource-attr-key-2"), "resource-attr-value-2")))
+                        ResourceAttributes.SERVICE_NAME,
+                        "myServiceName2",
+                        AttributeKey.stringKey("resource-attr-key-2"),
+                        "resource-attr-value-2")))
             .build();
 
     // test
@@ -171,7 +184,7 @@ class JaegerThriftSpanExporterTest {
     assertThat(result.isSuccess()).isEqualTo(true);
 
     // verify
-    Process expectedProcess1 = new Process("myservice.name");
+    Process expectedProcess1 = new Process("myServiceName1");
     expectedProcess1.addToTags(
         new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
     expectedProcess1.addToTags(
@@ -180,8 +193,9 @@ class JaegerThriftSpanExporterTest {
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
     expectedProcess1.addToTags(
         new Tag("resource-attr-key-1", TagType.STRING).setVStr("resource-attr-value-1"));
+    expectedProcess1.addToTags(new Tag("service.name", TagType.STRING).setVStr("myServiceName1"));
 
-    Process expectedProcess2 = new Process("myservice.name");
+    Process expectedProcess2 = new Process("myServiceName2");
     expectedProcess2.addToTags(
         new Tag("jaeger.version", TagType.STRING).setVStr("opentelemetry-java"));
     expectedProcess2.addToTags(
@@ -190,12 +204,13 @@ class JaegerThriftSpanExporterTest {
         new Tag("hostname", TagType.STRING).setVStr(InetAddress.getLocalHost().getHostName()));
     expectedProcess2.addToTags(
         new Tag("resource-attr-key-2", TagType.STRING).setVStr("resource-attr-value-2"));
+    expectedProcess2.addToTags(new Tag("service.name", TagType.STRING).setVStr("myServiceName2"));
 
     Span expectedSpan1 =
         new Span()
-            .setTraceIdHigh(TraceId.traceIdHighBytesAsLong(TRACE_ID))
-            .setTraceIdLow(TraceId.traceIdLowBytesAsLong(TRACE_ID))
-            .setSpanId(SpanId.asLong(SPAN_ID))
+            .setTraceIdHigh(TRACE_ID_HIGH)
+            .setTraceIdLow(TRACE_ID_LOW)
+            .setSpanId(SPAN_ID_LONG)
             .setOperationName("GET /api/endpoint/1")
             .setReferences(Collections.emptyList())
             .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
@@ -209,9 +224,9 @@ class JaegerThriftSpanExporterTest {
 
     Span expectedSpan2 =
         new Span()
-            .setTraceIdHigh(TraceId.traceIdHighBytesAsLong(TRACE_ID))
-            .setTraceIdLow(TraceId.traceIdLowBytesAsLong(TRACE_ID))
-            .setSpanId(SpanId.asLong(SPAN_ID_2))
+            .setTraceIdHigh(TRACE_ID_HIGH)
+            .setTraceIdLow(TRACE_ID_LOW)
+            .setSpanId(SPAN_ID_2_LONG)
             .setOperationName("GET /api/endpoint/2")
             .setReferences(Collections.emptyList())
             .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))

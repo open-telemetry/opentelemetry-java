@@ -13,32 +13,31 @@ import io.opencensus.trace.TraceId;
 import io.opencensus.trace.TraceOptions;
 import io.opencensus.trace.Tracestate;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.TraceStateBuilder;
 import javax.annotation.Nullable;
 
-class SpanConverter {
-  public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_TYPE = "message.event.type";
-  public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_UNCOMPRESSED =
+final class SpanConverter {
+  static final String MESSAGE_EVENT_ATTRIBUTE_KEY_TYPE = "message.event.type";
+  static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_UNCOMPRESSED =
       "message.event.size.uncompressed";
-  public static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_COMPRESSED =
-      "message.event.size.compressed";
+  static final String MESSAGE_EVENT_ATTRIBUTE_KEY_SIZE_COMPRESSED = "message.event.size.compressed";
 
   private SpanConverter() {}
 
-  static Kind mapKind(@Nullable io.opencensus.trace.Span.Kind ocKind) {
+  static SpanKind mapKind(@Nullable io.opencensus.trace.Span.Kind ocKind) {
     if (ocKind == null) {
-      return Kind.INTERNAL;
+      return SpanKind.INTERNAL;
     }
     switch (ocKind) {
       case CLIENT:
-        return Kind.CLIENT;
+        return SpanKind.CLIENT;
       case SERVER:
-        return Kind.SERVER;
+        return SpanKind.SERVER;
     }
-    return Kind.INTERNAL;
+    return SpanKind.INTERNAL;
   }
 
   static Span fromOtelSpan(io.opentelemetry.api.trace.Span otSpan) {
@@ -50,8 +49,8 @@ class SpanConverter {
 
   static SpanContext mapSpanContext(io.opentelemetry.api.trace.SpanContext otelSpanContext) {
     return SpanContext.create(
-        TraceId.fromLowerBase16(otelSpanContext.getTraceIdAsHexString()),
-        SpanId.fromLowerBase16(otelSpanContext.getSpanIdAsHexString()),
+        TraceId.fromLowerBase16(otelSpanContext.getTraceId()),
+        SpanId.fromLowerBase16(otelSpanContext.getSpanId()),
         TraceOptions.builder().setIsSampled(otelSpanContext.isSampled()).build(),
         mapTracestate(otelSpanContext.getTraceState()));
   }
@@ -68,7 +67,7 @@ class SpanConverter {
 
   private static TraceState mapTracestate(Tracestate tracestate) {
     TraceStateBuilder builder = TraceState.builder();
-    tracestate.getEntries().forEach(entry -> builder.set(entry.getKey(), entry.getValue()));
+    tracestate.getEntries().forEach(entry -> builder.put(entry.getKey(), entry.getValue()));
     return builder.build();
   }
 

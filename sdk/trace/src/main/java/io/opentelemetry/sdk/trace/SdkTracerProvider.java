@@ -12,8 +12,10 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
+import java.io.Closeable;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,7 +28,7 @@ import javax.annotation.Nullable;
  * OpenTelemetry}. However, if you need a custom implementation of the factory, you can create one
  * as needed.
  */
-public final class SdkTracerProvider implements TracerProvider, SdkTracerManagement {
+public final class SdkTracerProvider implements TracerProvider, Closeable {
   private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
   static final String DEFAULT_TRACER_NAME = "unknown";
   private final TracerSharedState sharedState;
@@ -45,10 +47,12 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
       Clock clock,
       IdGenerator idsGenerator,
       Resource resource,
-      Supplier<TraceConfig> traceConfigSupplier,
+      Supplier<SpanLimits> spanLimitsSupplier,
+      Sampler sampler,
       List<SpanProcessor> spanProcessors) {
     this.sharedState =
-        new TracerSharedState(clock, idsGenerator, resource, traceConfigSupplier, spanProcessors);
+        new TracerSharedState(
+            clock, idsGenerator, resource, spanLimitsSupplier, sampler, spanProcessors);
     this.tracerSdkComponentRegistry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkTracer(sharedState, instrumentationLibraryInfo));
@@ -69,22 +73,65 @@ public final class SdkTracerProvider implements TracerProvider, SdkTracerManagem
     return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
   }
 
-  @Override
-  public TraceConfig getActiveTraceConfig() {
-    return sharedState.getActiveTraceConfig();
+  /** Returns the {@link SpanLimits} that are currently applied to created spans. */
+  public SpanLimits getSpanLimits() {
+    return sharedState.getSpanLimits();
   }
 
-  @Override
+  /** Returns the configured {@link Sampler}. */
+  public Sampler getSampler() {
+    return sharedState.getSampler();
+  }
+
+  /**
+   * Attempts to stop all the activity for this {@link Tracer}. Calls {@link
+   * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
+   *
+   * <p>The returned {@link CompletableResultCode} will be completed when all the Spans are
+   * processed.
+   *
+   * <p>After this is called, newly created {@code Span}s will be no-ops.
+   *
+   * <p>After this is called, further attempts at re-using or reconfiguring this instance will
+   * result in undefined behavior. It should be considered a terminal operation for the SDK
+   * implementation.
+   *
+   * @return a {@link CompletableResultCode} which is completed when all the span processors have
+   *     been shut down.
+   */
   public CompletableResultCode shutdown() {
-    if (sharedState.isStopped()) {
+    if (sharedState.hasBeenShutdown()) {
       logger.log(Level.WARNING, "Calling shutdown() multiple times.");
       return CompletableResultCode.ofSuccess();
     }
     return sharedState.shutdown();
   }
 
-  @Override
+  /**
+   * Requests the active span processor to process all span events that have not yet been processed
+   * and returns a {@link CompletableResultCode} which is completed when the flush is finished.
+   *
+   * @see SpanProcessor#forceFlush()
+   */
   public CompletableResultCode forceFlush() {
     return sharedState.getActiveSpanProcessor().forceFlush();
+  }
+
+  /**
+   * Attempts to stop all the activity for this {@link Tracer}. Calls {@link
+   * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
+   *
+   * <p>This operation may block until all the Spans are processed. Must be called before turning
+   * off the main application to ensure all data are processed and exported.
+   *
+   * <p>After this is called, newly created {@code Span}s will be no-ops.
+   *
+   * <p>After this is called, further attempts at re-using or reconfiguring this instance will
+   * result in undefined behavior. It should be considered a terminal operation for the SDK
+   * implementation.
+   */
+  @Override
+  public void close() {
+    shutdown().join(10, TimeUnit.SECONDS);
   }
 }

@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 
 class BatchRecorderTest {
-  private static final Meter meter = Meter.getDefault();
+  private static final Meter meter = DefaultMeter.getInstance();
 
   @Test
   void testNewBatchRecorder_WrongNumberOfLabels() {

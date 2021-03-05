@@ -12,16 +12,12 @@
 package io.opentelemetry.extension.trace.propagation;
 
 import java.util.Objects;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/**
- * Utilities for working with strings.
- *
- * @deprecated Will be removed without a replacement
- */
+/** Utilities for working with strings. */
 @Immutable
-@Deprecated
-public final class StringUtils {
+final class StringUtils {
 
   /**
    * Returns a string, of length at least {@code minLength}, consisting of {@code string} prepended
@@ -43,10 +39,8 @@ public final class StringUtils {
    * @param padChar the character to insert at the beginning of the result until the minimum length
    *     is reached
    * @return the padded string
-   * @deprecated Will be removed without a replacement
    */
-  @Deprecated
-  public static String padStart(String string, int minLength, char padChar) {
+  static String padStart(String string, int minLength, char padChar) {
     Objects.requireNonNull(string);
     if (string.length() >= minLength) {
       return string;
@@ -67,10 +61,8 @@ public final class StringUtils {
    *
    * @param string a string reference to check
    * @return {@code true} if the string is null or is the empty string
-   * @deprecated Will be removed without a replacement
    */
-  @Deprecated
-  public static boolean isNullOrEmpty(String string) {
+  static boolean isNullOrEmpty(@Nullable String string) {
     return string == null || string.isEmpty();
   }
 
@@ -81,10 +73,8 @@ public final class StringUtils {
    * @param minLength the minimum length the resulting padded string must have. Can be zero or
    *     negative, in which case the input string is always returned.
    * @return the padded string
-   * @deprecated Will be removed without a replacement
    */
-  @Deprecated
-  public static String padLeft(String value, int minLength) {
+  static String padLeft(String value, int minLength) {
     return padStart(value, minLength, '0');
   }
 

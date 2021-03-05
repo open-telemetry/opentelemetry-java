@@ -11,8 +11,8 @@ import com.google.common.collect.ImmutableMap;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.JQF;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.context.propagation.TextMapPropagator.Getter;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.runner.RunWith;
@@ -29,7 +29,7 @@ public class W3CTraceContextPropagatorFuzzTest {
         w3cTraceContextPropagator.extract(
             Context.root(),
             ImmutableMap.of("traceparent", traceParentHeader, "tracestate", traceStateHeader),
-            new Getter<Map<String, String>>() {
+            new TextMapGetter<Map<String, String>>() {
               @Override
               public Iterable<String> keys(Map<String, String> carrier) {
                 return carrier.keySet();

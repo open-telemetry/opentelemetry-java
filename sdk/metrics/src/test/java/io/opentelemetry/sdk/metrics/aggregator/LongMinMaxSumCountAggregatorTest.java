@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -29,7 +29,7 @@ class LongMinMaxSumCountAggregatorTest {
   private static final LongMinMaxSumCountAggregator aggregator =
       new LongMinMaxSumCountAggregator(
           Resource.getDefault(),
-          InstrumentationLibraryInfo.getEmpty(),
+          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name",
               "description",
@@ -81,6 +81,7 @@ class LongMinMaxSumCountAggregatorTest {
         aggregator.toMetricData(
             Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
             0,
+            10,
             100);
     assertThat(metricData).isNotNull();
     assertThat(metricData.getType()).isEqualTo(MetricDataType.SUMMARY);
@@ -93,7 +94,7 @@ class LongMinMaxSumCountAggregatorTest {
     int numberOfThreads = 10;
     final long[] updates = new long[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
     final int numberOfUpdates = 1000;
-    final CountDownLatch startingGun = new CountDownLatch(numberOfThreads);
+    final CountDownLatch starter = new CountDownLatch(numberOfThreads);
     List<Thread> workers = new ArrayList<>();
     for (int i = 0; i < numberOfThreads; i++) {
       final int index = i;
@@ -102,7 +103,7 @@ class LongMinMaxSumCountAggregatorTest {
               () -> {
                 long update = updates[index];
                 try {
-                  startingGun.await();
+                  starter.await();
                 } catch (InterruptedException e) {
                   throw new RuntimeException(e);
                 }
@@ -117,7 +118,7 @@ class LongMinMaxSumCountAggregatorTest {
       t.start();
     }
     for (int i = 0; i <= numberOfThreads; i++) {
-      startingGun.countDown();
+      starter.countDown();
     }
 
     for (Thread worker : workers) {

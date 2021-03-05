@@ -5,19 +5,15 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import com.google.errorprone.annotations.concurrent.GuardedBy;
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-final class DoubleMinMaxSumCountAggregator extends AbstractAggregator<MinMaxSumCountAccumulation> {
+final class DoubleMinMaxSumCountAggregator extends AbstractMinMaxSumCountAggregator {
   DoubleMinMaxSumCountAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
@@ -33,32 +29,6 @@ final class DoubleMinMaxSumCountAggregator extends AbstractAggregator<MinMaxSumC
   @Override
   public MinMaxSumCountAccumulation accumulateDouble(double value) {
     return MinMaxSumCountAccumulation.create(1, value, value, value);
-  }
-
-  @Override
-  public MinMaxSumCountAccumulation merge(
-      MinMaxSumCountAccumulation a1, MinMaxSumCountAccumulation a2) {
-    return MinMaxSumCountAccumulation.create(
-        a1.getCount() + a2.getCount(),
-        a1.getSum() + a2.getSum(),
-        Math.min(a1.getMin(), a2.getMin()),
-        Math.max(a1.getMax(), a2.getMax()));
-  }
-
-  @Override
-  public MetricData toMetricData(
-      Map<Labels, MinMaxSumCountAccumulation> accumulationByLabels,
-      long startEpochNanos,
-      long epochNanos) {
-    return MetricData.createDoubleSummary(
-        getResource(),
-        getInstrumentationLibraryInfo(),
-        getInstrumentDescriptor().getName(),
-        getInstrumentDescriptor().getDescription(),
-        getInstrumentDescriptor().getUnit(),
-        DoubleSummaryData.create(
-            MetricDataUtils.toDoubleSummaryPointList(
-                accumulationByLabels, startEpochNanos, epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<MinMaxSumCountAccumulation> {

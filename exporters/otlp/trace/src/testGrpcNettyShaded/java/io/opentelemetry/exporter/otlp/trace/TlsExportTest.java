@@ -13,9 +13,7 @@ import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
@@ -62,8 +60,7 @@ class TlsExportTest {
   void testTlsExport() throws Exception {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.builder()
-            .setEndpoint("localhost:" + server.httpsPort())
-            .setUseTls(true)
+            .setEndpoint("https://localhost:" + server.httpsPort())
             .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
             .build();
     assertThat(
@@ -71,10 +68,8 @@ class TlsExportTest {
                 .export(
                     Arrays.asList(
                         TestSpanData.builder()
-                            .setTraceId(TraceId.getInvalid())
-                            .setSpanId(SpanId.getInvalid())
                             .setName("name")
-                            .setKind(Span.Kind.CLIENT)
+                            .setKind(SpanKind.CLIENT)
                             .setStartEpochNanos(1)
                             .setEndEpochNanos(2)
                             .setStatus(StatusData.ok())
@@ -89,18 +84,15 @@ class TlsExportTest {
   void testTlsExport_untrusted() throws Exception {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.builder()
-            .setEndpoint("localhost:" + server.httpsPort())
-            .setUseTls(true)
+            .setEndpoint("https://localhost:" + server.httpsPort())
             .build();
     assertThat(
             exporter
                 .export(
                     Arrays.asList(
                         TestSpanData.builder()
-                            .setTraceId(TraceId.getInvalid())
-                            .setSpanId(SpanId.getInvalid())
                             .setName("name")
-                            .setKind(Span.Kind.CLIENT)
+                            .setKind(SpanKind.CLIENT)
                             .setStartEpochNanos(1)
                             .setEndEpochNanos(2)
                             .setStatus(StatusData.ok())

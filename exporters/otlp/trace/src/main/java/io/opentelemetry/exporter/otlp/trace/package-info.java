@@ -36,4 +36,7 @@
  *
  * In both cases, if a property is missing, the name without "span" is used to resolve the value.
  */
+@ParametersAreNonnullByDefault
 package io.opentelemetry.exporter.otlp.trace;
+
+import javax.annotation.ParametersAreNonnullByDefault;

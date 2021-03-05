@@ -17,13 +17,16 @@ import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.trace.Span.Kind;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.extension.otproto.SpanAdapter;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -78,6 +81,19 @@ class OtlpGrpcSpanExporterTest {
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
+
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("endpoint");
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("😺://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must be a URL: 😺://localhost");
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: localhost");
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("gopher://localhost"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
   }
 
   @Test
@@ -235,13 +251,13 @@ class OtlpGrpcSpanExporterTest {
     long endNs = startNs + duration;
     return TestSpanData.builder()
         .setHasEnded(true)
-        .setTraceId(TRACE_ID)
-        .setSpanId(SPAN_ID)
+        .setSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
         .setName("GET /api/endpoint")
         .setStartEpochNanos(startNs)
         .setEndEpochNanos(endNs)
         .setStatus(StatusData.ok())
-        .setKind(Kind.SERVER)
+        .setKind(SpanKind.SERVER)
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)

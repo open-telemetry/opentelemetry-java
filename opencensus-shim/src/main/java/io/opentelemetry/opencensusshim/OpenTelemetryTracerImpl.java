@@ -28,14 +28,13 @@ import io.opencensus.trace.SpanBuilder;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.Tracer;
 import io.opencensus.trace.config.TraceConfig;
-import io.opentelemetry.opencensusshim.OpenTelemetrySpanBuilderImpl.Options;
 import javax.annotation.Nullable;
 
 class OpenTelemetryTracerImpl extends Tracer {
   private final OpenTelemetrySpanBuilderImpl.Options spanBuilderOptions;
 
   public OpenTelemetryTracerImpl(RandomHandler randomHandler, TraceConfig traceConfig) {
-    spanBuilderOptions = new Options(randomHandler, traceConfig);
+    spanBuilderOptions = new OpenTelemetrySpanBuilderImpl.Options(randomHandler, traceConfig);
   }
 
   @Override

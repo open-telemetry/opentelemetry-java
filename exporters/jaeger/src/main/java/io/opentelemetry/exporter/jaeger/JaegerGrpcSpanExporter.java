@@ -12,15 +12,13 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector.PostSpansRequest;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector.PostSpansResponse;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.Model.Process;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -54,18 +52,13 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   /**
    * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.
    *
-   * @param serviceName this service's name.
    * @param channel the channel to use when communicating with the Jaeger Collector.
    * @param timeoutNanos max waiting time for the collector to process each span batch. When set to
    *     0 or to a negative value, the exporter will wait indefinitely.
    */
-  JaegerGrpcSpanExporter(String serviceName, ManagedChannel channel, long timeoutNanos) {
+  JaegerGrpcSpanExporter(ManagedChannel channel, long timeoutNanos) {
     String hostname;
     String ipv4;
-
-    if (serviceName == null || serviceName.trim().length() == 0) {
-      throw new IllegalArgumentException("Service name must not be null or empty");
-    }
 
     try {
       hostname = InetAddress.getLocalHost().getHostName();
@@ -87,11 +80,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
         Model.KeyValue.newBuilder().setKey(HOSTNAME_KEY).setVStr(hostname).build();
 
     this.processBuilder =
-        Model.Process.newBuilder()
-            .setServiceName(serviceName)
-            .addTags(clientTag)
-            .addTags(ipv4Tag)
-            .addTags(hostnameTag);
+        Model.Process.newBuilder().addTags(clientTag).addTags(ipv4Tag).addTags(hostnameTag);
 
     this.managedChannel = channel;
     this.stub = CollectorServiceGrpc.newFutureStub(channel);
@@ -116,8 +105,9 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
         .collect(Collectors.groupingBy(SpanData::getResource))
         .forEach((resource, spanData) -> requests.add(buildRequest(resource, spanData)));
 
-    List<ListenableFuture<PostSpansResponse>> listenableFutures = new ArrayList<>(requests.size());
-    for (PostSpansRequest request : requests) {
+    List<ListenableFuture<Collector.PostSpansResponse>> listenableFutures =
+        new ArrayList<>(requests.size());
+    for (Collector.PostSpansRequest request : requests) {
       listenableFutures.add(stub.postSpans(request));
     }
 
@@ -127,7 +117,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     for (ListenableFuture<Collector.PostSpansResponse> future : listenableFutures) {
       Futures.addCallback(
           future,
-          new FutureCallback<PostSpansResponse>() {
+          new FutureCallback<Collector.PostSpansResponse>() {
             @Override
             public void onSuccess(Collector.PostSpansResponse result) {
               fulfill();
@@ -157,7 +147,14 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   }
 
   private Collector.PostSpansRequest buildRequest(Resource resource, List<SpanData> spans) {
-    Process.Builder builder = this.processBuilder.clone();
+    Model.Process.Builder builder = this.processBuilder.clone();
+
+    String serviceName = resource.getAttributes().get(ResourceAttributes.SERVICE_NAME);
+    if (serviceName == null || serviceName.isEmpty()) {
+      serviceName = Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME);
+    }
+    builder.setServiceName(serviceName);
+
     builder.addAllTags(Adapter.toKeyValues(resource.getAttributes()));
 
     return Collector.PostSpansRequest.newBuilder()

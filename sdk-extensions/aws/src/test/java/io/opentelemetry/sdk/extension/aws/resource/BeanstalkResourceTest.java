@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
 import java.io.IOException;
 import java.util.ServiceLoader;
@@ -27,21 +27,20 @@ class BeanstalkResourceTest {
         "{\"noise\": \"noise\", \"deployment_id\":4,\""
             + "version_label\":\"2\",\"environment_name\":\"HttpSubscriber-env\"}";
     Files.write(content.getBytes(Charsets.UTF_8), file);
-    BeanstalkResource populator = new BeanstalkResource(file.getPath());
-    Attributes attributes = populator.getAttributes();
+    Attributes attributes = BeanstalkResource.buildResource(file.getPath()).getAttributes();
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
                 ResourceAttributes.CLOUD_PROVIDER, "aws",
-                ResourceAttributes.SERVICE_INSTANCE, "4",
+                ResourceAttributes.SERVICE_INSTANCE_ID, "4",
                 ResourceAttributes.SERVICE_VERSION, "2",
                 ResourceAttributes.SERVICE_NAMESPACE, "HttpSubscriber-env"));
   }
 
   @Test
   void testConfigFileMissing() {
-    BeanstalkResource populator = new BeanstalkResource("a_file_never_existing");
-    Attributes attributes = populator.getAttributes();
+    Attributes attributes =
+        BeanstalkResource.buildResource("a_file_never_existing").getAttributes();
     assertThat(attributes.isEmpty()).isTrue();
   }
 
@@ -52,8 +51,7 @@ class BeanstalkResourceTest {
         "\"deployment_id\":4,\"version_label\":\"2\",\""
             + "environment_name\":\"HttpSubscriber-env\"}";
     Files.write(content.getBytes(Charsets.UTF_8), file);
-    BeanstalkResource populator = new BeanstalkResource(file.getPath());
-    Attributes attributes = populator.getAttributes();
+    Attributes attributes = BeanstalkResource.buildResource(file.getPath()).getAttributes();
     assertThat(attributes.isEmpty()).isTrue();
   }
 
@@ -62,6 +60,6 @@ class BeanstalkResourceTest {
     // No practical way to test the attributes themselves so at least check the service loader picks
     // it up.
     assertThat(ServiceLoader.load(ResourceProvider.class))
-        .anyMatch(BeanstalkResource.class::isInstance);
+        .anyMatch(BeanstalkResourceProvider.class::isInstance);
   }
 }

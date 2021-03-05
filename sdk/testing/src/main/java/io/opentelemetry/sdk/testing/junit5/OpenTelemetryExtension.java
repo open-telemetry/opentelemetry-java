@@ -14,7 +14,6 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.testing.assertj.TracesAssert;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -33,18 +32,18 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * between tests.
  *
  * <pre>{@code
- * > class CoolTest {
- * >   {@literal @}RegisterExtension
- * >   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
- * >
- * >   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
- * >
- * >   {@literal @}Test
- * >   void test() {
- * >     tracer.spanBuilder("name").startSpan().end();
- * >     assertThat(otelTesting.getSpans()).containsExactly(expected);
- * >   }
- * >  }
+ * // class CoolTest {
+ * //   @RegisterExtension
+ * //   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
+ * //
+ * //   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
+ * //
+ * //   @Test
+ * //   void test() {
+ * //     tracer.spanBuilder("name").startSpan().end();
+ * //     assertThat(otelTesting.getSpans()).containsExactly(expected);
+ * //   }
+ * //  }
  * }</pre>
  */
 public final class OpenTelemetryExtension
@@ -74,8 +73,6 @@ public final class OpenTelemetryExtension
   private final OpenTelemetrySdk openTelemetry;
   private final InMemorySpanExporter spanExporter;
 
-  private volatile OpenTelemetry previousGlobalOpenTelemetry;
-
   private OpenTelemetryExtension(
       OpenTelemetrySdk openTelemetry, InMemorySpanExporter spanExporter) {
     this.openTelemetry = openTelemetry;
@@ -85,11 +82,6 @@ public final class OpenTelemetryExtension
   /** Returns the {@link OpenTelemetrySdk} created by this extension. */
   public OpenTelemetry getOpenTelemetry() {
     return openTelemetry;
-  }
-
-  /** Returns the {@link SdkTracerManagement} created by this extension. */
-  public SdkTracerManagement getTracerManagement() {
-    return openTelemetry.getTracerManagement();
   }
 
   /** Returns all the exported {@link SpanData} so far. */
@@ -128,12 +120,11 @@ public final class OpenTelemetryExtension
 
   @Override
   public void beforeAll(ExtensionContext context) {
-    previousGlobalOpenTelemetry = GlobalOpenTelemetry.get();
     GlobalOpenTelemetry.set(openTelemetry);
   }
 
   @Override
   public void afterAll(ExtensionContext context) {
-    GlobalOpenTelemetry.set(previousGlobalOpenTelemetry);
+    GlobalOpenTelemetry.resetForTest();
   }
 }

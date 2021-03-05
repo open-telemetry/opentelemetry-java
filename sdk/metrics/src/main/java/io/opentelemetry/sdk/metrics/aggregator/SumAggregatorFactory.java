@@ -7,12 +7,15 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.resources.Resource;
 
 final class SumAggregatorFactory implements AggregatorFactory {
-  static final AggregatorFactory INSTANCE = new SumAggregatorFactory();
+  private final boolean alwaysCumulative;
 
-  private SumAggregatorFactory() {}
+  SumAggregatorFactory(boolean alwaysCumulative) {
+    this.alwaysCumulative = alwaysCumulative;
+  }
 
   @Override
   @SuppressWarnings("unchecked")
@@ -20,13 +23,18 @@ final class SumAggregatorFactory implements AggregatorFactory {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor) {
+    boolean stateful = alwaysCumulative;
+    if (descriptor.getType() == InstrumentType.SUM_OBSERVER
+        || descriptor.getType() == InstrumentType.UP_DOWN_SUM_OBSERVER) {
+      stateful = false;
+    }
     switch (descriptor.getValueType()) {
       case LONG:
         return (Aggregator<T>)
-            new LongSumAggregator(resource, instrumentationLibraryInfo, descriptor);
+            new LongSumAggregator(resource, instrumentationLibraryInfo, descriptor, stateful);
       case DOUBLE:
         return (Aggregator<T>)
-            new DoubleSumAggregator(resource, instrumentationLibraryInfo, descriptor);
+            new DoubleSumAggregator(resource, instrumentationLibraryInfo, descriptor, stateful);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

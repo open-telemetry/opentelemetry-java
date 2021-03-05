@@ -11,8 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -39,8 +39,9 @@ class TracerProviderConfigurationTest {
   @Test
   void configureTracerProvider() {
     Map<String, String> properties = new HashMap<>();
-    properties.put("otel.bsp.schedule.delay.millis", "100000");
-    properties.put("otel.trace.sampler", "always_off");
+    properties.put("otel.bsp.schedule.delay", "100000");
+    properties.put("otel.traces.sampler", "always_off");
+    properties.put("otel.traces.exporter", "none");
 
     Resource resource = Resource.create(Attributes.builder().put("cat", "meow").build());
     // We don't have any exporters on classpath for this test so check no-op case. Exporter cases
@@ -49,7 +50,7 @@ class TracerProviderConfigurationTest {
         TracerProviderConfiguration.configureTracerProvider(
             resource, ConfigProperties.createForTest(properties));
     try {
-      assertThat(tracerProvider.getActiveTraceConfig().getSampler()).isEqualTo(Sampler.alwaysOff());
+      assertThat(tracerProvider.getSampler()).isEqualTo(Sampler.alwaysOff());
 
       assertThat(tracerProvider)
           .extracting("sharedState")
@@ -97,10 +98,10 @@ class TracerProviderConfigurationTest {
   @Test
   void configureSpanProcessor_configured() {
     Map<String, String> properties = new HashMap<>();
-    properties.put("otel.bsp.schedule.delay.millis", "100000");
+    properties.put("otel.bsp.schedule.delay", "100000");
     properties.put("otel.bsp.max.queue.size", "2");
     properties.put("otel.bsp.max.export.batch.size", "3");
-    properties.put("otel.bsp.export.timeout.millis", "4");
+    properties.put("otel.bsp.export.timeout", "4");
 
     BatchSpanProcessor processor =
         TracerProviderConfiguration.configureSpanProcessor(
@@ -132,23 +133,21 @@ class TracerProviderConfigurationTest {
 
   @Test
   void configureTraceConfig_empty() {
-    assertThat(TracerProviderConfiguration.configureTraceConfig(EMPTY))
-        .isEqualTo(TraceConfig.getDefault());
+    assertThat(TracerProviderConfiguration.configureSpanLimits(EMPTY))
+        .isEqualTo(SpanLimits.getDefault());
   }
 
   @Test
   void configureTraceConfig_full() {
 
     Map<String, String> properties = new HashMap<>();
-    properties.put("otel.trace.sampler", "always_off");
+    properties.put("otel.traces.sampler", "always_off");
     properties.put("otel.span.attribute.count.limit", "5");
     properties.put("otel.span.event.count.limit", "4");
     properties.put("otel.span.link.count.limit", "3");
 
-    TraceConfig config =
-        TracerProviderConfiguration.configureTraceConfig(
-            ConfigProperties.createForTest(properties));
-    assertThat(config.getSampler()).isEqualTo(Sampler.alwaysOff());
+    SpanLimits config =
+        TracerProviderConfiguration.configureSpanLimits(ConfigProperties.createForTest(properties));
     assertThat(config.getMaxNumberOfAttributes()).isEqualTo(5);
     assertThat(config.getMaxNumberOfEvents()).isEqualTo(4);
     assertThat(config.getMaxNumberOfLinks()).isEqualTo(3);
@@ -164,7 +163,7 @@ class TracerProviderConfigurationTest {
             TracerProviderConfiguration.configureSampler(
                 "traceidratio",
                 ConfigProperties.createForTest(
-                    Collections.singletonMap("otel.trace.sampler.arg", "0.5"))))
+                    Collections.singletonMap("otel.traces.sampler.arg", "0.5"))))
         .isEqualTo(Sampler.traceIdRatioBased(0.5));
     assertThat(TracerProviderConfiguration.configureSampler("traceidratio", EMPTY))
         .isEqualTo(Sampler.traceIdRatioBased(1.0d));
@@ -176,13 +175,13 @@ class TracerProviderConfigurationTest {
             TracerProviderConfiguration.configureSampler(
                 "parentbased_traceidratio",
                 ConfigProperties.createForTest(
-                    Collections.singletonMap("otel.trace.sampler.arg", "0.4"))))
+                    Collections.singletonMap("otel.traces.sampler.arg", "0.4"))))
         .isEqualTo(Sampler.parentBased(Sampler.traceIdRatioBased(0.4)));
     assertThat(TracerProviderConfiguration.configureSampler("parentbased_traceidratio", EMPTY))
         .isEqualTo(Sampler.parentBased(Sampler.traceIdRatioBased(1.0d)));
 
     assertThatThrownBy(() -> TracerProviderConfiguration.configureSampler("catsampler", EMPTY))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized value for otel.trace.sampler: catsampler");
+        .hasMessage("Unrecognized value for otel.traces.sampler: catsampler");
   }
 }

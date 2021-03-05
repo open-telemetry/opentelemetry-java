@@ -5,12 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
@@ -32,7 +30,7 @@ final class DoubleLastValueAggregator extends AbstractAggregator<Double> {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor) {
-    super(resource, instrumentationLibraryInfo, descriptor);
+    super(resource, instrumentationLibraryInfo, descriptor, /* stateful= */ true);
   }
 
   @Override
@@ -53,47 +51,18 @@ final class DoubleLastValueAggregator extends AbstractAggregator<Double> {
 
   @Override
   public MetricData toMetricData(
-      Map<Labels, Double> accumulationByLabels, long startEpochNanos, long epochNanos) {
-    switch (getInstrumentDescriptor().getType()) {
-      case SUM_OBSERVER:
-        return MetricData.createDoubleSum(
-            getResource(),
-            getInstrumentationLibraryInfo(),
-            getInstrumentDescriptor().getName(),
-            getInstrumentDescriptor().getDescription(),
-            getInstrumentDescriptor().getUnit(),
-            DoubleSumData.create(
-                /* isMonotonic= */ true,
-                AggregationTemporality.CUMULATIVE,
-                MetricDataUtils.toDoublePointList(
-                    accumulationByLabels, startEpochNanos, epochNanos)));
-      case UP_DOWN_SUM_OBSERVER:
-        return MetricData.createDoubleSum(
-            getResource(),
-            getInstrumentationLibraryInfo(),
-            getInstrumentDescriptor().getName(),
-            getInstrumentDescriptor().getDescription(),
-            getInstrumentDescriptor().getUnit(),
-            DoubleSumData.create(
-                /* isMonotonic= */ false,
-                AggregationTemporality.CUMULATIVE,
-                MetricDataUtils.toDoublePointList(
-                    accumulationByLabels, startEpochNanos, epochNanos)));
-      case VALUE_OBSERVER:
-        return MetricData.createDoubleGauge(
-            getResource(),
-            getInstrumentationLibraryInfo(),
-            getInstrumentDescriptor().getName(),
-            getInstrumentDescriptor().getDescription(),
-            getInstrumentDescriptor().getUnit(),
-            DoubleGaugeData.create(
-                MetricDataUtils.toDoublePointList(
-                    accumulationByLabels, startEpochNanos, epochNanos)));
-      case COUNTER:
-      case UP_DOWN_COUNTER:
-      case VALUE_RECORDER:
-    }
-    return null;
+      Map<Labels, Double> accumulationByLabels,
+      long startEpochNanos,
+      long lastCollectionEpoch,
+      long epochNanos) {
+    return MetricData.createDoubleGauge(
+        getResource(),
+        getInstrumentationLibraryInfo(),
+        getInstrumentDescriptor().getName(),
+        getInstrumentDescriptor().getDescription(),
+        getInstrumentDescriptor().getUnit(),
+        DoubleGaugeData.create(
+            MetricDataUtils.toDoublePointList(accumulationByLabels, 0, epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<Double> {

@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import com.google.errorprone.annotations.Immutable;
-import io.opentelemetry.api.common.Labels;
 import io.opentelemetry.api.metrics.BoundDoubleCounter;
 import io.opentelemetry.api.metrics.BoundDoubleValueRecorder;
 import io.opentelemetry.api.metrics.BoundLongCounter;
@@ -16,6 +14,7 @@ import io.opentelemetry.api.metrics.DoubleValueRecorder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongValueRecorder;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.common.Labels;
 
 /**
  * This enum allows for iteration over all of the operations that we want to benchmark. To ensure
@@ -23,6 +22,7 @@ import io.opentelemetry.api.metrics.Meter;
  * return a wrapper for both bound and unbound versions of that operation which can then be used in
  * a benchmark.
  */
+@SuppressWarnings("ImmutableEnumChecker")
 public enum MetricsTestOperationBuilder {
   LongCounterAdd(
       meter -> {
@@ -121,7 +121,6 @@ public enum MetricsTestOperationBuilder {
     return this.builder.build(meter);
   }
 
-  @Immutable
   private interface OperationBuilder {
     Operation build(Meter meter);
   }

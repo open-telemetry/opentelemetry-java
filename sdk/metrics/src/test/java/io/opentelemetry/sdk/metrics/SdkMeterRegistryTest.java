@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.api.common.Labels;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -25,14 +25,14 @@ import org.junit.jupiter.api.Test;
 class SdkMeterRegistryTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider meterProvider =
-      SdkMeterProvider.builder().setClock(testClock).setResource(Resource.getEmpty()).build();
+      SdkMeterProvider.builder().setClock(testClock).setResource(Resource.empty()).build();
 
   @Test
   void builder_HappyPath() {
     assertThat(
             SdkMeterProvider.builder()
                 .setClock(mock(Clock.class))
-                .setResource(mock(Resource.class))
+                .setResource(Resource.empty())
                 .build())
         .isNotNull();
   }
@@ -87,7 +87,7 @@ class SdkMeterRegistryTest {
     assertThat(meterProvider.collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
-                Resource.getEmpty(),
+                Resource.empty(),
                 sdkMeter1.getInstrumentationLibraryInfo(),
                 "testLongCounter",
                 "",
@@ -99,7 +99,7 @@ class SdkMeterRegistryTest {
                         LongPointData.create(
                             testClock.now(), testClock.now(), Labels.empty(), 10)))),
             MetricData.createLongSum(
-                Resource.getEmpty(),
+                Resource.empty(),
                 sdkMeter2.getInstrumentationLibraryInfo(),
                 "testLongCounter",
                 "",

@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -48,7 +49,7 @@ class HandlerTest {
     assertThat(finished).hasSize(2);
 
     for (SpanData spanProto : finished) {
-      assertThat(spanProto.getKind()).isEqualTo(Span.Kind.CLIENT);
+      assertThat(spanProto.getKind()).isEqualTo(SpanKind.CLIENT);
     }
 
     assertThat(finished.get(0).getTraceId()).isNotEqualTo(finished.get(1).getTraceId());
