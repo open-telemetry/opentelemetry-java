@@ -83,12 +83,24 @@ final class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder addLink(SpanContext spanContext) {
+    if (spanContext == null || !spanContext.isValid()) {
+      return this;
+    }
     addLink(LinkData.create(spanContext));
     return this;
   }
 
   @Override
   public SpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
+    if (spanContext == null || !spanContext.isValid()) {
+      return this;
+    }
+    if (!spanContext.isValid()) {
+      return this;
+    }
+    if (attributes == null) {
+      attributes = Attributes.empty();
+    }
     int totalAttributeCount = attributes.size();
     addLink(
         LinkData.create(

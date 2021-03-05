@@ -15,6 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -92,12 +93,27 @@ class SdkSpanBuilderTest {
   void addLink() {
     // Verify methods do not crash.
     SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
+    spanBuilder.addLink(sampledSpanContext);
+    spanBuilder.addLink(sampledSpanContext, Attributes.empty());
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      assertThat(span.toSpanData().getLinks()).hasSize(2);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void addLink_invalid() {
+    // Verify methods do not crash.
+    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(Span.getInvalid().getSpanContext());
     spanBuilder.addLink(Span.getInvalid().getSpanContext(), Attributes.empty());
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      assertThat(span.toSpanData().getLinks()).hasSize(2);
+      assertThat(span.toSpanData().getLinks()).isEmpty();
     } finally {
       span.end();
     }
@@ -174,22 +190,19 @@ class SdkSpanBuilderTest {
 
   @Test
   void addLinkSpanContext_null() {
-    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null))
-        .isInstanceOf(NullPointerException.class);
+    assertThatCode(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null)).doesNotThrowAnyException();
   }
 
   @Test
   void addLinkSpanContextAttributes_nullContext() {
-    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty()))
-        .isInstanceOf(NullPointerException.class);
+    assertThatCode(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty()))
+        .doesNotThrowAnyException();
   }
 
   @Test
   void addLinkSpanContextAttributes_nullAttributes() {
-    assertThatThrownBy(
-            () ->
-                sdkTracer.spanBuilder(SPAN_NAME).addLink(Span.getInvalid().getSpanContext(), null))
-        .isInstanceOf(NullPointerException.class);
+    assertThatCode(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(sampledSpanContext, null))
+        .doesNotThrowAnyException();
   }
 
   @Test
