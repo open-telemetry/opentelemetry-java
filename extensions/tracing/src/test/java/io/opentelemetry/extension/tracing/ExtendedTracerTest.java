@@ -16,7 +16,7 @@ import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-class SpanalyzerTest {
+class ExtendedTracerTest {
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
@@ -24,7 +24,7 @@ class SpanalyzerTest {
 
   @Test
   void wrapRunnable() {
-    new Spanalyzer(tracer)
+    new ExtendedTracer(tracer)
         .wrap(
             "testSpan",
             () -> {
@@ -47,7 +47,7 @@ class SpanalyzerTest {
   void wrapRunnable_throws() {
     assertThatThrownBy(
             () ->
-                new Spanalyzer(tracer)
+                new ExtendedTracer(tracer)
                     .wrap(
                         "throwingRunnable",
                         (Runnable)
@@ -79,7 +79,7 @@ class SpanalyzerTest {
   @Test
   void wrapCallable() throws Exception {
     assertThat(
-            new Spanalyzer(tracer)
+            new ExtendedTracer(tracer)
                 .wrap(
                     "spanCallable",
                     () -> {
@@ -104,7 +104,7 @@ class SpanalyzerTest {
   void wrapCallable_throws() throws Exception {
     assertThatThrownBy(
             () ->
-                new Spanalyzer(tracer)
+                new ExtendedTracer(tracer)
                     .wrap(
                         "throwingCallable",
                         () -> {
