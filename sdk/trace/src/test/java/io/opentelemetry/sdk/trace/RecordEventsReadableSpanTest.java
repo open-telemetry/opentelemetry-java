@@ -196,6 +196,17 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
+  void toSpanData_immutableEvents_ended() {
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    span.end();
+    SpanData spanData = span.toSpanData();
+
+    assertThatThrownBy(
+            () -> spanData.getEvents().add(EventData.create(1000, "test", Attributes.empty())))
+        .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
   void toSpanData_RootSpan() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
