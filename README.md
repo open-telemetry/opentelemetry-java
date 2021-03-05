@@ -136,13 +136,13 @@ dependencies {
 ```
 
 Libraries will usually only need `opentelemetry-api`, while applications
-may want to use `opentelemetry-sdk`.
+will want to use the `opentelemetry-sdk` module which contains our standard implementation
+of the APIs.
 
 ## Releases
 
-OpenTelemetry Java is under active development. Releases aren't guaranteed
-to conform to a specific version of the specification. Future releases will
-not attempt to maintain backwards compatibility with previous releases.
+See the [VERSIONING.md](VERSIONING.md) document for our policies for releases and compatibility 
+guarantees.
 
 Check out information about the [latest release](https://github.com/open-telemetry/opentelemetry-java/releases).
 
