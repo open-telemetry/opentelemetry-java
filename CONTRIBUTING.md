@@ -110,6 +110,7 @@ It does not support all required rules, so you still have to run `spotlessApply`
   Javadoc, though the style of documentation is up to the author.
 * Try to do the least amount of change when modifying existing documentation.
   Don't change the style unless you have a good reason.
+* We do not use `@author` tags in our javadoc.
 * Our javadoc is available via [javadoc.io}(https://javadoc.io/doc/io.opentelemetry/opentelemetry-api)
 
 ### AutoValue
