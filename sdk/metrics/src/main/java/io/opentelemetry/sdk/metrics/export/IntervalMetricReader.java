@@ -92,27 +92,8 @@ public final class IntervalMetricReader {
     @Override
     @SuppressWarnings("BooleanParameter")
     public void run() {
-      if (exportAvailable.compareAndSet(true, false)) {
-        try {
-          List<MetricData> metricsList = new ArrayList<>();
-          for (MetricProducer metricProducer : internalState.getMetricProducers()) {
-            metricsList.addAll(metricProducer.collectAllMetrics());
-          }
-          final CompletableResultCode result =
-              internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
-          result.whenComplete(
-              () -> {
-                if (!result.isSuccess()) {
-                  logger.log(Level.FINE, "Exporter failed");
-                }
-                exportAvailable.set(true);
-              });
-        } catch (RuntimeException e) {
-          logger.log(Level.WARNING, "Exporter threw an Exception", e);
-        }
-      } else {
-        logger.log(Level.FINE, "Exporter busy. Dropping metrics.");
-      }
+      // Ignore the CompletableResultCode from doRun() in order to keep run() asynchronous
+      doRun();
     }
 
     CompletableResultCode doRun() {
