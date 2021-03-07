@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -23,9 +23,13 @@ import java.util.logging.Logger;
 
 /**
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
- * SpanData} and passes it directly to the configured exporter. This processor should only be used
- * where the exporter(s) are able to handle multiple exports simultaneously, as there is no back
- * pressure consideration here.
+ * SpanData} and passes it directly to the configured exporter.
+ *
+ * <p>This processor will cause all spans to be exported directly as they finish, meaning each
+ * export request will have a single span. Most backends will not perform well with a single span
+ * per request so unless you know what you're doing, strongly consider using {@link
+ * BatchSpanProcessor} instead, including in special environments such as serverless runtimes.
+ * {@link SimpleSpanProcessor} is generally meant to for logging or testing.
  */
 public final class SimpleSpanProcessor implements SpanProcessor {
 
@@ -33,7 +37,8 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   private final SpanExporter spanExporter;
   private final boolean sampled;
-  private final Map<CompletableResultCode, Boolean> pendingExports = new ConcurrentHashMap<>();
+  private final Set<CompletableResultCode> pendingExports =
+      Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
   /**
@@ -68,7 +73,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     try {
       List<SpanData> spans = Collections.singletonList(span.toSpanData());
       final CompletableResultCode result = spanExporter.export(spans);
-      pendingExports.put(result, true);
+      pendingExports.add(result);
       result.whenComplete(
           () -> {
             pendingExports.remove(result);
@@ -112,6 +117,6 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
   @Override
   public CompletableResultCode forceFlush() {
-    return CompletableResultCode.ofAll(pendingExports.keySet());
+    return CompletableResultCode.ofAll(pendingExports);
   }
 }
