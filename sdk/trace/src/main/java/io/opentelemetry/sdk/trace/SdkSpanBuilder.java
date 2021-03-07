@@ -95,9 +95,6 @@ final class SdkSpanBuilder implements SpanBuilder {
     if (spanContext == null || !spanContext.isValid()) {
       return this;
     }
-    if (!spanContext.isValid()) {
-      return this;
-    }
     if (attributes == null) {
       attributes = Attributes.empty();
     }
