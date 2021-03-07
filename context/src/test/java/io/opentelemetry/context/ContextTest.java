@@ -219,7 +219,7 @@ class ContextTest {
     assertThat(value).hasValue(null);
 
     try (Scope ignored = CAT.makeCurrent()) {
-      Context.currentContextWrapping(executor).execute(callback);
+      Context.wrapTasks(executor).execute(callback);
       assertThat(value).hasValue("cat");
     }
   }
@@ -372,7 +372,7 @@ class ContextTest {
   class CurrentContextWrappingExecutorService extends WrapExecutorService {
     @Override
     protected ExecutorService wrap(ExecutorService executorService) {
-      return Context.currentContextWrapping(executorService);
+      return Context.wrapTasks(executorService);
     }
 
     private Scope scope;

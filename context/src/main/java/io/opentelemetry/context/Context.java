@@ -101,18 +101,31 @@ public interface Context {
 
   /**
    * Returns an {@link Executor} which delegates to the provided {@code executor}, wrapping all
-   * invocations with the {@linkplain Context#current() current context} at the time of invocation.
+   * invocations of {@link Executor#execute(Runnable)} with the {@linkplain Context#current()
+   * current context} at the time of invocation.
+   *
+   * <p>This is generally used to create an {@link Executor} which will forward the {@link Context}
+   * during an invocation to another thread. For example, you may use something like {@code Executor
+   * dbExecutor = Context.wrapTasks(threadPool)} to ensure calls like {@code dbExecutor.execute(()
+   * -> database.query())} have {@link Context} available on the thread executing database queries.
    */
-  static Executor currentContextWrapping(Executor executor) {
+  static Executor wrapTasks(Executor executor) {
     return command -> executor.execute(Context.current().wrap(command));
   }
 
   /**
    * Returns an {@link ExecutorService} which delegates to the provided {@code executorService},
-   * wrapping all invocations with the {@linkplain Context#current() current context} at the time of
-   * invocation.
+   * wrapping all invocations of {@link ExecutorService} methods such as {@link
+   * ExecutorService#execute(Runnable)} or {@link ExecutorService#submit(Runnable)} with the
+   * {@linkplain Context#current() current context} at the time of invocation.
+   *
+   * <p>This is generally used to create an {@link ExecutorService} which will forward the {@link
+   * Context} during an invocation to another thread. For example, you may use something like {@code
+   * ExecutorService dbExecutor = Context.wrapTasks(threadPool)} to ensure calls like {@code
+   * dbExecutor.execute(() -> database.query())} have {@link Context} available on the thread
+   * executing database queries.
    */
-  static ExecutorService currentContextWrapping(ExecutorService executorService) {
+  static ExecutorService wrapTasks(ExecutorService executorService) {
     return new CurrentContextExecutorService(executorService);
   }
 

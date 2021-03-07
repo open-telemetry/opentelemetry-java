@@ -14,7 +14,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-class CurrentContextExecutorService extends ForwardingExecutorService {
+final class CurrentContextExecutorService extends ForwardingExecutorService {
 
   CurrentContextExecutorService(ExecutorService delegate) {
     super(delegate);
