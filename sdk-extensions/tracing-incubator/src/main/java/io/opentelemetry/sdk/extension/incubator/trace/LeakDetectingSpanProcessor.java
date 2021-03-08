@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.extension.incubator.trace;
 
 import static java.lang.Thread.currentThread;
 
-import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -61,7 +60,7 @@ public final class LeakDetectingSpanProcessor implements SpanProcessor {
     caller.setStackTrace(
         Arrays.copyOfRange(stackTrace, Math.min(3, stackTrace.length), stackTrace.length));
 
-    pendingSpans.put(span.getSpanContext(), caller);
+    pendingSpans.put(span, caller);
   }
 
   @Override
@@ -71,7 +70,7 @@ public final class LeakDetectingSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    pendingSpans.remove(span.getSpanContext()).ended = true;
+    pendingSpans.remove(span).ended = true;
   }
 
   @Override
@@ -79,9 +78,9 @@ public final class LeakDetectingSpanProcessor implements SpanProcessor {
     return true;
   }
 
-  private static class PendingSpans extends WeakConcurrentMap<SpanContext, CallerStackTrace> {
+  private static class PendingSpans extends WeakConcurrentMap<ReadableSpan, CallerStackTrace> {
 
-    private final ConcurrentHashMap<WeakKey<SpanContext>, CallerStackTrace> map;
+    private final ConcurrentHashMap<WeakKey<ReadableSpan>, CallerStackTrace> map;
     private final BiConsumer<String, Throwable> reporter;
 
     @SuppressWarnings("ThreadPriorityCheck")
@@ -97,7 +96,7 @@ public final class LeakDetectingSpanProcessor implements SpanProcessor {
     }
 
     private PendingSpans(
-        ConcurrentHashMap<WeakKey<SpanContext>, CallerStackTrace> map,
+        ConcurrentHashMap<WeakKey<ReadableSpan>, CallerStackTrace> map,
         BiConsumer<String, Throwable> reporter) {
       super(/* cleanerThread= */ false, /* reuseKeys= */ false, map);
       this.map = map;
@@ -110,7 +109,7 @@ public final class LeakDetectingSpanProcessor implements SpanProcessor {
       try {
         while (!Thread.interrupted()) {
           // call blocks until something is GC'd.
-          Reference<? extends SpanContext> gcdReference = remove();
+          Reference<? extends ReadableSpan> gcdReference = remove();
           CallerStackTrace caller = map.remove(gcdReference);
           if (caller != null && !caller.ended) {
             reporter.accept("Span garbage collected before being ended.", callerError(caller));

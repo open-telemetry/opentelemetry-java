@@ -8,8 +8,11 @@ package io.opentelemetry.sdk.extension.incubator.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import com.google.common.testing.GcFinalization;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import java.lang.ref.WeakReference;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +66,13 @@ public class LeakDetectingSpanProcessorTest {
 
     Tracer tracer = tracerProvider.get("test");
 
-    tracer.spanBuilder("testSpan").startSpan().end();
+    Span testSpan = tracer.spanBuilder("testSpan").startSpan();
+    WeakReference<Span> spanRef = new WeakReference<>(testSpan);
+
+    testSpan.end();
+    testSpan = null;
+
+    GcFinalization.awaitClear(spanRef);
 
     System.gc();
     assertThat(logs).isEmpty();
