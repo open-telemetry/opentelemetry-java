@@ -85,7 +85,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
               switch (status.getCode()) {
                 case UNIMPLEMENTED:
                   logger.log(
-                      Level.WARNING,
+                      Level.SEVERE,
                       "Failed to export metrics. Server responded with UNIMPLEMENTED. "
                           + "This usually means that your collector is not configured with an otlp "
                           + "receiver in the \"pipelines\" section of the configuration. "
@@ -95,7 +95,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
                 case UNAVAILABLE:
                   logger.log(
                       Level.SEVERE,
-                      "Failed to export metrics. Server is UNAVAILABLE.",
+                      "Failed to export metrics. Server is UNAVAILABLE. "
+                          + "Make sure your collector is running and reachable from this network.",
                       t.getMessage());
                   break;
                 default:

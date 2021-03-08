@@ -224,7 +224,10 @@ class OtlpGrpcSpanExporterTest {
     } finally {
       exporter.shutdown();
     }
-    LoggingEvent log = logs.assertContains("Failed to export spans. Server is UNAVAILABLE.");
+    LoggingEvent log =
+        logs.assertContains(
+            "Failed to export spans. Server is UNAVAILABLE. "
+                + "Make sure your collector is running and reachable from this network.");
     assertThat(log.getLevel()).isEqualTo(Level.ERROR);
   }
 
@@ -245,7 +248,7 @@ class OtlpGrpcSpanExporterTest {
                 + "This usually means that your collector is not configured with an otlp "
                 + "receiver in the \"pipelines\" section of the configuration. "
                 + "Full error message: UNIMPLEMENTED");
-    assertThat(log.getLevel()).isEqualTo(Level.WARN);
+    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
   }
 
   @Test

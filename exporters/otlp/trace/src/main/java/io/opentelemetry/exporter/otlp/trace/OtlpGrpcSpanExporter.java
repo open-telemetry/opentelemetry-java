@@ -113,7 +113,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
               switch (status.getCode()) {
                 case UNIMPLEMENTED:
                   logger.log(
-                      Level.WARNING,
+                      Level.SEVERE,
                       "Failed to export spans. Server responded with UNIMPLEMENTED. "
                           + "This usually means that your collector is not configured with an otlp "
                           + "receiver in the \"pipelines\" section of the configuration. "
@@ -123,7 +123,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
                 case UNAVAILABLE:
                   logger.log(
                       Level.SEVERE,
-                      "Failed to export spans. Server is UNAVAILABLE.",
+                      "Failed to export spans. Server is UNAVAILABLE. "
+                          + "Make sure your collector is running and reachable from this network.",
                       t.getMessage());
                   break;
                 default:
