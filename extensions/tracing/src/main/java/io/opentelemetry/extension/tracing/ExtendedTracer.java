@@ -6,64 +6,53 @@
 package io.opentelemetry.extension.tracing;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import java.util.concurrent.Callable;
 
 /** Provides easy mechanisms for wrapping standard Java constructs with an OpenTelemetry Span. */
-@SuppressWarnings("InconsistentOverloads")
-public class ExtendedTracer {
+public final class ExtendedTracer implements Tracer {
 
-  private final Tracer tracer;
+  private final Tracer delegate;
 
   /** Create a new {@link ExtendedTracer} that wraps the provided Tracer. */
-  public ExtendedTracer(Tracer tracer) {
-    this.tracer = tracer;
+  public static ExtendedTracer create(Tracer delegate) {
+    return new ExtendedTracer(delegate);
   }
 
-  /** Wrap the provided {@link Runnable} with a {@link Span} with the provided name. */
-  public Runnable wrap(String spanName, Runnable runnable) {
-    return wrap(tracer, spanName, runnable);
+  private ExtendedTracer(Tracer delegate) {
+    this.delegate = delegate;
   }
 
-  /**
-   * Wrap the provided {@link Runnable} with a {@link Span} with the provided name. Uses the
-   * provided {@link Tracer} for the functionality.
-   */
-  public static Runnable wrap(Tracer tracer, String spanName, Runnable runnable) {
-    return () -> {
-      Span span = tracer.spanBuilder(spanName).startSpan();
-      try (Scope scope = span.makeCurrent()) {
-        runnable.run();
-      } catch (Throwable e) {
-        span.recordException(e);
-        throw e;
-      } finally {
-        span.end();
-      }
-    };
+  /** Run the provided {@link Runnable} and wrap with a {@link Span} with the provided name. */
+  public void run(String spanName, Runnable runnable) {
+    Span span = delegate.spanBuilder(spanName).startSpan();
+    try (Scope scope = span.makeCurrent()) {
+      runnable.run();
+    } catch (Throwable e) {
+      span.recordException(e);
+      throw e;
+    } finally {
+      span.end();
+    }
   }
 
-  /** Wrap the provided {@link Callable} with a {@link Span} with the provided name. */
-  public <T> Callable<T> wrap(String spanName, Callable<T> callable) {
-    return wrap(tracer, spanName, callable);
+  /** Call the provided {@link Callable} and wrap with a {@link Span} with the provided name. */
+  public <T> T call(String spanName, Callable<T> callable) throws Exception {
+    Span span = delegate.spanBuilder(spanName).startSpan();
+    try (Scope scope = span.makeCurrent()) {
+      return callable.call();
+    } catch (Throwable e) {
+      span.recordException(e);
+      throw e;
+    } finally {
+      span.end();
+    }
   }
 
-  /**
-   * Wrap the provided {@link Callable} with a {@link Span} with the provided name. Uses the
-   * provided {@link Tracer} for the functionality.
-   */
-  public static <T> Callable<T> wrap(Tracer tracer, String spanName, Callable<T> callable) {
-    return () -> {
-      Span span = tracer.spanBuilder(spanName).startSpan();
-      try (Scope scope = span.makeCurrent()) {
-        return callable.call();
-      } catch (Throwable e) {
-        span.recordException(e);
-        throw e;
-      } finally {
-        span.end();
-      }
-    };
+  @Override
+  public SpanBuilder spanBuilder(String spanName) {
+    return delegate.spanBuilder(spanName);
   }
 }

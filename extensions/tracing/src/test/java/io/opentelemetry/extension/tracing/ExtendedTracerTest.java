@@ -23,14 +23,8 @@ class ExtendedTracerTest {
   private final Tracer tracer = otelTesting.getOpenTelemetry().getTracer("test");
 
   @Test
-  void wrapRunnable() {
-    new ExtendedTracer(tracer)
-        .wrap(
-            "testSpan",
-            () -> {
-              Span.current().setAttribute("one", 1);
-            })
-        .run();
+  void runRunnable() {
+    ExtendedTracer.create(tracer).run("testSpan", () -> Span.current().setAttribute("one", 1));
 
     otelTesting
         .assertTraces()
@@ -44,18 +38,16 @@ class ExtendedTracerTest {
   }
 
   @Test
-  void wrapRunnable_throws() {
+  void runRunnable_throws() {
     assertThatThrownBy(
             () ->
-                new ExtendedTracer(tracer)
-                    .wrap(
+                ExtendedTracer.create(tracer)
+                    .run(
                         "throwingRunnable",
-                        (Runnable)
-                            () -> {
-                              Span.current().setAttribute("one", 1);
-                              throw new RuntimeException("failed");
-                            })
-                    .run())
+                        () -> {
+                          Span.current().setAttribute("one", 1);
+                          throw new RuntimeException("failed");
+                        }))
         .isInstanceOf(RuntimeException.class);
 
     otelTesting
@@ -77,16 +69,15 @@ class ExtendedTracerTest {
   }
 
   @Test
-  void wrapCallable() throws Exception {
+  void callCallable() throws Exception {
     assertThat(
-            new ExtendedTracer(tracer)
-                .wrap(
+            ExtendedTracer.create(tracer)
+                .call(
                     "spanCallable",
                     () -> {
                       Span.current().setAttribute("one", 1);
                       return "hello";
-                    })
-                .call())
+                    }))
         .isEqualTo("hello");
 
     otelTesting
@@ -101,17 +92,16 @@ class ExtendedTracerTest {
   }
 
   @Test
-  void wrapCallable_throws() throws Exception {
+  void callCallable_throws() {
     assertThatThrownBy(
             () ->
-                new ExtendedTracer(tracer)
-                    .wrap(
+                ExtendedTracer.create(tracer)
+                    .call(
                         "throwingCallable",
                         () -> {
                           Span.current().setAttribute("one", 1);
                           throw new RuntimeException("failed");
-                        })
-                    .call())
+                        }))
         .isInstanceOf(RuntimeException.class);
 
     otelTesting
