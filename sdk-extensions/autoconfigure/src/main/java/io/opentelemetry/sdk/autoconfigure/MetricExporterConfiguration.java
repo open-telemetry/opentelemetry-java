@@ -64,7 +64,10 @@ final class MetricExporterConfiguration {
     }
     OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
 
-    String endpoint = config.getString("otel.exporter.otlp.endpoint");
+    String endpoint = config.getString("otel.exporter.otlp.metrics.endpoint");
+    if (endpoint == null) {
+      endpoint = config.getString("otel.exporter.otlp.endpoint");
+    }
     if (endpoint != null) {
       builder.setEndpoint(endpoint);
     }
