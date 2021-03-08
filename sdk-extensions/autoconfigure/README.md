@@ -48,7 +48,8 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 |------------------------------|-----------------------------|---------------------------------------------------------------------------|
 | otel.traces.exporter=otlp (default) | OTEL_TRACES_EXPORTER=otlp          | Select the OpenTelemetry exporter for tracing (default)                                   |
 | otel.metrics.exporter=otlp (default) | OTEL_METRICS_EXPORTER=otlp          | Select the OpenTelemetry exporter for metrics (default)                                   |
-| otel.exporter.otlp.endpoint  | OTEL_EXPORTER_OTLP_ENDPOINT | The OTLP endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
+| otel.exporter.otlp.traces.endpoint  | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT | The OTLP traces endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
+| otel.exporter.otlp.metrics.endpoint  | OTEL_EXPORTER_OTLP_METRICS_ENDPOINT | The OTLP metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
 | otel.exporter.otlp.headers   | OTEL_EXPORTER_OTLP_HEADERS  | Key-value pairs separated by semicolons to pass as request headers        |
 | otel.exporter.otlp.timeout   | OTEL_EXPORTER_OTLP_TIMEOUT  | The maximum waiting time allowed to send each batch. Default is `1000`.   |
 
