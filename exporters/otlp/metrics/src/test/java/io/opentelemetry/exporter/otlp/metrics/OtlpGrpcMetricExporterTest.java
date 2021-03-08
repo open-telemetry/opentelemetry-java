@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.io.Closer;
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
 import io.grpc.Status;
@@ -40,6 +41,9 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
+import org.slf4j.event.LoggingEvent;
 
 class OtlpGrpcMetricExporterTest {
 
@@ -49,6 +53,9 @@ class OtlpGrpcMetricExporterTest {
       InProcessChannelBuilder.forName(serverName).directExecutor().build();
 
   private final Closer closer = Closer.create();
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(OtlpGrpcMetricExporter.class);
 
   @BeforeEach
   public void setup() throws IOException {
@@ -216,6 +223,28 @@ class OtlpGrpcMetricExporterTest {
     } finally {
       exporter.shutdown();
     }
+    LoggingEvent log = logs.assertContains("Failed to export metrics. Server is UNAVAILABLE.");
+    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+  }
+
+  @Test
+  void testExport_Unimplemented() {
+    fakeCollector.setReturnedStatus(Status.UNIMPLEMENTED);
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
+    try {
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
+          .isFalse();
+    } finally {
+      exporter.shutdown();
+    }
+    LoggingEvent log =
+        logs.assertContains(
+            "Failed to export metrics. Server responded with UNIMPLEMENTED. "
+                + "This usually means that your collector is not configured with an otlp "
+                + "receiver in the \"pipelines\" section of the configuration. "
+                + "Full error message: UNIMPLEMENTED");
+    assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
   @Test

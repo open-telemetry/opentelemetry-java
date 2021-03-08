@@ -9,6 +9,8 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
@@ -78,14 +80,29 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
           @Override
           public void onFailure(Throwable t) {
-            if (t.getMessage().contains("UNIMPLEMENTED")) {
-              logger.log(
-                  Level.WARNING,
-                  "Failed to export metrics. Server responded with UNIMPLEMENTED. "
-                      + "This usually means that your collector is not configured with an otlp "
-                      + "receiver in the \"pipelines\" section of the configuration. "
-                      + "Full error message: "
-                      + t.getMessage());
+            if (t instanceof StatusRuntimeException) {
+              Status status = ((StatusRuntimeException) t).getStatus();
+              switch (status.getCode()) {
+                case UNIMPLEMENTED:
+                  logger.log(
+                      Level.WARNING,
+                      "Failed to export metrics. Server responded with UNIMPLEMENTED. "
+                          + "This usually means that your collector is not configured with an otlp "
+                          + "receiver in the \"pipelines\" section of the configuration. "
+                          + "Full error message: "
+                          + t.getMessage());
+                  break;
+                case UNAVAILABLE:
+                  logger.log(
+                      Level.SEVERE,
+                      "Failed to export metrics. Server is UNAVAILABLE.",
+                      t.getMessage());
+                  break;
+                default:
+                  logger.log(
+                      Level.WARNING, "Failed to export metrics. Error message: " + t.getMessage());
+                  break;
+              }
             } else {
               logger.log(
                   Level.WARNING, "Failed to export metrics. Error message: " + t.getMessage());
