@@ -109,7 +109,7 @@ public interface Context {
    * dbExecutor = Context.wrapTasks(threadPool)} to ensure calls like {@code dbExecutor.execute(()
    * -> database.query())} have {@link Context} available on the thread executing database queries.
    */
-  static Executor wrapTasks(Executor executor) {
+  static Executor taskWrapping(Executor executor) {
     return command -> executor.execute(Context.current().wrap(command));
   }
 
@@ -125,7 +125,7 @@ public interface Context {
    * dbExecutor.execute(() -> database.query())} have {@link Context} available on the thread
    * executing database queries.
    */
-  static ExecutorService wrapTasks(ExecutorService executorService) {
+  static ExecutorService taskWrapping(ExecutorService executorService) {
     return new CurrentContextExecutorService(executorService);
   }
 
