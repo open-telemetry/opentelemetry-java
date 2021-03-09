@@ -37,11 +37,7 @@ public final class LeakDetectingSpanProcessor implements SpanProcessor {
    * garbage collected.
    */
   public static LeakDetectingSpanProcessor create() {
-    return new LeakDetectingSpanProcessor();
-  }
-
-  private LeakDetectingSpanProcessor() {
-    this(
+    return new LeakDetectingSpanProcessor(
         (message, throwable) ->
             logger.log(Level.WARNING, "Span garbage collected before being ended.", throwable));
   }

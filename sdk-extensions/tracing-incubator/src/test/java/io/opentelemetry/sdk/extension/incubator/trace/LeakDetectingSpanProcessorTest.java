@@ -74,7 +74,6 @@ public class LeakDetectingSpanProcessorTest {
 
     GcFinalization.awaitClear(spanRef);
 
-    System.gc();
     assertThat(logs).isEmpty();
   }
 }
