@@ -52,8 +52,8 @@ The [Jaeger](https://www.jaegertracing.io/docs/1.21/apis/#protobuf-via-grpc-stab
 
 | System property                   | Environment variable              | Description                                                                                        |
 |-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------|
-| otel.traces.exporter=jaeger              | OTEL_TRACES_EXPORTER=jaeger              | Select the Jaeger exporter                                                                         |
-| otel.exporter.jaeger.endpoint     | OTEL_EXPORTER_JAEGER_ENDPOINT     | The Jaeger gRPC endpoint to connect to. Default is `localhost:14250`.                              |
+| otel.traces.exporter=jaeger       | OTEL_TRACES_EXPORTER=jaeger       | Select the Jaeger exporter                                                                         |
+| otel.exporter.jaeger.endpoint     | OTEL_EXPORTER_JAEGER_ENDPOINT     | The Jaeger gRPC endpoint to connect to. Default is `http://localhost:14250`.                       |
 
 ### Zipkin exporter
 
