@@ -12,7 +12,8 @@ pluginManagement {
 }
 
 rootProject.name = "opentelemetry-java-examples"
-include ":opentelemetry-examples-grpc",
+include ":opentelemetry-examples-autoconfigure",
+        ":opentelemetry-examples-grpc",
         ":opentelemetry-examples-http",
         ":opentelemetry-examples-jaeger",
         ":opentelemetry-examples-metrics",
