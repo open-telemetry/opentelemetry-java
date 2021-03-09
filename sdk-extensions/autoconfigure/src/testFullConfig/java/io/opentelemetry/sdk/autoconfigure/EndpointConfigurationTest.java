@@ -76,6 +76,7 @@ class EndpointConfigurationTest {
   void setUp() {
     otlpTraceRequests.clear();
     otlpMetricsRequests.clear();
+    GlobalOpenTelemetry.resetForTest();
   }
 
   @Test
