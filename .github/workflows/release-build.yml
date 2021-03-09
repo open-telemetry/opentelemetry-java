@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 11
-      - uses: burrunan/gradle-cache-action@v1.6
+      - uses: burrunan/gradle-cache-action@v1.8
         with:
           job-id: jdk11
           remote-build-cache-proxy-enabled: false
