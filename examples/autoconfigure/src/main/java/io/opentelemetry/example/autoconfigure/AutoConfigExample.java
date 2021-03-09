@@ -1,6 +1,6 @@
 package io.opentelemetry.example.autoconfigure;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.trace.Span;
@@ -21,11 +21,9 @@ public final class AutoConfigExample {
     System.setProperty("otel.imr.export.interval", "800");
 
     // Let the SDK configure itself using environment variables and system properties
-    OpenTelemetrySdkAutoConfiguration.initialize();
+    OpenTelemetry openTelemetry = OpenTelemetrySdkAutoConfiguration.initialize();
 
-    // OpenTelemetrySdkAutoConfiguration sets global instances of OpenTelemetry and MetricsProvider
-    // AutoConfigExample uses them instead of passing OpenTelemetry around by hand
-    AutoConfigExample example = new AutoConfigExample();
+    AutoConfigExample example = new AutoConfigExample(openTelemetry);
     // Do some real work that'll emit telemetry
     example.doWork();
 
@@ -36,8 +34,8 @@ public final class AutoConfigExample {
   private final Tracer tracer;
   private final LongCounter counter;
 
-  public AutoConfigExample() {
-    this.tracer = GlobalOpenTelemetry.get().getTracer(INSTRUMENTATION_NAME);
+  public AutoConfigExample(OpenTelemetry openTelemetry) {
+    this.tracer = openTelemetry.getTracer(INSTRUMENTATION_NAME);
     this.counter =
         GlobalMetricsProvider.getMeter(INSTRUMENTATION_NAME).longCounterBuilder("count").build();
   }
