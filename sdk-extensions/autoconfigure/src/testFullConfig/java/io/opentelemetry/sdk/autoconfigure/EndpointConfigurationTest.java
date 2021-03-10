@@ -38,6 +38,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -93,6 +94,11 @@ class EndpointConfigurationTest {
   void setUp() {
     otlpTraceRequests.clear();
     otlpMetricsRequests.clear();
+    GlobalOpenTelemetry.resetForTest();
+  }
+
+  @AfterEach
+  public void tearDown() {
     GlobalOpenTelemetry.resetForTest();
   }
 
