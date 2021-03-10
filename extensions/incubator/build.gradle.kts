@@ -5,8 +5,8 @@ plugins {
     id("ru.vyarus.animalsniffer")
 }
 
-description = "OpenTelemetry API Extensions for Tracing"
-extra["moduleName"] = "io.opentelemetry.extension.tracing"
+description = "OpenTelemetry API Incubator"
+extra["moduleName"] = "io.opentelemetry.extension.incubator"
 
 dependencies {
     api(project(":api:all"))
