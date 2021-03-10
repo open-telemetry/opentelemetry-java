@@ -147,11 +147,7 @@ class EndpointConfigurationTest {
         .untilAsserted(
             () -> {
               assertThat(otlpTraceRequests).hasSize(1);
-
-              // Not well defined how many metric exports would have happened by now, check that
-              // any
-              // did. The metrics will be BatchSpanProcessor metrics.
-              assertThat(otlpMetricsRequests).isNotEmpty();
+              assertThat(otlpMetricsRequests).hasSize(1);
             });
   }
 
