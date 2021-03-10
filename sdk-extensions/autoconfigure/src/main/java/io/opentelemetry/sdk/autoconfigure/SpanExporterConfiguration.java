@@ -70,7 +70,10 @@ final class SpanExporterConfiguration {
         "opentelemetry-exporter-otlp");
     OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder();
 
-    String endpoint = config.getString("otel.exporter.otlp.endpoint");
+    String endpoint = config.getString("otel.exporter.otlp.traces.endpoint");
+    if (endpoint == null) {
+      endpoint = config.getString("otel.exporter.otlp.endpoint");
+    }
     if (endpoint != null) {
       builder.setEndpoint(endpoint);
     }
