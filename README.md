@@ -9,11 +9,11 @@ If you are looking for an all-in-one, easy-to-install auto-instrumentation javaa
 [opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation).
 
 If you are looking for examples on how to use the OpenTelemetry APIs to write your own manual instrumentation, or 
-how to set up the OpenTelemetry Java SDK, please visit our [Quickstart guide](QUICKSTART.md). We also have 
+how to set up the OpenTelemetry Java SDK, please visit our [auickstart guide](QUICKSTART.md). We also have 
 fully-functioning example projects in our [examples sub-module](examples), which can be a good way to get
 your feet wet in a local environment.
 
-If you are looking to get involved with the project, please read our [Contributing Guide](CONTRIBUTING.md). We welcome
+If you are looking to get involved with the project, please read our [contributing guide](CONTRIBUTING.md). We welcome
 contributions! 
 
 If you are looking for a general overview of the OpenTelemetry project, please visit the [official website](https://opentelemetry.io).
