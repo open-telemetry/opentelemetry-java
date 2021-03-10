@@ -5,20 +5,37 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.trace.TestSpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.Collections;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,7 +97,66 @@ class EndpointConfigurationTest {
   }
 
   @Test
-  void configures() {
+  public void configure() {
+    ConfigProperties config =
+        ConfigProperties.createForTest(
+            ImmutableMap.of(
+                "otel.exporter.otlp.traces.endpoint", "http://localhost:" + server.httpPort()));
+    SpanExporter spanExporter = SpanExporterConfiguration.configureExporter("otlp", config);
+
+    OtlpGrpcMetricExporter metricExporter =
+        MetricExporterConfiguration.configureOtlpMetrics(
+            ConfigProperties.createForTest(
+                ImmutableMap.of(
+                    "otel.exporter.otlp.metrics.endpoint",
+                    "http://localhost:" + server.httpPort())),
+            SdkMeterProvider.builder().build());
+
+    spanExporter.export(
+        Lists.newArrayList(
+            TestSpanData.builder()
+                .setHasEnded(true)
+                .setName("name")
+                .setStartEpochNanos(MILLISECONDS.toNanos(System.currentTimeMillis()))
+                .setEndEpochNanos(MILLISECONDS.toNanos(System.currentTimeMillis()))
+                .setKind(SpanKind.SERVER)
+                .setStatus(StatusData.error())
+                .setTotalRecordedEvents(0)
+                .setTotalRecordedLinks(0)
+                .build()));
+
+    metricExporter.export(
+        Lists.newArrayList(
+            MetricData.createLongSum(
+                Resource.empty(),
+                InstrumentationLibraryInfo.empty(),
+                "metric_name",
+                "metric_description",
+                "ms",
+                LongSumData.create(
+                    false,
+                    AggregationTemporality.CUMULATIVE,
+                    Collections.singletonList(
+                        LongPointData.create(
+                            MILLISECONDS.toNanos(System.currentTimeMillis()),
+                            MILLISECONDS.toNanos(System.currentTimeMillis()),
+                            Labels.of("key", "value"),
+                            10))))));
+
+    await()
+        .untilAsserted(
+            () -> {
+              assertThat(otlpTraceRequests).hasSize(1);
+
+              // Not well defined how many metric exports would have happened by now, check that
+              // any
+              // did. The metrics will be BatchSpanProcessor metrics.
+              assertThat(otlpMetricsRequests).isNotEmpty();
+            });
+  }
+
+  @Test
+  void configuresGlobal() {
     // Point "otel.exporter.otlp.endpoint" to wrong endpoint
     System.setProperty("otel.exporter.otlp.endpoint", "http://localhost/wrong");
 
