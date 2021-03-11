@@ -6,7 +6,7 @@ to instrument a simple application using Jaeger as trace exporter.
 # How to run
 
 ## Prerequisites
-* Java 1.8.231
+* Java 1.8+
 * Docker 19.03
 * Jaeger 1.16 - [Link][jaeger]
 
