@@ -26,6 +26,13 @@ when the timeout happens. Nor will `whenComplete` actions be executed in that ca
 - A new option for aggregation as Histograms is now available. 
 
 ---
+## Version 1.0.1 - 2021-03-11
+
+### Bugfixes
+
+- AWS resource extensions have been fixed to not throw NullPointerException in actual AWS environment
+
+---
 ## Version 1.0.0 - 2021-02-26
 
 ### General
