@@ -33,10 +33,10 @@ class KotlinCoroutinesTest {
 
             assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
 
-            GlobalScope.launch {
+            async(Dispatchers.IO) {
                 // Child coroutine inherits context automatically.
                 assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
-            }
+            }.await()
         }
     }
 
