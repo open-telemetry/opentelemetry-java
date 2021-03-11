@@ -28,8 +28,6 @@ import java.util.logging.Logger;
 public final class EksResource {
   private static final Logger logger = Logger.getLogger(EksResource.class.getName());
 
-  private static final Resource INSTANCE = buildResource();
-
   static final String K8S_SVC_URL = "https://kubernetes.default.svc";
   static final String AUTH_CONFIGMAP_PATH = "/api/v1/namespaces/kube-system/configmaps/aws-auth";
   static final String CW_CONFIGMAP_PATH =
@@ -38,6 +36,8 @@ public final class EksResource {
       "/var/run/secrets/kubernetes.io/serviceaccount/token";
   private static final String K8S_CERT_PATH =
       "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
+
+  private static final Resource INSTANCE = buildResource();
 
   /**
    * Returns a factory of a {@link Resource} which provides information about the current ECS

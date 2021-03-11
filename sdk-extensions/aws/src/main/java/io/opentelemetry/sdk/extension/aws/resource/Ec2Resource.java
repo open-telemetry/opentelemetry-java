@@ -28,11 +28,11 @@ public final class Ec2Resource {
 
   private static final Logger logger = Logger.getLogger(Ec2Resource.class.getName());
 
-  private static final Resource INSTANCE = buildResource();
-
   private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
   private static final String DEFAULT_IMDS_ENDPOINT = "169.254.169.254";
+
+  private static final Resource INSTANCE = buildResource();
 
   /**
    * Returns a @link Resource} which provides information about the current EC2 instance if running
