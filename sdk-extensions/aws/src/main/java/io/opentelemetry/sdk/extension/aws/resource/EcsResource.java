@@ -22,10 +22,10 @@ import java.util.logging.Logger;
 public final class EcsResource {
   private static final Logger logger = Logger.getLogger(EcsResource.class.getName());
 
-  private static final Resource INSTANCE = buildResource();
-
   private static final String ECS_METADATA_KEY_V4 = "ECS_CONTAINER_METADATA_URI_V4";
   private static final String ECS_METADATA_KEY_V3 = "ECS_CONTAINER_METADATA_URI";
+
+  private static final Resource INSTANCE = buildResource();
 
   /**
    * Returns a factory of a {@link Resource} which provides information about the current ECS

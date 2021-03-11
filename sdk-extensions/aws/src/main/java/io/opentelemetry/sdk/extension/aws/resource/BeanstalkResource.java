@@ -25,13 +25,13 @@ public final class BeanstalkResource {
 
   private static final Logger logger = Logger.getLogger(BeanstalkResource.class.getName());
 
-  private static final Resource INSTANCE = buildResource();
-
   private static final String DEVELOPMENT_ID = "deployment_id";
   private static final String VERSION_LABEL = "version_label";
   private static final String ENVIRONMENT_NAME = "environment_name";
   private static final String BEANSTALK_CONF_PATH = "/var/elasticbeanstalk/xray/environment.conf";
   private static final JsonFactory JSON_FACTORY = new JsonFactory();
+
+  private static final Resource INSTANCE = buildResource();
 
   /**
    * Returns a factory of a {@link Resource} which provides information about the current EC2
