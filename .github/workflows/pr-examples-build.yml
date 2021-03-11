@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - uses: burrunan/gradle-cache-action@v1.8
+      - uses: burrunan/gradle-cache-action@v1.9
         with:
           remote-build-cache-proxy-enabled: false
           ## todo: how to make sure these are kept up to date, so we always build against the latest snapshots for stable modules
