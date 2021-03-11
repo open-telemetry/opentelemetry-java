@@ -94,7 +94,7 @@ public final class Ec2Resource {
             attrBuilders.put(ResourceAttributes.HOST_ID, value);
             break;
           case "availabilityZone":
-            attrBuilders.put(ResourceAttributes.CLOUD_ZONE, value);
+            attrBuilders.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, value);
             break;
           case "instanceType":
             attrBuilders.put(ResourceAttributes.HOST_TYPE, value);
