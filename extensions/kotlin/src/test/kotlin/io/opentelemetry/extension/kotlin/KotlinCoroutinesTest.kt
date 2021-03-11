@@ -37,6 +37,11 @@ class KotlinCoroutinesTest {
                 // Child coroutine inherits context automatically.
                 assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
             }.await()
+
+            coroutineScope {
+                // Child coroutine inherits context automatically.
+                assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
+            }
         }
     }
 
