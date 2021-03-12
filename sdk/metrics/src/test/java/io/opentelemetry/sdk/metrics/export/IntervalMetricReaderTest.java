@@ -65,7 +65,7 @@ class IntervalMetricReaderTest {
             .setExportIntervalMillis(100)
             .setMetricExporter(waitingMetricExporter)
             .setMetricProducers(Collections.singletonList(metricProducer))
-            .build();
+            .buildAndStart();
 
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(1))
@@ -88,7 +88,7 @@ class IntervalMetricReaderTest {
             .setExportIntervalMillis(100)
             .setMetricExporter(waitingMetricExporter)
             .setMetricProducers(Collections.singletonList(metricProducer))
-            .build();
+            .buildAndStart();
 
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(1))
@@ -106,7 +106,7 @@ class IntervalMetricReaderTest {
             .setExportIntervalMillis(100_000)
             .setMetricExporter(waitingMetricExporter)
             .setMetricProducers(Collections.singletonList(metricProducer))
-            .build();
+            .buildAndStart();
 
     // Assume that this will be called in less than 100 seconds.
     intervalMetricReader.shutdown();

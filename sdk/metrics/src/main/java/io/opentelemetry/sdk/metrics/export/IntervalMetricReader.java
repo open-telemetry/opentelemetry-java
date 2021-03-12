@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -31,6 +32,7 @@ public final class IntervalMetricReader {
 
   private final Exporter exporter;
   private final ScheduledExecutorService scheduler;
+  private volatile ScheduledFuture<?> scheduledFuture;
 
   /** Stops the scheduled task and calls export one more time. */
   public CompletableResultCode shutdown() {
@@ -73,11 +75,24 @@ public final class IntervalMetricReader {
     this.exporter = new Exporter(internalState);
     this.scheduler =
         Executors.newScheduledThreadPool(1, new DaemonThreadFactory("IntervalMetricReader"));
-    this.scheduler.scheduleAtFixedRate(
-        exporter,
-        internalState.getExportIntervalMillis(),
-        internalState.getExportIntervalMillis(),
-        TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * Starts this {@link IntervalMetricReader} to report to the configured exporter.
+   *
+   * @return this for fluent usage along with the builder.
+   */
+  public IntervalMetricReader start() {
+    if (scheduledFuture != null) {
+      return this;
+    }
+    scheduledFuture =
+        scheduler.scheduleAtFixedRate(
+            exporter,
+            exporter.internalState.getExportIntervalMillis(),
+            exporter.internalState.getExportIntervalMillis(),
+            TimeUnit.MILLISECONDS);
+    return this;
   }
 
   private static final class Exporter implements Runnable {
