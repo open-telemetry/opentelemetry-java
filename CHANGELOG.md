@@ -2,12 +2,26 @@
 
 ## Unreleased:
 
+### API
+
+#### Bugfixes
+
+- We now use our own internal `@GuardedBy` annotation for errorprone so there won't be an accidental 
+transitive dependency on a 3rd-party jar.
+  
 ### SDK
 
 #### Bugfixes
 
 - The `CompletableResultCode.join(long timeout, TimeUnit unit)` method will no longer `fail` the result
 when the timeout happens. Nor will `whenComplete` actions be executed in that case.
+- The `SimpleSpanProcessor` now keeps track of pending export calls and will wait for them to complete
+via a CompletableResultCode when `forceFlush()` is called. Similiarly, this is also done on `shutdown()`.
+
+#### Enhancements
+
+- The SpanBuilder provided by the SDK will now ignore `Link` entries that are reference an invalid SpanContext. 
+This is an update from the OpenTelemetry Specification v1.1.0 release.
 
 ### SDK Extensions
 
@@ -15,6 +29,18 @@ when the timeout happens. Nor will `whenComplete` actions be executed in that ca
 
 - Removed a stacktrace on startup when using the `autoconfigure` module without a metrics SDK on the classpath.
 
+#### Enhancements
+
+- The `autoconfigure` module now supports `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` and `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`
+settings, in addition to the combined `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable. Corresponding 
+system properties are also supported (`-Dotel.exporter.otlp.metrics.endpoint` and `-Dotel.exporter.otlp.traces.endpoint`).
+
+### Semantic Conventions (alpha)
+
+- The SemanticAttributes and ResourceAttributes have both been updated to match the OpenTelemetry Specification v1.1.0 release.
+This includes a breaking changes to the constants defined in the `ResourceAttributes` class:
+`ResourceAttributes.CLOUD_ZONE` has been replaced with `ResourceAttributes.CLOUD_AVAILABILITY_ZONE`.
+  
 ### Metrics (alpha)
 
 #### Breaking Changes
