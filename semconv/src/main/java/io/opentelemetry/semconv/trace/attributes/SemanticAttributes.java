@@ -239,6 +239,10 @@ public final class SemanticAttributes {
   /**
    * Full HTTP request URL in the form `scheme://host[:port]/path?query[#fragment]`. Usually the
    * fragment is not transmitted over HTTP, but if it is known, it should be included nevertheless.
+   *
+   * <p>Note: `http.url` MUST NOT contain credentials passed via URL in form of
+   * `https://username:password@www.example.com/`. In such case the attribute&#39;s value should be
+   * `https://www.example.com/`.
    */
   public static final AttributeKey<String> HTTP_URL = stringKey("http.url");
 
@@ -631,6 +635,8 @@ public final class SemanticAttributes {
     public static final String NEO4J = "neo4j";
     /** Apache Geode. */
     public static final String GEODE = "geode";
+    /** Elasticsearch. */
+    public static final String ELASTICSEARCH = "elasticsearch";
 
     private DbSystemValues() {}
   }
