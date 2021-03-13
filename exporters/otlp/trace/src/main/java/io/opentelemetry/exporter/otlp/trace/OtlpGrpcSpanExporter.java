@@ -10,6 +10,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -106,7 +107,29 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
           @Override
           public void onFailure(Throwable t) {
             spansExportedFailure.add(spans.size());
-            logger.log(Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
+            Status status = Status.fromThrowable(t);
+            switch (status.getCode()) {
+              case UNIMPLEMENTED:
+                logger.log(
+                    Level.SEVERE,
+                    "Failed to export spans. Server responded with UNIMPLEMENTED. "
+                        + "This usually means that your collector is not configured with an otlp "
+                        + "receiver in the \"pipelines\" section of the configuration. "
+                        + "Full error message: "
+                        + t.getMessage());
+                break;
+              case UNAVAILABLE:
+                logger.log(
+                    Level.SEVERE,
+                    "Failed to export spans. Server is UNAVAILABLE. "
+                        + "Make sure your collector is running and reachable from this network.",
+                    t.getMessage());
+                break;
+              default:
+                logger.log(
+                    Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
+                break;
+            }
             logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
             result.fail();
           }
