@@ -18,7 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A factory of a {@link Resource} which provides information about the current EC2 instance if
+ * A factory for a {@link Resource} which provides information about the current EC2 instance if
  * running on AWS Elastic Beanstalk.
  */
 public final class BeanstalkResource {
@@ -34,7 +34,7 @@ public final class BeanstalkResource {
   private static final Resource INSTANCE = buildResource();
 
   /**
-   * Returns a factory of a {@link Resource} which provides information about the current EC2
+   * Returns a factory for a {@link Resource} which provides information about the current EC2
    * instance if running on AWS Elastic Beanstalk.
    */
   public static Resource get() {

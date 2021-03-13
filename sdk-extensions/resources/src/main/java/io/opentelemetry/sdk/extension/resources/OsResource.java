@@ -17,7 +17,7 @@ public final class OsResource {
   private static final Resource INSTANCE = buildResource();
 
   /**
-   * Returns a factory of a {@link Resource} which provides information about the current operating
+   * Returns a factory for a {@link Resource} which provides information about the current operating
    * system.
    */
   public static Resource get() {

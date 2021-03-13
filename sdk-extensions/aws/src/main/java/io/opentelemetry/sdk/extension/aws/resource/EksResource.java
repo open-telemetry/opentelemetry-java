@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A factory of a {@link Resource} which provides information about the current ECS container if
+ * A factory for a {@link Resource} which provides information about the current ECS container if
  * running on AWS EKS.
  */
 public final class EksResource {
@@ -40,7 +40,7 @@ public final class EksResource {
   private static final Resource INSTANCE = buildResource();
 
   /**
-   * Returns a factory of a {@link Resource} which provides information about the current ECS
+   * Returns a factory for a {@link Resource} which provides information about the current ECS
    * container if running on AWS EKS.
    */
   public static Resource get() {

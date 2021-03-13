@@ -20,7 +20,7 @@ public final class ProcessResource {
   private static final Resource INSTANCE = buildResource();
 
   /**
-   * Returns a factory of a {@link Resource} which provides information about the current running
+   * Returns a factory for a {@link Resource} which provides information about the current running
    * process.
    */
   public static Resource get() {
