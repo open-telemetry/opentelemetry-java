@@ -217,6 +217,11 @@ class ContextTest {
 
     executor.execute(callback);
     assertThat(value).hasValue(null);
+
+    try (Scope ignored = CAT.makeCurrent()) {
+      Context.taskWrapping(executor).execute(callback);
+      assertThat(value).hasValue("cat");
+    }
   }
 
   @Nested
@@ -227,10 +232,14 @@ class ContextTest {
     protected ExecutorService wrapped;
     protected AtomicReference<String> value;
 
+    protected ExecutorService wrap(ExecutorService executorService) {
+      return CAT.wrap(executorService);
+    }
+
     @BeforeAll
     void initExecutor() {
       executor = Executors.newSingleThreadScheduledExecutor();
-      wrapped = CAT.wrap((ExecutorService) executor);
+      wrapped = wrap(executor);
     }
 
     @AfterAll
@@ -355,6 +364,30 @@ class ContextTest {
           .isEqualTo("bar");
       assertThat(value1).hasValue("cat");
       assertThat(value2).hasValue("cat");
+    }
+  }
+
+  @Nested
+  @TestInstance(Lifecycle.PER_CLASS)
+  class CurrentContextWrappingExecutorService extends WrapExecutorService {
+    @Override
+    protected ExecutorService wrap(ExecutorService executorService) {
+      return Context.taskWrapping(executorService);
+    }
+
+    private Scope scope;
+
+    @BeforeEach
+    // Closed in AfterEach
+    @SuppressWarnings("MustBeClosedChecker")
+    void makeCurrent() {
+      scope = CAT.makeCurrent();
+    }
+
+    @AfterEach
+    void close() {
+      scope.close();
+      scope = null;
     }
   }
 
