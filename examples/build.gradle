@@ -28,7 +28,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-        jcenter()
         maven {
             // Add snapshot repository
             url "https://oss.sonatype.org/content/repositories/snapshots"

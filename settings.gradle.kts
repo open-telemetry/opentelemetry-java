@@ -15,11 +15,6 @@ pluginManagement {
         id("org.unbroken-dome.test-sets") version "3.0.1"
         id("ru.vyarus.animalsniffer") version "1.5.2"
     }
-
-    repositories {
-        gradlePluginPortal()
-        google()
-    }
 }
 
 plugins {
@@ -29,7 +24,6 @@ plugins {
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
-        jcenter()
         mavenLocal()
     }
 }
