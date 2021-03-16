@@ -32,11 +32,16 @@ public final class IntervalMetricReader {
 
   private final Exporter exporter;
   private final ScheduledExecutorService scheduler;
+
   private volatile ScheduledFuture<?> scheduledFuture;
+  private final Object lock = new Object();
 
   /** Stops the scheduled task and calls export one more time. */
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = new CompletableResultCode();
+    if (scheduledFuture != null) {
+      scheduledFuture.cancel(false);
+    }
     scheduler.shutdown();
     try {
       scheduler.awaitTermination(5, TimeUnit.SECONDS);
@@ -70,7 +75,6 @@ public final class IntervalMetricReader {
     return new IntervalMetricReaderBuilder(InternalState.builder());
   }
 
-  @SuppressWarnings("FutureReturnValueIgnored")
   IntervalMetricReader(InternalState internalState) {
     this.exporter = new Exporter(internalState);
     this.scheduler =
@@ -83,16 +87,18 @@ public final class IntervalMetricReader {
    * @return this for fluent usage along with the builder.
    */
   public IntervalMetricReader start() {
-    if (scheduledFuture != null) {
+    synchronized (lock) {
+      if (scheduledFuture != null) {
+        return this;
+      }
+      scheduledFuture =
+          scheduler.scheduleAtFixedRate(
+              exporter,
+              exporter.internalState.getExportIntervalMillis(),
+              exporter.internalState.getExportIntervalMillis(),
+              TimeUnit.MILLISECONDS);
       return this;
     }
-    scheduledFuture =
-        scheduler.scheduleAtFixedRate(
-            exporter,
-            exporter.internalState.getExportIntervalMillis(),
-            exporter.internalState.getExportIntervalMillis(),
-            TimeUnit.MILLISECONDS);
-    return this;
   }
 
   private static final class Exporter implements Runnable {
