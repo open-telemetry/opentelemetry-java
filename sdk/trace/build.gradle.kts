@@ -9,9 +9,13 @@ plugins {
 description = "OpenTelemetry SDK For Tracing"
 extra["moduleName"] = "io.opentelemetry.sdk.trace"
 
+evaluationDependsOn(":sdk:trace-shaded-deps")
+
 dependencies {
     api(project(":api:all"))
     api(project(":sdk:common"))
+
+    compileOnly(project(path=":sdk:trace-shaded-deps", configuration="shadow"))
 
     implementation(project(":api:metrics"))
     implementation(project(":semconv"))
@@ -61,5 +65,9 @@ tasks {
         doLast {
             File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
         }
+    }
+
+    jar {
+        from(zipTree(project(":sdk:trace-shaded-deps").tasks.named<Jar>("shadowJar").get().archiveFile))
     }
 }

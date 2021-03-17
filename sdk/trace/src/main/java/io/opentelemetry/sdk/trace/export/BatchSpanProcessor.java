@@ -11,16 +11,16 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.internal.shaded.jctools.queues.MessagePassingQueue;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.internal.JcTools;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -72,7 +72,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
-            new ArrayBlockingQueue<>(maxQueueSize));
+            JcTools.newMpscCompoundQueue(maxQueueSize));
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
   }
@@ -131,7 +131,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private long nextExportTime;
 
-    private final BlockingQueue<ReadableSpan> queue;
+    private final MessagePassingQueue<ReadableSpan> queue;
 
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
@@ -142,7 +142,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
-        BlockingQueue<ReadableSpan> queue) {
+        MessagePassingQueue<ReadableSpan> queue) {
       this.spanExporter = spanExporter;
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
@@ -193,11 +193,12 @@ public final class BatchSpanProcessor implements SpanProcessor {
         }
 
         try {
-          ReadableSpan lastElement = queue.poll(100, TimeUnit.MILLISECONDS);
+          // DO NOT SUBMIT
+          ReadableSpan lastElement = queue.poll();
           if (lastElement != null) {
             batch.add(lastElement.toSpanData());
           }
-        } catch (InterruptedException e) {
+        } catch (Throwable e) {
           Thread.currentThread().interrupt();
           return;
         }
