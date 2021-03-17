@@ -419,6 +419,101 @@ class SdkSpanBuilderTest {
   }
 
   @Test
+  void setAllAttributes() {
+    Attributes attributes =
+        Attributes.builder()
+            .put("string", "value")
+            .put("long", 12345L)
+            .put("double", .12345)
+            .put("boolean", true)
+            .put(stringKey("stringAttribute"), "attrvalue")
+            .build();
+
+    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME).setAllAttributes(attributes);
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      SpanData spanData = span.toSpanData();
+      Attributes attrs = spanData.getAttributes();
+      assertThat(attrs.size()).isEqualTo(5);
+      assertThat(attrs.get(stringKey("string"))).isEqualTo("value");
+      assertThat(attrs.get(longKey("long"))).isEqualTo(12345L);
+      assertThat(attrs.get(doubleKey("double"))).isEqualTo(0.12345);
+      assertThat(attrs.get(booleanKey("boolean"))).isEqualTo(true);
+      assertThat(attrs.get(stringKey("stringAttribute"))).isEqualTo("attrvalue");
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(5);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void setAllAttributes_mergesAttributes() {
+    Attributes attributes =
+        Attributes.builder()
+            .put("string", "value")
+            .put("long", 12345L)
+            .put("double", .12345)
+            .put("boolean", true)
+            .put(stringKey("stringAttribute"), "attrvalue")
+            .build();
+
+    SpanBuilder spanBuilder =
+        sdkTracer
+            .spanBuilder(SPAN_NAME)
+            .setAttribute("string", "otherValue")
+            .setAttribute("boolean", false)
+            .setAttribute("existingString", "existingValue")
+            .setAllAttributes(attributes);
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      SpanData spanData = span.toSpanData();
+      Attributes attrs = spanData.getAttributes();
+      assertThat(attrs.size()).isEqualTo(6);
+      assertThat(attrs.get(stringKey("string"))).isEqualTo("value");
+      assertThat(attrs.get(stringKey("existingString"))).isEqualTo("existingValue");
+      assertThat(attrs.get(longKey("long"))).isEqualTo(12345L);
+      assertThat(attrs.get(doubleKey("double"))).isEqualTo(0.12345);
+      assertThat(attrs.get(booleanKey("boolean"))).isEqualTo(true);
+      assertThat(attrs.get(stringKey("stringAttribute"))).isEqualTo("attrvalue");
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(8);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void setAllAttributes_nullAttributes() {
+    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME).setAllAttributes(null);
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      SpanData spanData = span.toSpanData();
+      Attributes attrs = spanData.getAttributes();
+      assertThat(attrs.size()).isEqualTo(0);
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(0);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void setAllAttributes_emptyAttributes() {
+    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME).setAllAttributes(Attributes.empty());
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      SpanData spanData = span.toSpanData();
+      Attributes attrs = spanData.getAttributes();
+      assertThat(attrs.size()).isEqualTo(0);
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(0);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
   void recordEvents_default() {
     Span span = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
     try {

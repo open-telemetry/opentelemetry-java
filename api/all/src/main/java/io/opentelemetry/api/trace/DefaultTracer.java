@@ -97,6 +97,11 @@ final class DefaultTracer implements Tracer {
     }
 
     @Override
+    public NoopSpanBuilder setAllAttributes(Attributes attributes) {
+      return this;
+    }
+
+    @Override
     public NoopSpanBuilder setSpanKind(SpanKind spanKind) {
       return this;
     }

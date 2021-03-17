@@ -168,6 +168,23 @@ public interface Span extends ImplicitContextKeyed {
   }
 
   /**
+   * Sets attributes to the {@link Span}. If the {@link Span} previously contained a mapping for any
+   * of the keys, the old values are replaced by the specified values.
+   *
+   * @param attributes the attributes
+   * @return this.
+   */
+  @SuppressWarnings("unchecked")
+  default Span setAllAttributes(Attributes attributes) {
+    if (attributes == null || attributes.isEmpty()) {
+      return this;
+    }
+    attributes.forEach(
+        (attributeKey, value) -> this.setAttribute((AttributeKey<Object>) attributeKey, value));
+    return this;
+  }
+
+  /**
    * Adds an event to the {@link Span}. The timestamp of the event will be the current time.
    *
    * @param name the name of the event.
