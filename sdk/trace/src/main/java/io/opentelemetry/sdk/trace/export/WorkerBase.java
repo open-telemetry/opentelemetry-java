@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.api.metrics.BoundLongCounter;
@@ -35,6 +40,7 @@ public abstract class WorkerBase implements Runnable {
 
   /**
    * This a base class useful for all flavors of BatchSpanProcessor.
+   *
    * @param spanExporter {@link SpanExporter} to use
    * @param scheduleDelayNanos how much time can pass before Worker sends a batch to exporter
    * @param maxExportBatchSize max size of a batch
@@ -64,8 +70,7 @@ public abstract class WorkerBase implements Runnable {
         .setUpdater(
             result ->
                 result.observe(
-                    queue.size(),
-                    Labels.of(spanProcessorTypeLabel, spanProcessorTypeValue)))
+                    queue.size(), Labels.of(spanProcessorTypeLabel, spanProcessorTypeValue)))
         .build();
     LongCounter processedSpansCounter =
         meter
@@ -85,6 +90,7 @@ public abstract class WorkerBase implements Runnable {
 
   /**
    * Adds a span to worker's internal queue.
+   *
    * @param span {@link ReadableSpan}
    */
   public void addSpan(ReadableSpan span) {
@@ -102,8 +108,7 @@ public abstract class WorkerBase implements Runnable {
     }
 
     try {
-      final CompletableResultCode result =
-          spanExporter.export(new ArrayList<>(batch));
+      final CompletableResultCode result = spanExporter.export(new ArrayList<>(batch));
       result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
       if (result.isSuccess()) {
         exportedSpans.add(batch.size());

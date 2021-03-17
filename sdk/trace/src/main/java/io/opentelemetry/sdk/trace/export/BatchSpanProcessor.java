@@ -122,8 +122,14 @@ public final class BatchSpanProcessor implements SpanProcessor {
         int maxExportBatchSize,
         long exporterTimeoutNanos,
         BlockingQueue<ReadableSpan> queue) {
-      super(spanExporter, scheduleDelayNanos, maxExportBatchSize, exporterTimeoutNanos, queue,
-          SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE);
+      super(
+          spanExporter,
+          scheduleDelayNanos,
+          maxExportBatchSize,
+          exporterTimeoutNanos,
+          queue,
+          SPAN_PROCESSOR_TYPE_LABEL,
+          SPAN_PROCESSOR_TYPE_VALUE);
 
       this.batch = new ArrayList<>(maxExportBatchSize);
     }
