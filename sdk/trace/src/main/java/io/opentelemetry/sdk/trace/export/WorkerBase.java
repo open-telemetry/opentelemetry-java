@@ -33,6 +33,16 @@ public abstract class WorkerBase implements Runnable {
   protected final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
   protected final AtomicBoolean continueWork = new AtomicBoolean(true);
 
+  /**
+   * This a base class useful for all flavors of BatchSpanProcessor.
+   * @param spanExporter {@link SpanExporter} to use
+   * @param scheduleDelayNanos how much time can pass before Worker sends a batch to exporter
+   * @param maxExportBatchSize max size of a batch
+   * @param exporterTimeoutNanos {@link SpanExporter} timeout
+   * @param queue thread-safe queue for processing spans
+   * @param spanProcessorTypeLabel (ie. queueSize or processedSpans) metric label
+   * @param spanProcessorTypeValue (ie. queueSize or processedSpans) metric value
+   */
   protected WorkerBase(
       SpanExporter spanExporter,
       long scheduleDelayNanos,
@@ -73,6 +83,10 @@ public abstract class WorkerBase implements Runnable {
             Labels.of(spanProcessorTypeLabel, spanProcessorTypeValue, "dropped", "false"));
   }
 
+  /**
+   * Adds a span to worker's internal queue.
+   * @param span {@link ReadableSpan}
+   */
   public void addSpan(ReadableSpan span) {
     if (!queue.offer(span)) {
       droppedSpans.add(1);
@@ -103,6 +117,12 @@ public abstract class WorkerBase implements Runnable {
     }
   }
 
+  /**
+   * Processes all span events that have not yet been processed.
+   *
+   * @return a {@link CompletableResultCode} which completes when currently queued spans are
+   *     finished processing.
+   */
   public CompletableResultCode forceFlush() {
     logger.info("Force flush");
     CompletableResultCode flushResult = new CompletableResultCode();
@@ -115,6 +135,11 @@ public abstract class WorkerBase implements Runnable {
     return possibleResult == null ? CompletableResultCode.ofSuccess() : possibleResult;
   }
 
+  /**
+   * Processes all span events that have not yet been processed and closes used resources.
+   *
+   * @return a {@link CompletableResultCode} which completes when shutdown is finished.
+   */
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = new CompletableResultCode();
 
