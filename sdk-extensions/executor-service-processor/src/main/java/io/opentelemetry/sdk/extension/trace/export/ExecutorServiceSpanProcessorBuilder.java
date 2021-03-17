@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.extension.trace.export;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
@@ -30,8 +35,10 @@ public class ExecutorServiceSpanProcessorBuilder {
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
   private long queuePeekInterval = QUEUE_PEEK_INTERVAL;
 
-  public ExecutorServiceSpanProcessorBuilder(SpanExporter spanExporter,
-      ScheduledExecutorService executorService, boolean ownsExecutorService) {
+  public ExecutorServiceSpanProcessorBuilder(
+      SpanExporter spanExporter,
+      ScheduledExecutorService executorService,
+      boolean ownsExecutorService) {
     this.spanExporter = spanExporter;
     this.ownsExecutorService = ownsExecutorService;
     this.executorService = executorService;
@@ -145,15 +152,21 @@ public class ExecutorServiceSpanProcessorBuilder {
   }
 
   /**
-   * Returns a new {@link ExecutorServiceSpanProcessor} that batches, then converts spans to proto and
-   * forwards them to the given {@code spanExporter}.
+   * Returns a new {@link ExecutorServiceSpanProcessor} that batches, then converts spans to proto
+   * and forwards them to the given {@code spanExporter}.
    *
    * @return a new {@link ExecutorServiceSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
   public ExecutorServiceSpanProcessor build() {
     return new ExecutorServiceSpanProcessor(
-        spanExporter, scheduleDelayNanos, maxQueueSize, maxExportBatchSize, exporterTimeoutNanos,
-        executorService, ownsExecutorService, queuePeekInterval);
+        spanExporter,
+        scheduleDelayNanos,
+        maxQueueSize,
+        maxExportBatchSize,
+        exporterTimeoutNanos,
+        executorService,
+        ownsExecutorService,
+        queuePeekInterval);
   }
 }

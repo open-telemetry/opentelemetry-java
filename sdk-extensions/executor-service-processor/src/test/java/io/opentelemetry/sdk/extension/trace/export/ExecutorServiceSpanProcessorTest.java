@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.extension.trace.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,24 +88,28 @@ class ExecutorServiceSpanProcessorTest {
   @Test
   void configTest_EmptyOptions() {
     ExecutorServiceSpanProcessorBuilder config =
-        ExecutorServiceSpanProcessor.builder(new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()),
-            mock(ScheduledExecutorService.class), false);
+        ExecutorServiceSpanProcessor.builder(
+            new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()),
+            mock(ScheduledExecutorService.class),
+            false);
     assertThat(config.getScheduleDelayNanos())
         .isEqualTo(
-            TimeUnit.MILLISECONDS.toNanos(ExecutorServiceSpanProcessorBuilder.DEFAULT_SCHEDULE_DELAY_MILLIS));
+            TimeUnit.MILLISECONDS.toNanos(
+                ExecutorServiceSpanProcessorBuilder.DEFAULT_SCHEDULE_DELAY_MILLIS));
     assertThat(config.getMaxQueueSize())
         .isEqualTo(ExecutorServiceSpanProcessorBuilder.DEFAULT_MAX_QUEUE_SIZE);
     assertThat(config.getMaxExportBatchSize())
         .isEqualTo(ExecutorServiceSpanProcessorBuilder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
     assertThat(config.getExporterTimeoutNanos())
         .isEqualTo(
-            TimeUnit.MILLISECONDS.toNanos(ExecutorServiceSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
+            TimeUnit.MILLISECONDS.toNanos(
+                ExecutorServiceSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
     assertThat(config.getQueuePeekInterval())
         .isEqualTo(ExecutorServiceSpanProcessorBuilder.QUEUE_PEEK_INTERVAL);
   }
 
-  private static ExecutorServiceSpanProcessorBuilder dummyBuilder(SpanExporter exporter,
-      ScheduledExecutorService executor) {
+  private static ExecutorServiceSpanProcessorBuilder dummyBuilder(
+      SpanExporter exporter, ScheduledExecutorService executor) {
     return ExecutorServiceSpanProcessor.builder(exporter, executor, false);
   }
 
@@ -109,8 +118,7 @@ class ExecutorServiceSpanProcessorTest {
     SpanExporter exporter = mock(SpanExporter.class);
     ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
     assertThatThrownBy(
-        () -> dummyBuilder(exporter, executor)
-            .setScheduleDelay(-1, TimeUnit.MILLISECONDS))
+            () -> dummyBuilder(exporter, executor).setScheduleDelay(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("delay must be non-negative");
     assertThatThrownBy(() -> dummyBuilder(exporter, executor).setScheduleDelay(1, null))
@@ -120,8 +128,7 @@ class ExecutorServiceSpanProcessorTest {
         .isInstanceOf(NullPointerException.class)
         .hasMessage("delay");
     assertThatThrownBy(
-        () ->
-            dummyBuilder(exporter, executor).setExporterTimeout(-1, TimeUnit.MILLISECONDS))
+            () -> dummyBuilder(exporter, executor).setExporterTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("timeout must be non-negative");
     assertThatThrownBy(() -> dummyBuilder(exporter, executor).setExporterTimeout(1, null))
@@ -131,8 +138,7 @@ class ExecutorServiceSpanProcessorTest {
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
     assertThatThrownBy(
-        () ->
-            dummyBuilder(exporter, executor).setQueuePeekInterval(-1, TimeUnit.MILLISECONDS))
+            () -> dummyBuilder(exporter, executor).setQueuePeekInterval(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("interval must be non-negative");
     assertThatThrownBy(() -> dummyBuilder(exporter, executor).setQueuePeekInterval(1, null))
@@ -147,8 +153,8 @@ class ExecutorServiceSpanProcessorTest {
   void startEndRequirements() {
     ExecutorServiceSpanProcessor spansProcessor =
         ExecutorServiceSpanProcessor.builder(
-            new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()),
-              executor, false).build();
+                new WaitingSpanExporter(0, CompletableResultCode.ofSuccess()), executor, false)
+            .build();
     assertThat(spansProcessor.isStartRequired()).isFalse();
     assertThat(spansProcessor.isEndRequired()).isTrue();
   }
@@ -160,8 +166,7 @@ class ExecutorServiceSpanProcessorTest {
     sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
-                ExecutorServiceSpanProcessor.builder(
-                    waitingSpanExporter, executor, false)
+                ExecutorServiceSpanProcessor.builder(waitingSpanExporter, executor, false)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .build();
@@ -179,8 +184,7 @@ class ExecutorServiceSpanProcessorTest {
     sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
-                ExecutorServiceSpanProcessor.builder(
-                      spanExporter, executor, false)
+                ExecutorServiceSpanProcessor.builder(spanExporter, executor, false)
                     .setMaxQueueSize(6)
                     .setMaxExportBatchSize(2)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
@@ -214,8 +218,7 @@ class ExecutorServiceSpanProcessorTest {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(100, CompletableResultCode.ofSuccess(), 1);
     ExecutorServiceSpanProcessor executorServiceSpanProcessor =
-        ExecutorServiceSpanProcessor.builder(
-            waitingSpanExporter, executor, false)
+        ExecutorServiceSpanProcessor.builder(waitingSpanExporter, executor, false)
             .setMaxQueueSize(10_000)
             // Force flush should send all spans, make sure the number of spans we check here is
             // not divisible by the batch size.
@@ -223,8 +226,8 @@ class ExecutorServiceSpanProcessorTest {
             .setScheduleDelay(1000, TimeUnit.SECONDS)
             .build();
 
-    sdkTracerProvider = SdkTracerProvider.builder()
-        .addSpanProcessor(executorServiceSpanProcessor).build();
+    sdkTracerProvider =
+        SdkTracerProvider.builder().addSpanProcessor(executorServiceSpanProcessor).build();
     for (int i = 0; i < 100; i++) {
       createEndedSpan("notExported");
     }
@@ -248,8 +251,10 @@ class ExecutorServiceSpanProcessorTest {
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 ExecutorServiceSpanProcessor.builder(
-                    SpanExporter.composite(
-                        Arrays.asList(waitingSpanExporter, waitingSpanExporter2)), executor, false)
+                        SpanExporter.composite(
+                            Arrays.asList(waitingSpanExporter, waitingSpanExporter2)),
+                        executor,
+                        false)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .build();
@@ -271,8 +276,10 @@ class ExecutorServiceSpanProcessorTest {
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 ExecutorServiceSpanProcessor.builder(
-                    SpanExporter.composite(
-                        Arrays.asList(blockingSpanExporter, waitingSpanExporter)), executor, false)
+                        SpanExporter.composite(
+                            Arrays.asList(blockingSpanExporter, waitingSpanExporter)),
+                        executor,
+                        false)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .setMaxQueueSize(maxQueuedSpans)
                     .setMaxExportBatchSize(maxQueuedSpans / 2)
@@ -340,8 +347,10 @@ class ExecutorServiceSpanProcessorTest {
         SdkTracerProvider.builder()
             .addSpanProcessor(
                 ExecutorServiceSpanProcessor.builder(
-                    SpanExporter.composite(
-                        Arrays.asList(mockSpanExporter, waitingSpanExporter)), executor, false)
+                        SpanExporter.composite(
+                            Arrays.asList(mockSpanExporter, waitingSpanExporter)),
+                        executor,
+                        false)
                     .setScheduleDelay(MAX_SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
                     .build())
             .build();
@@ -370,13 +379,13 @@ class ExecutorServiceSpanProcessorTest {
     CountDownLatch exported = new CountDownLatch(1);
     // We return a result we never complete, meaning it will timeout.
     when(mockSpanExporter.export(
-        argThat(
-            spans -> {
-              assertThat(spans)
-                  .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_1));
-              exported.countDown();
-              return true;
-            })))
+            argThat(
+                spans -> {
+                  assertThat(spans)
+                      .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_1));
+                  exported.countDown();
+                  return true;
+                })))
         .thenReturn(new CompletableResultCode());
     createEndedSpan(SPAN_NAME_1);
     exported.await();
@@ -387,13 +396,13 @@ class ExecutorServiceSpanProcessorTest {
     CountDownLatch exportedAgain = new CountDownLatch(1);
     reset(mockSpanExporter);
     when(mockSpanExporter.export(
-        argThat(
-            spans -> {
-              assertThat(spans)
-                  .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_2));
-              exportedAgain.countDown();
-              return true;
-            })))
+            argThat(
+                spans -> {
+                  assertThat(spans)
+                      .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_2));
+                  exportedAgain.countDown();
+                  return true;
+                })))
         .thenReturn(CompletableResultCode.ofSuccess());
     createEndedSpan(SPAN_NAME_2);
     exported.await();
@@ -490,8 +499,8 @@ class ExecutorServiceSpanProcessorTest {
   void shutdownPropagatesSuccess() {
     SpanExporter mockSpanExporter = mock(SpanExporter.class);
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    ExecutorServiceSpanProcessor processor = ExecutorServiceSpanProcessor.builder(mockSpanExporter,
-        executor, false).build();
+    ExecutorServiceSpanProcessor processor =
+        ExecutorServiceSpanProcessor.builder(mockSpanExporter, executor, false).build();
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isTrue();
@@ -501,8 +510,8 @@ class ExecutorServiceSpanProcessorTest {
   void shutdownPropagatesFailure() {
     SpanExporter mockSpanExporter = mock(SpanExporter.class);
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofFailure());
-    ExecutorServiceSpanProcessor processor = ExecutorServiceSpanProcessor.builder(mockSpanExporter,
-        executor, false).build();
+    ExecutorServiceSpanProcessor processor =
+        ExecutorServiceSpanProcessor.builder(mockSpanExporter, executor, false).build();
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
     assertThat(result.isSuccess()).isFalse();
@@ -513,8 +522,8 @@ class ExecutorServiceSpanProcessorTest {
     // given
     ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
     SpanExporter spanExporter = mock(SpanExporter.class);
-    ExecutorServiceSpanProcessor processor = ExecutorServiceSpanProcessor.builder(spanExporter,
-        executorService, true).build();
+    ExecutorServiceSpanProcessor processor =
+        ExecutorServiceSpanProcessor.builder(spanExporter, executorService, true).build();
 
     // when
     when(spanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());

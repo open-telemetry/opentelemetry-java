@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.extension.trace.export;
 
 import io.opentelemetry.context.Context;
@@ -31,13 +36,16 @@ public class ExecutorServiceSpanProcessor implements SpanProcessor {
   private final ScheduledExecutorService executorService;
   private final ScheduledFuture<?> future;
 
-  public static ExecutorServiceSpanProcessorBuilder builder(SpanExporter spanExporter,
-      ScheduledExecutorService executorService, boolean ownsExecutorService) {
-    return new ExecutorServiceSpanProcessorBuilder(spanExporter, executorService,
-        ownsExecutorService);
+  public static ExecutorServiceSpanProcessorBuilder builder(
+      SpanExporter spanExporter,
+      ScheduledExecutorService executorService,
+      boolean ownsExecutorService) {
+    return new ExecutorServiceSpanProcessorBuilder(
+        spanExporter, executorService, ownsExecutorService);
   }
 
-  ExecutorServiceSpanProcessor(SpanExporter spanExporter,
+  ExecutorServiceSpanProcessor(
+      SpanExporter spanExporter,
       long scheduleDelayNanos,
       int maxQueueSize,
       int maxExportBatchSize,
@@ -45,20 +53,22 @@ public class ExecutorServiceSpanProcessor implements SpanProcessor {
       ScheduledExecutorService executorService,
       boolean ownsExecutorService,
       long queuePeekMillis) {
-    this.worker = new Worker(
-        spanExporter,
-        scheduleDelayNanos,
-        maxExportBatchSize,
-        exporterTimeoutNanos,
-        new ArrayBlockingQueue<>(maxQueueSize));
+    this.worker =
+        new Worker(
+            spanExporter,
+            scheduleDelayNanos,
+            maxExportBatchSize,
+            exporterTimeoutNanos,
+            new ArrayBlockingQueue<>(maxQueueSize));
     this.ownsExecutorService = ownsExecutorService;
     this.executorService = executorService;
-    this.future = executorService.scheduleAtFixedRate(worker, queuePeekMillis, queuePeekMillis,
-        TimeUnit.MILLISECONDS);
+    this.future =
+        executorService.scheduleAtFixedRate(
+            worker, queuePeekMillis, queuePeekMillis, TimeUnit.MILLISECONDS);
   }
 
   @Override
-  public void onStart(Context parentContext, ReadWriteSpan span) { }
+  public void onStart(Context parentContext, ReadWriteSpan span) {}
 
   @Override
   public boolean isStartRequired() {
@@ -85,12 +95,13 @@ public class ExecutorServiceSpanProcessor implements SpanProcessor {
     }
     CompletableResultCode result = worker.shutdown();
     // do the cleanup after worker finishes flush
-    result.whenComplete(() -> {
-      future.cancel(false);
-      if (ownsExecutorService) {
-        executorService.shutdown();
-      }
-    });
+    result.whenComplete(
+        () -> {
+          future.cancel(false);
+          if (ownsExecutorService) {
+            executorService.shutdown();
+          }
+        });
 
     return result;
   }
@@ -117,8 +128,14 @@ public class ExecutorServiceSpanProcessor implements SpanProcessor {
         int maxExportBatchSize,
         long exporterTimeoutNanos,
         BlockingQueue<ReadableSpan> queue) {
-      super(spanExporter, scheduleDelayNanos, maxExportBatchSize, exporterTimeoutNanos, queue,
-          SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE);
+      super(
+          spanExporter,
+          scheduleDelayNanos,
+          maxExportBatchSize,
+          exporterTimeoutNanos,
+          queue,
+          SPAN_PROCESSOR_TYPE_LABEL,
+          SPAN_PROCESSOR_TYPE_VALUE);
 
       this.batch = new ArrayBlockingQueue<>(maxExportBatchSize);
       updateNextExportTime();
