@@ -5,7 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.metrics.common.Labels;
@@ -16,6 +18,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,6 +58,26 @@ class IntervalMetricReaderTest {
   @BeforeEach
   void setup() {
     when(metricProducer.collectAllMetrics()).thenReturn(Collections.singletonList(METRIC_DATA));
+  }
+
+  @Test
+  void startOnlyOnce() {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+
+    IntervalMetricReader intervalMetricReader =
+        IntervalMetricReader.builder()
+            .setMetricExporter(waitingMetricExporter)
+            .setMetricProducers(singleton(() -> singleton(METRIC_DATA)))
+            .setExportIntervalMillis(100)
+            .buildAndStart();
+
+    intervalMetricReader.start();
+
+    // wait for 2 cycles. We should only have 2 metrics collected, not more.
+    await()
+        .during(Duration.ofMillis(100))
+        .atMost(Duration.ofMillis(250))
+        .until(() -> waitingMetricExporter.queue.size() < 3);
   }
 
   @Test
