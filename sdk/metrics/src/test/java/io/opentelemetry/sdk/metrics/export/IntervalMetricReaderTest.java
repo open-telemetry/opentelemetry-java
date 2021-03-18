@@ -5,8 +5,12 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
-import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.metrics.common.Labels;
@@ -23,9 +27,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,21 +65,25 @@ class IntervalMetricReaderTest {
   }
 
   @Test
-  void startOnlyOnce() throws InterruptedException {
-    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  void startOnlyOnce() {
+    ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
+
+    ScheduledFuture mock = mock(ScheduledFuture.class);
+    when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(mock);
 
     IntervalMetricReader intervalMetricReader =
-        IntervalMetricReader.builder()
-            .setMetricExporter(waitingMetricExporter)
-            .setMetricProducers(singleton(() -> singleton(METRIC_DATA)))
-            .setExportIntervalMillis(100)
-            .buildAndStart();
+        new IntervalMetricReader(
+            IntervalMetricReader.InternalState.builder()
+                .setMetricProducers(Collections.emptyList())
+                .setMetricExporter(mock(MetricExporter.class))
+                .build(),
+            scheduler);
 
     intervalMetricReader.start();
+    intervalMetricReader.start();
 
-    // wait for 2 cycles. We should only have 2 metrics collected, not more.
-    Thread.sleep(290);
-    assertThat(waitingMetricExporter.numberOfExports.get()).isEqualTo(2);
+    verify(scheduler, times(1)).scheduleAtFixedRate(any(), anyLong(), anyLong(), any());
   }
 
   @Test
@@ -143,7 +152,7 @@ class IntervalMetricReaderTest {
     private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
     private final boolean shouldThrow;
     private final BlockingQueue<List<MetricData>> queue = new LinkedBlockingQueue<>();
-    private final AtomicInteger numberOfExports = new AtomicInteger();
+    private final List<Long> exportTimes = Collections.synchronizedList(new ArrayList<>());
 
     private WaitingMetricExporter() {
       this(false);
@@ -155,7 +164,7 @@ class IntervalMetricReaderTest {
 
     @Override
     public CompletableResultCode export(Collection<MetricData> metricList) {
-      numberOfExports.incrementAndGet();
+      exportTimes.add(System.currentTimeMillis());
       queue.offer(new ArrayList<>(metricList));
 
       if (shouldThrow) {

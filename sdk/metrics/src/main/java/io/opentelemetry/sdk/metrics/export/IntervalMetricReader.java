@@ -76,9 +76,15 @@ public final class IntervalMetricReader {
   }
 
   IntervalMetricReader(InternalState internalState) {
+    this(
+        internalState,
+        Executors.newScheduledThreadPool(1, new DaemonThreadFactory("IntervalMetricReader")));
+  }
+
+  // visible for testing
+  IntervalMetricReader(InternalState internalState, ScheduledExecutorService intervalMetricReader) {
     this.exporter = new Exporter(internalState);
-    this.scheduler =
-        Executors.newScheduledThreadPool(1, new DaemonThreadFactory("IntervalMetricReader"));
+    this.scheduler = intervalMetricReader;
   }
 
   /**
