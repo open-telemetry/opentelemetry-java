@@ -73,7 +73,7 @@ class IntervalMetricReaderTest {
     intervalMetricReader.start();
 
     // wait for 2 cycles. We should only have 2 metrics collected, not more.
-    Thread.sleep(250);
+    Thread.sleep(290);
     assertThat(waitingMetricExporter.numberOfExports.get()).isEqualTo(2);
   }
 
