@@ -76,7 +76,7 @@ class IntervalMetricReaderTest {
     // wait for 2 cycles. We should only have 2 metrics collected, not more.
     await()
         .during(Duration.ofMillis(100))
-        .atMost(Duration.ofMillis(250))
+        .atMost(Duration.ofMillis(290))
         .until(() -> waitingMetricExporter.queue.size() < 3);
   }
 
