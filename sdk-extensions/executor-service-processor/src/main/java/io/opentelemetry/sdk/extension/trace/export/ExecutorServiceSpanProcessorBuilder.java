@@ -134,8 +134,8 @@ public class ExecutorServiceSpanProcessorBuilder {
   }
 
   /**
-   * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
-   * WORKER_SCHEDULE_INTERVAL}ms.
+   * Sets the delay interval between two consecutive runs of the worker job. If unset, defaults to
+   * {@value WORKER_SCHEDULE_INTERVAL}ms.
    */
   public ExecutorServiceSpanProcessorBuilder setWorkerScheduleInterval(Duration interval) {
     requireNonNull(interval, "interval");
@@ -143,11 +143,11 @@ public class ExecutorServiceSpanProcessorBuilder {
   }
 
   /**
-   * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
-   * WORKER_SCHEDULE_INTERVAL}ms.
+   * Sets the delay interval between two consecutive runs of the worker job. If unset, defaults to
+   * {@value WORKER_SCHEDULE_INTERVAL}ms.
    */
-  public ExecutorServiceSpanProcessorBuilder setWorkerScheduleInterval(long interval,
-      TimeUnit unit) {
+  public ExecutorServiceSpanProcessorBuilder setWorkerScheduleInterval(
+      long interval, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(interval >= 0, "interval must be non-negative");
     workerScheduleInterval = unit.toMillis(interval);
