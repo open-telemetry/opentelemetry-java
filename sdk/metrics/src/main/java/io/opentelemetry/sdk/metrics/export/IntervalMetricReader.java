@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -32,9 +33,15 @@ public final class IntervalMetricReader {
   private final Exporter exporter;
   private final ScheduledExecutorService scheduler;
 
+  private volatile ScheduledFuture<?> scheduledFuture;
+  private final Object lock = new Object();
+
   /** Stops the scheduled task and calls export one more time. */
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = new CompletableResultCode();
+    if (scheduledFuture != null) {
+      scheduledFuture.cancel(false);
+    }
     scheduler.shutdown();
     try {
       scheduler.awaitTermination(5, TimeUnit.SECONDS);
@@ -68,16 +75,36 @@ public final class IntervalMetricReader {
     return new IntervalMetricReaderBuilder(InternalState.builder());
   }
 
-  @SuppressWarnings("FutureReturnValueIgnored")
   IntervalMetricReader(InternalState internalState) {
+    this(
+        internalState,
+        Executors.newScheduledThreadPool(1, new DaemonThreadFactory("IntervalMetricReader")));
+  }
+
+  // visible for testing
+  IntervalMetricReader(InternalState internalState, ScheduledExecutorService intervalMetricReader) {
     this.exporter = new Exporter(internalState);
-    this.scheduler =
-        Executors.newScheduledThreadPool(1, new DaemonThreadFactory("IntervalMetricReader"));
-    this.scheduler.scheduleAtFixedRate(
-        exporter,
-        internalState.getExportIntervalMillis(),
-        internalState.getExportIntervalMillis(),
-        TimeUnit.MILLISECONDS);
+    this.scheduler = intervalMetricReader;
+  }
+
+  /**
+   * Starts this {@link IntervalMetricReader} to report to the configured exporter.
+   *
+   * @return this for fluent usage along with the builder.
+   */
+  public IntervalMetricReader start() {
+    synchronized (lock) {
+      if (scheduledFuture != null) {
+        return this;
+      }
+      scheduledFuture =
+          scheduler.scheduleAtFixedRate(
+              exporter,
+              exporter.internalState.getExportIntervalMillis(),
+              exporter.internalState.getExportIntervalMillis(),
+              TimeUnit.MILLISECONDS);
+      return this;
+    }
   }
 
   private static final class Exporter implements Runnable {
