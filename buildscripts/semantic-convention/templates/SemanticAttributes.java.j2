@@ -11,8 +11,10 @@
     List<String>
   {%- elif type == "boolean" -%}
     boolean
-  {%- elif type == "number" -%}
+  {%- elif type == "int" -%}
     long
+  {%- elif type == "double" -%}
+    double
   {%- else -%}
     {{type}}
   {%- endif -%}
@@ -24,8 +26,10 @@
     stringArrayKey
   {%- elif type == "boolean" -%}
     booleanKey
-  {%- elif type == "number" -%}
+  {%- elif type == "int" -%}
     longKey
+  {%- elif type == "double" -%}
+    doubleKey
   {%- else -%}
     {{lowerFirst(type)}}Key
   {%- endif -%}
@@ -43,6 +47,7 @@
 package {{pkg | trim}};
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
