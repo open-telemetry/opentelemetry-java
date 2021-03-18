@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public abstract class WorkerBase implements Runnable {
+abstract class WorkerBase implements Runnable {
 
   private final BoundLongCounter droppedSpans;
   protected final BoundLongCounter exportedSpans;

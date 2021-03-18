@@ -24,7 +24,7 @@ public class ExecutorServiceSpanProcessorBuilder {
   // Visible for testing
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
   // Visible for testing
-  static final int QUEUE_PEEK_INTERVAL = 100;
+  static final int WORKER_SCHEDULE_INTERVAL = 100;
 
   private final SpanExporter spanExporter;
   private final boolean ownsExecutorService;
@@ -33,9 +33,9 @@ public class ExecutorServiceSpanProcessorBuilder {
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
-  private long queuePeekInterval = QUEUE_PEEK_INTERVAL;
+  private long workerScheduleInterval = WORKER_SCHEDULE_INTERVAL;
 
-  public ExecutorServiceSpanProcessorBuilder(
+  ExecutorServiceSpanProcessorBuilder(
       SpanExporter spanExporter,
       ScheduledExecutorService executorService,
       boolean ownsExecutorService) {
@@ -44,6 +44,10 @@ public class ExecutorServiceSpanProcessorBuilder {
     this.executorService = executorService;
   }
 
+  /**
+   * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
+   * DEFAULT_SCHEDULE_DELAY_MILLIS}ms.
+   */
   public ExecutorServiceSpanProcessorBuilder setScheduleDelay(long delay, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(delay >= 0, "delay must be non-negative");
@@ -129,21 +133,30 @@ public class ExecutorServiceSpanProcessorBuilder {
     return this;
   }
 
-  public ExecutorServiceSpanProcessorBuilder setQueuePeekInterval(Duration interval) {
+  /**
+   * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
+   * WORKER_SCHEDULE_INTERVAL}ms.
+   */
+  public ExecutorServiceSpanProcessorBuilder setWorkerScheduleInterval(Duration interval) {
     requireNonNull(interval, "interval");
-    return setQueuePeekInterval(interval.toMillis(), TimeUnit.MILLISECONDS);
+    return setWorkerScheduleInterval(interval.toMillis(), TimeUnit.MILLISECONDS);
   }
 
-  public ExecutorServiceSpanProcessorBuilder setQueuePeekInterval(long interval, TimeUnit unit) {
+  /**
+   * Sets the delay interval between two consecutive exports. If unset, defaults to {@value
+   * WORKER_SCHEDULE_INTERVAL}ms.
+   */
+  public ExecutorServiceSpanProcessorBuilder setWorkerScheduleInterval(long interval,
+      TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(interval >= 0, "interval must be non-negative");
-    queuePeekInterval = unit.toMillis(interval);
+    workerScheduleInterval = unit.toMillis(interval);
     return this;
   }
 
   // Visible for testing
-  long getQueuePeekInterval() {
-    return queuePeekInterval;
+  long getWorkerScheduleInterval() {
+    return workerScheduleInterval;
   }
 
   // Visible for testing
@@ -167,6 +180,6 @@ public class ExecutorServiceSpanProcessorBuilder {
         exporterTimeoutNanos,
         executorService,
         ownsExecutorService,
-        queuePeekInterval);
+        workerScheduleInterval);
   }
 }

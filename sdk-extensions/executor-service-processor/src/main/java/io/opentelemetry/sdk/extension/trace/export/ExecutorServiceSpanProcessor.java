@@ -12,17 +12,14 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.sdk.trace.export.WorkerBase;
+import io.opentelemetry.sdk.trace.export.Worker;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class ExecutorServiceSpanProcessor implements SpanProcessor {
 
@@ -52,19 +49,21 @@ public class ExecutorServiceSpanProcessor implements SpanProcessor {
       long exporterTimeoutNanos,
       ScheduledExecutorService executorService,
       boolean ownsExecutorService,
-      long queuePeekMillis) {
+      long workerScheduleInterval) {
     this.worker =
         new Worker(
             spanExporter,
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
-            new ArrayBlockingQueue<>(maxQueueSize));
+            new ArrayBlockingQueue<>(maxQueueSize),
+            SPAN_PROCESSOR_TYPE_LABEL,
+            SPAN_PROCESSOR_TYPE_VALUE);
     this.ownsExecutorService = ownsExecutorService;
     this.executorService = executorService;
     this.future =
-        executorService.scheduleAtFixedRate(
-            worker, queuePeekMillis, queuePeekMillis, TimeUnit.MILLISECONDS);
+        executorService.scheduleWithFixedDelay(
+            worker, workerScheduleInterval, workerScheduleInterval, TimeUnit.MILLISECONDS);
   }
 
   @Override
@@ -113,72 +112,6 @@ public class ExecutorServiceSpanProcessor implements SpanProcessor {
 
   // Visible for testing
   List<SpanData> getBatch() {
-    return new ArrayList<>(worker.batch);
-  }
-
-  private static final class Worker extends WorkerBase {
-
-    private final AtomicLong nextExportTime = new AtomicLong();
-
-    private final ArrayBlockingQueue<SpanData> batch;
-
-    private Worker(
-        SpanExporter spanExporter,
-        long scheduleDelayNanos,
-        int maxExportBatchSize,
-        long exporterTimeoutNanos,
-        BlockingQueue<ReadableSpan> queue) {
-      super(
-          spanExporter,
-          scheduleDelayNanos,
-          maxExportBatchSize,
-          exporterTimeoutNanos,
-          queue,
-          SPAN_PROCESSOR_TYPE_LABEL,
-          SPAN_PROCESSOR_TYPE_VALUE);
-
-      this.batch = new ArrayBlockingQueue<>(maxExportBatchSize);
-      updateNextExportTime();
-    }
-
-    private void updateNextExportTime() {
-      nextExportTime.set(System.nanoTime() + scheduleDelayNanos);
-    }
-
-    @Override
-    public void run() {
-      // nextExportTime is set for the first time in the constructor
-
-      continueWork.set(true);
-      while (continueWork.get()) {
-        if (flushRequested.get() != null) {
-          flush();
-        }
-
-        try {
-          ReadableSpan lastElement = queue.peek();
-          if (lastElement != null) {
-            batch.add(lastElement.toSpanData());
-            // drain queue
-            queue.take();
-          } else {
-            continueWork.set(false);
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          return;
-        }
-
-        if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime.get()) {
-          exportCurrentBatch();
-          updateNextExportTime();
-        }
-      }
-    }
-
-    @Override
-    protected Collection<SpanData> getBatch() {
-      return batch;
-    }
+    return new ArrayList<>(worker.getBatch());
   }
 }

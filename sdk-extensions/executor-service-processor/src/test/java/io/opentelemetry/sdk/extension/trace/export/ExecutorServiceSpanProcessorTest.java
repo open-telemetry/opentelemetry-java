@@ -104,8 +104,8 @@ class ExecutorServiceSpanProcessorTest {
         .isEqualTo(
             TimeUnit.MILLISECONDS.toNanos(
                 ExecutorServiceSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
-    assertThat(config.getQueuePeekInterval())
-        .isEqualTo(ExecutorServiceSpanProcessorBuilder.QUEUE_PEEK_INTERVAL);
+    assertThat(config.getWorkerScheduleInterval())
+        .isEqualTo(ExecutorServiceSpanProcessorBuilder.WORKER_SCHEDULE_INTERVAL);
   }
 
   private static ExecutorServiceSpanProcessorBuilder dummyBuilder(
@@ -138,13 +138,13 @@ class ExecutorServiceSpanProcessorTest {
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
     assertThatThrownBy(
-            () -> dummyBuilder(exporter, executor).setQueuePeekInterval(-1, TimeUnit.MILLISECONDS))
+            () -> dummyBuilder(exporter, executor).setWorkerScheduleInterval(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("interval must be non-negative");
-    assertThatThrownBy(() -> dummyBuilder(exporter, executor).setQueuePeekInterval(1, null))
+    assertThatThrownBy(() -> dummyBuilder(exporter, executor).setWorkerScheduleInterval(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");
-    assertThatThrownBy(() -> dummyBuilder(exporter, executor).setQueuePeekInterval(null))
+    assertThatThrownBy(() -> dummyBuilder(exporter, executor).setWorkerScheduleInterval(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("interval");
   }
