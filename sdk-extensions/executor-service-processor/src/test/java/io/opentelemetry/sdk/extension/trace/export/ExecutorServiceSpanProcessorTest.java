@@ -138,7 +138,8 @@ class ExecutorServiceSpanProcessorTest {
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
     assertThatThrownBy(
-            () -> dummyBuilder(exporter, executor).setWorkerScheduleInterval(-1, TimeUnit.MILLISECONDS))
+            () -> dummyBuilder(exporter, executor)
+                .setWorkerScheduleInterval(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("interval must be non-negative");
     assertThatThrownBy(() -> dummyBuilder(exporter, executor).setWorkerScheduleInterval(1, null))
