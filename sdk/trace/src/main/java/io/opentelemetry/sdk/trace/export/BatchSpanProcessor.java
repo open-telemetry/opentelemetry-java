@@ -23,6 +23,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -131,7 +132,13 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private long nextExportTime;
     private final BlockingQueue<ReadableSpan> queue;
-    private final AtomicBoolean needSignal = new AtomicBoolean(false);
+    // When waiting on the spans queue, exporter thread sets this atomic to the number of more
+    // spans it needs before doing an export. Writer threads would then wait for the queue to reach
+    // spansNeeded size before notifying the exporter thread about new entries.
+    // Integer.MAX_VALUE is used to imply that exporter thread is not expecting any signal. Since
+    // exporter thread doesn't expect any signal initially, this value is initialized to
+    // Integer.MAX_VALUE.
+    private final AtomicInteger spansNeeded = new AtomicInteger(Integer.MAX_VALUE);
     private final BlockingQueue<Boolean> signal;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
@@ -182,7 +189,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       if (!queue.offer(span)) {
         droppedSpans.add(1);
       } else {
-        if (queue.size() >= maxExportBatchSize && needSignal.get()) {
+        if (queue.size() >= spansNeeded.get()) {
           signal.offer(true);
         }
       }
@@ -207,9 +214,9 @@ public final class BatchSpanProcessor implements SpanProcessor {
           try {
             long pollWaitTime = nextExportTime - System.nanoTime();
             if (pollWaitTime > 0) {
-              needSignal.set(true);
+              spansNeeded.set(maxExportBatchSize - batch.size());
               signal.poll(pollWaitTime, TimeUnit.NANOSECONDS);
-              needSignal.set(false);
+              spansNeeded.set(Integer.MAX_VALUE);
             }
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
