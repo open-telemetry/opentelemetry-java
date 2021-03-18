@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.export;
 
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.metrics.common.Labels;
@@ -18,7 +17,6 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +25,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +60,7 @@ class IntervalMetricReaderTest {
   }
 
   @Test
-  void startOnlyOnce() {
+  void startOnlyOnce() throws InterruptedException {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
 
     IntervalMetricReader intervalMetricReader =
@@ -74,10 +73,8 @@ class IntervalMetricReaderTest {
     intervalMetricReader.start();
 
     // wait for 2 cycles. We should only have 2 metrics collected, not more.
-    await()
-        .during(Duration.ofMillis(100))
-        .atMost(Duration.ofMillis(290))
-        .until(() -> waitingMetricExporter.queue.size() < 3);
+    Thread.sleep(250);
+    assertThat(waitingMetricExporter.numberOfExports.get()).isEqualTo(2);
   }
 
   @Test
@@ -146,6 +143,7 @@ class IntervalMetricReaderTest {
     private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
     private final boolean shouldThrow;
     private final BlockingQueue<List<MetricData>> queue = new LinkedBlockingQueue<>();
+    private final AtomicInteger numberOfExports = new AtomicInteger();
 
     private WaitingMetricExporter() {
       this(false);
@@ -157,6 +155,7 @@ class IntervalMetricReaderTest {
 
     @Override
     public CompletableResultCode export(Collection<MetricData> metricList) {
+      numberOfExports.incrementAndGet();
       queue.offer(new ArrayList<>(metricList));
 
       if (shouldThrow) {
