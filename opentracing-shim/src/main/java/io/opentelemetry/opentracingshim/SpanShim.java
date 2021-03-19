@@ -19,6 +19,7 @@ import io.opentracing.log.Fields;
 import io.opentracing.tag.Tag;
 import io.opentracing.tag.Tags;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /*
@@ -175,7 +176,7 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public void finish(long finishMicros) {
-    throw new UnsupportedOperationException();
+    span.end(finishMicros, TimeUnit.MICROSECONDS);
   }
 
   static String getEventNameFromFields(Map<String, ?> fields) {
