@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.trace.export;
+package io.opentelemetry.sdk.extension.incubator.trace;
 
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.CompletableResultCode;

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.trace.export;
+package io.opentelemetry.sdk.extension.incubator.trace;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -12,14 +12,16 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.sdk.trace.export.Worker;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ExecutorServiceSpanProcessor implements SpanProcessor {
 
@@ -113,5 +115,73 @@ public class ExecutorServiceSpanProcessor implements SpanProcessor {
   // Visible for testing
   List<SpanData> getBatch() {
     return new ArrayList<>(worker.getBatch());
+  }
+
+  private static class Worker extends WorkerBase {
+
+    private final AtomicLong nextExportTime = new AtomicLong();
+
+    private final ArrayBlockingQueue<SpanData> batch;
+
+    private Worker(
+        SpanExporter spanExporter,
+        long scheduleDelayNanos,
+        int maxExportBatchSize,
+        long exporterTimeoutNanos,
+        BlockingQueue<ReadableSpan> queue,
+        String spanProcessorTypeLabel,
+        String spanProcessorTypeValue) {
+      super(
+          spanExporter,
+          scheduleDelayNanos,
+          maxExportBatchSize,
+          exporterTimeoutNanos,
+          queue,
+          spanProcessorTypeLabel,
+          spanProcessorTypeValue);
+
+      this.batch = new ArrayBlockingQueue<>(maxExportBatchSize);
+      updateNextExportTime();
+    }
+
+    private void updateNextExportTime() {
+      nextExportTime.set(System.nanoTime() + scheduleDelayNanos);
+    }
+
+    @Override
+    public void run() {
+      // nextExportTime is set for the first time in the constructor
+
+      continueWork.set(true);
+      while (continueWork.get()) {
+        if (flushRequested.get() != null) {
+          flush();
+        }
+
+        try {
+          ReadableSpan lastElement = queue.peek();
+          if (lastElement != null) {
+            batch.add(lastElement.toSpanData());
+            // drain queue
+            queue.take();
+          } else {
+            continueWork.set(false);
+          }
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return;
+        }
+
+        if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime.get()) {
+          exportCurrentBatch();
+          updateNextExportTime();
+        }
+      }
+    }
+
+    @Override
+    public Collection<SpanData> getBatch() {
+      return batch;
+    }
   }
 }

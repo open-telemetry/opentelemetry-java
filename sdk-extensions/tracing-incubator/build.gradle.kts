@@ -13,6 +13,7 @@ extra["moduleName"] = "io.opentelemetry.sdk.extension.trace.incubator"
 dependencies {
     api(project(":api:all"))
     api(project(":sdk:all"))
+    api(project(":sdk:metrics"))
 
     implementation(project(":semconv"))
 
