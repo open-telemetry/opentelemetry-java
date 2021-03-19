@@ -120,8 +120,9 @@ class IntervalMetricReaderTest {
             .buildAndStart();
 
     try {
-      assertThat(waitingMetricExporter.waitForNumberOfExports(1))
-          .containsExactly(Collections.singletonList(METRIC_DATA));
+      assertThat(waitingMetricExporter.waitForNumberOfExports(2))
+          .containsExactly(
+              Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
     } finally {
       intervalMetricReader.shutdown();
     }
