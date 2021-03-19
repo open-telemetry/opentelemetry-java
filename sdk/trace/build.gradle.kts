@@ -15,7 +15,7 @@ dependencies {
     api(project(":api:all"))
     api(project(":sdk:common"))
 
-    compileOnly(project(path=":sdk:trace-shaded-deps", configuration="shadow"))
+    compileOnly(project(":sdk:trace-shaded-deps"))
 
     implementation(project(":api:metrics"))
     implementation(project(":semconv"))
@@ -68,6 +68,7 @@ tasks {
     }
 
     jar {
+        inputs.files(project(":sdk:trace-shaded-deps").file("src"))
         from(zipTree(project(":sdk:trace-shaded-deps").tasks.named<Jar>("shadowJar").get().archiveFile))
     }
 }
