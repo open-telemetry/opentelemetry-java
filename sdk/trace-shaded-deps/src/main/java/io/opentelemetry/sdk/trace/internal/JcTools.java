@@ -5,11 +5,12 @@
 
 package io.opentelemetry.sdk.trace.internal;
 
+import java.util.Queue;
 import org.jctools.queues.MpscCompoundQueue;
 
 public final class JcTools {
 
-  public static <T> MpscCompoundQueue<T> newMpscCompoundQueue(int capacity) {
+  public static <T> Queue<T> newMpscCompoundQueue(int capacity) {
     return new MpscCompoundQueue<>(capacity);
   }
 

@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -32,20 +33,37 @@ public final class IntervalMetricReader {
   private final Exporter exporter;
   private final ScheduledExecutorService scheduler;
 
+  private volatile ScheduledFuture<?> scheduledFuture;
+  private final Object lock = new Object();
+
   /** Stops the scheduled task and calls export one more time. */
-  public void shutdown() {
+  public CompletableResultCode shutdown() {
+    final CompletableResultCode result = new CompletableResultCode();
+    if (scheduledFuture != null) {
+      scheduledFuture.cancel(false);
+    }
     scheduler.shutdown();
     try {
       scheduler.awaitTermination(5, TimeUnit.SECONDS);
-      exporter.run();
+      final CompletableResultCode flushResult = exporter.doRun();
+      flushResult.join(5, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
       // force a shutdown if the export hasn't finished.
       scheduler.shutdownNow();
       // reset the interrupted status
       Thread.currentThread().interrupt();
     } finally {
-      exporter.shutdown();
+      final CompletableResultCode shutdownResult = exporter.shutdown();
+      shutdownResult.whenComplete(
+          () -> {
+            if (!shutdownResult.isSuccess()) {
+              result.fail();
+            } else {
+              result.succeed();
+            }
+          });
     }
+    return result;
   }
 
   /**
@@ -57,16 +75,36 @@ public final class IntervalMetricReader {
     return new IntervalMetricReaderBuilder(InternalState.builder());
   }
 
-  @SuppressWarnings("FutureReturnValueIgnored")
   IntervalMetricReader(InternalState internalState) {
+    this(
+        internalState,
+        Executors.newScheduledThreadPool(1, new DaemonThreadFactory("IntervalMetricReader")));
+  }
+
+  // visible for testing
+  IntervalMetricReader(InternalState internalState, ScheduledExecutorService intervalMetricReader) {
     this.exporter = new Exporter(internalState);
-    this.scheduler =
-        Executors.newScheduledThreadPool(1, new DaemonThreadFactory("IntervalMetricReader"));
-    this.scheduler.scheduleAtFixedRate(
-        exporter,
-        internalState.getExportIntervalMillis(),
-        internalState.getExportIntervalMillis(),
-        TimeUnit.MILLISECONDS);
+    this.scheduler = intervalMetricReader;
+  }
+
+  /**
+   * Starts this {@link IntervalMetricReader} to report to the configured exporter.
+   *
+   * @return this for fluent usage along with the builder.
+   */
+  public IntervalMetricReader start() {
+    synchronized (lock) {
+      if (scheduledFuture != null) {
+        return this;
+      }
+      scheduledFuture =
+          scheduler.scheduleAtFixedRate(
+              exporter,
+              exporter.internalState.getExportIntervalMillis(),
+              exporter.internalState.getExportIntervalMillis(),
+              TimeUnit.MILLISECONDS);
+      return this;
+    }
   }
 
   private static final class Exporter implements Runnable {
@@ -81,6 +119,12 @@ public final class IntervalMetricReader {
     @Override
     @SuppressWarnings("BooleanParameter")
     public void run() {
+      // Ignore the CompletableResultCode from doRun() in order to keep run() asynchronous
+      doRun();
+    }
+
+    CompletableResultCode doRun() {
+      final CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
         try {
           List<MetricData> metricsList = new ArrayList<>();
@@ -94,18 +138,22 @@ public final class IntervalMetricReader {
                 if (!result.isSuccess()) {
                   logger.log(Level.FINE, "Exporter failed");
                 }
+                flushResult.succeed();
                 exportAvailable.set(true);
               });
         } catch (RuntimeException e) {
           logger.log(Level.WARNING, "Exporter threw an Exception", e);
+          flushResult.fail();
         }
       } else {
         logger.log(Level.FINE, "Exporter busy. Dropping metrics.");
+        flushResult.fail();
       }
+      return flushResult;
     }
 
-    void shutdown() {
-      internalState.getMetricExporter().shutdown();
+    CompletableResultCode shutdown() {
+      return internalState.getMetricExporter().shutdown();
     }
   }
 
