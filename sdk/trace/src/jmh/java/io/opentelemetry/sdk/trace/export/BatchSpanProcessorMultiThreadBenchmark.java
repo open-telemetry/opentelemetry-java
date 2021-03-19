@@ -42,7 +42,7 @@ public class BatchSpanProcessorMultiThreadBenchmark {
     private long exportedSpans;
     private long droppedSpans;
 
-    @Setup(Level.Iteration)
+    @Setup(Level.Trial)
     public final void setup() {
       sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
       SpanExporter exporter = new DelayingSpanExporter(delayMs);

@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace.internal;
 import java.util.Queue;
 import org.jctools.queues.MessagePassingQueue;
 import org.jctools.queues.MpscArrayQueue;
-import org.jctools.queues.MpscCompoundQueue;
 
 /** Internal accessor of JCTools package for fast queues. */
 public final class JcTools {
@@ -18,11 +17,7 @@ public final class JcTools {
    * when items do not need to be strictly ordered.
    */
   public static <T> Queue<T> newMpscCompoundQueue(int capacity) {
-    if (capacity < Runtime.getRuntime().availableProcessors()) {
-      // This should only be true in tests.
-      return new MpscArrayQueue<>(capacity);
-    }
-    return new MpscCompoundQueue<>(capacity);
+    return new MpscArrayQueue<>(capacity);
   }
 
   /**

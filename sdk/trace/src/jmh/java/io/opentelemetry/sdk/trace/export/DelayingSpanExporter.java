@@ -38,6 +38,7 @@ public class DelayingSpanExporter implements SpanExporter {
 
   @Override
   public CompletableResultCode shutdown() {
+    executor.shutdown();
     return CompletableResultCode.ofSuccess();
   }
 }
