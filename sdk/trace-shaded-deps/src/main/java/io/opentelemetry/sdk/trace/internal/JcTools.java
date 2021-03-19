@@ -13,10 +13,9 @@ import org.jctools.queues.MpscArrayQueue;
 public final class JcTools {
 
   /**
-   * Returns a new {@link Queue} appopriate for use with multiple producers and a single consumer
-   * when items do not need to be strictly ordered.
+   * Returns a new {@link Queue} appropriate for use with multiple producers and a single consumer.
    */
-  public static <T> Queue<T> newMpscCompoundQueue(int capacity) {
+  public static <T> Queue<T> newMpscArrayQueue(int capacity) {
     return new MpscArrayQueue<>(capacity);
   }
 
