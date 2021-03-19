@@ -70,6 +70,8 @@ tasks {
 
     jar {
         inputs.files(project(":sdk:trace-shaded-deps").file("src"))
-        from(zipTree(project(":sdk:trace-shaded-deps").tasks.named<Jar>("shadowJar").get().archiveFile))
+        val shadowJar = project(":sdk:trace-shaded-deps").tasks.named<Jar>("shadowJar")
+        from(zipTree(shadowJar.get().archiveFile))
+        dependsOn(shadowJar)
     }
 }
