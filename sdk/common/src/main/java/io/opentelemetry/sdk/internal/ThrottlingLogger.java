@@ -9,6 +9,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.sdk.common.Clock;
+import java.util.Deque;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,8 +27,9 @@ public class ThrottlingLogger {
   private final Logger delegate;
   private final Clock clock;
 
-  // this window tracks the number of logs messages per minute. It holds the times of `log` calls.
-  private final ConcurrentLinkedDeque<Long> window = new ConcurrentLinkedDeque<>();
+  // this window tracks the number of logs messages per time unit. It holds the times of `log`
+  // calls.
+  private final Deque<Long> window = new ConcurrentLinkedDeque<>();
   private final AtomicBoolean throttled = new AtomicBoolean(false);
 
   /** Create a new logger which will enforce a max number of messages per minute. */
