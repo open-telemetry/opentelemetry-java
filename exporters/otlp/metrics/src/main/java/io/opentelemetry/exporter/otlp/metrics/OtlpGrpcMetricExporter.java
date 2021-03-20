@@ -16,6 +16,7 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc.MetricsServiceFutureStub;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
@@ -29,7 +30,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
 
-  private static final Logger logger = Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
+  private final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(OtlpGrpcMetricExporter.class.getName()));
 
   private final MetricsServiceFutureStub metricsService;
   private final ManagedChannel managedChannel;
@@ -94,8 +96,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
                 logger.log(
                     Level.SEVERE,
                     "Failed to export metrics. Server is UNAVAILABLE. "
-                        + "Make sure your collector is running and reachable from this network.",
-                    t.getMessage());
+                        + "Make sure your collector is running and reachable from this network."
+                        + t.getMessage());
                 break;
               default:
                 logger.log(

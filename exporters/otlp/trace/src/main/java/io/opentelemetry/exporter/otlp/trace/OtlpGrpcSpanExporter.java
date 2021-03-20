@@ -36,15 +36,15 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
 
-  private static final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OtlpGrpcSpanExporter.class.getName()));
   private static final String EXPORTER_NAME = OtlpGrpcSpanExporter.class.getSimpleName();
-
   private static final Labels EXPORTER_NAME_LABELS = Labels.of("exporter", EXPORTER_NAME);
   private static final Labels EXPORT_SUCCESS_LABELS =
       Labels.of("exporter", EXPORTER_NAME, "success", "true");
   private static final Labels EXPORT_FAILURE_LABELS =
       Labels.of("exporter", EXPORTER_NAME, "success", "false");
+
+  private final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(OtlpGrpcSpanExporter.class.getName()));
 
   private final TraceServiceFutureStub traceService;
 

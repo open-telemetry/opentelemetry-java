@@ -14,6 +14,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -42,8 +43,9 @@ import zipkin2.reporter.Sender;
  */
 public final class ZipkinSpanExporter implements SpanExporter {
   public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
+  public static final Logger baseLogger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
-  private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
+  private final ThrottlingLogger logger = new ThrottlingLogger(baseLogger);
 
   static final String OTEL_STATUS_CODE = "otel.status_code";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
@@ -77,7 +79,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       }
     } catch (Exception e) {
       // don't crash the caller if there was a problem reading nics.
-      logger.log(Level.FINE, "error reading nics", e);
+      baseLogger.log(Level.FINE, "error reading nics", e);
     }
     return null;
   }

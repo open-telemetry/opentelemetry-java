@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.slf4j.event.Level.ERROR;
 import static org.slf4j.event.Level.INFO;
 import static org.slf4j.event.Level.WARN;
 
@@ -27,9 +28,15 @@ class ThrottlingLoggerTest {
 
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.INFO, "oh yes!");
+    RuntimeException throwable = new RuntimeException();
+    logger.log(Level.SEVERE, "secrets", throwable);
 
     logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(WARN), "oh no!");
     logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(INFO), "oh yes!");
+    assertThat(
+            logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(ERROR), "secrets")
+                .getThrowable())
+        .isSameAs(throwable);
   }
 
   @Test
