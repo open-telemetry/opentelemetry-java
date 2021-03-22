@@ -252,7 +252,7 @@ public class OtlpPipelineStressTest {
             .setMetricExporter(metricExporter)
             .setMetricProducers(Collections.singleton(meterProvider))
             .setExportIntervalMillis(1000)
-            .build();
+            .buildAndStart();
 
     // set up the span exporter and wire it into the SDK
     OtlpGrpcSpanExporter spanExporter =

@@ -23,6 +23,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -130,9 +131,15 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final long exporterTimeoutNanos;
 
     private long nextExportTime;
-
     private final BlockingQueue<ReadableSpan> queue;
-
+    // When waiting on the spans queue, exporter thread sets this atomic to the number of more
+    // spans it needs before doing an export. Writer threads would then wait for the queue to reach
+    // spansNeeded size before notifying the exporter thread about new entries.
+    // Integer.MAX_VALUE is used to imply that exporter thread is not expecting any signal. Since
+    // exporter thread doesn't expect any signal initially, this value is initialized to
+    // Integer.MAX_VALUE.
+    private final AtomicInteger spansNeeded = new AtomicInteger(Integer.MAX_VALUE);
+    private final BlockingQueue<Boolean> signal;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
     private final ArrayList<SpanData> batch;
@@ -148,6 +155,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
       this.queue = queue;
+      this.signal = new ArrayBlockingQueue<>(1);
       Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.sdk.trace");
       meter
           .longValueObserverBuilder("queueSize")
@@ -180,6 +188,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private void addSpan(ReadableSpan span) {
       if (!queue.offer(span)) {
         droppedSpans.add(1);
+      } else {
+        if (queue.size() >= spansNeeded.get()) {
+          signal.offer(true);
+        }
       }
     }
 
@@ -191,20 +203,25 @@ public final class BatchSpanProcessor implements SpanProcessor {
         if (flushRequested.get() != null) {
           flush();
         }
-
-        try {
-          ReadableSpan lastElement = queue.poll(100, TimeUnit.MILLISECONDS);
-          if (lastElement != null) {
-            batch.add(lastElement.toSpanData());
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          return;
+        while (!queue.isEmpty() && batch.size() < maxExportBatchSize) {
+          batch.add(queue.poll().toSpanData());
         }
-
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime) {
           exportCurrentBatch();
           updateNextExportTime();
+        }
+        if (queue.isEmpty()) {
+          try {
+            long pollWaitTime = nextExportTime - System.nanoTime();
+            if (pollWaitTime > 0) {
+              spansNeeded.set(maxExportBatchSize - batch.size());
+              signal.poll(pollWaitTime, TimeUnit.NANOSECONDS);
+              spansNeeded.set(Integer.MAX_VALUE);
+            }
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+          }
         }
       }
     }
@@ -252,8 +269,10 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
     private CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
-      // we set the atomic here to trigger the worker loop to do a flush on its next iteration.
-      flushRequested.compareAndSet(null, flushResult);
+      // we set the atomic here to trigger the worker loop to do a flush of the entire queue.
+      if (flushRequested.compareAndSet(null, flushResult)) {
+        signal.offer(true);
+      }
       CompletableResultCode possibleResult = flushRequested.get();
       // there's a race here where the flush happening in the worker loop could complete before we
       // get what's in the atomic. In that case, just return success, since we know it succeeded in

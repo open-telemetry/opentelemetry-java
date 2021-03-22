@@ -52,7 +52,8 @@ public final class IntervalMetricReaderBuilder {
   }
 
   /**
-   * Builds a new {@link IntervalMetricReader} with current settings.
+   * Builds a new {@link IntervalMetricReader} with current settings. Does not start the background
+   * thread. Please call {@link IntervalMetricReader#start()} to do that.
    *
    * @return a {@code IntervalMetricReader}.
    */
@@ -62,5 +63,15 @@ public final class IntervalMetricReaderBuilder {
         internalState.getExportIntervalMillis() > 0, "Export interval must be positive");
 
     return new IntervalMetricReader(internalState);
+  }
+
+  /**
+   * Builds a new {@link IntervalMetricReader} with current settings and starts the background
+   * thread running.
+   *
+   * @return a {@code IntervalMetricReader}.
+   */
+  public IntervalMetricReader buildAndStart() {
+    return build().start();
   }
 }

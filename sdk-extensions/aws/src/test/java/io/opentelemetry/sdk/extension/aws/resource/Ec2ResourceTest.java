@@ -56,7 +56,7 @@ class Ec2ResourceTest {
 
     expectedAttrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, "aws");
     expectedAttrBuilders.put(ResourceAttributes.HOST_ID, "i-1234567890abcdef0");
-    expectedAttrBuilders.put(ResourceAttributes.CLOUD_ZONE, "us-west-2b");
+    expectedAttrBuilders.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "us-west-2b");
     expectedAttrBuilders.put(ResourceAttributes.HOST_TYPE, "t2.micro");
     expectedAttrBuilders.put(ResourceAttributes.HOST_IMAGE_ID, "ami-5fb8c835");
     expectedAttrBuilders.put(ResourceAttributes.CLOUD_ACCOUNT_ID, "123456789012");
@@ -90,7 +90,7 @@ class Ec2ResourceTest {
         Attributes.builder()
             .put(ResourceAttributes.CLOUD_PROVIDER, "aws")
             .put(ResourceAttributes.HOST_ID, "i-1234567890abcdef0")
-            .put(ResourceAttributes.CLOUD_ZONE, "us-west-2b")
+            .put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "us-west-2b")
             .put(ResourceAttributes.HOST_TYPE, "t2.micro")
             .put(ResourceAttributes.HOST_IMAGE_ID, "ami-5fb8c835")
             .put(ResourceAttributes.CLOUD_ACCOUNT_ID, "123456789012")
