@@ -30,7 +30,6 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
-
 /*
  * Run this along with a profiler to measure the CPU usage of BatchSpanProcessor's exporter thread.
  */
