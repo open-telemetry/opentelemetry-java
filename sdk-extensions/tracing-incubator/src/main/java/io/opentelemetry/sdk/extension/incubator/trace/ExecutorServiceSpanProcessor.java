@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ExecutorServiceSpanProcessor implements SpanProcessor {
+public final class ExecutorServiceSpanProcessor implements SpanProcessor {
 
   private static final String SPAN_PROCESSOR_TYPE_LABEL = "spanProcessorType";
   private static final String SPAN_PROCESSOR_TYPE_VALUE =
