@@ -125,7 +125,11 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public Span log(long timestampMicroseconds, Map<String, ?> fields) {
-    span.addEvent(getEventNameFromFields(fields), convertToAttributes(fields));
+    span.addEvent(
+        getEventNameFromFields(fields),
+        convertToAttributes(fields),
+        timestampMicroseconds,
+        TimeUnit.MICROSECONDS);
     return this;
   }
 
@@ -137,7 +141,7 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public Span log(long timestampMicroseconds, String event) {
-    span.addEvent(event);
+    span.addEvent(event, timestampMicroseconds, TimeUnit.MICROSECONDS);
     return this;
   }
 

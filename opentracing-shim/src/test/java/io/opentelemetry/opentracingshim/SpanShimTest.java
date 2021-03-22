@@ -11,7 +11,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import java.util.Collections;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,5 +93,32 @@ class SpanShimTest {
     assertThat(spanShim2.getBaggageItem("key1")).isEqualTo("value2");
     assertThat(getBaggageMap(spanShim2.context().baggageItems()))
         .isEqualTo(getBaggageMap(spanShim1.context().baggageItems()));
+  }
+
+  @Test
+  void finish_micros() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    long micros = 123447307984L;
+    spanShim.finish(micros);
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    assertThat(spanData.getEndEpochNanos()).isEqualTo(micros * 1000L);
+  }
+
+  @Test
+  void log_micros() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    long micros = 123447307984L;
+    spanShim.log(micros, "event");
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    assertThat(spanData.getEvents().get(0).getEpochNanos()).isEqualTo(micros * 1000L);
+  }
+
+  @Test
+  void log_fields_micros() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    long micros = 123447307984L;
+    spanShim.log(micros, Collections.singletonMap("key", "value"));
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    assertThat(spanData.getEvents().get(0).getEpochNanos()).isEqualTo(micros * 1000L);
   }
 }
