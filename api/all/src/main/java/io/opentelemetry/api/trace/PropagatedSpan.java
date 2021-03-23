@@ -129,6 +129,6 @@ final class PropagatedSpan implements Span {
 
   @Override
   public String toString() {
-    return "DefaultSpan";
+    return "PropagatedSpan{" + spanContext + '}';
   }
 }
