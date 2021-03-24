@@ -24,10 +24,17 @@ public final class OpenTracingShim {
    * @return a {@code io.opentracing.Tracer}.
    */
   public static io.opentracing.Tracer createTracerShim() {
-    return new TracerShim(
-        new TelemetryInfo(
-            getTracer(GlobalOpenTelemetry.getTracerProvider()),
-            GlobalOpenTelemetry.getPropagators()));
+    return createTracerShim(getTracer(GlobalOpenTelemetry.getTracerProvider()));
+  }
+
+  /**
+   * Creates a {@code io.opentracing.Tracer} shim using provided Tracer instance and {@code
+   * OpenTelemetry.getPropagators()}.
+   *
+   * @return a {@code io.opentracing.Tracer}.
+   */
+  public static io.opentracing.Tracer createTracerShim(Tracer tracer) {
+    return new TracerShim(new TelemetryInfo(tracer, OTPropagators.builder().build()));
   }
 
   /**
@@ -39,7 +46,11 @@ public final class OpenTracingShim {
   public static io.opentracing.Tracer createTracerShim(OpenTelemetry openTelemetry) {
     return new TracerShim(
         new TelemetryInfo(
-            getTracer(openTelemetry.getTracerProvider()), openTelemetry.getPropagators()));
+            getTracer(openTelemetry.getTracerProvider()),
+            OTPropagators.builder()
+                .setTextMap(openTelemetry.getPropagators().getTextMapPropagator())
+                .setHttpHeaders(openTelemetry.getPropagators().getTextMapPropagator())
+                .build()));
   }
 
   private static Tracer getTracer(TracerProvider tracerProvider) {
