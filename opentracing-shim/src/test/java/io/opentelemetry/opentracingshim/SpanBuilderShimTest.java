@@ -21,7 +21,7 @@ class SpanBuilderShimTest {
   private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
-      new TelemetryInfo(tracer, OTPropagators.builder().build());
+      new TelemetryInfo(tracer, Propagators.builder().build());
 
   private static final String SPAN_NAME = "Span";
 

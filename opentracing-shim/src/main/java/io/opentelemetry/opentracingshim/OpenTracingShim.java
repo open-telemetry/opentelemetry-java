@@ -34,7 +34,7 @@ public final class OpenTracingShim {
    * @return a {@code io.opentracing.Tracer}.
    */
   public static io.opentracing.Tracer createTracerShim(Tracer tracer) {
-    return new TracerShim(new TelemetryInfo(tracer, OTPropagators.builder().build()));
+    return new TracerShim(new TelemetryInfo(tracer, Propagators.builder().build()));
   }
 
   /**
@@ -47,7 +47,7 @@ public final class OpenTracingShim {
     return new TracerShim(
         new TelemetryInfo(
             getTracer(openTelemetry.getTracerProvider()),
-            OTPropagators.builder()
+            Propagators.builder()
                 .setTextMap(openTelemetry.getPropagators().getTextMapPropagator())
                 .setHttpHeaders(openTelemetry.getPropagators().getTextMapPropagator())
                 .build()));

@@ -16,12 +16,12 @@ final class TelemetryInfo {
 
   private final Tracer tracer;
   private final Baggage emptyBaggage;
-  private final OTPropagators otPropagators;
+  private final Propagators propagators;
   private final SpanContextShimTable spanContextTable;
 
-  TelemetryInfo(Tracer tracer, OTPropagators otPropagators) {
+  TelemetryInfo(Tracer tracer, Propagators propagators) {
     this.tracer = tracer;
-    this.otPropagators = otPropagators;
+    this.propagators = propagators;
     this.emptyBaggage = Baggage.empty();
     this.spanContextTable = new SpanContextShimTable();
   }
@@ -38,7 +38,7 @@ final class TelemetryInfo {
     return emptyBaggage;
   }
 
-  OTPropagators propagators() {
-    return otPropagators;
+  Propagators propagators() {
+    return propagators;
   }
 }

@@ -25,7 +25,7 @@ class PropagationTest {
   @Test
   public void defaultPropagators() {
     Propagation propagation =
-        new Propagation(new TelemetryInfo(tracer, OTPropagators.builder().build()));
+        new Propagation(new TelemetryInfo(tracer, Propagators.builder().build()));
     assertThat(propagation.propagators().textMapPropagator())
         .isSameAs(propagation.propagators().httpHeadersPropagator());
   }
@@ -36,8 +36,7 @@ class PropagationTest {
 
     Propagation propagation =
         new Propagation(
-            new TelemetryInfo(
-                tracer, OTPropagators.builder().setTextMap(textMapPropagator).build()));
+            new TelemetryInfo(tracer, Propagators.builder().setTextMap(textMapPropagator).build()));
 
     assertThat(propagation.propagators().textMapPropagator())
         .isNotSameAs(propagation.propagators().httpHeadersPropagator());
@@ -52,7 +51,7 @@ class PropagationTest {
     Propagation propagation =
         new Propagation(
             new TelemetryInfo(
-                tracer, OTPropagators.builder().setHttpHeaders(httpHeadersPropagator).build()));
+                tracer, Propagators.builder().setHttpHeaders(httpHeadersPropagator).build()));
 
     assertThat(propagation.propagators().textMapPropagator())
         .isNotSameAs(propagation.propagators().httpHeadersPropagator());
@@ -69,7 +68,7 @@ class PropagationTest {
         new Propagation(
             new TelemetryInfo(
                 tracer,
-                OTPropagators.builder()
+                Propagators.builder()
                     .setTextMap(textMapPropagator)
                     .setHttpHeaders(httpHeadersPropagator)
                     .build()));

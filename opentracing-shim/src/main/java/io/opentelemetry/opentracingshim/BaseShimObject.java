@@ -27,7 +27,7 @@ abstract class BaseShimObject {
     return telemetryInfo.spanContextTable();
   }
 
-  OTPropagators propagators() {
+  Propagators propagators() {
     return telemetryInfo.propagators();
   }
 }
