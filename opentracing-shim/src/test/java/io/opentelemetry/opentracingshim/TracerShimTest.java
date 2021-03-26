@@ -36,7 +36,8 @@ class TracerShimTest {
   @BeforeEach
   void setUp() {
     tracer = otelTesting.getOpenTelemetry().getTracer("opentracingshim");
-    tracerShim = new TracerShim(new TelemetryInfo(tracer, Propagators.builder().build()));
+    tracerShim =
+        new TracerShim(new TelemetryInfo(tracer, OpenTracingPropagators.builder().build()));
   }
 
   @Test
@@ -88,7 +89,7 @@ class TracerShimTest {
     TelemetryInfo telemetryInfo =
         new TelemetryInfo(
             tracer,
-            Propagators.builder()
+            OpenTracingPropagators.builder()
                 .setTextMap(textMapPropagator)
                 .setHttpHeaders(httpHeadersPropagator)
                 .build());
@@ -109,7 +110,7 @@ class TracerShimTest {
     TelemetryInfo telemetryInfo =
         new TelemetryInfo(
             tracer,
-            Propagators.builder()
+            OpenTracingPropagators.builder()
                 .setTextMap(textMapPropagator)
                 .setHttpHeaders(httpHeadersPropagator)
                 .build());
@@ -131,7 +132,7 @@ class TracerShimTest {
         new TracerShim(
             new TelemetryInfo(
                 tracer,
-                Propagators.builder()
+                OpenTracingPropagators.builder()
                     .setTextMap(textMapPropagator)
                     .setHttpHeaders(httpHeadersPropagator)
                     .build()));
@@ -150,7 +151,7 @@ class TracerShimTest {
         new TracerShim(
             new TelemetryInfo(
                 tracer,
-                Propagators.builder()
+                OpenTracingPropagators.builder()
                     .setTextMap(textMapPropagator)
                     .setHttpHeaders(httpHeadersPropagator)
                     .build()));
