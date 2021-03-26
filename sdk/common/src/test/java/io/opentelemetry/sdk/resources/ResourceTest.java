@@ -193,4 +193,33 @@ class ResourceTest {
     assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
     assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_VERSION)).isNotNull();
   }
+
+  @Test
+  void shouldBuilderNotFailWithNullResource() {
+    // given
+    Resource.Builder builder = Resource.getDefault().toBuilder();
+
+    // when
+    builder.putAll((Resource) null);
+
+    // then no exception is thrown
+    // and
+    assertThat(builder.build().getAttributes().get(ResourceAttributes.SERVICE_NAME))
+        .isEqualTo("unknown_service:java");
+  }
+
+  @Test
+  void shouldBuilderCopyResource() {
+    // given
+    Resource.Builder builder = Resource.getDefault().toBuilder();
+
+    // when
+    builder.put("dog says what?", "woof");
+
+    // then
+    Resource resource = builder.build();
+    // yes, it's supposed to be the reference check
+    assertThat(resource != Resource.getDefault()).isTrue();
+    assertThat(resource.getAttributes().get(stringKey("dog says what?"))).isEqualTo("woof");
+  }
 }

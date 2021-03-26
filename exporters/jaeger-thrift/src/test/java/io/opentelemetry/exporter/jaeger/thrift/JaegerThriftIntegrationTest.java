@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.jaeger.thrift;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
@@ -67,10 +66,9 @@ class JaegerThriftIntegrationTest {
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
                 .setResource(
-                    Resource.getDefault()
-                        .merge(
-                            Resource.create(
-                                Attributes.of(ResourceAttributes.SERVICE_NAME, SERVICE_NAME))))
+                    Resource.getDefault().toBuilder()
+                        .put(ResourceAttributes.SERVICE_NAME, SERVICE_NAME)
+                        .build())
                 .build())
         .build();
   }

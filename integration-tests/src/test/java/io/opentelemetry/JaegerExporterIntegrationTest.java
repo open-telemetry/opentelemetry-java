@@ -117,11 +117,9 @@ class JaegerExporterIntegrationTest {
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
                 .setResource(
-                    Resource.getDefault()
-                        .merge(
-                            Resource.create(
-                                Attributes.of(
-                                    ResourceAttributes.SERVICE_NAME, "integration test"))))
+                    Resource.getDefault().toBuilder()
+                        .put(ResourceAttributes.SERVICE_NAME, "integration test")
+                        .build())
                 .build())
         .buildAndRegisterGlobal();
   }
