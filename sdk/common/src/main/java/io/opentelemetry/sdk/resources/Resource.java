@@ -238,6 +238,7 @@ public abstract class Resource {
 
     /**
      * Adds all attributes from given {@link Resource}, if it is not null.
+     *
      * @param resource {@link Resource} whoose attributes will be copied
      * @return this Builder
      */
