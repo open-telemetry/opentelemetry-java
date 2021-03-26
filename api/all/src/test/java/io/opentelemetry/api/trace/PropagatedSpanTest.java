@@ -69,6 +69,10 @@ class PropagatedSpanTest {
   @Test
   void defaultSpan_ToString() {
     Span span = Span.getInvalid();
-    assertThat(span.toString()).isEqualTo("DefaultSpan");
+    assertThat(span.toString())
+        .isEqualTo(
+            "PropagatedSpan{ImmutableSpanContext{traceId=00000000000000000000000000000000, "
+                + "spanId=0000000000000000, traceFlags=00, "
+                + "traceState=ArrayBasedTraceState{entries=[]}, remote=false, valid=false}}");
   }
 }
