@@ -12,7 +12,7 @@ import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
@@ -60,7 +60,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    *     0 or to a negative value, the exporter will wait indefinitely.
    */
   OtlpGrpcSpanExporter(ManagedChannel channel, long timeoutNanos) {
-    Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.exporters.otlp");
+    Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.exporters.otlp");
     this.spansSeen =
         meter.longCounterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
     LongCounter spansExportedCounter = meter.longCounterBuilder("spansExportedByExporter").build();
