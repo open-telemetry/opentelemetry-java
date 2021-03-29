@@ -23,7 +23,7 @@ public class OpenTracingPropagators {
     return httpHeadersPropagator;
   }
 
-  public OpenTracingPropagators(
+  OpenTracingPropagators(
       TextMapPropagator textMapPropagator, TextMapPropagator httpHeadersPropagator) {
     this.textMapPropagator = textMapPropagator;
     this.httpHeadersPropagator = httpHeadersPropagator;

@@ -30,7 +30,7 @@ public class OpenTracingPropagatorsBuilder {
 
   /**
    * Constructs a new instance of the {@link OpenTracingPropagators} based on the builder's values.
-   * If propagators are not set then global are used.
+   * If propagators are not set then {@code GlobalOpenTelemetry.getPropagators()} is used.
    *
    * @return a new Propagators instance.
    */

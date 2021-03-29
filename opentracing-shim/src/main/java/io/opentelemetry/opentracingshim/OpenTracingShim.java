@@ -18,8 +18,8 @@ public final class OpenTracingShim {
   private OpenTracingShim() {}
 
   /**
-   * Creates a {@code io.opentracing.Tracer} shim out of {@code OpenTelemetry.getTracerProvider()}
-   * and {@code OpenTelemetry.getPropagators()}.
+   * Creates a {@code io.opentracing.Tracer} shim out of {@code
+   * GlobalOpenTelemetry.getTracerProvider()} and {@code GlobalOpenTelemetry.getPropagators()}.
    *
    * @return a {@code io.opentracing.Tracer}.
    */
@@ -29,7 +29,7 @@ public final class OpenTracingShim {
 
   /**
    * Creates a {@code io.opentracing.Tracer} shim using provided Tracer instance and {@code
-   * OpenTelemetry.getPropagators()}.
+   * GlobalOpenTelemetry.getPropagators()}.
    *
    * @return a {@code io.opentracing.Tracer}.
    */
