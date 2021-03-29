@@ -90,6 +90,7 @@ public class B3PropagationIntegrationTest {
     }
 
     List<SpanData> finishedSpanItems = spanExporter.getFinishedSpanItems();
+    // 3 spans, one from the client, and one from each of the servers.
     assertThat(finishedSpanItems).hasSize(3);
     String traceId = finishedSpanItems.get(0).getTraceId();
 
@@ -113,6 +114,7 @@ public class B3PropagationIntegrationTest {
     }
 
     List<SpanData> finishedSpanItems = spanExporter.getFinishedSpanItems();
+    // 2 spans, one from each of the servers
     assertThat(finishedSpanItems).hasSize(2);
     String traceId = finishedSpanItems.get(0).getTraceId();
 
