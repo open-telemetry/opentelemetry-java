@@ -169,88 +169,11 @@ public abstract class Resource {
     return !name.getKey().isEmpty() && isValid(name.getKey());
   }
 
-  public static Resource.Builder builder() {
-    return new Resource.Builder();
+  public static ResourceBuilder builder() {
+    return new ResourceBuilder();
   }
 
-  public Builder toBuilder() {
+  public ResourceBuilder toBuilder() {
     return builder().putAll(this);
-  }
-
-  public static class Builder {
-
-    private final AttributesBuilder attributesBuilder = Attributes.builder();
-
-    public Builder put(String key, String value) {
-      attributesBuilder.put(key, value);
-      return this;
-    }
-
-    public Builder put(String key, long value) {
-      attributesBuilder.put(key, value);
-      return this;
-    }
-
-    public Builder put(String key, double value) {
-      attributesBuilder.put(key, value);
-      return this;
-    }
-
-    public Builder put(String key, boolean value) {
-      attributesBuilder.put(key, value);
-      return this;
-    }
-
-    public Builder put(String key, String... values) {
-      attributesBuilder.put(key, values);
-      return this;
-    }
-
-    public Builder put(String key, long... values) {
-      attributesBuilder.put(key, values);
-      return this;
-    }
-
-    public Builder put(String key, double... values) {
-      attributesBuilder.put(key, values);
-      return this;
-    }
-
-    public Builder put(String key, boolean... values) {
-      attributesBuilder.put(key, values);
-      return this;
-    }
-
-    public <T> Builder put(AttributeKey<T> key, T value) {
-      attributesBuilder.put(key, value);
-      return this;
-    }
-
-    public <T> Builder put(AttributeKey<Long> key, int value) {
-      attributesBuilder.put(key, value);
-      return this;
-    }
-
-    public Builder putAll(Attributes attributes) {
-      attributesBuilder.putAll(attributes);
-      return this;
-    }
-
-    /**
-     * Adds all attributes from given {@link Resource}, if it is not null.
-     *
-     * @param resource {@link Resource} whoose attributes will be copied
-     * @return this Builder
-     */
-    public Builder putAll(@Nullable Resource resource) {
-      if (resource != null) {
-        attributesBuilder.putAll(resource.getAttributes());
-      }
-      return this;
-    }
-
-    public Resource build() {
-      return new AutoValue_Resource(attributesBuilder.build());
-    }
   }
 }
