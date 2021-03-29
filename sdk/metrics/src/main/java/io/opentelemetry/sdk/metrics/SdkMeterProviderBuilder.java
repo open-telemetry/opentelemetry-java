@@ -64,13 +64,13 @@ public final class SdkMeterProviderBuilder {
    * // create a selector to select which instruments to customize:
    * InstrumentSelector instrumentSelector = InstrumentSelector.builder()
    *   .setInstrumentType(InstrumentType.COUNTER)
-   *   .buildInstrument();
+   *   .build();
    *
    * // create a specification of how you want the metrics aggregated:
    * AggregatorFactory aggregatorFactory = AggregatorFactory.minMaxSumCount();
    *
    * // register the view with the SdkMeterProviderBuilder
-   * register.registerView(instrumentSelector, View.builder()
+   * meterProviderBuilder.registerView(instrumentSelector, View.builder()
    *   .setAggregatorFactory(aggregatorFactory).build());
    * }</pre>
    */

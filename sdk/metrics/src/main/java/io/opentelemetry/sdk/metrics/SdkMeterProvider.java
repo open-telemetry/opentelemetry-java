@@ -91,12 +91,12 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
    *
    * <pre>{@code
    * // get a handle to the MeterSdkProvider
-   * MeterSdkProvider meterProvider = OpenTelemetrySdk.getMeterProvider();
+   * SdkMeterProvider meterProvider = SdkMeterProvider.builder().build();
    *
    * // create a selector to select which instruments to customize:
    * InstrumentSelector instrumentSelector = InstrumentSelector.builder()
    *   .setInstrumentType(InstrumentType.COUNTER)
-   *   .buildInstrument();
+   *   .build();
    *
    * // create a specification of how you want the metrics aggregated:
    * AggregatorFactory aggregatorFactory = AggregatorFactory.minMaxSumCount();
@@ -105,6 +105,7 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
    * meterProvider.registerView(instrumentSelector, View.builder()
    *   .setAggregatorFactory(aggregatorFactory).build());
    * }</pre>
+   *
    * @deprecated Use {@link SdkMeterProviderBuilder#registerView(InstrumentSelector, View)}
    */
   @Deprecated
