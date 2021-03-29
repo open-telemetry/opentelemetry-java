@@ -164,7 +164,7 @@ public class B3PropagationIntegrationTest {
     server1.get(
         "/test",
         (request, response) -> {
-          Context incomingContext = extract(request);
+          Context incomingContext = extract(request, server1Sdk);
 
           Span span =
               server1Sdk
@@ -206,7 +206,7 @@ public class B3PropagationIntegrationTest {
     server2.get(
         "/test2",
         (request, response) -> {
-          Context incomingContext = extract(request);
+          Context incomingContext = extract(request, server2Sdk);
 
           Span span =
               server2Sdk
@@ -223,9 +223,8 @@ public class B3PropagationIntegrationTest {
     server2.awaitInitialization();
   }
 
-  private Context extract(spark.Request request) {
-    return server1Sdk
-        .getPropagators()
+  private static Context extract(spark.Request request, OpenTelemetrySdk sdk) {
+    return sdk.getPropagators()
         .getTextMapPropagator()
         .extract(
             Context.root(),
