@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+@SuppressWarnings("FutureReturnValueIgnored")
 public final class ExecutorServiceSpanProcessor implements SpanProcessor {
 
   private static final String SPAN_PROCESSOR_TYPE_LABEL = "spanProcessorType";
@@ -33,7 +33,6 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
   private final boolean ownsExecutorService;
   private final ScheduledExecutorService executorService;
-  private final ScheduledFuture<?> future;
 
   public static ExecutorServiceSpanProcessorBuilder builder(
       SpanExporter spanExporter,
@@ -51,7 +50,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
       long exporterTimeoutNanos,
       ScheduledExecutorService executorService,
       boolean ownsExecutorService,
-      long workerScheduleInterval) {
+      long workerScheduleIntervalNanos) {
     this.worker =
         new Worker(
             spanExporter,
@@ -60,12 +59,13 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
             exporterTimeoutNanos,
             new ArrayBlockingQueue<>(maxQueueSize),
             SPAN_PROCESSOR_TYPE_LABEL,
-            SPAN_PROCESSOR_TYPE_VALUE);
+            SPAN_PROCESSOR_TYPE_VALUE,
+            executorService,
+            isShutdown,
+            workerScheduleIntervalNanos);
     this.ownsExecutorService = ownsExecutorService;
     this.executorService = executorService;
-    this.future =
-        executorService.scheduleWithFixedDelay(
-            worker, workerScheduleInterval, workerScheduleInterval, TimeUnit.MILLISECONDS);
+    executorService.schedule(worker, workerScheduleIntervalNanos, TimeUnit.NANOSECONDS);
   }
 
   @Override
@@ -98,7 +98,6 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
     // do the cleanup after worker finishes flush
     result.whenComplete(
         () -> {
-          future.cancel(false);
           if (ownsExecutorService) {
             executorService.shutdown();
           }
@@ -123,6 +122,10 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
 
     private final ArrayBlockingQueue<SpanData> batch;
 
+    private final AtomicBoolean isShutdown;
+
+    private final long workerScheduleIntervalNanos;
+
     private Worker(
         SpanExporter spanExporter,
         long scheduleDelayNanos,
@@ -130,7 +133,10 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
         long exporterTimeoutNanos,
         BlockingQueue<ReadableSpan> queue,
         String spanProcessorTypeLabel,
-        String spanProcessorTypeValue) {
+        String spanProcessorTypeValue,
+        ScheduledExecutorService executorService,
+        AtomicBoolean isShutdown,
+        long workerScheduleIntervalNanos) {
       super(
           spanExporter,
           scheduleDelayNanos,
@@ -138,9 +144,12 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
           exporterTimeoutNanos,
           queue,
           spanProcessorTypeLabel,
-          spanProcessorTypeValue);
+          spanProcessorTypeValue,
+          executorService);
 
+      this.isShutdown = isShutdown;
       this.batch = new ArrayBlockingQueue<>(maxExportBatchSize);
+      this.workerScheduleIntervalNanos = workerScheduleIntervalNanos;
       updateNextExportTime();
     }
 
@@ -153,7 +162,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
       // nextExportTime is set for the first time in the constructor
 
       continueWork.set(true);
-      while (continueWork.get()) {
+      while (continueWork.get() && !isShutdown.get()) {
         if (flushRequested.get() != null) {
           flush();
         }
@@ -165,7 +174,9 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
             // drain queue
             queue.take();
           } else {
+            // nothing in the queue, so schedule next run and release the thread
             continueWork.set(false);
+            scheduleNextRun();
           }
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
@@ -173,15 +184,27 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
         }
 
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime.get()) {
+          continueWork.set(false);
           exportCurrentBatch();
           updateNextExportTime();
         }
+      }
+      // flush may be requested when processor shuts down
+      if (flushRequested.get() != null) {
+        flush();
       }
     }
 
     @Override
     public Collection<SpanData> getBatch() {
       return batch;
+    }
+
+    @Override
+    protected void scheduleNextRun() {
+      if (!isShutdown.get()) {
+        executorService.schedule(this, workerScheduleIntervalNanos, TimeUnit.NANOSECONDS);
+      }
     }
   }
 }

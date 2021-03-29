@@ -105,7 +105,7 @@ class ExecutorServiceSpanProcessorTest {
             TimeUnit.MILLISECONDS.toNanos(
                 ExecutorServiceSpanProcessorBuilder.DEFAULT_EXPORT_TIMEOUT_MILLIS));
     assertThat(config.getWorkerScheduleInterval())
-        .isEqualTo(ExecutorServiceSpanProcessorBuilder.WORKER_SCHEDULE_INTERVAL);
+        .isEqualTo(ExecutorServiceSpanProcessorBuilder.WORKER_SCHEDULE_INTERVAL_NANOS);
   }
 
   private static ExecutorServiceSpanProcessorBuilder dummyBuilder(

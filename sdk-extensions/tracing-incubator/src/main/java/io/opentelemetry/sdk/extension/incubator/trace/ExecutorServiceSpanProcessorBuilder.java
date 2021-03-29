@@ -24,7 +24,7 @@ public class ExecutorServiceSpanProcessorBuilder {
   // Visible for testing
   static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
   // Visible for testing
-  static final int WORKER_SCHEDULE_INTERVAL = 100;
+  static final int WORKER_SCHEDULE_INTERVAL_NANOS = 100_000;
 
   private final SpanExporter spanExporter;
   private final boolean ownsExecutorService;
@@ -33,7 +33,7 @@ public class ExecutorServiceSpanProcessorBuilder {
   private int maxQueueSize = DEFAULT_MAX_QUEUE_SIZE;
   private int maxExportBatchSize = DEFAULT_MAX_EXPORT_BATCH_SIZE;
   private long exporterTimeoutNanos = TimeUnit.MILLISECONDS.toNanos(DEFAULT_EXPORT_TIMEOUT_MILLIS);
-  private long workerScheduleInterval = WORKER_SCHEDULE_INTERVAL;
+  private long workerScheduleIntervalNanos = WORKER_SCHEDULE_INTERVAL_NANOS;
 
   ExecutorServiceSpanProcessorBuilder(
       SpanExporter spanExporter,
@@ -135,28 +135,28 @@ public class ExecutorServiceSpanProcessorBuilder {
 
   /**
    * Sets the delay interval between two consecutive runs of the worker job. If unset, defaults to
-   * {@value WORKER_SCHEDULE_INTERVAL}ms.
+   * {@value WORKER_SCHEDULE_INTERVAL_NANOS}ns.
    */
   public ExecutorServiceSpanProcessorBuilder setWorkerScheduleInterval(Duration interval) {
     requireNonNull(interval, "interval");
-    return setWorkerScheduleInterval(interval.toMillis(), TimeUnit.MILLISECONDS);
+    return setWorkerScheduleInterval(interval.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   /**
    * Sets the delay interval between two consecutive runs of the worker job. If unset, defaults to
-   * {@value WORKER_SCHEDULE_INTERVAL}ms.
+   * {@value WORKER_SCHEDULE_INTERVAL_NANOS}ms.
    */
   public ExecutorServiceSpanProcessorBuilder setWorkerScheduleInterval(
       long interval, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(interval >= 0, "interval must be non-negative");
-    workerScheduleInterval = unit.toMillis(interval);
+    workerScheduleIntervalNanos = unit.toNanos(interval);
     return this;
   }
 
   // Visible for testing
   long getWorkerScheduleInterval() {
-    return workerScheduleInterval;
+    return workerScheduleIntervalNanos;
   }
 
   // Visible for testing
@@ -180,6 +180,6 @@ public class ExecutorServiceSpanProcessorBuilder {
         exporterTimeoutNanos,
         executorService,
         ownsExecutorService,
-        workerScheduleInterval);
+        workerScheduleIntervalNanos);
   }
 }

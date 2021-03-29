@@ -17,6 +17,8 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,6 +40,7 @@ abstract class WorkerBase implements Runnable {
 
   protected final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
   protected final AtomicBoolean continueWork = new AtomicBoolean(true);
+  protected final ScheduledExecutorService executorService;
 
   /**
    * This a base class useful for all flavors of BatchSpanProcessor.
@@ -57,12 +60,14 @@ abstract class WorkerBase implements Runnable {
       long exporterTimeoutNanos,
       BlockingQueue<ReadableSpan> queue,
       String spanProcessorTypeLabel,
-      String spanProcessorTypeValue) {
+      String spanProcessorTypeValue,
+      ScheduledExecutorService executorService) {
     this.spanExporter = spanExporter;
     this.scheduleDelayNanos = scheduleDelayNanos;
     this.maxExportBatchSize = maxExportBatchSize;
     this.exporterTimeoutNanos = exporterTimeoutNanos;
     this.queue = queue;
+    this.executorService = executorService;
     Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.sdk.trace");
     meter
         .longValueObserverBuilder("queueSize")
@@ -105,22 +110,37 @@ abstract class WorkerBase implements Runnable {
   protected void exportCurrentBatch() {
     Collection<SpanData> batch = getBatch();
     if (batch.isEmpty()) {
+      scheduleNextRun();
       return;
     }
 
-    try {
-      final CompletableResultCode result = spanExporter.export(new ArrayList<>(batch));
-      result.join(exporterTimeoutNanos, TimeUnit.NANOSECONDS);
-      if (result.isSuccess()) {
-        exportedSpans.add(batch.size());
-      } else {
-        logger.log(Level.FINE, "Exporter failed");
-      }
-    } catch (RuntimeException e) {
-      logger.log(Level.WARNING, "Exporter threw an Exception", e);
-    } finally {
-      batch.clear();
-    }
+    final CompletableResultCode result = spanExporter.export(new ArrayList<>(batch));
+    final AtomicBoolean cleaner = new AtomicBoolean(true);
+    final ScheduledFuture<?> timeoutHandler =
+        executorService.schedule(
+            () -> {
+              if (cleaner.compareAndSet(true, false)) {
+                logger.log(Level.FINE, "Timeout happened when waiting for export to complete");
+                batch.clear();
+                scheduleNextRun();
+              }
+            },
+            exporterTimeoutNanos,
+            TimeUnit.NANOSECONDS);
+
+    result.whenComplete(
+        () -> {
+          if (cleaner.compareAndSet(true, false)) {
+            timeoutHandler.cancel(true);
+            if (result.isSuccess()) {
+              exportedSpans.add(batch.size());
+            } else {
+              logger.log(Level.FINE, "Exporter failed");
+            }
+            batch.clear();
+            scheduleNextRun();
+          }
+        });
   }
 
   /**
@@ -130,7 +150,6 @@ abstract class WorkerBase implements Runnable {
    *     finished processing.
    */
   public CompletableResultCode forceFlush() {
-    logger.info("Force flush");
     CompletableResultCode flushResult = new CompletableResultCode();
     // we set the atomic here to trigger the worker loop to do a flush on its next iteration.
     flushRequested.compareAndSet(null, flushResult);
@@ -183,4 +202,6 @@ abstract class WorkerBase implements Runnable {
     flushRequested.get().succeed();
     flushRequested.set(null);
   }
+
+  protected abstract void scheduleNextRun();
 }
