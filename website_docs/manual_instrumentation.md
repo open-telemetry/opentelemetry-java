@@ -3,6 +3,8 @@ Title: "Manual Instrumentation"
 Weight: 3
 ---
 
+**Note**: As of 3/29 this is a copy of the documentation live on opentelemetry.io, and requires updates to become current with the current Java release.
+
 ## Traces
 
 ### Instantiate `TracerProvider` and SDK
