@@ -210,8 +210,8 @@ public class B3PropagationIntegrationTest {
 
           Span span =
               server2Sdk
-                  .getTracer("server1Tracer")
-                  .spanBuilder("server1Span")
+                  .getTracer("server2Tracer")
+                  .spanBuilder("server2Span")
                   .setParent(incomingContext)
                   .startSpan();
           try (Scope ignored = span.makeCurrent()) {
