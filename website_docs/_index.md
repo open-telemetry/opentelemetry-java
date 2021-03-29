@@ -6,6 +6,8 @@ description: >
   A language-specific implementation of OpenTelemetry in Java.
 ---
 
+**Note**: As of 3/29 this is a copy of the documentation live on opentelemetry.io, and requires updates to become current with the current Java release.
+
 OpenTelemetry Java consists of the following repositories:
 
 - [opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java):
