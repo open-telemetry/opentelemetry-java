@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.extension.incubator.trace;
 
 import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
@@ -68,7 +68,7 @@ abstract class WorkerBase implements Runnable {
     this.exporterTimeoutNanos = exporterTimeoutNanos;
     this.queue = queue;
     this.executorService = executorService;
-    Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.sdk.trace");
+    Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.sdk.trace");
     meter
         .longValueObserverBuilder("queueSize")
         .setDescription("The number of spans queued")
