@@ -109,7 +109,7 @@ subprojects {
         tasks {
             val testJava8 by registering(Test::class) {
                 javaLauncher.set(javaToolchains.launcherFor {
-                    languageVersion.set(JavaLanguageVersion.of(14))
+                    languageVersion.set(JavaLanguageVersion.of(8))
                 })
 
                 configure<JacocoTaskExtension> {
