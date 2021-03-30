@@ -1,10 +1,7 @@
 name: Update OpenTelemetry Website Docs
 
 on:
-  # triggers on a release publication or on a manual push
-  release:
-    types: [ published ]
-    branch: [ main ]
+  # triggers only on a manual dispatch
   workflow_dispatch:
 
 jobs:
