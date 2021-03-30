@@ -25,8 +25,11 @@ import java.util.Random;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.testcontainers.shaded.okhttp3.Call;
 import org.testcontainers.shaded.okhttp3.OkHttpClient;
 import org.testcontainers.shaded.okhttp3.Request;
@@ -41,21 +44,12 @@ public class B3PropagationIntegrationTest {
   private static final int server2Port = new Random().nextInt(40000) + 1024;
   private static final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
-  private OpenTelemetrySdk clientSdk;
-  private OpenTelemetrySdk server1Sdk;
-  private OpenTelemetrySdk server2Sdk;
   private Service server1;
   private Service server2;
 
-  @SuppressWarnings("UnusedMethod")
-  private static Stream<TextMapPropagator> propagators() {
-    return Stream.of(B3Propagator.injectingMultiHeaders(), B3Propagator.injectingSingleHeader());
-  }
-
-  void setup(TextMapPropagator propagator) {
-    setupClient(propagator);
-    setupServer2(propagator);
+  private void setup(TextMapPropagator propagator) {
     setupServer1(propagator);
+    setupServer2(propagator);
   }
 
   @AfterEach
@@ -70,9 +64,11 @@ public class B3PropagationIntegrationTest {
   }
 
   @ParameterizedTest
-  @MethodSource("propagators")
+  @ArgumentsSource(PropagatorArgumentSupplier.class)
   void propagation(TextMapPropagator propagator) throws IOException {
     setup(propagator);
+    OpenTelemetrySdk clientSdk = setupClient(propagator);
+
     OkHttpClient httpClient = createPropagatingClient(clientSdk);
 
     Span span = clientSdk.getTracer("testTracer").spanBuilder("clientSpan").startSpan();
@@ -99,7 +95,7 @@ public class B3PropagationIntegrationTest {
   }
 
   @ParameterizedTest
-  @MethodSource("propagators")
+  @ArgumentsSource(PropagatorArgumentSupplier.class)
   void noClientTracing(TextMapPropagator propagator) throws IOException {
     setup(propagator);
     OkHttpClient httpClient = new OkHttpClient();
@@ -140,8 +136,8 @@ public class B3PropagationIntegrationTest {
         .build();
   }
 
-  private void setupClient(TextMapPropagator propagator) {
-    clientSdk =
+  private static OpenTelemetrySdk setupClient(TextMapPropagator propagator) {
+    OpenTelemetrySdk clientSdk =
         OpenTelemetrySdk.builder()
             .setPropagators(ContextPropagators.create(propagator))
             .setTracerProvider(
@@ -149,10 +145,11 @@ public class B3PropagationIntegrationTest {
                     .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
                     .build())
             .build();
+    return clientSdk;
   }
 
   private void setupServer1(TextMapPropagator propagator) {
-    server1Sdk =
+    OpenTelemetrySdk serverSdk =
         OpenTelemetrySdk.builder()
             .setPropagators(ContextPropagators.create(propagator))
             .setTracerProvider(
@@ -161,15 +158,15 @@ public class B3PropagationIntegrationTest {
                     .build())
             .build();
 
-    OkHttpClient serverClient = createPropagatingClient(server1Sdk);
+    OkHttpClient serverClient = createPropagatingClient(serverSdk);
     server1 = Service.ignite().port(server1Port);
     server1.get(
         "/test",
         (request, response) -> {
-          Context incomingContext = extract(request, server1Sdk);
+          Context incomingContext = extract(request, serverSdk);
 
           Span span =
-              server1Sdk
+              serverSdk
                   .getTracer("server1Tracer")
                   .spanBuilder("server1Span")
                   .setParent(incomingContext)
@@ -195,7 +192,7 @@ public class B3PropagationIntegrationTest {
   }
 
   private void setupServer2(TextMapPropagator propagator) {
-    server2Sdk =
+    OpenTelemetrySdk serverSdk =
         OpenTelemetrySdk.builder()
             .setPropagators(ContextPropagators.create(propagator))
             .setTracerProvider(
@@ -208,10 +205,10 @@ public class B3PropagationIntegrationTest {
     server2.get(
         "/test2",
         (request, response) -> {
-          Context incomingContext = extract(request, server2Sdk);
+          Context incomingContext = extract(request, serverSdk);
 
           Span span =
-              server2Sdk
+              serverSdk
                   .getTracer("server2Tracer")
                   .spanBuilder("server2Span")
                   .setParent(incomingContext)
@@ -243,5 +240,15 @@ public class B3PropagationIntegrationTest {
                 return carrier.headers(key);
               }
             });
+  }
+
+  public static class PropagatorArgumentSupplier implements ArgumentsProvider {
+
+    @Override
+    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+      return Stream.of(
+          Arguments.of(B3Propagator.injectingMultiHeaders()),
+          Arguments.of(B3Propagator.injectingSingleHeader()));
+    }
   }
 }
