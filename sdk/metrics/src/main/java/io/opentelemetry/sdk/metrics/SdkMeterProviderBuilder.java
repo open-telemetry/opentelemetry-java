@@ -8,7 +8,11 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.SystemClock;
+import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
@@ -20,6 +24,7 @@ public final class SdkMeterProviderBuilder {
 
   private Clock clock = SystemClock.getInstance();
   private Resource resource = Resource.getDefault();
+  private final Map<InstrumentSelector, View> instrumentSelectorViews = new HashMap<>();
 
   SdkMeterProviderBuilder() {}
 
@@ -48,6 +53,35 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
+   * Register a view with the given {@link InstrumentSelector}.
+   *
+   * <p>Example on how to register a view:
+   *
+   * <pre>{@code
+   * // create a SdkMeterProviderBuilder
+   * SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder();
+   *
+   * // create a selector to select which instruments to customize:
+   * InstrumentSelector instrumentSelector = InstrumentSelector.builder()
+   *   .setInstrumentType(InstrumentType.COUNTER)
+   *   .build();
+   *
+   * // create a specification of how you want the metrics aggregated:
+   * AggregatorFactory aggregatorFactory = AggregatorFactory.minMaxSumCount();
+   *
+   * // register the view with the SdkMeterProviderBuilder
+   * meterProviderBuilder.registerView(instrumentSelector, View.builder()
+   *   .setAggregatorFactory(aggregatorFactory).build());
+   * }</pre>
+   */
+  public SdkMeterProviderBuilder registerView(InstrumentSelector selector, View view) {
+    Objects.requireNonNull(selector, "selector");
+    Objects.requireNonNull(view, "view");
+    instrumentSelectorViews.put(selector, view);
+    return this;
+  }
+
+  /**
    * Returns a new {@link SdkMeterProvider} built with the configuration of this {@link
    * SdkMeterProviderBuilder} and registers it as the global {@link
    * io.opentelemetry.api.metrics.MeterProvider}.
@@ -71,6 +105,6 @@ public final class SdkMeterProviderBuilder {
    * @see GlobalMeterProvider
    */
   public SdkMeterProvider build() {
-    return new SdkMeterProvider(clock, resource);
+    return new SdkMeterProvider(clock, resource, instrumentSelectorViews);
   }
 }

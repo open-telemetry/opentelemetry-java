@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -39,8 +40,11 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
   private final ComponentRegistry<SdkMeter> registry;
   private final MeterProviderSharedState sharedState;
 
-  SdkMeterProvider(Clock clock, Resource resource) {
+  SdkMeterProvider(
+      Clock clock, Resource resource, Map<InstrumentSelector, View> instrumentSelectorViews) {
     this.sharedState = MeterProviderSharedState.create(clock, resource);
+    instrumentSelectorViews.forEach(
+        (selector, view) -> this.sharedState.getViewRegistry().registerView(selector, view));
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
@@ -87,12 +91,12 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
    *
    * <pre>{@code
    * // get a handle to the MeterSdkProvider
-   * MeterSdkProvider meterProvider = OpenTelemetrySdk.getMeterProvider();
+   * SdkMeterProvider meterProvider = SdkMeterProvider.builder().build();
    *
    * // create a selector to select which instruments to customize:
    * InstrumentSelector instrumentSelector = InstrumentSelector.builder()
    *   .setInstrumentType(InstrumentType.COUNTER)
-   *   .buildInstrument();
+   *   .build();
    *
    * // create a specification of how you want the metrics aggregated:
    * AggregatorFactory aggregatorFactory = AggregatorFactory.minMaxSumCount();
@@ -101,7 +105,10 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
    * meterProvider.registerView(instrumentSelector, View.builder()
    *   .setAggregatorFactory(aggregatorFactory).build());
    * }</pre>
+   *
+   * @deprecated Use {@link SdkMeterProviderBuilder#registerView(InstrumentSelector, View)}
    */
+  @Deprecated
   public void registerView(InstrumentSelector selector, View view) {
     sharedState.getViewRegistry().registerView(selector, view);
   }
