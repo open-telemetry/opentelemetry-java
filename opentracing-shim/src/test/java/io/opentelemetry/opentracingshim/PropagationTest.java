@@ -11,6 +11,7 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,7 @@ class PropagationTest {
   private final Tracer tracer = SdkTracerProvider.builder().build().get("PropagationTest");
 
   @BeforeEach
+  @AfterEach
   void setUp() {
     GlobalOpenTelemetry.resetForTest();
   }

@@ -15,21 +15,38 @@ public class OpenTracingPropagators {
   private final TextMapPropagator textMapPropagator;
   private final TextMapPropagator httpHeadersPropagator;
 
-  public TextMapPropagator textMapPropagator() {
-    return textMapPropagator;
-  }
-
-  public TextMapPropagator httpHeadersPropagator() {
-    return httpHeadersPropagator;
-  }
-
   OpenTracingPropagators(
       TextMapPropagator textMapPropagator, TextMapPropagator httpHeadersPropagator) {
     this.textMapPropagator = textMapPropagator;
     this.httpHeadersPropagator = httpHeadersPropagator;
   }
 
+  /**
+   * Returns a new builder instance for {@link OpenTracingPropagators}.
+   *
+   * @return a new builder instance for {@link OpenTracingPropagators}.
+   */
   public static OpenTracingPropagatorsBuilder builder() {
     return new OpenTracingPropagatorsBuilder();
+  }
+
+  /**
+   * Returns the propagator for {@link io.opentracing.propagation.Format.Builtin#TEXT_MAP} format.
+   *
+   * @return the propagator for {@link io.opentracing.propagation.Format.Builtin#TEXT_MAP} format.
+   */
+  public TextMapPropagator textMapPropagator() {
+    return textMapPropagator;
+  }
+
+  /**
+   * Returns the propagator for {@link io.opentracing.propagation.Format.Builtin#HTTP_HEADERS}
+   * format.
+   *
+   * @return the propagator for {@link io.opentracing.propagation.Format.Builtin#HTTP_HEADERS}
+   *     format.
+   */
+  public TextMapPropagator httpHeadersPropagator() {
+    return httpHeadersPropagator;
   }
 }

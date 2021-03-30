@@ -8,7 +8,6 @@ package io.opentelemetry.opentracingshim;
 import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -32,7 +31,6 @@ class SpanShimTest {
 
   @BeforeEach
   void setUp() {
-    GlobalOpenTelemetry.resetForTest();
     span = telemetryInfo.tracer().spanBuilder(SPAN_NAME).startSpan();
   }
 

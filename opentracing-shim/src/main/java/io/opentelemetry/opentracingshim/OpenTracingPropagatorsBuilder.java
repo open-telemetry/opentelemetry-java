@@ -9,10 +9,13 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.Objects;
 
+/** Builder for {@link OpenTracingPropagators}. */
 public class OpenTracingPropagatorsBuilder {
 
-  private TextMapPropagator textMapPropagator;
-  private TextMapPropagator httpHeadersPropagator;
+  private TextMapPropagator textMapPropagator =
+      GlobalOpenTelemetry.getPropagators().getTextMapPropagator();
+  private TextMapPropagator httpHeadersPropagator =
+      GlobalOpenTelemetry.getPropagators().getTextMapPropagator();
 
   /** Set propagator for {@link io.opentracing.propagation.Format.Builtin#TEXT_MAP} format. */
   public OpenTracingPropagatorsBuilder setTextMap(TextMapPropagator textMapPropagator) {
@@ -35,13 +38,6 @@ public class OpenTracingPropagatorsBuilder {
    * @return a new Propagators instance.
    */
   public OpenTracingPropagators build() {
-    if (textMapPropagator == null) {
-      textMapPropagator = GlobalOpenTelemetry.getPropagators().getTextMapPropagator();
-    }
-    if (httpHeadersPropagator == null) {
-      httpHeadersPropagator = GlobalOpenTelemetry.getPropagators().getTextMapPropagator();
-    }
-
     return new OpenTracingPropagators(textMapPropagator, httpHeadersPropagator);
   }
 }
