@@ -30,6 +30,10 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.common.v1.StringKeyValue;
+import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
+import io.opentelemetry.proto.metrics.v1.Metric;
+import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -173,5 +177,48 @@ class FullConfigTest {
                 .setKey("cat")
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
+
+    ExportMetricsServiceRequest metricRequest = otlpMetricsRequests.take();
+    assertThat(metricRequest.getResourceMetrics(0).getResource().getAttributesList())
+        .contains(
+            KeyValue.newBuilder()
+                .setKey("service.name")
+                .setValue(AnyValue.newBuilder().setStringValue("test").build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("cat")
+                .setValue(AnyValue.newBuilder().setStringValue("meow").build())
+                .build());
+    for (ResourceMetrics resourceMetrics : metricRequest.getResourceMetricsList()) {
+      for (InstrumentationLibraryMetrics instrumentationLibraryMetrics :
+          resourceMetrics.getInstrumentationLibraryMetricsList()) {
+        for (Metric metric : instrumentationLibraryMetrics.getMetricsList()) {
+          assertThat(getFirstDataPointLabels(metric))
+              .contains(StringKeyValue.newBuilder().setKey("configured").setValue("true").build());
+        }
+      }
+    }
+  }
+
+  private static List<StringKeyValue> getFirstDataPointLabels(Metric metric) {
+    switch (metric.getDataCase()) {
+      case INT_GAUGE:
+        return metric.getIntGauge().getDataPoints(0).getLabelsList();
+      case DOUBLE_GAUGE:
+        return metric.getDoubleGauge().getDataPoints(0).getLabelsList();
+      case INT_SUM:
+        return metric.getIntSum().getDataPoints(0).getLabelsList();
+      case DOUBLE_SUM:
+        return metric.getDoubleSum().getDataPoints(0).getLabelsList();
+      case INT_HISTOGRAM:
+        return metric.getIntHistogram().getDataPoints(0).getLabelsList();
+      case DOUBLE_HISTOGRAM:
+        return metric.getDoubleHistogram().getDataPoints(0).getLabelsList();
+      case DOUBLE_SUMMARY:
+        return metric.getDoubleSummary().getDataPoints(0).getLabelsList();
+      default:
+        throw new IllegalArgumentException(
+            "Unrecognized metric data case: " + metric.getDataCase().name());
+    }
   }
 }
