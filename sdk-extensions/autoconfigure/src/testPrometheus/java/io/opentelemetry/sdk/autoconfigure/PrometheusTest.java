@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.linecorp.armeria.client.WebClient;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.common.Labels;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -35,7 +35,7 @@ class PrometheusTest {
     System.setProperty("otel.exporter.prometheus.port", String.valueOf(port));
     OpenTelemetrySdkAutoConfiguration.initialize();
 
-    GlobalMetricsProvider.get()
+    GlobalMeterProvider.get()
         .get("test")
         .longValueObserverBuilder("test")
         .setUpdater(result -> result.observe(2, Labels.empty()))
