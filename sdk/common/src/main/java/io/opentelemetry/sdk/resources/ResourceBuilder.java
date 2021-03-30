@@ -9,6 +9,10 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 
+/**
+ * A builder of {@link Resource} that allows to add key-value pairs and copy attributes from other
+ * {@link Attributes} or {@link Resource}.
+ */
 @SuppressWarnings("AutoValueSubclassLeaked")
 public class ResourceBuilder {
 
