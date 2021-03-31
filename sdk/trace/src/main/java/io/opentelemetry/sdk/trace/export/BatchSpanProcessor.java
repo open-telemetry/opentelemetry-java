@@ -38,9 +38,6 @@ import java.util.logging.Logger;
  * {@code maxQueueSize} maximum size, if queue is full spans are dropped). Spans are exported either
  * when there are {@code maxExportBatchSize} pending spans or {@code scheduleDelayNanos} has passed
  * since the last export finished.
- *
- * <p>This batch {@link SpanProcessor} can cause high contention in a very high traffic service.
- * TODO: Add a link to the SpanProcessor that uses Disruptor as alternative with low contention.
  */
 public final class BatchSpanProcessor implements SpanProcessor {
 
