@@ -161,8 +161,8 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
     public void run() {
       // nextExportTime is set for the first time in the constructor
 
-      continueWork.set(true);
-      while (continueWork.get() && !isShutdown.get()) {
+      boolean continueWork = true;
+      while (continueWork && !isShutdown.get()) {
         if (flushRequested.get() != null) {
           flush();
         }
@@ -175,7 +175,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
             queue.take();
           } else {
             // nothing in the queue, so schedule next run and release the thread
-            continueWork.set(false);
+            continueWork = false;
             scheduleNextRun();
           }
         } catch (InterruptedException e) {
@@ -184,7 +184,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
         }
 
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime.get()) {
-          continueWork.set(false);
+          continueWork = false;
           exportCurrentBatch();
           updateNextExportTime();
         }

@@ -39,7 +39,6 @@ abstract class WorkerBase implements Runnable {
   protected final BlockingQueue<ReadableSpan> queue;
 
   protected final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
-  protected final AtomicBoolean continueWork = new AtomicBoolean(true);
   protected final ScheduledExecutorService executorService;
 
   /**
@@ -171,7 +170,6 @@ abstract class WorkerBase implements Runnable {
     final CompletableResultCode flushResult = forceFlush();
     flushResult.whenComplete(
         () -> {
-          continueWork.set(false);
           final CompletableResultCode shutdownResult = spanExporter.shutdown();
           shutdownResult.whenComplete(
               () -> {
