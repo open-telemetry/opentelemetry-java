@@ -50,21 +50,23 @@ public class ThrottlingLogger {
       return;
     }
     if (throttled.get()) {
-      if (throttledRateLimiter.canSpend(1.0)) {
+      if (throttledRateLimiter.trySpend(1.0)) {
         doLog(level, message, throwable);
       }
-    } else {
-      if (fastRateLimiter.canSpend(1.0)) {
-        doLog(level, message, throwable);
-      } else {
-        if (throttled.compareAndSet(false, true)) {
-          // spend the balance in the throttled one, s4o that it starts at zero.
-          throttledRateLimiter.canSpend(1.0);
-          delegate.log(
-              level, "Too many log messages detected. Will only log once per minute from now on.");
-          doLog(level, message, throwable);
-        }
-      }
+      return;
+    }
+
+    if (fastRateLimiter.trySpend(1.0)) {
+      doLog(level, message, throwable);
+      return;
+    }
+
+    if (throttled.compareAndSet(false, true)) {
+      // spend the balance in the throttled one, so that it starts at zero.
+      throttledRateLimiter.trySpend(THROTTLED_RATE_LIMIT);
+      delegate.log(
+          level, "Too many log messages detected. Will only log once per minute from now on.");
+      doLog(level, message, throwable);
     }
   }
 

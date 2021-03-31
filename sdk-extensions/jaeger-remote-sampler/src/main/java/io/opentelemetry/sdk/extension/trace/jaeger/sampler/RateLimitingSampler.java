@@ -57,7 +57,7 @@ class RateLimitingSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-    return this.rateLimiter.canSpend(1.0) ? onSamplingResult : offSamplingResult;
+    return this.rateLimiter.trySpend(1.0) ? onSamplingResult : offSamplingResult;
   }
 
   @Override

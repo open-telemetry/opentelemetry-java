@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <p>Variables have been renamed for clarity.
  *
- * <p>This class is internal and is hence not for public use. It's APIs are unstable and can change
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
 public class RateLimiter {
@@ -27,7 +27,7 @@ public class RateLimiter {
    * Create a new RateLimiter with the provided parameters.
    *
    * @param creditsPerSecond How many credits to accrue per second.
-   * @param maxBalance The maximum balance that the limiter can hold.
+   * @param maxBalance The maximum balance that the limiter can hold, which corresponds to the rate that is being limited to.
    * @param clock An implementation of the {@link Clock} interface.
    */
   public RateLimiter(double creditsPerSecond, double maxBalance, Clock clock) {
@@ -41,7 +41,7 @@ public class RateLimiter {
    * Check to see if the provided cost can be spent within the current limits. Will deduct the cost
    * from the current balance if it can be spent.
    */
-  public boolean canSpend(double itemCost) {
+  public boolean trySpend(double itemCost) {
     long cost = (long) (itemCost / creditsPerNanosecond);
     long currentNanos;
     long currentBalanceNanos;
