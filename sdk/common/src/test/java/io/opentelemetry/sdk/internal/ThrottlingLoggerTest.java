@@ -40,6 +40,20 @@ class ThrottlingLoggerTest {
   }
 
   @Test
+  void logsBelowLevelDontCount() {
+    ThrottlingLogger logger =
+        new ThrottlingLogger(Logger.getLogger(ThrottlingLoggerTest.class.getName()));
+
+    for (int i = 0; i < 100; i++) {
+      // FINE is below the default level and thus shouldn't impact the rate.
+      logger.log(Level.FINE, "secrets", new RuntimeException());
+    }
+    logger.log(Level.INFO, "oh yes!");
+
+    logs.assertContains(loggingEvent -> loggingEvent.getLevel().equals(INFO), "oh yes!");
+  }
+
+  @Test
   void fiveInAMinuteTriggersLimiting() {
     Clock clock = TestClock.create();
     ThrottlingLogger logger =

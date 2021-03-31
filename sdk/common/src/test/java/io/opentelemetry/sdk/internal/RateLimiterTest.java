@@ -55,7 +55,7 @@ class RateLimiterTest {
   @Test
   void testRateLimiterSteadyRate() {
     TestClock clock = TestClock.create();
-    RateLimiter limiter = new RateLimiter(5.0/60.0, 5.0, clock);
+    RateLimiter limiter = new RateLimiter(5.0 / 60.0, 5.0, clock);
     for (int i = 0; i < 100; i++) {
       assertThat(limiter.trySpend(1.0)).isTrue();
       clock.advanceNanos(TimeUnit.SECONDS.toNanos(20));

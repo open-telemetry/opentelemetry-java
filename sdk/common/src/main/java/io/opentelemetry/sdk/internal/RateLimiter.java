@@ -27,7 +27,8 @@ public class RateLimiter {
    * Create a new RateLimiter with the provided parameters.
    *
    * @param creditsPerSecond How many credits to accrue per second.
-   * @param maxBalance The maximum balance that the limiter can hold, which corresponds to the rate that is being limited to.
+   * @param maxBalance The maximum balance that the limiter can hold, which corresponds to the rate
+   *     that is being limited to.
    * @param clock An implementation of the {@link Clock} interface.
    */
   public RateLimiter(double creditsPerSecond, double maxBalance, Clock clock) {
