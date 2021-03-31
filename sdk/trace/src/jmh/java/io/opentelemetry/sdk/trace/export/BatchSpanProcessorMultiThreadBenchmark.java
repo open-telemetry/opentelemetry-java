@@ -42,7 +42,7 @@ public class BatchSpanProcessorMultiThreadBenchmark {
     private long exportedSpans;
     private long droppedSpans;
 
-    @Setup(Level.Trial)
+    @Setup(Level.Iteration)
     public final void setup() {
       sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
       SpanExporter exporter = new DelayingSpanExporter(delayMs);
@@ -57,10 +57,6 @@ public class BatchSpanProcessorMultiThreadBenchmark {
           new BatchSpanProcessorMetrics(sdkMeterProvider.collectAllMetrics(), numThreads);
       exportedSpans = metrics.exportedSpans();
       droppedSpans = metrics.droppedSpans();
-    }
-
-    @TearDown(Level.Trial)
-    public final void tearDown() {
       processor.shutdown().join(10, TimeUnit.SECONDS);
     }
   }
