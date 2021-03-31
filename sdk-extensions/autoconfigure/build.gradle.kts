@@ -35,6 +35,8 @@ dependencies {
     compileOnly("io.prometheus:simpleclient_httpserver")
     compileOnly(project(":exporters:zipkin"))
 
+    testImplementation(project(path=":sdk:trace-shaded-deps"))
+
     testImplementation(project(":proto"))
     testImplementation(project(":sdk:testing"))
     testImplementation("com.linecorp.armeria:armeria-junit5")
