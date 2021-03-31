@@ -24,7 +24,7 @@ OpenTelemetry Java consists of the following repositories:
 
 | Traces | Metrics | Logs         |
 | ------ | ------- | ------------ |
-| GA     | Alpha   | Experimental |
+| Stable     | Alpha   | Experimental |
 
 ### Components
 
