@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -41,5 +42,25 @@ class OpenTracingShimTest {
 
     TracerShim tracerShim = (TracerShim) OpenTracingShim.createTracerShim(openTelemetry);
     assertThat(tracerShim.tracer()).isEqualTo(sdk.get("opentracingshim"));
+  }
+
+  @Test
+  void createTracerShim_withPropagators() {
+    Tracer tracer = mock(Tracer.class);
+
+    TextMapPropagator textMapPropagator = new CustomTextMapPropagator();
+    TextMapPropagator httpHeadersPropagator = new CustomTextMapPropagator();
+
+    TracerShim tracerShim =
+        (TracerShim)
+            OpenTracingShim.createTracerShim(
+                tracer,
+                OpenTracingPropagators.builder()
+                    .setTextMap(textMapPropagator)
+                    .setHttpHeaders(httpHeadersPropagator)
+                    .build());
+
+    assertThat(tracerShim.propagators().textMapPropagator()).isSameAs(textMapPropagator);
+    assertThat(tracerShim.propagators().httpHeadersPropagator()).isSameAs(httpHeadersPropagator);
   }
 }

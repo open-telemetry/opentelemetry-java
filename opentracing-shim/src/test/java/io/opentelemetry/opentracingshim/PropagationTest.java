@@ -80,6 +80,7 @@ class PropagationTest {
     assertThat(propagation.propagators().textMapPropagator())
         .isNotSameAs(propagation.propagators().httpHeadersPropagator());
 
+    assertThat(propagation.propagators().textMapPropagator()).isSameAs(textMapPropagator);
     assertThat(propagation.propagators().httpHeadersPropagator()).isSameAs(httpHeadersPropagator);
   }
 }
