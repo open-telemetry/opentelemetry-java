@@ -10,7 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import org.junit.jupiter.api.Test;
 
 class SpanBuilderShimTest {
@@ -78,5 +80,14 @@ class SpanBuilderShimTest {
     } finally {
       parentSpan.finish();
     }
+  }
+
+  @Test
+  void withStartTimestamp() {
+    long micros = 123447307984L;
+    SpanShim spanShim =
+        (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).withStartTimestamp(micros).start();
+    SpanData spanData = ((ReadableSpan) spanShim.getSpan()).toSpanData();
+    assertThat(spanData.getStartEpochNanos()).isEqualTo(micros * 1000L);
   }
 }

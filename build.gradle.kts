@@ -8,7 +8,6 @@ import net.ltgt.gradle.errorprone.ErrorProneOptions
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import org.gradle.api.plugins.JavaPlugin.*
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferPlugin
 import java.time.Duration
@@ -82,9 +81,6 @@ subprojects {
         }
 
         configure<JavaPluginExtension> {
-            sourceCompatibility = JavaVersion.VERSION_1_8
-            targetCompatibility = JavaVersion.VERSION_1_8
-
             toolchain {
                 languageVersion.set(JavaLanguageVersion.of(11))
             }
@@ -109,7 +105,7 @@ subprojects {
         tasks {
             val testJava8 by registering(Test::class) {
                 javaLauncher.set(javaToolchains.launcherFor {
-                    languageVersion.set(JavaLanguageVersion.of(14))
+                    languageVersion.set(JavaLanguageVersion.of(8))
                 })
 
                 configure<JacocoTaskExtension> {

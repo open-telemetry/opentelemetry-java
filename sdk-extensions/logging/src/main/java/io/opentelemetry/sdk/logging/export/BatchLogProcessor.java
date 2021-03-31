@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logging.export;
 
 import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
@@ -66,7 +66,7 @@ public final class BatchLogProcessor implements LogProcessor {
 
   private static class Worker implements Runnable {
     static {
-      Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.sdk.logging");
+      Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.sdk.logging");
       LongCounter logRecordsProcessed =
           meter
               .longCounterBuilder("logRecordsProcessed")

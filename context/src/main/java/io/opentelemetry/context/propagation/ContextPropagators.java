@@ -60,7 +60,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   );
  *   Span span = tracer.spanBuilder("MyRequest")
  *       .setParent(context)
- *       .setSpanKind(Span.Kind.SERVER).startSpan();
+ *       .setSpanKind(SpanKind.SERVER).startSpan();
  *   try (Scope ignored = span.makeCurrent()) {
  *     // Handle request and send response back.
  *   } finally {

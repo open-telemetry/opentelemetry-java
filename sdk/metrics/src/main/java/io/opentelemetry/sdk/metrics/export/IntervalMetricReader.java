@@ -117,7 +117,6 @@ public final class IntervalMetricReader {
     }
 
     @Override
-    @SuppressWarnings("BooleanParameter")
     public void run() {
       // Ignore the CompletableResultCode from doRun() in order to keep run() asynchronous
       doRun();
@@ -141,8 +140,9 @@ public final class IntervalMetricReader {
                 flushResult.succeed();
                 exportAvailable.set(true);
               });
-        } catch (RuntimeException e) {
-          logger.log(Level.WARNING, "Exporter threw an Exception", e);
+        } catch (Throwable t) {
+          exportAvailable.set(true);
+          logger.log(Level.WARNING, "Exporter threw an Exception", t);
           flushResult.fail();
         }
       } else {
