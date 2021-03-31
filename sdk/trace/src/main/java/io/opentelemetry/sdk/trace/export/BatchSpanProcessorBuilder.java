@@ -86,7 +86,8 @@ public final class BatchSpanProcessorBuilder {
   }
 
   /**
-   * Sets the maximum number of Spans that are kept in the queue before start dropping.
+   * Sets the maximum number of Spans that are kept in the queue before start dropping. More memory
+   * than this value may be allocated to optimize queue access.
    *
    * <p>See the BatchSampledSpansProcessor class description for a high-level design description of
    * this class.

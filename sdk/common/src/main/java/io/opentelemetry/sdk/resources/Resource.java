@@ -168,4 +168,17 @@ public abstract class Resource {
   private static boolean isValidAndNotEmpty(AttributeKey<?> name) {
     return !name.getKey().isEmpty() && isValid(name.getKey());
   }
+
+  /** Returns a new {@link ResourceBuilder} instance for creating arbitrary {@link Resource}. */
+  public static ResourceBuilder builder() {
+    return new ResourceBuilder();
+  }
+
+  /**
+   * Returns a new {@link ResourceBuilder} instance populated with the data of this {@link
+   * Resource}.
+   */
+  public ResourceBuilder toBuilder() {
+    return builder().putAll(this);
+  }
 }

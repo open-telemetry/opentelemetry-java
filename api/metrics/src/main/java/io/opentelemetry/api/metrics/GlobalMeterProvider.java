@@ -11,11 +11,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * IMPORTANT: This is a temporary class, and solution for the metrics package until it will be
  * marked as stable.
  */
-public final class GlobalMetricsProvider {
+public final class GlobalMeterProvider {
   private static final Object mutex = new Object();
   private static final AtomicReference<MeterProvider> globalMeterProvider = new AtomicReference<>();
 
-  private GlobalMetricsProvider() {}
+  private GlobalMeterProvider() {}
 
   /** Returns the globally registered {@link MeterProvider}. */
   public static MeterProvider get() {

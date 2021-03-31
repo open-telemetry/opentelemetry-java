@@ -57,10 +57,6 @@ public class BatchSpanProcessorMultiThreadBenchmark {
           new BatchSpanProcessorMetrics(sdkMeterProvider.collectAllMetrics(), numThreads);
       exportedSpans = metrics.exportedSpans();
       droppedSpans = metrics.droppedSpans();
-    }
-
-    @TearDown(Level.Trial)
-    public final void tearDown() {
       processor.shutdown().join(10, TimeUnit.SECONDS);
     }
   }

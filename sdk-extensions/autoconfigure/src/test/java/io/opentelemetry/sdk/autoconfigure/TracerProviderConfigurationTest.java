@@ -17,11 +17,12 @@ import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.internal.JcTools;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -97,8 +98,7 @@ class TracerProviderConfigurationTest {
                 assertThat(worker)
                     .extracting("queue")
                     .isInstanceOfSatisfying(
-                        ArrayBlockingQueue.class,
-                        queue -> assertThat(queue.remainingCapacity()).isEqualTo(2048));
+                        Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2048));
                 assertThat(worker).extracting("spanExporter").isEqualTo(mockSpanExporter);
               });
     } finally {
@@ -133,8 +133,7 @@ class TracerProviderConfigurationTest {
                 assertThat(worker)
                     .extracting("queue")
                     .isInstanceOfSatisfying(
-                        ArrayBlockingQueue.class,
-                        queue -> assertThat(queue.remainingCapacity()).isEqualTo(2));
+                        Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2));
                 assertThat(worker).extracting("spanExporter").isEqualTo(mockSpanExporter);
               });
     } finally {

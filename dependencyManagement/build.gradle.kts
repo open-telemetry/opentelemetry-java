@@ -92,6 +92,7 @@ val DEPENDENCIES = listOf(
         "org.awaitility:awaitility:4.0.3",
         "org.codehaus.mojo:animal-sniffer-annotations:1.20",
         "org.curioswitch.curiostack:protobuf-jackson:1.2.0",
+        "org.jctools:jctools-core:3.3.0",
         "org.junit-pioneer:junit-pioneer:1.3.8",
         "org.skyscreamer:jsonassert:1.5.0",
         "org.slf4j:slf4j-simple:1.7.30"

@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
@@ -17,8 +17,10 @@ import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.internal.JcTools;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -36,9 +38,6 @@ import java.util.logging.Logger;
  * {@code maxQueueSize} maximum size, if queue is full spans are dropped). Spans are exported either
  * when there are {@code maxExportBatchSize} pending spans or {@code scheduleDelayNanos} has passed
  * since the last export finished.
- *
- * <p>This batch {@link SpanProcessor} can cause high contention in a very high traffic service.
- * TODO: Add a link to the SpanProcessor that uses Disruptor as alternative with low contention.
  */
 public final class BatchSpanProcessor implements SpanProcessor {
 
@@ -73,7 +72,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
-            new ArrayBlockingQueue<>(maxQueueSize));
+            JcTools.newMpscArrayQueue(maxQueueSize));
     Thread workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     workerThread.start();
   }
@@ -131,7 +130,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private final long exporterTimeoutNanos;
 
     private long nextExportTime;
-    private final BlockingQueue<ReadableSpan> queue;
+
+    private final Queue<ReadableSpan> queue;
     // When waiting on the spans queue, exporter thread sets this atomic to the number of more
     // spans it needs before doing an export. Writer threads would then wait for the queue to reach
     // spansNeeded size before notifying the exporter thread about new entries.
@@ -149,14 +149,14 @@ public final class BatchSpanProcessor implements SpanProcessor {
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
-        BlockingQueue<ReadableSpan> queue) {
+        Queue<ReadableSpan> queue) {
       this.spanExporter = spanExporter;
       this.scheduleDelayNanos = scheduleDelayNanos;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutNanos = exporterTimeoutNanos;
       this.queue = queue;
       this.signal = new ArrayBlockingQueue<>(1);
-      Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.sdk.trace");
+      Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.sdk.trace");
       meter
           .longValueObserverBuilder("queueSize")
           .setDescription("The number of spans queued")

@@ -9,9 +9,13 @@ plugins {
 description = "OpenTelemetry SDK For Tracing"
 extra["moduleName"] = "io.opentelemetry.sdk.trace"
 
+evaluationDependsOn(":sdk:trace-shaded-deps")
+
 dependencies {
     api(project(":api:all"))
     api(project(":sdk:common"))
+
+    compileOnly(project(":sdk:trace-shaded-deps"))
 
     implementation(project(":api:metrics"))
     implementation(project(":semconv"))
@@ -24,6 +28,7 @@ dependencies {
     testImplementation("com.google.guava:guava")
 
     jmh(project(":sdk:metrics"))
+    jmh(project(":sdk:trace-shaded-deps"))
     jmh(project(":sdk:testing")) {
         // JMH doesn"t handle dependencies that are duplicated between the main and jmh
         // configurations properly, but luckily here it"s simple enough to just exclude transitive
@@ -61,5 +66,12 @@ tasks {
         doLast {
             File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
         }
+    }
+
+    jar {
+        inputs.files(project(":sdk:trace-shaded-deps").file("src"))
+        val shadowJar = project(":sdk:trace-shaded-deps").tasks.named<Jar>("shadowJar")
+        from(zipTree(shadowJar.get().archiveFile))
+        dependsOn(shadowJar)
     }
 }
