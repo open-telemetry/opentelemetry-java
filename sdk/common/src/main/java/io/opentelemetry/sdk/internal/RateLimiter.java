@@ -11,41 +11,54 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * This class was taken from Jaeger java client.
  * https://github.com/jaegertracing/jaeger-client-java/blob/master/jaeger-core/src/main/java/io/jaegertracing/internal/samplers/RateLimitingSampler.java
+ *
+ * <p>Variables have been renamed for clarity.
+ *
+ * <p>This class is internal and is hence not for public use. It's APIs are unstable and can change
+ * at any time.
  */
-class RateLimiter {
+public class RateLimiter {
   private final Clock clock;
   private final double creditsPerNanosecond;
   private final long maxBalance; // max balance in nano ticks
-  private final AtomicLong debit; // last op nano time less remaining balance
+  private final AtomicLong currentBalance; // last op nano time less remaining balance
 
-  RateLimiter(double creditsPerSecond, double maxBalance, Clock clock) {
+  /**
+   * Create a new RateLimiter with the provided parameters.
+   *
+   * @param creditsPerSecond How many credits to accrue per second.
+   * @param maxBalance The maximum balance that the limiter can hold.
+   * @param clock An implementation of the {@link Clock} interface.
+   */
+  public RateLimiter(double creditsPerSecond, double maxBalance, Clock clock) {
     this.clock = clock;
     this.creditsPerNanosecond = creditsPerSecond / 1.0e9;
     this.maxBalance = (long) (maxBalance / creditsPerNanosecond);
-    this.debit = new AtomicLong(clock.nanoTime() - this.maxBalance);
+    this.currentBalance = new AtomicLong(clock.nanoTime() - this.maxBalance);
   }
 
-  public boolean checkCredit(double itemCost) {
+  /**
+   * Check to see if the provided cost can be spent within the current limits. Will deduct the cost
+   * from the current balance if it can be spent.
+   */
+  public boolean canSpend(double itemCost) {
     long cost = (long) (itemCost / creditsPerNanosecond);
-    long credit;
-    long currentDebit;
-    long balance;
+    long currentNanos;
+    long currentBalanceNanos;
+    long availableBalanceAfterWithdrawal;
     do {
-      currentDebit = debit.get();
-      credit = clock.nanoTime();
-      balance = credit - currentDebit;
-      if (balance > maxBalance) {
-        balance = maxBalance;
+      currentBalanceNanos = this.currentBalance.get();
+      currentNanos = clock.nanoTime();
+      long currentAvailableBalance = currentNanos - currentBalanceNanos;
+      if (currentAvailableBalance > maxBalance) {
+        currentAvailableBalance = maxBalance;
       }
-      balance -= cost;
-      if (balance < 0) {
+      availableBalanceAfterWithdrawal = currentAvailableBalance - cost;
+      if (availableBalanceAfterWithdrawal < 0) {
         return false;
       }
-      System.out.println("cost = " + cost);
-      System.out.println("balance = " + balance);
-      System.out.println("currentDebit = " + currentDebit);
-      System.out.println("credit = " + credit);
-    } while (!debit.compareAndSet(currentDebit, credit - balance));
+    } while (!this.currentBalance.compareAndSet(
+        currentBalanceNanos, currentNanos - availableBalanceAfterWithdrawal));
     return true;
   }
 }

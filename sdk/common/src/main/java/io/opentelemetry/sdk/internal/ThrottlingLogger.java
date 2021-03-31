@@ -5,7 +5,10 @@
 
 package io.opentelemetry.sdk.internal;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import io.opentelemetry.sdk.common.Clock;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,18 +16,14 @@ import javax.annotation.Nullable;
 
 /** Will limit the number of log messages emitted, so as not to spam when problems are happening. */
 public class ThrottlingLogger {
-  //  private static final int RATE_LIMIT = 5;
-  //  private static final int THROTTLED_RATE_LIMIT = 1;
-  //  private static final TimeUnit rateTimeUnit = MINUTES;
+  private static final double RATE_LIMIT = 5;
+  private static final double THROTTLED_RATE_LIMIT = 1;
+  private static final TimeUnit rateTimeUnit = MINUTES;
 
   private final Logger delegate;
-  //  private final Clock clock;
-
-  // this window tracks the number of logs messages per time unit. It holds the times of `log`
-  // calls.
-  //  private final Deque<Long> window = new ConcurrentLinkedDeque<>();
   private final AtomicBoolean throttled = new AtomicBoolean(false);
-  private final RateLimiter rateLimiter;
+  private final RateLimiter fastRateLimiter;
+  private final RateLimiter throttledRateLimiter;
 
   /** Create a new logger which will enforce a max number of messages per minute. */
   public ThrottlingLogger(Logger delegate) {
@@ -34,56 +33,42 @@ public class ThrottlingLogger {
   // visible for testing
   ThrottlingLogger(Logger delegate, Clock clock) {
     this.delegate = delegate;
-    //    this.clock = clock;
-    this.rateLimiter = new RateLimiter(1d / 60d, 4d, clock);
-
-    // pre-populate to make the logic easier below
-    //    IntStream.range(0, RATE_LIMIT).forEach(i -> window.push(0L));
+    this.fastRateLimiter =
+        new RateLimiter(RATE_LIMIT / rateTimeUnit.toSeconds(1), RATE_LIMIT, clock);
+    this.throttledRateLimiter =
+        new RateLimiter(RATE_LIMIT / rateTimeUnit.toSeconds(1), THROTTLED_RATE_LIMIT, clock);
   }
 
-  /** Log a message at a level. */
+  /** Log a message at the given level. */
   public void log(Level level, String message) {
     log(level, message, null);
   }
 
-  /** Log a message at a level with a throwable. */
+  /** Log a message at the given level with a throwable. */
   public void log(Level level, String message, @Nullable Throwable throwable) {
-    boolean ok = rateLimiter.checkCredit(1d);
-    if (!ok) {
-      if (throttled.compareAndSet(false, true)) {
-        delegate.log(
-            level, "Too many log messages detected. Will only log once per minute from now on.");
+    if (!isLoggable(level)) {
+      return;
+    }
+    if (throttled.get()) {
+      if (throttledRateLimiter.canSpend(1.0)) {
         doLog(level, message, throwable);
       }
     } else {
-      throttled.set(false);
-      doLog(level, message, throwable);
+      if (fastRateLimiter.canSpend(1.0)) {
+        doLog(level, message, throwable);
+      } else {
+        if (throttled.compareAndSet(false, true)) {
+          // spend the balance in the throttled one, s4o that it starts at zero.
+          throttledRateLimiter.canSpend(1.0);
+          delegate.log(
+              level, "Too many log messages detected. Will only log once per minute from now on.");
+          doLog(level, message, throwable);
+        }
+      }
     }
-    //    long now = clock.now();
-    //    window.addFirst(now);
-    //    long eldestTimestamp = window.removeLast();
-    //
-    //    long windowDurationMinutes = minutesBetween(now, eldestTimestamp);
-    //
-    //    if (windowDurationMinutes >= 1) {
-    //      if (throwable != null) {
-    //        delegate.log(level, message, throwable);
-    //      } else {
-    //        delegate.log(level, message);
-    //      }
-    //      return;
-    //    }
-    //
-    //    if (throttled.compareAndSet(false, true)) {
-    //      // shrink the queue down to only the throttled number of items
-    //      IntStream.range(0, RATE_LIMIT - THROTTLED_RATE_LIMIT).forEach(i -> window.removeLast());
-    //      delegate.log(
-    //          level, "Too many log messages detected. Will only log once per minute from now
-    // on.");
-    //    }
   }
 
-  private void doLog(Level level, String message, Throwable throwable) {
+  private void doLog(Level level, String message, @Nullable Throwable throwable) {
     if (throwable != null) {
       delegate.log(level, message, throwable);
     } else {
@@ -91,11 +76,12 @@ public class ThrottlingLogger {
     }
   }
 
+  /**
+   * Check if the current wrapped logger is set to log at the given level.
+   *
+   * @return true if the logger set to log at the requested level.
+   */
   public boolean isLoggable(Level level) {
     return delegate.isLoggable(level);
   }
-
-  //  private static long minutesBetween(long now, long then) {
-  //    return rateTimeUnit.convert(now - then, NANOSECONDS);
-  //  }
 }

@@ -51,13 +51,14 @@ class ThrottlingLoggerTest {
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.WARNING, "oh no!");
 
-    logger.log(Level.WARNING, "oh no I should be suppressed!");
+    logger.log(Level.WARNING, "oh no I should trigger suppression!");
     logger.log(Level.WARNING, "oh no I should be suppressed!");
 
-    assertThat(logs.getEvents()).hasSize(6);
+    assertThat(logs.getEvents()).hasSize(7);
     logs.assertDoesNotContain("oh no I should be suppressed!");
     logs.assertContains(
         "Too many log messages detected. Will only log once per minute from now on.");
+    logs.assertContains("oh no I should trigger suppression!");
   }
 
   @Test
@@ -105,24 +106,25 @@ class ThrottlingLoggerTest {
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.WARNING, "oh no!");
 
-    logger.log(Level.WARNING, "oh no I should be suppressed!");
+    logger.log(Level.WARNING, "oh no I should trigger suppression!");
     logger.log(Level.WARNING, "oh no I should be suppressed!");
 
-    assertThat(logs.getEvents()).hasSize(6);
+    assertThat(logs.getEvents()).hasSize(7);
     logs.assertDoesNotContain("oh no I should be suppressed!");
+    logs.assertContains("oh no I should trigger suppression!");
     logs.assertContains(
         "Too many log messages detected. Will only log once per minute from now on.");
 
     clock.advanceMillis(60_001);
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.WARNING, "oh no I should be suppressed!");
-    assertThat(logs.getEvents()).hasSize(7);
-    assertThat(logs.getEvents().get(6).getMessage()).isEqualTo("oh no!");
+    assertThat(logs.getEvents()).hasSize(8);
+    assertThat(logs.getEvents().get(7).getMessage()).isEqualTo("oh no!");
 
     clock.advanceMillis(60_001);
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.WARNING, "oh no I should be suppressed!");
-    assertThat(logs.getEvents()).hasSize(8);
-    assertThat(logs.getEvents().get(7).getMessage()).isEqualTo("oh no!");
+    assertThat(logs.getEvents()).hasSize(9);
+    assertThat(logs.getEvents().get(8).getMessage()).isEqualTo("oh no!");
   }
 }
