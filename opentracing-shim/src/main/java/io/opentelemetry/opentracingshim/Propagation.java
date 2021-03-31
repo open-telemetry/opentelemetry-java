@@ -8,6 +8,8 @@ package io.opentelemetry.opentracingshim;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 import java.util.HashMap;
@@ -22,24 +24,21 @@ final class Propagation extends BaseShimObject {
     super(telemetryInfo);
   }
 
-  void injectTextMap(SpanContextShim contextShim, TextMapInject carrier) {
+  <C> void injectTextMap(SpanContextShim contextShim, Format<C> format, TextMapInject carrier) {
     Context context = Context.current().with(Span.wrap(contextShim.getSpanContext()));
     context = context.with(contextShim.getBaggage());
 
-    propagators().getTextMapPropagator().inject(context, carrier, SETTER_INSTANCE);
+    getPropagator(format).inject(context, carrier, SETTER_INSTANCE);
   }
 
   @Nullable
-  SpanContextShim extractTextMap(TextMapExtract carrier) {
+  <C> SpanContextShim extractTextMap(Format<C> format, TextMapExtract carrier) {
     Map<String, String> carrierMap = new HashMap<>();
     for (Map.Entry<String, String> entry : carrier) {
       carrierMap.put(entry.getKey(), entry.getValue());
     }
 
-    Context context =
-        propagators()
-            .getTextMapPropagator()
-            .extract(Context.current(), carrierMap, GETTER_INSTANCE);
+    Context context = getPropagator(format).extract(Context.current(), carrierMap, GETTER_INSTANCE);
 
     Span span = Span.fromContext(context);
     if (!span.getSpanContext().isValid()) {
@@ -47,6 +46,13 @@ final class Propagation extends BaseShimObject {
     }
 
     return new SpanContextShim(telemetryInfo, span.getSpanContext(), Baggage.fromContext(context));
+  }
+
+  private <C> TextMapPropagator getPropagator(Format<C> format) {
+    if (format == Format.Builtin.HTTP_HEADERS) {
+      return propagators().httpHeadersPropagator();
+    }
+    return propagators().textMapPropagator();
   }
 
   static final class TextMapSetter

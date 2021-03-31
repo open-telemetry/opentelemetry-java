@@ -18,16 +18,34 @@ public final class OpenTracingShim {
   private OpenTracingShim() {}
 
   /**
-   * Creates a {@code io.opentracing.Tracer} shim out of {@code OpenTelemetry.getTracerProvider()}
-   * and {@code OpenTelemetry.getPropagators()}.
+   * Creates a {@code io.opentracing.Tracer} shim out of {@code
+   * GlobalOpenTelemetry.getTracerProvider()} and {@code GlobalOpenTelemetry.getPropagators()}.
    *
    * @return a {@code io.opentracing.Tracer}.
    */
   public static io.opentracing.Tracer createTracerShim() {
-    return new TracerShim(
-        new TelemetryInfo(
-            getTracer(GlobalOpenTelemetry.getTracerProvider()),
-            GlobalOpenTelemetry.getPropagators()));
+    return createTracerShim(getTracer(GlobalOpenTelemetry.getTracerProvider()));
+  }
+
+  /**
+   * Creates a {@code io.opentracing.Tracer} shim using provided Tracer instance and {@code
+   * GlobalOpenTelemetry.getPropagators()}.
+   *
+   * @return a {@code io.opentracing.Tracer}.
+   */
+  public static io.opentracing.Tracer createTracerShim(Tracer tracer) {
+    return createTracerShim(tracer, OpenTracingPropagators.builder().build());
+  }
+
+  /**
+   * Creates a {@code io.opentracing.Tracer} shim using provided Tracer instance and {@code
+   * OpenTracingPropagators} instance.
+   *
+   * @return a {@code io.opentracing.Tracer}.
+   */
+  public static io.opentracing.Tracer createTracerShim(
+      Tracer tracer, OpenTracingPropagators propagators) {
+    return new TracerShim(new TelemetryInfo(tracer, propagators));
   }
 
   /**
@@ -37,9 +55,12 @@ public final class OpenTracingShim {
    * @return a {@code io.opentracing.Tracer}.
    */
   public static io.opentracing.Tracer createTracerShim(OpenTelemetry openTelemetry) {
-    return new TracerShim(
-        new TelemetryInfo(
-            getTracer(openTelemetry.getTracerProvider()), openTelemetry.getPropagators()));
+    return createTracerShim(
+        getTracer(openTelemetry.getTracerProvider()),
+        OpenTracingPropagators.builder()
+            .setTextMap(openTelemetry.getPropagators().getTextMapPropagator())
+            .setHttpHeaders(openTelemetry.getPropagators().getTextMapPropagator())
+            .build());
   }
 
   private static Tracer getTracer(TracerProvider tracerProvider) {

@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -24,7 +23,8 @@ class SpanShimTest {
 
   private final SdkTracerProvider tracerSdkFactory = SdkTracerProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
-  private final TelemetryInfo telemetryInfo = new TelemetryInfo(tracer, ContextPropagators.noop());
+  private final TelemetryInfo telemetryInfo =
+      new TelemetryInfo(tracer, OpenTracingPropagators.builder().build());
   private Span span;
 
   private static final String SPAN_NAME = "Span";
