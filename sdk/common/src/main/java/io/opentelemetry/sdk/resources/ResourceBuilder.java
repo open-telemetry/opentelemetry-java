@@ -13,7 +13,6 @@ import io.opentelemetry.api.common.AttributesBuilder;
  * A builder of {@link Resource} that allows to add key-value pairs and copy attributes from other
  * {@link Attributes} or {@link Resource}.
  */
-@SuppressWarnings("AutoValueSubclassLeaked")
 public class ResourceBuilder {
 
   private final AttributesBuilder attributesBuilder = Attributes.builder();
@@ -172,6 +171,6 @@ public class ResourceBuilder {
 
   /** Create the {@link Resource} from this. */
   public Resource build() {
-    return new AutoValue_Resource(attributesBuilder.build());
+    return Resource.create(attributesBuilder.build());
   }
 }
