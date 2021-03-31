@@ -3,8 +3,6 @@ title: "Instrumentation Examples"
 weight: 4
 ---
 
-**Note**: As of 3/29 this is a copy of the documentation live on opentelemetry.io, and requires updates to become current with the current Java release.
-
 Here are Some of the resources for Opentelemetry Instrumentation Examples
 
 ## Community Resources

@@ -6,8 +6,6 @@ description: >
   A language-specific implementation of OpenTelemetry in Java.
 ---
 
-**Note**: As of 3/29 this is a copy of the documentation live on opentelemetry.io, and requires updates to become current with the current Java release.
-
 OpenTelemetry Java consists of the following repositories:
 
 - [opentelemetry-java](https://github.com/open-telemetry/opentelemetry-java):
@@ -26,7 +24,7 @@ OpenTelemetry Java consists of the following repositories:
 
 | Traces | Metrics | Logs         |
 | ------ | ------- | ------------ |
-| Beta   | Alpha   | Experimental |
+| Stable     | Alpha   | Experimental |
 
 ### Components
 
@@ -44,25 +42,39 @@ OpenTelemetry Java consists of the following repositories:
 
 ### Releases
 
-Published releases are available on maven central.
+Published releases are available on maven central. We strongly recommend using our BOM to keep the
+versions of the various components in sync.
 
 #### Maven
 
 ```xml
+<project>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>1.0.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.10.0</version>
     </dependency>
   </dependencies>
+</project>
 ```
 
 #### Gradle
 
 ```groovy
 dependencies {
-	implementation('io.opentelemetry:opentelemetry-api:0.10.0')
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.0.1")
+  implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
 
@@ -70,40 +82,8 @@ dependencies {
 
   - [releases](https://github.com/open-telemetry/opentelemetry-java/releases)
   - [maven](https://mvnrepository.com/artifact/io.opentelemetry)
-  - [bintray](https://bintray.com/open-telemetry/maven/opentelemetry-java)
 
 ### Additional Information
 
 - [Javadoc](https://www.javadoc.io/doc/io.opentelemetry)
 - [Example code](https://github.com/open-telemetry/opentelemetry-java/tree/main/examples)
-
-## opentelemetry-java-instrumentation
-
-| Traces | Metrics | Logs         |
-| ------ | ------- | ------------ |
-| Beta   | Alpha   | Experimental |
-
-### Releases
-
-> Published releases are *NOT* available on maven central, but will be by GA.
-
-  - [releases](https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases)
-  - [bintray](https://bintray.com/open-telemetry/maven/opentelemetry-java-instrumentation)
-
-> Snapshots are also available as documented
-> [here](https://github.com/open-telemetry/opentelemetry-java/blob/main/CONTRIBUTING.md#snapshots).
-
-### Additional Information
-
-- [Javadoc](https://www.javadoc.io/doc/io.opentelemetry)
-- [Example code](https://github.com/open-telemetry/opentelemetry-java/tree/main/examples)
-
-## opentelemetry-java-contrib
-
-| Component         | Status |
-| ----------------- | ------ |
-| JMX Metric Gather | Alpha  |
-
-### Releases
-
-  - [releases](https://github.com/open-telemetry/opentelemetry-java-contrib/releases)
