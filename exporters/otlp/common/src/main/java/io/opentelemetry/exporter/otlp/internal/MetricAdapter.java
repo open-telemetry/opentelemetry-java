@@ -17,8 +17,6 @@ import io.opentelemetry.proto.metrics.v1.DoubleGauge;
 import io.opentelemetry.proto.metrics.v1.DoubleHistogram;
 import io.opentelemetry.proto.metrics.v1.DoubleHistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.DoubleSum;
-import io.opentelemetry.proto.metrics.v1.DoubleSummary;
-import io.opentelemetry.proto.metrics.v1.DoubleSummaryDataPoint;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.IntDataPoint;
 import io.opentelemetry.proto.metrics.v1.IntGauge;
@@ -132,8 +130,10 @@ public final class MetricAdapter {
         break;
       case SUMMARY:
         DoubleSummaryData doubleSummaryData = metricData.getDoubleSummaryData();
-        builder.setDoubleSummary(
-            DoubleSummary.newBuilder()
+        builder.setDoubleHistogram(
+            DoubleHistogram.newBuilder()
+                // TODO: This is a bug, but preserve the logic and fix it later.
+                .setAggregationTemporality(AGGREGATION_TEMPORALITY_DELTA)
                 .addAllDataPoints(toSummaryDataPoints(doubleSummaryData.getPoints()))
                 .build());
         break;
@@ -209,12 +209,12 @@ public final class MetricAdapter {
     return result;
   }
 
-  static List<DoubleSummaryDataPoint> toSummaryDataPoints(
+  static List<DoubleHistogramDataPoint> toSummaryDataPoints(
       Collection<DoubleSummaryPointData> points) {
-    List<DoubleSummaryDataPoint> result = new ArrayList<>(points.size());
+    List<DoubleHistogramDataPoint> result = new ArrayList<>(points.size());
     for (DoubleSummaryPointData doubleSummaryPoint : points) {
-      DoubleSummaryDataPoint.Builder builder =
-          DoubleSummaryDataPoint.newBuilder()
+      DoubleHistogramDataPoint.Builder builder =
+          DoubleHistogramDataPoint.newBuilder()
               .setStartTimeUnixNano(doubleSummaryPoint.getStartEpochNanos())
               .setTimeUnixNano(doubleSummaryPoint.getEpochNanos())
               .setCount(doubleSummaryPoint.getCount())
@@ -223,16 +223,10 @@ public final class MetricAdapter {
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
       }
-      // Not calling directly addAllQuantileValues because that generates couple of unnecessary
+      // Not calling directly addAllPercentileValues because that generates couple of unnecessary
       // allocations if empty list.
       if (!doubleSummaryPoint.getPercentileValues().isEmpty()) {
-        for (ValueAtPercentile valueAtPercentile : doubleSummaryPoint.getPercentileValues()) {
-          builder.addQuantileValues(
-              DoubleSummaryDataPoint.ValueAtQuantile.newBuilder()
-                  .setQuantile(valueAtPercentile.getPercentile())
-                  .setValue(valueAtPercentile.getValue())
-                  .build());
-        }
+        addBucketValues(doubleSummaryPoint.getPercentileValues(), builder);
       }
       result.add(builder.build());
     }
@@ -261,6 +255,21 @@ public final class MetricAdapter {
       result.add(builder.build());
     }
     return result;
+  }
+
+  // TODO: Consider to pass the Builder and directly add values.
+  @SuppressWarnings("MixedMutabilityReturnType")
+  static void addBucketValues(
+      List<ValueAtPercentile> valueAtPercentiles, DoubleHistogramDataPoint.Builder builder) {
+
+    for (ValueAtPercentile valueAtPercentile : valueAtPercentiles) {
+      // TODO(jkwatson): Value of histogram should be long?
+      builder.addBucketCounts((long) valueAtPercentile.getValue());
+      builder.addExplicitBounds(valueAtPercentile.getPercentile());
+    }
+
+    // No recordings past the highest percentile (e.g., [highest percentile, +infinity]).
+    builder.addBucketCounts(0);
   }
 
   @SuppressWarnings("MixedMutabilityReturnType")
