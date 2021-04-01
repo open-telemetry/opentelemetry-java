@@ -12,6 +12,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.internal.RateLimiter;
 import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -56,7 +57,7 @@ class RateLimitingSampler implements Sampler {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-    return this.rateLimiter.checkCredit(1.0) ? onSamplingResult : offSamplingResult;
+    return this.rateLimiter.trySpend(1.0) ? onSamplingResult : offSamplingResult;
   }
 
   @Override
@@ -67,10 +68,5 @@ class RateLimitingSampler implements Sampler {
   @Override
   public String toString() {
     return getDescription();
-  }
-
-  // Visible for testing
-  double getMaxTracesPerSecond() {
-    return maxTracesPerSecond;
   }
 }

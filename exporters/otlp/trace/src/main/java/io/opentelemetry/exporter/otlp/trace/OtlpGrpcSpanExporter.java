@@ -22,6 +22,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc.TraceServiceFutureStub;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
@@ -35,14 +36,15 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
 
-  private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
   private static final String EXPORTER_NAME = OtlpGrpcSpanExporter.class.getSimpleName();
-
   private static final Labels EXPORTER_NAME_LABELS = Labels.of("exporter", EXPORTER_NAME);
   private static final Labels EXPORT_SUCCESS_LABELS =
       Labels.of("exporter", EXPORTER_NAME, "success", "true");
   private static final Labels EXPORT_FAILURE_LABELS =
       Labels.of("exporter", EXPORTER_NAME, "success", "false");
+
+  private final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(OtlpGrpcSpanExporter.class.getName()));
 
   private final TraceServiceFutureStub traceService;
 
@@ -122,15 +124,18 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
                 logger.log(
                     Level.SEVERE,
                     "Failed to export spans. Server is UNAVAILABLE. "
-                        + "Make sure your collector is running and reachable from this network.",
-                    t.getMessage());
+                        + "Make sure your collector is running and reachable from this network. "
+                        + "Full error message:"
+                        + t.getMessage());
                 break;
               default:
                 logger.log(
                     Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
                 break;
             }
-            logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
+            if (logger.isLoggable(Level.FINEST)) {
+              logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
+            }
             result.fail();
           }
         },
