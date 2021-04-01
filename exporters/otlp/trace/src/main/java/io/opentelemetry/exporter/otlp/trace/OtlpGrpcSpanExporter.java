@@ -185,6 +185,12 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     this.spansSeen.unbind();
     this.spansExportedSuccess.unbind();
     this.spansExportedFailure.unbind();
+    try {
+      managedChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      logger.log(Level.WARNING, "Failed to shutdown the gRPC channel", e);
+      return CompletableResultCode.ofFailure();
+    }
     return result;
   }
 
