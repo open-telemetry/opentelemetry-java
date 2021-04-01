@@ -48,6 +48,11 @@ class TracerProviderConfigurationTest {
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
+  @BeforeEach
+  void setUp() {
+    when(exporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+  }
+
   @Test
   void configureTracerProvider() {
     Map<String, String> properties = new HashMap<>();
