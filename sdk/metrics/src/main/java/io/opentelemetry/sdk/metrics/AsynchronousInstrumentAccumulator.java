@@ -42,8 +42,7 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
     AsynchronousInstrument.DoubleResult result =
         (value, labels) ->
             instrumentProcessor.batch(
-                labelsProcessor.onLabelsBound(ctx, labels),
-                aggregator.accumulateDouble(value));
+                labelsProcessor.onLabelsBound(ctx, labels), aggregator.accumulateDouble(value));
 
     return new AsynchronousInstrumentAccumulator(
         instrumentProcessor, () -> metricUpdater.accept(result));
@@ -70,8 +69,7 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
     AsynchronousInstrument.LongResult result =
         (value, labels) ->
             instrumentProcessor.batch(
-                labelsProcessor.onLabelsBound(ctx, labels),
-                aggregator.accumulateLong(value));
+                labelsProcessor.onLabelsBound(ctx, labels), aggregator.accumulateLong(value));
 
     return new AsynchronousInstrumentAccumulator(
         instrumentProcessor, () -> metricUpdater.accept(result));
