@@ -277,7 +277,7 @@ class AwsXrayPropagatorTest {
   }
 
   @Test
-  void extract_zeroedSingleDigitEpochPart() {
+  void extract_EpochPart_ZeroedSingleDigit() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
         TRACE_HEADER_KEY,
@@ -293,7 +293,7 @@ class AwsXrayPropagatorTest {
   }
 
   @Test
-  void extract_epochParTwoChars() {
+  void extract_EpochPart_TwoChars() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
         TRACE_HEADER_KEY,
@@ -309,7 +309,7 @@ class AwsXrayPropagatorTest {
   }
 
   @Test
-  void extract_zeroedEpochPart() {
+  void extract_EpochPart_Zeroed() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
         TRACE_HEADER_KEY,
@@ -325,7 +325,7 @@ class AwsXrayPropagatorTest {
   }
 
   @Test
-  void extract_InvalidTraceId_EpochPartTooLong() {
+  void extract_InvalidTraceId_EpochPart_TooLong() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         TRACE_HEADER_KEY,
@@ -336,7 +336,7 @@ class AwsXrayPropagatorTest {
   }
 
   @Test
-  void extract_InvalidTraceId_EpochPartEmpty() {
+  void extract_InvalidTraceId_EpochPart_Empty() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         TRACE_HEADER_KEY, "Root=1--d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
@@ -346,7 +346,7 @@ class AwsXrayPropagatorTest {
   }
 
   @Test
-  void extract_InvalidTraceId_EpochPartMissing() {
+  void extract_InvalidTraceId_EpochPart_Missing() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         TRACE_HEADER_KEY, "Root=1-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
