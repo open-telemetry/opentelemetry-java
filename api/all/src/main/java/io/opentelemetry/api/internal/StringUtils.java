@@ -9,7 +9,12 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** Utilities for working with strings. */
+/**
+ * Utilities for working with strings.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change *
+ * at any time.
+ */
 @Immutable
 public final class StringUtils {
 
