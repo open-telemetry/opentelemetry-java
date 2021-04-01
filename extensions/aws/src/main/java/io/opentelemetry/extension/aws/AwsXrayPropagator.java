@@ -201,6 +201,33 @@ public final class AwsXrayPropagator implements TextMapPropagator {
   }
 
   private static String parseTraceId(String xrayTraceId) {
+    return (xrayTraceId.length() == TRACE_ID_LENGTH
+        ? parseSpecTraceId(xrayTraceId)
+        : parseShortTraceId(xrayTraceId));
+  }
+
+  private static String parseSpecTraceId(String xrayTraceId) {
+
+    // Check version trace id version
+    if (!xrayTraceId.startsWith(TRACE_ID_VERSION)) {
+      return TraceId.getInvalid();
+    }
+
+    // Check delimiters
+    if (xrayTraceId.charAt(TRACE_ID_DELIMITER_INDEX_1) != TRACE_ID_DELIMITER
+        || xrayTraceId.charAt(TRACE_ID_DELIMITER_INDEX_2) != TRACE_ID_DELIMITER) {
+      return TraceId.getInvalid();
+    }
+
+    String epochPart =
+        xrayTraceId.substring(TRACE_ID_DELIMITER_INDEX_1 + 1, TRACE_ID_DELIMITER_INDEX_2);
+    String uniquePart = xrayTraceId.substring(TRACE_ID_DELIMITER_INDEX_2 + 1, TRACE_ID_LENGTH);
+
+    // X-Ray trace id format is 1-{8 digit hex}-{24 digit hex}
+    return epochPart + uniquePart;
+  }
+
+  private static String parseShortTraceId(String xrayTraceId) {
     if (xrayTraceId.length() > TRACE_ID_LENGTH) {
       return TraceId.getInvalid();
     }
