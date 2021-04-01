@@ -79,7 +79,7 @@ public class ThrottlingLogger {
   }
 
   /**
-   * Check if the current wrapped logger is set to log at the given level.
+   * Returns whether the current wrapped logger is set to log at the given level.
    *
    * @return true if the logger set to log at the requested level.
    */
