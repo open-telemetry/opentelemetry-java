@@ -10,7 +10,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -35,14 +34,12 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    LabelsProcessor labelsProcessor =
-        getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
-    System.out.println("double label processor " + labelsProcessor);
-    Context ctx = Context.current();
     AsynchronousInstrument.DoubleResult result =
         (value, labels) ->
             instrumentProcessor.batch(
-                labelsProcessor.onLabelsBound(ctx, labels), aggregator.accumulateDouble(value));
+                getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor)
+                    .onLabelsBound(Context.current(), labels),
+                aggregator.accumulateDouble(value));
 
     return new AsynchronousInstrumentAccumulator(
         instrumentProcessor, () -> metricUpdater.accept(result));
@@ -62,14 +59,12 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    LabelsProcessor labelsProcessor =
-        getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
-    System.out.println("long label processor " + labelsProcessor);
-    Context ctx = Context.current();
     AsynchronousInstrument.LongResult result =
         (value, labels) ->
             instrumentProcessor.batch(
-                labelsProcessor.onLabelsBound(ctx, labels), aggregator.accumulateLong(value));
+                getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor)
+                    .onLabelsBound(Context.current(), labels),
+                aggregator.accumulateLong(value));
 
     return new AsynchronousInstrumentAccumulator(
         instrumentProcessor, () -> metricUpdater.accept(result));
