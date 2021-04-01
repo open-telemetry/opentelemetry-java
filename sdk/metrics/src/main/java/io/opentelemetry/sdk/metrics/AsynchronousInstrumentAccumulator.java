@@ -37,6 +37,7 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
 
     LabelsProcessor labelsProcessor =
         getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
+    System.out.println("double label processor " + labelsProcessor);
     AsynchronousInstrument.DoubleResult result =
         (value, labels) ->
             instrumentProcessor.batch(
@@ -63,6 +64,7 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
 
     LabelsProcessor labelsProcessor =
         getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
+    System.out.println("long label processor " + labelsProcessor);
     AsynchronousInstrument.LongResult result =
         (value, labels) ->
             instrumentProcessor.batch(
