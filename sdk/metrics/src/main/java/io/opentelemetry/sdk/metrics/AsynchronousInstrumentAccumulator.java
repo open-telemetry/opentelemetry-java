@@ -6,11 +6,9 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.AsynchronousInstrument;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -35,13 +33,8 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    LabelsProcessor labelsProcessor =
-        getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
     AsynchronousInstrument.DoubleResult result =
-        (value, labels) ->
-            instrumentProcessor.batch(
-                labelsProcessor.onLabelsBound(Context.current(), labels),
-                aggregator.accumulateDouble(value));
+        (value, labels) -> instrumentProcessor.batch(labels, aggregator.accumulateDouble(value));
 
     return new AsynchronousInstrumentAccumulator(
         instrumentProcessor, () -> metricUpdater.accept(result));
@@ -61,13 +54,8 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
       return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
     }
 
-    LabelsProcessor labelsProcessor =
-        getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
     AsynchronousInstrument.LongResult result =
-        (value, labels) ->
-            instrumentProcessor.batch(
-                labelsProcessor.onLabelsBound(Context.current(), labels),
-                aggregator.accumulateLong(value));
+        (value, labels) -> instrumentProcessor.batch(labels, aggregator.accumulateLong(value));
 
     return new AsynchronousInstrumentAccumulator(
         instrumentProcessor, () -> metricUpdater.accept(result));
