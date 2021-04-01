@@ -46,7 +46,7 @@ with the `check` task.
 $ ./gradlew check
 ```
 ## PR Review
-After you submit a PR, it will be reviewed by the project maintainers. Not all maintainers need to review a
+After you submit a PR, it will be reviewed by the project maintainers and approvers. Not all maintainers need to review a
 particular PR, but merging to the base branch is authorized to restricted members (administrators).
 
 ## Style guideline
