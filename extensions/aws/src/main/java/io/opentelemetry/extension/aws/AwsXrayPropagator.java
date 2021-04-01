@@ -5,6 +5,7 @@
 
 package io.opentelemetry.extension.aws;
 
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -193,14 +194,14 @@ public final class AwsXrayPropagator implements TextMapPropagator {
     }
 
     return SpanContext.createFromRemoteParent(
-        traceId,
+        StringUtils.padLeft(traceId, TraceId.getLength()),
         spanId,
         isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault(),
         TraceState.getDefault());
   }
 
   private static String parseTraceId(String xrayTraceId) {
-    if (xrayTraceId.length() != TRACE_ID_LENGTH) {
+    if (xrayTraceId.length() > TRACE_ID_LENGTH) {
       return TraceId.getInvalid();
     }
 
@@ -210,16 +211,20 @@ public final class AwsXrayPropagator implements TextMapPropagator {
     }
 
     // Check delimiters
-    if (xrayTraceId.charAt(TRACE_ID_DELIMITER_INDEX_1) != TRACE_ID_DELIMITER
-        || xrayTraceId.charAt(TRACE_ID_DELIMITER_INDEX_2) != TRACE_ID_DELIMITER) {
+    int firstDelimiter = xrayTraceId.indexOf(TRACE_ID_DELIMITER);
+    // we don't allow the epoch part to be missing completely
+    int secondDelimiter = xrayTraceId.indexOf(TRACE_ID_DELIMITER, firstDelimiter + 2);
+    if (firstDelimiter != TRACE_ID_DELIMITER_INDEX_1
+        || secondDelimiter == -1
+        || secondDelimiter > TRACE_ID_DELIMITER_INDEX_2) {
       return TraceId.getInvalid();
     }
 
-    String epochPart =
-        xrayTraceId.substring(TRACE_ID_DELIMITER_INDEX_1 + 1, TRACE_ID_DELIMITER_INDEX_2);
-    String uniquePart = xrayTraceId.substring(TRACE_ID_DELIMITER_INDEX_2 + 1, TRACE_ID_LENGTH);
+    String epochPart = xrayTraceId.substring(firstDelimiter + 1, secondDelimiter);
+    String uniquePart = xrayTraceId.substring(secondDelimiter + 1, secondDelimiter + 25);
 
-    // X-Ray trace id format is 1-{8 digit hex}-{24 digit hex}
+    // X-Ray trace id format is 1-{at most 8 digit hex}-{24 digit hex}
+    // epoch part can have leading 0s truncated
     return epochPart + uniquePart;
   }
 

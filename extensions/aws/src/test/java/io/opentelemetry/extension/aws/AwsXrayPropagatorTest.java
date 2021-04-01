@@ -276,6 +276,85 @@ class AwsXrayPropagatorTest {
     assertThat(xrayPropagator.extract(context, Collections.emptyMap(), null)).isSameAs(context);
   }
 
+  @Test
+  void extract_zeroedSingleDigitEpochPart() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(
+        TRACE_HEADER_KEY,
+        "Root=1-0-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1;Foo=Bar");
+
+    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                "00000000d188f8fa79d48a391a778fa6",
+                SPAN_ID,
+                TraceFlags.getSampled(),
+                TraceState.getDefault()));
+  }
+
+  @Test
+  void extract_epochParTwoChars() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(
+        TRACE_HEADER_KEY,
+        "Root=1-1a-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1;Foo=Bar");
+
+    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                "0000001ad188f8fa79d48a391a778fa6",
+                SPAN_ID,
+                TraceFlags.getSampled(),
+                TraceState.getDefault()));
+  }
+
+  @Test
+  void extract_zeroedEpochPart() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(
+        TRACE_HEADER_KEY,
+        "Root=1-00000000-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1;Foo=Bar");
+
+    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                "00000000d188f8fa79d48a391a778fa6",
+                SPAN_ID,
+                TraceFlags.getSampled(),
+                TraceState.getDefault()));
+  }
+
+  @Test
+  void extract_InvalidTraceId_EpochPartTooLong() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(
+        TRACE_HEADER_KEY,
+        "Root=1-8a3c60f711-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
+
+    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(SpanContext.getInvalid());
+  }
+
+  @Test
+  void extract_InvalidTraceId_EpochPartEmpty() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(
+        TRACE_HEADER_KEY, "Root=1--d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
+
+    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(SpanContext.getInvalid());
+  }
+
+  @Test
+  void extract_InvalidTraceId_EpochPartMissing() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(
+        TRACE_HEADER_KEY, "Root=1-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0");
+
+    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
+        .isSameAs(SpanContext.getInvalid());
+  }
+
   private static Context withSpanContext(SpanContext spanContext, Context context) {
     return context.with(Span.wrap(spanContext));
   }
