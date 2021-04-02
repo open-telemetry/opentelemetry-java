@@ -14,9 +14,9 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - ubuntu-latest
+          - ubuntu-18.04
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-18.04
             testAdditionalJavaVersions: true
             coverage: true
     steps:
