@@ -67,7 +67,52 @@ public final class Application {
       if (carrier == null) {
         return;
       }
-      carrier.add(key, value);
+      carrier.set(key, value);
+    }
+  }
+
+  private static class Service {
+    private final WebClient client = WebClient.of();
+
+    @Post("/verify-tracecontext")
+    @Blocking
+    public String serve(RequestHeaders headers, List<Request> requests) {
+      Context context =
+          openTelemetry
+              .getPropagators()
+              .getTextMapPropagator()
+              .extract(Context.current(), headers, ArmeriaGetter.INSTANCE);
+
+      for (io.opentelemetry.Request req : requests) {
+        Span span =
+            openTelemetry
+                .getTracer("validation-server")
+                .spanBuilder("Entering Validation Server")
+                .setParent(context)
+                .startSpan();
+
+        Context withSpanContext = context.with(span);
+
+        RequestHeadersBuilder outHeaders =
+            RequestHeaders.builder(HttpMethod.POST, req.getUrl()).contentType(MediaType.JSON_UTF_8);
+        openTelemetry
+            .getPropagators()
+            .getTextMapPropagator()
+            .inject(withSpanContext, outHeaders, ArmeriaSetter.INSTANCE);
+
+        try {
+          AggregatedHttpResponse response =
+              client
+                  .execute(outHeaders.build(), objectMapper.writeValueAsBytes(req.getArguments()))
+                  .aggregate()
+                  .join();
+          logger.info("response: " + response.status());
+        } catch (Throwable t) {
+          logger.log(Level.SEVERE, "failed to send", t);
+        }
+        span.end();
+      }
+      return "Done";
     }
   }
 
@@ -75,58 +120,7 @@ public final class Application {
 
   /** Entry point. */
   public static void main(String[] args) {
-    WebClient client = WebClient.of();
-
-    Server server =
-        Server.builder()
-            .http(5000)
-            .annotatedService(
-                new Object() {
-                  @Post("/verify-tracecontext")
-                  @Blocking
-                  public String serve(RequestHeaders headers, List<Request> requests) {
-                    Context context =
-                        openTelemetry
-                            .getPropagators()
-                            .getTextMapPropagator()
-                            .extract(Context.current(), headers, ArmeriaGetter.INSTANCE);
-
-                    for (io.opentelemetry.Request req : requests) {
-                      Span span =
-                          openTelemetry
-                              .getTracer("validation-server")
-                              .spanBuilder("Entering Validation Server")
-                              .setParent(context)
-                              .startSpan();
-
-                      Context withSpanContext = context.with(span);
-
-                      RequestHeadersBuilder outHeaders =
-                          RequestHeaders.builder(HttpMethod.POST, req.getUrl())
-                              .contentType(MediaType.JSON_UTF_8);
-                      openTelemetry
-                          .getPropagators()
-                          .getTextMapPropagator()
-                          .inject(withSpanContext, outHeaders, ArmeriaSetter.INSTANCE);
-
-                      try {
-                        AggregatedHttpResponse response =
-                            client
-                                .execute(
-                                    outHeaders.build(),
-                                    objectMapper.writeValueAsBytes(req.getArguments()))
-                                .aggregate()
-                                .join();
-                        logger.info("response: " + response.status());
-                      } catch (Throwable t) {
-                        logger.log(Level.SEVERE, "failed to send", t);
-                      }
-                      span.end();
-                    }
-                    return "Done";
-                  }
-                })
-            .build();
+    Server server = Server.builder().http(5000).annotatedService(new Service()).build();
     server.start().join();
     Runtime.getRuntime().addShutdownHook(new Thread(() -> server.stop().join()));
   }
