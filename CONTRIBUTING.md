@@ -36,7 +36,12 @@ you must run a local docker daemon.
 check formatting:
 
     `./gradlew build`
+    
+4. If you are a Windows user, use the alternate command mentioned below to run tests and
+check formatting:
 
+     `gradlew.bat`
+     
 ## Checks
 
 Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
@@ -45,6 +50,9 @@ with the `check` task.
 ```bash
 $ ./gradlew check
 ```
+## PR Review
+After you submit a PR, it will be reviewed by the project maintainers and approvers. Not all maintainers need to review a
+particular PR, but merging to the base branch is authorized to restricted members (administrators).
 
 ## Style guideline
 
