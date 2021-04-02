@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 
 /**
  * Builder class for the {@link SdkMeterProvider}. Has fully functional default implementations of
@@ -34,7 +33,7 @@ public final class SdkMeterProviderBuilder {
    * @param clock The clock to use for all temporal needs.
    * @return this
    */
-  public SdkMeterProviderBuilder setClock(@Nonnull Clock clock) {
+  public SdkMeterProviderBuilder setClock(Clock clock) {
     Objects.requireNonNull(clock, "clock");
     this.clock = clock;
     return this;
@@ -46,7 +45,7 @@ public final class SdkMeterProviderBuilder {
    * @param resource A Resource implementation.
    * @return this
    */
-  public SdkMeterProviderBuilder setResource(@Nonnull Resource resource) {
+  public SdkMeterProviderBuilder setResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource = resource;
     return this;
