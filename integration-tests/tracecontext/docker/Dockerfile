@@ -1,6 +1,7 @@
 FROM python:3 AS build
 
-ARG TRACECONTEXT_GIT_TAG="98f210efd89c63593dce90e2bae0a1bdcb986f51"
+# Main branch SHA as of April-1-2021
+ARG TRACECONTEXT_GIT_TAG="dcd3ad9b7d6ac36f70ff3739874b73c11b0302a1"
 
 WORKDIR /workspace
 
