@@ -355,6 +355,17 @@ class AwsXrayPropagatorTest {
         .isSameAs(SpanContext.getInvalid());
   }
 
+  @Test
+  void extract_InvalidTraceId_WrongVersion() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(
+        TRACE_HEADER_KEY,
+        "Root=2-1a2a3a4a-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1;Foo=Bar");
+
+    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))
+        .isSameAs(SpanContext.getInvalid());
+  }
+
   private static Context withSpanContext(SpanContext spanContext, Context context) {
     return context.with(Span.wrap(spanContext));
   }
