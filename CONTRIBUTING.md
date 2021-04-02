@@ -36,7 +36,12 @@ you must run a local docker daemon.
 check formatting:
 
     `./gradlew build`
+    
+4. If you are a Windows user, use the alternate command mentioned below to run tests and
+check formatting:
 
+     `gradlew.bat`
+     
 ## Checks
 
 Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
