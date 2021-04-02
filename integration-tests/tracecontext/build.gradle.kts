@@ -12,7 +12,6 @@ dependencies {
     implementation(project(":extensions:trace-propagators"))
 
     implementation("com.linecorp.armeria:armeria")
-    implementation("com.google.code.gson:gson")
     implementation("org.slf4j:slf4j-simple")
 }
 
