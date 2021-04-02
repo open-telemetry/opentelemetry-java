@@ -72,6 +72,8 @@ public final class SdkMeterProviderBuilder {
    * meterProviderBuilder.registerView(instrumentSelector, View.builder()
    *   .setAggregatorFactory(aggregatorFactory).build());
    * }</pre>
+   *
+   * @since 1.1.0
    */
   public SdkMeterProviderBuilder registerView(InstrumentSelector selector, View view) {
     Objects.requireNonNull(selector, "selector");

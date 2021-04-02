@@ -85,6 +85,7 @@ public interface AggregatorFactory {
    * @param temporality configures what temporality to be produced for the Histogram metrics.
    * @param boundaries configures the fixed bucket boundaries.
    * @return an {@code AggregationFactory} that calculates histogram of recorded measurements.
+   * @since 1.1.0
    */
   static AggregatorFactory histogram(List<Double> boundaries, AggregationTemporality temporality) {
     return new HistogramAggregatorFactory(boundaries, temporality);

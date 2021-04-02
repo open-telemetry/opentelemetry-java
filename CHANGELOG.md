@@ -9,6 +9,22 @@
 - We now use our own internal `@GuardedBy` annotation for errorprone so there won't be an accidental 
 transitive dependency on a 3rd-party jar.
   
+#### Enhancements
+
+- The `Context` class now provides methods to wrap `java.util.concurrent.Executor` and `java.util.concurrent.ExecutorService` 
+instances to do context propagation using the current context. See `io.opentelemetry.context.Context.taskWrapping(...)` for
+more details.
+  
+### OpenTracing Shim (alpha)
+
+- The shim now supports methods that take a timestamp as a parameter. 
+- You can now specify both the `TEXT_MAP` and the `HTTP_HEADER` type propagators for the shim. 
+See `io.opentelemetry.opentracingshim.OpenTracingPropagators` for details.
+
+### Extensions
+
+- The AWS X-Ray propagator is now able to extract 64-bit trace ids.
+
 ### SDK
 
 #### Bugfixes
@@ -22,6 +38,14 @@ via a CompletableResultCode when `forceFlush()` is called. Similiarly, this is a
 
 - The SpanBuilder provided by the SDK will now ignore `Link` entries that are reference an invalid SpanContext. 
 This is an update from the OpenTelemetry Specification v1.1.0 release.
+- The OTLP Exporters will now log more helpful messages when the collector is unavailable or misconfigured.
+- The internals of the `BatchSpanProcessor` have had some optimization done on them, to reduce CPU
+usage under load.
+- The `Resource` class now has `builder()` and `toBuilder()` methods and a corresponding `ResourceBuilder` class
+has been introduced for more fluent creation and modification of `Resource` instances.
+- The standard exporters will now throttle error logging when export errors are too frequent. If more than 5
+error messages are logged in a single minute by an exporter, logging will be throttled down to only a single
+log message per minute.
 
 ### SDK Extensions
 
@@ -34,6 +58,7 @@ This is an update from the OpenTelemetry Specification v1.1.0 release.
 - The `autoconfigure` module now supports `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` and `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`
 settings, in addition to the combined `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable. Corresponding 
 system properties are also supported (`-Dotel.exporter.otlp.metrics.endpoint` and `-Dotel.exporter.otlp.traces.endpoint`).
+- An `SdkMeterProviderConfigurer` SPI is now available in the `autoconfigure` module. 
 
 ### Semantic Conventions (alpha)
 
@@ -46,6 +71,9 @@ This includes a breaking changes to the constants defined in the `ResourceAttrib
 #### Breaking Changes
 
 - The `ViewRegistry` now lets you register `View` objects, rather than `AggregatorFactory` instances.
+- `GlobalMetricsProvider` has been renamed to `GlobalMeterProvider`.
+- `View` registration has been moved to the `SdkMeterProviderBuilder` and the methods on the `SdkMeterProvider`
+to add views have been deprecated. They will be removed in the next release.
 
 #### Enhancements
 

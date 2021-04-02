@@ -169,7 +169,11 @@ public abstract class Resource {
     return !name.getKey().isEmpty() && isValid(name.getKey());
   }
 
-  /** Returns a new {@link ResourceBuilder} instance for creating arbitrary {@link Resource}. */
+  /**
+   * Returns a new {@link ResourceBuilder} instance for creating arbitrary {@link Resource}.
+   *
+   * @since 1.1.0
+   */
   public static ResourceBuilder builder() {
     return new ResourceBuilder();
   }
@@ -177,6 +181,8 @@ public abstract class Resource {
   /**
    * Returns a new {@link ResourceBuilder} instance populated with the data of this {@link
    * Resource}.
+   *
+   * @since 1.1.0
    */
   public ResourceBuilder toBuilder() {
     return builder().putAll(this);

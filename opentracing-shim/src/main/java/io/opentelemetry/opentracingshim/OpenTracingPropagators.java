@@ -10,6 +10,8 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 /**
  * Container for {@link io.opentracing.propagation.Format.Builtin#TEXT_MAP} and {@link
  * io.opentracing.propagation.Format.Builtin#HTTP_HEADERS} format propagators.
+ *
+ * @since 1.1.0
  */
 public class OpenTracingPropagators {
   private final TextMapPropagator textMapPropagator;

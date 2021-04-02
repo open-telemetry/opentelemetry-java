@@ -42,6 +42,7 @@ public final class OpenTracingShim {
    * OpenTracingPropagators} instance.
    *
    * @return a {@code io.opentracing.Tracer}.
+   * @since 1.1.0
    */
   public static io.opentracing.Tracer createTracerShim(
       Tracer tracer, OpenTracingPropagators propagators) {
