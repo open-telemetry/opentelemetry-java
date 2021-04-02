@@ -11,10 +11,8 @@ dependencies {
     implementation(project(":sdk:all"))
     implementation(project(":extensions:trace-propagators"))
 
-    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.linecorp.armeria:armeria")
     implementation("org.slf4j:slf4j-simple")
-    implementation("com.sparkjava:spark-core")
-    implementation("com.google.code.gson:gson")
 }
 
 tasks {
