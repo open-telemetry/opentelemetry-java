@@ -84,9 +84,9 @@ final class Adapter {
 
     // add the parent span
     if (span.getParentSpanContext().isValid()) {
-      references.add(
-          new SpanRef(
-              SpanRefType.CHILD_OF, traceIdLow, traceIdHigh, spanIdAsLong(span.getParentSpanId())));
+      long parentSpanId = spanIdAsLong(span.getParentSpanId());
+      references.add(new SpanRef(SpanRefType.CHILD_OF, traceIdLow, traceIdHigh, parentSpanId));
+      target.setParentSpanId(parentSpanId);
     }
     target.setReferences(references);
 
