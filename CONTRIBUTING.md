@@ -40,7 +40,7 @@ check formatting:
 4. If you are a Windows user, use the alternate command mentioned below to run tests and
 check formatting:
 
-     `gradlew.bat build`
+     `gradlew.bat`
      
 ## Checks
 
