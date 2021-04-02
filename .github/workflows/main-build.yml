@@ -13,9 +13,9 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - ubuntu-latest
+          - ubuntu-18.04
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-18.04
             testAdditionalJavaVersions: true
             coverage: true
     steps:
@@ -51,7 +51,7 @@ jobs:
     name: Publish snapshots
     if: ${{ github.event_name == 'push' && github.repository == 'open-telemetry/opentelemetry-java' }}
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
         with:

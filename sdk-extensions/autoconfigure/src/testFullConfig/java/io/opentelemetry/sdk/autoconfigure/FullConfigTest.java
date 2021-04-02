@@ -12,6 +12,7 @@ import com.linecorp.armeria.common.RequestHeaders;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.GrpcService;
+import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
@@ -100,6 +101,7 @@ class FullConfigTest {
                       })
                   .useBlockingTaskExecutor(true)
                   .build());
+          sb.decorator(LoggingService.newDecorator());
         }
       };
 
