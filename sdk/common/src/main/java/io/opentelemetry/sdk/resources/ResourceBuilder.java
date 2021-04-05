@@ -12,6 +12,8 @@ import io.opentelemetry.api.common.AttributesBuilder;
 /**
  * A builder of {@link Resource} that allows to add key-value pairs and copy attributes from other
  * {@link Attributes} or {@link Resource}.
+ *
+ * @since 1.1.0
  */
 public class ResourceBuilder {
 
