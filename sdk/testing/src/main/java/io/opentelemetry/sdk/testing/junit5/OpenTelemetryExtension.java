@@ -120,6 +120,7 @@ public final class OpenTelemetryExtension
 
   @Override
   public void beforeAll(ExtensionContext context) {
+    GlobalOpenTelemetry.resetForTest();
     GlobalOpenTelemetry.set(openTelemetry);
   }
 
