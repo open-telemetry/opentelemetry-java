@@ -23,6 +23,8 @@ import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -150,7 +152,7 @@ class LoggingSpanExporterTest {
     final AtomicBoolean flushed = new AtomicBoolean(false);
     Logger.getLogger(LoggingSpanExporter.class.getName())
         .addHandler(
-            new StreamHandler(System.err, new SimpleFormatter()) {
+            new StreamHandler(new PrintStream(new ByteArrayOutputStream()), new SimpleFormatter()) {
               @Override
               public synchronized void flush() {
                 flushed.set(true);

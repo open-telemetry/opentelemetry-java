@@ -160,6 +160,8 @@ subprojects {
 
                     // AutoValueImmutableFields suggests returning Guava types from API methods
                     disable("AutoValueImmutableFields")
+                    // Suggests using Guava types for fields but we don't use Guava
+                    disable("ImmutableMemberCollection")
                     // "-Xep:AutoValueImmutableFields:OFF"
 
                     // Fully qualified names may be necessary when deprecating a class to avoid

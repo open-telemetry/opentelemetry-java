@@ -13,11 +13,11 @@ rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
         "com.linecorp.armeria:armeria-bom:1.5.0",
-        "io.grpc:grpc-bom:1.36.0",
+        "io.grpc:grpc-bom:1.36.1",
         "io.zipkin.brave:brave-bom:5.13.3",
-        "com.google.guava:guava-bom:30.1-jre",
-        "com.google.protobuf:protobuf-bom:3.15.3",
-        "com.fasterxml.jackson:jackson-bom:2.12.1",
+        "com.google.guava:guava-bom:30.1.1-jre",
+        "com.google.protobuf:protobuf-bom:3.15.7",
+        "com.fasterxml.jackson:jackson-bom:2.12.2",
         "org.junit:junit-bom:5.7.1",
         "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3"
 )
@@ -25,12 +25,12 @@ val DEPENDENCY_BOMS = listOf(
 val DEPENDENCY_SETS = listOf(
         DependencySet(
                 "com.google.auto.value",
-                "1.7.4",
+                "1.7.5",
                 listOf("auto-value", "auto-value-annotations")
         ),
         DependencySet(
                 "com.google.errorprone",
-                "2.5.1",
+                "2.6.0",
                 listOf("error_prone_annotations", "error_prone_core")
         ),
         DependencySet(
@@ -55,7 +55,7 @@ val DEPENDENCY_SETS = listOf(
         ),
         DependencySet(
                 "org.openjdk.jmh",
-                "1.28",
+                "1.29",
                 listOf("jmh-core", "jmh-generator-bytecode")
         ),
         DependencySet(
