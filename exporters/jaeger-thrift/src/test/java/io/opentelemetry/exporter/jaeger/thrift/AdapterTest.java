@@ -339,6 +339,7 @@ class AdapterTest {
       }
     }
     assertThat(found).isTrue();
+    assertThat(spanIdFromLong(jaegerSpan.getParentSpanId())).isEqualTo(PARENT_SPAN_ID);
   }
 
   private static String traceIdFromLongs(long high, long low) {

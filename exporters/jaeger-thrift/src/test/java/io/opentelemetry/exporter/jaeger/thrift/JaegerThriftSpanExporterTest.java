@@ -12,6 +12,8 @@ import io.jaegertracing.internal.exceptions.SenderException;
 import io.jaegertracing.thrift.internal.senders.ThriftSender;
 import io.jaegertracing.thriftjava.Process;
 import io.jaegertracing.thriftjava.Span;
+import io.jaegertracing.thriftjava.SpanRef;
+import io.jaegertracing.thriftjava.SpanRefType;
 import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.api.common.AttributeKey;
@@ -71,6 +73,7 @@ class JaegerThriftSpanExporterTest {
         TestSpanData.builder()
             .setHasEnded(true)
             .setSpanContext(SPAN_CONTEXT)
+            .setParentSpanContext(SPAN_CONTEXT_2)
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -113,7 +116,14 @@ class JaegerThriftSpanExporterTest {
             .setTraceIdLow(TRACE_ID_LOW)
             .setSpanId(SPAN_ID_LONG)
             .setOperationName("GET /api/endpoint")
-            .setReferences(Collections.emptyList())
+            .setReferences(
+                Collections.singletonList(
+                    new SpanRef()
+                        .setSpanId(SPAN_ID_2_LONG)
+                        .setTraceIdHigh(TRACE_ID_HIGH)
+                        .setTraceIdLow(TRACE_ID_LOW)
+                        .setRefType(SpanRefType.CHILD_OF)))
+            .setParentSpanId(SPAN_ID_2_LONG)
             .setStartTime(TimeUnit.MILLISECONDS.toMicros(startMs))
             .setDuration(TimeUnit.MILLISECONDS.toMicros(duration))
             .setLogs(Collections.emptyList());
