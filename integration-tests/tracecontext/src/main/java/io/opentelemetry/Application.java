@@ -97,7 +97,6 @@ public final class Application {
 
         RequestHeadersBuilder outHeaders =
             RequestHeaders.builder(HttpMethod.POST, req.getUrl()).contentType(MediaType.JSON_UTF_8);
-        System.out.println(req.getUrl());
         openTelemetry
             .getPropagators()
             .getTextMapPropagator()
