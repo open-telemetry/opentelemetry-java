@@ -437,6 +437,24 @@ class W3CTraceContextPropagatorTest {
   }
 
   @Test
+  void extract_InvalidTracestate_EmptyValue() {
+    Map<String, String> invalidHeaders = new HashMap<>();
+    invalidHeaders.put(
+        W3CTraceContextPropagator.TRACE_PARENT,
+        "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01");
+    invalidHeaders.put(W3CTraceContextPropagator.TRACE_STATE, "foo=,test=test");
+    assertThat(
+            getSpanContext(
+                w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID_BASE16,
+                SPAN_ID_BASE16,
+                TraceFlags.getSampled(),
+                TraceState.builder().put("test", "test").build()));
+  }
+
+  @Test
   void extract_InvalidTracestate_OneString() {
     Map<String, String> invalidHeaders = new HashMap<>();
     invalidHeaders.put(
