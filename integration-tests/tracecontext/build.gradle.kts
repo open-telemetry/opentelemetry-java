@@ -13,6 +13,8 @@ dependencies {
 
     implementation("com.linecorp.armeria:armeria")
     implementation("org.slf4j:slf4j-simple")
+
+    testImplementation("org.testcontainers:junit-jupiter")
 }
 
 tasks {
@@ -22,5 +24,11 @@ tasks {
         manifest {
             attributes("Main-Class" to "io.opentelemetry.Application")
         }
+    }
+
+    withType(Test::class) {
+        dependsOn(shadowJar)
+
+        jvmArgs("-Dio.opentelemetry.testArchive=${shadowJar.get().archiveFile.get().asFile.absolutePath}")
     }
 }
