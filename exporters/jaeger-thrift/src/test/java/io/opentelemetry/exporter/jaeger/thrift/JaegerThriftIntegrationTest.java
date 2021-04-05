@@ -21,7 +21,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -42,7 +44,7 @@ class JaegerThriftIntegrationTest {
   public static GenericContainer<?> jaegerContainer =
       new GenericContainer<>("ghcr.io/open-telemetry/java-test-containers:jaeger")
           .withExposedPorts(THRIFT_HTTP_PORT, QUERY_PORT, HEALTH_PORT)
-          .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
+          .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("jaeger")))
           .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));
 
   @Test
