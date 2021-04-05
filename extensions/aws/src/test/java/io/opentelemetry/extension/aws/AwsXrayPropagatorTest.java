@@ -8,6 +8,7 @@ package io.opentelemetry.extension.aws;
 import static io.opentelemetry.extension.aws.AwsXrayPropagator.TRACE_HEADER_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
@@ -75,6 +76,25 @@ class AwsXrayPropagatorTest {
   }
 
   @Test
+  void inject_WithBaggage() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    xrayPropagator.inject(
+        withSpanContext(
+                SpanContext.create(
+                    TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()),
+                Context.current())
+            .with(Baggage.builder().put("cat", "meow").put("dog", "bark").build()),
+        carrier,
+        setter);
+
+    assertThat(carrier)
+        .containsEntry(
+            TRACE_HEADER_KEY,
+            "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=0;"
+                + "cat=meow;dog=bark");
+  }
+
+  @Test
   void inject_WithTraceState() {
     Map<String, String> carrier = new LinkedHashMap<>();
     xrayPropagator.inject(
@@ -88,7 +108,8 @@ class AwsXrayPropagatorTest {
         carrier,
         setter);
 
-    // TODO: assert trace state when the propagator supports it
+    // TODO: assert trace state when the propagator supports it, for general key/value pairs we are
+    // mapping with baggage.
     assertThat(carrier)
         .containsEntry(
             TRACE_HEADER_KEY,
@@ -168,11 +189,12 @@ class AwsXrayPropagatorTest {
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=1;Foo=Bar");
 
-    // TODO: assert additional fields when the propagator supports it
-    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), carrier, getter)))
+    Context context = xrayPropagator.extract(Context.current(), carrier, getter);
+    assertThat(getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault()));
+    assertThat(Baggage.fromContext(context).getEntryValue("Foo")).isEqualTo("Bar");
   }
 
   @Test
