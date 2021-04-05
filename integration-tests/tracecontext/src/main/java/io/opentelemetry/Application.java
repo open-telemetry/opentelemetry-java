@@ -15,6 +15,8 @@ import com.linecorp.armeria.common.RequestHeadersBuilder;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.annotation.Blocking;
 import com.linecorp.armeria.server.annotation.Post;
+import com.linecorp.armeria.server.healthcheck.HealthCheckService;
+import com.linecorp.armeria.server.logging.LoggingService;
 import io.netty.util.AsciiString;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
@@ -95,6 +97,7 @@ public final class Application {
 
         RequestHeadersBuilder outHeaders =
             RequestHeaders.builder(HttpMethod.POST, req.getUrl()).contentType(MediaType.JSON_UTF_8);
+        System.out.println(req.getUrl());
         openTelemetry
             .getPropagators()
             .getTextMapPropagator()
@@ -120,7 +123,13 @@ public final class Application {
 
   /** Entry point. */
   public static void main(String[] args) {
-    Server server = Server.builder().http(5000).annotatedService(new Service()).build();
+    Server server =
+        Server.builder()
+            .http(5000)
+            .annotatedService(new Service())
+            .service("/health", HealthCheckService.of())
+            .decorator(LoggingService.newDecorator())
+            .build();
     server.start().join();
     Runtime.getRuntime().addShutdownHook(new Thread(() -> server.stop().join()));
   }
