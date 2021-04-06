@@ -23,13 +23,13 @@ jobs:
       - uses: actions/checkout@v2
       - id: setup-java-8
         name: Setup Java 8
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
           java-version: 8
           java-package: jre
       - id: setup-java-11
         name: Setup Java 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
           java-version: 11
       - uses: burrunan/gradle-cache-action@v1.10
