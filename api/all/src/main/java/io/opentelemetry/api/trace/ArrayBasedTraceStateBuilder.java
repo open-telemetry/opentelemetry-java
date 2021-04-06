@@ -126,8 +126,9 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
         if (i > MAX_TENANT_ID_SIZE) {
           return false;
         }
-        // vendor id (the part to the right of the '@' sign) must be 13 characters or less
-        if (key.length() - i > MAX_VENDOR_ID_SIZE) {
+        // vendor id (the part to the right of the '@' sign) must be 1-13 characters long
+        int remainingKeyChars = key.length() - i - 1;
+        if (remainingKeyChars > MAX_VENDOR_ID_SIZE || remainingKeyChars == 0) {
           return false;
         }
       }
