@@ -24,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /** Unit tests for {@link W3CTraceContextPropagator}. */
 class W3CTraceContextPropagatorTest {
@@ -448,10 +450,7 @@ class W3CTraceContextPropagatorTest {
                 w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID_BASE16,
-                SPAN_ID_BASE16,
-                TraceFlags.getSampled(),
-                TraceState.builder().put("test", "test").build()));
+                TRACE_ID_BASE16, SPAN_ID_BASE16, TraceFlags.getSampled(), TraceState.getDefault()));
   }
 
   @Test
@@ -544,5 +543,19 @@ class W3CTraceContextPropagatorTest {
             Context.current());
     assertThat(w3cTraceContextPropagator.extract(context, Collections.emptyMap(), null))
         .isSameAs(context);
+  }
+
+  // Tests transplanted from the w3c test suite
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {"foo@=1,bar=2", "@foo=1,bar=2", "foo@@bar=1,bar=2", "foo@bar@baz=1,bar=2"})
+  void test_tracestate_key_illegal_vendor_format(String traceState) {
+    Map<String, String> invalidHeaders = new HashMap<>();
+    invalidHeaders.put(W3CTraceContextPropagator.TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED);
+    invalidHeaders.put(W3CTraceContextPropagator.TRACE_STATE, traceState);
+    Context context =
+        W3CTraceContextPropagator.getInstance().extract(Context.root(), invalidHeaders, getter);
+    assertThat(Span.fromContext(context).getSpanContext().getTraceState().get("bar")).isNull();
   }
 }

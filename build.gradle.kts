@@ -319,6 +319,7 @@ subprojects {
             add(TEST_COMPILE_ONLY_CONFIGURATION_NAME, "com.google.code.findbugs:jsr305")
 
             add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.junit.jupiter:junit-jupiter-api")
+            add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.junit.jupiter:junit-jupiter-params")
             add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "nl.jqno.equalsverifier:equalsverifier")
             add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.mockito:mockito-core")
             add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.mockito:mockito-junit-jupiter")
