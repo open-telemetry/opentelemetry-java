@@ -63,7 +63,8 @@ public final class HttpClient {
       if (url.getUserInfo() == null || url.getUserInfo().isEmpty()) {
         span.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
       } else {
-        span.setAttribute(SemanticAttributes.HTTP_URL, url.toString().replace(url.getUserInfo() + '@', ""));
+        span.setAttribute(
+            SemanticAttributes.HTTP_URL, url.toString().replace(url.getUserInfo() + '@', ""));
       }
 
       // Inject the request with the current Context/Span.
