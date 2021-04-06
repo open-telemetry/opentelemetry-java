@@ -83,7 +83,14 @@ class AwsXrayPropagatorTest {
                 SpanContext.create(
                     TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()),
                 Context.current())
-            .with(Baggage.builder().put("cat", "meow").put("dog", "bark").build()),
+            .with(
+                Baggage.builder()
+                    .put("cat", "meow")
+                    .put("dog", "bark")
+                    .put("Root", "ignored")
+                    .put("Parent", "ignored")
+                    .put("Sampled", "ignored")
+                    .build()),
         carrier,
         setter);
 

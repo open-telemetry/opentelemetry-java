@@ -125,12 +125,18 @@ public final class AwsXrayPropagator implements TextMapPropagator {
 
     Baggage baggage = Baggage.fromContext(context);
     baggage.forEach(
-        (key, value) ->
-            traceHeader
-                .append(TRACE_HEADER_DELIMITER)
-                .append(key)
-                .append(KV_DELIMITER)
-                .append(value.getValue()));
+        (key, value) -> {
+          if (key.equals(TRACE_ID_KEY)
+              || key.equals(PARENT_ID_KEY)
+              || key.equals(SAMPLED_FLAG_KEY)) {
+            return;
+          }
+          traceHeader
+              .append(TRACE_HEADER_DELIMITER)
+              .append(key)
+              .append(KV_DELIMITER)
+              .append(value.getValue());
+        });
 
     setter.set(carrier, TRACE_HEADER_KEY, traceHeader.toString());
   }
