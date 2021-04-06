@@ -53,7 +53,7 @@ public final class HttpClient {
       span.setAttribute(SemanticAttributes.HTTP_METHOD, "GET");
       span.setAttribute("component", "http");
       /*
-       Only one of the following is required, and url must not contain credential in url.
+       Only one of the following is required
          - http.url
          - http.scheme, http.host, http.target
          - http.scheme, peer.hostname, peer.port, http.target
