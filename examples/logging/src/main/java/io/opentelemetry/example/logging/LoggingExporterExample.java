@@ -19,9 +19,7 @@ public final class LoggingExporterExample {
   public LoggingExporterExample(OpenTelemetry openTelemetry) {
     tracer = openTelemetry.getTracer(INSTRUMENTATION_NAME);
     counter =
-        GlobalMeterProvider.getMeter(INSTRUMENTATION_NAME)
-            .longCounterBuilder("work_done")
-            .build();
+        GlobalMeterProvider.getMeter(INSTRUMENTATION_NAME).longCounterBuilder("work_done").build();
   }
 
   public void myWonderfulUseCase() {
