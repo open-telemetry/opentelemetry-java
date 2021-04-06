@@ -60,12 +60,11 @@ public final class HttpClient {
          - http.scheme, peer.ip, peer.port, http.target
       */
 
-      if (url.getUserInfo() == null || url.getUserInfo().isEmpty()){
+      if (url.getUserInfo() == null || url.getUserInfo().isEmpty()) {
         span.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
-      }else{
+      } else {
         span.setAttribute(url.toString().replace(url.getUserInfo() + '@', ""));
       }
-
 
       // Inject the request with the current Context/Span.
       textMapPropagator.inject(Context.current(), con, setter);
