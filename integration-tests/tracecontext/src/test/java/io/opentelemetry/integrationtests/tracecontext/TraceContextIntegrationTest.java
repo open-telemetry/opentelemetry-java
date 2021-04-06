@@ -5,6 +5,7 @@
 
 package io.opentelemetry.integrationtests.tracecontext;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -16,6 +17,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+// TODO(anuraaga): https://github.com/open-telemetry/opentelemetry-java/issues/3117
+@Disabled
 @Testcontainers(disabledWithoutDocker = true)
 class TraceContextIntegrationTest {
 
