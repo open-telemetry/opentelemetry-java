@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@v2
       - name: make-pr
         env:
-          API_TOKEN_GITHUB: ${{secrets.GITHUB_PAT_TOKEN}}
+          API_TOKEN_GITHUB: ${{secrets.DOC_UPDATE_TOKEN}}
           # Destination repo should always be 'open-telemetry/opentelemetry.io'
           DESTINATION_REPO: open-telemetry/opentelemetry.io
           # Destination path should be the absolute path to your language's friendly name in the docs tree (i.e, 'content/en/docs/java')
