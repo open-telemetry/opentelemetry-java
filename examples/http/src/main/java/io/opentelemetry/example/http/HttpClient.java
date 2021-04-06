@@ -53,13 +53,19 @@ public final class HttpClient {
       span.setAttribute(SemanticAttributes.HTTP_METHOD, "GET");
       span.setAttribute("component", "http");
       /*
-       Only one of the following is required:
+       Only one of the following is required, and url must not contain credential in url.
          - http.url
          - http.scheme, http.host, http.target
          - http.scheme, peer.hostname, peer.port, http.target
          - http.scheme, peer.ip, peer.port, http.target
       */
-      span.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
+
+      if (url.getUserInfo() == null || url.getUserInfo().isEmpty()){
+        span.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
+      }else{
+        span.setAttribute(url.toString().replace(url.getUserInfo() + '@', ""));
+      }
+
 
       // Inject the request with the current Context/Span.
       textMapPropagator.inject(Context.current(), con, setter);
