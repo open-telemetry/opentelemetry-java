@@ -8,6 +8,7 @@
 
 - We now use our own internal `@GuardedBy` annotation for errorprone so there won't be an accidental 
 transitive dependency on a 3rd-party jar.
+- The `TraceStateBuilder` now will not crash when an empty value is provided.
   
 #### Enhancements
 
@@ -33,6 +34,7 @@ See `io.opentelemetry.opentracingshim.OpenTracingPropagators` for details.
 when the timeout happens. Nor will `whenComplete` actions be executed in that case.
 - The `SimpleSpanProcessor` now keeps track of pending export calls and will wait for them to complete
 via a CompletableResultCode when `forceFlush()` is called. Similiarly, this is also done on `shutdown()`.
+- The Jaeger Thrift exporter now correctly populates the parent span id into the exporter span.
 
 #### Enhancements
 
