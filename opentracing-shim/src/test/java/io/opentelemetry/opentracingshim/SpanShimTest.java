@@ -8,12 +8,16 @@ package io.opentelemetry.opentracingshim;
 import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentracing.log.Fields;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,6 +109,48 @@ class SpanShimTest {
   }
 
   @Test
+  public void log_error() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    Map<String, Object> fields = createErrorFields();
+    spanShim.log(fields);
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    verifyErrorEvent(spanData);
+  }
+
+  @Test
+  public void log_error_with_timestamp() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    Map<String, Object> fields = createErrorFields();
+    long micros = 123447307984L;
+    spanShim.log(micros, fields);
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    verifyErrorEvent(spanData);
+  }
+
+  @Test
+  public void log_exception() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    Map<String, Object> fields = createExceptionFields();
+    spanShim.log(fields);
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    assertThat(spanData.getEvents()).hasSize(1);
+
+    verifyExceptionEvent(spanData);
+  }
+
+  @Test
+  public void log_exception_with_timestamp() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    Map<String, Object> fields = createExceptionFields();
+    long micros = 123447307984L;
+    spanShim.log(micros, fields);
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+
+    verifyExceptionEvent(spanData);
+    assertThat(spanData.getEvents().get(0).getEpochNanos()).isEqualTo(micros * 1000L);
+  }
+
+  @Test
   void log_micros() {
     SpanShim spanShim = new SpanShim(telemetryInfo, span);
     long micros = 123447307984L;
@@ -120,5 +166,45 @@ class SpanShimTest {
     spanShim.log(micros, Collections.singletonMap("key", "value"));
     SpanData spanData = ((ReadableSpan) span).toSpanData();
     assertThat(spanData.getEvents().get(0).getEpochNanos()).isEqualTo(micros * 1000L);
+  }
+
+  private static Map<String, Object> createErrorFields() {
+    Map<String, Object> fields = new HashMap<>();
+    fields.put(Fields.EVENT, "error");
+    fields.put(Fields.ERROR_OBJECT, new RuntimeException());
+    fields.put("key", "value");
+    return fields;
+  }
+
+  private static void verifyErrorEvent(SpanData spanData) {
+    assertThat(spanData.getEvents()).hasSize(1);
+
+    EventData eventData = spanData.getEvents().get(0);
+    assertThat(eventData.getName()).isEqualTo("exception");
+    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("key"))).isEqualTo("value");
+  }
+
+  private static Map<String, Object> createExceptionFields() {
+    Map<String, Object> fields = new HashMap<>();
+    fields.put(Fields.EVENT, "exception");
+    fields.put(Fields.ERROR_KIND, "kind");
+    fields.put(Fields.MESSAGE, "message");
+    fields.put(Fields.STACK, "stack");
+    fields.put("key", "value");
+    return fields;
+  }
+
+  private static void verifyExceptionEvent(SpanData spanData) {
+    assertThat(spanData.getEvents()).hasSize(1);
+
+    EventData eventData = spanData.getEvents().get(0);
+    assertThat(eventData.getName()).isEqualTo("exception");
+    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("exception.type")))
+        .isEqualTo("kind");
+    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("exception.message")))
+        .isEqualTo("message");
+    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("exception.stacktrace")))
+        .isEqualTo("stack");
+    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("key"))).isEqualTo("value");
   }
 }

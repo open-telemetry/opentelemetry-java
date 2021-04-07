@@ -119,17 +119,32 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public Span log(Map<String, ?> fields) {
-    span.addEvent(getEventNameFromFields(fields), convertToAttributes(fields));
+    ExtractedFields extractedFields = ExtractedFields.build(fields);
+
+    if (extractedFields.throwable != null) {
+      span.recordException(extractedFields.throwable, extractedFields.attributes);
+    } else {
+      span.addEvent(extractedFields.name, extractedFields.attributes);
+    }
+
     return this;
   }
 
   @Override
   public Span log(long timestampMicroseconds, Map<String, ?> fields) {
-    span.addEvent(
-        getEventNameFromFields(fields),
-        convertToAttributes(fields),
-        timestampMicroseconds,
-        TimeUnit.MICROSECONDS);
+    ExtractedFields extractedFields = ExtractedFields.build(fields);
+
+    if (extractedFields.throwable != null) {
+      // timestamp is not recorded
+      span.recordException(extractedFields.throwable, extractedFields.attributes);
+    } else {
+      span.addEvent(
+          extractedFields.name,
+          extractedFields.attributes,
+          timestampMicroseconds,
+          TimeUnit.MICROSECONDS);
+    }
+
     return this;
   }
 
@@ -192,7 +207,8 @@ final class SpanShim extends BaseShimObject implements Span {
     return DEFAULT_EVENT_NAME;
   }
 
-  static Attributes convertToAttributes(Map<String, ?> fields) {
+  static Attributes convertToAttributes(
+      Map<String, ?> fields, boolean isErrorEvent, boolean isExceptionEvent) {
     AttributesBuilder attributesBuilder = Attributes.builder();
 
     for (Map.Entry<String, ?> entry : fields.entrySet()) {
@@ -214,10 +230,64 @@ final class SpanShim extends BaseShimObject implements Span {
       } else if (value instanceof Boolean) {
         attributesBuilder.put(booleanKey(key), (Boolean) value);
       } else {
-        attributesBuilder.put(stringKey(key), value.toString());
+        if (isExceptionEvent) {
+          switch (key) {
+            case Fields.ERROR_KIND:
+              key = "exception.type";
+              break;
+            case Fields.MESSAGE:
+              key = "exception.message";
+              break;
+            case Fields.STACK:
+              key = "exception.stacktrace";
+              break;
+            default:
+              break;
+          }
+        }
+        if (!isErrorEvent || !key.equals(Fields.ERROR_OBJECT) || !(value instanceof Throwable)) {
+          attributesBuilder.put(stringKey(key), value.toString());
+        }
       }
     }
 
     return attributesBuilder.build();
+  }
+
+  static Throwable findThrowable(Map<String, ?> fields) {
+    for (Map.Entry<String, ?> entry : fields.entrySet()) {
+      String key = entry.getKey();
+      Object value = entry.getValue();
+
+      if (value == null) {
+        continue;
+      }
+      if (key.equals(Fields.ERROR_OBJECT) && value instanceof Throwable) {
+        return (Throwable) value;
+      }
+    }
+    return null;
+  }
+
+  static class ExtractedFields {
+    String name;
+    Throwable throwable;
+    Attributes attributes;
+
+    static ExtractedFields build(Map<String, ?> fields) {
+      ExtractedFields extractedFields = new ExtractedFields();
+      extractedFields.name = getEventNameFromFields(fields);
+      extractedFields.throwable = null;
+      boolean isExceptionEvent = false;
+      if (extractedFields.name.equals("error")) {
+        extractedFields.throwable = findThrowable(fields);
+      } else if (extractedFields.name.equals("exception")) {
+        isExceptionEvent = true;
+      }
+      extractedFields.attributes =
+          convertToAttributes(fields, extractedFields.throwable != null, isExceptionEvent);
+
+      return extractedFields;
+    }
   }
 }
