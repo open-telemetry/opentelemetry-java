@@ -25,7 +25,7 @@ jobs:
           git config --global user.name austinlparker
           git config --global user.email austin@lightstep.com
           git clone "https://$API_TOKEN_GITHUB@github.com/$DESTINATION_REPO.git" "$TARGET_DIR"
-          rsync -avu --delete "$SOURCE_PATH/" "$TARGET_DIR/$DESTINATION_PATH/"
+          rsync -av --delete "$SOURCE_PATH/" "$TARGET_DIR/$DESTINATION_PATH/"
           cd "$TARGET_DIR"
           git checkout -b docs-$GITHUB_REPOSITORY-$GITHUB_SHA
           git add .
