@@ -110,7 +110,7 @@ public final class ErrorReportingTest {
 
     List<EventData> events = spans.get(0).getEvents();
     assertThat(events).hasSize(maxRetries);
-    assertThat(Tags.ERROR.getKey()).isEqualTo(events.get(0).getName());
+    assertThat("exception").isEqualTo(events.get(0).getName());
     /* TODO: Handle actual objects being passed to log/events. */
     /*assertNotNull(events.get(0).getEvent().getAttributes().get(Fields.ERROR_OBJECT));*/
   }
