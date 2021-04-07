@@ -24,7 +24,7 @@ OpenTelemetry Java consists of the following repositories:
 
 | Traces | Metrics | Logs         |
 | ------ | ------- | ------------ |
-| Stable     | Alpha   | Experimental |
+| Stable | Alpha   | Experimental |
 
 ### Components
 
@@ -54,7 +54,7 @@ versions of the various components in sync.
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.0.1</version>
+        <version>1.1.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -73,7 +73,7 @@ versions of the various components in sync.
 
 ```groovy
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.0.1")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.1.0")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
