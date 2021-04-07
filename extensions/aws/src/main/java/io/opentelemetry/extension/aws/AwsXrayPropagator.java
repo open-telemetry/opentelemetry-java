@@ -7,6 +7,7 @@ package io.opentelemetry.extension.aws;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
+import io.opentelemetry.api.baggage.BaggageEntry;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -20,6 +21,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -124,18 +126,31 @@ public final class AwsXrayPropagator implements TextMapPropagator {
         .append(samplingFlag);
 
     Baggage baggage = Baggage.fromContext(context);
+    // Truncate baggage to 256 chars per X-Ray spec.
     baggage.forEach(
-        (key, value) -> {
-          if (key.equals(TRACE_ID_KEY)
-              || key.equals(PARENT_ID_KEY)
-              || key.equals(SAMPLED_FLAG_KEY)) {
-            return;
+        new BiConsumer<String, BaggageEntry>() {
+
+          private int baggageWrittenBytes;
+
+          @Override
+          public void accept(String key, BaggageEntry entry) {
+            if (key.equals(TRACE_ID_KEY)
+                || key.equals(PARENT_ID_KEY)
+                || key.equals(SAMPLED_FLAG_KEY)) {
+              return;
+            }
+            // Size is key/value pair, excludes delimiter.
+            int size = key.length() + entry.getValue().length() + 1;
+            if (baggageWrittenBytes + size > 256) {
+              return;
+            }
+            traceHeader
+                .append(TRACE_HEADER_DELIMITER)
+                .append(key)
+                .append(KV_DELIMITER)
+                .append(entry.getValue());
+            baggageWrittenBytes += size;
           }
-          traceHeader
-              .append(TRACE_HEADER_DELIMITER)
-              .append(key)
-              .append(KV_DELIMITER)
-              .append(value.getValue());
         });
 
     setter.set(carrier, TRACE_HEADER_KEY, traceHeader.toString());
@@ -165,6 +180,7 @@ public final class AwsXrayPropagator implements TextMapPropagator {
     Boolean isSampled = false;
 
     BaggageBuilder baggage = null;
+    int baggageReadBytes = 0;
 
     int pos = 0;
     while (pos < traceHeader.length()) {
@@ -181,10 +197,7 @@ public final class AwsXrayPropagator implements TextMapPropagator {
       String trimmedPart = part.trim();
       int equalsIndex = trimmedPart.indexOf(KV_DELIMITER);
       if (equalsIndex < 0) {
-        logger.fine(
-            "Error parsing X-Ray trace header. Invalid key value pair: "
-                + part
-                + " Returning INVALID span context.");
+        logger.fine("Error parsing X-Ray trace header. Invalid key value pair: " + part);
         return context;
       }
 
@@ -196,11 +209,12 @@ public final class AwsXrayPropagator implements TextMapPropagator {
         spanId = parseSpanId(value);
       } else if (trimmedPart.startsWith(SAMPLED_FLAG_KEY)) {
         isSampled = parseTraceFlag(value);
-      } else {
+      } else if (baggageReadBytes + trimmedPart.length() <= 256) {
         if (baggage == null) {
           baggage = Baggage.builder();
         }
-        baggage.put(trimmedPart.substring(0, equalsIndex), value.trim());
+        baggage.put(trimmedPart.substring(0, equalsIndex), value);
+        baggageReadBytes += trimmedPart.length();
       }
     }
     if (isSampled == null) {
@@ -209,7 +223,7 @@ public final class AwsXrayPropagator implements TextMapPropagator {
               + TRACE_HEADER_KEY
               + "' with value "
               + traceHeader
-              + "'. Returning INVALID span context.");
+              + "'.");
       return context;
     }
 
