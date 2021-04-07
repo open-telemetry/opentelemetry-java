@@ -75,8 +75,7 @@ public final class {{class}} {
   {%- for attribute in attributes | unique(attribute="fqn") %}
   {%- if attribute.is_enum %}
   {%- set class_name = attribute.fqn | to_camelcase(True) ~ "Values" %}
-  {%- set type = to_java_return_type(attribute.attr_type.string_type) %}
-  {%- if attribute.attr_type.custom_values %}
+  {%- set type = to_java_return_type(attribute.attr_type.enum_type) %}
   public static final class {{class_name}} {
     {%- for member in attribute.attr_type.members %}
       /** {% filter escape %}{{member.brief | to_doc_brief}}.{% endfilter %} */
@@ -84,7 +83,7 @@ public final class {{class}} {
     {%- endfor %}
       private {{ class_name }}() {}
   }
-  {%- else -%}
+
   {% endif %}
   {% endif %}
   {%- endfor %}
