@@ -259,9 +259,6 @@ final class SpanShim extends BaseShimObject implements Span {
       String key = entry.getKey();
       Object value = entry.getValue();
 
-      if (value == null) {
-        continue;
-      }
       if (key.equals(Fields.ERROR_OBJECT) && value instanceof Throwable) {
         return (Throwable) value;
       }
