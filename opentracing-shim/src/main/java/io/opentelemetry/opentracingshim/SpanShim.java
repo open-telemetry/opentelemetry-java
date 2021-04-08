@@ -269,10 +269,10 @@ final class SpanShim extends BaseShimObject implements Span {
     return null;
   }
 
-  static class ExtractedFields {
-    String name;
-    Throwable throwable;
-    Attributes attributes;
+  private static class ExtractedFields {
+    private final String name;
+    private final Throwable throwable;
+    private final Attributes attributes;
 
     private static ExtractedFields build(Map<String, ?> fields) {
       ExtractedFields extractedFields = new ExtractedFields();
