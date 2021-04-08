@@ -254,7 +254,7 @@ final class SpanShim extends BaseShimObject implements Span {
     return attributesBuilder.build();
   }
 
-  static Throwable findThrowable(Map<String, ?> fields) {
+  private static Throwable findThrowable(Map<String, ?> fields) {
     for (Map.Entry<String, ?> entry : fields.entrySet()) {
       String key = entry.getKey();
       Object value = entry.getValue();
