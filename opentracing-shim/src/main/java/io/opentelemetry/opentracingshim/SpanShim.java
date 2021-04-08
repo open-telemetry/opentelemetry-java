@@ -119,32 +119,13 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public Span log(Map<String, ?> fields) {
-    ExtractedFields extractedFields = new ExtractedFields(fields);
-
-    if (extractedFields.throwable != null) {
-      span.recordException(extractedFields.throwable, extractedFields.attributes);
-    } else {
-      span.addEvent(extractedFields.name, extractedFields.attributes);
-    }
-
+    logInternal(-1, fields);
     return this;
   }
 
   @Override
   public Span log(long timestampMicroseconds, Map<String, ?> fields) {
-    ExtractedFields extractedFields = new ExtractedFields(fields);
-
-    if (extractedFields.throwable != null) {
-      // timestamp is not recorded
-      span.recordException(extractedFields.throwable, extractedFields.attributes);
-    } else {
-      span.addEvent(
-          extractedFields.name,
-          extractedFields.attributes,
-          timestampMicroseconds,
-          TimeUnit.MICROSECONDS);
-    }
-
+    logInternal(timestampMicroseconds, fields);
     return this;
   }
 
@@ -198,7 +179,28 @@ final class SpanShim extends BaseShimObject implements Span {
     span.end(finishMicros, TimeUnit.MICROSECONDS);
   }
 
-  static String getEventNameFromFields(Map<String, ?> fields) {
+  private void logInternal(long timestampMicroseconds, Map<String, ?> fields) {
+    String name = getEventNameFromFields(fields);
+    boolean isExceptionEvent = false;
+    Throwable throwable = null;
+    if (name.equals("error")) {
+      throwable = findThrowable(fields);
+    } else if (name.equals("exception")) {
+      isExceptionEvent = true;
+    }
+    Attributes attributes = convertToAttributes(fields, throwable != null, isExceptionEvent);
+
+    if (throwable != null) {
+      // timestamp is not recorded if specified
+      span.recordException(throwable, attributes);
+    } else if (timestampMicroseconds != -1) {
+      span.addEvent(name, attributes, timestampMicroseconds, TimeUnit.MICROSECONDS);
+    } else {
+      span.addEvent(name, attributes);
+    }
+  }
+
+  private static String getEventNameFromFields(Map<String, ?> fields) {
     Object eventValue = fields == null ? null : fields.get(Fields.EVENT);
     if (eventValue != null) {
       return eventValue.toString();
@@ -207,7 +209,7 @@ final class SpanShim extends BaseShimObject implements Span {
     return DEFAULT_EVENT_NAME;
   }
 
-  static Attributes convertToAttributes(
+  private static Attributes convertToAttributes(
       Map<String, ?> fields, boolean isErrorEvent, boolean isExceptionEvent) {
     AttributesBuilder attributesBuilder = Attributes.builder();
 
@@ -264,25 +266,5 @@ final class SpanShim extends BaseShimObject implements Span {
       }
     }
     return null;
-  }
-
-  private static class ExtractedFields {
-    private final String name;
-    private final Throwable throwable;
-    private final Attributes attributes;
-
-    private ExtractedFields(Map<String, ?> fields) {
-      name = getEventNameFromFields(fields);
-      boolean isExceptionEvent = false;
-      if (name.equals("error")) {
-        throwable = findThrowable(fields);
-      } else if (name.equals("exception")) {
-        isExceptionEvent = true;
-        throwable = null;
-      } else {
-        throwable = null;
-      }
-      attributes = convertToAttributes(fields, throwable != null, isExceptionEvent);
-    }
   }
 }
