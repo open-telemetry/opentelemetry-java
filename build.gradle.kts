@@ -120,8 +120,9 @@ subprojects {
                 }
             }
 
+            val releaseVersion = 8
             withType(JavaCompile::class) {
-                options.release.set(8)
+                options.release.set(releaseVersion)
 
                 if (name != "jmhCompileGeneratedClasses") {
                     options.compilerArgs.addAll(listOf(
@@ -239,7 +240,11 @@ subprojects {
                     manifest {
                         attributes(
                                 "Automatic-Module-Name" to moduleName,
-                                "Implementation-Version" to "${project.version}")
+                                "Built-By" to System.getProperty("user.name"),
+                                "Built-JDK" to System.getProperty("java.version"),
+                                "Implementation-Title" to project.name,
+                                "Implementation-Version" to project.version,
+                                "Release-Version" to releaseVersion)
                     }
                 }
             }
