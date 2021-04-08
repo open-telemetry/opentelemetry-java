@@ -5,6 +5,11 @@
 
 package io.opentelemetry.sdk.extension.incubator.trace;
 
+import io.opentelemetry.api.metrics.BoundLongCounter;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
@@ -13,7 +18,6 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -21,6 +25,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class ExecutorServiceSpanProcessor implements SpanProcessor {
@@ -113,18 +119,23 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
 
   // Visible for testing
   List<SpanData> getBatch() {
-    return new ArrayList<>(worker.getBatch());
+    return new ArrayList<>(worker.batch);
   }
 
-  private static class Worker extends WorkerBase {
+  private static class Worker implements Runnable {
 
     private final AtomicLong nextExportTime = new AtomicLong();
-
     private final ArrayBlockingQueue<SpanData> batch;
-
     private final AtomicBoolean isShutdown;
-
     private final long workerScheduleIntervalNanos;
+    private final WorkerExporter workerExporter;
+    private final BoundLongCounter droppedSpans;
+    private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
+    private final long scheduleDelayNanos;
+    private final BlockingQueue<ReadableSpan> queue;
+    private final int maxExportBatchSize;
+    private final SpanExporter spanExporter;
+    private final ScheduledExecutorService executorService;
 
     private Worker(
         SpanExporter spanExporter,
@@ -137,19 +148,47 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
         ScheduledExecutorService executorService,
         AtomicBoolean isShutdown,
         long workerScheduleIntervalNanos) {
-      super(
-          spanExporter,
-          scheduleDelayNanos,
-          maxExportBatchSize,
-          exporterTimeoutNanos,
-          queue,
-          spanProcessorTypeLabel,
-          spanProcessorTypeValue,
-          executorService);
-
+      Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.sdk.trace");
+      meter
+          .longValueObserverBuilder("queueSize")
+          .setDescription("The number of spans queued")
+          .setUnit("1")
+          .setUpdater(
+              result ->
+                  result.observe(
+                      queue.size(), Labels.of(spanProcessorTypeLabel, spanProcessorTypeValue)))
+          .build();
+      LongCounter processedSpansCounter =
+          meter
+              .longCounterBuilder("processedSpans")
+              .setUnit("1")
+              .setDescription(
+                  "The number of spans processed by the BatchSpanProcessor. "
+                      + "[dropped=true if they were dropped due to high throughput]")
+              .build();
+      droppedSpans =
+          processedSpansCounter.bind(
+              Labels.of(spanProcessorTypeLabel, spanProcessorTypeValue, "dropped", "true"));
+      BoundLongCounter exportedSpans =
+          processedSpansCounter.bind(
+              Labels.of(spanProcessorTypeLabel, spanProcessorTypeValue, "dropped", "false"));
       this.isShutdown = isShutdown;
+      this.executorService = executorService;
+      this.spanExporter = spanExporter;
       this.batch = new ArrayBlockingQueue<>(maxExportBatchSize);
       this.workerScheduleIntervalNanos = workerScheduleIntervalNanos;
+      this.maxExportBatchSize = maxExportBatchSize;
+      this.workerExporter =
+          new WorkerExporter(
+              spanExporter,
+              executorService,
+              Logger.getLogger(getClass().getName()),
+              exporterTimeoutNanos,
+              exportedSpans,
+              flushRequested,
+              maxExportBatchSize);
+      this.scheduleDelayNanos = scheduleDelayNanos;
+      this.queue = queue;
       updateNextExportTime();
     }
 
@@ -164,7 +203,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
       boolean continueWork = true;
       while (continueWork && !isShutdown.get()) {
         if (flushRequested.get() != null) {
-          flush();
+          workerExporter.flush(batch, queue);
         }
 
         try {
@@ -185,26 +224,57 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
 
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime.get()) {
           continueWork = false;
-          exportCurrentBatch();
+          workerExporter.exportCurrentBatch(batch).whenComplete(this::scheduleNextRun);
           updateNextExportTime();
         }
       }
       // flush may be requested when processor shuts down
       if (flushRequested.get() != null) {
-        flush();
+        workerExporter.flush(batch, queue);
       }
     }
 
-    @Override
-    public Collection<SpanData> getBatch() {
-      return batch;
-    }
-
-    @Override
-    protected void scheduleNextRun() {
+    private void scheduleNextRun() {
       if (!isShutdown.get()) {
         executorService.schedule(this, workerScheduleIntervalNanos, TimeUnit.NANOSECONDS);
       }
+    }
+
+    public CompletableResultCode shutdown() {
+      final CompletableResultCode result = new CompletableResultCode();
+
+      final CompletableResultCode flushResult = forceFlush();
+      flushResult.whenComplete(
+          () -> {
+            final CompletableResultCode shutdownResult = spanExporter.shutdown();
+            shutdownResult.whenComplete(
+                () -> {
+                  if (!flushResult.isSuccess() || !shutdownResult.isSuccess()) {
+                    result.fail();
+                  } else {
+                    result.succeed();
+                  }
+                });
+          });
+
+      return result;
+    }
+
+    public void addSpan(ReadableSpan span) {
+      if (!queue.offer(span)) {
+        droppedSpans.add(1);
+      }
+    }
+
+    public CompletableResultCode forceFlush() {
+      CompletableResultCode flushResult = new CompletableResultCode();
+      // we set the atomic here to trigger the worker loop to do a flush on its next iteration.
+      flushRequested.compareAndSet(null, flushResult);
+      CompletableResultCode possibleResult = flushRequested.get();
+      // there's a race here where the flush happening in the worker loop could complete before we
+      // get what's in the atomic. In that case, just return success, since we know it succeeded in
+      // the interim.
+      return possibleResult == null ? CompletableResultCode.ofSuccess() : possibleResult;
     }
   }
 }

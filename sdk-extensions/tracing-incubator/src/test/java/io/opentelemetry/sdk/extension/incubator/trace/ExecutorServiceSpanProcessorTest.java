@@ -529,9 +529,10 @@ class ExecutorServiceSpanProcessorTest {
 
     // when
     when(spanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
-    processor.shutdown();
+    CompletableResultCode result = processor.shutdown();
 
     // then
+    result.join(5, TimeUnit.SECONDS);
     await().untilAsserted(() -> Assertions.assertThat(executorService.isShutdown()).isTrue());
   }
 }
