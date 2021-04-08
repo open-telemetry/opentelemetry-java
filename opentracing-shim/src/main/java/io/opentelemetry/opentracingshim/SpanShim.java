@@ -274,7 +274,7 @@ final class SpanShim extends BaseShimObject implements Span {
     Throwable throwable;
     Attributes attributes;
 
-    static ExtractedFields build(Map<String, ?> fields) {
+    private static ExtractedFields build(Map<String, ?> fields) {
       ExtractedFields extractedFields = new ExtractedFields();
       extractedFields.name = getEventNameFromFields(fields);
       extractedFields.throwable = null;
