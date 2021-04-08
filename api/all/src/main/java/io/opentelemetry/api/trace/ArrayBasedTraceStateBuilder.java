@@ -41,13 +41,15 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   }
 
    /** 
-   * @param key is opaque string up to 256 characters printable. It MUST begin with a lowercase letter, and
-   * can only contain lowercase letters a-z, digits 0-9, underscores _, dashes -, asterisks *, and
-   * forward slashes /.  For multi-tenant vendor scenarios, an at sign (@) can be used to prefix the
-   * vendor name. The tenant id (before the '@') is limited to 240 characters and the vendor id is
-   * limited to 13 characters. If in the multi-tenant vendor format, then the first character
-   * may additionally be digit.
-   **/
+    * Allows key value pairs to be added to the TraceState.
+    *
+    * @param key is an opaque string up to 256 characters printable. It MUST begin with a lowercase
+    * letter, and can only contain lowercase letters a-z, digits 0-9, underscores _, dashes -, 
+    * asterisks *, and forward slashes /.  For multi-tenant vendor scenarios, an at sign (@) can be 
+    * used to prefix the vendor name. The tenant id (before the '@') is limited to 240 characters and 
+    * the vendor id is limited to 13 characters. If in the multi-tenant vendor format, then the 
+    * first character may additionally be numeric.
+    **/
   @Override
   public TraceStateBuilder put(String key, String value) {
     if (!isKeyValid(key)
@@ -102,14 +104,14 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   }
 
   /** 
-   * Checks the validity of a key
+   * Checks the validity of a key.
    *
-   * @param key is opaque string up to 256 characters printable. It MUST begin with a lowercase letter, and
-   * can only contain lowercase letters a-z, digits 0-9, underscores _, dashes -, asterisks *, and
-   * forward slashes /.  For multi-tenant vendor scenarios, an at sign (@) can be used to prefix the
-   * vendor name. The tenant id (before the '@') is limited to 240 characters and the vendor id is
-   * limited to 13 characters. If in the multi-tenant vendor format, then the first character
-   * may additionally be digit.
+   * @param key is an opaque string up to 256 characters printable. It MUST begin with a lowercase
+   * letter, and can only contain lowercase letters a-z, digits 0-9, underscores _, dashes -, 
+   * asterisks *, and forward slashes /.  For multi-tenant vendor scenarios, an at sign (@) can be 
+   * used to prefix the vendor name. The tenant id (before the '@') is limited to 240 characters and 
+   * the vendor id is limited to 13 characters. If in the multi-tenant vendor format, then the 
+   * first character may additionally be numeric.
    * @return boolean representing key validity
    **/
   // todo: benchmark this implementation
