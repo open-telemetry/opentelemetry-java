@@ -119,7 +119,7 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public Span log(Map<String, ?> fields) {
-    ExtractedFields extractedFields = ExtractedFields.build(fields);
+    ExtractedFields extractedFields = new ExtractedFields(fields);
 
     if (extractedFields.throwable != null) {
       span.recordException(extractedFields.throwable, extractedFields.attributes);
@@ -132,7 +132,7 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public Span log(long timestampMicroseconds, Map<String, ?> fields) {
-    ExtractedFields extractedFields = ExtractedFields.build(fields);
+    ExtractedFields extractedFields = new ExtractedFields(fields);
 
     if (extractedFields.throwable != null) {
       // timestamp is not recorded
@@ -274,20 +274,18 @@ final class SpanShim extends BaseShimObject implements Span {
     private final Throwable throwable;
     private final Attributes attributes;
 
-    private static ExtractedFields build(Map<String, ?> fields) {
-      ExtractedFields extractedFields = new ExtractedFields();
-      extractedFields.name = getEventNameFromFields(fields);
-      extractedFields.throwable = null;
+    private ExtractedFields(Map<String, ?> fields) {
+      name = getEventNameFromFields(fields);
       boolean isExceptionEvent = false;
-      if (extractedFields.name.equals("error")) {
-        extractedFields.throwable = findThrowable(fields);
-      } else if (extractedFields.name.equals("exception")) {
+      if (name.equals("error")) {
+        throwable = findThrowable(fields);
+      } else if (name.equals("exception")) {
         isExceptionEvent = true;
+        throwable = null;
+      } else {
+        throwable = null;
       }
-      extractedFields.attributes =
-          convertToAttributes(fields, extractedFields.throwable != null, isExceptionEvent);
-
-      return extractedFields;
+      attributes = convertToAttributes(fields, throwable != null, isExceptionEvent);
     }
   }
 }
