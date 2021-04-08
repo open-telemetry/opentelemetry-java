@@ -237,7 +237,9 @@ subprojects {
                     inputs.property("moduleName", moduleName)
 
                     manifest {
-                        attributes("Automatic-Module-Name" to moduleName)
+                        attributes(
+                                "Automatic-Module-Name" to moduleName,
+                                "Implementation-Version" to "${project.version}")
                     }
                 }
             }
