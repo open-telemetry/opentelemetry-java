@@ -13,6 +13,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.log.Fields;
@@ -34,6 +35,8 @@ import javax.annotation.Nullable;
  */
 final class SpanShim extends BaseShimObject implements Span {
   private static final String DEFAULT_EVENT_NAME = "log";
+  private static final String ERROR = "error";
+  private static final String EXCEPTION = "exception";
 
   private final io.opentelemetry.api.trace.Span span;
 
@@ -183,9 +186,9 @@ final class SpanShim extends BaseShimObject implements Span {
     String name = getEventNameFromFields(fields);
     boolean isExceptionEvent = false;
     Throwable throwable = null;
-    if (name.equals("error")) {
+    if (name.equals(ERROR)) {
       throwable = findThrowable(fields);
-    } else if (name.equals("exception")) {
+    } else if (name.equals(EXCEPTION)) {
       isExceptionEvent = true;
     }
     Attributes attributes = convertToAttributes(fields, throwable != null, isExceptionEvent);
@@ -235,13 +238,13 @@ final class SpanShim extends BaseShimObject implements Span {
         if (isExceptionEvent) {
           switch (key) {
             case Fields.ERROR_KIND:
-              key = "exception.type";
+              key = SemanticAttributes.EXCEPTION_TYPE.getKey();
               break;
             case Fields.MESSAGE:
-              key = "exception.message";
+              key = SemanticAttributes.EXCEPTION_MESSAGE.getKey();
               break;
             case Fields.STACK:
-              key = "exception.stacktrace";
+              key = SemanticAttributes.EXCEPTION_STACKTRACE.getKey();
               break;
             default:
               break;

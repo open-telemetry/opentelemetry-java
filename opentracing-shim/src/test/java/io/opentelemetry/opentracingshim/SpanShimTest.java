@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.log.Fields;
 import java.util.Collections;
 import java.util.HashMap;
@@ -199,11 +200,20 @@ class SpanShimTest {
 
     EventData eventData = spanData.getEvents().get(0);
     assertThat(eventData.getName()).isEqualTo("exception");
-    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("exception.type")))
+    assertThat(
+            eventData
+                .getAttributes()
+                .get(AttributeKey.stringKey(SemanticAttributes.EXCEPTION_TYPE.getKey())))
         .isEqualTo("kind");
-    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("exception.message")))
+    assertThat(
+            eventData
+                .getAttributes()
+                .get(AttributeKey.stringKey(SemanticAttributes.EXCEPTION_MESSAGE.getKey())))
         .isEqualTo("message");
-    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("exception.stacktrace")))
+    assertThat(
+            eventData
+                .getAttributes()
+                .get(AttributeKey.stringKey(SemanticAttributes.EXCEPTION_STACKTRACE.getKey())))
         .isEqualTo("stack");
     assertThat(eventData.getAttributes().get(AttributeKey.stringKey("key"))).isEqualTo("value");
   }
