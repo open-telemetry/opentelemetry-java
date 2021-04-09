@@ -38,7 +38,8 @@ public final class OtlpExporterExample {
     Tracer tracer = openTelemetry.getTracer("io.opentelemetry.example");
     Meter meter = meterProvider.get("io.opentelemetry.example");
     LongCounter counter = meter.longCounterBuilder("example_counter").build();
-    LongValueRecorder recorder = meter.longValueRecorderBuilder("super_timer").setUnit("ms").build();
+    LongValueRecorder recorder =
+        meter.longValueRecorderBuilder("super_timer").setUnit("ms").build();
 
     for (int i = 0; i < 10; i++) {
       long startTime = System.currentTimeMillis();
