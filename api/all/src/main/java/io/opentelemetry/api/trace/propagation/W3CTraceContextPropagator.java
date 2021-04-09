@@ -245,6 +245,11 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
       checkArgument(index != -1, "Invalid TraceState list-member format.");
       traceStateBuilder.put(listMember.substring(0, index), listMember.substring(index + 1));
     }
-    return traceStateBuilder.build();
+    TraceState traceState = traceStateBuilder.build();
+    if (traceState.size() != listMembers.length) {
+      // Validation failure, drop the tracestate
+      return TraceState.getDefault();
+    }
+    return traceState;
   }
 }

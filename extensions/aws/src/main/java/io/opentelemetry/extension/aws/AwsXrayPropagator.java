@@ -5,6 +5,9 @@
 
 package io.opentelemetry.extension.aws;
 
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.baggage.BaggageBuilder;
+import io.opentelemetry.api.baggage.BaggageEntry;
 import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
@@ -18,6 +21,7 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -107,19 +111,49 @@ public final class AwsXrayPropagator implements TextMapPropagator {
     char samplingFlag = spanContext.isSampled() ? IS_SAMPLED : NOT_SAMPLED;
     // TODO: Add OT trace state to the X-Ray trace header
 
-    String traceHeader =
-        TRACE_ID_KEY
-            + KV_DELIMITER
-            + xrayTraceId
-            + TRACE_HEADER_DELIMITER
-            + PARENT_ID_KEY
-            + KV_DELIMITER
-            + parentId
-            + TRACE_HEADER_DELIMITER
-            + SAMPLED_FLAG_KEY
-            + KV_DELIMITER
-            + samplingFlag;
-    setter.set(carrier, TRACE_HEADER_KEY, traceHeader);
+    StringBuilder traceHeader = new StringBuilder();
+    traceHeader
+        .append(TRACE_ID_KEY)
+        .append(KV_DELIMITER)
+        .append(xrayTraceId)
+        .append(TRACE_HEADER_DELIMITER)
+        .append(PARENT_ID_KEY)
+        .append(KV_DELIMITER)
+        .append(parentId)
+        .append(TRACE_HEADER_DELIMITER)
+        .append(SAMPLED_FLAG_KEY)
+        .append(KV_DELIMITER)
+        .append(samplingFlag);
+
+    Baggage baggage = Baggage.fromContext(context);
+    // Truncate baggage to 256 chars per X-Ray spec.
+    baggage.forEach(
+        new BiConsumer<String, BaggageEntry>() {
+
+          private int baggageWrittenBytes;
+
+          @Override
+          public void accept(String key, BaggageEntry entry) {
+            if (key.equals(TRACE_ID_KEY)
+                || key.equals(PARENT_ID_KEY)
+                || key.equals(SAMPLED_FLAG_KEY)) {
+              return;
+            }
+            // Size is key/value pair, excludes delimiter.
+            int size = key.length() + entry.getValue().length() + 1;
+            if (baggageWrittenBytes + size > 256) {
+              return;
+            }
+            traceHeader
+                .append(TRACE_HEADER_DELIMITER)
+                .append(key)
+                .append(KV_DELIMITER)
+                .append(entry.getValue());
+            baggageWrittenBytes += size;
+          }
+        });
+
+    setter.set(carrier, TRACE_HEADER_KEY, traceHeader.toString());
   }
 
   @Override
@@ -131,24 +165,22 @@ public final class AwsXrayPropagator implements TextMapPropagator {
       return context;
     }
 
-    SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
-    if (!spanContext.isValid()) {
-      return context;
-    }
-
-    return context.with(Span.wrap(spanContext));
+    return getContextFromHeader(context, carrier, getter);
   }
 
-  private static <C> SpanContext getSpanContextFromHeader(
-      @Nullable C carrier, TextMapGetter<C> getter) {
+  private static <C> Context getContextFromHeader(
+      Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     String traceHeader = getter.get(carrier, TRACE_HEADER_KEY);
     if (traceHeader == null || traceHeader.isEmpty()) {
-      return SpanContext.getInvalid();
+      return context;
     }
 
     String traceId = TraceId.getInvalid();
     String spanId = SpanId.getInvalid();
     Boolean isSampled = false;
+
+    BaggageBuilder baggage = null;
+    int baggageReadBytes = 0;
 
     int pos = 0;
     while (pos < traceHeader.length()) {
@@ -165,11 +197,8 @@ public final class AwsXrayPropagator implements TextMapPropagator {
       String trimmedPart = part.trim();
       int equalsIndex = trimmedPart.indexOf(KV_DELIMITER);
       if (equalsIndex < 0) {
-        logger.fine(
-            "Error parsing X-Ray trace header. Invalid key value pair: "
-                + part
-                + " Returning INVALID span context.");
-        return SpanContext.getInvalid();
+        logger.fine("Error parsing X-Ray trace header. Invalid key value pair: " + part);
+        return context;
       }
 
       String value = trimmedPart.substring(equalsIndex + 1);
@@ -180,8 +209,13 @@ public final class AwsXrayPropagator implements TextMapPropagator {
         spanId = parseSpanId(value);
       } else if (trimmedPart.startsWith(SAMPLED_FLAG_KEY)) {
         isSampled = parseTraceFlag(value);
+      } else if (baggageReadBytes + trimmedPart.length() <= 256) {
+        if (baggage == null) {
+          baggage = Baggage.builder();
+        }
+        baggage.put(trimmedPart.substring(0, equalsIndex), value);
+        baggageReadBytes += trimmedPart.length();
       }
-      // TODO: Put the arbitrary TraceHeader keys in OT trace state
     }
     if (isSampled == null) {
       logger.fine(
@@ -189,15 +223,22 @@ public final class AwsXrayPropagator implements TextMapPropagator {
               + TRACE_HEADER_KEY
               + "' with value "
               + traceHeader
-              + "'. Returning INVALID span context.");
-      return SpanContext.getInvalid();
+              + "'.");
+      return context;
     }
 
-    return SpanContext.createFromRemoteParent(
-        StringUtils.padLeft(traceId, TraceId.getLength()),
-        spanId,
-        isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault(),
-        TraceState.getDefault());
+    SpanContext spanContext =
+        SpanContext.createFromRemoteParent(
+            StringUtils.padLeft(traceId, TraceId.getLength()),
+            spanId,
+            isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault(),
+            TraceState.getDefault());
+
+    context = context.with(Span.wrap(spanContext));
+    if (baggage != null) {
+      context = context.with(baggage.build());
+    }
+    return context;
   }
 
   private static String parseTraceId(String xrayTraceId) {

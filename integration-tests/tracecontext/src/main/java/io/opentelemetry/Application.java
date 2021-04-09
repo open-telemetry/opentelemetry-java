@@ -25,6 +25,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,8 +40,9 @@ public final class Application {
 
   static {
     openTelemetry =
-        OpenTelemetry.propagating(
-            ContextPropagators.create(W3CTraceContextPropagator.getInstance()));
+        OpenTelemetrySdk.builder()
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .build();
   }
 
   private enum ArmeriaGetter implements TextMapGetter<RequestHeaders> {
