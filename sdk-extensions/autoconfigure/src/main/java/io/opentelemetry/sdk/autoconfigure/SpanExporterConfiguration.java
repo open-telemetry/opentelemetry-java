@@ -115,6 +115,11 @@ final class SpanExporterConfiguration {
       builder.setEndpoint(endpoint);
     }
 
+    Duration timeout = config.getDuration("otel.exporter.jaeger.timeout");
+    if (timeout != null) {
+      builder.setTimeout(timeout);
+    }
+
     return builder.build();
   }
 
