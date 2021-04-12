@@ -191,7 +191,7 @@ final class SpanShim extends BaseShimObject implements Span {
       throwable = findThrowable(fields);
       isError = true;
       if (throwable == null) {
-        name = EXCEPTION;
+        name = SemanticAttributes.EXCEPTION_EVENT_NAME;
       }
     }
     Attributes attributes = convertToAttributes(fields, isError, throwable != null);
