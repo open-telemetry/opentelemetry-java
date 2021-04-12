@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -35,7 +36,7 @@ class LongUpDownCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void add_PreventNullLabels() {
@@ -54,7 +55,7 @@ class LongUpDownCounterSdkTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    LongUpDownCounterSdk longUpDownCounter =
+    LongUpDownCounter longUpDownCounter =
         sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.of("foo", "bar"));
     try {
@@ -66,7 +67,7 @@ class LongUpDownCounterSdkTest {
 
   @Test
   void collectMetrics_WithEmptyLabel() {
-    LongUpDownCounterSdk longUpDownCounter =
+    LongUpDownCounter longUpDownCounter =
         sdkMeter
             .longUpDownCounterBuilder("testUpDownCounter")
             .setDescription("description")
@@ -97,7 +98,7 @@ class LongUpDownCounterSdkTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    LongUpDownCounterSdk longUpDownCounter =
+    LongUpDownCounter longUpDownCounter =
         sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.of("K", "V"));
     try {
@@ -151,11 +152,13 @@ class LongUpDownCounterSdkTest {
 
   @Test
   void stressTest() {
-    final LongUpDownCounterSdk longUpDownCounter =
+    final LongUpDownCounter longUpDownCounter =
         sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(longUpDownCounter).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((LongUpDownCounterSdk) longUpDownCounter)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -189,11 +192,13 @@ class LongUpDownCounterSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongUpDownCounterSdk longUpDownCounter =
+    final LongUpDownCounter longUpDownCounter =
         sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(longUpDownCounter).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((LongUpDownCounterSdk) longUpDownCounter)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(

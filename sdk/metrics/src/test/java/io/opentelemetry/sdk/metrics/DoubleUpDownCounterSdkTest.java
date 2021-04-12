@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundDoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -35,7 +36,7 @@ class DoubleUpDownCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void add_PreventNullLabels() {
@@ -55,7 +56,7 @@ class DoubleUpDownCounterSdkTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleUpDownCounterSdk doubleUpDownCounter =
+    DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
     BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind(Labels.of("foo", "bar"));
     try {
@@ -67,7 +68,7 @@ class DoubleUpDownCounterSdkTest {
 
   @Test
   void collectMetrics_WithEmptyLabel() {
-    DoubleUpDownCounterSdk doubleUpDownCounter =
+    DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter
             .doubleUpDownCounterBuilder("testUpDownCounter")
             .setDescription("description")
@@ -100,7 +101,7 @@ class DoubleUpDownCounterSdkTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    DoubleUpDownCounterSdk doubleUpDownCounter =
+    DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
     BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind(Labels.of("K", "V"));
     try {
@@ -157,11 +158,13 @@ class DoubleUpDownCounterSdkTest {
 
   @Test
   void stressTest() {
-    final DoubleUpDownCounterSdk doubleUpDownCounter =
+    final DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleUpDownCounter).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((DoubleUpDownCounterSdk) doubleUpDownCounter)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -195,11 +198,13 @@ class DoubleUpDownCounterSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleUpDownCounterSdk doubleUpDownCounter =
+    final DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleUpDownCounter).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((DoubleUpDownCounterSdk) doubleUpDownCounter)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(

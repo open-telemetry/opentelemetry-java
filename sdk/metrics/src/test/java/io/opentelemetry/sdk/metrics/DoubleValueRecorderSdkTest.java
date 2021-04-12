@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundDoubleValueRecorder;
 import io.opentelemetry.api.metrics.DoubleValueRecorder;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -36,7 +37,7 @@ class DoubleValueRecorderSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void record_PreventNullLabels() {
@@ -55,7 +56,7 @@ class DoubleValueRecorderSdkTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleValueRecorderSdk doubleRecorder =
+    DoubleValueRecorder doubleRecorder =
         sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
     BoundDoubleValueRecorder bound = doubleRecorder.bind(Labels.of("key", "value"));
     try {
@@ -67,7 +68,7 @@ class DoubleValueRecorderSdkTest {
 
   @Test
   void collectMetrics_WithEmptyLabel() {
-    DoubleValueRecorderSdk doubleRecorder =
+    DoubleValueRecorder doubleRecorder =
         sdkMeter
             .doubleValueRecorderBuilder("testRecorder")
             .setDescription("description")
@@ -98,7 +99,7 @@ class DoubleValueRecorderSdkTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    DoubleValueRecorderSdk doubleRecorder =
+    DoubleValueRecorder doubleRecorder =
         sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
     BoundDoubleValueRecorder bound = doubleRecorder.bind(Labels.of("K", "V"));
     try {
@@ -170,11 +171,13 @@ class DoubleValueRecorderSdkTest {
 
   @Test
   void stressTest() {
-    final DoubleValueRecorderSdk doubleRecorder =
+    final DoubleValueRecorder doubleRecorder =
         sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleRecorder).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((DoubleValueRecorderSdk) doubleRecorder)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -211,11 +214,13 @@ class DoubleValueRecorderSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleValueRecorderSdk doubleRecorder =
+    final DoubleValueRecorder doubleRecorder =
         sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleRecorder).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((DoubleValueRecorderSdk) doubleRecorder)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(

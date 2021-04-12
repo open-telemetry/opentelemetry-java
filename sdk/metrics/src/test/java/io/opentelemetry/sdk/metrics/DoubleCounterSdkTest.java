@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundDoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -35,7 +36,7 @@ class DoubleCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void add_PreventNullLabels() {
@@ -53,7 +54,7 @@ class DoubleCounterSdkTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
+    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter bound = doubleCounter.bind(Labels.of("foo", "bar"));
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
@@ -64,7 +65,7 @@ class DoubleCounterSdkTest {
 
   @Test
   void collectMetrics_WithEmptyLabel() {
-    DoubleCounterSdk doubleCounter =
+    DoubleCounter doubleCounter =
         sdkMeter
             .doubleCounterBuilder("testCounter")
             .setDescription("description")
@@ -97,7 +98,7 @@ class DoubleCounterSdkTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
+    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter bound = doubleCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
@@ -152,7 +153,7 @@ class DoubleCounterSdkTest {
 
   @Test
   void doubleCounterAdd_Monotonicity() {
-    DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
+    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
 
     assertThatThrownBy(() -> doubleCounter.add(-45.77d, Labels.empty()))
         .isInstanceOf(IllegalArgumentException.class);
@@ -160,7 +161,7 @@ class DoubleCounterSdkTest {
 
   @Test
   void boundDoubleCounterAdd_Monotonicity() {
-    DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
+    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
 
     assertThatThrownBy(() -> doubleCounter.bind(Labels.empty()).add(-9.3))
         .isInstanceOf(IllegalArgumentException.class);
@@ -168,10 +169,12 @@ class DoubleCounterSdkTest {
 
   @Test
   void stressTest() {
-    final DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
+    final DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleCounter).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((DoubleCounterSdk) doubleCounter)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -203,10 +206,12 @@ class DoubleCounterSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleCounterSdk doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
+    final DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleCounter).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((DoubleCounterSdk) doubleCounter)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
