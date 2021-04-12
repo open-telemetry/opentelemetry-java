@@ -22,15 +22,14 @@ import org.junit.jupiter.api.Test;
 
 public class SdkDesignTest {
 
-  // TODO: limited to trace as currently metrics fails the test (SdkMeterProvider returns SdkMeter)
   private static final JavaClasses SDK_OTEL_CLASSES =
-      new ClassFileImporter().importPackages("io.opentelemetry.sdk.trace");
+      new ClassFileImporter().importPackages("io.opentelemetry.sdk");
 
   /**
    * Ensures that all SDK methods that: - are defined in classes that extend or implement API model
    * and are public (to exclude protected builders) - are public (avoids issues with protected
    * methods returning classes unavailable to test's CL) - override or implement parent method
-   * return only API, Context or generic Java type
+   * return only API, Context or generic Java type.
    */
   @Test
   void sdkImplementationOfApiClassesShouldReturnApiTypeOnly() {

@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
@@ -51,12 +52,12 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
   }
 
   @Override
-  public SdkMeter get(String instrumentationName) {
+  public Meter get(String instrumentationName) {
     return get(instrumentationName, null);
   }
 
   @Override
-  public SdkMeter get(String instrumentationName, @Nullable String instrumentationVersion) {
+  public Meter get(String instrumentationName, @Nullable String instrumentationVersion) {
     // Per the spec, both null and empty are "invalid" and a "default" should be used.
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("Meter requested without instrumentation name.");
