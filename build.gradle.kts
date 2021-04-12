@@ -120,9 +120,8 @@ subprojects {
                 }
             }
 
-            val releaseVersion = 8
             withType(JavaCompile::class) {
-                options.release.set(releaseVersion)
+                options.release.set(8)
 
                 if (name != "jmhCompileGeneratedClasses") {
                     options.compilerArgs.addAll(listOf(
@@ -243,8 +242,7 @@ subprojects {
                                 "Built-By" to System.getProperty("user.name"),
                                 "Built-JDK" to System.getProperty("java.version"),
                                 "Implementation-Title" to project.name,
-                                "Implementation-Version" to project.version,
-                                "Release-Version" to releaseVersion)
+                                "Implementation-Version" to project.version)
                     }
                 }
             }
