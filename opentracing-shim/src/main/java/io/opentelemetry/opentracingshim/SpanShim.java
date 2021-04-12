@@ -10,6 +10,7 @@ import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.StatusCode;
@@ -235,23 +236,21 @@ final class SpanShim extends BaseShimObject implements Span {
       } else if (value instanceof Boolean) {
         attributesBuilder.put(booleanKey(key), (Boolean) value);
       } else {
+        AttributeKey<String> attributeKey = null;
         if (isExceptionEvent) {
-          switch (key) {
-            case Fields.ERROR_KIND:
-              key = SemanticAttributes.EXCEPTION_TYPE.getKey();
-              break;
-            case Fields.MESSAGE:
-              key = SemanticAttributes.EXCEPTION_MESSAGE.getKey();
-              break;
-            case Fields.STACK:
-              key = SemanticAttributes.EXCEPTION_STACKTRACE.getKey();
-              break;
-            default:
-              break;
+          if (key.equals(Fields.ERROR_KIND)) {
+            attributeKey = SemanticAttributes.EXCEPTION_TYPE;
+          } else if (key.equals(Fields.MESSAGE)) {
+            attributeKey = SemanticAttributes.EXCEPTION_MESSAGE;
+          } else if (key.equals(Fields.STACK)) {
+            attributeKey = SemanticAttributes.EXCEPTION_STACKTRACE;
           }
         }
         if (!isErrorEvent || !key.equals(Fields.ERROR_OBJECT) || !(value instanceof Throwable)) {
-          attributesBuilder.put(stringKey(key), value.toString());
+          if (attributeKey == null) {
+            attributeKey = stringKey(key);
+          }
+          attributesBuilder.put(attributeKey, value.toString());
         }
       }
     }
