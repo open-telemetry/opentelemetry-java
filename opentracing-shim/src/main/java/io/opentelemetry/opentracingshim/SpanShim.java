@@ -247,14 +247,15 @@ final class SpanShim extends BaseShimObject implements Span {
             attributeKey = SemanticAttributes.EXCEPTION_STACKTRACE;
           }
         }
-        if (!isRecordingException
-            || !key.equals(Fields.ERROR_OBJECT)
-            || !(value instanceof Throwable)) {
-          if (attributeKey == null) {
-            attributeKey = stringKey(key);
-          }
-          attributesBuilder.put(attributeKey, value.toString());
+        if (isRecordingException && key.equals(Fields.ERROR_OBJECT)) {
+          // Already recorded as the exception itself so don't add as attribute.
+          continue;
         }
+
+        if (attributeKey == null) {
+          attributeKey = stringKey(key);
+        }
+        attributesBuilder.put(attributeKey, value.toString());
       }
     }
 
