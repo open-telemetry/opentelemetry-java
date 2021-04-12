@@ -140,6 +140,18 @@ class SpanShimTest {
   }
 
   @Test
+  public void log_error_with_exception() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    final Map<String, Object> fields = createExceptionFields();
+    fields.putAll(createErrorFields());
+
+    long micros = 123447307984L;
+    spanShim.log(micros, fields);
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    verifyErrorEvent(spanData);
+  }
+
+  @Test
   public void log_exception_with_timestamp() {
     SpanShim spanShim = new SpanShim(telemetryInfo, span);
     Map<String, Object> fields = createExceptionFields();
@@ -187,7 +199,7 @@ class SpanShimTest {
 
   private static Map<String, Object> createExceptionFields() {
     Map<String, Object> fields = new HashMap<>();
-    fields.put(Fields.EVENT, "exception");
+    fields.put(Fields.EVENT, "error");
     fields.put(Fields.ERROR_KIND, "kind");
     fields.put(Fields.MESSAGE, "message");
     fields.put(Fields.STACK, "stack");

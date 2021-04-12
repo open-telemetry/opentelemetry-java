@@ -185,14 +185,16 @@ final class SpanShim extends BaseShimObject implements Span {
 
   private void logInternal(long timestampMicroseconds, Map<String, ?> fields) {
     String name = getEventNameFromFields(fields);
-    boolean isExceptionEvent = false;
     Throwable throwable = null;
+    boolean isError = false;
     if (name.equals(ERROR)) {
       throwable = findThrowable(fields);
-    } else if (name.equals(EXCEPTION)) {
-      isExceptionEvent = true;
+      isError = true;
+      if (throwable == null) {
+        name = EXCEPTION;
+      }
     }
-    Attributes attributes = convertToAttributes(fields, throwable != null, isExceptionEvent);
+    Attributes attributes = convertToAttributes(fields, isError, throwable != null);
 
     if (throwable != null) {
       // timestamp is not recorded if specified
@@ -214,7 +216,7 @@ final class SpanShim extends BaseShimObject implements Span {
   }
 
   private static Attributes convertToAttributes(
-      Map<String, ?> fields, boolean isErrorEvent, boolean isExceptionEvent) {
+      Map<String, ?> fields, boolean isError, boolean isRecordingException) {
     AttributesBuilder attributesBuilder = Attributes.builder();
 
     for (Map.Entry<String, ?> entry : fields.entrySet()) {
@@ -237,7 +239,7 @@ final class SpanShim extends BaseShimObject implements Span {
         attributesBuilder.put(booleanKey(key), (Boolean) value);
       } else {
         AttributeKey<String> attributeKey = null;
-        if (isExceptionEvent) {
+        if (isError && !isRecordingException) {
           if (key.equals(Fields.ERROR_KIND)) {
             attributeKey = SemanticAttributes.EXCEPTION_TYPE;
           } else if (key.equals(Fields.MESSAGE)) {
@@ -246,7 +248,9 @@ final class SpanShim extends BaseShimObject implements Span {
             attributeKey = SemanticAttributes.EXCEPTION_STACKTRACE;
           }
         }
-        if (!isErrorEvent || !key.equals(Fields.ERROR_OBJECT) || !(value instanceof Throwable)) {
+        if (!isRecordingException
+            || !key.equals(Fields.ERROR_OBJECT)
+            || !(value instanceof Throwable)) {
           if (attributeKey == null) {
             attributeKey = stringKey(key);
           }
