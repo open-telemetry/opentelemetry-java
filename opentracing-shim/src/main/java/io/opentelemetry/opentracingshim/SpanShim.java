@@ -37,7 +37,6 @@ import javax.annotation.Nullable;
 final class SpanShim extends BaseShimObject implements Span {
   private static final String DEFAULT_EVENT_NAME = "log";
   private static final String ERROR = "error";
-  private static final String EXCEPTION = "exception";
 
   private final io.opentelemetry.api.trace.Span span;
 
