@@ -84,33 +84,4 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
   public static SdkMeterProviderBuilder builder() {
     return new SdkMeterProviderBuilder();
   }
-
-  /**
-   * Register a view with the given {@link InstrumentSelector}.
-   *
-   * <p>Example on how to register a view:
-   *
-   * <pre>{@code
-   * // get a handle to the MeterSdkProvider
-   * SdkMeterProvider meterProvider = SdkMeterProvider.builder().build();
-   *
-   * // create a selector to select which instruments to customize:
-   * InstrumentSelector instrumentSelector = InstrumentSelector.builder()
-   *   .setInstrumentType(InstrumentType.COUNTER)
-   *   .build();
-   *
-   * // create a specification of how you want the metrics aggregated:
-   * AggregatorFactory aggregatorFactory = AggregatorFactory.minMaxSumCount();
-   *
-   * //register the view with the MeterSdkProvider
-   * meterProvider.registerView(instrumentSelector, View.builder()
-   *   .setAggregatorFactory(aggregatorFactory).build());
-   * }</pre>
-   *
-   * @deprecated Use {@link SdkMeterProviderBuilder#registerView(InstrumentSelector, View)}
-   */
-  @Deprecated
-  public void registerView(InstrumentSelector selector, View view) {
-    sharedState.getViewRegistry().registerView(selector, view);
-  }
 }
