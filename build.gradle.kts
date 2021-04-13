@@ -237,7 +237,12 @@ subprojects {
                     inputs.property("moduleName", moduleName)
 
                     manifest {
-                        attributes("Automatic-Module-Name" to moduleName)
+                        attributes(
+                                "Automatic-Module-Name" to moduleName,
+                                "Built-By" to System.getProperty("user.name"),
+                                "Built-JDK" to System.getProperty("java.version"),
+                                "Implementation-Title" to project.name,
+                                "Implementation-Version" to project.version)
                     }
                 }
             }
