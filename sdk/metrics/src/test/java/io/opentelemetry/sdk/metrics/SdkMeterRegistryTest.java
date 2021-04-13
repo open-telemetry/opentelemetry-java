@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -71,24 +73,24 @@ class SdkMeterRegistryTest {
   void propagatesInstrumentationLibraryInfoToMeter() {
     InstrumentationLibraryInfo expected =
         InstrumentationLibraryInfo.create("theName", "theVersion");
-    SdkMeter meter = meterProvider.get(expected.getName(), expected.getVersion());
+    SdkMeter meter = (SdkMeter) meterProvider.get(expected.getName(), expected.getVersion());
     assertThat(meter.getInstrumentationLibraryInfo()).isEqualTo(expected);
   }
 
   @Test
   void metricProducer_GetAllMetrics() {
-    SdkMeter sdkMeter1 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
-    LongCounterSdk longCounter1 = sdkMeter1.longCounterBuilder("testLongCounter").build();
+    Meter sdkMeter1 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
+    LongCounter longCounter1 = sdkMeter1.longCounterBuilder("testLongCounter").build();
     longCounter1.add(10, Labels.empty());
-    SdkMeter sdkMeter2 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
-    LongCounterSdk longCounter2 = sdkMeter2.longCounterBuilder("testLongCounter").build();
+    Meter sdkMeter2 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
+    LongCounter longCounter2 = sdkMeter2.longCounterBuilder("testLongCounter").build();
     longCounter2.add(10, Labels.empty());
 
     assertThat(meterProvider.collectAllMetrics())
         .containsExactlyInAnyOrder(
             MetricData.createLongSum(
                 Resource.empty(),
-                sdkMeter1.getInstrumentationLibraryInfo(),
+                ((SdkMeter) sdkMeter1).getInstrumentationLibraryInfo(),
                 "testLongCounter",
                 "",
                 "1",
@@ -100,7 +102,7 @@ class SdkMeterRegistryTest {
                             testClock.now(), testClock.now(), Labels.empty(), 10)))),
             MetricData.createLongSum(
                 Resource.empty(),
-                sdkMeter2.getInstrumentationLibraryInfo(),
+                ((SdkMeter) sdkMeter2).getInstrumentationLibraryInfo(),
                 "testLongCounter",
                 "",
                 "1",
@@ -114,22 +116,22 @@ class SdkMeterRegistryTest {
 
   @Test
   void suppliesDefaultMeterForNullName() {
-    SdkMeter meter = meterProvider.get(null);
+    SdkMeter meter = (SdkMeter) meterProvider.get(null);
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
 
-    meter = meterProvider.get(null, null);
+    meter = (SdkMeter) meterProvider.get(null, null);
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
   }
 
   @Test
   void suppliesDefaultMeterForEmptyName() {
-    SdkMeter meter = meterProvider.get("");
+    SdkMeter meter = (SdkMeter) meterProvider.get("");
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
 
-    meter = meterProvider.get("", "");
+    meter = (SdkMeter) meterProvider.get("", "");
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
   }

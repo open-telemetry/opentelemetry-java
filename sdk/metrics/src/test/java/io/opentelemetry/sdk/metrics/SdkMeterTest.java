@@ -9,17 +9,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.metrics.BatchRecorder;
+import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.DoubleSumObserver;
+import io.opentelemetry.api.metrics.DoubleUpDownCounter;
+import io.opentelemetry.api.metrics.DoubleUpDownSumObserver;
 import io.opentelemetry.api.metrics.DoubleValueObserver;
+import io.opentelemetry.api.metrics.DoubleValueRecorder;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongSumObserver;
+import io.opentelemetry.api.metrics.LongUpDownCounter;
+import io.opentelemetry.api.metrics.LongUpDownSumObserver;
 import io.opentelemetry.api.metrics.LongValueObserver;
+import io.opentelemetry.api.metrics.LongValueRecorder;
+import io.opentelemetry.api.metrics.Meter;
 import org.junit.jupiter.api.Test;
 
 class SdkMeterTest {
   private final SdkMeterProvider testMeterProvider = SdkMeterProvider.builder().build();
-  private final SdkMeter sdkMeter = testMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = testMeterProvider.get(getClass().getName());
 
   @Test
   void testLongCounter() {
-    LongCounterSdk longCounter =
+    LongCounter longCounter =
         sdkMeter
             .longCounterBuilder("testLongCounter")
             .setDescription("My very own counter")
@@ -45,7 +56,7 @@ class SdkMeterTest {
 
   @Test
   void testLongUpDownCounter() {
-    LongUpDownCounterSdk longUpDownCounter =
+    LongUpDownCounter longUpDownCounter =
         sdkMeter
             .longUpDownCounterBuilder("testLongUpDownCounter")
             .setDescription("My very own counter")
@@ -72,7 +83,7 @@ class SdkMeterTest {
 
   @Test
   void testLongValueRecorder() {
-    LongValueRecorderSdk longValueRecorder =
+    LongValueRecorder longValueRecorder =
         sdkMeter
             .longValueRecorderBuilder("testLongValueRecorder")
             .setDescription("My very own counter")
@@ -126,7 +137,7 @@ class SdkMeterTest {
 
   @Test
   void testLongSumObserver() {
-    LongSumObserverSdk longObserver =
+    LongSumObserver longObserver =
         sdkMeter
             .longSumObserverBuilder("testLongSumObserver")
             .setDescription("My very own counter")
@@ -154,7 +165,7 @@ class SdkMeterTest {
 
   @Test
   void testLongUpDownSumObserver() {
-    LongUpDownSumObserverSdk longObserver =
+    LongUpDownSumObserver longObserver =
         sdkMeter
             .longUpDownSumObserverBuilder("testLongUpDownSumObserver")
             .setDescription("My very own counter")
@@ -186,7 +197,7 @@ class SdkMeterTest {
 
   @Test
   void testDoubleCounter() {
-    DoubleCounterSdk doubleCounter =
+    DoubleCounter doubleCounter =
         sdkMeter
             .doubleCounterBuilder("testDoubleCounter")
             .setDescription("My very own counter")
@@ -213,7 +224,7 @@ class SdkMeterTest {
 
   @Test
   void testDoubleUpDownCounter() {
-    DoubleUpDownCounterSdk doubleUpDownCounter =
+    DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter
             .doubleUpDownCounterBuilder("testDoubleUpDownCounter")
             .setDescription("My very own counter")
@@ -243,7 +254,7 @@ class SdkMeterTest {
 
   @Test
   void testDoubleValueRecorder() {
-    DoubleValueRecorderSdk doubleValueRecorder =
+    DoubleValueRecorder doubleValueRecorder =
         sdkMeter
             .doubleValueRecorderBuilder("testDoubleValueRecorder")
             .setDescription("My very own ValueRecorder")
@@ -273,7 +284,7 @@ class SdkMeterTest {
 
   @Test
   void testDoubleSumObserver() {
-    DoubleSumObserverSdk doubleObserver =
+    DoubleSumObserver doubleObserver =
         sdkMeter
             .doubleSumObserverBuilder("testDoubleSumObserver")
             .setDescription("My very own counter")
@@ -300,7 +311,7 @@ class SdkMeterTest {
 
   @Test
   void testDoubleUpDownSumObserver() {
-    DoubleUpDownSumObserverSdk doubleObserver =
+    DoubleUpDownSumObserver doubleObserver =
         sdkMeter
             .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver")
             .setDescription("My very own counter")

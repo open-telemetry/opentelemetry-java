@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -35,7 +36,7 @@ class LongCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void add_PreventNullLabels() {
@@ -53,7 +54,7 @@ class LongCounterSdkTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
+    LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
     BoundLongCounter bound = longCounter.bind(Labels.of("foo", "bar"));
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
@@ -64,7 +65,7 @@ class LongCounterSdkTest {
 
   @Test
   void collectMetrics_WithEmptyLabels() {
-    LongCounterSdk longCounter =
+    LongCounter longCounter =
         sdkMeter
             .longCounterBuilder("testCounter")
             .setDescription("description")
@@ -95,7 +96,7 @@ class LongCounterSdkTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
+    LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
     BoundLongCounter bound = longCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
@@ -148,7 +149,7 @@ class LongCounterSdkTest {
 
   @Test
   void longCounterAdd_MonotonicityCheck() {
-    LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
+    LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
 
     assertThatThrownBy(() -> longCounter.add(-45, Labels.empty()))
         .isInstanceOf(IllegalArgumentException.class);
@@ -156,7 +157,7 @@ class LongCounterSdkTest {
 
   @Test
   void boundLongCounterAdd_MonotonicityCheck() {
-    LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
+    LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
 
     assertThatThrownBy(() -> longCounter.bind(Labels.empty()).add(-9))
         .isInstanceOf(IllegalArgumentException.class);
@@ -164,10 +165,12 @@ class LongCounterSdkTest {
 
   @Test
   void stressTest() {
-    final LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
+    final LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(longCounter).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((LongCounterSdk) longCounter)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -199,10 +202,12 @@ class LongCounterSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongCounterSdk longCounter = sdkMeter.longCounterBuilder("testCounter").build();
+    final LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(longCounter).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((LongCounterSdk) longCounter)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
