@@ -428,22 +428,13 @@ public final class ResourceAttributes {
     private CloudInfrastructureServiceValues() {}
   }
 
-  public enum AwsEcsLaunchtypeValues {
+  public static final class AwsEcsLaunchtypeValues {
     /** ec2. */
-    EC2("ec2"),
+    public static final String EC2 = "ec2";
     /** fargate. */
-    FARGATE("fargate"),
-    ;
+    public static final String FARGATE = "fargate";
 
-    private final String value;
-
-    AwsEcsLaunchtypeValues(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
+    private AwsEcsLaunchtypeValues() {}
   }
 
   public static final class HostArchValues {

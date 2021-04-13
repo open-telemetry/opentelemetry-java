@@ -641,92 +641,65 @@ public final class SemanticAttributes {
     private DbSystemValues() {}
   }
 
-  public enum NetTransportValues {
+  public static final class NetTransportValues {
     /** IP.TCP. */
-    IP_TCP("IP.TCP"),
+    public static final String IP_TCP = "IP.TCP";
     /** IP.UDP. */
-    IP_UDP("IP.UDP"),
+    public static final String IP_UDP = "IP.UDP";
     /** Another IP-based protocol. */
-    IP("IP"),
+    public static final String IP = "IP";
     /** Unix Domain socket. See below. */
-    UNIX("Unix"),
+    public static final String UNIX = "Unix";
     /** Named or anonymous pipe. See note below. */
-    PIPE("pipe"),
+    public static final String PIPE = "pipe";
     /** In-process communication. */
-    INPROC("inproc"),
+    public static final String INPROC = "inproc";
     /** Something else (non IP-based). */
-    OTHER("other"),
-    ;
+    public static final String OTHER = "other";
 
-    private final String value;
-
-    NetTransportValues(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
+    private NetTransportValues() {}
   }
 
-  public enum DbCassandraConsistencyLevelValues {
+  public static final class DbCassandraConsistencyLevelValues {
     /** ALL. */
-    ALL("ALL"),
+    public static final String ALL = "ALL";
     /** EACH_QUORUM. */
-    EACH_QUORUM("EACH_QUORUM"),
+    public static final String EACH_QUORUM = "EACH_QUORUM";
     /** QUORUM. */
-    QUORUM("QUORUM"),
+    public static final String QUORUM = "QUORUM";
     /** LOCAL_QUORUM. */
-    LOCAL_QUORUM("LOCAL_QUORUM"),
+    public static final String LOCAL_QUORUM = "LOCAL_QUORUM";
     /** ONE. */
-    ONE("ONE"),
+    public static final String ONE = "ONE";
     /** TWO. */
-    TWO("TWO"),
+    public static final String TWO = "TWO";
     /** THREE. */
-    THREE("THREE"),
+    public static final String THREE = "THREE";
     /** LOCAL_ONE. */
-    LOCAL_ONE("LOCAL_ONE"),
+    public static final String LOCAL_ONE = "LOCAL_ONE";
     /** ANY. */
-    ANY("ANY"),
+    public static final String ANY = "ANY";
     /** SERIAL. */
-    SERIAL("SERIAL"),
+    public static final String SERIAL = "SERIAL";
     /** LOCAL_SERIAL. */
-    LOCAL_SERIAL("LOCAL_SERIAL"),
-    ;
+    public static final String LOCAL_SERIAL = "LOCAL_SERIAL";
 
-    private final String value;
-
-    DbCassandraConsistencyLevelValues(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
+    private DbCassandraConsistencyLevelValues() {}
   }
 
-  public enum FaasTriggerValues {
+  public static final class FaasTriggerValues {
     /** A response to some data source operation such as a database or filesystem read/write. */
-    DATASOURCE("datasource"),
+    public static final String DATASOURCE = "datasource";
     /** To provide an answer to an inbound HTTP request. */
-    HTTP("http"),
+    public static final String HTTP = "http";
     /** A function is set to be executed when messages are sent to a messaging system. */
-    PUBSUB("pubsub"),
+    public static final String PUBSUB = "pubsub";
     /** A function is scheduled to be executed regularly. */
-    TIMER("timer"),
+    public static final String TIMER = "timer";
     /** If none of the others apply. */
-    OTHER("other"),
-    ;
+    public static final String OTHER = "other";
 
-    private final String value;
-
-    FaasTriggerValues(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
+    private FaasTriggerValues() {}
   }
 
   public static final class FaasDocumentOperationValues {
@@ -755,22 +728,13 @@ public final class SemanticAttributes {
     private HttpFlavorValues() {}
   }
 
-  public enum MessagingDestinationKindValues {
+  public static final class MessagingDestinationKindValues {
     /** A message sent to a queue. */
-    QUEUE("queue"),
+    public static final String QUEUE = "queue";
     /** A message sent to a topic. */
-    TOPIC("topic"),
-    ;
+    public static final String TOPIC = "topic";
 
-    private final String value;
-
-    MessagingDestinationKindValues(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
+    private MessagingDestinationKindValues() {}
   }
 
   public static final class FaasInvokedProviderValues {
@@ -784,70 +748,52 @@ public final class SemanticAttributes {
     private FaasInvokedProviderValues() {}
   }
 
-  public enum MessagingOperationValues {
+  public static final class MessagingOperationValues {
     /** receive. */
-    RECEIVE("receive"),
+    public static final String RECEIVE = "receive";
     /** process. */
-    PROCESS("process"),
-    ;
+    public static final String PROCESS = "process";
 
-    private final String value;
-
-    MessagingOperationValues(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
+    private MessagingOperationValues() {}
   }
 
-  public enum RpcGrpcStatusCodeValues {
+  public static final class RpcGrpcStatusCodeValues {
     /** OK. */
-    OK(0),
+    public static final long OK = 0;
     /** CANCELLED. */
-    CANCELLED(1),
+    public static final long CANCELLED = 1;
     /** UNKNOWN. */
-    UNKNOWN(2),
+    public static final long UNKNOWN = 2;
     /** INVALID_ARGUMENT. */
-    INVALID_ARGUMENT(3),
+    public static final long INVALID_ARGUMENT = 3;
     /** DEADLINE_EXCEEDED. */
-    DEADLINE_EXCEEDED(4),
+    public static final long DEADLINE_EXCEEDED = 4;
     /** NOT_FOUND. */
-    NOT_FOUND(5),
+    public static final long NOT_FOUND = 5;
     /** ALREADY_EXISTS. */
-    ALREADY_EXISTS(6),
+    public static final long ALREADY_EXISTS = 6;
     /** PERMISSION_DENIED. */
-    PERMISSION_DENIED(7),
+    public static final long PERMISSION_DENIED = 7;
     /** RESOURCE_EXHAUSTED. */
-    RESOURCE_EXHAUSTED(8),
+    public static final long RESOURCE_EXHAUSTED = 8;
     /** FAILED_PRECONDITION. */
-    FAILED_PRECONDITION(9),
+    public static final long FAILED_PRECONDITION = 9;
     /** ABORTED. */
-    ABORTED(10),
+    public static final long ABORTED = 10;
     /** OUT_OF_RANGE. */
-    OUT_OF_RANGE(11),
+    public static final long OUT_OF_RANGE = 11;
     /** UNIMPLEMENTED. */
-    UNIMPLEMENTED(12),
+    public static final long UNIMPLEMENTED = 12;
     /** INTERNAL. */
-    INTERNAL(13),
+    public static final long INTERNAL = 13;
     /** UNAVAILABLE. */
-    UNAVAILABLE(14),
+    public static final long UNAVAILABLE = 14;
     /** DATA_LOSS. */
-    DATA_LOSS(15),
+    public static final long DATA_LOSS = 15;
     /** UNAUTHENTICATED. */
-    UNAUTHENTICATED(16),
-    ;
+    public static final long UNAUTHENTICATED = 16;
 
-    private final long value;
-
-    RpcGrpcStatusCodeValues(long value) {
-      this.value = value;
-    }
-
-    public long getValue() {
-      return value;
-    }
+    private RpcGrpcStatusCodeValues() {}
   }
 
   // Manually defined and not YET in the YAML
