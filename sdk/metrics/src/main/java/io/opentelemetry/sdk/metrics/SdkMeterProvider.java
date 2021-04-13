@@ -12,14 +12,11 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -41,11 +38,8 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
   private final ComponentRegistry<SdkMeter> registry;
   private final MeterProviderSharedState sharedState;
 
-  SdkMeterProvider(
-      Clock clock, Resource resource, Map<InstrumentSelector, View> instrumentSelectorViews) {
-    this.sharedState = MeterProviderSharedState.create(clock, resource);
-    instrumentSelectorViews.forEach(
-        (selector, view) -> this.sharedState.getViewRegistry().registerView(selector, view));
+  SdkMeterProvider(Clock clock, Resource resource, ViewRegistry viewRegistry) {
+    this.sharedState = MeterProviderSharedState.create(clock, resource, viewRegistry);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
