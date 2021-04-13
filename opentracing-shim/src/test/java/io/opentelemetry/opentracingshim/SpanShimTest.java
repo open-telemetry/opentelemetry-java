@@ -17,7 +17,6 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.log.Fields;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
@@ -164,6 +163,14 @@ class SpanShimTest {
   }
 
   @Test
+  public void log_fields() {
+    SpanShim spanShim = new SpanShim(telemetryInfo, span);
+    spanShim.log(putKeyValuePairsToMap(new HashMap<>()));
+    SpanData spanData = ((ReadableSpan) span).toSpanData();
+    verifyAttributes(spanData.getEvents().get(0));
+  }
+
+  @Test
   void log_micros() {
     SpanShim spanShim = new SpanShim(telemetryInfo, span);
     long micros = 123447307984L;
@@ -176,16 +183,19 @@ class SpanShimTest {
   void log_fields_micros() {
     SpanShim spanShim = new SpanShim(telemetryInfo, span);
     long micros = 123447307984L;
-    spanShim.log(micros, Collections.singletonMap("key", "value"));
+    spanShim.log(micros, putKeyValuePairsToMap(new HashMap<>()));
     SpanData spanData = ((ReadableSpan) span).toSpanData();
-    assertThat(spanData.getEvents().get(0).getEpochNanos()).isEqualTo(micros * 1000L);
+    EventData eventData = spanData.getEvents().get(0);
+    assertThat(eventData.getEpochNanos()).isEqualTo(micros * 1000L);
+    verifyAttributes(eventData);
   }
 
   private static Map<String, Object> createErrorFields() {
     Map<String, Object> fields = new HashMap<>();
     fields.put(Fields.EVENT, "error");
     fields.put(Fields.ERROR_OBJECT, new RuntimeException());
-    fields.put("key", "value");
+
+    putKeyValuePairsToMap(fields);
     return fields;
   }
 
@@ -194,7 +204,8 @@ class SpanShimTest {
 
     EventData eventData = spanData.getEvents().get(0);
     assertThat(eventData.getName()).isEqualTo("exception");
-    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("key"))).isEqualTo("value");
+
+    verifyAttributes(eventData);
   }
 
   private static Map<String, Object> createExceptionFields() {
@@ -203,7 +214,16 @@ class SpanShimTest {
     fields.put(Fields.ERROR_KIND, "kind");
     fields.put(Fields.MESSAGE, "message");
     fields.put(Fields.STACK, "stack");
-    fields.put("key", "value");
+
+    putKeyValuePairsToMap(fields);
+    return fields;
+  }
+
+  private static Map<String, Object> putKeyValuePairsToMap(Map<String, Object> fields) {
+    fields.put("keyForString", "value");
+    fields.put("keyForInt", 1);
+    fields.put("keyForDouble", 1.0);
+    fields.put("keyForBoolean", true);
     return fields;
   }
 
@@ -227,6 +247,16 @@ class SpanShimTest {
                 .getAttributes()
                 .get(AttributeKey.stringKey(SemanticAttributes.EXCEPTION_STACKTRACE.getKey())))
         .isEqualTo("stack");
-    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("key"))).isEqualTo("value");
+
+    verifyAttributes(eventData);
+  }
+
+  private static void verifyAttributes(EventData eventData) {
+    assertThat(eventData.getAttributes().get(AttributeKey.stringKey("keyForString")))
+        .isEqualTo("value");
+    assertThat(eventData.getAttributes().get(AttributeKey.longKey("keyForInt"))).isEqualTo(1);
+    assertThat(eventData.getAttributes().get(AttributeKey.doubleKey("keyForDouble")))
+        .isEqualTo(1.0);
+    assertThat(eventData.getAttributes().get(AttributeKey.booleanKey("keyForBoolean"))).isTrue();
   }
 }
