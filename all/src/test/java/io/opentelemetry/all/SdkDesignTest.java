@@ -53,7 +53,7 @@ public class SdkDesignTest {
     covariantReturnRule.check(SDK_OTEL_CLASSES);
   }
 
-  static DescribedPredicate<? super JavaMethod> implmentOrOverride() {
+  static DescribedPredicate<? super JavaMethod> implementOrOverride() {
     return new DescribedPredicate<>("implement or override a method") {
       @Override
       public boolean apply(JavaMethod input) {
