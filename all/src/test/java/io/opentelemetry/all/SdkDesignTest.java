@@ -43,7 +43,7 @@ public class SdkDesignTest {
             .arePublic()
             .and()
             .arePublic()
-            .and(implmentOrOverride())
+            .and(implementOrOverride())
             .should()
             .haveRawReturnType(
                 inPackage("io.opentelemetry.api..", "io.opentelemetry.context..", "java.."))
