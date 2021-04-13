@@ -25,19 +25,18 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   private static final int VALUE_MAX_SIZE = 256;
   private static final int MAX_TENANT_ID_SIZE = 240;
 
-  private final ArrayBasedTraceState parent;
-  @Nullable private List<String> entries;
+  private final List<String> entries;
 
   static TraceState empty() {
     return EMPTY;
   }
 
   ArrayBasedTraceStateBuilder() {
-    parent = EMPTY;
+    entries = new ArrayList<>();
   }
 
   ArrayBasedTraceStateBuilder(ArrayBasedTraceState parent) {
-    this.parent = parent;
+    entries = new ArrayList<>(parent.getEntries());
   }
 
   /**
@@ -57,10 +56,6 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
         || (entries != null && entries.size() >= MAX_KEY_VALUE_PAIRS)) {
       return this;
     }
-    if (entries == null) {
-      // Copy entries from the parent.
-      entries = new ArrayList<>(parent.getEntries());
-    }
     removeEntry(key);
     // Inserts the element at the front of this list. (note: probably pretty inefficient with an
     // ArrayList as the underlying implementation!)
@@ -73,10 +68,6 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
   public TraceStateBuilder remove(String key) {
     if (key == null) {
       return this;
-    }
-    if (entries == null) {
-      // Copy entries from the parent.
-      entries = new ArrayList<>(parent.getEntries());
     }
     removeEntry(key);
     return this;
@@ -97,9 +88,6 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
 
   @Override
   public TraceState build() {
-    if (entries == null) {
-      return parent;
-    }
     return ArrayBasedTraceState.create(entries);
   }
 
@@ -173,6 +161,8 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
 
   // Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the range
   // 0x20 to 0x7E) except comma , and =.
+  // TODO(anuraaga): Seems to be false positive, see if there's a way to work around.
+  @SuppressWarnings("NullAway")
   private static boolean isValueValid(@Nullable String value) {
     if (StringUtils.isNullOrEmpty(value)) {
       return false;

@@ -8,6 +8,7 @@ package io.opentelemetry.api.common;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import java.util.ArrayList;
 import java.util.Comparator;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -32,6 +33,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
 
   @SuppressWarnings("unchecked")
   @Override
+  @Nullable
   public <T> T get(AttributeKey<T> key) {
     return (T) super.get(key);
   }

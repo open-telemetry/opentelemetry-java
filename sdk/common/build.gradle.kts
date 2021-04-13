@@ -73,6 +73,8 @@ for (version in mrJarVersions) {
     dependencies {
         // Common to reference classes in main sourceset from Java 9 one (e.g., to return a common interface)
         add("java${version}Implementation", files(sourceSets.main.get().output.classesDirs))
+
+        add("java${version}AnnotationProcessor", "com.uber.nullaway:nullaway")
     }
 }
 

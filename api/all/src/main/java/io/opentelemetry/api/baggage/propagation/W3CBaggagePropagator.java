@@ -40,7 +40,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
+  public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
     if (context == null || setter == null) {
       return;
     }

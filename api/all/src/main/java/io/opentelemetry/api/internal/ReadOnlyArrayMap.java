@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /** A read-only view of an array of key-value pairs. */
 @SuppressWarnings("unchecked")
@@ -74,6 +75,7 @@ public final class ReadOnlyArrayMap<K, V> extends AbstractMap<K, V> {
   }
 
   @Override
+  @Nullable
   public V get(Object o) {
     if (o == null) {
       return null; // null keys are not allowed

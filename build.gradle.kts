@@ -4,6 +4,7 @@ import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import io.morethan.jmhreport.gradle.JmhReportExtension
 import me.champeau.gradle.JMHPluginExtension
 import nebula.plugin.release.git.opinion.Strategies
+import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.ErrorProneOptions
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
 import org.gradle.api.plugins.JavaPlugin.*
@@ -151,6 +152,13 @@ subprojects {
                     disableWarningsInGeneratedCode.set(true)
                     allDisabledChecksAsWarnings.set(true)
 
+                    // Enable nullaway on main sources.
+                    if (!name.contains("Test") && !name.contains("Jmh")) {
+                        // TODO(anuraaga): Set severity to ERROR when all projects pass.
+                        check("NullAway", CheckSeverity.OFF)
+                        option("NullAway:AnnotatedPackages", "io.opentelemetry")
+                    }
+
                     // Doesn't currently use Var annotations.
                     disable("Var") // "-Xep:Var:OFF"
 
@@ -169,7 +177,7 @@ subprojects {
                     disable("UnnecessarilyFullyQualified")
 
                     // Ignore warnings for protobuf and jmh generated files.
-                    excludedPaths.set(".*generated.*")
+                    excludedPaths.set(".*generated.*|.*internal.shaded.*")
                     // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
 
                     disable("Java7ApiChecker")
@@ -333,6 +341,7 @@ subprojects {
             add(ErrorPronePlugin.CONFIGURATION_NAME, "com.google.errorprone:error_prone_core")
 
             add(ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "com.google.guava:guava-beta-checker")
+            add(ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "com.uber.nullaway:nullaway")
 
             // Workaround for @javax.annotation.Generated
             // see: https://github.com/grpc/grpc-java/issues/3633
