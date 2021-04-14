@@ -5,15 +5,25 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
+import static io.opentelemetry.extension.trace.propagation.B3Propagator.SAMPLED_HEADER;
+import static io.opentelemetry.extension.trace.propagation.B3Propagator.SPAN_ID_HEADER;
+import static io.opentelemetry.extension.trace.propagation.B3Propagator.TRACE_ID_HEADER;
+
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
 final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector {
+  private static final Collection<String> FIELDS =
+      Collections.unmodifiableList(Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER));
+
   @Override
   public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
     if (context == null) {
@@ -35,8 +45,13 @@ final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector 
       sampled = Common.TRUE_INT;
     }
 
-    setter.set(carrier, B3Propagator.TRACE_ID_HEADER, spanContext.getTraceId());
-    setter.set(carrier, B3Propagator.SPAN_ID_HEADER, spanContext.getSpanId());
-    setter.set(carrier, B3Propagator.SAMPLED_HEADER, sampled);
+    setter.set(carrier, TRACE_ID_HEADER, spanContext.getTraceId());
+    setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanId());
+    setter.set(carrier, SAMPLED_HEADER, sampled);
+  }
+
+  @Override
+  public Collection<String> fields() {
+    return FIELDS;
   }
 }
