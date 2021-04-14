@@ -10,9 +10,11 @@ import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.log.Fields;
@@ -34,6 +36,7 @@ import javax.annotation.Nullable;
  */
 final class SpanShim extends BaseShimObject implements Span {
   private static final String DEFAULT_EVENT_NAME = "log";
+  private static final String ERROR = "error";
 
   private final io.opentelemetry.api.trace.Span span;
 
@@ -119,17 +122,13 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public Span log(Map<String, ?> fields) {
-    span.addEvent(getEventNameFromFields(fields), convertToAttributes(fields));
+    logInternal(-1, fields);
     return this;
   }
 
   @Override
   public Span log(long timestampMicroseconds, Map<String, ?> fields) {
-    span.addEvent(
-        getEventNameFromFields(fields),
-        convertToAttributes(fields),
-        timestampMicroseconds,
-        TimeUnit.MICROSECONDS);
+    logInternal(timestampMicroseconds, fields);
     return this;
   }
 
@@ -183,7 +182,30 @@ final class SpanShim extends BaseShimObject implements Span {
     span.end(finishMicros, TimeUnit.MICROSECONDS);
   }
 
-  static String getEventNameFromFields(Map<String, ?> fields) {
+  private void logInternal(long timestampMicroseconds, Map<String, ?> fields) {
+    String name = getEventNameFromFields(fields);
+    Throwable throwable = null;
+    boolean isError = false;
+    if (name.equals(ERROR)) {
+      throwable = findThrowable(fields);
+      isError = true;
+      if (throwable == null) {
+        name = SemanticAttributes.EXCEPTION_EVENT_NAME;
+      }
+    }
+    Attributes attributes = convertToAttributes(fields, isError, throwable != null);
+
+    if (throwable != null) {
+      // timestamp is not recorded if specified
+      span.recordException(throwable, attributes);
+    } else if (timestampMicroseconds != -1) {
+      span.addEvent(name, attributes, timestampMicroseconds, TimeUnit.MICROSECONDS);
+    } else {
+      span.addEvent(name, attributes);
+    }
+  }
+
+  private static String getEventNameFromFields(Map<String, ?> fields) {
     Object eventValue = fields == null ? null : fields.get(Fields.EVENT);
     if (eventValue != null) {
       return eventValue.toString();
@@ -192,7 +214,8 @@ final class SpanShim extends BaseShimObject implements Span {
     return DEFAULT_EVENT_NAME;
   }
 
-  static Attributes convertToAttributes(Map<String, ?> fields) {
+  private static Attributes convertToAttributes(
+      Map<String, ?> fields, boolean isError, boolean isRecordingException) {
     AttributesBuilder attributesBuilder = Attributes.builder();
 
     for (Map.Entry<String, ?> entry : fields.entrySet()) {
@@ -214,10 +237,37 @@ final class SpanShim extends BaseShimObject implements Span {
       } else if (value instanceof Boolean) {
         attributesBuilder.put(booleanKey(key), (Boolean) value);
       } else {
-        attributesBuilder.put(stringKey(key), value.toString());
+        AttributeKey<String> attributeKey = null;
+        if (isError && !isRecordingException) {
+          if (key.equals(Fields.ERROR_KIND)) {
+            attributeKey = SemanticAttributes.EXCEPTION_TYPE;
+          } else if (key.equals(Fields.MESSAGE)) {
+            attributeKey = SemanticAttributes.EXCEPTION_MESSAGE;
+          } else if (key.equals(Fields.STACK)) {
+            attributeKey = SemanticAttributes.EXCEPTION_STACKTRACE;
+          }
+        }
+        if (isRecordingException && key.equals(Fields.ERROR_OBJECT)) {
+          // Already recorded as the exception itself so don't add as attribute.
+          continue;
+        }
+
+        if (attributeKey == null) {
+          attributeKey = stringKey(key);
+        }
+        attributesBuilder.put(attributeKey, value.toString());
       }
     }
 
     return attributesBuilder.build();
+  }
+
+  @Nullable
+  private static Throwable findThrowable(Map<String, ?> fields) {
+    Object value = fields.get(Fields.ERROR_OBJECT);
+    if (value instanceof Throwable) {
+      return (Throwable) value;
+    }
+    return null;
   }
 }
