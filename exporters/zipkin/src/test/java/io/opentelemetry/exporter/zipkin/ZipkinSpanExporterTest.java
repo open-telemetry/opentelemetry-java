@@ -107,6 +107,20 @@ class ZipkinSpanExporterTest {
   }
 
   @Test
+  void generateSpan_nullInstrumentationLibaryInfoName() {
+    SpanData data =
+        buildStandardSpan()
+            .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create(null, null))
+            .build();
+
+    assertThat(exporter.generateSpan(data))
+        .isEqualTo(
+            standardZipkinSpanBuilder(Span.Kind.SERVER)
+                .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .build());
+  }
+
+  @Test
   void generateSpan_ClientKind() {
     SpanData data = buildStandardSpan().setKind(SpanKind.CLIENT).build();
 

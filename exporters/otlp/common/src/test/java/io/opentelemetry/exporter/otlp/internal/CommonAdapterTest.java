@@ -144,6 +144,14 @@ class CommonAdapterTest {
   }
 
   @Test
+  void toProtoInstrumentationLibrary_nullName() {
+    InstrumentationLibrary instrumentationLibrary =
+        CommonAdapter.toProtoInstrumentationLibrary(InstrumentationLibraryInfo.create(null, null));
+    assertThat(instrumentationLibrary.getName()).isEmpty();
+    assertThat(instrumentationLibrary.getVersion()).isEmpty();
+  }
+
+  @Test
   void toProtoInstrumentationLibrary_NoVersion() {
     InstrumentationLibrary instrumentationLibrary =
         CommonAdapter.toProtoInstrumentationLibrary(

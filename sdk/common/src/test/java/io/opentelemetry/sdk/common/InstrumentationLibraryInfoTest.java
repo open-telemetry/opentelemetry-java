@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -20,9 +19,7 @@ class InstrumentationLibraryInfoTest {
   }
 
   @Test
-  void nullName() {
-    assertThatThrownBy(() -> InstrumentationLibraryInfo.create(null, "1.0.0"))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("name");
+  void nullName_doesNotBreak() {
+    assertThat(InstrumentationLibraryInfo.create(null, null).getName()).isNull();
   }
 }

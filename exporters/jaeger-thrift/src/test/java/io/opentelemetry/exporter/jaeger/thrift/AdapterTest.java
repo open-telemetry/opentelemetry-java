@@ -27,6 +27,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -57,7 +58,25 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
 
-    SpanData span = getSpanData(startMs, endMs, SpanKind.SERVER);
+    SpanData span =
+        getSpanData(startMs, endMs, SpanKind.SERVER, InstrumentationLibraryInfo.empty());
+    List<SpanData> spans = Collections.singletonList(span);
+
+    List<io.jaegertracing.thriftjava.Span> jaegerSpans = Adapter.toJaeger(spans);
+
+    // the span contents are checked somewhere else
+    assertThat(jaegerSpans).hasSize(1);
+  }
+
+  @Test
+  void testThriftSpans_nullInstrumentationLibraryName() {
+    long duration = 900; // ms
+    long startMs = System.currentTimeMillis();
+    long endMs = startMs + duration;
+
+    SpanData span =
+        getSpanData(startMs, endMs, SpanKind.SERVER, InstrumentationLibraryInfo.create(null, null));
+
     List<SpanData> spans = Collections.singletonList(span);
 
     List<io.jaegertracing.thriftjava.Span> jaegerSpans = Adapter.toJaeger(spans);
@@ -72,7 +91,8 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
 
-    SpanData span = getSpanData(startMs, endMs, SpanKind.SERVER);
+    SpanData span =
+        getSpanData(startMs, endMs, SpanKind.SERVER, InstrumentationLibraryInfo.empty());
 
     // test
     io.jaegertracing.thriftjava.Span jaegerSpan = Adapter.toJaeger(span);
@@ -110,7 +130,8 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
 
-    SpanData span = getSpanData(startMs, endMs, SpanKind.INTERNAL);
+    SpanData span =
+        getSpanData(startMs, endMs, SpanKind.INTERNAL, InstrumentationLibraryInfo.empty());
 
     // test
     io.jaegertracing.thriftjava.Span jaegerSpan = Adapter.toJaeger(span);
@@ -275,7 +296,11 @@ class AdapterTest {
     return EventData.create(epochNanos, "the log message", attributes, totalAttributeCount);
   }
 
-  private static SpanData getSpanData(long startMs, long endMs, SpanKind kind) {
+  private static SpanData getSpanData(
+      long startMs,
+      long endMs,
+      SpanKind kind,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
     Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
     LinkData link = LinkData.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
@@ -297,6 +322,7 @@ class AdapterTest {
         .setKind(kind)
         .setResource(Resource.create(Attributes.empty()))
         .setStatus(StatusData.create(StatusCode.OK, "ok!"))
+        .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
         .build();
   }
 

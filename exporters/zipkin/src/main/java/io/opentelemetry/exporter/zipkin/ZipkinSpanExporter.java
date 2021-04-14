@@ -122,7 +122,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
     InstrumentationLibraryInfo instrumentationLibraryInfo =
         spanData.getInstrumentationLibraryInfo();
 
-    if (!instrumentationLibraryInfo.getName().isEmpty()) {
+    if (!(instrumentationLibraryInfo.getName() == null
+        || instrumentationLibraryInfo.getName().isEmpty())) {
       spanBuilder.putTag(KEY_INSTRUMENTATION_LIBRARY_NAME, instrumentationLibraryInfo.getName());
     }
     if (instrumentationLibraryInfo.getVersion() != null) {

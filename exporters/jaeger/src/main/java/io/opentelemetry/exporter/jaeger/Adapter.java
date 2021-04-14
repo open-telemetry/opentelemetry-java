@@ -112,11 +112,13 @@ final class Adapter {
               .build());
     }
 
-    target.addTags(
-        Model.KeyValue.newBuilder()
-            .setKey(KEY_INSTRUMENTATION_LIBRARY_NAME)
-            .setVStr(span.getInstrumentationLibraryInfo().getName())
-            .build());
+    if (span.getInstrumentationLibraryInfo().getName() != null) {
+      target.addTags(
+          Model.KeyValue.newBuilder()
+              .setKey(KEY_INSTRUMENTATION_LIBRARY_NAME)
+              .setVStr(span.getInstrumentationLibraryInfo().getName())
+              .build());
+    }
 
     if (span.getInstrumentationLibraryInfo().getVersion() != null) {
       target.addTags(

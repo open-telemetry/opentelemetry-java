@@ -145,7 +145,10 @@ final class CommonAdapter {
   static InstrumentationLibrary toProtoInstrumentationLibrary(
       InstrumentationLibraryInfo instrumentationLibraryInfo) {
     return InstrumentationLibrary.newBuilder()
-        .setName(instrumentationLibraryInfo.getName())
+        .setName(
+            instrumentationLibraryInfo.getName() == null
+                ? ""
+                : instrumentationLibraryInfo.getName())
         .setVersion(
             instrumentationLibraryInfo.getVersion() == null
                 ? ""

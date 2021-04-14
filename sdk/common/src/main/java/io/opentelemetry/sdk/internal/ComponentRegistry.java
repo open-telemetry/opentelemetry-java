@@ -48,7 +48,8 @@ public final class ComponentRegistry<V> {
    * @param instrumentationVersion the version of the instrumentation library.
    * @return the registered value associated with this name and version.
    */
-  public final V get(String instrumentationName, @Nullable String instrumentationVersion) {
+  public final V get(
+      @Nullable String instrumentationName, @Nullable String instrumentationVersion) {
     InstrumentationLibraryInfo instrumentationLibraryInfo =
         InstrumentationLibraryInfo.create(instrumentationName, instrumentationVersion);
 

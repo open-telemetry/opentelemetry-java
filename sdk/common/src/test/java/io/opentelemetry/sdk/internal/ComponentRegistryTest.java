@@ -6,12 +6,10 @@
 package io.opentelemetry.sdk.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import org.junit.jupiter.api.Test;
 
-/** Tests for {@link InstrumentationLibraryInfo}. */
 class ComponentRegistryTest {
 
   private static final String INSTRUMENTATION_NAME = "test_name";
@@ -20,10 +18,11 @@ class ComponentRegistryTest {
       new ComponentRegistry<>(TestComponent::new);
 
   @Test
-  void libraryName_MustNotBeNull() {
-    assertThatThrownBy(() -> registry.get(null, "version"))
-        .isInstanceOf(NullPointerException.class)
-        .hasMessage("name");
+  void libraryName_AllowsNull() {
+    TestComponent testComponent = registry.get(null, null);
+    assertThat(testComponent).isNotNull();
+    assertThat(testComponent.instrumentationLibraryInfo.getName()).isNull();
+    assertThat(testComponent.instrumentationLibraryInfo.getVersion()).isNull();
   }
 
   @Test

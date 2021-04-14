@@ -82,6 +82,17 @@ class OtlpJsonLoggingSpanExporterTest {
           .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("instrumentation2", "2"))
           .build();
 
+  private static final SpanData MINIMALIST_SPAN =
+      TestSpanData.builder()
+          .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create(null, null))
+          .setName("")
+          .setKind(SpanKind.CLIENT)
+          .setStartEpochNanos(500)
+          .setEndEpochNanos(501)
+          .setHasEnded(false)
+          .setStatus(StatusData.unset())
+          .build();
+
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(OtlpJsonLoggingSpanExporter.class);
 
@@ -94,10 +105,10 @@ class OtlpJsonLoggingSpanExporterTest {
 
   @Test
   void log() throws Exception {
-    exporter.export(Arrays.asList(SPAN1, SPAN2));
+    exporter.export(Arrays.asList(SPAN1, SPAN2, MINIMALIST_SPAN));
 
     assertThat(logs.getEvents())
-        .hasSize(1)
+        .hasSize(2)
         .allSatisfy(log -> assertThat(log.getLevel()).isEqualTo(Level.INFO));
     JSONAssert.assertEquals(
         "{"
@@ -165,9 +176,42 @@ class OtlpJsonLoggingSpanExporterTest {
             + "    }]"
             + "  }]"
             + "}",
-        logs.getEvents().get(0).getMessage(),
+        logs.getEvents().stream()
+            .filter(le -> le.getMessage().contains("12345678876543211234567887654321"))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("could not find trace id in the logs"))
+            .getMessage(),
+        /* strict= */ true);
+
+    // the empty resource span ends up with it's own log line...
+    JSONAssert.assertEquals(
+        "{"
+            + "  \"resource\": {},"
+            + "  \"instrumentationLibrarySpans\": ["
+            + "    {"
+            + "      \"instrumentationLibrary\": {},"
+            + "      \"spans\": ["
+            + "        {"
+            + "          \"traceId\": \"00000000000000000000000000000000\","
+            + "          \"spanId\": \"0000000000000000\","
+            + "          \"kind\": \"SPAN_KIND_CLIENT\","
+            + "          \"startTimeUnixNano\": \"500\","
+            + "          \"endTimeUnixNano\": \"501\","
+            + "          \"status\": {}"
+            + "        }"
+            + "      ]"
+            + "    }"
+            + "  ]"
+            + "}",
+        logs.getEvents().stream()
+            .filter(le -> le.getMessage().contains("00000000000000000000000000000000"))
+            .findFirst()
+            .orElseThrow(
+                () -> new IllegalStateException("could not find invalid trace id in the logs"))
+            .getMessage(),
         /* strict= */ true);
     assertThat(logs.getEvents().get(0).getMessage()).doesNotContain("\n");
+    assertThat(logs.getEvents().get(1).getMessage()).doesNotContain("\n");
   }
 
   @Test

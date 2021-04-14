@@ -201,22 +201,18 @@ class SdkTracerProviderTest {
   @Test
   void suppliesDefaultTracerForNullName() {
     SdkTracer tracer = (SdkTracer) tracerFactory.get(null);
-    assertThat(tracer.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
+    assertThat(tracer.getInstrumentationLibraryInfo().getName()).isNull();
 
     tracer = (SdkTracer) tracerFactory.get(null, null);
-    assertThat(tracer.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
+    assertThat(tracer.getInstrumentationLibraryInfo().getName()).isNull();
   }
 
   @Test
   void suppliesDefaultTracerForEmptyName() {
     SdkTracer tracer = (SdkTracer) tracerFactory.get("");
-    assertThat(tracer.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
+    assertThat(tracer.getInstrumentationLibraryInfo().getName()).isEqualTo("");
 
     tracer = (SdkTracer) tracerFactory.get("", "");
-    assertThat(tracer.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkTracerProvider.DEFAULT_TRACER_NAME);
+    assertThat(tracer.getInstrumentationLibraryInfo().getName()).isEqualTo("");
   }
 }

@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
  */
 public final class SdkTracerProvider implements TracerProvider, Closeable {
   private static final Logger logger = Logger.getLogger(SdkTracerProvider.class.getName());
-  static final String DEFAULT_TRACER_NAME = "unknown";
+  static final String DEFAULT_TRACER_NAME = "";
   private final TracerSharedState sharedState;
   private final ComponentRegistry<SdkTracer> tracerSdkComponentRegistry;
 
@@ -68,7 +68,6 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
     // Per the spec, both null and empty are "invalid" and a "default" should be used.
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       logger.fine("Tracer requested without instrumentation name.");
-      instrumentationName = DEFAULT_TRACER_NAME;
     }
     return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
   }
