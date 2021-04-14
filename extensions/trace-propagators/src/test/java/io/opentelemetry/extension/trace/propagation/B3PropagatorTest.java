@@ -617,13 +617,15 @@ class B3PropagatorTest {
   }
 
   @Test
-  void fieldsList() {
+  void fieldsList_multiInject() {
     assertThat(b3Propagator.fields())
         .containsExactly(
-            B3Propagator.TRACE_ID_HEADER,
-            B3Propagator.SPAN_ID_HEADER,
-            B3Propagator.SAMPLED_HEADER,
-            B3Propagator.COMBINED_HEADER);
+            B3Propagator.TRACE_ID_HEADER, B3Propagator.SPAN_ID_HEADER, B3Propagator.SAMPLED_HEADER);
+  }
+
+  @Test
+  void fieldsList_singleHeader() {
+    assertThat(b3PropagatorSingleHeader.fields()).containsExactly(B3Propagator.COMBINED_HEADER);
   }
 
   @Test
