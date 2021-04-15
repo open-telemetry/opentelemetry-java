@@ -41,12 +41,11 @@ public final class ResourceAttributes {
       stringKey("cloud.availability_zone");
 
   /**
-   * The cloud infrastructure resource in use.
+   * The cloud platform in use.
    *
    * <p>Note: The prefix of the service SHOULD match the one specified in `cloud.provider`.
    */
-  public static final AttributeKey<String> CLOUD_INFRASTRUCTURE_SERVICE =
-      stringKey("cloud.infrastructure_service");
+  public static final AttributeKey<String> CLOUD_PLATFORM = stringKey("cloud.platform");
 
   /**
    * The Amazon Resource Name (ARN) of an [ECS container
@@ -76,6 +75,10 @@ public final class ResourceAttributes {
 
   /** The task definition family this task definition is a member of. */
   public static final AttributeKey<String> AWS_ECS_TASK_FAMILY = stringKey("aws.ecs.task.family");
+
+  /** The revision for this task definition. */
+  public static final AttributeKey<String> AWS_ECS_TASK_REVISION =
+      stringKey("aws.ecs.task.revision");
 
   /** The ARN of an EKS cluster. */
   public static final AttributeKey<String> AWS_EKS_CLUSTER_ARN = stringKey("aws.eks.cluster.arn");
@@ -381,6 +384,16 @@ public final class ResourceAttributes {
   public static final AttributeKey<String> TELEMETRY_AUTO_VERSION =
       stringKey("telemetry.auto.version");
 
+  /** The name of the web engine. */
+  public static final AttributeKey<String> WEBENGINE_NAME = stringKey("webengine.name");
+
+  /** The version of the web engine. */
+  public static final AttributeKey<String> WEBENGINE_VERSION = stringKey("webengine.version");
+
+  /** Additional description of the web engine (e.g. detailed version and edition information). */
+  public static final AttributeKey<String> WEBENGINE_DESCRIPTION =
+      stringKey("webengine.description");
+
   // Enum definitions
   public static final class CloudProviderValues {
     /** Amazon Web Services. */
@@ -393,7 +406,7 @@ public final class ResourceAttributes {
     private CloudProviderValues() {}
   }
 
-  public static final class CloudInfrastructureServiceValues {
+  public static final class CloudPlatformValues {
     /** AWS Elastic Compute Cloud. */
     public static final String AWS_EC2 = "aws_ec2";
     /** AWS Elastic Container Service. */
@@ -425,7 +438,7 @@ public final class ResourceAttributes {
     /** Google Cloud App Engine (GAE). */
     public static final String GCP_APPENGINE = "gcp_app_engine";
 
-    private CloudInfrastructureServiceValues() {}
+    private CloudPlatformValues() {}
   }
 
   public static final class AwsEcsLaunchtypeValues {

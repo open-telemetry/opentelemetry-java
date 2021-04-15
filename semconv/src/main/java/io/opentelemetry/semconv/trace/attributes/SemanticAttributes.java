@@ -6,10 +6,13 @@
 package io.opentelemetry.semconv.trace.attributes;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
+import java.util.List;
 
 // DO NOT EDIT, this is an Auto-generated file from
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
@@ -492,6 +495,101 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<Long> CODE_LINENO = longKey("code.lineno");
 
+  /** The value `aws-api`. */
+  public static final AttributeKey<String> RPC_SYSTEM = stringKey("rpc.system");
+
+  /** The name of the service to which a request is made, as returned by the AWS SDK. */
+  public static final AttributeKey<String> RPC_SERVICE = stringKey("rpc.service");
+
+  /** The name of the operation corresponding to the request, as returned by the AWS SDK. */
+  public static final AttributeKey<String> RPC_METHOD = stringKey("rpc.method");
+
+  /** The keys in the `RequestItems` object field. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_TABLE_NAMES =
+      stringArrayKey("aws.dynamodb.table_names");
+
+  /** The JSON-serialized value of each item in the `ConsumedCapacity` response field. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_CONSUMED_CAPACITY =
+      stringArrayKey("aws.dynamodb.consumed_capacity");
+
+  /** The JSON-serialized value of the `ItemCollectionMetrics` response field. */
+  public static final AttributeKey<String> AWS_DYNAMODB_ITEM_COLLECTION_METRICS =
+      stringKey("aws.dynamodb.item_collection_metrics");
+
+  /** The value of the `ProvisionedThroughput.ReadCapacityUnits` request parameter. */
+  public static final AttributeKey<Double> AWS_DYNAMODB_PROVISIONED_READ_CAPACITY =
+      doubleKey("aws.dynamodb.provisioned_read_capacity");
+
+  /** The value of the `ProvisionedThroughput.WriteCapacityUnits` request parameter. */
+  public static final AttributeKey<Double> AWS_DYNAMODB_PROVISIONED_WRITE_CAPACITY =
+      doubleKey("aws.dynamodb.provisioned_write_capacity");
+
+  /** The value of the `ConsistentRead` request parameter. */
+  public static final AttributeKey<Boolean> AWS_DYNAMODB_CONSISTENT_READ =
+      booleanKey("aws.dynamodb.consistent_read");
+
+  /** The value of the `ProjectionExpression` request parameter. */
+  public static final AttributeKey<String> AWS_DYNAMODB_PROJECTION =
+      stringKey("aws.dynamodb.projection");
+
+  /** The value of the `Limit` request parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_LIMIT = longKey("aws.dynamodb.limit");
+
+  /** The value of the `AttributesToGet` request parameter. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_ATTRIBUTES_TO_GET =
+      stringArrayKey("aws.dynamodb.attributes_to_get");
+
+  /** The value of the `IndexName` request parameter. */
+  public static final AttributeKey<String> AWS_DYNAMODB_INDEX_NAME =
+      stringKey("aws.dynamodb.index_name");
+
+  /** The value of the `Select` request parameter. */
+  public static final AttributeKey<String> AWS_DYNAMODB_SELECT = stringKey("aws.dynamodb.select");
+
+  /** The JSON-serialized value of each item of the `GlobalSecondaryIndexes` request field. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_GLOBAL_SECONDARY_INDEXES =
+      stringArrayKey("aws.dynamodb.global_secondary_indexes");
+
+  /** The JSON-serialized value of each item of the `LocalSecondaryIndexes` request field. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_LOCAL_SECONDARY_INDEXES =
+      stringArrayKey("aws.dynamodb.local_secondary_indexes");
+
+  /** The value of the `ExclusiveStartTableName` request parameter. */
+  public static final AttributeKey<String> AWS_DYNAMODB_EXCLUSIVE_START_TABLE =
+      stringKey("aws.dynamodb.exclusive_start_table");
+
+  /** The the number of items in the `TableNames` response parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_TABLE_COUNT =
+      longKey("aws.dynamodb.table_count");
+
+  /** The value of the `ScanIndexForward` request parameter. */
+  public static final AttributeKey<Boolean> AWS_DYNAMODB_SCAN_FORWARD =
+      booleanKey("aws.dynamodb.scan_forward");
+
+  /** The value of the `Segment` request parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_SEGMENT = longKey("aws.dynamodb.segment");
+
+  /** The value of the `TotalSegments` request parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_TOTAL_SEGMENTS =
+      longKey("aws.dynamodb.total_segments");
+
+  /** The value of the `Count` response parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_COUNT = longKey("aws.dynamodb.count");
+
+  /** The value of the `ScannedCount` response parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_SCANNED_COUNT =
+      longKey("aws.dynamodb.scanned_count");
+
+  /** The JSON-serialized value of each item in the `AttributeDefinitions` request field. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_ATTRIBUTE_DEFINITIONS =
+      stringArrayKey("aws.dynamodb.attribute_definitions");
+
+  /**
+   * The JSON-serialized value of each item in the the `GlobalSecondaryIndexUpdates` request field.
+   */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_GLOBAL_SECONDARY_INDEX_UPDATES =
+      stringArrayKey("aws.dynamodb.global_secondary_index_updates");
+
   /**
    * A string identifying the kind of message consumption as defined in the [Operation
    * names](#operation-names) section above. If the operation is &#34;send&#34;, this attribute MUST
@@ -529,15 +627,6 @@ public final class SemanticAttributes {
   /** A boolean that is true if the message is a tombstone. */
   public static final AttributeKey<Boolean> MESSAGING_KAFKA_TOMBSTONE =
       booleanKey("messaging.kafka.tombstone");
-
-  /** A string identifying the remoting system. */
-  public static final AttributeKey<String> RPC_SYSTEM = stringKey("rpc.system");
-
-  /** The full name of the service being called, including its package name, if applicable. */
-  public static final AttributeKey<String> RPC_SERVICE = stringKey("rpc.service");
-
-  /** The name of the method being called, must be equal to the $method part in the span name. */
-  public static final AttributeKey<String> RPC_METHOD = stringKey("rpc.method");
 
   /**
    * The [numeric status code](https://github.com/grpc/grpc/blob/v1.33.2/doc/statuscodes.md) of the
@@ -740,7 +829,7 @@ public final class SemanticAttributes {
   public static final class FaasInvokedProviderValues {
     /** Amazon Web Services. */
     public static final String AWS = "aws";
-    /** Amazon Web Services. */
+    /** Microsoft Azure. */
     public static final String AZURE = "azure";
     /** Google Cloud Platform. */
     public static final String GCP = "gcp";
