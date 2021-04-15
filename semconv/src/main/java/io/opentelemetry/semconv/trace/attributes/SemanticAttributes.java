@@ -68,21 +68,6 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> DB_OPERATION = stringKey("db.operation");
 
-  /** Remote hostname or similar, see note below. */
-  public static final AttributeKey<String> NET_PEER_NAME = stringKey("net.peer.name");
-
-  /**
-   * Remote address of the peer (dotted decimal for IPv4 or
-   * [RFC5952](https://tools.ietf.org/html/rfc5952) for IPv6).
-   */
-  public static final AttributeKey<String> NET_PEER_IP = stringKey("net.peer.ip");
-
-  /** Remote port number. */
-  public static final AttributeKey<Long> NET_PEER_PORT = longKey("net.peer.port");
-
-  /** Transport protocol used. See note below. */
-  public static final AttributeKey<String> NET_TRANSPORT = stringKey("net.transport");
-
   /**
    * The Microsoft SQL Server [instance
    * name](https://docs.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver15)
@@ -236,6 +221,131 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> FAAS_DOCUMENT_NAME = stringKey("faas.document.name");
 
+  /**
+   * A string containing the function invocation time in the [ISO
+   * 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format expressed in
+   * [UTC](https://www.w3.org/TR/NOTE-datetime).
+   */
+  public static final AttributeKey<String> FAAS_TIME = stringKey("faas.time");
+
+  /**
+   * A string containing the schedule period as [Cron
+   * Expression](https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm).
+   */
+  public static final AttributeKey<String> FAAS_CRON = stringKey("faas.cron");
+
+  /**
+   * A boolean that is true if the serverless function is executed for the first time (aka
+   * cold-start).
+   */
+  public static final AttributeKey<Boolean> FAAS_COLDSTART = booleanKey("faas.coldstart");
+
+  /**
+   * The name of the invoked function.
+   *
+   * <p>Note: SHOULD be equal to the `faas.name` resource attribute of the invoked function.
+   */
+  public static final AttributeKey<String> FAAS_INVOKED_NAME = stringKey("faas.invoked_name");
+
+  /**
+   * The cloud provider of the invoked function.
+   *
+   * <p>Note: SHOULD be equal to the `cloud.provider` resource attribute of the invoked function.
+   */
+  public static final AttributeKey<String> FAAS_INVOKED_PROVIDER =
+      stringKey("faas.invoked_provider");
+
+  /**
+   * The cloud region of the invoked function.
+   *
+   * <p>Note: SHOULD be equal to the `cloud.region` resource attribute of the invoked function.
+   */
+  public static final AttributeKey<String> FAAS_INVOKED_REGION = stringKey("faas.invoked_region");
+
+  /** Transport protocol used. See note below. */
+  public static final AttributeKey<String> NET_TRANSPORT = stringKey("net.transport");
+
+  /**
+   * Remote address of the peer (dotted decimal for IPv4 or
+   * [RFC5952](https://tools.ietf.org/html/rfc5952) for IPv6).
+   */
+  public static final AttributeKey<String> NET_PEER_IP = stringKey("net.peer.ip");
+
+  /** Remote port number. */
+  public static final AttributeKey<Long> NET_PEER_PORT = longKey("net.peer.port");
+
+  /** Remote hostname or similar, see note below. */
+  public static final AttributeKey<String> NET_PEER_NAME = stringKey("net.peer.name");
+
+  /** Like `net.peer.ip` but for the host IP. Useful in case of a multi-IP host. */
+  public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
+
+  /** Like `net.peer.port` but for the host port. */
+  public static final AttributeKey<Long> NET_HOST_PORT = longKey("net.host.port");
+
+  /** Local hostname or similar, see note below. */
+  public static final AttributeKey<String> NET_HOST_NAME = stringKey("net.host.name");
+
+  /**
+   * The [`service.name`](../../resource/semantic_conventions/README.md#service) of the remote
+   * service. SHOULD be equal to the actual `service.name` resource attribute of the remote service
+   * if any.
+   */
+  public static final AttributeKey<String> PEER_SERVICE = stringKey("peer.service");
+
+  /**
+   * Username or client_id extracted from the access token or
+   * [Authorization](https://tools.ietf.org/html/rfc7235#section-4.2) header in the inbound request
+   * from outside the system.
+   */
+  public static final AttributeKey<String> ENDUSER_ID = stringKey("enduser.id");
+
+  /**
+   * Actual/assumed role the client is making the request under extracted from token or application
+   * security context.
+   */
+  public static final AttributeKey<String> ENDUSER_ROLE = stringKey("enduser.role");
+
+  /**
+   * Scopes or granted authorities the client currently possesses extracted from token or
+   * application security context. The value would come from the scope associated with an [OAuth 2.0
+   * Access Token](https://tools.ietf.org/html/rfc6749#section-3.3) or an attribute value in a [SAML
+   * 2.0
+   * Assertion](http://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html).
+   */
+  public static final AttributeKey<String> ENDUSER_SCOPE = stringKey("enduser.scope");
+
+  /** Current &#34;managed&#34; thread ID (as opposed to OS thread ID). */
+  public static final AttributeKey<Long> THREAD_ID = longKey("thread.id");
+
+  /** Current thread name. */
+  public static final AttributeKey<String> THREAD_NAME = stringKey("thread.name");
+
+  /**
+   * The method or function name, or equivalent (usually rightmost part of the code unit&#39;s
+   * name).
+   */
+  public static final AttributeKey<String> CODE_FUNCTION = stringKey("code.function");
+
+  /**
+   * The &#34;namespace&#34; within which `code.function` is defined. Usually the qualified class or
+   * module name, such that `code.namespace` + some separator + `code.function` form a unique
+   * identifier for the code unit.
+   */
+  public static final AttributeKey<String> CODE_NAMESPACE = stringKey("code.namespace");
+
+  /**
+   * The source code file name that identifies the code unit as uniquely as possible (preferably an
+   * absolute file path).
+   */
+  public static final AttributeKey<String> CODE_FILEPATH = stringKey("code.filepath");
+
+  /**
+   * The line number in `code.filepath` best representing the operation. It SHOULD point within the
+   * code unit named in `code.function`.
+   */
+  public static final AttributeKey<Long> CODE_LINENO = longKey("code.lineno");
+
   /** HTTP request method. */
   public static final AttributeKey<String> HTTP_METHOD = stringKey("http.method");
 
@@ -334,176 +444,6 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> HTTP_CLIENT_IP = stringKey("http.client_ip");
 
-  /** Like `net.peer.ip` but for the host IP. Useful in case of a multi-IP host. */
-  public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
-
-  /** Like `net.peer.port` but for the host port. */
-  public static final AttributeKey<Long> NET_HOST_PORT = longKey("net.host.port");
-
-  /** Local hostname or similar, see note below. */
-  public static final AttributeKey<String> NET_HOST_NAME = stringKey("net.host.name");
-
-  /** A string identifying the messaging system. */
-  public static final AttributeKey<String> MESSAGING_SYSTEM = stringKey("messaging.system");
-
-  /**
-   * The message destination name. This might be equal to the span name but is required
-   * nevertheless.
-   */
-  public static final AttributeKey<String> MESSAGING_DESTINATION =
-      stringKey("messaging.destination");
-
-  /** The kind of message destination. */
-  public static final AttributeKey<String> MESSAGING_DESTINATION_KIND =
-      stringKey("messaging.destination_kind");
-
-  /** A boolean that is true if the message destination is temporary. */
-  public static final AttributeKey<Boolean> MESSAGING_TEMP_DESTINATION =
-      booleanKey("messaging.temp_destination");
-
-  /** The name of the transport protocol. */
-  public static final AttributeKey<String> MESSAGING_PROTOCOL = stringKey("messaging.protocol");
-
-  /** The version of the transport protocol. */
-  public static final AttributeKey<String> MESSAGING_PROTOCOL_VERSION =
-      stringKey("messaging.protocol_version");
-
-  /** Connection string. */
-  public static final AttributeKey<String> MESSAGING_URL = stringKey("messaging.url");
-
-  /**
-   * A value used by the messaging system as an identifier for the message, represented as a string.
-   */
-  public static final AttributeKey<String> MESSAGING_MESSAGE_ID = stringKey("messaging.message_id");
-
-  /**
-   * The [conversation ID](#conversations) identifying the conversation to which the message
-   * belongs, represented as a string. Sometimes called &#34;Correlation ID&#34;.
-   */
-  public static final AttributeKey<String> MESSAGING_CONVERSATION_ID =
-      stringKey("messaging.conversation_id");
-
-  /**
-   * The (uncompressed) size of the message payload in bytes. Also use this attribute if it is
-   * unknown whether the compressed or uncompressed payload size is reported.
-   */
-  public static final AttributeKey<Long> MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES =
-      longKey("messaging.message_payload_size_bytes");
-
-  /** The compressed size of the message payload in bytes. */
-  public static final AttributeKey<Long> MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES =
-      longKey("messaging.message_payload_compressed_size_bytes");
-
-  /**
-   * A string containing the function invocation time in the [ISO
-   * 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format expressed in
-   * [UTC](https://www.w3.org/TR/NOTE-datetime).
-   */
-  public static final AttributeKey<String> FAAS_TIME = stringKey("faas.time");
-
-  /**
-   * A string containing the schedule period as [Cron
-   * Expression](https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm).
-   */
-  public static final AttributeKey<String> FAAS_CRON = stringKey("faas.cron");
-
-  /**
-   * A boolean that is true if the serverless function is executed for the first time (aka
-   * cold-start).
-   */
-  public static final AttributeKey<Boolean> FAAS_COLDSTART = booleanKey("faas.coldstart");
-
-  /**
-   * The name of the invoked function.
-   *
-   * <p>Note: SHOULD be equal to the `faas.name` resource attribute of the invoked function.
-   */
-  public static final AttributeKey<String> FAAS_INVOKED_NAME = stringKey("faas.invoked_name");
-
-  /**
-   * The cloud provider of the invoked function.
-   *
-   * <p>Note: SHOULD be equal to the `cloud.provider` resource attribute of the invoked function.
-   */
-  public static final AttributeKey<String> FAAS_INVOKED_PROVIDER =
-      stringKey("faas.invoked_provider");
-
-  /**
-   * The cloud region of the invoked function.
-   *
-   * <p>Note: SHOULD be equal to the `cloud.region` resource attribute of the invoked function.
-   */
-  public static final AttributeKey<String> FAAS_INVOKED_REGION = stringKey("faas.invoked_region");
-
-  /**
-   * The [`service.name`](../../resource/semantic_conventions/README.md#service) of the remote
-   * service. SHOULD be equal to the actual `service.name` resource attribute of the remote service
-   * if any.
-   */
-  public static final AttributeKey<String> PEER_SERVICE = stringKey("peer.service");
-
-  /**
-   * Username or client_id extracted from the access token or
-   * [Authorization](https://tools.ietf.org/html/rfc7235#section-4.2) header in the inbound request
-   * from outside the system.
-   */
-  public static final AttributeKey<String> ENDUSER_ID = stringKey("enduser.id");
-
-  /**
-   * Actual/assumed role the client is making the request under extracted from token or application
-   * security context.
-   */
-  public static final AttributeKey<String> ENDUSER_ROLE = stringKey("enduser.role");
-
-  /**
-   * Scopes or granted authorities the client currently possesses extracted from token or
-   * application security context. The value would come from the scope associated with an [OAuth 2.0
-   * Access Token](https://tools.ietf.org/html/rfc6749#section-3.3) or an attribute value in a [SAML
-   * 2.0
-   * Assertion](http://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html).
-   */
-  public static final AttributeKey<String> ENDUSER_SCOPE = stringKey("enduser.scope");
-
-  /** Current &#34;managed&#34; thread ID (as opposed to OS thread ID). */
-  public static final AttributeKey<Long> THREAD_ID = longKey("thread.id");
-
-  /** Current thread name. */
-  public static final AttributeKey<String> THREAD_NAME = stringKey("thread.name");
-
-  /**
-   * The method or function name, or equivalent (usually rightmost part of the code unit&#39;s
-   * name).
-   */
-  public static final AttributeKey<String> CODE_FUNCTION = stringKey("code.function");
-
-  /**
-   * The &#34;namespace&#34; within which `code.function` is defined. Usually the qualified class or
-   * module name, such that `code.namespace` + some separator + `code.function` form a unique
-   * identifier for the code unit.
-   */
-  public static final AttributeKey<String> CODE_NAMESPACE = stringKey("code.namespace");
-
-  /**
-   * The source code file name that identifies the code unit as uniquely as possible (preferably an
-   * absolute file path).
-   */
-  public static final AttributeKey<String> CODE_FILEPATH = stringKey("code.filepath");
-
-  /**
-   * The line number in `code.filepath` best representing the operation. It SHOULD point within the
-   * code unit named in `code.function`.
-   */
-  public static final AttributeKey<Long> CODE_LINENO = longKey("code.lineno");
-
-  /** The value `aws-api`. */
-  public static final AttributeKey<String> RPC_SYSTEM = stringKey("rpc.system");
-
-  /** The name of the service to which a request is made, as returned by the AWS SDK. */
-  public static final AttributeKey<String> RPC_SERVICE = stringKey("rpc.service");
-
-  /** The name of the operation corresponding to the request, as returned by the AWS SDK. */
-  public static final AttributeKey<String> RPC_METHOD = stringKey("rpc.method");
-
   /** The keys in the `RequestItems` object field. */
   public static final AttributeKey<List<String>> AWS_DYNAMODB_TABLE_NAMES =
       stringArrayKey("aws.dynamodb.table_names");
@@ -590,6 +530,57 @@ public final class SemanticAttributes {
   public static final AttributeKey<List<String>> AWS_DYNAMODB_GLOBAL_SECONDARY_INDEX_UPDATES =
       stringArrayKey("aws.dynamodb.global_secondary_index_updates");
 
+  /** A string identifying the messaging system. */
+  public static final AttributeKey<String> MESSAGING_SYSTEM = stringKey("messaging.system");
+
+  /**
+   * The message destination name. This might be equal to the span name but is required
+   * nevertheless.
+   */
+  public static final AttributeKey<String> MESSAGING_DESTINATION =
+      stringKey("messaging.destination");
+
+  /** The kind of message destination. */
+  public static final AttributeKey<String> MESSAGING_DESTINATION_KIND =
+      stringKey("messaging.destination_kind");
+
+  /** A boolean that is true if the message destination is temporary. */
+  public static final AttributeKey<Boolean> MESSAGING_TEMP_DESTINATION =
+      booleanKey("messaging.temp_destination");
+
+  /** The name of the transport protocol. */
+  public static final AttributeKey<String> MESSAGING_PROTOCOL = stringKey("messaging.protocol");
+
+  /** The version of the transport protocol. */
+  public static final AttributeKey<String> MESSAGING_PROTOCOL_VERSION =
+      stringKey("messaging.protocol_version");
+
+  /** Connection string. */
+  public static final AttributeKey<String> MESSAGING_URL = stringKey("messaging.url");
+
+  /**
+   * A value used by the messaging system as an identifier for the message, represented as a string.
+   */
+  public static final AttributeKey<String> MESSAGING_MESSAGE_ID = stringKey("messaging.message_id");
+
+  /**
+   * The [conversation ID](#conversations) identifying the conversation to which the message
+   * belongs, represented as a string. Sometimes called &#34;Correlation ID&#34;.
+   */
+  public static final AttributeKey<String> MESSAGING_CONVERSATION_ID =
+      stringKey("messaging.conversation_id");
+
+  /**
+   * The (uncompressed) size of the message payload in bytes. Also use this attribute if it is
+   * unknown whether the compressed or uncompressed payload size is reported.
+   */
+  public static final AttributeKey<Long> MESSAGING_MESSAGE_PAYLOAD_SIZE_BYTES =
+      longKey("messaging.message_payload_size_bytes");
+
+  /** The compressed size of the message payload in bytes. */
+  public static final AttributeKey<Long> MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES =
+      longKey("messaging.message_payload_compressed_size_bytes");
+
   /**
    * A string identifying the kind of message consumption as defined in the [Operation
    * names](#operation-names) section above. If the operation is &#34;send&#34;, this attribute MUST
@@ -627,6 +618,15 @@ public final class SemanticAttributes {
   /** A boolean that is true if the message is a tombstone. */
   public static final AttributeKey<Boolean> MESSAGING_KAFKA_TOMBSTONE =
       booleanKey("messaging.kafka.tombstone");
+
+  /** A string identifying the remoting system. */
+  public static final AttributeKey<String> RPC_SYSTEM = stringKey("rpc.system");
+
+  /** The full name of the service being called, including its package name, if applicable. */
+  public static final AttributeKey<String> RPC_SERVICE = stringKey("rpc.service");
+
+  /** The name of the method being called, must be equal to the $method part in the span name. */
+  public static final AttributeKey<String> RPC_METHOD = stringKey("rpc.method");
 
   /**
    * The [numeric status code](https://github.com/grpc/grpc/blob/v1.33.2/doc/statuscodes.md) of the
@@ -730,25 +730,6 @@ public final class SemanticAttributes {
     private DbSystemValues() {}
   }
 
-  public static final class NetTransportValues {
-    /** IP.TCP. */
-    public static final String IP_TCP = "IP.TCP";
-    /** IP.UDP. */
-    public static final String IP_UDP = "IP.UDP";
-    /** Another IP-based protocol. */
-    public static final String IP = "IP";
-    /** Unix Domain socket. See below. */
-    public static final String UNIX = "Unix";
-    /** Named or anonymous pipe. See note below. */
-    public static final String PIPE = "pipe";
-    /** In-process communication. */
-    public static final String INPROC = "inproc";
-    /** Something else (non IP-based). */
-    public static final String OTHER = "other";
-
-    private NetTransportValues() {}
-  }
-
   public static final class DbCassandraConsistencyLevelValues {
     /** ALL. */
     public static final String ALL = "ALL";
@@ -802,6 +783,36 @@ public final class SemanticAttributes {
     private FaasDocumentOperationValues() {}
   }
 
+  public static final class FaasInvokedProviderValues {
+    /** Amazon Web Services. */
+    public static final String AWS = "aws";
+    /** Microsoft Azure. */
+    public static final String AZURE = "azure";
+    /** Google Cloud Platform. */
+    public static final String GCP = "gcp";
+
+    private FaasInvokedProviderValues() {}
+  }
+
+  public static final class NetTransportValues {
+    /** IP.TCP. */
+    public static final String IP_TCP = "IP.TCP";
+    /** IP.UDP. */
+    public static final String IP_UDP = "IP.UDP";
+    /** Another IP-based protocol. */
+    public static final String IP = "IP";
+    /** Unix Domain socket. See below. */
+    public static final String UNIX = "Unix";
+    /** Named or anonymous pipe. See note below. */
+    public static final String PIPE = "pipe";
+    /** In-process communication. */
+    public static final String INPROC = "inproc";
+    /** Something else (non IP-based). */
+    public static final String OTHER = "other";
+
+    private NetTransportValues() {}
+  }
+
   public static final class HttpFlavorValues {
     /** HTTP 1.0. */
     public static final String HTTP_1_0 = "1.0";
@@ -824,17 +835,6 @@ public final class SemanticAttributes {
     public static final String TOPIC = "topic";
 
     private MessagingDestinationKindValues() {}
-  }
-
-  public static final class FaasInvokedProviderValues {
-    /** Amazon Web Services. */
-    public static final String AWS = "aws";
-    /** Microsoft Azure. */
-    public static final String AZURE = "azure";
-    /** Google Cloud Platform. */
-    public static final String GCP = "gcp";
-
-    private FaasInvokedProviderValues() {}
   }
 
   public static final class MessagingOperationValues {
