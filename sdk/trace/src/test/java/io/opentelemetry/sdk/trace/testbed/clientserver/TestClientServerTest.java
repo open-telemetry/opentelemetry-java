@@ -56,27 +56,24 @@ class TestClientServerTest {
 
     List<SpanData> finished = otelTesting.getSpans();
     assertThat(finished).hasSize(2);
-    int flag=1;
+    int flag = 1;
     finished = TestUtils.sortByStartTime(finished);
 
-    if(finished.get(0).getKind().equals(SpanKind.CLIENT)){
-      flag=2;
+    if (finished.get(0).getKind().equals(SpanKind.CLIENT)) {
+      flag = 2;
     }
 
-     if(flag==2){
+     if (flag == 2) {
        assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
        assertThat(finished.get(0).getKind()).isEqualTo(SpanKind.CLIENT);
        assertThat(finished.get(1).getKind()).isEqualTo(SpanKind.SERVER);
-     }
-
-     else{
+     } else {
        SpanData r = finished.get(0);
-       finished.set(0,finished.get(1));
-       finished.set(1,r);
+       finished.set(0, finished.get(1));
+       finished.set(1, r);
        assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
        assertThat(finished.get(0).getKind()).isEqualTo(SpanKind.CLIENT);
        assertThat(finished.get(1).getKind()).isEqualTo(SpanKind.SERVER);
-
      }
     assertThat(Span.current()).isSameAs(Span.getInvalid());
   }
