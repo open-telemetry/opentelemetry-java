@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import java.util.EnumMap;
@@ -26,7 +27,9 @@ import java.util.regex.Pattern;
 final class ViewRegistry {
   private static final LinkedHashMap<Pattern, View> EMPTY_CONFIG = new LinkedHashMap<>();
   static final View CUMULATIVE_SUM =
-      View.builder().setAggregatorFactory(AggregatorFactory.sum(true)).build();
+      View.builder()
+          .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.CUMULATIVE))
+          .build();
   static final View SUMMARY =
       View.builder().setAggregatorFactory(AggregatorFactory.minMaxSumCount()).build();
   static final View LAST_VALUE =

@@ -57,9 +57,11 @@ public interface Aggregator<T> {
   /**
    * Returns the result of the merge of the given accumulations.
    *
+   * @param previousAccumulation the previously captured accumulation
+   * @param accumulation the newly captured accumulation
    * @return the result of the merge of the given accumulations.
    */
-  T merge(T a1, T a2);
+  T merge(T previousAccumulation, T accumulation);
 
   /**
    * Returns {@code true} if the processor needs to keep the previous collected state in order to

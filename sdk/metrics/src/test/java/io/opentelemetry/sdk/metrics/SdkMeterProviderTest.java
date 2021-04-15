@@ -165,7 +165,9 @@ public class SdkMeterProviderTest {
   void collectAllSyncInstruments_OverwriteTemporality() {
     sdkMeterProviderBuilder.registerView(
         InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
-        View.builder().setAggregatorFactory(AggregatorFactory.sum(false)).build());
+        View.builder()
+            .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.DELTA))
+            .build());
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
 
