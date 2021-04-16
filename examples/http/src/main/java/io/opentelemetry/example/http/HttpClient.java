@@ -59,13 +59,19 @@ public final class HttpClient {
          - http.scheme, peer.hostname, peer.port, http.target
          - http.scheme, peer.ip, peer.port, http.target
       */
+      url =
+          new URI(
+                  url.getScheme(),
+                  null,
+                  url.getHost(),
+                  url.getPort(),
+                  url.getPath(),
+                  url.getQuery(),
+                  url.getFragment())
+              .toUrl();
 
-      if (url.getUserInfo() == null || url.getUserInfo().isEmpty()) {
-        span.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
-      } else {
-        span.setAttribute(
-            SemanticAttributes.HTTP_URL, url.toString().replace(url.getUserInfo() + '@', ""));
-      }
+      span.setAttribute(
+          SemanticAttributes.HTTP_URL, url.toString());
 
       // Inject the request with the current Context/Span.
       textMapPropagator.inject(Context.current(), con, setter);
