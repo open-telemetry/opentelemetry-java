@@ -61,7 +61,7 @@ public final class HttpClient {
          - http.scheme, peer.hostname, peer.port, http.target
          - http.scheme, peer.ip, peer.port, http.target
       */
-      uri = url.toURI();
+      URI uri = url.toURI();
       url =
           new URI(
                   uri.getScheme(),
