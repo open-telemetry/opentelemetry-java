@@ -21,6 +21,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 
 public final class HttpClient {
@@ -38,7 +40,7 @@ public final class HttpClient {
   // Inject the span context into the request
   private static final TextMapSetter<HttpURLConnection> setter = URLConnection::setRequestProperty;
 
-  private void makeRequest() throws IOException {
+  private void makeRequest() throws IOException, URISyntaxException {
     int port = 8080;
     URL url = new URL("http://127.0.0.1:" + port);
     HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -59,16 +61,17 @@ public final class HttpClient {
          - http.scheme, peer.hostname, peer.port, http.target
          - http.scheme, peer.ip, peer.port, http.target
       */
+      uri = url.toURI();
       url =
           new URI(
-                  url.getScheme(),
+                  uri.getScheme(),
                   null,
-                  url.getHost(),
-                  url.getPort(),
-                  url.getPath(),
-                  url.getQuery(),
-                  url.getFragment())
-              .toUrl();
+                  uri.getHost(),
+                  uri.getPort(),
+                  uri.getPath(),
+                  uri.getQuery(),
+                  uri.getFragment())
+              .toURL();
 
       span.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
 
