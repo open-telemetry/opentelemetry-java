@@ -70,8 +70,7 @@ public final class HttpClient {
                   url.getFragment())
               .toUrl();
 
-      span.setAttribute(
-          SemanticAttributes.HTTP_URL, url.toString());
+      span.setAttribute(SemanticAttributes.HTTP_URL, url.toString());
 
       // Inject the request with the current Context/Span.
       textMapPropagator.inject(Context.current(), con, setter);
