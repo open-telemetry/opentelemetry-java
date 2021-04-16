@@ -16,7 +16,7 @@
 
 #### Breaking Changes
 - The SemanticAttributes and ResourceAttributes have both been updated to match the OpenTelemetry Specification v1.2.0 release.
-- Values that were previously defined as `enum`s are now defined as static `public static final String` constants.
+- Values that were previously defined as `enum`s are now defined as static `public static final ` constants of the appropriate type.
 
 ### OpenTracing Shim (alpha)
 
