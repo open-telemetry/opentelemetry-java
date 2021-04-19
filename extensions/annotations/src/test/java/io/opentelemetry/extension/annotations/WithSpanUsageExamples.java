@@ -34,4 +34,14 @@ public class WithSpanUsageExamples {
    */
   @WithSpan(kind = SpanKind.CONSUMER)
   public void consume() {}
+
+  /**
+   * A {@link Span} with the default name and kind and with default span attributes.
+   *
+   * @param attribute1 A span attribute with the default name of {@code attribute1}.
+   * @param value A span attribute with the name {@code attribute2}.
+   */
+  @WithSpan
+  public void attributes(
+      @WithSpanAttribute String attribute1, @WithSpanAttribute("attribute2") long value) {}
 }
