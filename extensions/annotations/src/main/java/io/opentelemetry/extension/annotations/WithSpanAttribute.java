@@ -31,7 +31,12 @@ public @interface WithSpanAttribute {
    * Optional name of the attribute.
    *
    * <p>If not specified, an appropriate default name should be created by auto-instrumentation.
-   * E.g. {@code "className"."method"}
+   * E.g. the name of the parameter if formal parameter names are stored in the class file on
+   * compilation using the {@code -parameters} compiler option.
+   *
+   * @see <a
+   *     href="https://docs.oracle.com/javase/tutorial/reflect/member/methodparameterreflection.html">Obtaining
+   *     Names of Method Parameters</a>
    */
   String value() default "";
 }
