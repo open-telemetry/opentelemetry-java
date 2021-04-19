@@ -18,12 +18,9 @@ class ViewRegistryBuilder {
   private static final LinkedHashMap<Pattern, View> EMPTY_CONFIG = new LinkedHashMap<>();
 
   ViewRegistryBuilder() {
-    configuration.put(InstrumentType.COUNTER, EMPTY_CONFIG);
-    configuration.put(InstrumentType.UP_DOWN_COUNTER, EMPTY_CONFIG);
-    configuration.put(InstrumentType.VALUE_RECORDER, EMPTY_CONFIG);
-    configuration.put(InstrumentType.SUM_OBSERVER, EMPTY_CONFIG);
-    configuration.put(InstrumentType.UP_DOWN_SUM_OBSERVER, EMPTY_CONFIG);
-    configuration.put(InstrumentType.VALUE_OBSERVER, EMPTY_CONFIG);
+    for (InstrumentType type : InstrumentType.values()) {
+      configuration.put(type, EMPTY_CONFIG);
+    }
   }
 
   ViewRegistry build() {
