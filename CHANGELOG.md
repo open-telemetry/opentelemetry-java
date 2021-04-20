@@ -26,6 +26,10 @@
 ### SDK Extensions
 - A new `HostResource` Resource and the corresponding `ResourceProvider` has been added. 
 It will populate the `host.name` and `host.arch` Resource Attributes.
+- A new `ExecutorServiceSpanProcessor` has been added to the `opentelemetry-sdk-extension-tracing-incubator` module. This implementation
+of a batch SpanProcessor allows you to provide your own ExecutorService to do the background export work.
+- The `autoconfigure` module now supports providing the timeout setting for the Jaeger GRPC exporter via 
+a system property (`otel.exporter.jaeger.timeout`) or environment variable (`OTEL_EXPORTER_JAEGER_TIMEOUT`).
 
 ---
 
