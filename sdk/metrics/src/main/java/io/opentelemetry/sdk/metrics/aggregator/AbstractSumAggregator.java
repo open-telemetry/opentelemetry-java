@@ -64,6 +64,7 @@ abstract class AbstractSumAggregator<T> extends AbstractAggregator<T> {
    * @param temporality the temporality
    * @return the merge strategy
    */
+  // Visible for testing
   static MergeStrategy resolveMergeStrategy(
       InstrumentType instrumentType, AggregationTemporality temporality) {
     if ((instrumentType == InstrumentType.SUM_OBSERVER
@@ -76,17 +77,17 @@ abstract class AbstractSumAggregator<T> extends AbstractAggregator<T> {
   }
 
   @Override
-  public final T merge(T a1, T a2) {
+  public final T merge(T previousAccumulation, T accumulation) {
     switch (mergeStrategy) {
       case SUM:
-        return mergeSum(a1, a2);
+        return mergeSum(previousAccumulation, accumulation);
       case DIFF:
-        return mergeDiff(a1, a2);
+        return mergeDiff(previousAccumulation, accumulation);
     }
-    throw new AssertionError("Unsupported merge strategy: " + mergeStrategy.name());
+    throw new IllegalStateException("Unsupported merge strategy: " + mergeStrategy.name());
   }
 
-  abstract T mergeSum(T a1, T a2);
+  abstract T mergeSum(T previousAccumulation, T accumulation);
 
   abstract T mergeDiff(T previousAccumulation, T accumulation);
 

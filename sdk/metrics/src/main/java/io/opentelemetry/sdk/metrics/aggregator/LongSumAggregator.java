@@ -36,12 +36,12 @@ final class LongSumAggregator extends AbstractSumAggregator<Long> {
   }
 
   @Override
-  final Long mergeSum(Long a1, Long a2) {
-    return a1 + a2;
+  Long mergeSum(Long previousAccumulation, Long accumulation) {
+    return previousAccumulation + accumulation;
   }
 
   @Override
-  final Long mergeDiff(Long previousAccumulation, Long accumulation) {
+  Long mergeDiff(Long previousAccumulation, Long accumulation) {
     return accumulation - previousAccumulation;
   }
 

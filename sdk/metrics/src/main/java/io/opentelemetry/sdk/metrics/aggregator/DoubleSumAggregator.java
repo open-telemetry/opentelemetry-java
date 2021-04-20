@@ -35,12 +35,12 @@ final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
   }
 
   @Override
-  final Double mergeSum(Double a1, Double a2) {
-    return a1 + a2;
+  Double mergeSum(Double previousAccumulation, Double accumulation) {
+    return previousAccumulation + accumulation;
   }
 
   @Override
-  final Double mergeDiff(Double previousAccumulation, Double accumulation) {
+  Double mergeDiff(Double previousAccumulation, Double accumulation) {
     return accumulation - previousAccumulation;
   }
 
