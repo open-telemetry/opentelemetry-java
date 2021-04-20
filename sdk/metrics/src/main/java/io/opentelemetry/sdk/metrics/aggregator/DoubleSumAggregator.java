@@ -20,8 +20,8 @@ final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      boolean stateful) {
-    super(resource, instrumentationLibraryInfo, descriptor, stateful);
+      AggregationTemporality temporality) {
+    super(resource, instrumentationLibraryInfo, descriptor, temporality);
   }
 
   @Override
@@ -35,8 +35,13 @@ final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
   }
 
   @Override
-  public final Double merge(Double a1, Double a2) {
-    return a1 + a2;
+  Double mergeSum(Double previousAccumulation, Double accumulation) {
+    return previousAccumulation + accumulation;
+  }
+
+  @Override
+  Double mergeDiff(Double previousAccumulation, Double accumulation) {
+    return accumulation - previousAccumulation;
   }
 
   @Override

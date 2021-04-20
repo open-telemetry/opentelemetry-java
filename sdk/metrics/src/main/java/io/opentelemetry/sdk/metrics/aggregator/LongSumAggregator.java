@@ -16,12 +16,13 @@ import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
 final class LongSumAggregator extends AbstractSumAggregator<Long> {
+
   LongSumAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
-      boolean stateful) {
-    super(resource, instrumentationLibraryInfo, descriptor, stateful);
+      AggregationTemporality temporality) {
+    super(resource, instrumentationLibraryInfo, descriptor, temporality);
   }
 
   @Override
@@ -35,8 +36,13 @@ final class LongSumAggregator extends AbstractSumAggregator<Long> {
   }
 
   @Override
-  public Long merge(Long a1, Long a2) {
-    return a1 + a2;
+  Long mergeSum(Long previousAccumulation, Long accumulation) {
+    return previousAccumulation + accumulation;
+  }
+
+  @Override
+  Long mergeDiff(Long previousAccumulation, Long accumulation) {
+    return accumulation - previousAccumulation;
   }
 
   @Override

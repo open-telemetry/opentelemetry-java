@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.aggregator.AbstractSumAggregator.MergeStrategy;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -28,7 +29,7 @@ class LongSumAggregatorTest {
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG),
-          /* stateful= */ true);
+          AggregationTemporality.CUMULATIVE);
 
   @Test
   void createHandle() {
@@ -74,6 +75,29 @@ class LongSumAggregatorTest {
     aggregatorHandle.recordLong(-25);
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(-13);
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+  }
+
+  @Test
+  void merge() {
+    for (InstrumentType instrumentType : InstrumentType.values()) {
+      for (AggregationTemporality temporality : AggregationTemporality.values()) {
+        LongSumAggregator aggregator =
+            new LongSumAggregator(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.empty(),
+                InstrumentDescriptor.create(
+                    "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
+                temporality);
+        MergeStrategy expectedMergeStrategy =
+            AbstractSumAggregator.resolveMergeStrategy(instrumentType, temporality);
+        long merged = aggregator.merge(1L, 2L);
+        assertThat(merged)
+            .withFailMessage(
+                "Invalid merge result for instrumentType %s, temporality %s: %s",
+                instrumentType, temporality, merged)
+            .isEqualTo(expectedMergeStrategy == MergeStrategy.SUM ? 3 : 1);
+      }
+    }
   }
 
   @Test
