@@ -10,9 +10,9 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -21,14 +21,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class WorkerExporter {
+class WorkerExporter {
 
   private final SpanExporter spanExporter;
   private final ScheduledExecutorService executorService;
   private final Logger logger;
   private final long exporterTimeoutNanos;
-  private final BoundLongCounter exportedSpans;
-  private final AtomicReference<CompletableResultCode> flushRequested;
+  private final BoundLongCounter exportedSpanCounter;
+  private final AtomicReference<CompletableResultCode> flushSignal;
   private final int maxExportBatchSize;
 
   WorkerExporter(
@@ -36,15 +36,15 @@ public class WorkerExporter {
       ScheduledExecutorService executorService,
       Logger logger,
       long exporterTimeoutNanos,
-      BoundLongCounter exportedSpans,
-      AtomicReference<CompletableResultCode> flushRequested,
+      BoundLongCounter exportedSpanCounter,
+      AtomicReference<CompletableResultCode> flushSignal,
       int maxExportBatchSize) {
     this.spanExporter = spanExporter;
     this.executorService = executorService;
     this.logger = logger;
     this.exporterTimeoutNanos = exporterTimeoutNanos;
-    this.exportedSpans = exportedSpans;
-    this.flushRequested = flushRequested;
+    this.exportedSpanCounter = exportedSpanCounter;
+    this.flushSignal = flushSignal;
     this.maxExportBatchSize = maxExportBatchSize;
   }
 
@@ -80,7 +80,7 @@ public class WorkerExporter {
           if (cleaner.compareAndSet(true, false)) {
             timeoutHandler.cancel(true);
             if (result.isSuccess()) {
-              exportedSpans.add(batch.size());
+              exportedSpanCounter.add(batch.size());
               batch.clear();
               thisOpResult.succeed();
             } else {
@@ -99,7 +99,7 @@ public class WorkerExporter {
    * @param batch a collection of {@link SpanData} to export
    * @param queue {@link ReadableSpan} queue to be drained and then exported
    */
-  public void flush(Collection<SpanData> batch, BlockingQueue<ReadableSpan> queue) {
+  public void flush(Collection<SpanData> batch, AbstractQueue<ReadableSpan> queue) {
     int spansToFlush = queue.size();
     while (spansToFlush > 0) {
       ReadableSpan span = queue.poll();
@@ -111,7 +111,7 @@ public class WorkerExporter {
       }
     }
     exportCurrentBatch(batch);
-    flushRequested.get().succeed();
-    flushRequested.set(null);
+    flushSignal.get().succeed();
+    flushSignal.set(null);
   }
 }

@@ -17,6 +17,7 @@ dependencies {
 
     implementation(project(":api:metrics"))
     implementation(project(":semconv"))
+    implementation("org.jctools:jctools-core:3.3.0")
 
     annotationProcessor("com.google.auto.value:auto-value")
     testImplementation(project(":sdk:testing"))

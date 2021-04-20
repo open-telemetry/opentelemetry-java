@@ -20,13 +20,13 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
+import org.jctools.queues.MpscArrayQueue;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class ExecutorServiceSpanProcessor implements SpanProcessor {
@@ -34,6 +34,12 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
   private static final String SPAN_PROCESSOR_TYPE_LABEL = "spanProcessorType";
   private static final String SPAN_PROCESSOR_TYPE_VALUE =
       ExecutorServiceSpanProcessor.class.getSimpleName();
+  private static final Labels SPAN_PROCESSOR_LABELS =
+      Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE);
+  private static final Labels SPAN_PROCESSOR_DROPPED_LABELS =
+      Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE, "dropped", "true");
+  private static final Labels SPAN_PROCESSOR_EXPORTED_LABELS =
+      Labels.of(SPAN_PROCESSOR_TYPE_LABEL, SPAN_PROCESSOR_TYPE_VALUE, "dropped", "false");
 
   private final Worker worker;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
@@ -63,9 +69,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
-            new ArrayBlockingQueue<>(maxQueueSize),
-            SPAN_PROCESSOR_TYPE_LABEL,
-            SPAN_PROCESSOR_TYPE_VALUE,
+            new MpscArrayQueue<>(maxQueueSize),
             executorService,
             isShutdown,
             workerScheduleIntervalNanos);
@@ -132,7 +136,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
     private final BoundLongCounter droppedSpans;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private final long scheduleDelayNanos;
-    private final BlockingQueue<ReadableSpan> queue;
+    private final MpscArrayQueue<ReadableSpan> queue;
     private final int maxExportBatchSize;
     private final SpanExporter spanExporter;
     private final ScheduledExecutorService executorService;
@@ -142,9 +146,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
-        BlockingQueue<ReadableSpan> queue,
-        String spanProcessorTypeLabel,
-        String spanProcessorTypeValue,
+        MpscArrayQueue<ReadableSpan> queue,
         ScheduledExecutorService executorService,
         AtomicBoolean isShutdown,
         long workerScheduleIntervalNanos) {
@@ -153,10 +155,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
           .longValueObserverBuilder("queueSize")
           .setDescription("The number of spans queued")
           .setUnit("1")
-          .setUpdater(
-              result ->
-                  result.observe(
-                      queue.size(), Labels.of(spanProcessorTypeLabel, spanProcessorTypeValue)))
+          .setUpdater(result -> result.observe(queue.size(), SPAN_PROCESSOR_LABELS))
           .build();
       LongCounter processedSpansCounter =
           meter
@@ -166,12 +165,8 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
                   "The number of spans processed by the BatchSpanProcessor. "
                       + "[dropped=true if they were dropped due to high throughput]")
               .build();
-      droppedSpans =
-          processedSpansCounter.bind(
-              Labels.of(spanProcessorTypeLabel, spanProcessorTypeValue, "dropped", "true"));
-      BoundLongCounter exportedSpans =
-          processedSpansCounter.bind(
-              Labels.of(spanProcessorTypeLabel, spanProcessorTypeValue, "dropped", "false"));
+      droppedSpans = processedSpansCounter.bind(SPAN_PROCESSOR_DROPPED_LABELS);
+      BoundLongCounter exportedSpans = processedSpansCounter.bind(SPAN_PROCESSOR_EXPORTED_LABELS);
       this.isShutdown = isShutdown;
       this.executorService = executorService;
       this.spanExporter = spanExporter;
@@ -206,20 +201,13 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
           workerExporter.flush(batch, queue);
         }
 
-        try {
-          ReadableSpan lastElement = queue.peek();
-          if (lastElement != null) {
-            batch.add(lastElement.toSpanData());
-            // drain queue
-            queue.take();
-          } else {
-            // nothing in the queue, so schedule next run and release the thread
-            continueWork = false;
-            scheduleNextRun();
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          return;
+        ReadableSpan lastElement = queue.poll();
+        if (lastElement != null) {
+          batch.add(lastElement.toSpanData());
+        } else {
+          // nothing in the queue, so schedule next run and release the thread
+          continueWork = false;
+          scheduleNextRun();
         }
 
         if (batch.size() >= maxExportBatchSize || System.nanoTime() >= nextExportTime.get()) {
