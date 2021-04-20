@@ -2,6 +2,33 @@
 
 ## Unreleased:
 
+### General
+
+#### Enhancements
+- The `"Implementation-Version"` attribute has been added to the jar manifests for all published jar artifacts.
+
+### Propagators
+
+#### Bugfixes
+- The B3 Propagator injectors now only include the relevant fields for the specific injection format.
+
+### Semantic Conventions (alpha)
+
+#### Breaking Changes
+- The SemanticAttributes and ResourceAttributes have both been updated to match the OpenTelemetry Specification v1.2.0 release.
+- Values that were previously defined as `enum`s are now defined as static `public static final ` constants of the appropriate type.
+
+### OpenTracing Shim (alpha)
+
+#### Enhancements
+- Error logging support in the shim is now implemented according to the v1.2.0 specification.
+
+### SDK Extensions
+- A new `HostResource` Resource and the corresponding `ResourceProvider` has been added. 
+It will populate the `host.name` and `host.arch` Resource Attributes.
+
+---
+
 ## Version 1.1.0 - 2021-04-07
 
 ### API
