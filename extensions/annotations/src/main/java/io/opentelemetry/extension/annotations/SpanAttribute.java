@@ -21,22 +21,18 @@ import java.lang.annotation.Target;
  * is non-functional without the OpenTelemetry auto-instrumentation agent, or some other annotation
  * processor.
  *
- * @see <a href="https://github.com/open-telemetry/opentelemetry-auto-instr-java">OpenTelemetry
- *     Auto-Instrumentation</a>
+ * @see <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation">OpenTelemetry
+ *     OpenTelemetry Instrumentation for Java</a>
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface WithSpanAttribute {
+public @interface SpanAttribute {
   /**
    * Optional name of the attribute.
    *
-   * <p>If not specified, an appropriate default name should be created by auto-instrumentation.
-   * E.g. the name of the parameter if formal parameter names are stored in the class file on
-   * compilation using the {@code -parameters} compiler option.
-   *
-   * @see <a
-   *     href="https://docs.oracle.com/javase/tutorial/reflect/member/methodparameterreflection.html">Obtaining
-   *     Names of Method Parameters</a>
+   * <p>If not specified and the code is compiled using the `{@code -parameters}` argument to
+   * `javac`, the parameter name will be used instead. If the parameter name is not available, e.g.,
+   * because the code was not compiled with that flag, the attribute will be ignored.
    */
   String value() default "";
 }

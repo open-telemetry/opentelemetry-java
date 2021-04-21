@@ -43,5 +43,5 @@ public class WithSpanUsageExamples {
    */
   @WithSpan
   public void attributes(
-      @WithSpanAttribute String attribute1, @WithSpanAttribute("attribute2") long value) {}
+      @SpanAttribute String attribute1, @SpanAttribute("attribute2") long value) {}
 }
