@@ -13,6 +13,11 @@ import java.time.Duration;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Builder class for the {@link ExecutorServiceSpanProcessor}.
+ *
+ * @see ExecutorServiceSpanProcessor#builder(SpanExporter, ScheduledExecutorService, boolean)
+ */
 public class ExecutorServiceSpanProcessorBuilder {
 
   // Visible for testing
