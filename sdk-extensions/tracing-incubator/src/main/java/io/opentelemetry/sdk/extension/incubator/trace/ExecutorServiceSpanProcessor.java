@@ -28,6 +28,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.jctools.queues.MpscArrayQueue;
 
+/**
+ * A Batch {@link SpanProcessor} that uses a user-provided {@link
+ * java.util.concurrent.ScheduledExecutorService} to run background tasks.
+ */
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class ExecutorServiceSpanProcessor implements SpanProcessor {
 
@@ -46,6 +50,15 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
   private final boolean ownsExecutorService;
   private final ScheduledExecutorService executorService;
 
+  /**
+   * Create a new {@link ExecutorServiceSpanProcessorBuilder} with the required components.
+   *
+   * @param spanExporter The {@link SpanExporter} to be used for exports.
+   * @param executorService The {@link ScheduledExecutorService} for running background tasks.
+   * @param ownsExecutorService Whether this component can be considered the "owner" of the provided
+   *     {@link ScheduledExecutorService}. If true, the {@link ScheduledExecutorService} will be
+   *     shut down when this SpanProcessor is shut down.
+   */
   public static ExecutorServiceSpanProcessorBuilder builder(
       SpanExporter spanExporter,
       ScheduledExecutorService executorService,
