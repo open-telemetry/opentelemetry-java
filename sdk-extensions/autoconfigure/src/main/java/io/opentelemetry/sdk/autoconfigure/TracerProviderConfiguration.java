@@ -5,8 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableSamplerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
+import io.opentelemetry.sdk.extension.trace.jaeger.sampler.JaegerRemoteSampler;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -34,7 +36,7 @@ final class TracerProviderConfiguration {
 
     String sampler = config.getString("otel.traces.sampler");
     if (sampler != null) {
-      tracerProviderBuilder.setSampler(configureSampler(sampler, config));
+      tracerProviderBuilder.setSampler(configureSampler(sampler, resource, config));
     }
 
     // Run user configuration before setting exporters from environment to allow user span
@@ -118,7 +120,7 @@ final class TracerProviderConfiguration {
   }
 
   // Visible for testing
-  static Sampler configureSampler(String sampler, ConfigProperties config) {
+  static Sampler configureSampler(String sampler, Resource resource, ConfigProperties config) {
     Map<String, Sampler> spiSamplers =
         StreamSupport.stream(
                 ServiceLoader.load(ConfigurableSamplerProvider.class).spliterator(), false)
@@ -151,6 +153,20 @@ final class TracerProviderConfiguration {
             ratio = 1.0d;
           }
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
+        }
+      case "jaeger":
+        {
+          String jaegerEndpoint = config.getString("otel.exporter.jaeger.endpoint");
+          String serviceName = resource.getAttributes().get(AttributeKey.stringKey("service.name"));
+
+          if (jaegerEndpoint == null) {
+            throw new ConfigurationException("otel.exporter.jaeger.endpoint is mandatory");
+          }
+
+          return JaegerRemoteSampler.builder()
+              .setEndpoint(jaegerEndpoint)
+              .setServiceName(serviceName)
+              .build();
         }
       default:
         Sampler spiSampler = spiSamplers.get(sampler);

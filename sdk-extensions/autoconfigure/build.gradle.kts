@@ -25,6 +25,7 @@ dependencies {
     api(project(":sdk:metrics"))
 
     implementation(project(":semconv"))
+    implementation(project(":sdk-extensions:jaeger-remote-sampler"))
 
     compileOnly(project(":extensions:trace-propagators"))
     compileOnly(project(":exporters:jaeger"))
