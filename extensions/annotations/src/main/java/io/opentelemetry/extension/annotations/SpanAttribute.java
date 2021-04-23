@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  * within the body of the method.
  *
  * <p>Application developers can use this annotation to signal OpenTelemetry auto-instrumentation
- * that a new span should be created whenever marked method is executed.
+ * that a new span attribute should be added to a span created when the parent method is executed.
  *
  * <p>If you are a library developer, then probably you should NOT use this annotation, because it
  * is non-functional without the OpenTelemetry auto-instrumentation agent, or some other annotation
