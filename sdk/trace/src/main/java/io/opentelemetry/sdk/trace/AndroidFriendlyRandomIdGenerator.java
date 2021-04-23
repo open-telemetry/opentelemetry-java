@@ -16,13 +16,21 @@ import java.util.Random;
 enum AndroidFriendlyRandomIdGenerator implements IdGenerator {
   INSTANCE;
 
-  private static final ThreadLocal<Random> threadLocalRandom = new ThreadLocal<>();
+  // note: we can't use ThreadLocal.withInitial(..) on Android API 21
+  private static final ThreadLocal<Random> threadLocalRandom =
+      new ThreadLocal<Random>() {
+        @Override
+        protected Random initialValue() {
+          return new Random();
+        }
+      };
+
   private static final long INVALID_ID = 0;
 
   @Override
   public String generateSpanId() {
     long id;
-    Random random = getRandom();
+    Random random = threadLocalRandom.get();
     do {
       id = random.nextLong();
     } while (id == INVALID_ID);
@@ -33,20 +41,11 @@ enum AndroidFriendlyRandomIdGenerator implements IdGenerator {
   public String generateTraceId() {
     long idHi;
     long idLo;
-    Random random = getRandom();
+    Random random = threadLocalRandom.get();
     do {
       idHi = random.nextLong();
       idLo = random.nextLong();
     } while (idHi == INVALID_ID && idLo == INVALID_ID);
     return TraceId.fromLongs(idHi, idLo);
-  }
-
-  private static Random getRandom() {
-    Random random = threadLocalRandom.get();
-    if (random == null) {
-      random = new Random();
-      threadLocalRandom.set(random);
-    }
-    return random;
   }
 }
