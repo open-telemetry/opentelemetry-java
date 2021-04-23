@@ -1,3 +1,7 @@
+> This is a design document and is not necessarily updated with evolving APIs. For up-to-date 
+> examples of SDK configuration see the 
+> [documentation](https://opentelemetry.io/docs/java/manual_instrumentation/).
+
 # Design for configuring the SDK
 
 This document outlines some of the goals we have for user configuration of the SDK. It is a
