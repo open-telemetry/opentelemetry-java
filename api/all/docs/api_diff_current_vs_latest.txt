@@ -1,2 +1,7 @@
 Comparing source compatibility of  against 
-No changes.
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.trace.Span  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.Span setAllAttributes(io.opentelemetry.api.common.Attributes)
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.trace.SpanBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.SpanBuilder setAllAttributes(io.opentelemetry.api.common.Attributes)
