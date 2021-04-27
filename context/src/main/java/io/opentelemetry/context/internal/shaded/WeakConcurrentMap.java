@@ -179,8 +179,10 @@ public class WeakConcurrentMap<K, V>
     public boolean equals(Object other) {
       if (other instanceof WeakConcurrentMap.LookupKey<?>) {
         return ((LookupKey<?>) other).key == key;
-      } else {
+      } else if (other instanceof WeakKey<?>) {
         return ((WeakKey<?>) other).get() == key;
+      } else {
+        return false;
       }
     }
 

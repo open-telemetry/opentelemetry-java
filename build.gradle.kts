@@ -18,6 +18,7 @@ plugins {
     id("io.codearte.nexus-staging")
     id("nebula.release")
 
+    id("com.github.spotbugs") apply false
     id("com.google.protobuf") apply false
     id("de.marcphilipp.nexus-publish") apply false
     id("io.morethan.jmhreport") apply false
@@ -72,8 +73,18 @@ subprojects {
         plugins.apply("eclipse")
         plugins.apply("idea")
         plugins.apply("jacoco")
-
         plugins.apply("com.diffplug.spotless")
+
+        plugins.apply("com.github.spotbugs")
+        configure<com.github.spotbugs.snom.SpotBugsExtension> {
+            setEffort("max")
+            setReportLevel("high")
+            excludeFilter.set(file("$rootDir/buildscripts/spotbugs-exclude.xml"))
+        }
+        tasks.named("spotbugsTest")  {
+            enabled = false
+        }
+
         plugins.apply("net.ltgt.errorprone")
 
         configure<BasePluginConvention> {

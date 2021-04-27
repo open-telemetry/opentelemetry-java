@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- Nullable-related stuff seem busted against this repo for whatever reason -->
+  <Match>
+    <Bug pattern="NP_NONNULL_PARAM_VIOLATION"/>
+  </Match>
+  <Match>
+    <Bug pattern="NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE"/>
+  </Match>
+  <Match>
+  <!-- This an an oddly specific one... -->
+    <Bug pattern="SC_START_IN_CTOR"/>
+  </Match>
+  <Match>
+    <!-- https://github.com/spotbugs/spotbugs/issues/573 kotlin is not well supported (yet) -->
+    <Source name="~.*\.kt"/>
+  </Match>
+  <Match>
+    <Source name="~.*(Test|Benchmark).*"/>
+  </Match>
+  <Match>
+    <!-- Another broken null detector -->
+    <Class name="io.opentelemetry.api.common.AttributesBuilder"/>
+    <Bug pattern="NP_NULL_PARAM_DEREF"/>
+  </Match>
+  <Match>
+    <!-- Assuming native file encoding seems sane here -->
+    <Class name="io.opentelemetry.sdk.extension.aws.resource.DockerHelper"/>
+    <Bug pattern="DM_DEFAULT_ENCODING"/>
+  </Match>
+  <Match>
+    <!-- This twisty maze of type checks is ok -->
+    <Class name="io.opentelemetry.context.internal.shaded.WeakConcurrentMap$LookupKey"/>
+    <Bug pattern="EQ_CHECK_FOR_OPERAND_NOT_COMPATIBLE_WITH_THIS"/>
+  </Match>
+</FindBugsFilter>
