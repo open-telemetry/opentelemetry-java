@@ -3,6 +3,7 @@ import com.google.protobuf.gradle.*
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import io.morethan.jmhreport.gradle.JmhReportExtension
 import me.champeau.gradle.JMHPluginExtension
+import me.champeau.gradle.japicmp.JapicmpTask
 import nebula.plugin.release.git.opinion.Strategies
 import net.ltgt.gradle.errorprone.ErrorProneOptions
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
@@ -24,6 +25,7 @@ plugins {
     id("me.champeau.gradle.jmh") apply false
     id("net.ltgt.errorprone") apply false
     id("ru.vyarus.animalsniffer") apply false
+    id("me.champeau.gradle.japicmp") apply false
 }
 
 if (!JavaVersion.current().isJava11Compatible()) {
@@ -422,9 +424,83 @@ subprojects {
         }
     }
 
-    plugins.withId("maven-publish") {
-        plugins.apply("signing")
+    plugins.withId("me.champeau.gradle.japicmp") {
+        afterEvaluate {
+            val temp: Configuration = project.configurations.create("tempConfig")
+            project.dependencies.add("tempConfig", "io.opentelemetry:opentelemetry-bom:latest.release")
+            val moduleVersion = project.configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
+            project.configurations.remove(temp)
 
+            val userRequestedBase = project.properties["apiBaseVersion"]
+            val baselineVersion = userRequestedBase ?: moduleVersion
+            val newVersion : String? = project.properties["apiNewVersion"] as String?
+            val baselineArtifact: File?
+            var newArtifact: File? = null
+            val oldGroup = project.group
+            try {
+                //this dance is needed due to gradle not allowing more than one version of a dependency.
+                project.group = "virtual_baseline_for_japicmp"
+                val depModule = "io.opentelemetry:${base.archivesBaseName}:$baselineVersion@jar"
+                val depJar = "${base.archivesBaseName}-${baselineVersion}.jar"
+                val configuration: Configuration = configurations.detachedConfiguration(
+                        dependencies.create(depModule)
+                )
+                baselineArtifact = files(configuration.files).filter {
+                    it.name.equals(depJar)
+                }.singleFile
+            } finally {
+                project.group = oldGroup
+            }
+            if (newVersion != null) {
+                try {
+                    project.group = "virtual_new_for_japicmp"
+                    val depModule = "io.opentelemetry:${base.archivesBaseName}:$newVersion@jar"
+                    val depJar = "${base.archivesBaseName}-${newVersion}.jar"
+                    val configuration: Configuration = configurations.detachedConfiguration(
+                            dependencies.create(depModule)
+                    )
+                    newArtifact = files(configuration.files).filter {
+                        it.name.equals(depJar)
+                    }.singleFile
+                } finally {
+                    project.group = oldGroup
+                }
+            }
+
+            tasks {
+                val jar = getByName("jar") as Jar
+                if (newArtifact == null) {
+                    newArtifact = file(jar.archiveFile)
+                }
+                create<JapicmpTask>("japicmp") {
+                    oldClasspath = files(baselineArtifact)
+                    newClasspath = files(newArtifact)
+                    htmlOutputFile = file("$buildDir/reports/japi.html")
+                    //only output changes, not everything
+                    isOnlyModified = true
+                    //this is needed so that we only consider the current artifact, and not dependencies
+                    isIgnoreMissingClasses = true
+                    // double wildcards don't seem to work here (*.internal.*)
+                    packageExcludes = listOf("*.internal", "io.opentelemetry.internal.shaded.jctools.*")
+                    if (newVersion == null) {
+                        val baseVersionString = if (userRequestedBase == null) "latest" else baselineVersion
+                        txtOutputFile = file("$projectDir/docs/api_diff_current_vs_${baseVersionString}.txt")
+                    } else {
+                        txtOutputFile = file("$projectDir/docs/api_diff_${newVersion}_vs_${baselineVersion}.txt")
+                    }
+
+                }
+            }
+        }
+    }
+
+    plugins.withId("maven-publish") {
+        //generate the api diff report for any module that is stable and publishes a jar.
+        if (!project.hasProperty("otel.release")
+                && project.tasks.map { it.name }.contains("jar")) {
+            plugins.apply("me.champeau.gradle.japicmp")
+        }
+        plugins.apply("signing")
         plugins.apply("de.marcphilipp.nexus-publish")
 
         configure<PublishingExtension> {
