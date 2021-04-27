@@ -229,6 +229,23 @@ public interface SpanBuilder {
   <T> SpanBuilder setAttribute(AttributeKey<T> key, T value);
 
   /**
+   * Sets attributes to the {@link SpanBuilder}. If the {@link SpanBuilder} previously contained a
+   * mapping for any of the keys, the old values are replaced by the specified values.
+   *
+   * @param attributes the attributes
+   * @return this.
+   */
+  @SuppressWarnings("unchecked")
+  default SpanBuilder setAllAttributes(Attributes attributes) {
+    if (attributes == null || attributes.isEmpty()) {
+      return this;
+    }
+    attributes.forEach(
+        (attributeKey, value) -> setAttribute((AttributeKey<Object>) attributeKey, value));
+    return this;
+  }
+
+  /**
    * Sets the {@link SpanKind} for the newly created {@code Span}. If not called, the implementation
    * will provide a default value {@link SpanKind#INTERNAL}.
    *

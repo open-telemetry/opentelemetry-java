@@ -50,6 +50,10 @@ class PropagatedSpanTest {
     span.setAttribute(longArrayKey("NullArrayLong"), null);
     span.setAttribute(doubleArrayKey("NullArrayDouble"), null);
     span.setAttribute((String) null, null);
+    span.setAllAttributes(null);
+    span.setAllAttributes(Attributes.empty());
+    span.setAllAttributes(
+        Attributes.of(stringKey("MyStringAttributeKey"), "MyStringAttributeValue"));
     span.addEvent("event");
     span.addEvent("event", 0, TimeUnit.NANOSECONDS);
     span.addEvent("event", Instant.EPOCH);
