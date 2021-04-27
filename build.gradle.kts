@@ -426,6 +426,7 @@ subprojects {
 
     plugins.withId("me.champeau.gradle.japicmp") {
         afterEvaluate {
+            // hack to find the current released version of the project
             val temp: Configuration = project.configurations.create("tempConfig")
             project.dependencies.add("tempConfig", "io.opentelemetry:opentelemetry-bom:latest.release")
             val moduleVersion = project.configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
@@ -488,8 +489,9 @@ subprojects {
                     } else {
                         txtOutputFile = file("$projectDir/docs/api_diff_${newVersion}_vs_${baselineVersion}.txt")
                     }
-
                 }
+                //have the build task depend on the api comparison task, to make it more likely it will get used.
+                getByName("build").dependsOn("japicmp")
             }
         }
     }
