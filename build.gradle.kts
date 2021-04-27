@@ -474,6 +474,7 @@ subprojects {
                     newArtifact = file(jar.archiveFile)
                 }
                 create<JapicmpTask>("japicmp") {
+                    dependsOn("jar")
                     oldClasspath = files(baselineArtifact)
                     newClasspath = files(newArtifact)
                     htmlOutputFile = file("$buildDir/reports/japi.html")
