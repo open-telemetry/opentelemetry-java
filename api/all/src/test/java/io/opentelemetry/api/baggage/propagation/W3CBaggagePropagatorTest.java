@@ -42,48 +42,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
-  void extract_noBaggageHeader() {
-    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
-
-    Context result = propagator.extract(Context.root(), ImmutableMap.of(), getter);
-
-    assertThat(result).isEqualTo(Context.root());
-  }
-
-  @Test
-  void extract_emptyBaggageHeader() {
-    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
-
-    Context result = propagator.extract(Context.root(), ImmutableMap.of("baggage", ""), getter);
-
-    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
-  }
-
-  @Test
-  void extract_singleEntry() {
-    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
-
-    Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=value"), getter);
-
-    Baggage expectedBaggage = Baggage.builder().put("key", "value").build();
-    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
-  }
-
-  @Test
-  void extract_multiEntry() {
-    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
-
-    Context result =
-        propagator.extract(
-            Context.root(), ImmutableMap.of("baggage", "key1=value1,key2=value2"), getter);
-
-    Baggage expectedBaggage = Baggage.builder().put("key1", "value1").put("key2", "value2").build();
-    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
-  }
-
-  @Test
-  void extract_duplicateKeys() {
+  void extract_key_duplicate() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
@@ -95,7 +54,286 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
-  void extract_withMetadata() {
+  void extract_key_leadingSpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "  key=value1"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key", "value1").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_key_trailingSpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key     =value1"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key", "value1").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_key_onlySpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "   =value1"), getter);
+
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_key_withInnerSpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "ke y=value1"), getter);
+
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_key_withSeparators() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "ke?y=value1"), getter);
+
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_key_singleValid_multipleInvalid() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(),
+            ImmutableMap.of(
+                "baggage",
+                "ke<y=value1, ;sss,key=value;meta1=value1;meta2=value2,ke(y=value;meta=val "),
+            getter);
+
+    Baggage expectedBaggage =
+        Baggage.builder()
+            .put("key", "value", BaggageEntryMetadata.create("meta1=value1;meta2=value2"))
+            .build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_value_leadingSpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "  key=  value1"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key", "value1").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_value_trailingSpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=value1      "), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key", "value1").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_value_trailingSpaces_withMetadata() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(), ImmutableMap.of("baggage", "key=value1      ;meta1=meta2"), getter);
+
+    Baggage expectedBaggage =
+        Baggage.builder().put("key", "value1", BaggageEntryMetadata.create("meta1=meta2")).build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_value_empty() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key1="), getter);
+
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_value_empty_withMetadata() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(), ImmutableMap.of("baggage", "key1=;metakey=metaval"), getter);
+
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_value_onlySpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key1=     "), getter);
+
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_value_withInnerSpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=valu e1"), getter);
+
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_value_withSeparators() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=val\\ue1"), getter);
+
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_value_multiple_leadingSpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(), ImmutableMap.of("baggage", "key=  value1,key1=val"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key1", "val").put("key", "value1").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_value_multiple_trailingSpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(), ImmutableMap.of("baggage", "key=value1      ,key1=val"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key1", "val").put("key", "value1").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_value_multiple_empty_withMeEtadata() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(), ImmutableMap.of("baggage", "key1=;metakey=metaval,key1=val"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key1", "val").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_value_multiple_empty() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key1=,key1=val"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key1", "val").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_value_multiple_onlySpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(), ImmutableMap.of("baggage", "key1=     ,key1=val"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key1", "val").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_value_multiple_withInnerSpaces() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(), ImmutableMap.of("baggage", "key=valu e1,key1=val"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key1", "val").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_value_multiple_withSeparators() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(), ImmutableMap.of("baggage", "key=val\\ue1,key1=val"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key1", "val").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_header_missing() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result = propagator.extract(Context.root(), ImmutableMap.of(), getter);
+    assertThat(result).isEqualTo(Context.root());
+  }
+
+  @Test
+  void extract_header_empty() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result = propagator.extract(Context.root(), ImmutableMap.of("baggage", ""), getter);
+    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+  }
+
+  @Test
+  void extract_member_single() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=value"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key", "value").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_member_multi() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(
+            Context.root(), ImmutableMap.of("baggage", "key1=value1,key2=value2"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key1", "value1").put("key2", "value2").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
+  void extract_member_single_withMetadata() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
@@ -112,7 +350,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
-  void extract_fullComplexities() {
+  void extract_member_fullComplexities() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
@@ -137,7 +375,7 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
-  void extract_invalidHeader() {
+  void extract_member_someInvalid() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context input = Context.current();
@@ -147,10 +385,16 @@ class W3CBaggagePropagatorTest {
             ImmutableMap.of(
                 "baggage",
                 "key1= v;alsdf;-asdflkjasdf===asdlfkjadsf ,,a sdf9asdf-alue1; metadata-key = "
-                    + "value; othermetadata, key2 =value2 , key3 =\tvalue3 ; "),
+                    + "value; othermetadata, key2 =value2, key3 =\tvalue3 ; "),
             getter);
-    assertThat(result).isSameAs(input);
-    assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
+
+    Baggage expectedBaggage =
+        Baggage.builder()
+            .put("key1", "v", BaggageEntryMetadata.create("alsdf;-asdflkjasdf===asdlfkjadsf"))
+            .put("key2", "value2")
+            .put("key3", "value3")
+            .build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
   @Test
