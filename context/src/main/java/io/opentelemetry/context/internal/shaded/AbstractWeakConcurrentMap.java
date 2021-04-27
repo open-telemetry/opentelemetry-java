@@ -283,7 +283,7 @@ abstract class AbstractWeakConcurrentMap<K, V, L> extends ReferenceQueue<K>
       if (other instanceof WeakKey<?>) {
         return ((WeakKey<?>) other).get() == get();
       } else {
-        return other == null ? false : other.equals(this);
+        return other != null && other.equals(this);
       }
     }
 
