@@ -468,13 +468,12 @@ subprojects {
                     project.group = oldGroup
                 }
             }
-
             tasks {
                 val jar = getByName("jar") as Jar
                 if (newArtifact == null) {
                     newArtifact = file(jar.archiveFile)
                 }
-                create<JapicmpTask>("japicmp") {
+                val japicmp by registering(JapicmpTask::class) {
                     dependsOn("jar")
                     oldClasspath = files(baselineArtifact)
                     newClasspath = files(newArtifact)
@@ -494,7 +493,7 @@ subprojects {
                 }
                 // have the build task depend on the api comparison task, to make it more likely it will get used.
                 named("build") {
-                    dependsOn("japicmp")
+                    dependsOn(japicmp)
                 }
             }
         }
