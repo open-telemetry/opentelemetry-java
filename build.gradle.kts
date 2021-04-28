@@ -52,16 +52,16 @@ fun Project.findArtifact(version: String) : File {
 }
 
 /**
- * Find the latest *released* version of the project.
+ * The latest *released* version of the project. Evaluated lazily so the work is only done if necessary.
  */
-fun Project.latestReleasedVersion() : String {
+val latestReleasedVersion : String by lazy {
     // hack to find the current released version of the project
     val temp: Configuration = project.configurations.create("tempConfig")
-    //pick the bom, since it's always there.
-    project.dependencies.add("tempConfig", "io.opentelemetry:opentelemetry-bom:latest.release")
+    // pick the bom, since it's always there.
+    dependencies.add("tempConfig", "io.opentelemetry:opentelemetry-bom:latest.release")
     val moduleVersion = project.configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
     project.configurations.remove(temp)
-    return moduleVersion
+    moduleVersion
 }
 
 if (!JavaVersion.current().isJava11Compatible()) {
@@ -467,7 +467,7 @@ subprojects {
                     dependsOn("jar")
                     // the japicmp "old" version is either the user-specified one, or the latest release.
                     val userRequestedBase = project.properties["apiBaseVersion"] as String?
-                    val baselineVersion: String = userRequestedBase ?: project.latestReleasedVersion()
+                    val baselineVersion: String = userRequestedBase ?: latestReleasedVersion
                     val baselineArtifact: File = project.findArtifact(baselineVersion)
                     oldClasspath = files(baselineArtifact)
 
