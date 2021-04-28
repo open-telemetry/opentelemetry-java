@@ -439,7 +439,8 @@ subprojects {
             var newArtifact: File? = null
             val oldGroup = project.group
             try {
-                //this dance is needed due to gradle not allowing more than one version of a dependency.
+                // Temporarily change the group name because we want to fetch an artifact with the same
+                // Maven coordinates as the project, which Gradle would not allow otherwise.
                 project.group = "virtual_baseline_for_japicmp"
                 val depModule = "io.opentelemetry:${base.archivesBaseName}:$baselineVersion@jar"
                 val depJar = "${base.archivesBaseName}-${baselineVersion}.jar"
@@ -491,16 +492,17 @@ subprojects {
                         txtOutputFile = file("$projectDir/docs/api_diff_${newVersion}_vs_${baselineVersion}.txt")
                     }
                 }
-                //have the build task depend on the api comparison task, to make it more likely it will get used.
-                getByName("build").dependsOn("japicmp")
+                // have the build task depend on the api comparison task, to make it more likely it will get used.
+                named("build") {
+                    dependsOn("japicmp")
+                }
             }
         }
     }
 
     plugins.withId("maven-publish") {
-        //generate the api diff report for any module that is stable and publishes a jar.
-        if (!project.hasProperty("otel.release")
-                && project.tasks.map { it.name }.contains("jar")) {
+        // generate the api diff report for any module that is stable and publishes a jar.
+        if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
             plugins.apply("me.champeau.gradle.japicmp")
         }
         plugins.apply("signing")
