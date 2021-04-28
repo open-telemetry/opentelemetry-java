@@ -28,6 +28,42 @@ plugins {
     id("me.champeau.gradle.japicmp") apply false
 }
 
+
+/**
+ * Locate the project's artifact of a particular version.
+ */
+fun Project.findArtifact(version: String) : File {
+    val existingGroup = this.group
+    try {
+        // Temporarily change the group name because we want to fetch an artifact with the same
+        // Maven coordinates as the project, which Gradle would not allow otherwise.
+        this.group = "virtual_group"
+        val depModule = "io.opentelemetry:${base.archivesBaseName}:$version@jar"
+        val depJar = "${base.archivesBaseName}-${version}.jar"
+        val configuration: Configuration = configurations.detachedConfiguration(
+                dependencies.create(depModule)
+        )
+        return files(configuration.files).filter {
+            it.name.equals(depJar)
+        }.singleFile
+    } finally {
+        this.group = existingGroup
+    }
+}
+
+/**
+ * Find the latest *released* version of the project.
+ */
+fun Project.latestReleasedVersion() : String {
+    // hack to find the current released version of the project
+    val temp: Configuration = project.configurations.create("tempConfig")
+    //pick the bom, since it's always there.
+    project.dependencies.add("tempConfig", "io.opentelemetry:opentelemetry-bom:latest.release")
+    val moduleVersion = project.configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
+    project.configurations.remove(temp)
+    return moduleVersion
+}
+
 if (!JavaVersion.current().isJava11Compatible()) {
     throw GradleException("JDK 11 or higher is required to build. " +
             "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
@@ -424,60 +460,27 @@ subprojects {
         }
     }
 
-    /**
-     * Locate the proejct's artifact of a particular version.
-     */
-    fun findArtifact(version: String) : File {
-        val group = project.group
-        try {
-            // Temporarily change the group name because we want to fetch an artifact with the same
-            // Maven coordinates as the project, which Gradle would not allow otherwise.
-            project.group = "virtual_new_for_japicmp"
-            val depModule = "io.opentelemetry:${base.archivesBaseName}:$version@jar"
-            val depJar = "${base.archivesBaseName}-${version}.jar"
-            val configuration: Configuration = configurations.detachedConfiguration(
-                    project.dependencies.create(depModule)
-            )
-            return files(configuration.files).filter {
-                it.name.equals(depJar)
-            }.singleFile
-        } finally {
-            project.group = group
-        }
-    }
-
-    /**
-     * Find the latest *released* version of the project.
-     */
-    fun latestReleasedVersion() : String {
-        // hack to find the current released version of the project
-        val temp: Configuration = project.configurations.create("tempConfig")
-        project.dependencies.add("tempConfig", "io.opentelemetry:opentelemetry-bom:latest.release")
-        val moduleVersion = project.configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
-        project.configurations.remove(temp)
-        return moduleVersion
-    }
-
     plugins.withId("me.champeau.gradle.japicmp") {
         afterEvaluate {
             tasks {
-                val japicmp by registering(JapicmpTask::class) {
+                val jApiCmp by registering(JapicmpTask::class) {
                     dependsOn("jar")
-
+                    // the japicmp "old" version is either the user-specified one, or the latest release.
                     val userRequestedBase = project.properties["apiBaseVersion"] as String?
-                    val baselineVersion: String = userRequestedBase ?: latestReleasedVersion()
+                    val baselineVersion: String = userRequestedBase ?: project.latestReleasedVersion()
+                    val baselineArtifact: File = project.findArtifact(baselineVersion)
+                    oldClasspath = files(baselineArtifact)
 
+                    // the japicmp "new" version is either the user-specified one, or the locally built jar.
                     val newVersion : String? = project.properties["apiNewVersion"] as String?
-                    val baselineArtifact: File = findArtifact(baselineVersion)
-
-                    val newArtifact: File = if (newVersion != null) {
-                        findArtifact(newVersion)
-                    } else {
+                    val newArtifact: File = if (newVersion == null) {
                         val jar = getByName("jar") as Jar
                         file(jar.archiveFile)
+                    } else {
+                        project.findArtifact(newVersion)
                     }
-                    oldClasspath = files(baselineArtifact)
                     newClasspath = files(newArtifact)
+
                     //only output changes, not everything
                     isOnlyModified = true
                     //this is needed so that we only consider the current artifact, and not dependencies
@@ -493,7 +496,7 @@ subprojects {
                 }
                 // have the build task depend on the api comparison task, to make it more likely it will get used.
                 named("build") {
-                    dependsOn(japicmp)
+                    dependsOn(jApiCmp)
                 }
             }
         }
