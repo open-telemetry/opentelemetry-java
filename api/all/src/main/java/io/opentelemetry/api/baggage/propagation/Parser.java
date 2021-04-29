@@ -44,24 +44,7 @@ class Parser {
     reset(0);
   }
 
-  public void reset(int i) {
-
-    this.skipToNext = false;
-
-    this.state = State.KEY;
-
-    this.key.reset(i);
-    this.value.reset(i);
-    this.meta = "";
-    this.metaStart = 0;
-  }
-
-  public void setState(State state, int start) {
-    this.state = state;
-    this.metaStart = start;
-  }
-
-  public void parseInto(BaggageBuilder baggageBuilder) {
+  void parseInto(BaggageBuilder baggageBuilder) {
     char[] chars = baggageHeader.toCharArray();
     for (int i = 0, n = chars.length; i < n; i++) {
       char current = chars[i];
@@ -122,7 +105,7 @@ class Parser {
           }
       }
     }
-
+    // need to finish parsing if there was no list element termination comma
     switch (state) {
       case KEY:
         break;
@@ -141,5 +124,25 @@ class Parser {
           }
         }
     }
+  }
+
+  /**
+   * Resets parsing state, preparing to start a new list element (see spec).
+   *
+   * @param index index where parser should start new element scan
+   */
+  private void reset(int index) {
+    this.skipToNext = false;
+    this.state = State.KEY;
+    this.key.reset(index);
+    this.value.reset(index);
+    this.meta = "";
+    this.metaStart = 0;
+  }
+
+  /** Switches parser state (element of a list member). */
+  private void setState(State state, int start) {
+    this.state = state;
+    this.metaStart = start;
   }
 }

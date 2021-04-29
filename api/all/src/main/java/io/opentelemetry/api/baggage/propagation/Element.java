@@ -7,6 +7,11 @@ package io.opentelemetry.api.baggage.propagation;
 
 import java.util.BitSet;
 
+/**
+ * Represents single element of a W3C baggage header (key or value). Allows tracking parsing of a
+ * header string, keeping the state and validating allowed characters. Parsing state can be reset
+ * with {@link #reset(int)} allowing instance re-use.
+ */
 class Element {
 
   private final BitSet excluded = new BitSet(128);
@@ -18,9 +23,14 @@ class Element {
   private int end;
   private String value;
 
+  /**
+   * Constructs element instance.
+   *
+   * @param excludedChars characters that are not allowed for this type of an element
+   */
   Element(char[] excludedChars) {
-    for (char separator : excludedChars) {
-      excluded.set(separator);
+    for (char excludedChar : excludedChars) {
+      excluded.set(excludedChar);
     }
     reset(0);
   }
@@ -37,9 +47,9 @@ class Element {
     value = null;
   }
 
-  boolean tryTerminating(int i, String header) {
+  boolean tryTerminating(int index, String header) {
     if (this.readingValue) {
-      markEnd(i);
+      markEnd(index);
     }
     if (this.trailingSpace) {
       setValue(header);
@@ -60,13 +70,13 @@ class Element {
     this.value = header.substring(this.start, this.end);
   }
 
-  boolean tryNextChar(char character, int i) {
+  boolean tryNextChar(char character, int index) {
     if (isWhitespace(character)) {
-      return tryNextWhitespace(i);
+      return tryNextWhitespace(index);
     } else if (isExcluded(character)) {
       return false;
     } else {
-      return tryNextTokenChar(i);
+      return tryNextTokenChar(index);
     }
   }
 
@@ -74,27 +84,27 @@ class Element {
     return character == ' ' || character == '\t';
   }
 
+  private boolean tryNextWhitespace(int index) {
+    if (readingValue) {
+      markEnd(index);
+    }
+    return true;
+  }
+
   private boolean isExcluded(char character) {
     return (character <= 32 || character >= 127 || excluded.get(character));
   }
 
-  private boolean tryNextTokenChar(int i) {
+  private boolean tryNextTokenChar(int index) {
     if (leadingSpace) {
-      markStart(i);
+      markStart(index);
     }
     return !trailingSpace;
   }
 
-  void markStart(int start) {
+  private void markStart(int start) {
     this.start = start;
     readingValue = true;
     leadingSpace = false;
-  }
-
-  private boolean tryNextWhitespace(int i) {
-    if (readingValue) {
-      markEnd(i);
-    }
-    return true;
   }
 }
