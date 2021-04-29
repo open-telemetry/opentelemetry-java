@@ -70,17 +70,4 @@ public class W3CBaggagePropagatorBenchmark {
 
     return propagator.extract(Context.root(), Collections.singletonMap("baggage", header), getter);
   }
-
-  @Benchmark
-  @BenchmarkMode({Mode.AverageTime})
-  @Fork(1)
-  @Measurement(iterations = 15, time = 1)
-  @OutputTimeUnit(TimeUnit.NANOSECONDS)
-  @Warmup(iterations = 5, time = 1)
-  public Context jdkStringOpsBasedPropagatorExtractBenchmark() {
-    JdkStringOperationsBasedPropagator propagator =
-        JdkStringOperationsBasedPropagator.getInstance();
-
-    return propagator.extract(Context.root(), Collections.singletonMap("baggage", header), getter);
-  }
 }
