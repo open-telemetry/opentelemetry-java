@@ -494,8 +494,8 @@ subprojects {
                         txtOutputFile = file("$projectDir/docs/api_diff_${newVersion}_vs_${baselineVersion}.txt")
                     }
                 }
-                // have the build task depend on the api comparison task, to make it more likely it will get used.
-                named("build") {
+                // have the check task depend on the api comparison task, to make it more likely it will get used.
+                named("check") {
                     dependsOn(jApiCmp)
                 }
             }
