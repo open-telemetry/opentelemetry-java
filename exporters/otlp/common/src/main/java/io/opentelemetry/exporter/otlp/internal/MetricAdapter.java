@@ -229,7 +229,7 @@ public final class MetricAdapter {
         for (ValueAtPercentile valueAtPercentile : doubleSummaryPoint.getPercentileValues()) {
           builder.addQuantileValues(
               DoubleSummaryDataPoint.ValueAtQuantile.newBuilder()
-                  .setQuantile(valueAtPercentile.getPercentile())
+                  .setQuantile(valueAtPercentile.getPercentile() / 100.0)
                   .setValue(valueAtPercentile.getValue())
                   .build());
         }
