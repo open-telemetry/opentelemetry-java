@@ -184,7 +184,7 @@ class MetricAdapterTest {
                 .addQuantileValues(
                     ValueAtQuantile.newBuilder().setQuantile(0.0).setValue(1.1).build())
                 .addQuantileValues(
-                    ValueAtQuantile.newBuilder().setQuantile(100.0).setValue(20.3).build())
+                    ValueAtQuantile.newBuilder().setQuantile(1.0).setValue(20.3).build())
                 .build());
   }
 
@@ -460,7 +460,7 @@ class MetricAdapterTest {
                                 33d,
                                 ImmutableList.of(
                                     ValueAtPercentile.create(0, 1.1),
-                                    ValueAtPercentile.create(1.0, 20.3))))))))
+                                    ValueAtPercentile.create(100.0, 20.3))))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
