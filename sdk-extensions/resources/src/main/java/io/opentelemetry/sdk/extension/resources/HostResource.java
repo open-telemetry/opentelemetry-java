@@ -12,12 +12,12 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-/** Factory of a {@link Resource} which provides information about the host info. */
+/** Factory for a {@link Resource} which provides information about the host info. */
 public final class HostResource {
 
   private static final Resource INSTANCE = buildResource();
 
-  /** Returns a factory for a {@link Resource} which provides information about host. */
+  /** Returns a {@link Resource} which provides information about host. */
   public static Resource get() {
     return INSTANCE;
   }

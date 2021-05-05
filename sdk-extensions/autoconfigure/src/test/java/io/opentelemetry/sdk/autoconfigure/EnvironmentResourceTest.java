@@ -17,6 +17,11 @@ import org.junit.jupiter.api.Test;
 class EnvironmentResourceTest {
 
   @Test
+  void get() {
+    assertThat(EnvironmentResource.get()).isNotNull();
+  }
+
+  @Test
   void resourceFromConfig_empty() {
     Attributes attributes =
         EnvironmentResource.getAttributes(ConfigProperties.createForTest(emptyMap()));
