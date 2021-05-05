@@ -588,6 +588,10 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> MESSAGING_OPERATION = stringKey("messaging.operation");
 
+  /** RabbitMQ message routing key. */
+  public static final AttributeKey<String> MESSAGING_RABBITMQ_ROUTING_KEY =
+      stringKey("messaging.rabbitmq.routing_key");
+
   /**
    * Message keys in Kafka are used for grouping alike messages to ensure they&#39;re processed on
    * the same partition. They differ from `messaging.message_id` in that they&#39;re not unique. If
@@ -731,28 +735,28 @@ public final class SemanticAttributes {
   }
 
   public static final class DbCassandraConsistencyLevelValues {
-    /** ALL. */
-    public static final String ALL = "ALL";
-    /** EACH_QUORUM. */
-    public static final String EACH_QUORUM = "EACH_QUORUM";
-    /** QUORUM. */
-    public static final String QUORUM = "QUORUM";
-    /** LOCAL_QUORUM. */
-    public static final String LOCAL_QUORUM = "LOCAL_QUORUM";
-    /** ONE. */
-    public static final String ONE = "ONE";
-    /** TWO. */
-    public static final String TWO = "TWO";
-    /** THREE. */
-    public static final String THREE = "THREE";
-    /** LOCAL_ONE. */
-    public static final String LOCAL_ONE = "LOCAL_ONE";
-    /** ANY. */
-    public static final String ANY = "ANY";
-    /** SERIAL. */
-    public static final String SERIAL = "SERIAL";
-    /** LOCAL_SERIAL. */
-    public static final String LOCAL_SERIAL = "LOCAL_SERIAL";
+    /** all. */
+    public static final String ALL = "all";
+    /** each_quorum. */
+    public static final String EACH_QUORUM = "each_quorum";
+    /** quorum. */
+    public static final String QUORUM = "quorum";
+    /** local_quorum. */
+    public static final String LOCAL_QUORUM = "local_quorum";
+    /** one. */
+    public static final String ONE = "one";
+    /** two. */
+    public static final String TWO = "two";
+    /** three. */
+    public static final String THREE = "three";
+    /** local_one. */
+    public static final String LOCAL_ONE = "local_one";
+    /** any. */
+    public static final String ANY = "any";
+    /** serial. */
+    public static final String SERIAL = "serial";
+    /** local_serial. */
+    public static final String LOCAL_SERIAL = "local_serial";
 
     private DbCassandraConsistencyLevelValues() {}
   }
@@ -795,14 +799,14 @@ public final class SemanticAttributes {
   }
 
   public static final class NetTransportValues {
-    /** IP.TCP. */
-    public static final String IP_TCP = "IP.TCP";
-    /** IP.UDP. */
-    public static final String IP_UDP = "IP.UDP";
+    /** ip_tcp. */
+    public static final String IP_TCP = "ip_tcp";
+    /** ip_udp. */
+    public static final String IP_UDP = "ip_udp";
     /** Another IP-based protocol. */
-    public static final String IP = "IP";
+    public static final String IP = "ip";
     /** Unix Domain socket. See below. */
-    public static final String UNIX = "Unix";
+    public static final String UNIX = "unix";
     /** Named or anonymous pipe. See note below. */
     public static final String PIPE = "pipe";
     /** In-process communication. */
