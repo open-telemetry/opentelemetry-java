@@ -94,6 +94,19 @@ class MultiTextMapPropagatorTest {
   }
 
   @Test
+  void inject_nullContextAllDelegated() {
+    Map<String, String> carrier = new HashMap<>();
+    Context context = null;
+    TextMapSetter<Map<String, String>> setter = Map::put;
+
+    TextMapPropagator prop = new MultiTextMapPropagator(propagator1, propagator2, propagator3);
+    prop.inject(context, carrier, setter);
+    verify(propagator1).inject(context, carrier, setter);
+    verify(propagator2).inject(context, carrier, setter);
+    verify(propagator3).inject(context, carrier, setter);
+  }
+
+  @Test
   void extract_noPropagators() {
     Map<String, String> carrier = new HashMap<>();
     Context context = mock(Context.class);
@@ -123,6 +136,19 @@ class MultiTextMapPropagatorTest {
   void extract_notFound() {
     Map<String, String> carrier = new HashMap<>();
     Context context = mock(Context.class);
+    when(propagator1.extract(context, carrier, getter)).thenReturn(context);
+    when(propagator2.extract(context, carrier, getter)).thenReturn(context);
+
+    TextMapPropagator prop = new MultiTextMapPropagator(propagator1, propagator2);
+    Context result = prop.extract(context, carrier, getter);
+
+    assertThat(result).isSameAs(context);
+  }
+
+  @Test
+  void extract_nullContext() {
+    Map<String, String> carrier = new HashMap<>();
+    Context context = null;
     when(propagator1.extract(context, carrier, getter)).thenReturn(context);
     when(propagator2.extract(context, carrier, getter)).thenReturn(context);
 
