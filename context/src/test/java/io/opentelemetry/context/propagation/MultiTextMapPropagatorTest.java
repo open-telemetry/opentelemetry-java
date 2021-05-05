@@ -121,7 +121,6 @@ class MultiTextMapPropagatorTest {
 
   @Test
   void extract_notFound() {
-
     Map<String, String> carrier = new HashMap<>();
     Context context = mock(Context.class);
     when(propagator1.extract(context, carrier, getter)).thenReturn(context);
