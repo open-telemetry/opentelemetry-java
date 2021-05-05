@@ -20,7 +20,7 @@ having to iterate over the contents and add them individually. See `Span.setAllA
 
 #### Enhancements
 - The `IdGenerator.random()` method will now attempt to detect if it is being used in an Android environment, and use
-a more Android-friendly `IdGenerator` instance in that case. This will impact any usage of the SDK that does not
+a more Android-friendly `IdGenerator` instance in that case. This will affect any usage of the SDK that does not
 explicitly specify a custom `IdGenerator` instance when running on Android.
 
 #### Behavioral Changes
@@ -59,6 +59,9 @@ a system property (`otel.exporter.jaeger.timeout`) or environment variable (`OTE
 #### Breaking Changes
 - The deprecated `SdkMeterProvider.registerView()` method has been removed. The ViewRegistry is now immutable and cannot
 be changed once the `SdkMeterProvider` has been built.
+
+#### Bugfixes
+- OTLP summaries now have the proper percentile value of `1.0` to represent the maximum; previously it was wrongly set to `100.0`. 
 
 #### Enhancements
 - There is now full support for delta-aggregations with the `LongSumAggregator` and `DoubleSumAggregator`. 
