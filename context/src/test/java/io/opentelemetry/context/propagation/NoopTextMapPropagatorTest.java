@@ -23,11 +23,7 @@ class NoopTextMapPropagatorTest {
   void extract_contextUnchanged() {
     Context input = Context.current();
     Context result =
-        TextMapPropagator.noop()
-            .extract(
-                input,
-                new HashMap<>(),
-                new HashMapTextMapGetter());
+        TextMapPropagator.noop().extract(input, new HashMap<>(), new HashMapTextMapGetter());
     assertThat(result).isSameAs(input);
   }
 
@@ -35,16 +31,12 @@ class NoopTextMapPropagatorTest {
   void extract_nullContext() {
     Context input = null;
     Context result =
-        TextMapPropagator.noop()
-            .extract(
-                input,
-                new HashMap<>(),
-                new HashMapTextMapGetter());
+        TextMapPropagator.noop().extract(input, new HashMap<>(), new HashMapTextMapGetter());
     assertThat(result).isSameAs(input);
   }
 
-  private static class HashMapTextMapGetter implements
-      TextMapGetter<HashMap<? extends Object, ? extends Object>> {
+  private static class HashMapTextMapGetter
+      implements TextMapGetter<HashMap<? extends Object, ? extends Object>> {
     @Override
     public Iterable<String> keys(HashMap<?, ?> carrier) {
       return null;
