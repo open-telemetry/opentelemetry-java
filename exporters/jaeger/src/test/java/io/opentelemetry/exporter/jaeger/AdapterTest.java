@@ -69,7 +69,7 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
 
-    SpanData span = getSpanData(startMs, endMs, SpanKind.SERVER);
+    SpanData span = getSpanData(startMs, endMs, SpanKind.SERVER, 2);
 
     // test
     Model.Span jaegerSpan = Adapter.toJaeger(span);
@@ -80,12 +80,30 @@ class AdapterTest {
     assertThat(jaegerSpan.getStartTime()).isEqualTo(Timestamps.fromMillis(startMs));
     assertThat(Durations.toMillis(jaegerSpan.getDuration())).isEqualTo(duration);
 
-    assertThat(jaegerSpan.getTagsCount()).isEqualTo(4);
+    assertThat(jaegerSpan.getTagsCount()).isEqualTo(6);
     Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);
     assertThat(keyValue).isNotNull();
     assertThat(keyValue.getVStr()).isEqualTo("server");
 
+    Model.KeyValue droppedAttributes =
+        getValue(jaegerSpan.getTagsList(), Adapter.KEY_DROPPED_ATTRIBUTES_COUNT);
+    assertThat(droppedAttributes)
+        .isEqualTo(
+            Model.KeyValue.newBuilder()
+                .setKey(Adapter.KEY_DROPPED_ATTRIBUTES_COUNT)
+                .setVInt64(2)
+                .build());
+
     assertThat(jaegerSpan.getLogsCount()).isEqualTo(1);
+    Model.KeyValue droppedEvents =
+        getValue(jaegerSpan.getTagsList(), Adapter.KEY_DROPPED_EVENTS_COUNT);
+    assertThat(droppedEvents)
+        .isEqualTo(
+            Model.KeyValue.newBuilder()
+                .setKey(Adapter.KEY_DROPPED_EVENTS_COUNT)
+                .setVInt64(1)
+                .build());
+
     Model.Log log = jaegerSpan.getLogs(0);
     keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_EVENT);
     assertThat(keyValue).isNotNull();
@@ -288,6 +306,11 @@ class AdapterTest {
   }
 
   private static SpanData getSpanData(long startMs, long endMs, SpanKind kind) {
+    return getSpanData(startMs, endMs, kind, 1);
+  }
+
+  private static SpanData getSpanData(
+      long startMs, long endMs, SpanKind kind, int totalRecordedEvents) {
     Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
     LinkData link = LinkData.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
@@ -302,8 +325,9 @@ class AdapterTest {
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
         .setAttributes(Attributes.of(booleanKey("valueB"), true))
+        .setTotalAttributeCount(3)
         .setEvents(Collections.singletonList(getTimedEvent()))
-        .setTotalRecordedEvents(1)
+        .setTotalRecordedEvents(totalRecordedEvents)
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)
         .setKind(kind)

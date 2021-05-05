@@ -147,6 +147,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setStartEpochNanos(START_EPOCH_NANOS)
         .setAttributes(attributes)
         .setTotalAttributeCount(attributes.size())
+        .setTotalRecordedEvents(annotations.size())
         .setEvents(annotations)
         .setLinks(Collections.emptyList())
         .setEndEpochNanos(END_EPOCH_NANOS)

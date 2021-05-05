@@ -33,6 +33,8 @@ final class Adapter {
   static final AttributeKey<Boolean> KEY_ERROR = booleanKey("error");
   static final String KEY_LOG_EVENT = "event";
   static final String KEY_EVENT_DROPPED_ATTRIBUTES_COUNT = "otel.event.dropped_attributes_count";
+  static final String KEY_DROPPED_ATTRIBUTES_COUNT = "otel.dropped_attributes_count";
+  static final String KEY_DROPPED_EVENTS_COUNT = "otel.dropped_events_count";
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "otel.status_description";
   static final String KEY_SPAN_STATUS_CODE = "otel.status_code";
@@ -75,7 +77,18 @@ final class Adapter {
         Timestamps.between(startTimestamp, Timestamps.fromNanos(span.getEndEpochNanos())));
 
     target.addAllTags(toKeyValues(span.getAttributes()));
+    int numberOfAttributes = span.getAttributes().size();
+    if (numberOfAttributes != span.getTotalAttributeCount()) {
+      target.addTags(
+          toKeyValue(
+              KEY_DROPPED_ATTRIBUTES_COUNT, span.getTotalAttributeCount() - numberOfAttributes));
+    }
     target.addAllLogs(toJaegerLogs(span.getEvents()));
+    int numberOfEvents = span.getEvents().size();
+    if (numberOfEvents != span.getTotalRecordedEvents()) {
+      target.addTags(
+          toKeyValue(KEY_DROPPED_EVENTS_COUNT, span.getTotalRecordedEvents() - numberOfEvents));
+    }
     target.addAllReferences(toSpanRefs(span.getLinks()));
 
     // add the parent span
@@ -89,41 +102,26 @@ final class Adapter {
     }
 
     if (span.getKind() != SpanKind.INTERNAL) {
-      target.addTags(
-          Model.KeyValue.newBuilder()
-              .setKey(KEY_SPAN_KIND)
-              .setVStr(span.getKind().name().toLowerCase(Locale.ROOT))
-              .build());
+      target.addTags(toKeyValue(KEY_SPAN_KIND, span.getKind().name().toLowerCase(Locale.ROOT)));
     }
 
     if (!span.getStatus().getDescription().isEmpty()) {
-      target.addTags(
-          Model.KeyValue.newBuilder()
-              .setKey(KEY_SPAN_STATUS_MESSAGE)
-              .setVStr(span.getStatus().getDescription())
-              .build());
+      target.addTags(toKeyValue(KEY_SPAN_STATUS_MESSAGE, span.getStatus().getDescription()));
     }
 
     if (span.getStatus().getStatusCode() != StatusCode.UNSET) {
-      target.addTags(
-          Model.KeyValue.newBuilder()
-              .setKey(KEY_SPAN_STATUS_CODE)
-              .setVStr(span.getStatus().getStatusCode().name())
-              .build());
+      target.addTags(toKeyValue(KEY_SPAN_STATUS_CODE, span.getStatus().getStatusCode().name()));
     }
 
     target.addTags(
-        Model.KeyValue.newBuilder()
-            .setKey(KEY_INSTRUMENTATION_LIBRARY_NAME)
-            .setVStr(span.getInstrumentationLibraryInfo().getName())
-            .build());
+        toKeyValue(
+            KEY_INSTRUMENTATION_LIBRARY_NAME, span.getInstrumentationLibraryInfo().getName()));
 
     if (span.getInstrumentationLibraryInfo().getVersion() != null) {
       target.addTags(
-          Model.KeyValue.newBuilder()
-              .setKey(KEY_INSTRUMENTATION_LIBRARY_VERSION)
-              .setVStr(span.getInstrumentationLibraryInfo().getVersion())
-              .build());
+          toKeyValue(
+              KEY_INSTRUMENTATION_LIBRARY_VERSION,
+              span.getInstrumentationLibraryInfo().getVersion()));
     }
 
     if (span.getStatus().getStatusCode() == StatusCode.ERROR) {
@@ -161,8 +159,7 @@ final class Adapter {
     builder.setTimestamp(Timestamps.fromNanos(event.getEpochNanos()));
 
     // name is a top-level property in OpenTelemetry
-    builder.addFields(
-        Model.KeyValue.newBuilder().setKey(KEY_LOG_EVENT).setVStr(event.getName()).build());
+    builder.addFields(toKeyValue(KEY_LOG_EVENT, event.getName()));
 
     int droppedAttributesCount = event.getDroppedAttributesCount();
     if (droppedAttributesCount > 0) {
@@ -229,6 +226,14 @@ final class Adapter {
         break;
     }
     return builder.build();
+  }
+
+  private static Model.KeyValue toKeyValue(String key, String value) {
+    return Model.KeyValue.newBuilder().setKey(key).setVStr(value).build();
+  }
+
+  private static Model.KeyValue toKeyValue(String key, long value) {
+    return Model.KeyValue.newBuilder().setKey(key).setVInt64(value).build();
   }
 
   /**

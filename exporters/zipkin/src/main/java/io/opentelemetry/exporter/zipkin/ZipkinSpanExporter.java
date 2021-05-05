@@ -47,6 +47,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
   private final ThrottlingLogger logger = new ThrottlingLogger(baseLogger);
 
+  static final String OTEL_DROPPED_ATTRIBUTES_COUNT = "otel.dropped_attributes_count";
+  static final String OTEL_DROPPED_EVENTS_COUNT = "otel.dropped_events_count";
   static final String OTEL_STATUS_CODE = "otel.status_code";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
 
@@ -107,6 +109,13 @@ public final class ZipkinSpanExporter implements SpanExporter {
     Attributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
         (key, value) -> spanBuilder.putTag(key.getKey(), valueToString(key, value)));
+    int numberOfAttributes = spanAttributes.size();
+    if (numberOfAttributes != spanData.getTotalAttributeCount()) {
+      spanBuilder.putTag(
+          OTEL_DROPPED_ATTRIBUTES_COUNT,
+          String.valueOf(spanData.getTotalAttributeCount() - numberOfAttributes));
+    }
+
     StatusData status = spanData.getStatus();
 
     // include status code & error.
@@ -129,9 +138,13 @@ public final class ZipkinSpanExporter implements SpanExporter {
       spanBuilder.putTag(
           KEY_INSTRUMENTATION_LIBRARY_VERSION, instrumentationLibraryInfo.getVersion());
     }
-
     for (EventData annotation : spanData.getEvents()) {
       spanBuilder.addAnnotation(toEpochMicros(annotation.getEpochNanos()), annotation.getName());
+    }
+    if (spanData.getEvents().size() != spanData.getTotalRecordedEvents()) {
+      spanBuilder.putTag(
+          OTEL_DROPPED_EVENTS_COUNT,
+          String.valueOf(spanData.getTotalRecordedEvents() - spanData.getEvents().size()));
     }
 
     return spanBuilder.build();
