@@ -135,6 +135,11 @@ final class SpanExporterConfiguration {
       builder.setEndpoint(endpoint);
     }
 
+    Duration timeout = config.getDuration("otel.exporter.zipkin.timeout");
+    if (timeout != null) {
+      builder.setReadTimeout(timeout);
+    }
+
     return builder.build();
   }
 
