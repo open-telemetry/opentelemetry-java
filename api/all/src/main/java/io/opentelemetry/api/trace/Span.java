@@ -173,6 +173,7 @@ public interface Span extends ImplicitContextKeyed {
    *
    * @param attributes the attributes
    * @return this.
+   * @since 1.2.0
    */
   @SuppressWarnings("unchecked")
   default Span setAllAttributes(Attributes attributes) {

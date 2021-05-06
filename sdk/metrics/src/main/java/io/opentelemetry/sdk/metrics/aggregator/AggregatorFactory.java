@@ -43,6 +43,7 @@ public interface AggregatorFactory {
    *
    * @param temporality configures what temporality to be produced for the Sum metrics.
    * @return an {@code AggregationFactory} that calculates sum of recorded measurements.
+   * @since 1.2.0
    */
   static AggregatorFactory sum(AggregationTemporality temporality) {
     return new SumAggregatorFactory(temporality);
