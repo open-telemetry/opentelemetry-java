@@ -234,6 +234,7 @@ public interface SpanBuilder {
    *
    * @param attributes the attributes
    * @return this.
+   * @since 1.2.0
    */
   @SuppressWarnings("unchecked")
   default SpanBuilder setAllAttributes(Attributes attributes) {

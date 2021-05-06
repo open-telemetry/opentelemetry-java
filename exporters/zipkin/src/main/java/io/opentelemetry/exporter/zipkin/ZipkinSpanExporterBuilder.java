@@ -70,6 +70,7 @@ public final class ZipkinSpanExporterBuilder {
    * Sets the maximum time to wait for the export of a batch of spans. If unset, defaults to 10s.
    *
    * @return this.
+   * @since 1.2.0
    */
   public ZipkinSpanExporterBuilder setReadTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
@@ -82,6 +83,7 @@ public final class ZipkinSpanExporterBuilder {
    * Sets the maximum time to wait for the export of a batch of spans. If unset, defaults to 10s.
    *
    * @return this.
+   * @since 1.2.0
    */
   public ZipkinSpanExporterBuilder setReadTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
