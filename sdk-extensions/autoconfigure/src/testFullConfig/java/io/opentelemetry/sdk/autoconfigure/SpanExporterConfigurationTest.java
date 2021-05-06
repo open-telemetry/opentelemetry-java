@@ -57,4 +57,19 @@ class SpanExporterConfigurationTest {
       exporter.shutdown();
     }
   }
+
+  // Timeout difficult to test using real exports so just check that things don't blow up.
+  @Test
+  void configureZipkinTimeout() {
+    SpanExporter exporter =
+        SpanExporterConfiguration.configureExporter(
+            "zipkin",
+            ConfigProperties.createForTest(
+                Collections.singletonMap("otel.exporter.zipkin.timeout", "5s")));
+    try {
+      assertThat(exporter).isNotNull();
+    } finally {
+      exporter.shutdown();
+    }
+  }
 }

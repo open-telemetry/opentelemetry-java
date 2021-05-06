@@ -14,6 +14,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
@@ -38,6 +39,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -422,5 +424,33 @@ class ZipkinSpanExporterTest {
                 .build())
         .addAnnotation(1505855799000000L + 433901068L / 1000, "RECEIVED")
         .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT");
+  }
+
+  @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void invalidConfig() {
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setEndpoint(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("endpoint");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setSender(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("sender");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setEncoder(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("encoder");
   }
 }
