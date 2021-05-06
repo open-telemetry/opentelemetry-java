@@ -34,7 +34,7 @@ previously used `"unknown"` value. This change is based on a specification clari
 
 ### Exporters
 - The `jaeger-thrift` exporter has had its dependency on the `jaeger-client` library updated to version `1.6.0`.
-- The `zipkin` and `jaeger` exporters now have an option to specific a custom timeout. 
+- The `zipkin` exporter now has an option to specific a custom timeout. 
 - The `zipkin`, `jaeger` and `jaeger-thrift` exporters will now report the `otel.dropped_attributes_count` and `otel.dropped_events_count` 
 tags if the numbers are greater than zero.
 
