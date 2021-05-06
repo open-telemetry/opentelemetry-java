@@ -489,9 +489,9 @@ subprojects {
                     packageExcludes = listOf("*.internal", "io.opentelemetry.internal.shaded.jctools.*")
                     if (newVersion == null) {
                         val baseVersionString = if (userRequestedBase == null) "latest" else baselineVersion
-                        txtOutputFile = file("$projectDir/docs/api_diff_current_vs_${baseVersionString}.txt")
+                        txtOutputFile = file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${project.base.archivesBaseName}.txt")
                     } else {
-                        txtOutputFile = file("$projectDir/docs/api_diff_${newVersion}_vs_${baselineVersion}.txt")
+                        txtOutputFile = file("$rootDir/docs/apidiffs/${newVersion}_vs_${baselineVersion}/${project.base.archivesBaseName}.txt")
                     }
                 }
                 // have the check task depend on the api comparison task, to make it more likely it will get used.
