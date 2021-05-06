@@ -264,8 +264,7 @@ class OtTracePropagatorTest {
     invalidHeaders.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID + "00");
     invalidHeaders.put(OtTracePropagator.SPAN_ID_HEADER, SPAN_ID);
     invalidHeaders.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -274,8 +273,7 @@ class OtTracePropagatorTest {
     invalidHeaders.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
     invalidHeaders.put(OtTracePropagator.SPAN_ID_HEADER, "abcdefghijklmnop");
     invalidHeaders.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -284,15 +282,20 @@ class OtTracePropagatorTest {
     invalidHeaders.put(OtTracePropagator.TRACE_ID_HEADER, TRACE_ID);
     invalidHeaders.put(OtTracePropagator.SPAN_ID_HEADER, "abcdefghijklmnop" + "00");
     invalidHeaders.put(OtTracePropagator.SAMPLED_HEADER, Common.TRUE_INT);
-    assertThat(getSpanContext(propagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
+  }
+
+  private void verifyInvalidBehavior(Map<String, String> invalidHeaders) {
+    Context input = Context.current();
+    Context result = propagator.extract(input, invalidHeaders, getter);
+    assertThat(result).isSameAs(input);
+    assertThat(getSpanContext(result)).isSameAs(SpanContext.getInvalid());
   }
 
   @Test
   void extract_emptyCarrier() {
     Map<String, String> emptyHeaders = new HashMap<>();
-    assertThat(getSpanContext(propagator.extract(Context.current(), emptyHeaders, getter)))
-        .isEqualTo(SpanContext.getInvalid());
+    verifyInvalidBehavior(emptyHeaders);
   }
 
   @Test

@@ -298,42 +298,42 @@ class W3CTraceContextPropagatorTest {
   void extract_EmptyHeader() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(W3CTraceContextPropagator.TRACE_PARENT, "");
-    assertThat(
-            getSpanContext(
-                w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
   void extract_invalidDelimiters() {
     Map<String, String> carrier = new LinkedHashMap<>();
+    Context input = Context.current();
+    Context result;
+
     carrier.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "01+" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00-02");
-    assertThat(
-            getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
-        .isEqualTo(SpanContext.getInvalid());
+    result = w3cTraceContextPropagator.extract(input, carrier, getter);
+    assertThat(result).isSameAs(input);
+    assertThat(getSpanContext(result)).isEqualTo(SpanContext.getInvalid());
 
     carrier.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "01-" + TRACE_ID_BASE16 + "+" + SPAN_ID_BASE16 + "-00-02");
-    assertThat(
-            getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
-        .isEqualTo(SpanContext.getInvalid());
+    result = w3cTraceContextPropagator.extract(input, carrier, getter);
+    assertThat(result).isSameAs(input);
+    assertThat(getSpanContext(result)).isEqualTo(SpanContext.getInvalid());
 
     carrier.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "01-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "+00-02");
-    assertThat(
-            getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
-        .isEqualTo(SpanContext.getInvalid());
+    result = w3cTraceContextPropagator.extract(input, carrier, getter);
+    assertThat(result).isSameAs(input);
+    assertThat(getSpanContext(result)).isEqualTo(SpanContext.getInvalid());
 
     carrier.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "01-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00+02");
-    assertThat(
-            getSpanContext(w3cTraceContextPropagator.extract(Context.current(), carrier, getter)))
-        .isEqualTo(SpanContext.getInvalid());
+    result = w3cTraceContextPropagator.extract(input, carrier, getter);
+    assertThat(result).isSameAs(input);
+    assertThat(getSpanContext(result)).isEqualTo(SpanContext.getInvalid());
   }
 
   @Test
@@ -342,10 +342,7 @@ class W3CTraceContextPropagatorTest {
     invalidHeaders.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "00-" + "abcdefghijklmnopabcdefghijklmnop" + "-" + SPAN_ID_BASE16 + "-01");
-    assertThat(
-            getSpanContext(
-                w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -354,10 +351,7 @@ class W3CTraceContextPropagatorTest {
     invalidHeaders.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "00-" + TRACE_ID_BASE16 + "00-" + SPAN_ID_BASE16 + "-01");
-    assertThat(
-            getSpanContext(
-                w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -366,10 +360,7 @@ class W3CTraceContextPropagatorTest {
     invalidHeaders.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "00-" + TRACE_ID_BASE16 + "-" + "abcdefghijklmnop" + "-01");
-    assertThat(
-            getSpanContext(
-                w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -378,10 +369,7 @@ class W3CTraceContextPropagatorTest {
     invalidHeaders.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "00-01");
-    assertThat(
-            getSpanContext(
-                w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -390,10 +378,7 @@ class W3CTraceContextPropagatorTest {
     invalidHeaders.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-gh");
-    assertThat(
-            getSpanContext(
-                w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -402,10 +387,14 @@ class W3CTraceContextPropagatorTest {
     invalidHeaders.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-0100");
-    assertThat(
-            getSpanContext(
-                w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
+  }
+
+  private void verifyInvalidBehavior(Map<String, String> invalidHeaders) {
+    Context input = Context.current();
+    Context result = w3cTraceContextPropagator.extract(input, invalidHeaders, getter);
+    assertThat(result).isSameAs(input);
+    assertThat(getSpanContext(result)).isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -474,10 +463,7 @@ class W3CTraceContextPropagatorTest {
     invalidHeaders.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "ff-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01");
-    assertThat(
-            getSpanContext(
-                w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -486,10 +472,7 @@ class W3CTraceContextPropagatorTest {
     invalidHeaders.put(
         W3CTraceContextPropagator.TRACE_PARENT,
         "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00-01");
-    assertThat(
-            getSpanContext(
-                w3cTraceContextPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test

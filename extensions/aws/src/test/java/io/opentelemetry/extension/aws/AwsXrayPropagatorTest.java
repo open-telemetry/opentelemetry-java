@@ -273,8 +273,7 @@ class AwsXrayPropagatorTest {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(TRACE_HEADER_KEY, "");
 
-    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -284,8 +283,7 @@ class AwsXrayPropagatorTest {
         TRACE_HEADER_KEY,
         "Root=abcdefghijklmnopabcdefghijklmnop;Parent=53995c3f42cd8ad8;Sampled=0");
 
-    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -295,8 +293,7 @@ class AwsXrayPropagatorTest {
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa600;Parent=53995c3f42cd8ad8;Sampled=0");
 
-    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -306,8 +303,7 @@ class AwsXrayPropagatorTest {
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=abcdefghijklmnop;Sampled=0");
 
-    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -317,8 +313,7 @@ class AwsXrayPropagatorTest {
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad800;Sampled=0");
 
-    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -328,8 +323,7 @@ class AwsXrayPropagatorTest {
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=");
 
-    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -339,8 +333,7 @@ class AwsXrayPropagatorTest {
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=10220");
 
-    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -350,8 +343,14 @@ class AwsXrayPropagatorTest {
         TRACE_HEADER_KEY,
         "Root=1-8a3c60f7-d188f8fa79d48a391a778fa6;Parent=53995c3f42cd8ad8;Sampled=a");
 
-    assertThat(getSpanContext(xrayPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
+  }
+
+  private void verifyInvalidBehavior(Map<String, String> invalidHeaders) {
+    Context input = Context.current();
+    Context result = xrayPropagator.extract(input, invalidHeaders, getter);
+    assertThat(result).isSameAs(input);
+    assertThat(getSpanContext(result)).isSameAs(SpanContext.getInvalid());
   }
 
   @Test
