@@ -7,10 +7,33 @@
 #### Enhancements
 - The `"Implementation-Version"` attribute has been added to the jar manifests for all published jar artifacts.
 
+### API
+
+#### Enhancements
+- A new method has been added to the Span and the SpanBuilder to enable adding a set of Attributes in one call, rather than
+having to iterate over the contents and add them individually. See `Span.setAllAttributes(Attributes)` and `SpanBuilder.setAllAttributes(Attributes)`
+
+#### Behavioral Changes
+- Previously, an AttributeKey with a null underlying key would preserve the null. Now, this will be converted to an empty String.
+
+### SDK
+
+#### Enhancements
+- The `IdGenerator.random()` method will now attempt to detect if it is being used in an Android environment, and use
+a more Android-friendly `IdGenerator` instance in that case. This will affect any usage of the SDK that does not
+explicitly specify a custom `IdGenerator` instance when running on Android.
+
+#### Behavioral Changes
+- The name used for Tracer instances that do not have a name has been changed to be an empty String, rather than the 
+previously used `"unknown"` value. This change is based on a specification clarification.
+
 ### Propagators
 
 #### Bugfixes
 - The B3 Propagator injectors now only include the relevant fields for the specific injection format.
+
+### Exporters
+- The `jaeger-thrift` exporter has had its dependency on the `jaeger-client` library updated to version `1.6.0`.
 
 ### Semantic Conventions (alpha)
 
@@ -26,6 +49,24 @@
 ### SDK Extensions
 - A new `HostResource` Resource and the corresponding `ResourceProvider` has been added. 
 It will populate the `host.name` and `host.arch` Resource Attributes.
+- A new `ExecutorServiceSpanProcessor` has been added to the `opentelemetry-sdk-extension-tracing-incubator` module. This implementation
+of a batch SpanProcessor allows you to provide your own ExecutorService to do the background export work.
+- The `autoconfigure` module now supports providing the timeout setting for the Jaeger GRPC exporter via 
+a system property (`otel.exporter.jaeger.timeout`) or environment variable (`OTEL_EXPORTER_JAEGER_TIMEOUT`).
+
+### Metrics (alpha)
+
+#### Breaking Changes
+- The deprecated `SdkMeterProvider.registerView()` method has been removed. The ViewRegistry is now immutable and cannot
+be changed once the `SdkMeterProvider` has been built.
+
+#### Bugfixes
+- OTLP summaries now have the proper percentile value of `1.0` to represent the maximum; previously it was wrongly set to `100.0`. 
+
+#### Enhancements
+- There is now full support for delta-aggregations with the `LongSumAggregator` and `DoubleSumAggregator`. 
+See `AggregatorFactory.sum(AggregationTemporality)`. The previous `AggregatorFactory.sum(boolean)` has been
+deprecated and will be removed in the next release.
 
 ---
 
