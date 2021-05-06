@@ -19,15 +19,13 @@ import io.opentelemetry.context.propagation.ContextPropagators;
  * framework. If such overhead is not a concern, always use either {@link OpenTelemetry#noop()},
  * {@link OpenTelemetry#propagating(ContextPropagators)}, or the OpenTelemetry SDK.
  *
- * <p>Code such as
+ * <p>The following code will fail because context is not mounted.
  *
  * <pre>{@code
  * try (Scope ignored = Context.current().with(Span.wrap(VALID_SPAN_CONTEXT).makeCurrent()) {
  *   assert Span.current().spanContext().equals(VALID_SPAN_CONTEXT);
  * }
  * }</pre>
- *
- * will fail because no new context is mounted.
  *
  * <p>In most cases when instrumenting a library, the above pattern does not happen because {@link
  * io.opentelemetry.api.trace.Span#wrap(SpanContext)} is primarily for use in remote propagators.
@@ -40,8 +38,8 @@ import io.opentelemetry.context.propagation.ContextPropagators;
  * }
  * }</pre>
  *
- * The above will succeed both with the {@linkplain OpenTelemetry#noop() default implementation} and
- * this one, but with this implementation there will be no overhead at all.
+ * <p>The above will succeed both with the {@linkplain OpenTelemetry#noop() default implementation}
+ * and this one, but with this implementation there will be no overhead at all.
  */
 public class NoopOpenTelemetry implements OpenTelemetry {
 
