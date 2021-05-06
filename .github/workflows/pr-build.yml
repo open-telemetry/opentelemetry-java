@@ -34,7 +34,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: adopt
-          java-version: 11
+          java-version: 11.0.10+9
       - uses: burrunan/gradle-cache-action@v1.10
         with:
           remote-build-cache-proxy-enabled: false
