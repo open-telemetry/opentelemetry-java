@@ -34,11 +34,11 @@ enum NoopTracerProvider implements TracerProvider {
 
     @Override
     public SpanBuilder spanBuilder(String spanName) {
-      return NoopSpanBuilde.INSTANCE;
+      return NoopSpanBuilder.INSTANCE;
     }
   }
 
-  enum NoopSpanBuilde implements SpanBuilder {
+  enum NoopSpanBuilder implements SpanBuilder {
     INSTANCE;
 
     @Override
