@@ -80,19 +80,15 @@ final class Adapter {
         TimeUnit.NANOSECONDS.toMicros(span.getEndEpochNanos() - span.getStartEpochNanos()));
 
     List<Tag> tags = toTags(span.getAttributes());
-    int numberOfAttributes = span.getAttributes().size();
-    if (numberOfAttributes != span.getTotalAttributeCount()) {
-      tags.add(
-          new Tag(KEY_DROPPED_ATTRIBUTES_COUNT, TagType.LONG)
-              .setVLong(span.getTotalAttributeCount() - numberOfAttributes));
+    int droppedAttributes = span.getTotalAttributeCount() - span.getAttributes().size();
+    if (droppedAttributes > 0) {
+      tags.add(new Tag(KEY_DROPPED_ATTRIBUTES_COUNT, TagType.LONG).setVLong(droppedAttributes));
     }
 
     target.setLogs(toJaegerLogs(span.getEvents()));
-    int numberOfEvents = span.getEvents().size();
-    if (numberOfAttributes != span.getTotalRecordedEvents()) {
-      tags.add(
-          new Tag(KEY_DROPPED_EVENTS_COUNT, TagType.LONG)
-              .setVLong(span.getTotalRecordedEvents() - numberOfEvents));
+    int droppedEvents = span.getTotalRecordedEvents() - span.getEvents().size();
+    if (droppedEvents > 0) {
+      tags.add(new Tag(KEY_DROPPED_EVENTS_COUNT, TagType.LONG).setVLong(droppedEvents));
     }
 
     List<SpanRef> references = toSpanRefs(span.getLinks());

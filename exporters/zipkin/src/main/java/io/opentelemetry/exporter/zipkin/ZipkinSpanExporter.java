@@ -109,11 +109,9 @@ public final class ZipkinSpanExporter implements SpanExporter {
     Attributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
         (key, value) -> spanBuilder.putTag(key.getKey(), valueToString(key, value)));
-    int numberOfAttributes = spanAttributes.size();
-    if (numberOfAttributes != spanData.getTotalAttributeCount()) {
-      spanBuilder.putTag(
-          OTEL_DROPPED_ATTRIBUTES_COUNT,
-          String.valueOf(spanData.getTotalAttributeCount() - numberOfAttributes));
+    int droppedAttributes = spanData.getTotalAttributeCount() - spanAttributes.size();
+    if (droppedAttributes > 0) {
+      spanBuilder.putTag(OTEL_DROPPED_ATTRIBUTES_COUNT, String.valueOf(droppedAttributes));
     }
 
     StatusData status = spanData.getStatus();
@@ -141,10 +139,9 @@ public final class ZipkinSpanExporter implements SpanExporter {
     for (EventData annotation : spanData.getEvents()) {
       spanBuilder.addAnnotation(toEpochMicros(annotation.getEpochNanos()), annotation.getName());
     }
-    if (spanData.getEvents().size() != spanData.getTotalRecordedEvents()) {
-      spanBuilder.putTag(
-          OTEL_DROPPED_EVENTS_COUNT,
-          String.valueOf(spanData.getTotalRecordedEvents() - spanData.getEvents().size()));
+    int droppedEvents = spanData.getTotalRecordedEvents() - spanData.getEvents().size();
+    if (droppedEvents > 0) {
+      spanBuilder.putTag(OTEL_DROPPED_EVENTS_COUNT, String.valueOf(droppedEvents));
     }
 
     return spanBuilder.build();

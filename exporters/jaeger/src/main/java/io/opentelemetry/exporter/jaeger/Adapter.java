@@ -77,17 +77,15 @@ final class Adapter {
         Timestamps.between(startTimestamp, Timestamps.fromNanos(span.getEndEpochNanos())));
 
     target.addAllTags(toKeyValues(span.getAttributes()));
-    int numberOfAttributes = span.getAttributes().size();
-    if (numberOfAttributes != span.getTotalAttributeCount()) {
-      target.addTags(
-          toKeyValue(
-              KEY_DROPPED_ATTRIBUTES_COUNT, span.getTotalAttributeCount() - numberOfAttributes));
+    int droppedAttributes = span.getTotalAttributeCount() - span.getAttributes().size();
+    if (droppedAttributes > 0) {
+      target.addTags(toKeyValue(KEY_DROPPED_ATTRIBUTES_COUNT, droppedAttributes));
     }
+
     target.addAllLogs(toJaegerLogs(span.getEvents()));
-    int numberOfEvents = span.getEvents().size();
-    if (numberOfEvents != span.getTotalRecordedEvents()) {
-      target.addTags(
-          toKeyValue(KEY_DROPPED_EVENTS_COUNT, span.getTotalRecordedEvents() - numberOfEvents));
+    int droppedEvents = span.getTotalRecordedEvents() - span.getEvents().size();
+    if (droppedEvents > 0) {
+      target.addTags(toKeyValue(KEY_DROPPED_EVENTS_COUNT, droppedEvents));
     }
     target.addAllReferences(toSpanRefs(span.getLinks()));
 
