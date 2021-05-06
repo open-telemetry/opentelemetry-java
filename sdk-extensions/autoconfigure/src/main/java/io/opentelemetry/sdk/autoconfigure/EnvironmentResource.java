@@ -9,10 +9,22 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 
-final class EnvironmentResource {
+/**
+ * Factory for a {@link Resource} which parses the standard "otel.resource.attributes" system
+ * property or OTEL_RESOURCE_ATTRIBUTES environment variable.
+ */
+public final class EnvironmentResource {
 
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
+
+  /**
+   * Returns a {@link Resource} which contains information from the standard
+   * "otel.resource.attributes" system property or OTEL_RESOURCE_ATTRIBUTES environment variable.
+   */
+  public static Resource get() {
+    return create(ConfigProperties.get());
+  }
 
   static Resource create(ConfigProperties config) {
     return Resource.create(getAttributes(config));
