@@ -34,11 +34,15 @@ previously used `"unknown"` value. This change is based on a specification clari
 
 ### Exporters
 - The `jaeger-thrift` exporter has had its dependency on the `jaeger-client` library updated to version `1.6.0`.
+- The `zipkin` exporter now has an option to specific a custom timeout. 
+- The `zipkin`, `jaeger` and `jaeger-thrift` exporters will now report the `otel.dropped_attributes_count` and `otel.dropped_events_count` 
+tags if the numbers are greater than zero.
 
 ### Semantic Conventions (alpha)
 
 #### Breaking Changes
-- The SemanticAttributes and ResourceAttributes have both been updated to match the OpenTelemetry Specification v1.2.0 release.
+- The SemanticAttributes and ResourceAttributes have both been updated to match the OpenTelemetry Specification v1.3.0 release, which 
+includes several breaking changes.
 - Values that were previously defined as `enum`s are now defined as static `public static final ` constants of the appropriate type.
 
 ### OpenTracing Shim (alpha)
@@ -53,6 +57,8 @@ It will populate the `host.name` and `host.arch` Resource Attributes.
 of a batch SpanProcessor allows you to provide your own ExecutorService to do the background export work.
 - The `autoconfigure` module now supports providing the timeout setting for the Jaeger GRPC exporter via 
 a system property (`otel.exporter.jaeger.timeout`) or environment variable (`OTEL_EXPORTER_JAEGER_TIMEOUT`).
+- The `autoconfigure` module now supports providing the timeout setting for the Zipkin exporter via 
+a system property (`otel.exporter.zipkin.timeout`) or environment variable (`OTEL_EXPORTER_ZIPKIN_TIMEOUT`).
 
 ### Metrics (alpha)
 
