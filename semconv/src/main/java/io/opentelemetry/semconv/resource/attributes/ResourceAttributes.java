@@ -416,27 +416,27 @@ public final class ResourceAttributes {
     /** AWS Lambda. */
     public static final String AWS_LAMBDA = "aws_lambda";
     /** AWS Elastic Beanstalk. */
-    public static final String AWS_ELASTICBEANSTALK = "aws_elastic_beanstalk";
+    public static final String AWS_ELASTIC_BEANSTALK = "aws_elastic_beanstalk";
     /** Azure Virtual Machines. */
     public static final String AZURE_VM = "azure_vm";
     /** Azure Container Instances. */
-    public static final String AZURE_CONTAINERINSTANCES = "azure_container_instances";
+    public static final String AZURE_CONTAINER_INSTANCES = "azure_container_instances";
     /** Azure Kubernetes Service. */
     public static final String AZURE_AKS = "azure_aks";
     /** Azure Functions. */
     public static final String AZURE_FUNCTIONS = "azure_functions";
     /** Azure App Service. */
-    public static final String AZURE_APPSERVICE = "azure_app_service";
+    public static final String AZURE_APP_SERVICE = "azure_app_service";
     /** Google Cloud Compute Engine (GCE). */
-    public static final String GCP_COMPUTEENGINE = "gcp_compute_engine";
+    public static final String GCP_COMPUTE_ENGINE = "gcp_compute_engine";
     /** Google Cloud Run. */
-    public static final String GCP_CLOUDRUN = "gcp_cloud_run";
+    public static final String GCP_CLOUD_RUN = "gcp_cloud_run";
     /** Google Cloud Kubernetes Engine (GKE). */
-    public static final String GCP_KUBERNETESENGINE = "gcp_kubernetes_engine";
+    public static final String GCP_KUBERNETES_ENGINE = "gcp_kubernetes_engine";
     /** Google Cloud Functions (GCF). */
-    public static final String GCP_CLOUDFUNCTIONS = "gcp_cloud_functions";
+    public static final String GCP_CLOUD_FUNCTIONS = "gcp_cloud_functions";
     /** Google Cloud App Engine (GAE). */
-    public static final String GCP_APPENGINE = "gcp_app_engine";
+    public static final String GCP_APP_ENGINE = "gcp_app_engine";
 
     private CloudPlatformValues() {}
   }
@@ -471,27 +471,27 @@ public final class ResourceAttributes {
 
   public static final class OsTypeValues {
     /** Microsoft Windows. */
-    public static final String WINDOWS = "WINDOWS";
+    public static final String WINDOWS = "windows";
     /** Linux. */
-    public static final String LINUX = "LINUX";
+    public static final String LINUX = "linux";
     /** Apple Darwin. */
-    public static final String DARWIN = "DARWIN";
+    public static final String DARWIN = "darwin";
     /** FreeBSD. */
-    public static final String FREEBSD = "FREEBSD";
+    public static final String FREEBSD = "freebsd";
     /** NetBSD. */
-    public static final String NETBSD = "NETBSD";
+    public static final String NETBSD = "netbsd";
     /** OpenBSD. */
-    public static final String OPENBSD = "OPENBSD";
+    public static final String OPENBSD = "openbsd";
     /** DragonFly BSD. */
-    public static final String DRAGONFLYBSD = "DRAGONFLYBSD";
+    public static final String DRAGONFLYBSD = "dragonflybsd";
     /** HP-UX (Hewlett Packard Unix). */
-    public static final String HPUX = "HPUX";
+    public static final String HPUX = "hpux";
     /** AIX (Advanced Interactive eXecutive). */
-    public static final String AIX = "AIX";
+    public static final String AIX = "aix";
     /** Oracle Solaris. */
-    public static final String SOLARIS = "SOLARIS";
+    public static final String SOLARIS = "solaris";
     /** IBM z/OS. */
-    public static final String ZOS = "ZOS";
+    public static final String Z_OS = "z_os";
 
     private OsTypeValues() {}
   }

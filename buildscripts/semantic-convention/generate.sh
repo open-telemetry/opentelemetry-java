@@ -4,7 +4,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../../"
 
 # freeze the spec & generator tools versions to make SemanticAttributes generation reproducible
-SPEC_VERSION=v1.2.0
+SPEC_VERSION=v1.3.0
 GENERATOR_VERSION=0.3.1
 
 cd ${SCRIPT_DIR}
