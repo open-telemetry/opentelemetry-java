@@ -136,6 +136,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       spanBuilder.putTag(
           KEY_INSTRUMENTATION_LIBRARY_VERSION, instrumentationLibraryInfo.getVersion());
     }
+
     for (EventData annotation : spanData.getEvents()) {
       spanBuilder.addAnnotation(toEpochMicros(annotation.getEpochNanos()), annotation.getName());
     }
