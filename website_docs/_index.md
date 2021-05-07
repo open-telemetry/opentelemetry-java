@@ -54,7 +54,7 @@ versions of the various components in sync.
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.1.0</version>
+        <version>1.2.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -73,7 +73,7 @@ versions of the various components in sync.
 
 ```groovy
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.1.0")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.2.0")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
