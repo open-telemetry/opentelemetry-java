@@ -12,6 +12,7 @@ import io.jaegertracing.thriftjava.Span;
 import io.jaegertracing.thriftjava.Tag;
 import io.jaegertracing.thriftjava.TagType;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -31,15 +32,17 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class JaegerThriftSpanExporter implements SpanExporter {
 
-  private static final String DEFAULT_HOST_NAME = "unknown";
   static final String DEFAULT_ENDPOINT = "http://localhost:14268/api/traces";
 
-  private static final Logger logger = Logger.getLogger(JaegerThriftSpanExporter.class.getName());
+  private static final String DEFAULT_HOST_NAME = "unknown";
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
   private static final String HOSTNAME_KEY = "hostname";
   private static final String IP_KEY = "ip";
   private static final String IP_DEFAULT = "0.0.0.0";
+
+  private final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(JaegerThriftSpanExporter.class.getName()));
   private final ThriftSender thriftSender;
   private final Process process;
 

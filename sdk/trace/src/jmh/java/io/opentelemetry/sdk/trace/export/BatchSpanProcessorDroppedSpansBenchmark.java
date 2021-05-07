@@ -5,17 +5,10 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import java.util.Collection;
 import org.openjdk.jmh.annotations.AuxCounters;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -32,99 +25,60 @@ import org.openjdk.jmh.annotations.Warmup;
 
 public class BatchSpanProcessorDroppedSpansBenchmark {
 
-  private static class DelayingSpanExporter implements SpanExporter {
-    @SuppressWarnings("FutureReturnValueIgnored")
-    @Override
-    public CompletableResultCode export(Collection<SpanData> spans) {
-      return CompletableResultCode.ofSuccess();
-    }
-
-    @Override
-    public CompletableResultCode flush() {
-      return CompletableResultCode.ofSuccess();
-    }
-
-    @Override
-    public CompletableResultCode shutdown() {
-      return CompletableResultCode.ofSuccess();
-    }
-  }
-
   @State(Scope.Benchmark)
   public static class BenchmarkState {
-    private final MetricProducer metricProducer = ((SdkMeterProvider) GlobalMetricsProvider.get());
+    private SdkMeterProvider sdkMeterProvider;
     private BatchSpanProcessor processor;
     private Tracer tracer;
-    private Collection<MetricData> allMetrics;
+    private double dropRatio;
+    private long exportedSpans;
+    private long droppedSpans;
+    private int numThreads;
 
-    @Setup(Level.Trial)
+    @Setup(Level.Iteration)
     public final void setup() {
-      SpanExporter exporter = new DelayingSpanExporter();
+      sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
+      SpanExporter exporter = new DelayingSpanExporter(0);
       processor = BatchSpanProcessor.builder(exporter).build();
 
       tracer = SdkTracerProvider.builder().build().get("benchmarkTracer");
     }
 
-    @TearDown(Level.Trial)
-    public final void tearDown() {
-      processor.shutdown();
+    @TearDown(Level.Iteration)
+    public final void recordMetrics() {
+      BatchSpanProcessorMetrics metrics =
+          new BatchSpanProcessorMetrics(sdkMeterProvider.collectAllMetrics(), numThreads);
+      dropRatio = metrics.dropRatio();
+      exportedSpans = metrics.exportedSpans();
+      droppedSpans = metrics.droppedSpans();
     }
 
     @TearDown(Level.Iteration)
-    public final void recordMetrics() {
-      allMetrics = metricProducer.collectAllMetrics();
+    public final void tearDown() {
+      processor.shutdown();
     }
   }
 
   @State(Scope.Thread)
-  @AuxCounters(AuxCounters.Type.EVENTS)
+  @AuxCounters(AuxCounters.Type.OPERATIONS)
   public static class ThreadState {
-    private Collection<MetricData> allMetrics;
+    BenchmarkState benchmarkState;
 
     @TearDown(Level.Iteration)
     public final void recordMetrics(BenchmarkState benchmarkState) {
-      allMetrics = benchmarkState.allMetrics;
+      this.benchmarkState = benchmarkState;
     }
 
-    /** Burn, checkstyle, burn. */
     public double dropRatio() {
-      long exported = getMetric(true);
-      long dropped = getMetric(false);
-      long total = exported + dropped;
-      if (total == 0) {
-        return 0;
-      } else {
-        // Due to peculiarities of JMH reporting we have to divide this by the number of the
-        // concurrent threads running the actual benchmark.
-        return (double) dropped / total / 5;
-      }
+      return benchmarkState.dropRatio;
     }
 
     public long exportedSpans() {
-      return getMetric(true);
+      return benchmarkState.exportedSpans;
     }
 
     public long droppedSpans() {
-      return getMetric(false);
-    }
-
-    private long getMetric(boolean dropped) {
-      String labelValue = String.valueOf(dropped);
-      for (MetricData metricData : allMetrics) {
-        if (metricData.getName().equals("processedSpans")) {
-          if (metricData.isEmpty()) {
-            return 0;
-          } else {
-            Collection<LongPointData> points = metricData.getLongSumData().getPoints();
-            for (LongPointData point : points) {
-              if (labelValue.equals(point.getLabels().get("dropped"))) {
-                return point.getValue();
-              }
-            }
-          }
-        }
-      }
-      return 0;
+      return benchmarkState.droppedSpans;
     }
   }
 
@@ -137,6 +91,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
   @BenchmarkMode(Mode.Throughput)
   public void export(
       BenchmarkState benchmarkState, @SuppressWarnings("unused") ThreadState threadState) {
+    benchmarkState.numThreads = 5;
     benchmarkState.processor.onEnd(
         (ReadableSpan) benchmarkState.tracer.spanBuilder("span").startSpan());
   }

@@ -10,6 +10,7 @@ dependencies {
     api(project(":api:all"))
 
     api("io.opentracing:opentracing-api")
+    implementation(project(":semconv"))
 
     testImplementation(project(":sdk:testing"))
 

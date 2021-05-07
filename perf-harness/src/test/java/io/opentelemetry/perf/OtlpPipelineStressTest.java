@@ -43,8 +43,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -62,6 +65,8 @@ public class OtlpPipelineStressTest {
   public static Network network = Network.newNetwork();
   public static AtomicLong totalSpansReceivedByCollector = new AtomicLong();
 
+  private static final Logger logger = LoggerFactory.getLogger(OtlpPipelineStressTest.class);
+
   @Container
   public static GenericContainer<?> collectorContainer =
       new GenericContainer<>(
@@ -74,11 +79,11 @@ public class OtlpPipelineStressTest {
           .withCopyFileToContainer(
               MountableFile.forClasspathResource("otel-collector-config-perf.yaml"),
               "/etc/otel-collector-config-perf.yaml")
-          .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
+          .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("otel-collector")))
           .withLogConsumer(
               outputFrame -> {
                 String logline = outputFrame.getUtf8String();
-                String spanExportPrefix = "TraceExporter\t{\"#spans\": ";
+                String spanExportPrefix = "TracesExporter\t{\"#spans\": ";
                 int start = logline.indexOf(spanExportPrefix);
                 int end = logline.indexOf("}");
                 if (start > 0) {
@@ -134,7 +139,7 @@ public class OtlpPipelineStressTest {
 
     toxiproxyClient.reset();
     collectorProxy.delete();
-    System.out.println("totalSpansReceivedByCollector = " + totalSpansReceivedByCollector);
+    logger.info("totalSpansReceivedByCollector = {}", totalSpansReceivedByCollector);
   }
 
   @Test
@@ -164,7 +169,8 @@ public class OtlpPipelineStressTest {
               latch.await();
               runOnce(null, 30_000);
             } catch (InterruptedException e) {
-              e.printStackTrace();
+              Thread.currentThread().interrupt();
+              throw new IllegalStateException("Interrupted", e);
             }
           });
     }
@@ -200,7 +206,7 @@ public class OtlpPipelineStressTest {
           pointsByLabelset.forEach(
               (labels, longPoints) -> {
                 long total = longPoints.get(longPoints.size() - 1).getValue();
-                System.out.println(name + " : " + labels + " : " + total);
+                logger.info("{} : {} : {}", name, labels, total);
               });
         });
   }
@@ -244,20 +250,22 @@ public class OtlpPipelineStressTest {
                 .build());
 
     // set up the metric exporter and wire it into the SDK and a timed reader.
-    SdkMeterProvider meterProvider = SdkMeterProvider.builder().setResource(resource).build();
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().setResource(resource).buildAndRegisterGlobal();
 
     intervalMetricReader =
         IntervalMetricReader.builder()
             .setMetricExporter(metricExporter)
             .setMetricProducers(Collections.singleton(meterProvider))
             .setExportIntervalMillis(1000)
-            .build();
+            .buildAndStart();
 
     // set up the span exporter and wire it into the SDK
     OtlpGrpcSpanExporter spanExporter =
         OtlpGrpcSpanExporter.builder()
             .setEndpoint(
-                toxiproxyContainer.getHost()
+                "http://"
+                    + toxiproxyContainer.getHost()
                     + ":"
                     + toxiproxyContainer.getMappedPort(COLLECTOR_PROXY_PORT))
             //            .setDeadlineMs(1000)

@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.jaeger.thrift;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
@@ -22,7 +21,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -43,7 +44,7 @@ class JaegerThriftIntegrationTest {
   public static GenericContainer<?> jaegerContainer =
       new GenericContainer<>("ghcr.io/open-telemetry/java-test-containers:jaeger")
           .withExposedPorts(THRIFT_HTTP_PORT, QUERY_PORT, HEALTH_PORT)
-          .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
+          .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("jaeger")))
           .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));
 
   @Test
@@ -67,10 +68,9 @@ class JaegerThriftIntegrationTest {
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
                 .setResource(
-                    Resource.getDefault()
-                        .merge(
-                            Resource.create(
-                                Attributes.of(ResourceAttributes.SERVICE_NAME, SERVICE_NAME))))
+                    Resource.getDefault().toBuilder()
+                        .put(ResourceAttributes.SERVICE_NAME, SERVICE_NAME)
+                        .build())
                 .build())
         .build();
   }

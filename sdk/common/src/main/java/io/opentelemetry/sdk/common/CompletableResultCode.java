@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.common;
 
+import io.opentelemetry.api.internal.GuardedBy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 
 /**
  * This class models JDK 8's CompletableFuture to afford migration should Open Telemetry's SDK
@@ -38,6 +38,9 @@ public final class CompletableResultCode {
    * CompletableResultCode}s complete. If any of the results fail, the result will be failed.
    */
   public static CompletableResultCode ofAll(final Collection<CompletableResultCode> codes) {
+    if (codes.isEmpty()) {
+      return ofSuccess();
+    }
     final CompletableResultCode result = new CompletableResultCode();
     final AtomicInteger pending = new AtomicInteger(codes.size());
     final AtomicBoolean failed = new AtomicBoolean();
@@ -136,8 +139,9 @@ public final class CompletableResultCode {
   }
 
   /**
-   * Waits for the specified amount of time for this {@link CompletableResultCode} to complete. If
-   * it times out or is interrupted, the {@link CompletableResultCode} is failed.
+   * Waits up to the specified amount of time for this {@link CompletableResultCode} to complete.
+   * Even after this method returns, the result may not be complete yet - you should always check
+   * {@link #isSuccess()} or {@link #isDone()} after calling this method to determine the result.
    *
    * @return this {@link CompletableResultCode}
    */
@@ -149,11 +153,10 @@ public final class CompletableResultCode {
     whenComplete(latch::countDown);
     try {
       if (!latch.await(timeout, unit)) {
-        fail();
+        return this;
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      fail();
     }
     return this;
   }

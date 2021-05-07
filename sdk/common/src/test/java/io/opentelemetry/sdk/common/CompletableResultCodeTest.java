@@ -11,8 +11,10 @@ import static org.awaitility.Awaitility.await;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
 class CompletableResultCodeTest {
@@ -131,6 +133,8 @@ class CompletableResultCodeTest {
     result3.succeed();
     assertThat(all.isDone()).isTrue();
     assertThat(all.isSuccess()).isTrue();
+
+    assertThat(CompletableResultCode.ofAll(Collections.emptyList()).isSuccess()).isTrue();
   }
 
   @Test
@@ -163,17 +167,24 @@ class CompletableResultCodeTest {
   void joinTimesOut() {
     CompletableResultCode result = new CompletableResultCode();
     assertThat(result.join(1, TimeUnit.MILLISECONDS).isSuccess()).isFalse();
-    assertThat(result.isDone()).isTrue();
+    assertThat(result.isDone()).isFalse();
   }
 
   @Test
   void joinInterrupted() {
     CompletableResultCode result = new CompletableResultCode();
-    Thread thread = new Thread(() -> result.join(10, TimeUnit.SECONDS));
+    AtomicReference<Boolean> interrupted = new AtomicReference<>();
+    Thread thread =
+        new Thread(
+            () -> {
+              result.join(10, TimeUnit.SECONDS);
+              interrupted.set(Thread.currentThread().isInterrupted());
+            });
     thread.start();
     thread.interrupt();
     // Different thread so wait a bit for result to be propagated.
-    await().untilAsserted(() -> assertThat(result.isDone()).isTrue());
+    await().untilAsserted(() -> assertThat(interrupted).hasValue(true));
     assertThat(result.isSuccess()).isFalse();
+    assertThat(result.isDone()).isFalse();
   }
 }

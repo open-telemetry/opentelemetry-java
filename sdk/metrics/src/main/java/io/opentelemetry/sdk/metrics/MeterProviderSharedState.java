@@ -13,8 +13,9 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 abstract class MeterProviderSharedState {
-  static MeterProviderSharedState create(Clock clock, Resource resource) {
-    return new AutoValue_MeterProviderSharedState(clock, resource, new ViewRegistry(), clock.now());
+  static MeterProviderSharedState create(
+      Clock clock, Resource resource, ViewRegistry viewRegistry) {
+    return new AutoValue_MeterProviderSharedState(clock, resource, viewRegistry, clock.now());
   }
 
   abstract Clock getClock();

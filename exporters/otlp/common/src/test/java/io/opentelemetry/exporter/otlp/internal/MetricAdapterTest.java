@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.otlp.internal;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,6 +23,9 @@ import io.opentelemetry.proto.metrics.v1.DoubleGauge;
 import io.opentelemetry.proto.metrics.v1.DoubleHistogram;
 import io.opentelemetry.proto.metrics.v1.DoubleHistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.DoubleSum;
+import io.opentelemetry.proto.metrics.v1.DoubleSummary;
+import io.opentelemetry.proto.metrics.v1.DoubleSummaryDataPoint;
+import io.opentelemetry.proto.metrics.v1.DoubleSummaryDataPoint.ValueAtQuantile;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.IntDataPoint;
 import io.opentelemetry.proto.metrics.v1.IntGauge;
@@ -33,6 +35,8 @@ import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
@@ -56,26 +60,6 @@ class MetricAdapterTest {
         .containsExactly(
             StringKeyValue.newBuilder().setKey("k1").setValue("v1").build(),
             StringKeyValue.newBuilder().setKey("k2").setValue("v2").build());
-  }
-
-  @Test
-  void toProtoValueAtPercentiles() {
-    DoubleHistogramDataPoint.Builder builder = DoubleHistogramDataPoint.newBuilder();
-    MetricAdapter.addBucketValues(Collections.emptyList(), builder);
-    // 0 count in default bucket of [-infinity, infinity].
-    assertThat(builder.getBucketCountsList()).containsExactly(0L);
-
-    builder.clear();
-    MetricAdapter.addBucketValues(singletonList(ValueAtPercentile.create(0.9, 1.1)), builder);
-    assertThat(builder.getBucketCountsList()).containsExactly(1L, 0L);
-    assertThat(builder.getExplicitBoundsList()).containsExactly(0.9);
-
-    builder.clear();
-    MetricAdapter.addBucketValues(
-        ImmutableList.of(ValueAtPercentile.create(0.9, 1.1), ValueAtPercentile.create(0.99, 20.3)),
-        builder);
-    assertThat(builder.getBucketCountsList()).containsExactly(1L, 20L, 0L);
-    assertThat(builder.getExplicitBoundsList()).containsExactly(0.9, 0.99);
   }
 
   @Test
@@ -157,18 +141,17 @@ class MetricAdapterTest {
                         Labels.of("k", "v"),
                         5,
                         14.2,
-                        singletonList(ValueAtPercentile.create(0.9, 1.1))))))
+                        singletonList(ValueAtPercentile.create(0.0, 1.1))))))
         .containsExactly(
-            DoubleHistogramDataPoint.newBuilder()
+            DoubleSummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
                 .addAllLabels(
                     singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
                 .setCount(5)
                 .setSum(14.2)
-                .addBucketCounts(1)
-                .addBucketCounts(0)
-                .addExplicitBounds(0.9)
+                .addQuantileValues(
+                    ValueAtQuantile.newBuilder().setQuantile(0.0).setValue(1.1).build())
                 .build());
     assertThat(
             MetricAdapter.toSummaryDataPoints(
@@ -182,27 +165,61 @@ class MetricAdapterTest {
                         9,
                         18.3,
                         ImmutableList.of(
-                            ValueAtPercentile.create(0.9, 1.1),
-                            ValueAtPercentile.create(0.99, 20.3))))))
+                            ValueAtPercentile.create(0.0, 1.1),
+                            ValueAtPercentile.create(100.0, 20.3))))))
         .containsExactly(
-            DoubleHistogramDataPoint.newBuilder()
+            DoubleSummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
                 .setCount(7)
                 .setSum(15.3)
                 .build(),
-            DoubleHistogramDataPoint.newBuilder()
+            DoubleSummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(321)
                 .setTimeUnixNano(654)
                 .addAllLabels(
                     singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
                 .setCount(9)
                 .setSum(18.3)
+                .addQuantileValues(
+                    ValueAtQuantile.newBuilder().setQuantile(0.0).setValue(1.1).build())
+                .addQuantileValues(
+                    ValueAtQuantile.newBuilder().setQuantile(1.0).setValue(20.3).build())
+                .build());
+  }
+
+  @Test
+  void toHistogramDataPoints() {
+    assertThat(
+            MetricAdapter.toDoubleHistogramDataPoints(
+                ImmutableList.of(
+                    DoubleHistogramPointData.create(
+                        123,
+                        456,
+                        Labels.of("k", "v"),
+                        14.2,
+                        ImmutableList.of(1.0),
+                        ImmutableList.of(1L, 5L)),
+                    DoubleHistogramPointData.create(
+                        123, 456, Labels.empty(), 15.3, ImmutableList.of(), ImmutableList.of(7L)))))
+        .containsExactly(
+            DoubleHistogramDataPoint.newBuilder()
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
+                .addAllLabels(
+                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
+                .setCount(6)
+                .setSum(14.2)
                 .addBucketCounts(1)
-                .addBucketCounts(20)
-                .addBucketCounts(0)
-                .addExplicitBounds(0.9)
-                .addExplicitBounds(0.99)
+                .addBucketCounts(5)
+                .addExplicitBounds(1.0)
+                .build(),
+            DoubleHistogramDataPoint.newBuilder()
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
+                .setCount(7)
+                .setSum(15.3)
+                .addBucketCounts(7)
                 .build());
   }
 
@@ -436,7 +453,68 @@ class MetricAdapterTest {
                     DoubleSummaryData.create(
                         singletonList(
                             DoubleSummaryPointData.create(
-                                123, 456, Labels.of("k", "v"), 5, 33d, emptyList()))))))
+                                123,
+                                456,
+                                Labels.of("k", "v"),
+                                5,
+                                33d,
+                                ImmutableList.of(
+                                    ValueAtPercentile.create(0, 1.1),
+                                    ValueAtPercentile.create(100.0, 20.3))))))))
+        .isEqualTo(
+            Metric.newBuilder()
+                .setName("name")
+                .setDescription("description")
+                .setUnit("1")
+                .setDoubleSummary(
+                    DoubleSummary.newBuilder()
+                        .addDataPoints(
+                            DoubleSummaryDataPoint.newBuilder()
+                                .setStartTimeUnixNano(123)
+                                .setTimeUnixNano(456)
+                                .addAllLabels(
+                                    singletonList(
+                                        StringKeyValue.newBuilder()
+                                            .setKey("k")
+                                            .setValue("v")
+                                            .build()))
+                                .setCount(5)
+                                .setSum(33d)
+                                .addQuantileValues(
+                                    ValueAtQuantile.newBuilder()
+                                        .setQuantile(0)
+                                        .setValue(1.1)
+                                        .build())
+                                .addQuantileValues(
+                                    ValueAtQuantile.newBuilder()
+                                        .setQuantile(1.0)
+                                        .setValue(20.3)
+                                        .build())
+                                .build())
+                        .build())
+                .build());
+  }
+
+  @Test
+  void toProtoMetric_histogram() {
+    assertThat(
+            MetricAdapter.toProtoMetric(
+                MetricData.createDoubleHistogram(
+                    Resource.empty(),
+                    InstrumentationLibraryInfo.empty(),
+                    "name",
+                    "description",
+                    "1",
+                    DoubleHistogramData.create(
+                        AggregationTemporality.DELTA,
+                        singletonList(
+                            DoubleHistogramPointData.create(
+                                123,
+                                456,
+                                Labels.of("k", "v"),
+                                4.0,
+                                ImmutableList.of(),
+                                ImmutableList.of(33L)))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -455,8 +533,9 @@ class MetricAdapterTest {
                                             .setKey("k")
                                             .setValue("v")
                                             .build()))
-                                .setCount(5)
-                                .setSum(33d)
+                                .setCount(33)
+                                .setSum(4.0)
+                                .addBucketCounts(33)
                                 .build())
                         .build())
                 .build());

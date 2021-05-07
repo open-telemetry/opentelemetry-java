@@ -2,6 +2,199 @@
 
 ## Unreleased:
 
+### General
+
+#### Enhancements
+- The `"Implementation-Version"` attribute has been added to the jar manifests for all published jar artifacts.
+
+### API
+
+#### Enhancements
+- A new method has been added to the Span and the SpanBuilder to enable adding a set of Attributes in one call, rather than
+having to iterate over the contents and add them individually. See `Span.setAllAttributes(Attributes)` and `SpanBuilder.setAllAttributes(Attributes)`
+
+#### Behavioral Changes
+- Previously, an AttributeKey with a null underlying key would preserve the null. Now, this will be converted to an empty String.
+
+### SDK
+
+#### Enhancements
+- The `IdGenerator.random()` method will now attempt to detect if it is being used in an Android environment, and use
+a more Android-friendly `IdGenerator` instance in that case. This will affect any usage of the SDK that does not
+explicitly specify a custom `IdGenerator` instance when running on Android.
+
+#### Behavioral Changes
+- The name used for Tracer instances that do not have a name has been changed to be an empty String, rather than the 
+previously used `"unknown"` value. This change is based on a specification clarification.
+
+### Propagators
+
+#### Bugfixes
+- The B3 Propagator injectors now only include the relevant fields for the specific injection format.
+
+### Exporters
+- The `jaeger-thrift` exporter has had its dependency on the `jaeger-client` library updated to version `1.6.0`.
+- The `zipkin` exporter now has an option to specific a custom timeout. 
+- The `zipkin`, `jaeger` and `jaeger-thrift` exporters will now report the `otel.dropped_attributes_count` and `otel.dropped_events_count` 
+tags if the numbers are greater than zero.
+
+### Semantic Conventions (alpha)
+
+#### Breaking Changes
+- The SemanticAttributes and ResourceAttributes have both been updated to match the OpenTelemetry Specification v1.3.0 release, which 
+includes several breaking changes.
+- Values that were previously defined as `enum`s are now defined as static `public static final ` constants of the appropriate type.
+
+### OpenTracing Shim (alpha)
+
+#### Enhancements
+- Error logging support in the shim is now implemented according to the v1.2.0 specification.
+
+### SDK Extensions
+- A new `HostResource` Resource and the corresponding `ResourceProvider` has been added. 
+It will populate the `host.name` and `host.arch` Resource Attributes.
+- A new `ExecutorServiceSpanProcessor` has been added to the `opentelemetry-sdk-extension-tracing-incubator` module. This implementation
+of a batch SpanProcessor allows you to provide your own ExecutorService to do the background export work.
+- The `autoconfigure` module now supports providing the timeout setting for the Jaeger GRPC exporter via 
+a system property (`otel.exporter.jaeger.timeout`) or environment variable (`OTEL_EXPORTER_JAEGER_TIMEOUT`).
+- The `autoconfigure` module now supports providing the timeout setting for the Zipkin exporter via 
+a system property (`otel.exporter.zipkin.timeout`) or environment variable (`OTEL_EXPORTER_ZIPKIN_TIMEOUT`).
+
+### Metrics (alpha)
+
+#### Breaking Changes
+- The deprecated `SdkMeterProvider.registerView()` method has been removed. The ViewRegistry is now immutable and cannot
+be changed once the `SdkMeterProvider` has been built.
+
+#### Bugfixes
+- OTLP summaries now have the proper percentile value of `1.0` to represent the maximum; previously it was wrongly set to `100.0`. 
+
+#### Enhancements
+- There is now full support for delta-aggregations with the `LongSumAggregator` and `DoubleSumAggregator`. 
+See `AggregatorFactory.sum(AggregationTemporality)`. The previous `AggregatorFactory.sum(boolean)` has been
+deprecated and will be removed in the next release.
+
+---
+
+## Version 1.1.0 - 2021-04-07
+
+### API
+
+#### Bugfixes
+
+- We now use our own internal `@GuardedBy` annotation for errorprone so there won't be an accidental 
+transitive dependency on a 3rd-party jar.
+- The `TraceStateBuilder` now will not crash when an empty value is provided.
+  
+#### Enhancements
+
+- The `Context` class now provides methods to wrap `java.util.concurrent.Executor` and `java.util.concurrent.ExecutorService` 
+instances to do context propagation using the current context. See `io.opentelemetry.context.Context.taskWrapping(...)` for
+more details.
+  
+### OpenTracing Shim (alpha)
+
+- The shim now supports methods that take a timestamp as a parameter. 
+- You can now specify both the `TEXT_MAP` and the `HTTP_HEADER` type propagators for the shim. 
+See `io.opentelemetry.opentracingshim.OpenTracingPropagators` for details.
+
+### Extensions
+
+- The AWS X-Ray propagator is now able to extract 64-bit trace ids.
+
+### SDK
+
+#### Bugfixes
+
+- The `CompletableResultCode.join(long timeout, TimeUnit unit)` method will no longer `fail` the result
+when the timeout happens. Nor will `whenComplete` actions be executed in that case.
+- The `SimpleSpanProcessor` now keeps track of pending export calls and will wait for them to complete
+via a CompletableResultCode when `forceFlush()` is called. Similiarly, this is also done on `shutdown()`.
+- The Jaeger Thrift exporter now correctly populates the parent span id into the exporter span.
+
+#### Enhancements
+
+- The SpanBuilder provided by the SDK will now ignore `Link` entries that are reference an invalid SpanContext. 
+This is an update from the OpenTelemetry Specification v1.1.0 release.
+- The OTLP Exporters will now log more helpful messages when the collector is unavailable or misconfigured.
+- The internals of the `BatchSpanProcessor` have had some optimization done on them, to reduce CPU
+usage under load.
+- The `Resource` class now has `builder()` and `toBuilder()` methods and a corresponding `ResourceBuilder` class
+has been introduced for more fluent creation and modification of `Resource` instances.
+- The standard exporters will now throttle error logging when export errors are too frequent. If more than 5
+error messages are logged in a single minute by an exporter, logging will be throttled down to only a single
+log message per minute.
+
+### SDK Extensions
+
+#### Bugfixes
+
+- Removed a stacktrace on startup when using the `autoconfigure` module without a metrics SDK on the classpath.
+
+#### Enhancements
+
+- The `autoconfigure` module now supports `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` and `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`
+settings, in addition to the combined `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable. Corresponding 
+system properties are also supported (`-Dotel.exporter.otlp.metrics.endpoint` and `-Dotel.exporter.otlp.traces.endpoint`).
+- An `SdkMeterProviderConfigurer` SPI is now available in the `autoconfigure` module. 
+
+### Semantic Conventions (alpha)
+
+- The SemanticAttributes and ResourceAttributes have both been updated to match the OpenTelemetry Specification v1.1.0 release.
+This includes a breaking changes to the constants defined in the `ResourceAttributes` class:
+`ResourceAttributes.CLOUD_ZONE` has been replaced with `ResourceAttributes.CLOUD_AVAILABILITY_ZONE`.
+  
+### Metrics (alpha)
+
+#### Breaking Changes
+
+- The `ViewRegistry` now lets you register `View` objects, rather than `AggregatorFactory` instances.
+- `GlobalMetricsProvider` has been renamed to `GlobalMeterProvider`.
+- `View` registration has been moved to the `SdkMeterProviderBuilder` and the methods on the `SdkMeterProvider`
+to add views have been deprecated. They will be removed in the next release.
+
+#### Enhancements
+
+- A new option for aggregation as Histograms is now available. 
+
+---
+## Version 1.0.1 - 2021-03-11
+
+### Bugfixes
+
+- AWS resource extensions have been fixed to not throw NullPointerException in actual AWS environment
+
+---
+## Version 1.0.0 - 2021-02-26
+
+### General
+
+This releases marks the first stable release for the tracing, baggage and context APIs and the SDK. 
+Please see the [Versioning](VERSIONING.md) document for stability guarantees.
+
+The best source of lsit of the now stable packages can be found in the 
+[opentelemetry-bom](https://repo1.maven.org/maven2/io/opentelemetry/opentelemetry-bom/1.0.0/opentelemetry-bom-1.0.0.pom)
+artifact in maven central.
+
+Javadoc is available at javadoc.io. 
+For example, [javadoc.io](https://javadoc.io/doc/io.opentelemetry/opentelemetry-api/1.0.0/index.html) for
+the API module.
+
+#### Changes
+
+- The `opentelemetry-proto` module is now versioned as an `alpha` module, as it contains non-stable
+metrics and logs signals. It has hence been removed from the main BOM.
+- The `opentelemetry-sdk-extension-otproto` module has been removed. The classes in it have been moved
+to a new `opentelemetry-exporter-otlp-common` module but have been repackaged into an unsupported,
+internal package.
+
+### Metrics (alpha)
+
+#### Breaking Changes
+
+- `PrometheusCollector.Builder` inner class has been moved to the top level as `PrometheusCollectorBuilder`.
+
+---
 ## Version 0.17.1 - 2021-02-19
 
 - Removed the unused `ResourceProvider` interface from the SDK. This interface is still available 
@@ -16,8 +209,6 @@ on a number of breaking changes. We apologize for the inconvenience this may hav
 aware that these changes will impact users. If you need assistance in migrating from previous releases,
 please open a [discussion topic](https://github.com/opentelemetry/opentelemetry-java/discussions) at
 [https://github.com/opentelemetry/opentelemetry-java/discussions](https://github.com/opentelemetry/opentelemetry-java/discussions).
-
-####
 
 Many classes have been made final that previously were not. Please reach out if you have a need to 
 provide extended functionality, and we can figure out how best to solve your use-case.
@@ -76,7 +267,7 @@ the `http://` or `https://` in front of your endpoint.
 - `Meter.getDefault()` has been removed.
 - `MeterProvider.getDefault()` has been renamed to `MeterProvider.noop()`.
 
-
+---
 ## Version 0.16.0 - 2021-02-08 - RC#2
 
 ### General
@@ -185,6 +376,7 @@ classpath, it will automatically update the `Resource.getDefault()` instance wit
 - The `Labels` interface has been moved into the metrics API module and repackaged into the 
 `io.opentelemetry.api.metrics.common` package.
 
+---
 ## Version 0.15.0 - 2021-01-29 - RC#1
 
 ### General
@@ -261,7 +453,6 @@ SDK as the instance of `GlobalOpenTelemetry` when used.
 property for specifying a path to a trusted certificate for the OTLP exporters.
 
 ---
-
 ## Version 0.14.1 - 2021-01-14
 
 ### General
@@ -377,7 +568,7 @@ the methods on the Builder have changed to use the same naming patterns as the r
 - The `SdkMeterProvicer.Builder` has been moved to the top level `SdkMeterProviderBuilder`.
 - The `InstrumentSelector` now requires an instrument type to be provided, and defaults the name regex to `.*`.
 
------
+---
 
 ## Version 0.13.0 - 2020-12-17
 
@@ -479,8 +670,7 @@ You can still access the `LabelsBuilder` functionality via the `Labels.builder()
 - Some common OTLP adapter utilities have been moved into the `opentelemetry-sdk-extension-otproto` module so they can 
   be shared across OTLP exporters.
 
------
-
+---
 ## Version 0.12.0 - 2020-12-04
 
 ### API
@@ -572,8 +762,7 @@ and the classes in it have been repackaged into the `io.opentelemetry.sdk.extens
 This is included in the Resource SPI implementation that the module provides.
 - The `opentelemetry-sdk-extension-aws` extension now will auto-detect AWS Lambda resource attributes.
 
------
-
+---
 ## Version 0.11.0 - 2020-11-18
 
 ### API
@@ -631,8 +820,7 @@ have been fixed to properly report the committed memory values.
 - A new module has been added to assist with propagating the OTel context in kotlin co-routines. 
 See the `opentelemetry-extension-kotlin` module for details.
 
------
-
+---
 ## Version 0.10.0 - 2020-11-06
 
 ### API
@@ -715,6 +903,7 @@ Many thanks to everyone who made this release possible!
 
 @anuraaga @bogdandrutu @Oberon00 @thisthat @HaloFour @jkwatson @kenfinnigan @MariusVolkhart @malafeev @trask  @tylerbenson @XiXiaPdx @dengliming @hengyunabc @jarebudev @brianashby-sfx 
 
+---
 ## 0.9.1 - 2020-10-07
 
 - API
@@ -767,6 +956,7 @@ Many thanks to all who made this release possible:
    
 @bogdandrutu @Oberon00 @jkwatson @thisthat @anuraaga @jarebudev @malafeev @quijote @JasonXZLiu @zoercai @eunice98k @dengliming @breedx-nr @iNikem @wangzlei @imavroukakis 
 
+---
 ## 0.8.0 - 2020-09-01
 
 - Extensions:
@@ -793,11 +983,12 @@ Many thanks to all who made this release possible:
 
 - Many thanks for contributions from @anuraaga, @dengliming, @iNikem, @huntc, @jarebudev, @MitchellDumovic, @wtyanan, @williamhu99, @Oberon00, @thisthat, @malafeev, @mateuszrzeszutek, @kenfinnigan
 
-
+---
 ## 0.7.1 - 2020-08-14
 
 - BUGFIX: OTLP Span Exporter: fix splitting metadata key-value substring with more than one '=' sign
 
+---
 ## 0.7.0 - 2020-08-02
 
 NOTE: This release contains non-backward-compatible breaking SDK changes
@@ -825,6 +1016,7 @@ NOTE: This release contains non-backward-compatible breaking SDK changes
 - Added a new configuration option to limit the size of Span attributes
 - Many thanks for contributions from @anuraaga, @dengliming, @iNikem, @wtyanan, @williamhu99, @trask, @Oberon00, @MitchellDumovic, @FrankSpitulski, @heyams, @ptravers, @thisthat, @albertteoh, @evantorrie, @neeraj97,
 
+---
 ## 0.6.0 - 2020-07-01
 
 NOTE: This release contains non-backward-compatible breaking API and SDK changes
@@ -844,12 +1036,14 @@ NOTE: This release contains non-backward-compatible breaking API and SDK changes
 - Changed the MinMaxSumCount aggregations for ValueRecorders to always aggregate deltas, rather than cumulative
 - Updated the OTLP protobuf and exporter to version 0.4.0 of the OTLP protobufs.
 
+---
 ## 0.5.0 - 2020-06-04
 
 TODO: fill this out
 
 - Add helper API to get Tracer/Meter
 
+---
 ## 0.4.0 - 2020-05-04
 - Initial implementation of the Zipkin exporter.
 - **Breaking change:** Move B3 propagator to a contrib package
@@ -859,6 +1053,7 @@ TODO: fill this out
 - Mark all threads/pools as daemon.
 - Add support for Jaeger remote sampler.
 
+---
 ## 0.3.0 - 2020-03-27
 - Initial Java API and SDK for context, trace, metrics, resource.
 - Initial implementation of the Jaeger exporter.

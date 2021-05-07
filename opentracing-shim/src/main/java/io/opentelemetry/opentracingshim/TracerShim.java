@@ -65,7 +65,7 @@ final class TracerShim extends BaseShimObject implements Tracer {
     if (format == Format.Builtin.TEXT_MAP
         || format == Format.Builtin.TEXT_MAP_INJECT
         || format == Format.Builtin.HTTP_HEADERS) {
-      propagation.injectTextMap(contextShim, (TextMapInject) carrier);
+      propagation.injectTextMap(contextShim, format, (TextMapInject) carrier);
     }
   }
 
@@ -76,7 +76,7 @@ final class TracerShim extends BaseShimObject implements Tracer {
       if (format == Format.Builtin.TEXT_MAP
           || format == Format.Builtin.TEXT_MAP_EXTRACT
           || format == Format.Builtin.HTTP_HEADERS) {
-        return propagation.extractTextMap((TextMapExtract) carrier);
+        return propagation.extractTextMap(format, (TextMapExtract) carrier);
       }
     } catch (RuntimeException e) {
       logger.log(

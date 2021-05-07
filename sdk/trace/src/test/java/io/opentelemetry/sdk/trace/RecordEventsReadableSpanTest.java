@@ -196,6 +196,17 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
+  void toSpanData_immutableEvents_ended() {
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    span.end();
+    SpanData spanData = span.toSpanData();
+
+    assertThatThrownBy(
+            () -> spanData.getEvents().add(EventData.create(1000, "test", Attributes.empty())))
+        .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
   void toSpanData_RootSpan() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
@@ -461,6 +472,118 @@ class RecordEventsReadableSpanTest {
     span.setAttribute(longArrayKey("longArrayAttribute"), Arrays.asList(12345L, null));
     span.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList(1.2345, null));
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
+  }
+
+  @Test
+  void setAllAttributes() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    Attributes attributes =
+        Attributes.builder()
+            .put("StringKey", "StringVal")
+            .put("NullStringKey", (String) null)
+            .put("EmptyStringKey", "")
+            .put(stringKey("NullStringAttributeValue"), null)
+            .put(stringKey("EmptyStringAttributeValue"), "")
+            .put("LongKey", 1000L)
+            .put(longKey("LongKey2"), 5)
+            .put(longKey("LongKey3"), 6L)
+            .put("DoubleKey", 10.0)
+            .put("BooleanKey", false)
+            .put(
+                stringArrayKey("ArrayStringKey"),
+                Arrays.asList("StringVal", null, "", "StringVal2"))
+            .put(longArrayKey("ArrayLongKey"), Arrays.asList(1L, 2L, 3L, 4L, 5L))
+            .put(doubleArrayKey("ArrayDoubleKey"), Arrays.asList(0.1, 2.3, 4.5, 6.7, 8.9))
+            .put(booleanArrayKey("ArrayBooleanKey"), Arrays.asList(true, false, false, true))
+            // These should be dropped
+            .put(stringArrayKey("NullArrayStringKey"), null)
+            .put(longArrayKey("NullArrayLongKey"), null)
+            .put(doubleArrayKey("NullArrayDoubleKey"), null)
+            .put(booleanArrayKey("NullArrayBooleanKey"), null)
+            // These should be maintained
+            .put(longArrayKey("ArrayWithNullLongKey"), Arrays.asList(new Long[] {null}))
+            .put(stringArrayKey("ArrayWithNullStringKey"), Arrays.asList(new String[] {null}))
+            .put(doubleArrayKey("ArrayWithNullDoubleKey"), Arrays.asList(new Double[] {null}))
+            .put(booleanArrayKey("ArrayWithNullBooleanKey"), Arrays.asList(new Boolean[] {null}))
+            .build();
+
+    try {
+      span.setAllAttributes(attributes);
+    } finally {
+      span.end();
+    }
+
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getAttributes().size()).isEqualTo(16);
+    assertThat(spanData.getAttributes().get(stringKey("StringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringKey("EmptyStringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringKey("EmptyStringAttributeValue"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longKey("LongKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longKey("LongKey2"))).isEqualTo(5L);
+    assertThat(spanData.getAttributes().get(longKey("LongKey3"))).isEqualTo(6L);
+    assertThat(spanData.getAttributes().get(doubleKey("DoubleKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(booleanKey("BooleanKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringArrayKey("ArrayStringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longArrayKey("ArrayLongKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayDoubleKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(booleanArrayKey("ArrayBooleanKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longArrayKey("ArrayWithNullLongKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringArrayKey("ArrayWithNullStringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayWithNullDoubleKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(booleanArrayKey("ArrayWithNullBooleanKey")))
+        .isNotNull();
+    assertThat(spanData.getAttributes().get(stringArrayKey("ArrayStringKey")).size()).isEqualTo(4);
+    assertThat(spanData.getAttributes().get(longArrayKey("ArrayLongKey")).size()).isEqualTo(5);
+    assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayDoubleKey")).size()).isEqualTo(5);
+    assertThat(spanData.getAttributes().get(booleanArrayKey("ArrayBooleanKey")).size())
+        .isEqualTo(4);
+  }
+
+  @Test
+  void setAllAttributes_mergesAttributes() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    Attributes attributes =
+        Attributes.builder()
+            .put("StringKey", "StringVal")
+            .put("LongKey", 1000L)
+            .put("DoubleKey", 10.0)
+            .put("BooleanKey", false)
+            .build();
+
+    try {
+      span.setAttribute("StringKey", "OtherStringVal")
+          .setAttribute("ExistingStringKey", "ExistingStringVal")
+          .setAttribute("LongKey", 2000L)
+          .setAllAttributes(attributes);
+    } finally {
+      span.end();
+    }
+
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getAttributes().size()).isEqualTo(5);
+    assertThat(spanData.getAttributes().get(stringKey("StringKey")))
+        .isNotNull()
+        .isEqualTo("StringVal");
+    assertThat(spanData.getAttributes().get(stringKey("ExistingStringKey")))
+        .isNotNull()
+        .isEqualTo("ExistingStringVal");
+    assertThat(spanData.getAttributes().get(longKey("LongKey"))).isNotNull().isEqualTo(1000L);
+    assertThat(spanData.getAttributes().get(doubleKey("DoubleKey"))).isNotNull().isEqualTo(10.0);
+    assertThat(spanData.getAttributes().get(booleanKey("BooleanKey"))).isNotNull().isEqualTo(false);
+  }
+
+  @Test
+  void setAllAttributes_nullAttributes() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    span.setAllAttributes(null);
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(0);
+  }
+
+  @Test
+  void setAllAttributes_emptyAttributes() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    span.setAllAttributes(Attributes.empty());
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(0);
   }
 
   @Test

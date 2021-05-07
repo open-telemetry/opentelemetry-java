@@ -14,6 +14,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
@@ -38,6 +39,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -199,7 +201,13 @@ class ZipkinSpanExporterTest {
             .put(doubleArrayKey("doubleArray"), Arrays.asList(32.33d, -98.3d))
             .put(longArrayKey("longArray"), Arrays.asList(33L, 999L))
             .build();
-    SpanData data = buildStandardSpan().setAttributes(attributes).setKind(SpanKind.CLIENT).build();
+    SpanData data =
+        buildStandardSpan()
+            .setAttributes(attributes)
+            .setTotalAttributeCount(28)
+            .setTotalRecordedEvents(3)
+            .setKind(SpanKind.CLIENT)
+            .build();
 
     assertThat(exporter.generateSpan(data))
         .isEqualTo(
@@ -213,6 +221,8 @@ class ZipkinSpanExporterTest {
                 .putTag("doubleArray", "32.33,-98.3")
                 .putTag("longArray", "33,999")
                 .putTag(ZipkinSpanExporter.OTEL_STATUS_CODE, "OK")
+                .putTag(ZipkinSpanExporter.OTEL_DROPPED_ATTRIBUTES_COUNT, "20")
+                .putTag(ZipkinSpanExporter.OTEL_DROPPED_EVENTS_COUNT, "1")
                 .build());
   }
 
@@ -244,6 +254,7 @@ class ZipkinSpanExporterTest {
             .setAttributes(attributeMap)
             .setKind(SpanKind.CLIENT)
             .setStatus(StatusData.error())
+            .setTotalAttributeCount(2)
             .build();
 
     assertThat(exporter.generateSpan(data))
@@ -266,6 +277,7 @@ class ZipkinSpanExporterTest {
         buildStandardSpan()
             .setStatus(StatusData.create(StatusCode.ERROR, errorMessage))
             .setAttributes(attributeMap)
+            .setTotalAttributeCount(1)
             .build();
 
     assertThat(exporter.generateSpan(data))
@@ -285,6 +297,7 @@ class ZipkinSpanExporterTest {
         buildStandardSpan()
             .setStatus(StatusData.create(StatusCode.ERROR, ""))
             .setAttributes(attributeMap)
+            .setTotalAttributeCount(1)
             .build();
 
     assertThat(exporter.generateSpan(data))
@@ -304,6 +317,7 @@ class ZipkinSpanExporterTest {
         buildStandardSpan()
             .setStatus(StatusData.create(StatusCode.UNSET, ""))
             .setAttributes(attributeMap)
+            .setTotalAttributeCount(1)
             .build();
 
     assertThat(exporter.generateSpan(data))
@@ -397,6 +411,7 @@ class ZipkinSpanExporterTest {
         .setEndEpochNanos(1505855799_465726528L)
         .setAttributes(attributes)
         .setTotalAttributeCount(attributes.size())
+        .setTotalRecordedEvents(annotations.size())
         .setEvents(annotations)
         .setLinks(Collections.emptyList())
         .setHasEnded(true);
@@ -422,5 +437,33 @@ class ZipkinSpanExporterTest {
                 .build())
         .addAnnotation(1505855799000000L + 433901068L / 1000, "RECEIVED")
         .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT");
+  }
+
+  @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void invalidConfig() {
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("timeout must be non-negative");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setReadTimeout(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("timeout");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setEndpoint(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("endpoint");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setSender(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("sender");
+
+    assertThatThrownBy(() -> ZipkinSpanExporter.builder().setEncoder(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("encoder");
   }
 }

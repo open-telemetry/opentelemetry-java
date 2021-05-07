@@ -11,8 +11,10 @@
     List<String>
   {%- elif type == "boolean" -%}
     boolean
-  {%- elif type == "number" -%}
+  {%- elif type == "int" -%}
     long
+  {%- elif type == "double" -%}
+    double
   {%- else -%}
     {{type}}
   {%- endif -%}
@@ -24,8 +26,10 @@
     stringArrayKey
   {%- elif type == "boolean" -%}
     booleanKey
-  {%- elif type == "number" -%}
+  {%- elif type == "int" -%}
     longKey
+  {%- elif type == "double" -%}
+    doubleKey
   {%- else -%}
     {{lowerFirst(type)}}Key
   {%- endif -%}
@@ -43,6 +47,7 @@
 package {{pkg | trim}};
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
@@ -52,7 +57,7 @@ import java.util.List;
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention{{template}}
 public final class {{class}} {
-  {%- for attribute in attributes | unique(attribute="fqn") %}
+  {%- for attribute in attributes if attribute.is_local and not attribute.ref %}
 
   /**
   * {% filter escape %}{{attribute.brief | to_doc_brief}}.{% endfilter %}
@@ -72,11 +77,10 @@ public final class {{class}} {
   {%- endfor %}
 
   // Enum definitions
-  {%- for attribute in attributes | unique(attribute="fqn") %}
+  {%- for attribute in attributes if attribute.is_local and not attribute.ref %}
   {%- if attribute.is_enum %}
   {%- set class_name = attribute.fqn | to_camelcase(True) ~ "Values" %}
   {%- set type = to_java_return_type(attribute.attr_type.enum_type) %}
-  {%- if attribute.attr_type.custom_values %}
   public static final class {{class_name}} {
     {%- for member in attribute.attr_type.members %}
       /** {% filter escape %}{{member.brief | to_doc_brief}}.{% endfilter %} */
@@ -84,24 +88,7 @@ public final class {{class}} {
     {%- endfor %}
       private {{ class_name }}() {}
   }
-  {%- else -%}
-  public enum {{class_name}} {
-    {%- for member in attribute.attr_type.members %}
-      /** {% filter escape %}{{member.brief | to_doc_brief}}.{% endfilter %} */
-      {{ member.member_id | to_const_name }}({{ print_value(type, member.value) }}),
-    {%- endfor %}
-      ;
 
-      private final {{ type }} value;
-      {{class_name}}({{ type }} value) {
-        this.value = value;
-      }
-
-      public {{ type }} getValue() {
-        return value;
-      }
-  }
-  {% endif %}
   {% endif %}
   {%- endfor %}
 

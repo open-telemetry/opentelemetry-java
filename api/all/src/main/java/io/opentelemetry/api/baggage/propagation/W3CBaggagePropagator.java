@@ -78,14 +78,14 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
       return context;
     }
     if (baggageHeader.isEmpty()) {
-      return context.with(Baggage.empty());
+      return context;
     }
 
     BaggageBuilder baggageBuilder = Baggage.builder();
     try {
       extractEntries(baggageHeader, baggageBuilder);
     } catch (RuntimeException e) {
-      return context.with(Baggage.empty());
+      return context;
     }
     return context.with(baggageBuilder.build());
   }

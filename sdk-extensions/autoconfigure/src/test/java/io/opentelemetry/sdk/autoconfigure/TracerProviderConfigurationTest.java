@@ -7,34 +7,46 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanLimits;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.internal.JcTools;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 // NB: We use AssertJ extracting to reflectively access implementation details to test configuration
 // because the use of BatchSpanProcessor makes it difficult to verify values through public means.
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class TracerProviderConfigurationTest {
 
   private static final ConfigProperties EMPTY =
       ConfigProperties.createForTest(Collections.emptyMap());
 
-  @Mock private SpanExporter exporter;
+  @Mock private SpanExporter mockSpanExporter;
+
+  @BeforeEach
+  void setUp() {
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+  }
 
   @Test
   void configureTracerProvider() {
@@ -69,7 +81,7 @@ class TracerProviderConfigurationTest {
   @Test
   void configureSpanProcessor_empty() {
     BatchSpanProcessor processor =
-        TracerProviderConfiguration.configureSpanProcessor(EMPTY, exporter);
+        TracerProviderConfiguration.configureSpanProcessor(EMPTY, mockSpanExporter);
 
     try {
       assertThat(processor)
@@ -86,9 +98,8 @@ class TracerProviderConfigurationTest {
                 assertThat(worker)
                     .extracting("queue")
                     .isInstanceOfSatisfying(
-                        ArrayBlockingQueue.class,
-                        queue -> assertThat(queue.remainingCapacity()).isEqualTo(2048));
-                assertThat(worker).extracting("spanExporter").isEqualTo(exporter);
+                        Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2048));
+                assertThat(worker).extracting("spanExporter").isEqualTo(mockSpanExporter);
               });
     } finally {
       processor.shutdown();
@@ -105,7 +116,7 @@ class TracerProviderConfigurationTest {
 
     BatchSpanProcessor processor =
         TracerProviderConfiguration.configureSpanProcessor(
-            ConfigProperties.createForTest(properties), exporter);
+            ConfigProperties.createForTest(properties), mockSpanExporter);
 
     try {
       assertThat(processor)
@@ -122,9 +133,8 @@ class TracerProviderConfigurationTest {
                 assertThat(worker)
                     .extracting("queue")
                     .isInstanceOfSatisfying(
-                        ArrayBlockingQueue.class,
-                        queue -> assertThat(queue.remainingCapacity()).isEqualTo(2));
-                assertThat(worker).extracting("spanExporter").isEqualTo(exporter);
+                        Queue.class, queue -> assertThat(JcTools.capacity(queue)).isEqualTo(2));
+                assertThat(worker).extracting("spanExporter").isEqualTo(mockSpanExporter);
               });
     } finally {
       processor.shutdown();

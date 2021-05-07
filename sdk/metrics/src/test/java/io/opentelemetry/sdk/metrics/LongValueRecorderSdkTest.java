@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongValueRecorder;
 import io.opentelemetry.api.metrics.LongValueRecorder;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -36,7 +37,7 @@ class LongValueRecorderSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void record_PreventNullLabels() {
@@ -55,7 +56,7 @@ class LongValueRecorderSdkTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    LongValueRecorderSdk longRecorder = sdkMeter.longValueRecorderBuilder("testRecorder").build();
+    LongValueRecorder longRecorder = sdkMeter.longValueRecorderBuilder("testRecorder").build();
     BoundLongValueRecorder bound = longRecorder.bind(Labels.of("key", "value"));
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
@@ -66,7 +67,7 @@ class LongValueRecorderSdkTest {
 
   @Test
   void collectMetrics_WithEmptyLabel() {
-    LongValueRecorderSdk longRecorder =
+    LongValueRecorder longRecorder =
         sdkMeter
             .longValueRecorderBuilder("testRecorder")
             .setDescription("description")
@@ -97,7 +98,7 @@ class LongValueRecorderSdkTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    LongValueRecorderSdk longRecorder = sdkMeter.longValueRecorderBuilder("testRecorder").build();
+    LongValueRecorder longRecorder = sdkMeter.longValueRecorderBuilder("testRecorder").build();
     BoundLongValueRecorder bound = longRecorder.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
@@ -168,11 +169,13 @@ class LongValueRecorderSdkTest {
 
   @Test
   void stressTest() {
-    final LongValueRecorderSdk longRecorder =
+    final LongValueRecorder longRecorder =
         sdkMeter.longValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(longRecorder).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((LongValueRecorderSdk) longRecorder)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -212,11 +215,13 @@ class LongValueRecorderSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongValueRecorderSdk longRecorder =
+    final LongValueRecorder longRecorder =
         sdkMeter.longValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(longRecorder).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((LongValueRecorderSdk) longRecorder)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(

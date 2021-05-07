@@ -1,6 +1,6 @@
 package io.opentelemetry.example.metrics;
 
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongValueObserver;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
@@ -13,8 +13,7 @@ import io.opentelemetry.api.metrics.common.Labels;
 public final class LongValueObserverExample {
 
   public static void main(String[] args) {
-    Meter sampleMeter =
-        GlobalMetricsProvider.getMeter("io.opentelemetry.example.metrics", "0.13.1");
+    Meter sampleMeter = GlobalMeterProvider.getMeter("io.opentelemetry.example.metrics", "0.13.1");
     LongValueObserver observer =
         sampleMeter
             .longValueObserverBuilder("jvm.memory.total")

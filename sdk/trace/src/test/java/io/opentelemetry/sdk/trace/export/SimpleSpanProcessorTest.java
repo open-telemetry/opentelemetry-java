@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -190,8 +191,58 @@ class SimpleSpanProcessorTest {
   }
 
   @Test
+  void forceFlush() {
+    CompletableResultCode export1 = new CompletableResultCode();
+    CompletableResultCode export2 = new CompletableResultCode();
+
+    when(spanExporter.export(any())).thenReturn(export1, export2);
+
+    SpanData spanData = TestUtils.makeBasicSpan();
+    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+
+    simpleSampledSpansProcessor.onEnd(readableSpan);
+    simpleSampledSpansProcessor.onEnd(readableSpan);
+
+    verify(spanExporter, times(2)).export(Collections.singletonList(spanData));
+
+    CompletableResultCode flush = simpleSampledSpansProcessor.forceFlush();
+    assertThat(flush.isDone()).isFalse();
+
+    export1.succeed();
+    assertThat(flush.isDone()).isFalse();
+
+    export2.succeed();
+    assertThat(flush.isDone()).isTrue();
+    assertThat(flush.isSuccess()).isTrue();
+  }
+
+  @Test
   void shutdown() {
-    simpleSampledSpansProcessor.shutdown();
+    CompletableResultCode export1 = new CompletableResultCode();
+    CompletableResultCode export2 = new CompletableResultCode();
+
+    when(spanExporter.export(any())).thenReturn(export1, export2);
+
+    SpanData spanData = TestUtils.makeBasicSpan();
+    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+
+    simpleSampledSpansProcessor.onEnd(readableSpan);
+    simpleSampledSpansProcessor.onEnd(readableSpan);
+
+    verify(spanExporter, times(2)).export(Collections.singletonList(spanData));
+
+    CompletableResultCode shutdown = simpleSampledSpansProcessor.shutdown();
+    assertThat(shutdown.isDone()).isFalse();
+
+    export1.succeed();
+    assertThat(shutdown.isDone()).isFalse();
+    verify(spanExporter, never()).shutdown();
+
+    export2.succeed();
+    assertThat(shutdown.isDone()).isTrue();
+    assertThat(shutdown.isSuccess()).isTrue();
     verify(spanExporter).shutdown();
   }
 

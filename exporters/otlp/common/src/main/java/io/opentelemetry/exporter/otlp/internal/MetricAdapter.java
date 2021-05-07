@@ -17,6 +17,8 @@ import io.opentelemetry.proto.metrics.v1.DoubleGauge;
 import io.opentelemetry.proto.metrics.v1.DoubleHistogram;
 import io.opentelemetry.proto.metrics.v1.DoubleHistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.DoubleSum;
+import io.opentelemetry.proto.metrics.v1.DoubleSummary;
+import io.opentelemetry.proto.metrics.v1.DoubleSummaryDataPoint;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.IntDataPoint;
 import io.opentelemetry.proto.metrics.v1.IntGauge;
@@ -25,6 +27,8 @@ import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
@@ -128,10 +132,8 @@ public final class MetricAdapter {
         break;
       case SUMMARY:
         DoubleSummaryData doubleSummaryData = metricData.getDoubleSummaryData();
-        builder.setDoubleHistogram(
-            DoubleHistogram.newBuilder()
-                // TODO: This is a bug, but preserve the logic and fix it later.
-                .setAggregationTemporality(AGGREGATION_TEMPORALITY_DELTA)
+        builder.setDoubleSummary(
+            DoubleSummary.newBuilder()
                 .addAllDataPoints(toSummaryDataPoints(doubleSummaryData.getPoints()))
                 .build());
         break;
@@ -150,7 +152,13 @@ public final class MetricAdapter {
                 .build());
         break;
       case HISTOGRAM:
-        // no-op, will add in the following PRs
+        DoubleHistogramData doubleHistogramData = metricData.getDoubleHistogramData();
+        builder.setDoubleHistogram(
+            DoubleHistogram.newBuilder()
+                .setAggregationTemporality(
+                    mapToTemporality(doubleHistogramData.getAggregationTemporality()))
+                .addAllDataPoints(toDoubleHistogramDataPoints(doubleHistogramData.getPoints()))
+                .build());
         break;
     }
     return builder.build();
@@ -201,12 +209,12 @@ public final class MetricAdapter {
     return result;
   }
 
-  static List<DoubleHistogramDataPoint> toSummaryDataPoints(
+  static List<DoubleSummaryDataPoint> toSummaryDataPoints(
       Collection<DoubleSummaryPointData> points) {
-    List<DoubleHistogramDataPoint> result = new ArrayList<>(points.size());
+    List<DoubleSummaryDataPoint> result = new ArrayList<>(points.size());
     for (DoubleSummaryPointData doubleSummaryPoint : points) {
-      DoubleHistogramDataPoint.Builder builder =
-          DoubleHistogramDataPoint.newBuilder()
+      DoubleSummaryDataPoint.Builder builder =
+          DoubleSummaryDataPoint.newBuilder()
               .setStartTimeUnixNano(doubleSummaryPoint.getStartEpochNanos())
               .setTimeUnixNano(doubleSummaryPoint.getEpochNanos())
               .setCount(doubleSummaryPoint.getCount())
@@ -215,29 +223,44 @@ public final class MetricAdapter {
       if (!labels.isEmpty()) {
         builder.addAllLabels(labels);
       }
-      // Not calling directly addAllPercentileValues because that generates couple of unnecessary
+      // Not calling directly addAllQuantileValues because that generates couple of unnecessary
       // allocations if empty list.
       if (!doubleSummaryPoint.getPercentileValues().isEmpty()) {
-        addBucketValues(doubleSummaryPoint.getPercentileValues(), builder);
+        for (ValueAtPercentile valueAtPercentile : doubleSummaryPoint.getPercentileValues()) {
+          builder.addQuantileValues(
+              DoubleSummaryDataPoint.ValueAtQuantile.newBuilder()
+                  .setQuantile(valueAtPercentile.getPercentile() / 100.0)
+                  .setValue(valueAtPercentile.getValue())
+                  .build());
+        }
       }
       result.add(builder.build());
     }
     return result;
   }
 
-  // TODO: Consider to pass the Builder and directly add values.
-  @SuppressWarnings("MixedMutabilityReturnType")
-  static void addBucketValues(
-      List<ValueAtPercentile> valueAtPercentiles, DoubleHistogramDataPoint.Builder builder) {
-
-    for (ValueAtPercentile valueAtPercentile : valueAtPercentiles) {
-      // TODO(jkwatson): Value of histogram should be long?
-      builder.addBucketCounts((long) valueAtPercentile.getValue());
-      builder.addExplicitBounds(valueAtPercentile.getPercentile());
+  static Collection<DoubleHistogramDataPoint> toDoubleHistogramDataPoints(
+      Collection<DoubleHistogramPointData> points) {
+    List<DoubleHistogramDataPoint> result = new ArrayList<>(points.size());
+    for (DoubleHistogramPointData doubleHistogramPoint : points) {
+      DoubleHistogramDataPoint.Builder builder =
+          DoubleHistogramDataPoint.newBuilder()
+              .setStartTimeUnixNano(doubleHistogramPoint.getStartEpochNanos())
+              .setTimeUnixNano(doubleHistogramPoint.getEpochNanos())
+              .setCount(doubleHistogramPoint.getCount())
+              .setSum(doubleHistogramPoint.getSum())
+              .addAllBucketCounts(doubleHistogramPoint.getCounts());
+      List<Double> boundaries = doubleHistogramPoint.getBoundaries();
+      if (!boundaries.isEmpty()) {
+        builder.addAllExplicitBounds(boundaries);
+      }
+      Collection<StringKeyValue> labels = toProtoLabels(doubleHistogramPoint.getLabels());
+      if (!labels.isEmpty()) {
+        builder.addAllLabels(labels);
+      }
+      result.add(builder.build());
     }
-
-    // No recordings past the highest percentile (e.g., [highest percentile, +infinity]).
-    builder.addBucketCounts(0);
+    return result;
   }
 
   @SuppressWarnings("MixedMutabilityReturnType")

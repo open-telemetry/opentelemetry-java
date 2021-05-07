@@ -2,10 +2,10 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../../"
-# freeze the spec version to make SemanticAttributes generation reproducible
-# this hash was obtained by calling `git rev-parse master` on 2021/01/07
-# we can't use a version tag here because otel-spec releases are very rare
-SPEC_VERSION=d01d110b41b384e3d90169ec8d66d07f8b5963cd
+
+# freeze the spec & generator tools versions to make SemanticAttributes generation reproducible
+SPEC_VERSION=v1.3.0
+GENERATOR_VERSION=0.3.1
 
 cd ${SCRIPT_DIR}
 
@@ -23,7 +23,7 @@ docker run --rm \
   -v ${SCRIPT_DIR}/opentelemetry-specification/semantic_conventions/trace:/source \
   -v ${SCRIPT_DIR}/templates:/templates \
   -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/semconv/trace/attributes/:/output \
-  otel/semconvgen \
+  otel/semconvgen:$GENERATOR_VERSION \
   -f /source code \
   --template /templates/SemanticAttributes.java.j2 \
   --output /output/SemanticAttributes.java \
@@ -34,7 +34,7 @@ docker run --rm \
   -v ${SCRIPT_DIR}/opentelemetry-specification/semantic_conventions/resource:/source \
   -v ${SCRIPT_DIR}/templates:/templates \
   -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/semconv/resource/attributes/:/output \
-  otel/semconvgen \
+  otel/semconvgen:$GENERATOR_VERSION \
   -f /source code \
   --template /templates/SemanticAttributes.java.j2 \
   --output /output/ResourceAttributes.java \

@@ -15,31 +15,11 @@ spans will be sent to a Jaeger Thrift endpoint running on `localhost`:
 JaegerThriftSpanExporter exporter =
         JaegerThriftSpanExporter.builder()
             .setEndpoint("http://localhost:14268/api/traces")
-            .setServiceName("my-service")
             .build();
 ```
 
-Service name and Endpoint can be also configured via environment variables or system properties.
-
-```java
-// Using environment variables
-JaegerThriftSpanExporter exporter = 
-        JaegerThriftSpanExporter.builder()
-            .readEnvironmentVariables()
-            .build()
-```
-
-```java
-// Using system properties
-JaegerThriftSpanExporter exporter = 
-        JaegerThriftSpanExporter.builder()
-            .readSystemProperties()
-            .build()
-```
-
-The Jaeger Thrift span exporter will look for the following environment variables / system properties:
-* `OTEL_EXPORTER_JAEGER_SERVICE_NAME` / `otel.exporter.jaeger.service.name`
-* `OTEL_EXPORTER_JAEGER_ENDPOINT` / `otel.exporter.jaeger.endpoint`
+If you need configuration via environment variables and/or system properties, you will want to use
+the [autoconfigure](../../sdk-extensions/autoconfigure) module.
 
 ## Compatibility
 

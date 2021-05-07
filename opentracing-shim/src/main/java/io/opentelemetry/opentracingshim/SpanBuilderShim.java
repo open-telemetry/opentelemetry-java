@@ -22,6 +22,7 @@ import io.opentracing.tag.Tag;
 import io.opentracing.tag.Tags;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   private final String spanName;
@@ -40,6 +41,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   private final List<Object> spanBuilderAttributeValues = new ArrayList<>();
   private SpanKind spanKind;
   private boolean error;
+  private long startTimestampMicros;
 
   public SpanBuilderShim(TelemetryInfo telemetryInfo, String spanName) {
     super(telemetryInfo);
@@ -176,7 +178,8 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public SpanBuilder withStartTimestamp(long microseconds) {
-    throw new UnsupportedOperationException();
+    this.startTimestampMicros = microseconds;
+    return this;
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
@@ -204,6 +207,10 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
     if (spanKind != null) {
       builder.setSpanKind(spanKind);
+    }
+
+    if (startTimestampMicros > 0) {
+      builder.setStartTimestamp(startTimestampMicros, TimeUnit.MICROSECONDS);
     }
 
     io.opentelemetry.api.trace.Span span = builder.startSpan();

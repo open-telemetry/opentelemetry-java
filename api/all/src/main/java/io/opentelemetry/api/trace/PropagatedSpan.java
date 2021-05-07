@@ -67,6 +67,11 @@ final class PropagatedSpan implements Span {
   }
 
   @Override
+  public Span setAllAttributes(Attributes attributes) {
+    return this;
+  }
+
+  @Override
   public Span addEvent(String name) {
     return this;
   }
@@ -129,6 +134,6 @@ final class PropagatedSpan implements Span {
 
   @Override
   public String toString() {
-    return "DefaultSpan";
+    return "PropagatedSpan{" + spanContext + '}';
   }
 }

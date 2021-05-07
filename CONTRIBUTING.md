@@ -36,7 +36,12 @@ you must run a local docker daemon.
 check formatting:
 
     `./gradlew build`
+    
+4. If you are a Windows user, use the alternate command mentioned below to run tests and
+check formatting:
 
+     `gradlew.bat`
+     
 ## Checks
 
 Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
@@ -45,6 +50,9 @@ with the `check` task.
 ```bash
 $ ./gradlew check
 ```
+## PR Review
+After you submit a PR, it will be reviewed by the project maintainers and approvers. Not all maintainers need to review a
+particular PR, but merging to the base branch is authorized to restricted members (administrators).
 
 ## Style guideline
 
@@ -110,6 +118,7 @@ It does not support all required rules, so you still have to run `spotlessApply`
   Javadoc, though the style of documentation is up to the author.
 * Try to do the least amount of change when modifying existing documentation.
   Don't change the style unless you have a good reason.
+* We do not use `@author` tags in our javadoc.
 * Our javadoc is available via [javadoc.io}(https://javadoc.io/doc/io.opentelemetry/opentelemetry-api)
 
 ### AutoValue

@@ -8,6 +8,7 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
 
 ## Contents
 
+* [General notes](#general-notes)
 * [Exporters](#exporters)
   + [OTLP exporter (both span and metric exporters)](#otlp-exporter-both-span-and-metric-exporters)
   + [Jaeger exporter](#jaeger-exporter)
@@ -21,6 +22,14 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
 * [Span limits](#span-limits)
 * [Interval metric reader](#interval-metric-reader)
 * [Customizing the OpenTelemetry SDK](#customizing-the-opentelemetry-sdk)
+
+## General notes
+
+- The autoconfigure module registers Java shutdown hooks to shut down the SDK when appropriate. Please note that since this project uses
+java.util.logging for all of it's logging, some of that logging may be suppressed during shutdown hooks. This is a bug in the JDK itself,
+and not something we can control. If you require logging during shutdown hooks, please consider using `System.out` rather than a logging framework
+that might shut itself down in a shutdown hook, thus suppressing your log messages. See this [JDK bug](https://bugs.openjdk.java.net/browse/JDK-8161253)
+for more details.
 
 ## Exporters
 
@@ -39,9 +48,11 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 |------------------------------|-----------------------------|---------------------------------------------------------------------------|
 | otel.traces.exporter=otlp (default) | OTEL_TRACES_EXPORTER=otlp          | Select the OpenTelemetry exporter for tracing (default)                                   |
 | otel.metrics.exporter=otlp (default) | OTEL_METRICS_EXPORTER=otlp          | Select the OpenTelemetry exporter for metrics (default)                                   |
-| otel.exporter.otlp.endpoint  | OTEL_EXPORTER_OTLP_ENDPOINT | The OTLP endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
-| otel.exporter.otlp.headers   | OTEL_EXPORTER_OTLP_HEADERS  | Key-value pairs separated by semicolons to pass as request headers        |
-| otel.exporter.otlp.timeout   | OTEL_EXPORTER_OTLP_TIMEOUT  | The maximum waiting time allowed to send each batch. Default is `1000`.   |
+| otel.exporter.otlp.endpoint  | OTEL_EXPORTER_OTLP_ENDPOINT | The OTLP traces and metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
+| otel.exporter.otlp.traces.endpoint  | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT | The OTLP traces endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
+| otel.exporter.otlp.metrics.endpoint  | OTEL_EXPORTER_OTLP_METRICS_ENDPOINT | The OTLP metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
+| otel.exporter.otlp.headers   | OTEL_EXPORTER_OTLP_HEADERS  | Key-value pairs separated by commas to pass as request headers.        |
+| otel.exporter.otlp.timeout   | OTEL_EXPORTER_OTLP_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each batch. Default is `10000`.  |
 
 To configure the service name for the OTLP exporter, add the `service.name` key
 to the OpenTelemetry Resource ([see below](#opentelemetry-resource)), e.g. `OTEL_RESOURCE_ATTRIBUTES=service.name=myservice`.
@@ -52,8 +63,9 @@ The [Jaeger](https://www.jaegertracing.io/docs/1.21/apis/#protobuf-via-grpc-stab
 
 | System property                   | Environment variable              | Description                                                                                        |
 |-----------------------------------|-----------------------------------|----------------------------------------------------------------------------------------------------|
-| otel.traces.exporter=jaeger              | OTEL_TRACES_EXPORTER=jaeger              | Select the Jaeger exporter                                                                         |
-| otel.exporter.jaeger.endpoint     | OTEL_EXPORTER_JAEGER_ENDPOINT     | The Jaeger gRPC endpoint to connect to. Default is `localhost:14250`.                              |
+| otel.traces.exporter=jaeger       | OTEL_TRACES_EXPORTER=jaeger       | Select the Jaeger exporter                                                                         |
+| otel.exporter.jaeger.endpoint     | OTEL_EXPORTER_JAEGER_ENDPOINT     | The Jaeger gRPC endpoint to connect to. Default is `http://localhost:14250`.                       |
+| otel.exporter.jaeger.timeout      | OTEL_EXPORTER_JAEGER_TIMEOUT      | The maximum waiting time, in milliseconds, allowed to send each batch. Default is `10000`.         |
 
 ### Zipkin exporter
 

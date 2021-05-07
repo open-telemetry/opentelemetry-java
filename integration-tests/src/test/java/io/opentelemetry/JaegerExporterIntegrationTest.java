@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -25,22 +24,12 @@ import okhttp3.Response;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-/**
- * Integration test to verify that OpenTelemetry artefacts run in JRE 7.
- *
- * <p>An executable JAR with dependencies containing {@link SendTraceToJaeger} is built prior to
- * executing the tests.
- *
- * <p>A Jaeger-all-in-one container is started, then an Alpine JRE 7 container is started with the
- * executable JAR added to it and executed which will send a trace to the Jaeger instance. The test
- * verifies that the trace is received by Jaeger.
- */
+/** Integration test to verify that the Jaeger GRPC exporter works. */
 @Testcontainers(disabledWithoutDocker = true)
 class JaegerExporterIntegrationTest {
 
@@ -52,8 +41,6 @@ class JaegerExporterIntegrationTest {
   private static final int HEALTH_PORT = 14269;
   private static final String SERVICE_NAME = "integration test";
   private static final String JAEGER_URL = "http://localhost";
-
-  private static final Network network = Network.SHARED;
 
   @Container
   public static GenericContainer<?> jaegerContainer =
@@ -101,7 +88,7 @@ class JaegerExporterIntegrationTest {
   }
 
   private static OpenTelemetry initOpenTelemetry(String ip, int port) {
-    // Create a channel towards Jaeger end point
+    // Create a channel for the Jaeger endpoint
     ManagedChannel jaegerChannel =
         ManagedChannelBuilder.forAddress(ip, port).usePlaintext().build();
     // Export traces to Jaeger
@@ -117,11 +104,9 @@ class JaegerExporterIntegrationTest {
             SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(jaegerExporter))
                 .setResource(
-                    Resource.getDefault()
-                        .merge(
-                            Resource.create(
-                                Attributes.of(
-                                    ResourceAttributes.SERVICE_NAME, "integration test"))))
+                    Resource.getDefault().toBuilder()
+                        .put(ResourceAttributes.SERVICE_NAME, "integration test")
+                        .build())
                 .build())
         .buildAndRegisterGlobal();
   }

@@ -10,10 +10,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -31,17 +34,20 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @SuppressWarnings("PreferJavaTimeOverload")
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class BatchSpanProcessorTest {
 
   private static final String SPAN_NAME_1 = "MySpanName/1";
@@ -51,6 +57,12 @@ class BatchSpanProcessorTest {
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
 
   @Mock private Sampler mockSampler;
+  @Mock private SpanExporter mockSpanExporter;
+
+  @BeforeEach
+  void setUp() {
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+  }
 
   @AfterEach
   void cleanup() {
@@ -185,12 +197,19 @@ class BatchSpanProcessorTest {
             .build();
 
     sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 50; i++) {
       createEndedSpan("notExported");
     }
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
-    assertThat(exported.size()).isEqualTo(98);
+    assertThat(exported.size()).isEqualTo(49);
+
+    for (int i = 0; i < 50; i++) {
+      createEndedSpan("notExported");
+    }
+    exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(49);
 
     batchSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
     exported = waitingSpanExporter.getExported();
@@ -317,52 +336,47 @@ class BatchSpanProcessorTest {
 
   @Test
   @Timeout(5)
-  public void exporterTimesOut() throws InterruptedException {
-    final CountDownLatch interruptMarker = new CountDownLatch(1);
-    WaitingSpanExporter waitingSpanExporter =
-        new WaitingSpanExporter(1, new CompletableResultCode()) {
-          @Override
-          public CompletableResultCode export(Collection<SpanData> spans) {
-            CompletableResultCode result = super.export(spans);
-            Thread exporterThread =
-                new Thread(
-                    () -> {
-                      try {
-                        // sleep longer than the configured timeout of 100ms
-                        Thread.sleep(1000);
-                      } catch (InterruptedException e) {
-                        interruptMarker.countDown();
-                      }
-                    });
-            exporterThread.start();
-            result.whenComplete(
-                () -> {
-                  if (!result.isSuccess()) {
-                    exporterThread.interrupt();
-                  }
-                });
-            return result;
-          }
-        };
-
-    int exporterTimeoutMillis = 100;
-    sdkTracerProvider =
-        SdkTracerProvider.builder()
-            .addSpanProcessor(
-                BatchSpanProcessor.builder(waitingSpanExporter)
-                    .setExporterTimeout(exporterTimeoutMillis, TimeUnit.MILLISECONDS)
-                    .setScheduleDelay(1, TimeUnit.MILLISECONDS)
-                    .setMaxQueueSize(1)
-                    .build())
+  public void continuesIfExporterTimesOut() throws InterruptedException {
+    int exporterTimeoutMillis = 10;
+    BatchSpanProcessor bsp =
+        BatchSpanProcessor.builder(mockSpanExporter)
+            .setExporterTimeout(exporterTimeoutMillis, TimeUnit.MILLISECONDS)
+            .setScheduleDelay(1, TimeUnit.MILLISECONDS)
+            .setMaxQueueSize(1)
             .build();
+    sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(bsp).build();
 
-    ReadableSpan span = createEndedSpan(SPAN_NAME_1);
-    List<SpanData> exported = waitingSpanExporter.waitForExport();
-    assertThat(exported).containsExactly(span.toSpanData());
+    CountDownLatch exported = new CountDownLatch(1);
+    // We return a result we never complete, meaning it will timeout.
+    when(mockSpanExporter.export(
+            argThat(
+                spans -> {
+                  assertThat(spans)
+                      .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_1));
+                  exported.countDown();
+                  return true;
+                })))
+        .thenReturn(new CompletableResultCode());
+    createEndedSpan(SPAN_NAME_1);
+    exported.await();
+    // Timed out so the span was dropped.
+    await().untilAsserted(() -> assertThat(bsp.getBatch()).isEmpty());
 
-    // since the interrupt happens outside the execution of the test method, we'll block to make
-    // sure that the thread was actually interrupted due to the timeout.
-    interruptMarker.await();
+    // Still processing new spans.
+    CountDownLatch exportedAgain = new CountDownLatch(1);
+    reset(mockSpanExporter);
+    when(mockSpanExporter.export(
+            argThat(
+                spans -> {
+                  assertThat(spans)
+                      .anySatisfy(span -> assertThat(span.getName()).isEqualTo(SPAN_NAME_2));
+                  exportedAgain.countDown();
+                  return true;
+                })))
+        .thenReturn(CompletableResultCode.ofSuccess());
+    createEndedSpan(SPAN_NAME_2);
+    exported.await();
+    await().untilAsserted(() -> assertThat(bsp.getBatch()).isEmpty());
   }
 
   @Test

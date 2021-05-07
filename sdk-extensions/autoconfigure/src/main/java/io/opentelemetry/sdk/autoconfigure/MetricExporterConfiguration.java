@@ -17,6 +17,7 @@ import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
+import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
 
@@ -48,15 +49,25 @@ final class MetricExporterConfiguration {
   }
 
   // Visible for testing
+  @Nullable
   static OtlpGrpcMetricExporter configureOtlpMetrics(
       ConfigProperties config, SdkMeterProvider meterProvider) {
-    ClasspathUtil.checkClassExists(
-        "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
-        "OTLP Metrics Exporter",
-        "opentelemetry-exporter-otlp-metrics");
+    try {
+      ClasspathUtil.checkClassExists(
+          "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
+          "OTLP Metrics Exporter",
+          "opentelemetry-exporter-otlp-metrics");
+    } catch (ConfigurationException e) {
+      // Squash this for now, until metrics are stable and included in the `exporter-otlp` artifact
+      // by default,
+      return null;
+    }
     OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
 
-    String endpoint = config.getString("otel.exporter.otlp.endpoint");
+    String endpoint = config.getString("otel.exporter.otlp.metrics.endpoint");
+    if (endpoint == null) {
+      endpoint = config.getString("otel.exporter.otlp.endpoint");
+    }
     if (endpoint != null) {
       builder.setEndpoint(endpoint);
     }
@@ -85,7 +96,7 @@ final class MetricExporterConfiguration {
     if (exportIntervalMillis != null) {
       readerBuilder.setExportIntervalMillis(exportIntervalMillis);
     }
-    IntervalMetricReader reader = readerBuilder.build();
+    IntervalMetricReader reader = readerBuilder.buildAndStart();
     Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
   }
 

@@ -5,6 +5,7 @@
 
 package io.opentelemetry.extension.trace.propagation;
 
+import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;

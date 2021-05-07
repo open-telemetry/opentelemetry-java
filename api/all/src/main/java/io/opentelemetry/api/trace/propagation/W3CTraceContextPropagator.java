@@ -7,6 +7,7 @@ package io.opentelemetry.api.trace.propagation;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -207,26 +208,28 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
       return SpanContext.getInvalid();
     }
 
-    try {
-      String version = traceparent.substring(0, 2);
-      if (!VALID_VERSIONS.contains(version)) {
-        return SpanContext.getInvalid();
-      }
-      if (version.equals(VERSION_00) && traceparent.length() > TRACEPARENT_HEADER_SIZE) {
-        return SpanContext.getInvalid();
-      }
-
-      String traceId =
-          traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getLength());
-      String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getLength());
-
-      TraceFlags traceFlags = TraceFlags.fromHex(traceparent, TRACE_OPTION_OFFSET);
-      return SpanContext.createFromRemoteParent(
-          traceId, spanId, traceFlags, TraceState.getDefault());
-    } catch (IllegalArgumentException e) {
-      logger.fine("Unparseable traceparent header. Returning INVALID span context.");
+    String version = traceparent.substring(0, 2);
+    if (!VALID_VERSIONS.contains(version)) {
       return SpanContext.getInvalid();
     }
+    if (version.equals(VERSION_00) && traceparent.length() > TRACEPARENT_HEADER_SIZE) {
+      return SpanContext.getInvalid();
+    }
+
+    String traceId = traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + TraceId.getLength());
+    String spanId = traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + SpanId.getLength());
+    char firstTraceFlagsChar = traceparent.charAt(TRACE_OPTION_OFFSET);
+    char secondTraceFlagsChar = traceparent.charAt(TRACE_OPTION_OFFSET + 1);
+
+    if (!OtelEncodingUtils.isValidBase16Character(firstTraceFlagsChar)
+        || !OtelEncodingUtils.isValidBase16Character(secondTraceFlagsChar)) {
+      return SpanContext.getInvalid();
+    }
+
+    TraceFlags traceFlags =
+        TraceFlags.fromByte(
+            OtelEncodingUtils.byteFromBase16(firstTraceFlagsChar, secondTraceFlagsChar));
+    return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TraceState.getDefault());
   }
 
   private static TraceState extractTraceState(String traceStateHeader) {
@@ -242,6 +245,11 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
       checkArgument(index != -1, "Invalid TraceState list-member format.");
       traceStateBuilder.put(listMember.substring(0, index), listMember.substring(index + 1));
     }
-    return traceStateBuilder.build();
+    TraceState traceState = traceStateBuilder.build();
+    if (traceState.size() != listMembers.length) {
+      // Validation failure, drop the tracestate
+      return TraceState.getDefault();
+    }
+    return traceState;
   }
 }
