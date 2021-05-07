@@ -61,6 +61,7 @@ val latestReleasedVersion : String by lazy {
     dependencies.add("tempConfig", "io.opentelemetry:opentelemetry-bom:latest.release")
     val moduleVersion = project.configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
     project.configurations.remove(temp)
+    println("Discovered latest release version: " + moduleVersion)
     moduleVersion
 }
 
