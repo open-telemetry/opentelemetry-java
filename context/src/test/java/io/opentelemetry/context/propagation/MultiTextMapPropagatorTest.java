@@ -12,9 +12,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -25,6 +28,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class MultiTextMapPropagatorTest {
+
+  private static final ContextKey<String> KEY = ContextKey.named("key");
 
   @Mock private TextMapPropagator propagator1;
   @Mock private TextMapPropagator propagator2;
@@ -94,19 +99,6 @@ class MultiTextMapPropagatorTest {
   }
 
   @Test
-  void inject_nullContextAllDelegated() {
-    Map<String, String> carrier = new HashMap<>();
-    Context context = null;
-    TextMapSetter<Map<String, String>> setter = Map::put;
-
-    TextMapPropagator prop = new MultiTextMapPropagator(propagator1, propagator2, propagator3);
-    prop.inject(context, carrier, setter);
-    verify(propagator1).inject(context, carrier, setter);
-    verify(propagator2).inject(context, carrier, setter);
-    verify(propagator3).inject(context, carrier, setter);
-  }
-
-  @Test
   void extract_noPropagators() {
     Map<String, String> carrier = new HashMap<>();
     Context context = mock(Context.class);
@@ -147,14 +139,33 @@ class MultiTextMapPropagatorTest {
 
   @Test
   void extract_nullContext() {
-    Map<String, String> carrier = new HashMap<>();
-    Context context = null;
-    when(propagator1.extract(context, carrier, getter)).thenReturn(context);
-    when(propagator2.extract(context, carrier, getter)).thenReturn(context);
+    assertThat(
+            new MultiTextMapPropagator(propagator1, propagator2)
+                .extract(null, Collections.emptyMap(), getter))
+        .isSameAs(Context.root());
+  }
 
-    TextMapPropagator prop = new MultiTextMapPropagator(propagator1, propagator2);
-    Context result = prop.extract(context, carrier, getter);
+  @Test
+  void extract_nullGetter() {
+    Context context = Context.current().with(KEY, "treasure");
+    assertThat(
+            new MultiTextMapPropagator(propagator1, propagator2)
+                .extract(context, Collections.emptyMap(), null))
+        .isSameAs(context);
+  }
 
-    assertThat(result).isSameAs(context);
+  @Test
+  void inject_nullContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    new MultiTextMapPropagator(propagator1, propagator2).inject(null, carrier, Map::put);
+    assertThat(carrier).isEmpty();
+  }
+
+  @Test
+  void inject_nullSetter() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    Context context = Context.current().with(KEY, "treasure");
+    new MultiTextMapPropagator(propagator1, propagator2).inject(context, carrier, null);
+    assertThat(carrier).isEmpty();
   }
 }
