@@ -2,6 +2,10 @@
 
 ## Starting the Release
 
+Before releasing, it is a good idea to run `./gradlew japicmp` on the main branch
+and verify that there are no unexpected public API changes seen in the `docs/apidiffs/current_vs_latest`
+directory.
+
 Open the release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/release-build.yml).
 
 You will see a button that says "Run workflow". Press the button, enter the version number you want
@@ -31,7 +35,11 @@ After releasing is done, you need to first update the docs.
 
 ```
 ./gradlew updateVersionInDocs -Prelease.version=x.y.z
+./gradlew japicmp -PapiBaseVersion=a.b.c -PapiNewVersion=x.y.z
+./gradlew japicmp
 ```
+
+Where `x.y.z` is the version just released and `a.b.c` is the previous version.
 
 Next, update the
 [CHANGELOG.md](https://github.com/open-telemetry/opentelemetry-java/blob/main/CHANGELOG.md).
