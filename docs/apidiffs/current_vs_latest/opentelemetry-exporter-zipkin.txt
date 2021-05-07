@@ -1,5 +1,2 @@
 Comparing source compatibility of  against 
-***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder setReadTimeout(long, java.util.concurrent.TimeUnit)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder setReadTimeout(java.time.Duration)
+No changes.
