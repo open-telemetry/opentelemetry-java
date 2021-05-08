@@ -2,6 +2,10 @@
 
 ## Unreleased:
 
+---
+
+## Version 1.2.0 - 2021-05-07
+
 ### General
 
 #### Enhancements
@@ -32,6 +36,12 @@ previously used `"unknown"` value. This change is based on a specification clari
 #### Bugfixes
 - The B3 Propagator injectors now only include the relevant fields for the specific injection format.
 
+#### Behavioral Changes
+- The `W3CBaggagePropagator` will no longer explicitly populate an empty `Baggage` instance into the context when
+the header is unparsable. It will now return the provided Context instance unaltered, as is required by the specification.
+- The `AwsXrayPropagator` will no longer explicitly populate an invalid `Span` instance into the context when
+the headers are unparsable. It will now return the provided Context instance unaltered, as is required by the specification.
+
 ### Exporters
 - The `jaeger-thrift` exporter has had its dependency on the `jaeger-client` library updated to version `1.6.0`.
 - The `zipkin` exporter now has an option to specific a custom timeout. 
@@ -59,6 +69,8 @@ of a batch SpanProcessor allows you to provide your own ExecutorService to do th
 a system property (`otel.exporter.jaeger.timeout`) or environment variable (`OTEL_EXPORTER_JAEGER_TIMEOUT`).
 - The `autoconfigure` module now supports providing the timeout setting for the Zipkin exporter via 
 a system property (`otel.exporter.zipkin.timeout`) or environment variable (`OTEL_EXPORTER_ZIPKIN_TIMEOUT`).
+- The `autoconfigure` module now exposes the `EnvironmentResource` class to provide programmatic access to a `Resource`
+built from parsing the `otel.resource.attributes` configuration property.
 
 ### Metrics (alpha)
 
