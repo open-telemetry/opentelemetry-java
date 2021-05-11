@@ -29,12 +29,7 @@ abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
   }
 
   @Override
-  public String getKey() {
-    return key();
-  }
-
-  @Nullable
-  abstract String key();
+  public abstract String getKey();
 
   @Override
   public final String toString() {

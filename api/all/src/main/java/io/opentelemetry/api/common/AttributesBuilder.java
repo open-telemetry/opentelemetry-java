@@ -85,7 +85,10 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, String... value) {
-    return put(stringArrayKey(key), value == null ? null : Arrays.asList(value));
+    if (value == null) {
+      return this;
+    }
+    return put(stringArrayKey(key), Arrays.asList(value));
   }
 
   /**
@@ -97,6 +100,9 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, long... value) {
+    if (value == null) {
+      return this;
+    }
     return put(longArrayKey(key), toList(value));
   }
 
@@ -109,6 +115,9 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, double... value) {
+    if (value == null) {
+      return this;
+    }
     return put(doubleArrayKey(key), toList(value));
   }
 
@@ -121,6 +130,9 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, boolean... value) {
+    if (value == null) {
+      return this;
+    }
     return put(booleanArrayKey(key), toList(value));
   }
 

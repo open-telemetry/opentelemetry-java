@@ -30,6 +30,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 /**
  * A {@link ContextStorage} which keeps track of opened and closed {@link Scope}s, reporting caller
@@ -112,6 +113,7 @@ final class StrictContextStorage implements ContextStorage, AutoCloseable {
   }
 
   @Override
+  @Nullable
   public Context current() {
     return delegate.current();
   }
@@ -209,7 +211,8 @@ final class StrictContextStorage implements ContextStorage, AutoCloseable {
 
     @Override
     public String toString() {
-      return caller.getMessage();
+      String message = caller.getMessage();
+      return message != null ? message : super.toString();
     }
   }
 
