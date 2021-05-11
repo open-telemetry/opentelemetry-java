@@ -236,12 +236,11 @@ public final class JaegerPropagator implements TextMapPropagator {
           builder.put(key.substring(BAGGAGE_PREFIX.length()), value);
         }
       } else if (key.equals(BAGGAGE_HEADER)) {
-        if (builder == null) {
-          builder = Baggage.builder();
-        }
-
         String value = getter.get(carrier, key);
         if (value != null) {
+          if (builder == null) {
+            builder = Baggage.builder();
+          }
           builder = parseBaggageHeader(value, builder);
         }
       }
@@ -253,9 +252,6 @@ public final class JaegerPropagator implements TextMapPropagator {
     for (String part : header.split("\\s*,\\s*")) {
       String[] kv = part.split("\\s*=\\s*");
       if (kv.length == 2) {
-        if (builder == null) {
-          builder = Baggage.builder();
-        }
         builder.put(kv[0], kv[1]);
       } else {
         logger.fine("malformed token in " + BAGGAGE_HEADER + " header: " + part);
