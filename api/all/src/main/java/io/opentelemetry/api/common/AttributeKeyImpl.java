@@ -12,10 +12,6 @@ import javax.annotation.Nullable;
 @AutoValue
 abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
 
-  // This instance of String is returned if a user passed null as a key name so we can filter it
-  // out when adding to attributes.
-  static final String NULL_KEY = new String("null");
-
   // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
   // this method.
   //
@@ -33,12 +29,7 @@ abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
   }
 
   @Override
-  public String getKey() {
-    return key();
-  }
-
-  @Nullable
-  abstract String key();
+  public abstract String getKey();
 
   @Override
   public final String toString() {

@@ -161,8 +161,6 @@ final class ArrayBasedTraceStateBuilder implements TraceStateBuilder {
 
   // Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the range
   // 0x20 to 0x7E) except comma , and =.
-  // TODO(anuraaga): Seems to be false positive, see if there's a way to work around.
-  @SuppressWarnings("NullAway")
   private static boolean isValueValid(@Nullable String value) {
     if (StringUtils.isNullOrEmpty(value)) {
       return false;

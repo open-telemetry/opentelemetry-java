@@ -8,6 +8,7 @@ import nebula.plugin.release.git.opinion.Strategies
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.ErrorProneOptions
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
+import net.ltgt.gradle.nullaway.NullAwayOptions
 import org.gradle.api.plugins.JavaPlugin.*
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
@@ -25,6 +26,7 @@ plugins {
     id("io.morethan.jmhreport") apply false
     id("me.champeau.gradle.jmh") apply false
     id("net.ltgt.errorprone") apply false
+    id("net.ltgt.nullaway") apply false
     id("ru.vyarus.animalsniffer") apply false
     id("me.champeau.gradle.japicmp") apply false
 }
@@ -104,6 +106,8 @@ nexusStaging {
     delayBetweenRetriesInMillis = 10000
 }
 
+val enableNullaway: String? by project
+
 subprojects {
     group = "io.opentelemetry"
 
@@ -115,6 +119,7 @@ subprojects {
 
         plugins.apply("com.diffplug.spotless")
         plugins.apply("net.ltgt.errorprone")
+        plugins.apply("net.ltgt.nullaway")
 
         configure<BasePluginConvention> {
             archivesBaseName = "opentelemetry-${name}"
@@ -191,11 +196,15 @@ subprojects {
                     disableWarningsInGeneratedCode.set(true)
                     allDisabledChecksAsWarnings.set(true)
 
-                    // Enable nullaway on main sources.
-                    if (!name.contains("Test") && !name.contains("Jmh")) {
-                        // TODO(anuraaga): Set severity to ERROR when all projects pass.
-                        check("NullAway", CheckSeverity.OFF)
-                        option("NullAway:AnnotatedPackages", "io.opentelemetry")
+                    (this as ExtensionAware).extensions.configure<NullAwayOptions> {
+                        // Enable nullaway on main sources.
+                        // TODO(anuraaga): Remove enableNullaway flag when all errors fixed
+                        if (!name.contains("Test") && !name.contains("Jmh") && enableNullaway == "true") {
+                            severity.set(CheckSeverity.ERROR)
+                        } else {
+                            severity.set(CheckSeverity.OFF)
+                        }
+                        annotatedPackages.add("io.opentelemetry")
                     }
 
                     // Doesn't currently use Var annotations.
@@ -383,9 +392,9 @@ subprojects {
             add(TEST_RUNTIME_ONLY_CONFIGURATION_NAME, "org.junit.vintage:junit-vintage-engine")
 
             add(ErrorPronePlugin.CONFIGURATION_NAME, "com.google.errorprone:error_prone_core")
+            add(ErrorPronePlugin.CONFIGURATION_NAME, "com.uber.nullaway:nullaway")
 
             add(ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "com.google.guava:guava-beta-checker")
-            add(ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "com.uber.nullaway:nullaway")
 
             // Workaround for @javax.annotation.Generated
             // see: https://github.com/grpc/grpc-java/issues/3633

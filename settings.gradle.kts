@@ -12,6 +12,8 @@ pluginManagement {
         id("me.champeau.gradle.jmh") version "0.5.3"
         id("nebula.release") version "15.3.1"
         id("net.ltgt.errorprone") version "2.0.1"
+        id("net.ltgt.nullaway") version "1.1.0"
+        id("org.checkerframework") version "0.5.20"
         id("org.jetbrains.kotlin.jvm") version "1.4.21"
         id("org.unbroken-dome.test-sets") version "3.0.1"
         id("ru.vyarus.animalsniffer") version "1.5.3"

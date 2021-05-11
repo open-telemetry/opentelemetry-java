@@ -215,10 +215,13 @@ public final class JaegerPropagator implements TextMapPropagator {
     return buildSpanContext(traceId, spanId, flags);
   }
 
-  private static <C> Baggage getBaggageFromHeader(C carrier, TextMapGetter<C> getter) {
+  @Nullable
+  private static <C> Baggage getBaggageFromHeader(@Nullable C carrier, TextMapGetter<C> getter) {
     BaggageBuilder builder = null;
 
-    for (String key : getter.keys(carrier)) {
+    Iterable<String> keys = carrier != null ? getter.keys(carrier) : Collections.emptyList();
+
+    for (String key : keys) {
       if (key.startsWith(BAGGAGE_PREFIX)) {
         if (key.length() == BAGGAGE_PREFIX.length()) {
           continue;
@@ -227,9 +230,20 @@ public final class JaegerPropagator implements TextMapPropagator {
         if (builder == null) {
           builder = Baggage.builder();
         }
-        builder.put(key.substring(BAGGAGE_PREFIX.length()), getter.get(carrier, key));
+
+        String value = getter.get(carrier, key);
+        if (value != null) {
+          builder.put(key.substring(BAGGAGE_PREFIX.length()), value);
+        }
       } else if (key.equals(BAGGAGE_HEADER)) {
-        builder = parseBaggageHeader(getter.get(carrier, key), builder);
+        if (builder == null) {
+          builder = Baggage.builder();
+        }
+
+        String value = getter.get(carrier, key);
+        if (value != null) {
+          builder = parseBaggageHeader(value, builder);
+        }
       }
     }
     return builder == null ? null : builder.build();
