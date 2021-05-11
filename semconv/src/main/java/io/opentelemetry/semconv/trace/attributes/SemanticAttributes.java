@@ -6,10 +6,13 @@
 package io.opentelemetry.semconv.trace.attributes;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.doubleKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
+import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
+import java.util.List;
 
 // DO NOT EDIT, this is an Auto-generated file from
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
@@ -64,21 +67,6 @@ public final class SemanticAttributes {
    * or performs more than one operation, this value may be omitted.
    */
   public static final AttributeKey<String> DB_OPERATION = stringKey("db.operation");
-
-  /** Remote hostname or similar, see note below. */
-  public static final AttributeKey<String> NET_PEER_NAME = stringKey("net.peer.name");
-
-  /**
-   * Remote address of the peer (dotted decimal for IPv4 or
-   * [RFC5952](https://tools.ietf.org/html/rfc5952) for IPv6).
-   */
-  public static final AttributeKey<String> NET_PEER_IP = stringKey("net.peer.ip");
-
-  /** Remote port number. */
-  public static final AttributeKey<Long> NET_PEER_PORT = longKey("net.peer.port");
-
-  /** Transport protocol used. See note below. */
-  public static final AttributeKey<String> NET_TRANSPORT = stringKey("net.transport");
 
   /**
    * The Microsoft SQL Server [instance
@@ -233,6 +221,131 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> FAAS_DOCUMENT_NAME = stringKey("faas.document.name");
 
+  /**
+   * A string containing the function invocation time in the [ISO
+   * 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format expressed in
+   * [UTC](https://www.w3.org/TR/NOTE-datetime).
+   */
+  public static final AttributeKey<String> FAAS_TIME = stringKey("faas.time");
+
+  /**
+   * A string containing the schedule period as [Cron
+   * Expression](https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm).
+   */
+  public static final AttributeKey<String> FAAS_CRON = stringKey("faas.cron");
+
+  /**
+   * A boolean that is true if the serverless function is executed for the first time (aka
+   * cold-start).
+   */
+  public static final AttributeKey<Boolean> FAAS_COLDSTART = booleanKey("faas.coldstart");
+
+  /**
+   * The name of the invoked function.
+   *
+   * <p>Note: SHOULD be equal to the `faas.name` resource attribute of the invoked function.
+   */
+  public static final AttributeKey<String> FAAS_INVOKED_NAME = stringKey("faas.invoked_name");
+
+  /**
+   * The cloud provider of the invoked function.
+   *
+   * <p>Note: SHOULD be equal to the `cloud.provider` resource attribute of the invoked function.
+   */
+  public static final AttributeKey<String> FAAS_INVOKED_PROVIDER =
+      stringKey("faas.invoked_provider");
+
+  /**
+   * The cloud region of the invoked function.
+   *
+   * <p>Note: SHOULD be equal to the `cloud.region` resource attribute of the invoked function.
+   */
+  public static final AttributeKey<String> FAAS_INVOKED_REGION = stringKey("faas.invoked_region");
+
+  /** Transport protocol used. See note below. */
+  public static final AttributeKey<String> NET_TRANSPORT = stringKey("net.transport");
+
+  /**
+   * Remote address of the peer (dotted decimal for IPv4 or
+   * [RFC5952](https://tools.ietf.org/html/rfc5952) for IPv6).
+   */
+  public static final AttributeKey<String> NET_PEER_IP = stringKey("net.peer.ip");
+
+  /** Remote port number. */
+  public static final AttributeKey<Long> NET_PEER_PORT = longKey("net.peer.port");
+
+  /** Remote hostname or similar, see note below. */
+  public static final AttributeKey<String> NET_PEER_NAME = stringKey("net.peer.name");
+
+  /** Like `net.peer.ip` but for the host IP. Useful in case of a multi-IP host. */
+  public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
+
+  /** Like `net.peer.port` but for the host port. */
+  public static final AttributeKey<Long> NET_HOST_PORT = longKey("net.host.port");
+
+  /** Local hostname or similar, see note below. */
+  public static final AttributeKey<String> NET_HOST_NAME = stringKey("net.host.name");
+
+  /**
+   * The [`service.name`](../../resource/semantic_conventions/README.md#service) of the remote
+   * service. SHOULD be equal to the actual `service.name` resource attribute of the remote service
+   * if any.
+   */
+  public static final AttributeKey<String> PEER_SERVICE = stringKey("peer.service");
+
+  /**
+   * Username or client_id extracted from the access token or
+   * [Authorization](https://tools.ietf.org/html/rfc7235#section-4.2) header in the inbound request
+   * from outside the system.
+   */
+  public static final AttributeKey<String> ENDUSER_ID = stringKey("enduser.id");
+
+  /**
+   * Actual/assumed role the client is making the request under extracted from token or application
+   * security context.
+   */
+  public static final AttributeKey<String> ENDUSER_ROLE = stringKey("enduser.role");
+
+  /**
+   * Scopes or granted authorities the client currently possesses extracted from token or
+   * application security context. The value would come from the scope associated with an [OAuth 2.0
+   * Access Token](https://tools.ietf.org/html/rfc6749#section-3.3) or an attribute value in a [SAML
+   * 2.0
+   * Assertion](http://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html).
+   */
+  public static final AttributeKey<String> ENDUSER_SCOPE = stringKey("enduser.scope");
+
+  /** Current &#34;managed&#34; thread ID (as opposed to OS thread ID). */
+  public static final AttributeKey<Long> THREAD_ID = longKey("thread.id");
+
+  /** Current thread name. */
+  public static final AttributeKey<String> THREAD_NAME = stringKey("thread.name");
+
+  /**
+   * The method or function name, or equivalent (usually rightmost part of the code unit&#39;s
+   * name).
+   */
+  public static final AttributeKey<String> CODE_FUNCTION = stringKey("code.function");
+
+  /**
+   * The &#34;namespace&#34; within which `code.function` is defined. Usually the qualified class or
+   * module name, such that `code.namespace` + some separator + `code.function` form a unique
+   * identifier for the code unit.
+   */
+  public static final AttributeKey<String> CODE_NAMESPACE = stringKey("code.namespace");
+
+  /**
+   * The source code file name that identifies the code unit as uniquely as possible (preferably an
+   * absolute file path).
+   */
+  public static final AttributeKey<String> CODE_FILEPATH = stringKey("code.filepath");
+
+  /**
+   * The line number in `code.filepath` best representing the operation. It SHOULD point within the
+   * code unit named in `code.function`.
+   */
+  public static final AttributeKey<Long> CODE_LINENO = longKey("code.lineno");
+
   /** HTTP request method. */
   public static final AttributeKey<String> HTTP_METHOD = stringKey("http.method");
 
@@ -331,14 +444,91 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> HTTP_CLIENT_IP = stringKey("http.client_ip");
 
-  /** Like `net.peer.ip` but for the host IP. Useful in case of a multi-IP host. */
-  public static final AttributeKey<String> NET_HOST_IP = stringKey("net.host.ip");
+  /** The keys in the `RequestItems` object field. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_TABLE_NAMES =
+      stringArrayKey("aws.dynamodb.table_names");
 
-  /** Like `net.peer.port` but for the host port. */
-  public static final AttributeKey<Long> NET_HOST_PORT = longKey("net.host.port");
+  /** The JSON-serialized value of each item in the `ConsumedCapacity` response field. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_CONSUMED_CAPACITY =
+      stringArrayKey("aws.dynamodb.consumed_capacity");
 
-  /** Local hostname or similar, see note below. */
-  public static final AttributeKey<String> NET_HOST_NAME = stringKey("net.host.name");
+  /** The JSON-serialized value of the `ItemCollectionMetrics` response field. */
+  public static final AttributeKey<String> AWS_DYNAMODB_ITEM_COLLECTION_METRICS =
+      stringKey("aws.dynamodb.item_collection_metrics");
+
+  /** The value of the `ProvisionedThroughput.ReadCapacityUnits` request parameter. */
+  public static final AttributeKey<Double> AWS_DYNAMODB_PROVISIONED_READ_CAPACITY =
+      doubleKey("aws.dynamodb.provisioned_read_capacity");
+
+  /** The value of the `ProvisionedThroughput.WriteCapacityUnits` request parameter. */
+  public static final AttributeKey<Double> AWS_DYNAMODB_PROVISIONED_WRITE_CAPACITY =
+      doubleKey("aws.dynamodb.provisioned_write_capacity");
+
+  /** The value of the `ConsistentRead` request parameter. */
+  public static final AttributeKey<Boolean> AWS_DYNAMODB_CONSISTENT_READ =
+      booleanKey("aws.dynamodb.consistent_read");
+
+  /** The value of the `ProjectionExpression` request parameter. */
+  public static final AttributeKey<String> AWS_DYNAMODB_PROJECTION =
+      stringKey("aws.dynamodb.projection");
+
+  /** The value of the `Limit` request parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_LIMIT = longKey("aws.dynamodb.limit");
+
+  /** The value of the `AttributesToGet` request parameter. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_ATTRIBUTES_TO_GET =
+      stringArrayKey("aws.dynamodb.attributes_to_get");
+
+  /** The value of the `IndexName` request parameter. */
+  public static final AttributeKey<String> AWS_DYNAMODB_INDEX_NAME =
+      stringKey("aws.dynamodb.index_name");
+
+  /** The value of the `Select` request parameter. */
+  public static final AttributeKey<String> AWS_DYNAMODB_SELECT = stringKey("aws.dynamodb.select");
+
+  /** The JSON-serialized value of each item of the `GlobalSecondaryIndexes` request field. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_GLOBAL_SECONDARY_INDEXES =
+      stringArrayKey("aws.dynamodb.global_secondary_indexes");
+
+  /** The JSON-serialized value of each item of the `LocalSecondaryIndexes` request field. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_LOCAL_SECONDARY_INDEXES =
+      stringArrayKey("aws.dynamodb.local_secondary_indexes");
+
+  /** The value of the `ExclusiveStartTableName` request parameter. */
+  public static final AttributeKey<String> AWS_DYNAMODB_EXCLUSIVE_START_TABLE =
+      stringKey("aws.dynamodb.exclusive_start_table");
+
+  /** The the number of items in the `TableNames` response parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_TABLE_COUNT =
+      longKey("aws.dynamodb.table_count");
+
+  /** The value of the `ScanIndexForward` request parameter. */
+  public static final AttributeKey<Boolean> AWS_DYNAMODB_SCAN_FORWARD =
+      booleanKey("aws.dynamodb.scan_forward");
+
+  /** The value of the `Segment` request parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_SEGMENT = longKey("aws.dynamodb.segment");
+
+  /** The value of the `TotalSegments` request parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_TOTAL_SEGMENTS =
+      longKey("aws.dynamodb.total_segments");
+
+  /** The value of the `Count` response parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_COUNT = longKey("aws.dynamodb.count");
+
+  /** The value of the `ScannedCount` response parameter. */
+  public static final AttributeKey<Long> AWS_DYNAMODB_SCANNED_COUNT =
+      longKey("aws.dynamodb.scanned_count");
+
+  /** The JSON-serialized value of each item in the `AttributeDefinitions` request field. */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_ATTRIBUTE_DEFINITIONS =
+      stringArrayKey("aws.dynamodb.attribute_definitions");
+
+  /**
+   * The JSON-serialized value of each item in the the `GlobalSecondaryIndexUpdates` request field.
+   */
+  public static final AttributeKey<List<String>> AWS_DYNAMODB_GLOBAL_SECONDARY_INDEX_UPDATES =
+      stringArrayKey("aws.dynamodb.global_secondary_index_updates");
 
   /** A string identifying the messaging system. */
   public static final AttributeKey<String> MESSAGING_SYSTEM = stringKey("messaging.system");
@@ -392,112 +582,15 @@ public final class SemanticAttributes {
       longKey("messaging.message_payload_compressed_size_bytes");
 
   /**
-   * A string containing the function invocation time in the [ISO
-   * 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format expressed in
-   * [UTC](https://www.w3.org/TR/NOTE-datetime).
-   */
-  public static final AttributeKey<String> FAAS_TIME = stringKey("faas.time");
-
-  /**
-   * A string containing the schedule period as [Cron
-   * Expression](https://docs.oracle.com/cd/E12058_01/doc/doc.1014/e12030/cron_expressions.htm).
-   */
-  public static final AttributeKey<String> FAAS_CRON = stringKey("faas.cron");
-
-  /**
-   * A boolean that is true if the serverless function is executed for the first time (aka
-   * cold-start).
-   */
-  public static final AttributeKey<Boolean> FAAS_COLDSTART = booleanKey("faas.coldstart");
-
-  /**
-   * The name of the invoked function.
-   *
-   * <p>Note: SHOULD be equal to the `faas.name` resource attribute of the invoked function.
-   */
-  public static final AttributeKey<String> FAAS_INVOKED_NAME = stringKey("faas.invoked_name");
-
-  /**
-   * The cloud provider of the invoked function.
-   *
-   * <p>Note: SHOULD be equal to the `cloud.provider` resource attribute of the invoked function.
-   */
-  public static final AttributeKey<String> FAAS_INVOKED_PROVIDER =
-      stringKey("faas.invoked_provider");
-
-  /**
-   * The cloud region of the invoked function.
-   *
-   * <p>Note: SHOULD be equal to the `cloud.region` resource attribute of the invoked function.
-   */
-  public static final AttributeKey<String> FAAS_INVOKED_REGION = stringKey("faas.invoked_region");
-
-  /**
-   * The [`service.name`](../../resource/semantic_conventions/README.md#service) of the remote
-   * service. SHOULD be equal to the actual `service.name` resource attribute of the remote service
-   * if any.
-   */
-  public static final AttributeKey<String> PEER_SERVICE = stringKey("peer.service");
-
-  /**
-   * Username or client_id extracted from the access token or
-   * [Authorization](https://tools.ietf.org/html/rfc7235#section-4.2) header in the inbound request
-   * from outside the system.
-   */
-  public static final AttributeKey<String> ENDUSER_ID = stringKey("enduser.id");
-
-  /**
-   * Actual/assumed role the client is making the request under extracted from token or application
-   * security context.
-   */
-  public static final AttributeKey<String> ENDUSER_ROLE = stringKey("enduser.role");
-
-  /**
-   * Scopes or granted authorities the client currently possesses extracted from token or
-   * application security context. The value would come from the scope associated with an [OAuth 2.0
-   * Access Token](https://tools.ietf.org/html/rfc6749#section-3.3) or an attribute value in a [SAML
-   * 2.0
-   * Assertion](http://docs.oasis-open.org/security/saml/Post2.0/sstc-saml-tech-overview-2.0.html).
-   */
-  public static final AttributeKey<String> ENDUSER_SCOPE = stringKey("enduser.scope");
-
-  /** Current &#34;managed&#34; thread ID (as opposed to OS thread ID). */
-  public static final AttributeKey<Long> THREAD_ID = longKey("thread.id");
-
-  /** Current thread name. */
-  public static final AttributeKey<String> THREAD_NAME = stringKey("thread.name");
-
-  /**
-   * The method or function name, or equivalent (usually rightmost part of the code unit&#39;s
-   * name).
-   */
-  public static final AttributeKey<String> CODE_FUNCTION = stringKey("code.function");
-
-  /**
-   * The &#34;namespace&#34; within which `code.function` is defined. Usually the qualified class or
-   * module name, such that `code.namespace` + some separator + `code.function` form a unique
-   * identifier for the code unit.
-   */
-  public static final AttributeKey<String> CODE_NAMESPACE = stringKey("code.namespace");
-
-  /**
-   * The source code file name that identifies the code unit as uniquely as possible (preferably an
-   * absolute file path).
-   */
-  public static final AttributeKey<String> CODE_FILEPATH = stringKey("code.filepath");
-
-  /**
-   * The line number in `code.filepath` best representing the operation. It SHOULD point within the
-   * code unit named in `code.function`.
-   */
-  public static final AttributeKey<Long> CODE_LINENO = longKey("code.lineno");
-
-  /**
    * A string identifying the kind of message consumption as defined in the [Operation
    * names](#operation-names) section above. If the operation is &#34;send&#34;, this attribute MUST
    * NOT be set, since the operation can be inferred from the span kind in that case.
    */
   public static final AttributeKey<String> MESSAGING_OPERATION = stringKey("messaging.operation");
+
+  /** RabbitMQ message routing key. */
+  public static final AttributeKey<String> MESSAGING_RABBITMQ_ROUTING_KEY =
+      stringKey("messaging.rabbitmq.routing_key");
 
   /**
    * Message keys in Kafka are used for grouping alike messages to ensure they&#39;re processed on
@@ -641,92 +734,46 @@ public final class SemanticAttributes {
     private DbSystemValues() {}
   }
 
-  public enum NetTransportValues {
-    /** IP.TCP. */
-    IP_TCP("IP.TCP"),
-    /** IP.UDP. */
-    IP_UDP("IP.UDP"),
-    /** Another IP-based protocol. */
-    IP("IP"),
-    /** Unix Domain socket. See below. */
-    UNIX("Unix"),
-    /** Named or anonymous pipe. See note below. */
-    PIPE("pipe"),
-    /** In-process communication. */
-    INPROC("inproc"),
-    /** Something else (non IP-based). */
-    OTHER("other"),
-    ;
+  public static final class DbCassandraConsistencyLevelValues {
+    /** all. */
+    public static final String ALL = "all";
+    /** each_quorum. */
+    public static final String EACH_QUORUM = "each_quorum";
+    /** quorum. */
+    public static final String QUORUM = "quorum";
+    /** local_quorum. */
+    public static final String LOCAL_QUORUM = "local_quorum";
+    /** one. */
+    public static final String ONE = "one";
+    /** two. */
+    public static final String TWO = "two";
+    /** three. */
+    public static final String THREE = "three";
+    /** local_one. */
+    public static final String LOCAL_ONE = "local_one";
+    /** any. */
+    public static final String ANY = "any";
+    /** serial. */
+    public static final String SERIAL = "serial";
+    /** local_serial. */
+    public static final String LOCAL_SERIAL = "local_serial";
 
-    private final String value;
-
-    NetTransportValues(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
+    private DbCassandraConsistencyLevelValues() {}
   }
 
-  public enum DbCassandraConsistencyLevelValues {
-    /** ALL. */
-    ALL("ALL"),
-    /** EACH_QUORUM. */
-    EACH_QUORUM("EACH_QUORUM"),
-    /** QUORUM. */
-    QUORUM("QUORUM"),
-    /** LOCAL_QUORUM. */
-    LOCAL_QUORUM("LOCAL_QUORUM"),
-    /** ONE. */
-    ONE("ONE"),
-    /** TWO. */
-    TWO("TWO"),
-    /** THREE. */
-    THREE("THREE"),
-    /** LOCAL_ONE. */
-    LOCAL_ONE("LOCAL_ONE"),
-    /** ANY. */
-    ANY("ANY"),
-    /** SERIAL. */
-    SERIAL("SERIAL"),
-    /** LOCAL_SERIAL. */
-    LOCAL_SERIAL("LOCAL_SERIAL"),
-    ;
-
-    private final String value;
-
-    DbCassandraConsistencyLevelValues(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
-  }
-
-  public enum FaasTriggerValues {
+  public static final class FaasTriggerValues {
     /** A response to some data source operation such as a database or filesystem read/write. */
-    DATASOURCE("datasource"),
+    public static final String DATASOURCE = "datasource";
     /** To provide an answer to an inbound HTTP request. */
-    HTTP("http"),
+    public static final String HTTP = "http";
     /** A function is set to be executed when messages are sent to a messaging system. */
-    PUBSUB("pubsub"),
+    public static final String PUBSUB = "pubsub";
     /** A function is scheduled to be executed regularly. */
-    TIMER("timer"),
+    public static final String TIMER = "timer";
     /** If none of the others apply. */
-    OTHER("other"),
-    ;
+    public static final String OTHER = "other";
 
-    private final String value;
-
-    FaasTriggerValues(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
+    private FaasTriggerValues() {}
   }
 
   public static final class FaasDocumentOperationValues {
@@ -738,6 +785,36 @@ public final class SemanticAttributes {
     public static final String DELETE = "delete";
 
     private FaasDocumentOperationValues() {}
+  }
+
+  public static final class FaasInvokedProviderValues {
+    /** Amazon Web Services. */
+    public static final String AWS = "aws";
+    /** Microsoft Azure. */
+    public static final String AZURE = "azure";
+    /** Google Cloud Platform. */
+    public static final String GCP = "gcp";
+
+    private FaasInvokedProviderValues() {}
+  }
+
+  public static final class NetTransportValues {
+    /** ip_tcp. */
+    public static final String IP_TCP = "ip_tcp";
+    /** ip_udp. */
+    public static final String IP_UDP = "ip_udp";
+    /** Another IP-based protocol. */
+    public static final String IP = "ip";
+    /** Unix Domain socket. See below. */
+    public static final String UNIX = "unix";
+    /** Named or anonymous pipe. See note below. */
+    public static final String PIPE = "pipe";
+    /** In-process communication. */
+    public static final String INPROC = "inproc";
+    /** Something else (non IP-based). */
+    public static final String OTHER = "other";
+
+    private NetTransportValues() {}
   }
 
   public static final class HttpFlavorValues {
@@ -755,99 +832,61 @@ public final class SemanticAttributes {
     private HttpFlavorValues() {}
   }
 
-  public enum MessagingDestinationKindValues {
+  public static final class MessagingDestinationKindValues {
     /** A message sent to a queue. */
-    QUEUE("queue"),
+    public static final String QUEUE = "queue";
     /** A message sent to a topic. */
-    TOPIC("topic"),
-    ;
+    public static final String TOPIC = "topic";
 
-    private final String value;
-
-    MessagingDestinationKindValues(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
+    private MessagingDestinationKindValues() {}
   }
 
-  public static final class FaasInvokedProviderValues {
-    /** Amazon Web Services. */
-    public static final String AWS = "aws";
-    /** Amazon Web Services. */
-    public static final String AZURE = "azure";
-    /** Google Cloud Platform. */
-    public static final String GCP = "gcp";
-
-    private FaasInvokedProviderValues() {}
-  }
-
-  public enum MessagingOperationValues {
+  public static final class MessagingOperationValues {
     /** receive. */
-    RECEIVE("receive"),
+    public static final String RECEIVE = "receive";
     /** process. */
-    PROCESS("process"),
-    ;
+    public static final String PROCESS = "process";
 
-    private final String value;
-
-    MessagingOperationValues(String value) {
-      this.value = value;
-    }
-
-    public String getValue() {
-      return value;
-    }
+    private MessagingOperationValues() {}
   }
 
-  public enum RpcGrpcStatusCodeValues {
+  public static final class RpcGrpcStatusCodeValues {
     /** OK. */
-    OK(0),
+    public static final long OK = 0;
     /** CANCELLED. */
-    CANCELLED(1),
+    public static final long CANCELLED = 1;
     /** UNKNOWN. */
-    UNKNOWN(2),
+    public static final long UNKNOWN = 2;
     /** INVALID_ARGUMENT. */
-    INVALID_ARGUMENT(3),
+    public static final long INVALID_ARGUMENT = 3;
     /** DEADLINE_EXCEEDED. */
-    DEADLINE_EXCEEDED(4),
+    public static final long DEADLINE_EXCEEDED = 4;
     /** NOT_FOUND. */
-    NOT_FOUND(5),
+    public static final long NOT_FOUND = 5;
     /** ALREADY_EXISTS. */
-    ALREADY_EXISTS(6),
+    public static final long ALREADY_EXISTS = 6;
     /** PERMISSION_DENIED. */
-    PERMISSION_DENIED(7),
+    public static final long PERMISSION_DENIED = 7;
     /** RESOURCE_EXHAUSTED. */
-    RESOURCE_EXHAUSTED(8),
+    public static final long RESOURCE_EXHAUSTED = 8;
     /** FAILED_PRECONDITION. */
-    FAILED_PRECONDITION(9),
+    public static final long FAILED_PRECONDITION = 9;
     /** ABORTED. */
-    ABORTED(10),
+    public static final long ABORTED = 10;
     /** OUT_OF_RANGE. */
-    OUT_OF_RANGE(11),
+    public static final long OUT_OF_RANGE = 11;
     /** UNIMPLEMENTED. */
-    UNIMPLEMENTED(12),
+    public static final long UNIMPLEMENTED = 12;
     /** INTERNAL. */
-    INTERNAL(13),
+    public static final long INTERNAL = 13;
     /** UNAVAILABLE. */
-    UNAVAILABLE(14),
+    public static final long UNAVAILABLE = 14;
     /** DATA_LOSS. */
-    DATA_LOSS(15),
+    public static final long DATA_LOSS = 15;
     /** UNAUTHENTICATED. */
-    UNAUTHENTICATED(16),
-    ;
+    public static final long UNAUTHENTICATED = 16;
 
-    private final long value;
-
-    RpcGrpcStatusCodeValues(long value) {
-      this.value = value;
-    }
-
-    public long getValue() {
-      return value;
-    }
+    private RpcGrpcStatusCodeValues() {}
   }
 
   // Manually defined and not YET in the YAML

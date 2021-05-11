@@ -45,6 +45,9 @@ final class MultiTextMapPropagator implements TextMapPropagator {
 
   @Override
   public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
+    if (context == null || setter == null) {
+      return;
+    }
     for (TextMapPropagator textPropagator : textPropagators) {
       textPropagator.inject(context, carrier, setter);
     }
@@ -52,6 +55,12 @@ final class MultiTextMapPropagator implements TextMapPropagator {
 
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
+    if (context == null) {
+      return Context.root();
+    }
+    if (getter == null) {
+      return context;
+    }
     for (TextMapPropagator textPropagator : textPropagators) {
       context = textPropagator.extract(context, carrier, getter);
     }

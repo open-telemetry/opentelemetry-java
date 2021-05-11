@@ -106,6 +106,9 @@ public final class SdkMeterProviderBuilder {
    * @see GlobalMeterProvider
    */
   public SdkMeterProvider build() {
-    return new SdkMeterProvider(clock, resource, instrumentSelectorViews);
+    ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
+    instrumentSelectorViews.forEach(viewRegistryBuilder::addView);
+    ViewRegistry viewRegistry = viewRegistryBuilder.build();
+    return new SdkMeterProvider(clock, resource, viewRegistry);
   }
 }

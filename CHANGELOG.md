@@ -2,6 +2,92 @@
 
 ## Unreleased:
 
+---
+
+## Version 1.2.0 - 2021-05-07
+
+### General
+
+#### Enhancements
+- The `"Implementation-Version"` attribute has been added to the jar manifests for all published jar artifacts.
+
+### API
+
+#### Enhancements
+- A new method has been added to the Span and the SpanBuilder to enable adding a set of Attributes in one call, rather than
+having to iterate over the contents and add them individually. See `Span.setAllAttributes(Attributes)` and `SpanBuilder.setAllAttributes(Attributes)`
+
+#### Behavioral Changes
+- Previously, an AttributeKey with a null underlying key would preserve the null. Now, this will be converted to an empty String.
+
+### SDK
+
+#### Enhancements
+- The `IdGenerator.random()` method will now attempt to detect if it is being used in an Android environment, and use
+a more Android-friendly `IdGenerator` instance in that case. This will affect any usage of the SDK that does not
+explicitly specify a custom `IdGenerator` instance when running on Android.
+
+#### Behavioral Changes
+- The name used for Tracer instances that do not have a name has been changed to be an empty String, rather than the 
+previously used `"unknown"` value. This change is based on a specification clarification.
+
+### Propagators
+
+#### Bugfixes
+- The B3 Propagator injectors now only include the relevant fields for the specific injection format.
+
+#### Behavioral Changes
+- The `W3CBaggagePropagator` will no longer explicitly populate an empty `Baggage` instance into the context when
+the header is unparsable. It will now return the provided Context instance unaltered, as is required by the specification.
+- The `AwsXrayPropagator` will no longer explicitly populate an invalid `Span` instance into the context when
+the headers are unparsable. It will now return the provided Context instance unaltered, as is required by the specification.
+
+### Exporters
+- The `jaeger-thrift` exporter has had its dependency on the `jaeger-client` library updated to version `1.6.0`.
+- The `zipkin` exporter now has an option to specific a custom timeout. 
+- The `zipkin`, `jaeger` and `jaeger-thrift` exporters will now report the `otel.dropped_attributes_count` and `otel.dropped_events_count` 
+tags if the numbers are greater than zero.
+
+### Semantic Conventions (alpha)
+
+#### Breaking Changes
+- The SemanticAttributes and ResourceAttributes have both been updated to match the OpenTelemetry Specification v1.3.0 release, which 
+includes several breaking changes.
+- Values that were previously defined as `enum`s are now defined as static `public static final ` constants of the appropriate type.
+
+### OpenTracing Shim (alpha)
+
+#### Enhancements
+- Error logging support in the shim is now implemented according to the v1.2.0 specification.
+
+### SDK Extensions
+- A new `HostResource` Resource and the corresponding `ResourceProvider` has been added. 
+It will populate the `host.name` and `host.arch` Resource Attributes.
+- A new `ExecutorServiceSpanProcessor` has been added to the `opentelemetry-sdk-extension-tracing-incubator` module. This implementation
+of a batch SpanProcessor allows you to provide your own ExecutorService to do the background export work.
+- The `autoconfigure` module now supports providing the timeout setting for the Jaeger GRPC exporter via 
+a system property (`otel.exporter.jaeger.timeout`) or environment variable (`OTEL_EXPORTER_JAEGER_TIMEOUT`).
+- The `autoconfigure` module now supports providing the timeout setting for the Zipkin exporter via 
+a system property (`otel.exporter.zipkin.timeout`) or environment variable (`OTEL_EXPORTER_ZIPKIN_TIMEOUT`).
+- The `autoconfigure` module now exposes the `EnvironmentResource` class to provide programmatic access to a `Resource`
+built from parsing the `otel.resource.attributes` configuration property.
+
+### Metrics (alpha)
+
+#### Breaking Changes
+- The deprecated `SdkMeterProvider.registerView()` method has been removed. The ViewRegistry is now immutable and cannot
+be changed once the `SdkMeterProvider` has been built.
+
+#### Bugfixes
+- OTLP summaries now have the proper percentile value of `1.0` to represent the maximum; previously it was wrongly set to `100.0`. 
+
+#### Enhancements
+- There is now full support for delta-aggregations with the `LongSumAggregator` and `DoubleSumAggregator`. 
+See `AggregatorFactory.sum(AggregationTemporality)`. The previous `AggregatorFactory.sum(boolean)` has been
+deprecated and will be removed in the next release.
+
+---
+
 ## Version 1.1.0 - 2021-04-07
 
 ### API

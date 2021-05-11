@@ -82,7 +82,7 @@ public final class OsResource {
     } else if (os.startsWith("solaris")) {
       return ResourceAttributes.OsTypeValues.SOLARIS;
     } else if (os.startsWith("z/os")) {
-      return ResourceAttributes.OsTypeValues.ZOS;
+      return ResourceAttributes.OsTypeValues.Z_OS;
     }
     return null;
   }

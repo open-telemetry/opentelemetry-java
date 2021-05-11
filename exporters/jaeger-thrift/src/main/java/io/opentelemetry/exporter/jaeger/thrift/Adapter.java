@@ -37,6 +37,8 @@ final class Adapter {
   static final AttributeKey<Boolean> KEY_ERROR = booleanKey("error");
   static final String KEY_LOG_EVENT = "event";
   static final String KEY_EVENT_DROPPED_ATTRIBUTES_COUNT = "otel.event.dropped_attributes_count";
+  static final String KEY_DROPPED_ATTRIBUTES_COUNT = "otel.dropped_attributes_count";
+  static final String KEY_DROPPED_EVENTS_COUNT = "otel.dropped_events_count";
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "otel.status_message";
   static final String KEY_SPAN_STATUS_CODE = "otel.status_code";
@@ -78,8 +80,17 @@ final class Adapter {
         TimeUnit.NANOSECONDS.toMicros(span.getEndEpochNanos() - span.getStartEpochNanos()));
 
     List<Tag> tags = toTags(span.getAttributes());
+    int droppedAttributes = span.getTotalAttributeCount() - span.getAttributes().size();
+    if (droppedAttributes > 0) {
+      tags.add(new Tag(KEY_DROPPED_ATTRIBUTES_COUNT, TagType.LONG).setVLong(droppedAttributes));
+    }
 
     target.setLogs(toJaegerLogs(span.getEvents()));
+    int droppedEvents = span.getTotalRecordedEvents() - span.getEvents().size();
+    if (droppedEvents > 0) {
+      tags.add(new Tag(KEY_DROPPED_EVENTS_COUNT, TagType.LONG).setVLong(droppedEvents));
+    }
+
     List<SpanRef> references = toSpanRefs(span.getLinks());
 
     // add the parent span

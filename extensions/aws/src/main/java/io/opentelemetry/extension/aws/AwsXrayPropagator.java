@@ -233,8 +233,9 @@ public final class AwsXrayPropagator implements TextMapPropagator {
             spanId,
             isSampled ? TraceFlags.getSampled() : TraceFlags.getDefault(),
             TraceState.getDefault());
-
-    context = context.with(Span.wrap(spanContext));
+    if (spanContext.isValid()) {
+      context = context.with(Span.wrap(spanContext));
+    }
     if (baggage != null) {
       context = context.with(baggage.build());
     }

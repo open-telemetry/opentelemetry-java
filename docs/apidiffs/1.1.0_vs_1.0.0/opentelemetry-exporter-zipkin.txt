@@ -1,0 +1,4 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.exporter.zipkin.ZipkinSpanExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) java.util.logging.Logger baseLogger

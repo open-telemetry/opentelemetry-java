@@ -84,7 +84,7 @@ val DEPENDENCIES = listOf(
         "edu.berkeley.cs.jqf:jqf-fuzz:1.6",
         "eu.rekawek.toxiproxy:toxiproxy-java:2.1.4",
         "io.github.netmikey.logunit:logunit-jul:1.1.0",
-        "io.jaegertracing:jaeger-client:1.5.0",
+        "io.jaegertracing:jaeger-client:1.6.0",
         "io.opentracing:opentracing-api:0.33.0",
         "io.zipkin.zipkin2:zipkin-junit:2.23.2",
         "junit:junit:4.13.2",

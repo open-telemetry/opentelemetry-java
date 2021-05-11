@@ -102,7 +102,7 @@ class AggregatorFactoryTest {
 
   @Test
   void getSumAggregatorFactory() {
-    AggregatorFactory sum = AggregatorFactory.sum(false);
+    AggregatorFactory sum = AggregatorFactory.sum(AggregationTemporality.DELTA);
     assertThat(
             sum.create(
                 Resource.getDefault(),

@@ -136,23 +136,20 @@ class W3CBaggagePropagatorTest {
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
   }
 
-  /**
-   * It would be cool if we could replace this with a fuzzer to generate tons of crud data, to make
-   * sure we don't blow up with it.
-   */
   @Test
   void extract_invalidHeader() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
+    Context input = Context.current();
     Context result =
         propagator.extract(
-            Context.root(),
+            input,
             ImmutableMap.of(
                 "baggage",
                 "key1= v;alsdf;-asdflkjasdf===asdlfkjadsf ,,a sdf9asdf-alue1; metadata-key = "
                     + "value; othermetadata, key2 =value2 , key3 =\tvalue3 ; "),
             getter);
-
+    assertThat(result).isSameAs(input);
     assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
 

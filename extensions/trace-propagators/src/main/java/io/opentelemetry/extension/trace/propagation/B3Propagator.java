@@ -10,9 +10,7 @@ import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -24,7 +22,7 @@ import javax.annotation.concurrent.Immutable;
  * href=https://github.com/openzipkin/b3-propagation>openzipkin/b3-propagation</a>.
  *
  * <p>Also see <a
- * href=https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/context/api-propagators.md#b3-requirements>B3
+ * href=https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/context/api-propagators.md#b3-requirements>B3
  * Requirements</a>
  *
  * <p>To register the default B3 propagator, which injects a single header, use:
@@ -63,10 +61,6 @@ public final class B3Propagator implements TextMapPropagator {
   static final char IS_SAMPLED = '1';
   static final char NOT_SAMPLED = '0';
   static final char DEBUG_SAMPLED = 'd';
-
-  private static final Collection<String> FIELDS =
-      Collections.unmodifiableList(
-          Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER, COMBINED_HEADER));
 
   private static final B3Propagator SINGLE_HEADER_INSTANCE =
       new B3Propagator(new B3PropagatorInjectorSingleHeader());
@@ -109,7 +103,7 @@ public final class B3Propagator implements TextMapPropagator {
 
   @Override
   public Collection<String> fields() {
-    return FIELDS;
+    return b3PropagatorInjector.fields();
   }
 
   @Override

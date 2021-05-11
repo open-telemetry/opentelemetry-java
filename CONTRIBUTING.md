@@ -50,6 +50,10 @@ with the `check` task.
 ```bash
 $ ./gradlew check
 ```
+
+Note: this gradle task will potentially generate changes to files in the `docs/apidiffs/current_vs_latest`
+directory. Please make sure to include any changes to these files in your pull request.
+
 ## PR Review
 After you submit a PR, it will be reviewed by the project maintainers and approvers. Not all maintainers need to review a
 particular PR, but merging to the base branch is authorized to restricted members (administrators).

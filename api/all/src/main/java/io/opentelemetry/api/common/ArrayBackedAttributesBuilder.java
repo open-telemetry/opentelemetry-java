@@ -32,7 +32,7 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
 
   @Override
   public <T> AttributesBuilder put(AttributeKey<T> key, T value) {
-    if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
     data.add(key);

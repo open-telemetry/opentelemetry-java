@@ -23,8 +23,7 @@ import org.mockito.Mockito;
 
 public class AsynchronousInstrumentAccumulatorTest {
   private final TestClock testClock = TestClock.create();
-  private final MeterProviderSharedState meterProviderSharedState =
-      MeterProviderSharedState.create(testClock, Resource.empty());
+  private MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState =
       MeterSharedState.create(InstrumentationLibraryInfo.empty());
   private LabelsProcessor spyLabelProcessor;
@@ -33,21 +32,28 @@ public class AsynchronousInstrumentAccumulatorTest {
   void setup() {
     spyLabelProcessor =
         Mockito.spy(
+            // note: can't convert to a lambda here because Mockito gets grumpy
             new LabelsProcessor() {
               @Override
               public Labels onLabelsBound(Context ctx, Labels labels) {
                 return labels.toBuilder().build();
               }
             });
-    meterProviderSharedState
-        .getViewRegistry()
-        .registerView(
-            InstrumentSelector.builder().setInstrumentType(InstrumentType.VALUE_OBSERVER).build(),
-            View.builder()
-                .setAggregatorFactory(AggregatorFactory.lastValue())
-                .setLabelsProcessorFactory(
-                    (resource, instrumentationLibraryInfo, descriptor) -> spyLabelProcessor)
-                .build());
+    ViewRegistry viewRegistry =
+        ViewRegistry.builder()
+            .addView(
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.VALUE_OBSERVER)
+                    .build(),
+                View.builder()
+                    .setAggregatorFactory(AggregatorFactory.lastValue())
+                    .setLabelsProcessorFactory(
+                        (resource, instrumentationLibraryInfo, descriptor) -> spyLabelProcessor)
+                    .build())
+            .build();
+
+    meterProviderSharedState =
+        MeterProviderSharedState.create(testClock, Resource.empty(), viewRegistry);
   }
 
   @Test

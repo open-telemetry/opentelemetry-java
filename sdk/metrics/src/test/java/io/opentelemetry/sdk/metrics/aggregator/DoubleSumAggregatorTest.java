@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.aggregator.AbstractSumAggregator.MergeStrategy;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -28,7 +29,7 @@ class DoubleSumAggregatorTest {
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE),
-          /* stateful= */ true);
+          AggregationTemporality.CUMULATIVE);
 
   @Test
   void createHandle() {
@@ -72,6 +73,29 @@ class DoubleSumAggregatorTest {
     aggregatorHandle.recordDouble(-25);
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(-13);
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+  }
+
+  @Test
+  void merge() {
+    for (InstrumentType instrumentType : InstrumentType.values()) {
+      for (AggregationTemporality temporality : AggregationTemporality.values()) {
+        DoubleSumAggregator aggregator =
+            new DoubleSumAggregator(
+                Resource.getDefault(),
+                InstrumentationLibraryInfo.empty(),
+                InstrumentDescriptor.create(
+                    "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
+                temporality);
+        MergeStrategy expectedMergeStrategy =
+            AbstractSumAggregator.resolveMergeStrategy(instrumentType, temporality);
+        double merged = aggregator.merge(1.0d, 2.0d);
+        assertThat(merged)
+            .withFailMessage(
+                "Invalid merge result for instrumentType %s, temporality %s: %s",
+                instrumentType, temporality, merged)
+            .isEqualTo(expectedMergeStrategy == MergeStrategy.SUM ? 3.0d : 1.0d);
+      }
+    }
   }
 
   @Test

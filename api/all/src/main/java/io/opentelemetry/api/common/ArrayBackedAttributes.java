@@ -43,7 +43,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
     // so they will then be removed by the sortAndFilter method.
     for (int i = 0; i < data.length; i += 2) {
       AttributeKey<?> key = (AttributeKey<?>) data[i];
-      if (key != null && (key.getKey() == null || "".equals(key.getKey()))) {
+      if (key != null && key.getKey().isEmpty()) {
         data[i] = null;
       }
     }

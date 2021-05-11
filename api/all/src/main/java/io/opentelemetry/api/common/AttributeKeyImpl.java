@@ -28,8 +28,8 @@ abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
   // the class loader automatically resolves its super classes (interfaces), which in this case is
   // Context, which would be the same class (interface) being instrumented at that time,
   // which would lead to the JVM throwing a LinkageError "attempted duplicate interface definition"
-  static <T> AttributeKey<T> create(String key, AttributeType type) {
-    return new AutoValue_AttributeKeyImpl<>(type, key);
+  static <T> AttributeKey<T> create(@Nullable String key, AttributeType type) {
+    return new AutoValue_AttributeKeyImpl<>(type, key != null ? key : "");
   }
 
   @Override

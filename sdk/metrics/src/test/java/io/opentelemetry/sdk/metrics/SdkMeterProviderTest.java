@@ -15,6 +15,7 @@ import io.opentelemetry.api.metrics.DoubleValueRecorder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.LongValueRecorder;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -56,7 +57,7 @@ public class SdkMeterProviderTest {
   @Test
   void collectAllSyncInstruments() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-    SdkMeter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
     longCounter.add(10, Labels.empty());
     LongUpDownCounter longUpDownCounter =
@@ -164,9 +165,11 @@ public class SdkMeterProviderTest {
   void collectAllSyncInstruments_OverwriteTemporality() {
     sdkMeterProviderBuilder.registerView(
         InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
-        View.builder().setAggregatorFactory(AggregatorFactory.sum(false)).build());
+        View.builder()
+            .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.DELTA))
+            .build());
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-    SdkMeter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
 
     LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
     longCounter.add(10, Labels.empty());
@@ -211,7 +214,7 @@ public class SdkMeterProviderTest {
     registerViewForAllTypes(
         sdkMeterProviderBuilder, AggregatorFactory.count(AggregationTemporality.DELTA));
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-    SdkMeter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
     longCounter.add(10, Labels.empty());
     LongUpDownCounter longUpDownCounter =
@@ -394,7 +397,7 @@ public class SdkMeterProviderTest {
   @Test
   void collectAllAsyncInstruments() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-    SdkMeter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
         .longSumObserverBuilder("testLongSumObserver")
         .setUpdater(longResult -> longResult.observe(10, Labels.empty()))
@@ -496,7 +499,7 @@ public class SdkMeterProviderTest {
     registerViewForAllTypes(
         sdkMeterProviderBuilder, AggregatorFactory.count(AggregationTemporality.CUMULATIVE));
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-    SdkMeter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
+    Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
         .longSumObserverBuilder("testLongSumObserver")
         .setUpdater(longResult -> longResult.observe(10, Labels.empty()))
