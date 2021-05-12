@@ -11,6 +11,9 @@ package io.opentelemetry.api.internal;
  * multiple derived objects at the same time because the same memory will be used. In general, you
  * should get a temporary buffer, fill it with data, and finish by converting into the derived
  * object within the same method to avoid multiple usages of the same buffer.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public final class TemporaryBuffers {
 
