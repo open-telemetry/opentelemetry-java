@@ -2,7 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
 
-    id("me.champeau.gradle.jmh")
+    id("me.champeau.jmh")
     id("org.unbroken-dome.test-sets")
     id("ru.vyarus.animalsniffer")
 }
