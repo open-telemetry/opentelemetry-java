@@ -8,6 +8,7 @@ package io.opentelemetry.extension.trace.propagation;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.api.internal.TemporaryBuffers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -100,24 +101,20 @@ public final class JaegerPropagator implements TextMapPropagator {
   private static <C> void injectSpan(
       SpanContext spanContext, @Nullable C carrier, TextMapSetter<C> setter) {
 
-    char[] chars = new char[PROPAGATION_HEADER_SIZE];
+    char[] chars = TemporaryBuffers.chars(PROPAGATION_HEADER_SIZE);
 
     String traceId = spanContext.getTraceId();
-    for (int i = 0; i < traceId.length(); i++) {
-      chars[i] = traceId.charAt(i);
-    }
+    traceId.getChars(0, traceId.length(), chars, 0);
 
     chars[SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     String spanId = spanContext.getSpanId();
-    for (int i = 0; i < spanId.length(); i++) {
-      chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
-    }
+    spanId.getChars(0, spanId.length(), chars, SPAN_ID_OFFSET);
 
     chars[PARENT_SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     chars[PARENT_SPAN_ID_OFFSET] = DEPRECATED_PARENT_SPAN;
     chars[SAMPLED_FLAG_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     chars[SAMPLED_FLAG_OFFSET] = spanContext.isSampled() ? IS_SAMPLED_CHAR : NOT_SAMPLED_CHAR;
-    setter.set(carrier, PROPAGATION_HEADER, new String(chars));
+    setter.set(carrier, PROPAGATION_HEADER, new String(chars, 0, PROPAGATION_HEADER_SIZE));
   }
 
   private static <C> void injectBaggage(
