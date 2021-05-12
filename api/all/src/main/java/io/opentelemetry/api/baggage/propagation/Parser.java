@@ -45,9 +45,8 @@ class Parser {
   }
 
   void parseInto(BaggageBuilder baggageBuilder) {
-    char[] chars = baggageHeader.toCharArray();
-    for (int i = 0, n = chars.length; i < n; i++) {
-      char current = chars[i];
+    for (int i = 0, n = baggageHeader.length(); i < n; i++) {
+      char current = baggageHeader.charAt(i);
 
       if (skipToNext) {
         if (current == ',') {
