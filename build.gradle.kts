@@ -2,7 +2,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.protobuf.gradle.*
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import io.morethan.jmhreport.gradle.JmhReportExtension
-import me.champeau.gradle.JMHPluginExtension
+import me.champeau.jmh.JmhParameters
 import me.champeau.gradle.japicmp.JapicmpTask
 import nebula.plugin.release.git.opinion.Strategies
 import net.ltgt.gradle.errorprone.CheckSeverity
@@ -24,7 +24,7 @@ plugins {
     id("com.google.protobuf") apply false
     id("de.marcphilipp.nexus-publish") apply false
     id("io.morethan.jmhreport") apply false
-    id("me.champeau.gradle.jmh") apply false
+    id("me.champeau.jmh") apply false
     id("net.ltgt.errorprone") apply false
     id("net.ltgt.nullaway") apply false
     id("ru.vyarus.animalsniffer") apply false
@@ -142,7 +142,7 @@ subprojects {
         }
 
         configure<JacocoPluginExtension> {
-            toolVersion = "0.8.6"
+            toolVersion = "0.8.7"
         }
 
         val javaToolchains = the<JavaToolchainService>()
@@ -361,14 +361,19 @@ subprojects {
             }
         }
 
+        val dependencyManagement by configurations.creating {
+            isCanBeConsumed = false
+            isCanBeResolved = false
+            isVisible = false
+        }
+
         dependencies {
-            configurations.configureEach {
-                // Gradle and newer plugins will set these configuration properties correctly.
-                if (isCanBeResolved && !isCanBeConsumed
-                        // Older ones (like JMH) may not, so check the name as well.
-                        // Kotlin compiler classpaths don't support BOM nor need it.
-                        || name.endsWith("Classpath") && !name.startsWith("kotlin")) {
-                    add(name, platform(project(":dependencyManagement")))
+            add(dependencyManagement.name, platform(project(":dependencyManagement")))
+            afterEvaluate {
+                configurations.configureEach {
+                    if (isCanBeResolved && !isCanBeConsumed) {
+                        extendsFrom(dependencyManagement)
+                    }
                 }
             }
 
@@ -442,7 +447,7 @@ subprojects {
             }
         }
 
-        plugins.withId("me.champeau.gradle.jmh") {
+        plugins.withId("me.champeau.jmh") {
             // Always include the jmhreport plugin and run it after jmh task.
             plugins.apply("io.morethan.jmhreport")
             dependencies {
@@ -453,16 +458,16 @@ subprojects {
 
             // invoke jmh on a single benchmark class like so:
             //   ./gradlew -PjmhIncludeSingleClass=StatsTraceContextBenchmark clean :grpc-core:jmh
-            configure<JMHPluginExtension> {
-                failOnError = true
-                resultFormat = "JSON"
+            configure<JmhParameters> {
+                failOnError.set(true)
+                resultFormat.set("JSON")
                 // Otherwise an error will happen:
                 // Could not expand ZIP 'byte-buddy-agent-1.9.7.jar'.
-                isIncludeTests = false
-                profilers = listOf("gc")
+                includeTests.set(false)
+                profilers.add("gc")
                 val jmhIncludeSingleClass: String? by project
                 if (jmhIncludeSingleClass != null) {
-                    include = listOf(jmhIncludeSingleClass)
+                    includes.add(jmhIncludeSingleClass as String)
                 }
             }
 
@@ -472,6 +477,12 @@ subprojects {
             }
 
             tasks {
+                // TODO(anuraaga): Unclear why this is triggering even though there don't seem to
+                // be duplicates, possibly a bug in JMH plugin.
+                named<ProcessResources>("processJmhResources") {
+                    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                }
+
                 named("jmh") {
                     finalizedBy(named("jmhReport"))
                 }
