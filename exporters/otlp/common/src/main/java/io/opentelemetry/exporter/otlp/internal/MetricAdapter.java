@@ -155,7 +155,7 @@ public final class MetricAdapter {
             Histogram.newBuilder()
                 .setAggregationTemporality(
                     mapToTemporality(doubleHistogramData.getAggregationTemporality()))
-                .addAllDataPoints(toDoubleHistogramDataPoints(doubleHistogramData.getPoints()))
+                .addAllDataPoints(toHistogramDataPoints(doubleHistogramData.getPoints()))
                 .build());
         break;
     }
@@ -236,7 +236,7 @@ public final class MetricAdapter {
     return result;
   }
 
-  static Collection<HistogramDataPoint> toDoubleHistogramDataPoints(
+  static Collection<HistogramDataPoint> toHistogramDataPoints(
       Collection<DoubleHistogramPointData> points) {
     List<HistogramDataPoint> result = new ArrayList<>(points.size());
     for (DoubleHistogramPointData doubleHistogramPoint : points) {

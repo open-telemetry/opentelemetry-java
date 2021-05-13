@@ -205,7 +205,7 @@ class MetricAdapterTest {
   @Test
   void toHistogramDataPoints() {
     assertThat(
-            MetricAdapter.toDoubleHistogramDataPoints(
+            MetricAdapter.toHistogramDataPoints(
                 ImmutableList.of(
                     DoubleHistogramPointData.create(
                         123,
