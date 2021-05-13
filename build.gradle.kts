@@ -184,6 +184,10 @@ subprojects {
                             "-Werror"
                     ))
                 }
+                //disable deprecation warnings for the protobuf module
+                if (project.name == "proto") {
+                    options.compilerArgs.add("-Xlint:-deprecation")
+                }
 
                 options.encoding = "UTF-8"
 

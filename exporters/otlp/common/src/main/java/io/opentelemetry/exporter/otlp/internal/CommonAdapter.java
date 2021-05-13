@@ -101,7 +101,7 @@ final class CommonAdapter {
     return keyValueBuilder.build();
   }
 
-  private static KeyValue makeStringKeyValue(AttributeKey<?> key, String value) {
+  static KeyValue makeStringKeyValue(AttributeKey<?> key, String value) {
     KeyValue.Builder keyValueBuilder =
         KeyValue.newBuilder()
             .setKey(key.getKey())
