@@ -472,8 +472,8 @@ subprojects {
             }
 
             configure<JmhReportExtension> {
-                jmhResultPath = file("${buildDir}/reports/jmh/results.json").absolutePath
-                jmhReportOutput = file("${buildDir}/reports/jmh").absolutePath
+                jmhResultPath = file("${buildDir}/results/jmh/results.json").absolutePath
+                jmhReportOutput = file("${buildDir}/results/jmh").absolutePath
             }
 
             tasks {
