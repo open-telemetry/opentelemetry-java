@@ -8,6 +8,7 @@ package io.opentelemetry.api.trace.propagation;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.internal.TemporaryBuffers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -115,16 +116,12 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
     chars[2] = TRACEPARENT_DELIMITER;
 
     String traceId = spanContext.getTraceId();
-    for (int i = 0; i < traceId.length(); i++) {
-      chars[TRACE_ID_OFFSET + i] = traceId.charAt(i);
-    }
+    traceId.getChars(0, traceId.length(), chars, TRACE_ID_OFFSET);
 
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
 
     String spanId = spanContext.getSpanId();
-    for (int i = 0; i < spanId.length(); i++) {
-      chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
-    }
+    spanId.getChars(0, spanId.length(), chars, SPAN_ID_OFFSET);
 
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     String traceFlagsHex = spanContext.getTraceFlags().asHex();

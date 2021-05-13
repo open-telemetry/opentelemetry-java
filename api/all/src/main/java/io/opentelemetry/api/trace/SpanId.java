@@ -6,6 +6,7 @@
 package io.opentelemetry.api.trace;
 
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.internal.TemporaryBuffers;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -21,8 +22,6 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class SpanId {
-  private static final ThreadLocal<char[]> charBuffer = new ThreadLocal<>();
-
   private static final int BYTES_LENGTH = 8;
   private static final int HEX_LENGTH = 2 * BYTES_LENGTH;
   private static final String INVALID = "0000000000000000";
@@ -75,9 +74,9 @@ public final class SpanId {
     if (spanIdBytes == null || spanIdBytes.length < BYTES_LENGTH) {
       return INVALID;
     }
-    char[] result = getTemporaryBuffer();
+    char[] result = TemporaryBuffers.chars(HEX_LENGTH);
     OtelEncodingUtils.bytesToBase16(spanIdBytes, result, BYTES_LENGTH);
-    return new String(result);
+    return new String(result, 0, HEX_LENGTH);
   }
 
   /**
@@ -98,17 +97,8 @@ public final class SpanId {
     if (id == 0) {
       return getInvalid();
     }
-    char[] result = getTemporaryBuffer();
+    char[] result = TemporaryBuffers.chars(HEX_LENGTH);
     OtelEncodingUtils.longToBase16String(id, result, 0);
-    return new String(result);
-  }
-
-  private static char[] getTemporaryBuffer() {
-    char[] chars = charBuffer.get();
-    if (chars == null) {
-      chars = new char[HEX_LENGTH];
-      charBuffer.set(chars);
-    }
-    return chars;
+    return new String(result, 0, HEX_LENGTH);
   }
 }

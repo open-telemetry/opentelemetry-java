@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import com.fasterxml.jackson.core.util.JsonGeneratorDelegate;
+import io.opentelemetry.api.internal.TemporaryBuffers;
 import java.io.IOException;
 
 final class HexEncodingStringJsonGenerator extends JsonGeneratorDelegate {
@@ -39,12 +40,13 @@ final class HexEncodingStringJsonGenerator extends JsonGeneratorDelegate {
   private static final char[] HEX_ARRAY = "0123456789abcdef".toCharArray();
 
   private static String bytesToHex(byte[] bytes, int offset, int len) {
-    char[] hexChars = new char[len * 2];
+    int hexLength = len * 2;
+    char[] hexChars = TemporaryBuffers.chars(hexLength);
     for (int i = 0; i < len; i++) {
       int v = bytes[offset + i] & 0xFF;
       hexChars[i * 2] = HEX_ARRAY[v >>> 4];
       hexChars[i * 2 + 1] = HEX_ARRAY[v & 0x0F];
     }
-    return new String(hexChars);
+    return new String(hexChars, 0, hexLength);
   }
 }
