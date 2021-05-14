@@ -19,7 +19,7 @@ jobs:
             testAdditionalJavaVersions: true
             coverage: true
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 0
       - id: setup-java-8
@@ -55,7 +55,7 @@ jobs:
     needs: build
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 0
       - id: setup-java-11
