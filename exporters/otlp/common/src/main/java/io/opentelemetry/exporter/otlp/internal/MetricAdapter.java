@@ -10,21 +10,19 @@ import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATI
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED;
 
 import io.opentelemetry.api.metrics.common.Labels;
-import io.opentelemetry.proto.common.v1.StringKeyValue;
+import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
-import io.opentelemetry.proto.metrics.v1.DoubleDataPoint;
-import io.opentelemetry.proto.metrics.v1.DoubleGauge;
-import io.opentelemetry.proto.metrics.v1.DoubleHistogram;
-import io.opentelemetry.proto.metrics.v1.DoubleHistogramDataPoint;
-import io.opentelemetry.proto.metrics.v1.DoubleSum;
-import io.opentelemetry.proto.metrics.v1.DoubleSummary;
-import io.opentelemetry.proto.metrics.v1.DoubleSummaryDataPoint;
+import io.opentelemetry.proto.metrics.v1.Gauge;
+import io.opentelemetry.proto.metrics.v1.Histogram;
+import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
-import io.opentelemetry.proto.metrics.v1.IntDataPoint;
-import io.opentelemetry.proto.metrics.v1.IntGauge;
-import io.opentelemetry.proto.metrics.v1.IntSum;
 import io.opentelemetry.proto.metrics.v1.Metric;
+import io.opentelemetry.proto.metrics.v1.NumberDataPoint;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.proto.metrics.v1.Sum;
+import io.opentelemetry.proto.metrics.v1.Summary;
+import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
@@ -112,8 +110,8 @@ public final class MetricAdapter {
     switch (metricData.getType()) {
       case LONG_SUM:
         LongSumData longSumData = metricData.getLongSumData();
-        builder.setIntSum(
-            IntSum.newBuilder()
+        builder.setSum(
+            Sum.newBuilder()
                 .setIsMonotonic(longSumData.isMonotonic())
                 .setAggregationTemporality(
                     mapToTemporality(longSumData.getAggregationTemporality()))
@@ -122,8 +120,8 @@ public final class MetricAdapter {
         break;
       case DOUBLE_SUM:
         DoubleSumData doubleSumData = metricData.getDoubleSumData();
-        builder.setDoubleSum(
-            DoubleSum.newBuilder()
+        builder.setSum(
+            Sum.newBuilder()
                 .setIsMonotonic(doubleSumData.isMonotonic())
                 .setAggregationTemporality(
                     mapToTemporality(doubleSumData.getAggregationTemporality()))
@@ -132,32 +130,32 @@ public final class MetricAdapter {
         break;
       case SUMMARY:
         DoubleSummaryData doubleSummaryData = metricData.getDoubleSummaryData();
-        builder.setDoubleSummary(
-            DoubleSummary.newBuilder()
+        builder.setSummary(
+            Summary.newBuilder()
                 .addAllDataPoints(toSummaryDataPoints(doubleSummaryData.getPoints()))
                 .build());
         break;
       case LONG_GAUGE:
         LongGaugeData longGaugeData = metricData.getLongGaugeData();
-        builder.setIntGauge(
-            IntGauge.newBuilder()
+        builder.setGauge(
+            Gauge.newBuilder()
                 .addAllDataPoints(toIntDataPoints(longGaugeData.getPoints()))
                 .build());
         break;
       case DOUBLE_GAUGE:
         DoubleGaugeData doubleGaugeData = metricData.getDoubleGaugeData();
-        builder.setDoubleGauge(
-            DoubleGauge.newBuilder()
+        builder.setGauge(
+            Gauge.newBuilder()
                 .addAllDataPoints(toDoubleDataPoints(doubleGaugeData.getPoints()))
                 .build());
         break;
       case HISTOGRAM:
         DoubleHistogramData doubleHistogramData = metricData.getDoubleHistogramData();
-        builder.setDoubleHistogram(
-            DoubleHistogram.newBuilder()
+        builder.setHistogram(
+            Histogram.newBuilder()
                 .setAggregationTemporality(
                     mapToTemporality(doubleHistogramData.getAggregationTemporality()))
-                .addAllDataPoints(toDoubleHistogramDataPoints(doubleHistogramData.getPoints()))
+                .addAllDataPoints(toHistogramDataPoints(doubleHistogramData.getPoints()))
                 .build());
         break;
     }
@@ -175,60 +173,59 @@ public final class MetricAdapter {
     return AGGREGATION_TEMPORALITY_UNSPECIFIED;
   }
 
-  static List<IntDataPoint> toIntDataPoints(Collection<LongPointData> points) {
-    List<IntDataPoint> result = new ArrayList<>(points.size());
+  static List<NumberDataPoint> toIntDataPoints(Collection<LongPointData> points) {
+    List<NumberDataPoint> result = new ArrayList<>(points.size());
     for (LongPointData longPoint : points) {
-      IntDataPoint.Builder builder =
-          IntDataPoint.newBuilder()
+      NumberDataPoint.Builder builder =
+          NumberDataPoint.newBuilder()
               .setStartTimeUnixNano(longPoint.getStartEpochNanos())
               .setTimeUnixNano(longPoint.getEpochNanos())
-              .setValue(longPoint.getValue());
-      Collection<StringKeyValue> labels = toProtoLabels(longPoint.getLabels());
+              .setAsInt(longPoint.getValue());
+      Collection<KeyValue> labels = toProtoLabels(longPoint.getLabels());
       if (!labels.isEmpty()) {
-        builder.addAllLabels(labels);
+        builder.addAllAttributes(labels);
       }
       result.add(builder.build());
     }
     return result;
   }
 
-  static Collection<DoubleDataPoint> toDoubleDataPoints(Collection<DoublePointData> points) {
-    List<DoubleDataPoint> result = new ArrayList<>(points.size());
+  static Collection<NumberDataPoint> toDoubleDataPoints(Collection<DoublePointData> points) {
+    List<NumberDataPoint> result = new ArrayList<>(points.size());
     for (DoublePointData doublePoint : points) {
-      DoubleDataPoint.Builder builder =
-          DoubleDataPoint.newBuilder()
+      NumberDataPoint.Builder builder =
+          NumberDataPoint.newBuilder()
               .setStartTimeUnixNano(doublePoint.getStartEpochNanos())
               .setTimeUnixNano(doublePoint.getEpochNanos())
-              .setValue(doublePoint.getValue());
-      Collection<StringKeyValue> labels = toProtoLabels(doublePoint.getLabels());
+              .setAsDouble(doublePoint.getValue());
+      Collection<KeyValue> labels = toProtoLabels(doublePoint.getLabels());
       if (!labels.isEmpty()) {
-        builder.addAllLabels(labels);
+        builder.addAllAttributes(labels);
       }
       result.add(builder.build());
     }
     return result;
   }
 
-  static List<DoubleSummaryDataPoint> toSummaryDataPoints(
-      Collection<DoubleSummaryPointData> points) {
-    List<DoubleSummaryDataPoint> result = new ArrayList<>(points.size());
+  static List<SummaryDataPoint> toSummaryDataPoints(Collection<DoubleSummaryPointData> points) {
+    List<SummaryDataPoint> result = new ArrayList<>(points.size());
     for (DoubleSummaryPointData doubleSummaryPoint : points) {
-      DoubleSummaryDataPoint.Builder builder =
-          DoubleSummaryDataPoint.newBuilder()
+      SummaryDataPoint.Builder builder =
+          SummaryDataPoint.newBuilder()
               .setStartTimeUnixNano(doubleSummaryPoint.getStartEpochNanos())
               .setTimeUnixNano(doubleSummaryPoint.getEpochNanos())
               .setCount(doubleSummaryPoint.getCount())
               .setSum(doubleSummaryPoint.getSum());
-      List<StringKeyValue> labels = toProtoLabels(doubleSummaryPoint.getLabels());
+      List<KeyValue> labels = toProtoLabels(doubleSummaryPoint.getLabels());
       if (!labels.isEmpty()) {
-        builder.addAllLabels(labels);
+        builder.addAllAttributes(labels);
       }
       // Not calling directly addAllQuantileValues because that generates couple of unnecessary
       // allocations if empty list.
       if (!doubleSummaryPoint.getPercentileValues().isEmpty()) {
         for (ValueAtPercentile valueAtPercentile : doubleSummaryPoint.getPercentileValues()) {
           builder.addQuantileValues(
-              DoubleSummaryDataPoint.ValueAtQuantile.newBuilder()
+              SummaryDataPoint.ValueAtQuantile.newBuilder()
                   .setQuantile(valueAtPercentile.getPercentile() / 100.0)
                   .setValue(valueAtPercentile.getValue())
                   .build());
@@ -239,12 +236,12 @@ public final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleHistogramDataPoint> toDoubleHistogramDataPoints(
+  static Collection<HistogramDataPoint> toHistogramDataPoints(
       Collection<DoubleHistogramPointData> points) {
-    List<DoubleHistogramDataPoint> result = new ArrayList<>(points.size());
+    List<HistogramDataPoint> result = new ArrayList<>(points.size());
     for (DoubleHistogramPointData doubleHistogramPoint : points) {
-      DoubleHistogramDataPoint.Builder builder =
-          DoubleHistogramDataPoint.newBuilder()
+      HistogramDataPoint.Builder builder =
+          HistogramDataPoint.newBuilder()
               .setStartTimeUnixNano(doubleHistogramPoint.getStartEpochNanos())
               .setTimeUnixNano(doubleHistogramPoint.getEpochNanos())
               .setCount(doubleHistogramPoint.getCount())
@@ -254,9 +251,9 @@ public final class MetricAdapter {
       if (!boundaries.isEmpty()) {
         builder.addAllExplicitBounds(boundaries);
       }
-      Collection<StringKeyValue> labels = toProtoLabels(doubleHistogramPoint.getLabels());
+      Collection<KeyValue> labels = toProtoLabels(doubleHistogramPoint.getLabels());
       if (!labels.isEmpty()) {
-        builder.addAllLabels(labels);
+        builder.addAllAttributes(labels);
       }
       result.add(builder.build());
     }
@@ -264,14 +261,18 @@ public final class MetricAdapter {
   }
 
   @SuppressWarnings("MixedMutabilityReturnType")
-  static List<StringKeyValue> toProtoLabels(Labels labels) {
+  static List<KeyValue> toProtoLabels(Labels labels) {
     if (labels.isEmpty()) {
       return Collections.emptyList();
     }
-    final List<StringKeyValue> result = new ArrayList<>(labels.size());
+    final List<KeyValue> result = new ArrayList<>(labels.size());
     labels.forEach(
         (key, value) ->
-            result.add(StringKeyValue.newBuilder().setKey(key).setValue(value).build()));
+            result.add(
+                KeyValue.newBuilder()
+                    .setKey(key)
+                    .setValue(AnyValue.newBuilder().setStringValue(value).build())
+                    .build()));
     return result;
   }
 

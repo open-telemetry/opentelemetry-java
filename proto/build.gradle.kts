@@ -20,9 +20,9 @@ dependencies {
     api("io.grpc:grpc-stub")
 }
 
-val protoVersion = "0.7.0"
+val protoVersion = "0.9.0"
 // To generate checksum, download the file and run "shasum -a 256 ~/path/to/vfoo.zip"
-val protoChecksum = "0b581c654b2360485b99c2de3731dd59275b0fe7b91d78e7f6c5efd5997f4c82"
+val protoChecksum = "5e4131064e9471eb09294374db0d55028fdb73898b08aa07a835d17d61e5f017"
 val protoArchive = file("$buildDir/archives/opentelemetry-proto-${protoVersion}.zip")
 
 tasks {

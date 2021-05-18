@@ -17,21 +17,16 @@ import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.common.v1.StringKeyValue;
-import io.opentelemetry.proto.metrics.v1.DoubleDataPoint;
-import io.opentelemetry.proto.metrics.v1.DoubleGauge;
-import io.opentelemetry.proto.metrics.v1.DoubleHistogram;
-import io.opentelemetry.proto.metrics.v1.DoubleHistogramDataPoint;
-import io.opentelemetry.proto.metrics.v1.DoubleSum;
-import io.opentelemetry.proto.metrics.v1.DoubleSummary;
-import io.opentelemetry.proto.metrics.v1.DoubleSummaryDataPoint;
-import io.opentelemetry.proto.metrics.v1.DoubleSummaryDataPoint.ValueAtQuantile;
+import io.opentelemetry.proto.metrics.v1.Gauge;
+import io.opentelemetry.proto.metrics.v1.Histogram;
+import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
-import io.opentelemetry.proto.metrics.v1.IntDataPoint;
-import io.opentelemetry.proto.metrics.v1.IntGauge;
-import io.opentelemetry.proto.metrics.v1.IntSum;
 import io.opentelemetry.proto.metrics.v1.Metric;
+import io.opentelemetry.proto.metrics.v1.NumberDataPoint;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.proto.metrics.v1.Sum;
+import io.opentelemetry.proto.metrics.v1.Summary;
+import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
@@ -55,11 +50,15 @@ class MetricAdapterTest {
   void toProtoLabels() {
     assertThat(MetricAdapter.toProtoLabels(Labels.empty())).isEmpty();
     assertThat(MetricAdapter.toProtoLabels(Labels.of("k", "v")))
-        .containsExactly(StringKeyValue.newBuilder().setKey("k").setValue("v").build());
+        .containsExactly(KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build());
     assertThat(MetricAdapter.toProtoLabels(Labels.of("k1", "v1", "k2", "v2")))
         .containsExactly(
-            StringKeyValue.newBuilder().setKey("k1").setValue("v1").build(),
-            StringKeyValue.newBuilder().setKey("k2").setValue("v2").build());
+            KeyValue.newBuilder().setKey("k1").setValue(stringValue("v1")).build(),
+            KeyValue.newBuilder().setKey("k2").setValue(stringValue("v2")).build());
+  }
+
+  private static AnyValue stringValue(String v) {
+    return AnyValue.newBuilder().setStringValue(v).build();
   }
 
   @Test
@@ -69,12 +68,13 @@ class MetricAdapterTest {
             MetricAdapter.toIntDataPoints(
                 singletonList(LongPointData.create(123, 456, Labels.of("k", "v"), 5))))
         .containsExactly(
-            IntDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
-                .setValue(5)
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
+                .setAsInt(5)
                 .build());
     assertThat(
             MetricAdapter.toIntDataPoints(
@@ -82,17 +82,18 @@ class MetricAdapterTest {
                     LongPointData.create(123, 456, Labels.empty(), 5),
                     LongPointData.create(321, 654, Labels.of("k", "v"), 7))))
         .containsExactly(
-            IntDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .setValue(5)
+                .setAsInt(5)
                 .build(),
-            IntDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(321)
                 .setTimeUnixNano(654)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
-                .setValue(7)
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
+                .setAsInt(7)
                 .build());
   }
 
@@ -103,12 +104,13 @@ class MetricAdapterTest {
             MetricAdapter.toDoubleDataPoints(
                 singletonList(DoublePointData.create(123, 456, Labels.of("k", "v"), 5.1))))
         .containsExactly(
-            DoubleDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
-                .setValue(5.1)
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
+                .setAsDouble(5.1)
                 .build());
     assertThat(
             MetricAdapter.toDoubleDataPoints(
@@ -116,17 +118,18 @@ class MetricAdapterTest {
                     DoublePointData.create(123, 456, Labels.empty(), 5.1),
                     DoublePointData.create(321, 654, Labels.of("k", "v"), 7.1))))
         .containsExactly(
-            DoubleDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .setValue(5.1)
+                .setAsDouble(5.1)
                 .build(),
-            DoubleDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(321)
                 .setTimeUnixNano(654)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
-                .setValue(7.1)
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
+                .setAsDouble(7.1)
                 .build());
   }
 
@@ -143,15 +146,19 @@ class MetricAdapterTest {
                         14.2,
                         singletonList(ValueAtPercentile.create(0.0, 1.1))))))
         .containsExactly(
-            DoubleSummaryDataPoint.newBuilder()
+            SummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
                 .setCount(5)
                 .setSum(14.2)
                 .addQuantileValues(
-                    ValueAtQuantile.newBuilder().setQuantile(0.0).setValue(1.1).build())
+                    SummaryDataPoint.ValueAtQuantile.newBuilder()
+                        .setQuantile(0.0)
+                        .setValue(1.1)
+                        .build())
                 .build());
     assertThat(
             MetricAdapter.toSummaryDataPoints(
@@ -168,30 +175,37 @@ class MetricAdapterTest {
                             ValueAtPercentile.create(0.0, 1.1),
                             ValueAtPercentile.create(100.0, 20.3))))))
         .containsExactly(
-            DoubleSummaryDataPoint.newBuilder()
+            SummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
                 .setCount(7)
                 .setSum(15.3)
                 .build(),
-            DoubleSummaryDataPoint.newBuilder()
+            SummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(321)
                 .setTimeUnixNano(654)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
                 .setCount(9)
                 .setSum(18.3)
                 .addQuantileValues(
-                    ValueAtQuantile.newBuilder().setQuantile(0.0).setValue(1.1).build())
+                    SummaryDataPoint.ValueAtQuantile.newBuilder()
+                        .setQuantile(0.0)
+                        .setValue(1.1)
+                        .build())
                 .addQuantileValues(
-                    ValueAtQuantile.newBuilder().setQuantile(1.0).setValue(20.3).build())
+                    SummaryDataPoint.ValueAtQuantile.newBuilder()
+                        .setQuantile(1.0)
+                        .setValue(20.3)
+                        .build())
                 .build());
   }
 
   @Test
   void toHistogramDataPoints() {
     assertThat(
-            MetricAdapter.toDoubleHistogramDataPoints(
+            MetricAdapter.toHistogramDataPoints(
                 ImmutableList.of(
                     DoubleHistogramPointData.create(
                         123,
@@ -203,18 +217,19 @@ class MetricAdapterTest {
                     DoubleHistogramPointData.create(
                         123, 456, Labels.empty(), 15.3, ImmutableList.of(), ImmutableList.of(7L)))))
         .containsExactly(
-            DoubleHistogramDataPoint.newBuilder()
+            HistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
                 .setCount(6)
                 .setSum(14.2)
                 .addBucketCounts(1)
                 .addBucketCounts(5)
                 .addExplicitBounds(1.0)
                 .build(),
-            DoubleHistogramDataPoint.newBuilder()
+            HistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
                 .setCount(7)
@@ -242,21 +257,21 @@ class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setIntSum(
-                    IntSum.newBuilder()
+                .setSum(
+                    Sum.newBuilder()
                         .setIsMonotonic(true)
                         .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
                         .addDataPoints(
-                            IntDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5)
+                                .setAsInt(5)
                                 .build())
                         .build())
                 .build());
@@ -278,21 +293,21 @@ class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setDoubleSum(
-                    DoubleSum.newBuilder()
+                .setSum(
+                    Sum.newBuilder()
                         .setIsMonotonic(true)
                         .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
                         .addDataPoints(
-                            DoubleDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5.1)
+                                .setAsDouble(5.1)
                                 .build())
                         .build())
                 .build());
@@ -317,21 +332,21 @@ class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setIntSum(
-                    IntSum.newBuilder()
+                .setSum(
+                    Sum.newBuilder()
                         .setIsMonotonic(false)
                         .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
                         .addDataPoints(
-                            IntDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5)
+                                .setAsInt(5)
                                 .build())
                         .build())
                 .build());
@@ -353,21 +368,21 @@ class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setDoubleSum(
-                    DoubleSum.newBuilder()
+                .setSum(
+                    Sum.newBuilder()
                         .setIsMonotonic(false)
                         .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
                         .addDataPoints(
-                            DoubleDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5.1)
+                                .setAsDouble(5.1)
                                 .build())
                         .build())
                 .build());
@@ -390,19 +405,19 @@ class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setIntGauge(
-                    IntGauge.newBuilder()
+                .setGauge(
+                    Gauge.newBuilder()
                         .addDataPoints(
-                            IntDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5)
+                                .setAsInt(5)
                                 .build())
                         .build())
                 .build());
@@ -422,19 +437,19 @@ class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setDoubleGauge(
-                    DoubleGauge.newBuilder()
+                .setGauge(
+                    Gauge.newBuilder()
                         .addDataPoints(
-                            DoubleDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5.1)
+                                .setAsDouble(5.1)
                                 .build())
                         .build())
                 .build());
@@ -466,27 +481,27 @@ class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setDoubleSummary(
-                    DoubleSummary.newBuilder()
+                .setSummary(
+                    Summary.newBuilder()
                         .addDataPoints(
-                            DoubleSummaryDataPoint.newBuilder()
+                            SummaryDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
                                 .setCount(5)
                                 .setSum(33d)
                                 .addQuantileValues(
-                                    ValueAtQuantile.newBuilder()
+                                    SummaryDataPoint.ValueAtQuantile.newBuilder()
                                         .setQuantile(0)
                                         .setValue(1.1)
                                         .build())
                                 .addQuantileValues(
-                                    ValueAtQuantile.newBuilder()
+                                    SummaryDataPoint.ValueAtQuantile.newBuilder()
                                         .setQuantile(1.0)
                                         .setValue(20.3)
                                         .build())
@@ -520,18 +535,18 @@ class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setDoubleHistogram(
-                    DoubleHistogram.newBuilder()
+                .setHistogram(
+                    Histogram.newBuilder()
                         .setAggregationTemporality(AGGREGATION_TEMPORALITY_DELTA)
                         .addDataPoints(
-                            DoubleHistogramDataPoint.newBuilder()
+                            HistogramDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
                                 .setCount(33)
                                 .setSum(4.0)
@@ -548,10 +563,7 @@ class MetricAdapterTest {
         io.opentelemetry.proto.resource.v1.Resource.newBuilder()
             .addAllAttributes(
                 singletonList(
-                    KeyValue.newBuilder()
-                        .setKey("ka")
-                        .setValue(AnyValue.newBuilder().setStringValue("va").build())
-                        .build()))
+                    KeyValue.newBuilder().setKey("ka").setValue(stringValue("va")).build()))
             .build();
     io.opentelemetry.proto.resource.v1.Resource emptyResourceProto =
         io.opentelemetry.proto.resource.v1.Resource.newBuilder().build();
@@ -566,18 +578,21 @@ class MetricAdapterTest {
             .setName("name")
             .setDescription("description")
             .setUnit("1")
-            .setDoubleSum(
-                DoubleSum.newBuilder()
+            .setSum(
+                Sum.newBuilder()
                     .setIsMonotonic(true)
                     .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
                     .addDataPoints(
-                        DoubleDataPoint.newBuilder()
+                        NumberDataPoint.newBuilder()
                             .setStartTimeUnixNano(123)
                             .setTimeUnixNano(456)
-                            .addAllLabels(
+                            .addAllAttributes(
                                 singletonList(
-                                    StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
-                            .setValue(5.0)
+                                    KeyValue.newBuilder()
+                                        .setKey("k")
+                                        .setValue(stringValue("v"))
+                                        .build()))
+                            .setAsDouble(5.0)
                             .build())
                     .build())
             .build();
