@@ -27,9 +27,6 @@ final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements At
   }
 
   <T> void put(AttributeKey<T> key, T value) {
-    if (key == null || key.getKey() == null || value == null) {
-      return;
-    }
     totalAddedValues++;
     if (size() >= capacity && !containsKey(key)) {
       return;
