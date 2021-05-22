@@ -58,8 +58,7 @@ import org.testcontainers.utility.MountableFile;
 @SuppressWarnings({"FutureReturnValueIgnored", "CatchAndPrintStackTrace"})
 public class OtlpPipelineStressTest {
 
-  public static final int OTLP_RECEIVER_PORT =
-      55680; // todo: switch to 4317 when that port makes it into the collector docker image.
+  public static final int OTLP_RECEIVER_PORT = 4317;
   public static final int COLLECTOR_PROXY_PORT = 44444;
   public static final int TOXIPROXY_CONTROL_PORT = 8474;
   public static Network network = Network.newNetwork();
