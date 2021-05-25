@@ -5,22 +5,28 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 
 /**
  * Factory for a {@link Resource} which parses the standard "otel.resource.attributes" system
- * property or OTEL_RESOURCE_ATTRIBUTES environment variable.
+ * property or OTEL_RESOURCE_ATTRIBUTES environment variable. Will also use
+ * OTEL_SERVICE_NAME/otel.service.name to specifically set the service name.
  */
 public final class EnvironmentResource {
 
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
+  static final String SERVICE_NAME_PROPERTY = "otel.service.name";
+  // when semconv is stable, this should use ResourceAttributes.SERVICE_NAME
+  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
   /**
    * Returns a {@link Resource} which contains information from the standard
-   * "otel.resource.attributes" system property or OTEL_RESOURCE_ATTRIBUTES environment variable.
+   * "otel.resource.attributes"/"otel.service.name" system properties or
+   * OTEL_RESOURCE_ATTRIBUTES/OTEL_SERVICE_NAME environment variables.
    */
   public static Resource get() {
     return create(ConfigProperties.get());
@@ -34,6 +40,10 @@ public final class EnvironmentResource {
   static Attributes getAttributes(ConfigProperties configProperties) {
     AttributesBuilder resourceAttributes = Attributes.builder();
     configProperties.getCommaSeparatedMap(ATTRIBUTE_PROPERTY).forEach(resourceAttributes::put);
+    String serviceName = configProperties.getString(SERVICE_NAME_PROPERTY);
+    if (serviceName != null) {
+      resourceAttributes.put(SERVICE_NAME, serviceName);
+    }
     return resourceAttributes.build();
   }
 

@@ -9,6 +9,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -43,6 +44,36 @@ class EnvironmentResourceTest {
             Attributes.of(
                 ResourceAttributes.SERVICE_NAME,
                 "myService",
+                AttributeKey.stringKey("appName"),
+                "MyApp"));
+  }
+
+  @Test
+  void serviceName() {
+    Attributes attributes =
+        EnvironmentResource.getAttributes(
+            ConfigProperties.createForTest(
+                singletonMap(EnvironmentResource.SERVICE_NAME_PROPERTY, "myService")));
+
+    assertThat(attributes).isEqualTo(Attributes.of(ResourceAttributes.SERVICE_NAME, "myService"));
+  }
+
+  @Test
+  void resourceFromConfig_overrideServiceName() {
+    Attributes attributes =
+        EnvironmentResource.getAttributes(
+            ConfigProperties.createForTest(
+                ImmutableMap.of(
+                    EnvironmentResource.ATTRIBUTE_PROPERTY,
+                    "service.name=myService,appName=MyApp",
+                    EnvironmentResource.SERVICE_NAME_PROPERTY,
+                    "ReallyMyService")));
+
+    assertThat(attributes)
+        .isEqualTo(
+            Attributes.of(
+                ResourceAttributes.SERVICE_NAME,
+                "ReallyMyService",
                 AttributeKey.stringKey("appName"),
                 "MyApp"));
   }
