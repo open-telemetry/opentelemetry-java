@@ -30,15 +30,16 @@ import javax.annotation.Nullable;
  * https://https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader>AWS
  * Tracing header spec</a>
  *
- * <p>To register the X-Ray propagator together with default propagator:
+ * <p>To register the X-Ray propagator together with default propagator when using the SDK:
  *
  * <pre>{@code
- * OpenTelemetry.setPropagators(
- *   DefaultContextPropagators
- *     .builder()
- *     .addTextMapPropagator(W3CTraceContextPropagator.getInstance())
- *     .addTextMapPropagator(AWSXrayPropagator.getInstance())
- *     .build());
+ * OpenTelemetrySdk.builder()
+ *   .setPropagators(
+ *     ContextPropagators.create(
+ *         TextMapPropagator.composite(
+ *             W3CTraceContextPropagator.getInstance(),
+ *             AWSXrayPropagator.getInstance())))
+ *    .build();
  * }</pre>
  */
 public final class AwsXrayPropagator implements TextMapPropagator {
