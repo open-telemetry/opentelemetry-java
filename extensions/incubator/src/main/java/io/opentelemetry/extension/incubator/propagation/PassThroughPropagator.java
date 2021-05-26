@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
  * io.opentelemetry.api.OpenTelemetry} that only propagates. Similarly, you will never need this
  * when using the OpenTelemetry SDK to enable telemetry.
  */
-public class PassThroughPropagator implements TextMapPropagator {
+public final class PassThroughPropagator implements TextMapPropagator {
 
   private static final ContextKey<List<String>> EXTRACTED_KEY_VALUES =
       ContextKey.named("passthroughpropagator-keyvalues");
