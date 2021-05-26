@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 /**
  * Factory for a {@link Resource} which parses the standard "otel.resource.attributes" system
@@ -20,8 +20,6 @@ public final class EnvironmentResource {
   // Visible for testing
   static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
   static final String SERVICE_NAME_PROPERTY = "otel.service.name";
-  // when semconv is stable, this should use ResourceAttributes.SERVICE_NAME
-  private static final AttributeKey<String> SERVICE_NAME = AttributeKey.stringKey("service.name");
 
   /**
    * Returns a {@link Resource} which contains information from the standard
@@ -42,7 +40,7 @@ public final class EnvironmentResource {
     configProperties.getCommaSeparatedMap(ATTRIBUTE_PROPERTY).forEach(resourceAttributes::put);
     String serviceName = configProperties.getString(SERVICE_NAME_PROPERTY);
     if (serviceName != null) {
-      resourceAttributes.put(SERVICE_NAME, serviceName);
+      resourceAttributes.put(ResourceAttributes.SERVICE_NAME, serviceName);
     }
     return resourceAttributes.build();
   }

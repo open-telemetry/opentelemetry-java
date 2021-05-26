@@ -5,12 +5,11 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ class EnvironmentResourceTest {
     Attributes attributes =
         EnvironmentResource.getAttributes(ConfigProperties.createForTest(emptyMap()));
 
-    assertThat(attributes).isEqualTo(Attributes.empty());
+    assertThat(attributes).isEmpty();
   }
 
   @Test
@@ -40,12 +39,9 @@ class EnvironmentResourceTest {
                     "service.name=myService,appName=MyApp")));
 
     assertThat(attributes)
-        .isEqualTo(
-            Attributes.of(
-                ResourceAttributes.SERVICE_NAME,
-                "myService",
-                AttributeKey.stringKey("appName"),
-                "MyApp"));
+        .hasSize(2)
+        .containsEntry(ResourceAttributes.SERVICE_NAME, "myService")
+        .containsEntry("appName", "MyApp");
   }
 
   @Test
@@ -55,7 +51,7 @@ class EnvironmentResourceTest {
             ConfigProperties.createForTest(
                 singletonMap(EnvironmentResource.SERVICE_NAME_PROPERTY, "myService")));
 
-    assertThat(attributes).isEqualTo(Attributes.of(ResourceAttributes.SERVICE_NAME, "myService"));
+    assertThat(attributes).hasSize(1).containsEntry(ResourceAttributes.SERVICE_NAME, "myService");
   }
 
   @Test
@@ -70,12 +66,9 @@ class EnvironmentResourceTest {
                     "ReallyMyService")));
 
     assertThat(attributes)
-        .isEqualTo(
-            Attributes.of(
-                ResourceAttributes.SERVICE_NAME,
-                "ReallyMyService",
-                AttributeKey.stringKey("appName"),
-                "MyApp"));
+        .hasSize(2)
+        .containsEntry(ResourceAttributes.SERVICE_NAME, "ReallyMyService")
+        .containsEntry("appName", "MyApp");
   }
 
   @Test
@@ -85,6 +78,6 @@ class EnvironmentResourceTest {
             ConfigProperties.createForTest(
                 singletonMap(EnvironmentResource.ATTRIBUTE_PROPERTY, "")));
 
-    assertThat(attributes).isEqualTo(Attributes.empty());
+    assertThat(attributes).isEmpty();
   }
 }

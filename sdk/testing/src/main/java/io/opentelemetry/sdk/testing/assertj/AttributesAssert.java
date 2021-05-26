@@ -142,4 +142,23 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
     assertThat(actual.asMap()).containsOnly(entries);
     return this;
   }
+
+  /** Asserts the attributes have no entries. */
+  public AttributesAssert isEmpty() {
+    return isEqualTo(Attributes.empty());
+  }
+
+  /** Asserts the number of attributes in the collection. */
+  public AttributesAssert hasSize(int numberOfEntries) {
+    int size = actual.size();
+    if (size != numberOfEntries) {
+      failWithActualExpectedAndMessage(
+          size,
+          numberOfEntries,
+          "Expected attributes to have <%s> entries but actually has <%s>",
+          numberOfEntries,
+          size);
+    }
+    return this;
+  }
 }
