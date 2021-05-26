@@ -2,6 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
 
+    id("me.champeau.jmh")
     id("ru.vyarus.animalsniffer")
 }
 
