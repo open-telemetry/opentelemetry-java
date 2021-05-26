@@ -50,6 +50,21 @@ class PassThroughPropagatorTest {
   }
 
   @Test
+  void noFields() {
+    TextMapPropagator propagator = PassThroughPropagator.create();
+    Map<String, String> incoming = new HashMap<>();
+    incoming.put("animal", "cat");
+    incoming.put("food", "pizza");
+    incoming.put("country", "japan");
+
+    Context context = propagator.extract(Context.root(), incoming, getter);
+
+    Map<String, String> outgoing = new HashMap<>();
+    propagator.inject(context, outgoing, Map::put);
+    assertThat(outgoing).isEmpty();
+  }
+
+  @Test
   void emptyMap() {
     Map<String, String> incoming = new HashMap<>();
 

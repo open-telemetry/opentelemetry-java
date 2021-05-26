@@ -39,24 +39,27 @@ public final class PassThroughPropagator implements TextMapPropagator {
       ContextKey.named("passthroughpropagator-keyvalues");
 
   /**
-   * Returns a {@link PassThroughPropagator} which will propagate the given {@code fields} from
+   * Returns a {@link TextMapPropagator} which will propagate the given {@code fields} from
    * extraction to injection.
    */
-  public static PassThroughPropagator create(String... fields) {
+  public static TextMapPropagator create(String... fields) {
     requireNonNull(fields, "fields");
     return create(Arrays.asList(fields));
   }
 
   /**
-   * Returns a {@link PassThroughPropagator} which will propagate the given {@code fields} from
+   * Returns a {@link TextMapPropagator} which will propagate the given {@code fields} from
    * extraction to injection.
    */
-  public static PassThroughPropagator create(Iterable<String> fields) {
+  public static TextMapPropagator create(Iterable<String> fields) {
     requireNonNull(fields, "fields");
     List<String> fieldsList =
         StreamSupport.stream(fields.spliterator(), false)
             .map(field -> requireNonNull(field, "field"))
             .collect(Collectors.toList());
+    if (fieldsList.isEmpty()) {
+      return TextMapPropagator.noop();
+    }
     return new PassThroughPropagator(fieldsList);
   }
 

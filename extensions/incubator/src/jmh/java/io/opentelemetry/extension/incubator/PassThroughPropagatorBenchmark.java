@@ -12,6 +12,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.extension.incubator.propagation.PassThroughPropagator;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,7 +62,7 @@ public class PassThroughPropagatorBenchmark {
         }
       };
 
-  private static final PassThroughPropagator passthrough =
+  private static final TextMapPropagator passthrough =
       PassThroughPropagator.create(W3CTraceContextPropagator.getInstance().fields());
 
   @Benchmark
