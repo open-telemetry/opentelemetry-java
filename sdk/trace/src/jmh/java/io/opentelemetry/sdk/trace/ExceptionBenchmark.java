@@ -30,9 +30,7 @@ public class ExceptionBenchmark {
   @Setup(Level.Trial)
   public final void setup() {
     SdkTracerProvider tracerProvider =
-        SdkTracerProvider.builder()
-            .setSampler(Sampler.alwaysOn())
-            .build();
+        SdkTracerProvider.builder().setSampler(Sampler.alwaysOn()).build();
 
     Tracer tracer = tracerProvider.get("benchmarkTracer");
     spanBuilder = tracer.spanBuilder("benchmarkSpanBuilder");
@@ -75,5 +73,4 @@ public class ExceptionBenchmark {
   public RuntimeException createException() {
     return new RuntimeException();
   }
-
 }
