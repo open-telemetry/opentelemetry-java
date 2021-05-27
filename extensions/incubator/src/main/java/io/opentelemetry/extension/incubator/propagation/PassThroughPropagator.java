@@ -38,6 +38,12 @@ public final class PassThroughPropagator implements TextMapPropagator {
   private static final ContextKey<List<String>> EXTRACTED_KEY_VALUES =
       ContextKey.named("passthroughpropagator-keyvalues");
 
+  private final List<String> fields;
+
+  private PassThroughPropagator(List<String> fields) {
+    this.fields = Collections.unmodifiableList(fields);
+  }
+
   /**
    * Returns a {@link TextMapPropagator} which will propagate the given {@code fields} from
    * extraction to injection.
@@ -61,12 +67,6 @@ public final class PassThroughPropagator implements TextMapPropagator {
       return TextMapPropagator.noop();
     }
     return new PassThroughPropagator(fieldsList);
-  }
-
-  private final List<String> fields;
-
-  private PassThroughPropagator(List<String> fields) {
-    this.fields = Collections.unmodifiableList(fields);
   }
 
   @Override
