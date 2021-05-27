@@ -3,10 +3,9 @@ receivers:
     protocols:
       grpc:
         endpoint: 0.0.0.0:5678
-
-processors:
-  batch:
-  queued_retry:
+  jaeger:
+    protocols:
+      thrift_http:
 
 extensions:
   health_check:
@@ -19,6 +18,5 @@ service:
   extensions: [health_check]
   pipelines:
     traces:
-      receivers: [otlp]
-      processors: [batch, queued_retry]
+      receivers: [otlp, jaeger]
       exporters: [logging]
