@@ -68,7 +68,6 @@ public class ExporterBenchmark {
       sdkSpanBuilder = (SdkSpanBuilder) tracerSdk.spanBuilder("PipelineBenchmarkSpan");
     }
 
-
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @Warmup(iterations = 5, time = 1)
@@ -93,7 +92,6 @@ public class ExporterBenchmark {
           .setTimeout(Duration.ofSeconds(50))
           .build();
     }
-
   }
 
   public static class JaegerBenchmark extends AbstractProcessorBenchmark {
@@ -105,6 +103,5 @@ public class ExporterBenchmark {
           .setEndpoint("http://" + host + ":" + port + "/api/traces")
           .build();
     }
-
   }
 }
