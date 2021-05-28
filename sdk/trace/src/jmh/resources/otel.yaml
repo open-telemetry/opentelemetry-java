@@ -6,19 +6,17 @@ receivers:
 
 processors:
   batch:
-  queued_retry:
 
 extensions:
   health_check:
 
 exporters:
   logging:
-    loglevel: debug
 
 service:
   extensions: [health_check]
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch, queued_retry]
+      processors: [batch]
       exporters: [logging]
