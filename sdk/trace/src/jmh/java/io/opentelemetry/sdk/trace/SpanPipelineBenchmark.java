@@ -56,8 +56,8 @@ public class SpanPipelineBenchmark {
         }
         span.end();
       }
-      //we flush the SDK in order to make sure that the BatchSpanProcessor doesn't drop spans.
-      //this means that this benchmark is mostly useful for measuring allocations, not throughput.
+      // we flush the SDK in order to make sure that the BatchSpanProcessor doesn't drop spans.
+      // this means that this benchmark is mostly useful for measuring allocations, not throughput.
       tracerProvider.forceFlush().join(1, TimeUnit.SECONDS);
     }
 
@@ -77,10 +77,11 @@ public class SpanPipelineBenchmark {
 
       SpanProcessor spanProcessor = makeSpanProcessor(collector);
 
-      tracerProvider = SdkTracerProvider.builder()
-          .setSampler(Sampler.alwaysOn())
-          .addSpanProcessor(spanProcessor)
-          .build();
+      tracerProvider =
+          SdkTracerProvider.builder()
+              .setSampler(Sampler.alwaysOn())
+              .addSpanProcessor(spanProcessor)
+              .build();
 
       tracer = tracerProvider.get("PipelineBenchmarkTracer");
     }
