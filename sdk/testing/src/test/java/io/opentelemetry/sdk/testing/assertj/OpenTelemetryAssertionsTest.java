@@ -122,6 +122,7 @@ class OpenTelemetryAssertionsTest {
         .hasAttributesSatisfying(
             attributes ->
                 assertThat(attributes)
+                    .hasSize(8)
                     .containsEntry(AttributeKey.stringKey("bear"), "mya")
                     .hasEntrySatisfying(
                         AttributeKey.stringKey("bear"), value -> assertThat(value).hasSize(3))
@@ -158,7 +159,8 @@ class OpenTelemetryAssertionsTest {
                   .hasTimestamp(Instant.ofEpochSecond(0, 10))
                   .hasAttributes(Attributes.empty())
                   .hasAttributesSatisfying(
-                      attributes -> assertThat(attributes).isEqualTo(Attributes.empty()));
+                      attributes -> assertThat(attributes).isEqualTo(Attributes.empty()))
+                  .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty());
             })
         .hasLinks(LINKS)
         .hasLinks(LINKS.toArray(new LinkData[0]))
@@ -206,6 +208,16 @@ class OpenTelemetryAssertionsTest {
                 assertThat(SPAN1)
                     .hasAttributesSatisfying(
                         attributes -> assertThat(attributes).containsEntry("cat", "bark")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasAttributesSatisfying(attributes -> assertThat(attributes).hasSize(33)))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->

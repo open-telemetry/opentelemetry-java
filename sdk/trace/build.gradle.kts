@@ -35,6 +35,7 @@ dependencies {
         // dependencies.
         isTransitive = false
     }
+    jmh(project(":exporters:jaeger-thrift"))
     jmh(project(":exporters:otlp:trace")) {
         // The opentelemetry-exporter-otlp-trace depends on this project itself. So don"t pull in
         // the transitive dependencies.

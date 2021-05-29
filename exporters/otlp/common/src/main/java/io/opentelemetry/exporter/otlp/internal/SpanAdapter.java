@@ -13,7 +13,7 @@ import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 
-import com.google.protobuf.ByteString;
+import com.google.protobuf.UnsafeByteOperations;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -86,12 +86,13 @@ public final class SpanAdapter {
 
   static Span toProtoSpan(SpanData spanData) {
     final Span.Builder builder = Span.newBuilder();
-    builder.setTraceId(ByteString.copyFrom(spanData.getSpanContext().getTraceIdBytes()));
-    builder.setSpanId(ByteString.copyFrom(spanData.getSpanContext().getSpanIdBytes()));
+    builder.setTraceId(
+        UnsafeByteOperations.unsafeWrap(spanData.getSpanContext().getTraceIdBytes()));
+    builder.setSpanId(UnsafeByteOperations.unsafeWrap(spanData.getSpanContext().getSpanIdBytes()));
     // TODO: Set TraceState;
     if (spanData.getParentSpanContext().isValid()) {
       builder.setParentSpanId(
-          ByteString.copyFrom(spanData.getParentSpanContext().getSpanIdBytes()));
+          UnsafeByteOperations.unsafeWrap(spanData.getParentSpanContext().getSpanIdBytes()));
     }
     builder.setName(spanData.getName());
     builder.setKind(toProtoSpanKind(spanData.getKind()));
@@ -144,8 +145,8 @@ public final class SpanAdapter {
 
   static Span.Link toProtoSpanLink(LinkData link) {
     final Span.Link.Builder builder = Span.Link.newBuilder();
-    builder.setTraceId(ByteString.copyFrom(link.getSpanContext().getTraceIdBytes()));
-    builder.setSpanId(ByteString.copyFrom(link.getSpanContext().getSpanIdBytes()));
+    builder.setTraceId(UnsafeByteOperations.unsafeWrap(link.getSpanContext().getTraceIdBytes()));
+    builder.setSpanId(UnsafeByteOperations.unsafeWrap(link.getSpanContext().getSpanIdBytes()));
     // TODO: Set TraceState;
     Attributes attributes = link.getAttributes();
     attributes.forEach(
