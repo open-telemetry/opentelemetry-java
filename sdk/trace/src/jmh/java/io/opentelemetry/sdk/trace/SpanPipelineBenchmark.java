@@ -41,21 +41,28 @@ public class SpanPipelineBenchmark {
         DockerImageName.parse("otel/opentelemetry-collector-dev:latest");
     private static final int EXPOSED_PORT = 5678;
     private static final int HEALTH_CHECK_PORT = 13133;
-    private SdkSpanBuilder sdkSpanBuilder;
+    private Tracer tracer;
+    private SdkTracerProvider tracerProvider;
 
     protected abstract SpanProcessor getSpanProcessor(String collectorAddress);
 
     protected abstract void runThePipeline();
 
     protected void doWork() {
-      Span span = sdkSpanBuilder.startSpan();
-      for (int i = 0; i < 10; i++) {
-        span.setAttribute("benchmarkAttribute_" + i, "benchmarkAttrValue_" + i);
+      for (int j = 0; j < 100; j++) {
+        Span span = tracer.spanBuilder("PipelineBenchmarkSpan " + j).startSpan();
+        for (int i = 0; i < 10; i++) {
+          span.setAttribute("benchmarkAttribute_" + i, "benchmarkAttrValue_" + i);
+        }
+        span.end();
       }
-      span.end();
+      // we flush the SDK in order to make sure that the BatchSpanProcessor doesn't drop spans.
+      // this means that this benchmark is mostly useful for measuring allocations, not throughput.
+      tracerProvider.forceFlush().join(1, TimeUnit.SECONDS);
     }
 
     @Setup(Level.Trial)
+    @SuppressWarnings("SystemOut")
     public void setup() {
       // Configuring the collector test-container
       GenericContainer<?> collector =
@@ -70,14 +77,13 @@ public class SpanPipelineBenchmark {
 
       SpanProcessor spanProcessor = makeSpanProcessor(collector);
 
-      SdkTracerProvider tracerProvider =
+      tracerProvider =
           SdkTracerProvider.builder()
               .setSampler(Sampler.alwaysOn())
               .addSpanProcessor(spanProcessor)
               .build();
 
-      Tracer tracerSdk = tracerProvider.get("PipelineBenchmarkTracer");
-      sdkSpanBuilder = (SdkSpanBuilder) tracerSdk.spanBuilder("PipelineBenchmarkSpan");
+      tracer = tracerProvider.get("PipelineBenchmarkTracer");
     }
 
     private SpanProcessor makeSpanProcessor(GenericContainer<?> collector) {
