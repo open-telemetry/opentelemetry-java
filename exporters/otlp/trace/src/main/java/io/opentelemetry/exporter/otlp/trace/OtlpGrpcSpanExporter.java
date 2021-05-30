@@ -9,6 +9,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ConnectivityState;
+import io.grpc.Context;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.opentelemetry.api.metrics.BoundLongCounter;
@@ -97,49 +98,56 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
       exporter = traceService;
     }
 
-    Futures.addCallback(
-        exporter.export(exportTraceServiceRequest),
-        new FutureCallback<ExportTraceServiceResponse>() {
-          @Override
-          public void onSuccess(@Nullable ExportTraceServiceResponse response) {
-            spansExportedSuccess.add(spans.size());
-            result.succeed();
-          }
+    Context forked = Context.current().fork();
+    Context previous = forked.attach();
 
-          @Override
-          public void onFailure(Throwable t) {
-            spansExportedFailure.add(spans.size());
-            Status status = Status.fromThrowable(t);
-            switch (status.getCode()) {
-              case UNIMPLEMENTED:
-                logger.log(
-                    Level.SEVERE,
-                    "Failed to export spans. Server responded with UNIMPLEMENTED. "
-                        + "This usually means that your collector is not configured with an otlp "
-                        + "receiver in the \"pipelines\" section of the configuration. "
-                        + "Full error message: "
-                        + t.getMessage());
-                break;
-              case UNAVAILABLE:
-                logger.log(
-                    Level.SEVERE,
-                    "Failed to export spans. Server is UNAVAILABLE. "
-                        + "Make sure your collector is running and reachable from this network. "
-                        + "Full error message:"
-                        + t.getMessage());
-                break;
-              default:
-                logger.log(
-                    Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
-                break;
+    try {
+      Futures.addCallback(
+          exporter.export(exportTraceServiceRequest),
+          new FutureCallback<ExportTraceServiceResponse>() {
+            @Override
+            public void onSuccess(@Nullable ExportTraceServiceResponse response) {
+              spansExportedSuccess.add(spans.size());
+              result.succeed();
             }
-            if (logger.isLoggable(Level.FINEST)) {
-              logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
+
+            @Override
+            public void onFailure(Throwable t) {
+              spansExportedFailure.add(spans.size());
+              Status status = Status.fromThrowable(t);
+              switch (status.getCode()) {
+                case UNIMPLEMENTED:
+                  logger.log(
+                      Level.SEVERE,
+                      "Failed to export spans. Server responded with UNIMPLEMENTED. "
+                          + "This usually means that your collector is not configured with an otlp "
+                          + "receiver in the \"pipelines\" section of the configuration. "
+                          + "Full error message: "
+                          + t.getMessage());
+                  break;
+                case UNAVAILABLE:
+                  logger.log(
+                      Level.SEVERE,
+                      "Failed to export spans. Server is UNAVAILABLE. "
+                          + "Make sure your collector is running and reachable from this network. "
+                          + "Full error message:"
+                          + t.getMessage());
+                  break;
+                default:
+                  logger.log(
+                      Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
+                  break;
+              }
+              if (logger.isLoggable(Level.FINEST)) {
+                logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
+              }
+              result.fail();
             }
-            result.fail();
-          }
-        },
-        MoreExecutors.directExecutor());
+          },
+          MoreExecutors.directExecutor());
+    } finally {
+      forked.detach(previous);
+    }
     return result;
   }
 
