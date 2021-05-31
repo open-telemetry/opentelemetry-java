@@ -3,11 +3,12 @@ receivers:
     protocols:
       grpc:
         endpoint: 0.0.0.0:5678
-processors:
-  batch:
   jaeger:
     protocols:
       thrift_http:
+
+processors:
+  batch:
 
 extensions:
   health_check:
