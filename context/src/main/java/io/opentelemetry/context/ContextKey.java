@@ -20,9 +20,9 @@ package io.opentelemetry.context;
  *   }
  *
  *   public void continueWork(Context context) {
- *     MyState state = context.getValue(KEY);
+ *     MyState state = context.get(KEY);
  *     // Keys are compared by reference only.
- *     assert state != Context.current().getValue(ContextKey.named("MyState"));
+ *     assert state != Context.current().get(ContextKey.named("MyState"));
  *     ...
  *   }
  * }
