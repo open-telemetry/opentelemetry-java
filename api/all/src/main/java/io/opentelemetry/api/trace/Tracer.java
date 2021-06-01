@@ -22,7 +22,8 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = OpenTelemetry.getTracer();
+ *   private static final Tracer tracer =
+ *     openTelemetry.getTracer("instrumentation-library-name", "1.0.0");
  *   void doWork() {
  *     Span span = tracer.spanBuilder("MyClass.DoWork").startSpan();
  *     try (Scope ignored = span.makeCurrent()) {
@@ -40,7 +41,8 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = OpenTelemetry.getTracer();
+ *   private static final Tracer tracer =
+ *     openTelemetry.getTracer("instrumentation-library-name", "1.0.0");
  *   void doWork(Span parent) {
  *     Span childSpan = tracer.spanBuilder("MyChildSpan")
  *         setParent(parent).startSpan();
