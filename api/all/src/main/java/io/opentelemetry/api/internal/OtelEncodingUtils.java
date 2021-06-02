@@ -111,9 +111,9 @@ public final class OtelEncodingUtils {
    */
   public static byte byteFromBase16(char first, char second) {
     Utils.checkArgument(
-        first < ASCII_CHARACTERS && DECODING[first] != -1, "invalid character " + first);
+        first < ASCII_CHARACTERS && DECODING[first] != -1, () -> "invalid character " + first);
     Utils.checkArgument(
-        second < ASCII_CHARACTERS && DECODING[second] != -1, "invalid character " + second);
+        second < ASCII_CHARACTERS && DECODING[second] != -1, () -> "invalid character " + second);
     int decoded = DECODING[first] << 4 | DECODING[second];
     return (byte) decoded;
   }
