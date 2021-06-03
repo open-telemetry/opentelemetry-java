@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.trace.samplers;
 
-import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanKind;
@@ -21,11 +20,17 @@ import javax.annotation.concurrent.Immutable;
  * probability range. Using the low bits of the traceId also ensures that systems that only use 64
  * bit ID's will also work with this sampler.
  */
-@AutoValue
 @Immutable
-abstract class TraceIdRatioBasedSampler implements Sampler {
+final class TraceIdRatioBasedSampler implements Sampler {
 
-  TraceIdRatioBasedSampler() {}
+  private static final SamplingResult POSITIVE_SAMPLING_RESULT =
+      SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE);
+
+  private static final SamplingResult NEGATIVE_SAMPLING_RESULT =
+      SamplingResult.create(SamplingDecision.DROP);
+
+  private final long idUpperBound;
+  private final String description;
 
   static TraceIdRatioBasedSampler create(double ratio) {
     if (ratio < 0.0 || ratio > 1.0) {
@@ -43,20 +48,13 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
     } else {
       idUpperBound = (long) (ratio * Long.MAX_VALUE);
     }
-    return new AutoValue_TraceIdRatioBasedSampler(
-        ratio,
-        idUpperBound,
-        SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE),
-        SamplingResult.create(SamplingDecision.DROP));
+    return new TraceIdRatioBasedSampler(ratio, idUpperBound);
   }
 
-  abstract double getRatio();
-
-  abstract long getIdUpperBound();
-
-  abstract SamplingResult getPositiveSamplingResult();
-
-  abstract SamplingResult getNegativeSamplingResult();
+  TraceIdRatioBasedSampler(double ratio, long idUpperBound) {
+    this.idUpperBound = idUpperBound;
+    description = String.format("TraceIdRatioBased{%.6f}", ratio);
+  }
 
   @Override
   public final SamplingResult shouldSample(
@@ -74,19 +72,38 @@ abstract class TraceIdRatioBasedSampler implements Sampler {
     // while allowing for a (very) small chance of *not* sampling if the id == Long.MAX_VALUE.
     // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
     // code is executed in-line for every Span creation).
-    return Math.abs(getTraceIdRandomPart(traceId)) < getIdUpperBound()
-        ? getPositiveSamplingResult()
-        : getNegativeSamplingResult();
+    return Math.abs(getTraceIdRandomPart(traceId)) < idUpperBound
+        ? POSITIVE_SAMPLING_RESULT
+        : NEGATIVE_SAMPLING_RESULT;
   }
 
   @Override
   public final String getDescription() {
-    return String.format("TraceIdRatioBased{%.6f}", getRatio());
+    return description;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof TraceIdRatioBasedSampler)) {
+      return false;
+    }
+    TraceIdRatioBasedSampler that = (TraceIdRatioBasedSampler) obj;
+    return idUpperBound == that.idUpperBound;
+  }
+
+  @Override
+  public int hashCode() {
+    return Long.hashCode(idUpperBound);
   }
 
   @Override
   public final String toString() {
     return getDescription();
+  }
+
+  // Visible for testing
+  long getIdUpperBound() {
+    return idUpperBound;
   }
 
   private static long getTraceIdRandomPart(String traceId) {
