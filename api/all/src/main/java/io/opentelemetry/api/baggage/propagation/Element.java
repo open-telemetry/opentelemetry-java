@@ -14,7 +14,7 @@ import java.util.BitSet;
  */
 class Element {
 
-  private final BitSet excluded = new BitSet(128);
+  private final BitSet excluded;
 
   private boolean leadingSpace;
   private boolean readingValue;
@@ -26,12 +26,10 @@ class Element {
   /**
    * Constructs element instance.
    *
-   * @param excludedChars characters that are not allowed for this type of an element
+   * @param excluded characters that are not allowed for this type of an element
    */
-  Element(char[] excludedChars) {
-    for (char excludedChar : excludedChars) {
-      excluded.set(excludedChar);
-    }
+  Element(BitSet excluded) {
+    this.excluded = excluded;
     reset(0);
   }
 

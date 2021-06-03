@@ -8,8 +8,11 @@ package io.opentelemetry.api.baggage.propagation;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -25,24 +28,25 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Thread)
 public class W3CBaggagePropagatorBenchmark {
 
-  // pre-allocate the keys & values to remove one possible confounding factor
-  private static String header;
+  private static final Map<String, String> SMALL_BAGGAGE;
+  private static final Map<String, String> LARGE_BAGGAGE;
 
   static {
-    for (int i = 0; i < 100; i++) {
-      header +=
-          "key"
-              + i
-              + " = value"
-              + i
-              + ";metaKey"
-              + i
-              + "=\tmetaVal"
-              + i
-              + ",broken)key"
-              + i
-              + "=value,";
-    }
+    List<String> baggages = IntStream.range(0, 100)
+        .mapToObj(i -> "key"
+            + i
+            + " = value"
+            + i
+            + ";metaKey"
+            + i
+            + "=\tmetaVal"
+            + i
+            + ",broken)key"
+            + i
+            + "=value")
+        .collect(Collectors.toList());
+    SMALL_BAGGAGE = Collections.singletonMap("baggage", String.join(",", baggages.subList(0, 5)));
+    LARGE_BAGGAGE = Collections.singletonMap("baggage", String.join(",", baggages));
   }
 
   private static final TextMapGetter<Map<String, String>> getter =
@@ -61,13 +65,23 @@ public class W3CBaggagePropagatorBenchmark {
 
   @Benchmark
   @BenchmarkMode({Mode.AverageTime})
-  @Fork(1)
+  @Fork(3)
   @Measurement(iterations = 15, time = 1)
-  @OutputTimeUnit(TimeUnit.NANOSECONDS)
+  @OutputTimeUnit(TimeUnit.MICROSECONDS)
   @Warmup(iterations = 5, time = 1)
-  public Context defaultPropagatorExtractBenchmark() {
+  public Context smallBaggage() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+    return propagator.extract(Context.root(), SMALL_BAGGAGE, getter);
+  }
 
-    return propagator.extract(Context.root(), Collections.singletonMap("baggage", header), getter);
+  @Benchmark
+  @BenchmarkMode({Mode.AverageTime})
+  @Fork(3)
+  @Measurement(iterations = 15, time = 1)
+  @OutputTimeUnit(TimeUnit.MICROSECONDS)
+  @Warmup(iterations = 5, time = 1)
+  public Context largeBaggage() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+    return propagator.extract(Context.root(), LARGE_BAGGAGE, getter);
   }
 }

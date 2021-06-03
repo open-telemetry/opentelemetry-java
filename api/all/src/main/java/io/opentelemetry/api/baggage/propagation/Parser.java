@@ -7,6 +7,7 @@ package io.opentelemetry.api.baggage.propagation;
 
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
+import java.util.BitSet;
 
 /**
  * Implements single-pass Baggage parsing in accordance with https://w3c.github.io/baggage/ Key /
@@ -18,6 +19,21 @@ import io.opentelemetry.api.baggage.BaggageEntryMetadata;
  */
 class Parser {
 
+  private static final BitSet EXCLUDED_KEY_CHARS = new BitSet(128);
+  private static final BitSet EXCLUDED_VALUE_CHARS = new BitSet(128);
+
+  static {
+    for (char c :
+        new char[] {
+          '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"', '/', '[', ']', '?', '=', '{', '}'
+        }) {
+      EXCLUDED_KEY_CHARS.set(c);
+    }
+    for (char c : new char[] {'"', ',', ';', '\\'}) {
+      EXCLUDED_VALUE_CHARS.set(c);
+    }
+  }
+
   private enum State {
     KEY,
     VALUE,
@@ -26,12 +42,8 @@ class Parser {
 
   private final String baggageHeader;
 
-  private final Element key =
-      new Element(
-          new char[] {
-            '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"', '/', '[', ']', '?', '=', '{', '}'
-          });
-  private final Element value = new Element(new char[] {'"', ',', ';', '\\'});
+  private final Element key = new Element(EXCLUDED_KEY_CHARS);
+  private final Element value = new Element(EXCLUDED_VALUE_CHARS);
   private String meta;
 
   private State state;
