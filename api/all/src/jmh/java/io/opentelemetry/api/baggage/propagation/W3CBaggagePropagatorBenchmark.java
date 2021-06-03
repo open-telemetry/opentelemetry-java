@@ -32,19 +32,22 @@ public class W3CBaggagePropagatorBenchmark {
   private static final Map<String, String> LARGE_BAGGAGE;
 
   static {
-    List<String> baggages = IntStream.range(0, 100)
-        .mapToObj(i -> "key"
-            + i
-            + " = value"
-            + i
-            + ";metaKey"
-            + i
-            + "=\tmetaVal"
-            + i
-            + ",broken)key"
-            + i
-            + "=value")
-        .collect(Collectors.toList());
+    List<String> baggages =
+        IntStream.range(0, 100)
+            .mapToObj(
+                i ->
+                    "key"
+                        + i
+                        + " = value"
+                        + i
+                        + ";metaKey"
+                        + i
+                        + "=\tmetaVal"
+                        + i
+                        + ",broken)key"
+                        + i
+                        + "=value")
+            .collect(Collectors.toList());
     SMALL_BAGGAGE = Collections.singletonMap("baggage", String.join(",", baggages.subList(0, 5)));
     LARGE_BAGGAGE = Collections.singletonMap("baggage", String.join(",", baggages));
   }
