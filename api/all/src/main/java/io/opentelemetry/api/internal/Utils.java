@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.internal;
 
-import java.util.function.Supplier;
 import javax.annotation.concurrent.Immutable;
 
 /** General internal utility methods. */
@@ -24,19 +23,6 @@ public final class Utils {
   public static void checkArgument(boolean isValid, String errorMessage) {
     if (!isValid) {
       throw new IllegalArgumentException(errorMessage);
-    }
-  }
-
-  /**
-   * Throws an {@link IllegalArgumentException} if the argument is false. This method is similar to
-   * {@code Preconditions.checkArgument(boolean, Object)} from Guava.
-   *
-   * @param isValid whether the argument check passed.
-   * @param errorMessage the supplier of the message to use for the exception.
-   */
-  public static void checkArgument(boolean isValid, Supplier<String> errorMessage) {
-    if (!isValid) {
-      throw new IllegalArgumentException(errorMessage.get());
     }
   }
 }

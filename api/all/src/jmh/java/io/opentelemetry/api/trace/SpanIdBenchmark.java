@@ -22,7 +22,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 15, time = 1)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
-@Fork(1)
+@Fork(3)
 @Threads(1)
 public class SpanIdBenchmark {
 
