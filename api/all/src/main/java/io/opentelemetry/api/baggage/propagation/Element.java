@@ -51,7 +51,7 @@ class Element {
    *
    * @param excluded characters that are not allowed for this type of an element
    */
-  Element(BitSet excluded) {
+  private Element(BitSet excluded) {
     this.excluded = excluded;
     reset(0);
   }
