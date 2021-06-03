@@ -65,7 +65,7 @@ public class SdkDesignTest {
         String name = input.getName();
 
         List<JavaClass> parents = new ArrayList<>(input.getOwner().getAllRawSuperclasses());
-        parents.addAll(input.getOwner().getAllInterfaces());
+        parents.addAll(input.getOwner().getAllRawInterfaces());
 
         for (JavaClass parent : parents) {
           Optional<JavaMethod> found = parent.tryGetMethod(name, paramsType);
