@@ -91,22 +91,22 @@ public final class SpanAdapter {
       groupByResourceAndLibrary(Collection<SpanData> spanDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> result = new HashMap<>();
     ThreadLocalCache threadLocalCache = getThreadLocalCache();
-    Map<String, ByteString> idBytesCache = threadLocalCache.idBytesCache;
     for (SpanData spanData : spanDataList) {
       Map<InstrumentationLibraryInfo, List<Span>> libraryInfoListMap =
           result.computeIfAbsent(spanData.getResource(), unused -> new HashMap<>());
       List<Span> spanList =
           libraryInfoListMap.computeIfAbsent(
               spanData.getInstrumentationLibraryInfo(), unused -> new ArrayList<>());
-      spanList.add(toProtoSpan(spanData, idBytesCache));
+      spanList.add(toProtoSpan(spanData, threadLocalCache));
     }
-    idBytesCache.clear();
+    threadLocalCache.idBytesCache.clear();
     return result;
   }
 
   // Visible for testing
-  static Span toProtoSpan(SpanData spanData, Map<String, ByteString> idBytesCache) {
-    final Span.Builder builder = Span.newBuilder();
+  static Span toProtoSpan(SpanData spanData, ThreadLocalCache threadLocalCache) {
+    Map<String, ByteString> idBytesCache = threadLocalCache.idBytesCache;
+    Span.Builder builder = threadLocalCache.spanBuilder;
     builder.setTraceId(
         idBytesCache.computeIfAbsent(
             spanData.getSpanContext().getTraceId(),
@@ -135,15 +135,17 @@ public final class SpanAdapter {
     builder.setDroppedAttributesCount(
         spanData.getTotalAttributeCount() - spanData.getAttributes().size());
     for (EventData event : spanData.getEvents()) {
-      builder.addEvents(toProtoSpanEvent(event));
+      builder.addEvents(toProtoSpanEvent(event, threadLocalCache));
     }
     builder.setDroppedEventsCount(spanData.getTotalRecordedEvents() - spanData.getEvents().size());
     for (LinkData link : spanData.getLinks()) {
-      builder.addLinks(toProtoSpanLink(link, idBytesCache));
+      builder.addLinks(toProtoSpanLink(link, threadLocalCache));
     }
     builder.setDroppedLinksCount(spanData.getTotalRecordedLinks() - spanData.getLinks().size());
     builder.setStatus(toStatusProto(spanData.getStatus()));
-    return builder.build();
+    Span span = builder.build();
+    builder.clear();
+    return span;
   }
 
   static Span.SpanKind toProtoSpanKind(SpanKind kind) {
@@ -163,8 +165,8 @@ public final class SpanAdapter {
   }
 
   // Visible for testing
-  static Span.Event toProtoSpanEvent(EventData event) {
-    final Span.Event.Builder builder = Span.Event.newBuilder();
+  static Span.Event toProtoSpanEvent(EventData event, ThreadLocalCache threadLocalCache) {
+    Span.Event.Builder builder = threadLocalCache.spanEventBuilder;
     builder.setName(event.getName());
     builder.setTimeUnixNano(event.getEpochNanos());
     event
@@ -172,12 +174,15 @@ public final class SpanAdapter {
         .forEach((key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
     builder.setDroppedAttributesCount(
         event.getTotalAttributeCount() - event.getAttributes().size());
-    return builder.build();
+    Span.Event built = builder.build();
+    builder.clear();
+    return built;
   }
 
   // Visible for testing
-  static Span.Link toProtoSpanLink(LinkData link, Map<String, ByteString> idBytesCache) {
-    final Span.Link.Builder builder = Span.Link.newBuilder();
+  static Span.Link toProtoSpanLink(LinkData link, ThreadLocalCache threadLocalCache) {
+    Map<String, ByteString> idBytesCache = threadLocalCache.idBytesCache;
+    Span.Link.Builder builder = threadLocalCache.spanLinkBuilder;
     builder.setTraceId(
         idBytesCache.computeIfAbsent(
             link.getSpanContext().getTraceId(),
@@ -192,7 +197,9 @@ public final class SpanAdapter {
         (key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
 
     builder.setDroppedAttributesCount(link.getTotalAttributeCount() - attributes.size());
-    return builder.build();
+    Span.Link built = builder.build();
+    builder.clear();
+    return built;
   }
 
   // Visible for testing
@@ -227,6 +234,9 @@ public final class SpanAdapter {
 
   static final class ThreadLocalCache {
     final Map<String, ByteString> idBytesCache = new HashMap<>();
+    final Span.Builder spanBuilder = Span.newBuilder();
+    final Span.Event.Builder spanEventBuilder = Span.Event.newBuilder();
+    final Span.Link.Builder spanLinkBuilder = Span.Link.newBuilder();
   }
 
   private SpanAdapter() {}
