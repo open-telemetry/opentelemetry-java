@@ -14,7 +14,22 @@ import java.util.BitSet;
  */
 class Element {
 
-  private final BitSet excluded = new BitSet(128);
+  private static final BitSet EXCLUDED_KEY_CHARS = new BitSet(128);
+  private static final BitSet EXCLUDED_VALUE_CHARS = new BitSet(128);
+
+  static {
+    for (char c :
+        new char[] {
+          '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"', '/', '[', ']', '?', '=', '{', '}'
+        }) {
+      EXCLUDED_KEY_CHARS.set(c);
+    }
+    for (char c : new char[] {'"', ',', ';', '\\'}) {
+      EXCLUDED_VALUE_CHARS.set(c);
+    }
+  }
+
+  private final BitSet excluded;
 
   private boolean leadingSpace;
   private boolean readingValue;
@@ -23,15 +38,21 @@ class Element {
   private int end;
   private String value;
 
+  static Element createKeyElement() {
+    return new Element(EXCLUDED_KEY_CHARS);
+  }
+
+  static Element createValueElement() {
+    return new Element(EXCLUDED_VALUE_CHARS);
+  }
+
   /**
    * Constructs element instance.
    *
-   * @param excludedChars characters that are not allowed for this type of an element
+   * @param excluded characters that are not allowed for this type of an element
    */
-  Element(char[] excludedChars) {
-    for (char excludedChar : excludedChars) {
-      excluded.set(excludedChar);
-    }
+  private Element(BitSet excluded) {
+    this.excluded = excluded;
     reset(0);
   }
 

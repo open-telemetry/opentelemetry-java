@@ -26,12 +26,8 @@ class Parser {
 
   private final String baggageHeader;
 
-  private final Element key =
-      new Element(
-          new char[] {
-            '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"', '/', '[', ']', '?', '=', '{', '}'
-          });
-  private final Element value = new Element(new char[] {'"', ',', ';', '\\'});
+  private final Element key = Element.createKeyElement();
+  private final Element value = Element.createValueElement();
   private String meta;
 
   private State state;
