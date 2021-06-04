@@ -2,6 +2,25 @@
 
 ## Unreleased:
 
+### API
+#### Enhancements
+- Parsing of the W3C Baggage header has been optimized.
+
+### SDK
+#### Behavioral Changes
+- The implementation of SpanBuilder will no longer throw exceptions when null parameters are passed in. Instead,
+it will treat these calls as no-ops.
+  
+#### Enhancements
+- Memory usage of the Tracing SDK has been greatly reduced when exporting via the OTLP or Jaeger exporters.
+- The OTLP protobuf version has been updated to v0.9.0
+
+### Extensions
+- A new experimental extension module has been added to provide a truly no-op implementation of the API. This
+is published under the `io.opentelemetry.extension.noopapi` name.
+- The `io.opentelemetry.sdk.autoconfigure` module now supports the `OTEL_SERVICE_NAME`/`otel.service.name`
+environment variable/system property for configuring the SDK's `Resource` implementation.
+
 ---
 
 ## Version 1.2.0 - 2021-05-07
