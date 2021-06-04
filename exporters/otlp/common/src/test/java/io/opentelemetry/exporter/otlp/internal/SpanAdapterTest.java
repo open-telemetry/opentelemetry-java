@@ -37,6 +37,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Collections;
+import java.util.HashMap;
 import org.junit.jupiter.api.Test;
 
 class SpanAdapterTest {
@@ -70,7 +71,7 @@ class SpanAdapterTest {
                 .setTotalRecordedLinks(2)
                 .setStatus(StatusData.ok())
                 .build(),
-            Collections.emptyMap());
+            new HashMap<>());
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(span.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
@@ -177,7 +178,7 @@ class SpanAdapterTest {
 
   @Test
   void toProtoSpanLink_WithoutAttributes() {
-    assertThat(SpanAdapter.toProtoSpanLink(LinkData.create(SPAN_CONTEXT), Collections.emptyMap()))
+    assertThat(SpanAdapter.toProtoSpanLink(LinkData.create(SPAN_CONTEXT), new HashMap<>()))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
@@ -190,7 +191,7 @@ class SpanAdapterTest {
     assertThat(
             SpanAdapter.toProtoSpanLink(
                 LinkData.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5),
-                Collections.emptyMap()))
+                new HashMap<>()))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))

@@ -36,8 +36,7 @@ import java.util.Map;
 /** Converter from SDK {@link SpanData} to OTLP {@link ResourceSpans}. */
 public final class SpanAdapter {
 
-  private static final ThreadLocal<Map<String, ByteString>> ID_BYTES_CACHE =
-      ThreadLocal.withInitial(HashMap::new);
+  private static final ThreadLocal<ThreadLocalCache> THREAD_LOCAL_CACHE = new ThreadLocal<>();
 
   // Still set DeprecatedCode
   @SuppressWarnings("deprecation")
@@ -87,7 +86,8 @@ public final class SpanAdapter {
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>>
       groupByResourceAndLibrary(Collection<SpanData> spanDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> result = new HashMap<>();
-    Map<String, ByteString> idBytesCache = ID_BYTES_CACHE.get();
+    ThreadLocalCache threadLocalCache = getThreadLocalCache();
+    Map<String, ByteString> idBytesCache = threadLocalCache.idBytesCache;
     for (SpanData spanData : spanDataList) {
       Map<InstrumentationLibraryInfo, List<Span>> libraryInfoListMap =
           result.computeIfAbsent(spanData.getResource(), unused -> new HashMap<>());
@@ -210,6 +210,19 @@ public final class SpanAdapter {
       return withoutDescription;
     }
     return withoutDescription.toBuilder().setMessage(status.getDescription()).build();
+  }
+
+  private static ThreadLocalCache getThreadLocalCache() {
+    ThreadLocalCache result = THREAD_LOCAL_CACHE.get();
+    if (result == null) {
+      result = new ThreadLocalCache();
+      THREAD_LOCAL_CACHE.set(result);
+    }
+    return result;
+  }
+
+  static final class ThreadLocalCache {
+    final Map<String, ByteString> idBytesCache = new HashMap<>();
   }
 
   private SpanAdapter() {}
