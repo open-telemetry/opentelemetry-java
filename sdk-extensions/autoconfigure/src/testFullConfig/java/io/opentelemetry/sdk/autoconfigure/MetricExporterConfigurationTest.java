@@ -7,9 +7,9 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +20,9 @@ class MetricExporterConfigurationTest {
     OtlpGrpcMetricExporter exporter =
         MetricExporterConfiguration.configureOtlpMetrics(
             ConfigProperties.createForTest(
-                Collections.singletonMap("otel.exporter.otlp.timeout", "10")),
+                ImmutableMap.of(
+                    "otel.exporter.otlp.timeout", "10ms",
+                    "otel.imr.export.interval", "5s")),
             SdkMeterProvider.builder().build());
     try {
       assertThat(exporter)
