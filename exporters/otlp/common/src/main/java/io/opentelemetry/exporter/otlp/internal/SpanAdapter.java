@@ -13,6 +13,7 @@ import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.UnsafeByteOperations;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
@@ -34,6 +35,9 @@ import java.util.Map;
 
 /** Converter from SDK {@link SpanData} to OTLP {@link ResourceSpans}. */
 public final class SpanAdapter {
+
+  private static final ThreadLocal<Map<String, ByteString>> ID_BYTES_CACHE =
+      ThreadLocal.withInitial(HashMap::new);
 
   // Still set DeprecatedCode
   @SuppressWarnings("deprecation")
@@ -88,26 +92,39 @@ public final class SpanAdapter {
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>>
       groupByResourceAndLibrary(Collection<SpanData> spanDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> result = new HashMap<>();
+    Map<String, ByteString> idBytesCache = ID_BYTES_CACHE.get();
     for (SpanData spanData : spanDataList) {
       Map<InstrumentationLibraryInfo, List<Span>> libraryInfoListMap =
           result.computeIfAbsent(spanData.getResource(), unused -> new HashMap<>());
       List<Span> spanList =
           libraryInfoListMap.computeIfAbsent(
               spanData.getInstrumentationLibraryInfo(), unused -> new ArrayList<>());
-      spanList.add(toProtoSpan(spanData));
+      spanList.add(toProtoSpan(spanData, idBytesCache));
     }
+    idBytesCache.clear();
     return result;
   }
 
-  static Span toProtoSpan(SpanData spanData) {
+  // Visible for testing
+  static Span toProtoSpan(SpanData spanData, Map<String, ByteString> idBytesCache) {
     final Span.Builder builder = Span.newBuilder();
     builder.setTraceId(
-        UnsafeByteOperations.unsafeWrap(spanData.getSpanContext().getTraceIdBytes()));
-    builder.setSpanId(UnsafeByteOperations.unsafeWrap(spanData.getSpanContext().getSpanIdBytes()));
+        idBytesCache.computeIfAbsent(
+            spanData.getSpanContext().getTraceId(),
+            unused ->
+                UnsafeByteOperations.unsafeWrap(spanData.getSpanContext().getTraceIdBytes())));
+    builder.setSpanId(
+        idBytesCache.computeIfAbsent(
+            spanData.getSpanContext().getSpanId(),
+            unused -> UnsafeByteOperations.unsafeWrap(spanData.getSpanContext().getSpanIdBytes())));
     // TODO: Set TraceState;
     if (spanData.getParentSpanContext().isValid()) {
       builder.setParentSpanId(
-          UnsafeByteOperations.unsafeWrap(spanData.getParentSpanContext().getSpanIdBytes()));
+          idBytesCache.computeIfAbsent(
+              spanData.getParentSpanContext().getSpanId(),
+              unused ->
+                  UnsafeByteOperations.unsafeWrap(
+                      spanData.getParentSpanContext().getSpanIdBytes())));
     }
     builder.setName(spanData.getName());
     builder.setKind(toProtoSpanKind(spanData.getKind()));
@@ -123,7 +140,7 @@ public final class SpanAdapter {
     }
     builder.setDroppedEventsCount(spanData.getTotalRecordedEvents() - spanData.getEvents().size());
     for (LinkData link : spanData.getLinks()) {
-      builder.addLinks(toProtoSpanLink(link));
+      builder.addLinks(toProtoSpanLink(link, idBytesCache));
     }
     builder.setDroppedLinksCount(spanData.getTotalRecordedLinks() - spanData.getLinks().size());
     builder.setStatus(toStatusProto(spanData.getStatus()));
@@ -146,6 +163,7 @@ public final class SpanAdapter {
     return Span.SpanKind.UNRECOGNIZED;
   }
 
+  // Visible for testing
   static Span.Event toProtoSpanEvent(EventData event) {
     final Span.Event.Builder builder = Span.Event.newBuilder();
     builder.setName(event.getName());
@@ -158,10 +176,17 @@ public final class SpanAdapter {
     return builder.build();
   }
 
-  static Span.Link toProtoSpanLink(LinkData link) {
+  // Visible for testing
+  static Span.Link toProtoSpanLink(LinkData link, Map<String, ByteString> idBytesCache) {
     final Span.Link.Builder builder = Span.Link.newBuilder();
-    builder.setTraceId(UnsafeByteOperations.unsafeWrap(link.getSpanContext().getTraceIdBytes()));
-    builder.setSpanId(UnsafeByteOperations.unsafeWrap(link.getSpanContext().getSpanIdBytes()));
+    builder.setTraceId(
+        idBytesCache.computeIfAbsent(
+            link.getSpanContext().getTraceId(),
+            unused -> UnsafeByteOperations.unsafeWrap(link.getSpanContext().getTraceIdBytes())));
+    builder.setSpanId(
+        idBytesCache.computeIfAbsent(
+            link.getSpanContext().getSpanId(),
+            unused -> UnsafeByteOperations.unsafeWrap(link.getSpanContext().getSpanIdBytes())));
     // TODO: Set TraceState;
     Attributes attributes = link.getAttributes();
     attributes.forEach(
@@ -171,6 +196,7 @@ public final class SpanAdapter {
     return builder.build();
   }
 
+  // Visible for testing
   static Status toStatusProto(StatusData status) {
     final Status withoutDescription;
     switch (status.getStatusCode()) {

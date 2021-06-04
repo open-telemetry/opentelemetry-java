@@ -69,7 +69,8 @@ class SpanAdapterTest {
                 .setLinks(Collections.singletonList(LinkData.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
                 .setStatus(StatusData.ok())
-                .build());
+                .build(),
+            Collections.emptyMap());
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(span.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
@@ -176,7 +177,7 @@ class SpanAdapterTest {
 
   @Test
   void toProtoSpanLink_WithoutAttributes() {
-    assertThat(SpanAdapter.toProtoSpanLink(LinkData.create(SPAN_CONTEXT)))
+    assertThat(SpanAdapter.toProtoSpanLink(LinkData.create(SPAN_CONTEXT), Collections.emptyMap()))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
@@ -188,7 +189,8 @@ class SpanAdapterTest {
   void toProtoSpanLink_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanLink(
-                LinkData.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
+                LinkData.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5),
+                Collections.emptyMap()))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
