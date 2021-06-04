@@ -92,9 +92,9 @@ final class MetricExporterConfiguration {
         IntervalMetricReader.builder()
             .setMetricProducers(Collections.singleton(meterProvider))
             .setMetricExporter(exporter);
-    Duration exportIntervalMillis = config.getDuration("otel.imr.export.interval");
-    if (exportIntervalMillis != null) {
-      readerBuilder.setExportIntervalMillis(exportIntervalMillis.toMillis());
+    Duration exportInterval = config.getDuration("otel.imr.export.interval");
+    if (exportInterval != null) {
+      readerBuilder.setExportIntervalMillis(exportInterval.toMillis());
     }
     IntervalMetricReader reader = readerBuilder.buildAndStart();
     Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
