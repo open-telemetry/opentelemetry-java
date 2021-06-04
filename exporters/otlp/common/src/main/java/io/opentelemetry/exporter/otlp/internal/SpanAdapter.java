@@ -16,7 +16,6 @@ import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPREC
 import com.google.protobuf.UnsafeByteOperations;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -35,6 +34,30 @@ import java.util.Map;
 
 /** Converter from SDK {@link SpanData} to OTLP {@link ResourceSpans}. */
 public final class SpanAdapter {
+
+  // Still set DeprecatedCode
+  @SuppressWarnings("deprecation")
+  private static final Status STATUS_OK =
+      Status.newBuilder()
+          .setCode(Status.StatusCode.STATUS_CODE_OK)
+          .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
+          .build();
+
+  // Still set DeprecatedCode
+  @SuppressWarnings("deprecation")
+  private static final Status STATUS_ERROR =
+      Status.newBuilder()
+          .setCode(Status.StatusCode.STATUS_CODE_ERROR)
+          .setDeprecatedCode(DEPRECATED_STATUS_CODE_UNKNOWN_ERROR)
+          .build();
+
+  // Still set DeprecatedCode
+  @SuppressWarnings("deprecation")
+  private static final Status STATUS_UNSET =
+      Status.newBuilder()
+          .setCode(Status.StatusCode.STATUS_CODE_UNSET)
+          .setDeprecatedCode(DEPRECATED_STATUS_CODE_OK)
+          .build();
 
   /** Converts the provided {@link SpanData} to {@link ResourceSpans}. */
   public static List<ResourceSpans> toProtoResourceSpans(Collection<SpanData> spanDataList) {
@@ -67,18 +90,11 @@ public final class SpanAdapter {
       groupByResourceAndLibrary(Collection<SpanData> spanDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> result = new HashMap<>();
     for (SpanData spanData : spanDataList) {
-      Resource resource = spanData.getResource();
       Map<InstrumentationLibraryInfo, List<Span>> libraryInfoListMap =
-          result.get(spanData.getResource());
-      if (libraryInfoListMap == null) {
-        libraryInfoListMap = new HashMap<>();
-        result.put(resource, libraryInfoListMap);
-      }
-      List<Span> spanList = libraryInfoListMap.get(spanData.getInstrumentationLibraryInfo());
-      if (spanList == null) {
-        spanList = new ArrayList<>();
-        libraryInfoListMap.put(spanData.getInstrumentationLibraryInfo(), spanList);
-      }
+          result.computeIfAbsent(spanData.getResource(), unused -> new HashMap<>());
+      List<Span> spanList =
+          libraryInfoListMap.computeIfAbsent(
+              spanData.getInstrumentationLibraryInfo(), unused -> new ArrayList<>());
       spanList.add(toProtoSpan(spanData));
     }
     return result;
@@ -157,22 +173,23 @@ public final class SpanAdapter {
   }
 
   static Status toStatusProto(StatusData status) {
-    Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
-    Status.DeprecatedStatusCode deprecatedStatusCode = DEPRECATED_STATUS_CODE_OK;
-    if (status.getStatusCode() == StatusCode.OK) {
-      protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
-    } else if (status.getStatusCode() == StatusCode.ERROR) {
-      protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
-      deprecatedStatusCode = DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
+    final Status withoutDescription;
+    switch (status.getStatusCode()) {
+      case OK:
+        withoutDescription = STATUS_OK;
+        break;
+      case ERROR:
+        withoutDescription = STATUS_ERROR;
+        break;
+      case UNSET:
+      default:
+        withoutDescription = STATUS_UNSET;
+        break;
     }
-
-    @SuppressWarnings("deprecation") // setDeprecatedCode is deprecated.
-    Status.Builder builder =
-        Status.newBuilder().setCode(protoStatusCode).setDeprecatedCode(deprecatedStatusCode);
-    if (!status.getDescription().isEmpty()) {
-      builder.setMessage(status.getDescription());
+    if (status.getDescription().isEmpty()) {
+      return withoutDescription;
     }
-    return builder.build();
+    return withoutDescription.toBuilder().setMessage(status.getDescription()).build();
   }
 
   private SpanAdapter() {}

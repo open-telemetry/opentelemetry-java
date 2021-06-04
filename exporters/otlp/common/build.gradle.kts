@@ -2,6 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
 
+    id("me.champeau.jmh")
     id("ru.vyarus.animalsniffer")
 }
 
@@ -20,4 +21,7 @@ dependencies {
 
     testImplementation("io.grpc:grpc-testing")
     testRuntimeOnly("io.grpc:grpc-netty-shaded")
+
+    jmhImplementation(project(":sdk:testing"))
+    jmhImplementation(project(":sdk-extensions:resources"))
 }
