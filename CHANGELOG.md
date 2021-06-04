@@ -7,6 +7,10 @@
 - Parsing of the W3C Baggage header has been optimized.
 
 ### SDK
+#### Behavioral Changes
+- The implementation of SpanBuilder will no longer throw exceptions when null parameters are passed in. Instead,
+it will treat these calls as no-ops.
+  
 #### Enhancements
 - Memory usage of the Tracing SDK has been greatly reduced when exporting via the OTLP or Jaeger exporters.
 - The OTLP protobuf version has been updated to v0.9.0
