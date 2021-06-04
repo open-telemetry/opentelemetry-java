@@ -64,25 +64,25 @@ public final class SpanAdapter {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> resourceAndLibraryMap =
         groupByResourceAndLibrary(spanDataList);
     List<ResourceSpans> resourceSpans = new ArrayList<>(resourceAndLibraryMap.size());
-    for (Map.Entry<Resource, Map<InstrumentationLibraryInfo, List<Span>>> entryResource :
-        resourceAndLibraryMap.entrySet()) {
-      List<InstrumentationLibrarySpans> instrumentationLibrarySpans =
-          new ArrayList<>(entryResource.getValue().size());
-      for (Map.Entry<InstrumentationLibraryInfo, List<Span>> entryLibrary :
-          entryResource.getValue().entrySet()) {
-        instrumentationLibrarySpans.add(
-            InstrumentationLibrarySpans.newBuilder()
-                .setInstrumentationLibrary(
-                    CommonAdapter.toProtoInstrumentationLibrary(entryLibrary.getKey()))
-                .addAllSpans(entryLibrary.getValue())
-                .build());
-      }
-      resourceSpans.add(
-          ResourceSpans.newBuilder()
-              .setResource(ResourceAdapter.toProtoResource(entryResource.getKey()))
-              .addAllInstrumentationLibrarySpans(instrumentationLibrarySpans)
-              .build());
-    }
+    resourceAndLibraryMap.forEach(
+        (resource, librarySpans) -> {
+          List<InstrumentationLibrarySpans> instrumentationLibrarySpans =
+              new ArrayList<>(librarySpans.size());
+          librarySpans.forEach(
+              (library, spans) -> {
+                instrumentationLibrarySpans.add(
+                    InstrumentationLibrarySpans.newBuilder()
+                        .setInstrumentationLibrary(
+                            CommonAdapter.toProtoInstrumentationLibrary(library))
+                        .addAllSpans(spans)
+                        .build());
+              });
+          resourceSpans.add(
+              ResourceSpans.newBuilder()
+                  .setResource(ResourceAdapter.toProtoResource(resource))
+                  .addAllInstrumentationLibrarySpans(instrumentationLibrarySpans)
+                  .build());
+        });
     return resourceSpans;
   }
 
