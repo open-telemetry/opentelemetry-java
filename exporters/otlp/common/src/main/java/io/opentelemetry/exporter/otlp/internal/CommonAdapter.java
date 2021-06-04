@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
@@ -14,6 +15,10 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import java.util.List;
 
 final class CommonAdapter {
+
+  private static final WeakConcurrentMap<InstrumentationLibraryInfo, InstrumentationLibrary>
+      INSTRUMENTATION_LIBRARY_PROTO_CACHE = new WeakConcurrentMap.WithInlinedExpunction<>();
+
   @SuppressWarnings("unchecked")
   public static KeyValue toProtoAttribute(AttributeKey<?> key, Object value) {
     KeyValue.Builder builder = KeyValue.newBuilder().setKey(key.getKey());
@@ -144,13 +149,22 @@ final class CommonAdapter {
 
   static InstrumentationLibrary toProtoInstrumentationLibrary(
       InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return InstrumentationLibrary.newBuilder()
-        .setName(instrumentationLibraryInfo.getName())
-        .setVersion(
-            instrumentationLibraryInfo.getVersion() == null
-                ? ""
-                : instrumentationLibraryInfo.getVersion())
-        .build();
+    InstrumentationLibrary cached =
+        INSTRUMENTATION_LIBRARY_PROTO_CACHE.get(instrumentationLibraryInfo);
+    if (cached == null) {
+      // Since WeakConcurrentMap doesn't support computeIfAbsent, we may end up doing the conversion
+      // a few times until the cache gets filled which is fine.
+      cached =
+          InstrumentationLibrary.newBuilder()
+              .setName(instrumentationLibraryInfo.getName())
+              .setVersion(
+                  instrumentationLibraryInfo.getVersion() == null
+                      ? ""
+                      : instrumentationLibraryInfo.getVersion())
+              .build();
+      INSTRUMENTATION_LIBRARY_PROTO_CACHE.put(instrumentationLibraryInfo, cached);
+    }
+    return cached;
   }
 
   private CommonAdapter() {}
