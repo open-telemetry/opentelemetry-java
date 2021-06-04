@@ -36,6 +36,9 @@ import java.util.Map;
 /** Converter from SDK {@link SpanData} to OTLP {@link ResourceSpans}. */
 public final class SpanAdapter {
 
+  // In practice, there is often only one thread that calls this code in the BatchSpanProcessor so
+  // reusing buffers for the thread is almost free. Even with multiple threads, it should still be
+  // worth it and is common practice in serialization libraries such as Jackson.
   private static final ThreadLocal<ThreadLocalCache> THREAD_LOCAL_CACHE = new ThreadLocal<>();
 
   // Still set DeprecatedCode
@@ -79,6 +82,7 @@ public final class SpanAdapter {
                               CommonAdapter.toProtoInstrumentationLibrary(library))
                           .addAllSpans(spans)
                           .build()));
+          resourceSpans.add(resourceSpansBuilder.build());
         });
     return resourceSpans;
   }
