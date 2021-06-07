@@ -23,15 +23,4 @@ class ImmutableStatusDataTest {
     assertThat(StatusData.error().getStatusCode()).isEqualTo(StatusCode.ERROR);
     assertThat(StatusData.error().getDescription()).isEmpty();
   }
-
-  @Test
-  void generateCodeToStatus() {
-    StatusCode[] codes = StatusCode.values();
-    assertThat(ImmutableStatusData.codeToStatus).hasSize(codes.length);
-    for (StatusCode code : codes) {
-      assertThat(ImmutableStatusData.codeToStatus.get(code)).isNotNull();
-      assertThat(ImmutableStatusData.codeToStatus.get(code).getStatusCode()).isEqualTo(code);
-      assertThat(ImmutableStatusData.codeToStatus.get(code).getDescription()).isEmpty();
-    }
-  }
 }
