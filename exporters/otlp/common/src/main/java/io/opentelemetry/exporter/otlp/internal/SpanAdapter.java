@@ -144,6 +144,8 @@ public final class SpanAdapter {
     builder.setDroppedLinksCount(spanData.getTotalRecordedLinks() - spanData.getLinks().size());
     builder.setStatus(toStatusProto(spanData.getStatus()));
     Span span = builder.build();
+    // We reuse the builder instance to create multiple spans to reduce allocation of intermediary
+    // storage. It means we MUST clear here or we'd keep on building on the same object.
     builder.clear();
     return span;
   }
@@ -175,6 +177,8 @@ public final class SpanAdapter {
     builder.setDroppedAttributesCount(
         event.getTotalAttributeCount() - event.getAttributes().size());
     Span.Event built = builder.build();
+    // We reuse the builder instance to create multiple spans to reduce allocation of intermediary
+    // storage. It means we MUST clear here or we'd keep on building on the same object.
     builder.clear();
     return built;
   }
@@ -198,6 +202,8 @@ public final class SpanAdapter {
 
     builder.setDroppedAttributesCount(link.getTotalAttributeCount() - attributes.size());
     Span.Link built = builder.build();
+    // We reuse the builder instance to create multiple spans to reduce allocation of intermediary
+    // storage. It means we MUST clear here or we'd keep on building on the same object.
     builder.clear();
     return built;
   }
