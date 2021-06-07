@@ -21,7 +21,6 @@ final class CommonAdapter {
 
   @SuppressWarnings("unchecked")
   public static KeyValue toProtoAttribute(AttributeKey<?> key, Object value) {
-    KeyValue.Builder builder = KeyValue.newBuilder().setKey(key.getKey());
     switch (key.getType()) {
       case STRING:
         return makeStringKeyValue(key, (String) value);
@@ -40,7 +39,10 @@ final class CommonAdapter {
       case STRING_ARRAY:
         return makeStringArrayKeyValue(key, (List<String>) value);
     }
-    return builder.setValue(AnyValue.getDefaultInstance()).build();
+    return KeyValue.newBuilder()
+        .setKey(key.getKey())
+        .setValue(AnyValue.getDefaultInstance())
+        .build();
   }
 
   private static KeyValue makeLongArrayKeyValue(AttributeKey<?> key, List<Long> value) {
