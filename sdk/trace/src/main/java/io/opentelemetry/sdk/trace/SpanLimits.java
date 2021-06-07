@@ -21,9 +21,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class SpanLimits {
 
-  // These values are the default values for all the global parameters.
-  // TODO: decide which default sampler to use
-
   private static final SpanLimits DEFAULT = new SpanLimitsBuilder().build();
 
   /** Returns the default {@link SpanLimits}. */
