@@ -26,7 +26,6 @@ dependencies {
 
     implementation(project(":semconv"))
 
-    compileOnly(project(":extensions:trace-propagators"))
     compileOnly(project(":exporters:jaeger"))
     compileOnly(project(":exporters:logging"))
     compileOnly(project(":exporters:otlp:all"))
