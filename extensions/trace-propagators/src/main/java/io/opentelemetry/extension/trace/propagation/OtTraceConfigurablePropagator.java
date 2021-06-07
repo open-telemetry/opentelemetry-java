@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
  * A {@link ConfigurablePropagatorProvider} which allows enabling the {@link OtTracePropagator} with
  * the propagator name {@code ottrace}.
  */
-public class OtTraceConfigurablePropagator implements ConfigurablePropagatorProvider {
+public final class OtTraceConfigurablePropagator implements ConfigurablePropagatorProvider {
   @Override
   public TextMapPropagator getPropagator() {
     return OtTracePropagator.getInstance();

@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
  * A {@link ConfigurablePropagatorProvider} which allows enabling the {@linkplain
  * B3Propagator#injectingSingleHeader()} B3-single propagator} with the propagator name {@code b3}.
  */
-public class B3ConfigurablePropagator implements ConfigurablePropagatorProvider {
+public final class B3ConfigurablePropagator implements ConfigurablePropagatorProvider {
   @Override
   public TextMapPropagator getPropagator() {
     return B3Propagator.injectingSingleHeader();

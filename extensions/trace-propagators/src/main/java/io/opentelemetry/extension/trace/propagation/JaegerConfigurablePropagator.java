@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
  * A {@link ConfigurablePropagatorProvider} which allows enabling the {@link JaegerPropagator} with
  * the propagator name {@code jaeger}.
  */
-public class JaegerConfigurablePropagator implements ConfigurablePropagatorProvider {
+public final class JaegerConfigurablePropagator implements ConfigurablePropagatorProvider {
   @Override
   public TextMapPropagator getPropagator() {
     return JaegerPropagator.getInstance();

@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
  * B3Propagator#injectingMultiHeaders() B3-multi propagator} with the propagator name {@code
  * b3multi}.
  */
-public class B3MultiConfigurablePropagator implements ConfigurablePropagatorProvider {
+public final class B3MultiConfigurablePropagator implements ConfigurablePropagatorProvider {
   @Override
   public TextMapPropagator getPropagator() {
     return B3Propagator.injectingMultiHeaders();
