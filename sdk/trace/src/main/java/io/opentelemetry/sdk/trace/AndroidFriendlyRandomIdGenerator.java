@@ -32,11 +32,10 @@ enum AndroidFriendlyRandomIdGenerator implements IdGenerator {
   @Override
   public String generateTraceId() {
     long idHi;
-    long idLo;
     do {
       idHi = random.nextLong();
-      idLo = random.nextLong();
-    } while (idHi == INVALID_ID && idLo == INVALID_ID);
+    } while (idHi == INVALID_ID);
+    long idLo = random.nextLong();
     return TraceId.fromLongs(idHi, idLo);
   }
 }
