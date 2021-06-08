@@ -1,0 +1,4 @@
+io.opentelemetry.extension.trace.propagation.B3ConfigurablePropagator
+io.opentelemetry.extension.trace.propagation.B3MultiConfigurablePropagator
+io.opentelemetry.extension.trace.propagation.JaegerConfigurablePropagator
+io.opentelemetry.extension.trace.propagation.OtTraceConfigurablePropagator

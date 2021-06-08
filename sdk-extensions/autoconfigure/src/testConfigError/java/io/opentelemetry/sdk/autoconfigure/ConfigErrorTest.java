@@ -30,7 +30,9 @@ class ConfigErrorTest {
   void invalidPropagator() {
     assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
         .isInstanceOf(ConfigurationException.class)
-        .hasMessage("Unrecognized value for otel.propagators: cat");
+        .hasMessage(
+            "Unrecognized value for otel.propagators: cat. Make sure the artifact "
+                + "including the propagator is on the classpath.");
   }
 
   @Test
