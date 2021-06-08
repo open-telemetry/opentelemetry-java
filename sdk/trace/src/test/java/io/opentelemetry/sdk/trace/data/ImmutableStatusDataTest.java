@@ -10,17 +10,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.trace.StatusCode;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link ImmutableStatusData}. */
 class ImmutableStatusDataTest {
   @Test
-  void defaultConstants() {
+  void statuses() {
     StatusCode[] codes = StatusCode.values();
-    assertThat(codes).hasSize(3);
-    assertThat(StatusData.unset().getStatusCode()).isEqualTo(StatusCode.UNSET);
-    assertThat(StatusData.unset().getDescription()).isEmpty();
-    assertThat(StatusData.ok().getStatusCode()).isEqualTo(StatusCode.OK);
-    assertThat(StatusData.ok().getDescription()).isEmpty();
-    assertThat(StatusData.error().getStatusCode()).isEqualTo(StatusCode.ERROR);
-    assertThat(StatusData.error().getDescription()).isEmpty();
+    for (StatusCode code : codes) {
+      StatusData status = ImmutableStatusData.create(code, "");
+      switch (code) {
+        case UNSET:
+          assertThat(status).isSameAs(StatusData.unset());
+          break;
+        case OK:
+          assertThat(status).isSameAs(StatusData.ok());
+          break;
+        case ERROR:
+          assertThat(status).isSameAs(StatusData.error());
+          break;
+      }
+      assertThat(status).isNotNull();
+      assertThat(status.getStatusCode()).isEqualTo(code);
+      assertThat(status.getDescription()).isEmpty();
+    }
   }
 }
