@@ -63,6 +63,22 @@ public interface OpenTelemetry {
     return getTracerProvider().get(instrumentationName, instrumentationVersion);
   }
 
+  /**
+   * Gets or creates a named and versioned tracer instance from the {@link TracerProvider} in this
+   * {@link OpenTelemetry}.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   * @param instrumentationVersion The version of the instrumentation library (e.g., "1.0.0").
+   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
+   *     library.
+   * @return a tracer instance.
+   */
+  default Tracer getTracer(
+      String instrumentationName, String instrumentationVersion, String schemaUrl) {
+    return getTracerProvider().get(instrumentationName, instrumentationVersion, schemaUrl);
+  }
+
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */
   ContextPropagators getPropagators();
 }

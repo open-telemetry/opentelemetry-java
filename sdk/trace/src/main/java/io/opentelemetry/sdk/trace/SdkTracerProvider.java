@@ -65,12 +65,20 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
 
   @Override
   public Tracer get(String instrumentationName, @Nullable String instrumentationVersion) {
+    return get(instrumentationName, instrumentationVersion, null);
+  }
+
+  @Override
+  public Tracer get(
+      String instrumentationName,
+      @Nullable String instrumentationVersion,
+      @Nullable String schemaUrl) {
     // Per the spec, both null and empty are "invalid" and a default value should be used.
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       logger.fine("Tracer requested without instrumentation name.");
       instrumentationName = DEFAULT_TRACER_NAME;
     }
-    return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
+    return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion, schemaUrl);
   }
 
   /** Returns the {@link SpanLimits} that are currently applied to created spans. */

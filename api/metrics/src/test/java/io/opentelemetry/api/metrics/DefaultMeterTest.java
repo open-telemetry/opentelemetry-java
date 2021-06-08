@@ -15,5 +15,7 @@ class DefaultMeterTest {
     assertThat(MeterProvider.noop().get("test")).isInstanceOf(DefaultMeter.class);
     assertThat(MeterProvider.noop().get("test")).isSameAs(DefaultMeter.getInstance());
     assertThat(MeterProvider.noop().get("test", "0.1.0")).isSameAs(DefaultMeter.getInstance());
+    assertThat(MeterProvider.noop().get("test", "0.1.0", "http://url"))
+        .isSameAs(DefaultMeter.getInstance());
   }
 }

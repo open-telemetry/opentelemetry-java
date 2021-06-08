@@ -58,12 +58,15 @@ public final class MetricAdapter {
           new ArrayList<>(entryResource.getValue().size());
       for (Map.Entry<InstrumentationLibraryInfo, List<Metric>> entryLibrary :
           entryResource.getValue().entrySet()) {
-        instrumentationLibraryMetrics.add(
+        InstrumentationLibraryMetrics.Builder metricsBuilder =
             InstrumentationLibraryMetrics.newBuilder()
                 .setInstrumentationLibrary(
                     CommonAdapter.toProtoInstrumentationLibrary(entryLibrary.getKey()))
-                .addAllMetrics(entryLibrary.getValue())
-                .build());
+                .addAllMetrics(entryLibrary.getValue());
+        if (entryLibrary.getKey().getSchemaUrl() != null) {
+          metricsBuilder.setSchemaUrl(entryLibrary.getKey().getSchemaUrl());
+        }
+        instrumentationLibraryMetrics.add(metricsBuilder.build());
       }
       resourceMetrics.add(
           ResourceMetrics.newBuilder()

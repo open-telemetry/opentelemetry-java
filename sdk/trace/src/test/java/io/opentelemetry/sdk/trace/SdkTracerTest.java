@@ -19,14 +19,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-/** Unit tests for {@link SdkTracer}. */
-// Need to suppress warnings for MustBeClosed because Android 14 does not support
-// try-with-resources.
-@SuppressWarnings("MustBeClosedChecker")
-@ExtendWith(MockitoExtension.class)
 class SdkTracerTest {
 
   private static final String SPAN_NAME = "span_name";
@@ -35,12 +28,15 @@ class SdkTracerTest {
   private static final String INSTRUMENTATION_LIBRARY_VERSION = "0.2.0";
   private static final InstrumentationLibraryInfo instrumentationLibraryInfo =
       InstrumentationLibraryInfo.create(
-          INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+          INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION, "http://schemaurl");
   private final SdkTracer tracer =
       (SdkTracer)
           SdkTracerProvider.builder()
               .build()
-              .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+              .get(
+                  INSTRUMENTATION_LIBRARY_NAME,
+                  INSTRUMENTATION_LIBRARY_VERSION,
+                  "http://schemaurl");
 
   @Test
   void defaultSpanBuilder() {

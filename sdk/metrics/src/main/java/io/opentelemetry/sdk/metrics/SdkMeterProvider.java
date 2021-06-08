@@ -52,12 +52,19 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
 
   @Override
   public Meter get(String instrumentationName, @Nullable String instrumentationVersion) {
-    // Per the spec, both null and empty are "invalid" and a "default" should be used.
+    return get(instrumentationName, instrumentationVersion, null);
+  }
+
+  @Override
+  public Meter get(
+      String instrumentationName,
+      @Nullable String instrumentationVersion,
+      @Nullable String schemaUrl) {
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("Meter requested without instrumentation name.");
       instrumentationName = DEFAULT_METER_NAME;
     }
-    return registry.get(instrumentationName, instrumentationVersion);
+    return registry.get(instrumentationName, instrumentationVersion, schemaUrl);
   }
 
   @Override

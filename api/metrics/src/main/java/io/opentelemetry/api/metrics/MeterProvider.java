@@ -42,4 +42,19 @@ public interface MeterProvider {
    * @return a tracer instance.
    */
   Meter get(String instrumentationName, String instrumentationVersion);
+
+  /**
+   * Gets or creates a named and versioned meter instance associated with a specific version of *
+   * the OpenTelemetry schema.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @param instrumentationVersion The version of the instrumentation library.
+   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
+   *     library.
+   * @return a tracer instance.
+   */
+  default Meter get(String instrumentationName, String instrumentationVersion, String schemaUrl) {
+    return get(instrumentationName, instrumentationVersion);
+  }
 }

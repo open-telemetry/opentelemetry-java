@@ -127,6 +127,25 @@ public final class GlobalOpenTelemetry {
   }
 
   /**
+   * Gets or creates a named and versioned tracer instance from the globally registered {@link
+   * TracerProvider}.
+   *
+   * <p>This is a shortcut method for {@code getTracerProvider().get(instrumentationName,
+   * instrumentationVersion)}
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   * @param instrumentationVersion The version of the instrumentation library (e.g., "1.0.0").
+   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
+   *     library.
+   * @return a tracer instance.
+   */
+  public static Tracer getTracer(
+      String instrumentationName, String instrumentationVersion, String schemaUrl) {
+    return get().getTracer(instrumentationName, instrumentationVersion, schemaUrl);
+  }
+
+  /**
    * Unsets the global {@link OpenTelemetry}. This is only meant to be used from tests which need to
    * reconfigure {@link OpenTelemetry}.
    */

@@ -75,13 +75,17 @@ public final class SpanAdapter {
           ResourceSpans.Builder resourceSpansBuilder =
               ResourceSpans.newBuilder().setResource(ResourceAdapter.toProtoResource(resource));
           librarySpans.forEach(
-              (library, spans) ->
-                  resourceSpansBuilder.addInstrumentationLibrarySpans(
-                      InstrumentationLibrarySpans.newBuilder()
-                          .setInstrumentationLibrary(
-                              CommonAdapter.toProtoInstrumentationLibrary(library))
-                          .addAllSpans(spans)
-                          .build()));
+              (library, spans) -> {
+                InstrumentationLibrarySpans.Builder spansBuilder =
+                    InstrumentationLibrarySpans.newBuilder()
+                        .setInstrumentationLibrary(
+                            CommonAdapter.toProtoInstrumentationLibrary(library))
+                        .addAllSpans(spans);
+                if (library.getSchemaUrl() != null) {
+                  spansBuilder.setSchemaUrl(library.getSchemaUrl());
+                }
+                resourceSpansBuilder.addInstrumentationLibrarySpans(spansBuilder.build());
+              });
           resourceSpans.add(resourceSpansBuilder.build());
         });
     return resourceSpans;

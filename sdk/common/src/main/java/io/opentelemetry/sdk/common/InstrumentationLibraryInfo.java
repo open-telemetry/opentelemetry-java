@@ -31,7 +31,21 @@ public abstract class InstrumentationLibraryInfo {
    */
   public static InstrumentationLibraryInfo create(String name, @Nullable String version) {
     requireNonNull(name, "name");
-    return new AutoValue_InstrumentationLibraryInfo(name, version);
+    return new AutoValue_InstrumentationLibraryInfo(name, version, null);
+  }
+
+  /**
+   * Creates a new instance of {@link InstrumentationLibraryInfo}.
+   *
+   * @param name name of the instrumentation library (e.g., "io.opentelemetry.contrib.mongodb"),
+   *     must not be null
+   * @param version version of the instrumentation library (e.g., "1.0.0"), might be null
+   * @return the new instance
+   */
+  public static InstrumentationLibraryInfo create(
+      String name, @Nullable String version, @Nullable String schemaUrl) {
+    requireNonNull(name, "name");
+    return new AutoValue_InstrumentationLibraryInfo(name, version, schemaUrl);
   }
 
   /**
@@ -57,6 +71,16 @@ public abstract class InstrumentationLibraryInfo {
    */
   @Nullable
   public abstract String getVersion();
+
+  /**
+   * Returns the URL of the schema used by this instrumentation library, or {@code null} if not
+   * available.
+   *
+   * @return the URL of the schema used by this instrumentation library, or {@code null} if not
+   *     available.
+   */
+  @Nullable
+  public abstract String getSchemaUrl();
 
   // Package protected ctor to avoid others to extend this class.
   InstrumentationLibraryInfo() {}

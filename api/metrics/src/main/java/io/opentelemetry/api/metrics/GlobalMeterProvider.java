@@ -68,4 +68,23 @@ public final class GlobalMeterProvider {
   public static Meter getMeter(String instrumentationName, String instrumentationVersion) {
     return get().get(instrumentationName, instrumentationVersion);
   }
+
+  /**
+   * Gets or creates a named and versioned meter instance from the globally registered {@link
+   * MeterProvider}.
+   *
+   * <p>This is a shortcut method for {@code getGlobalMeterProvider().get(instrumentationName,
+   * instrumentationVersion)}
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @param instrumentationVersion The version of the instrumentation library.
+   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
+   *     library.
+   * @return a tracer instance.
+   */
+  public static Meter getMeter(
+      String instrumentationName, String instrumentationVersion, String schemaUrl) {
+    return get().get(instrumentationName, instrumentationVersion, schemaUrl);
+  }
 }
