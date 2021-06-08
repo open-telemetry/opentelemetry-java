@@ -105,7 +105,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     addLink(
         LinkData.create(
             spanContext,
-            RecordEventsReadableSpan.copyAndLimitAttributes(
+            RecordEventsReadableSpan.applyAttributesLimit(
                 attributes, spanLimits.getMaxNumberOfAttributesPerLink()),
             totalAttributeCount));
     return this;
