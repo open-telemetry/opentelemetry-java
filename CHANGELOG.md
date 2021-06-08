@@ -21,6 +21,10 @@ is published under the `io.opentelemetry.extension.noopapi` name.
 - The `io.opentelemetry.sdk.autoconfigure` module now supports the `OTEL_SERVICE_NAME`/`otel.service.name`
 environment variable/system property for configuring the SDK's `Resource` implementation.
 
+### Semantic Conventions (alpha)
+- The `SemanticAttributes` and `ResourceAttributes` classes have been updated to match the semantic conventions
+as of specification release `1.4.0`. There are no breaking changes in this update, only additions.
+
 ---
 
 ## Version 1.2.0 - 2021-05-07

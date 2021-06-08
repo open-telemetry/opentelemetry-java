@@ -638,6 +638,34 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<Long> RPC_GRPC_STATUS_CODE = longKey("rpc.grpc.status_code");
 
+  /**
+   * Protocol version as in `jsonrpc` property of request/response. Since JSON-RPC 1.0 does not
+   * specify this, the value can be omitted.
+   */
+  public static final AttributeKey<String> RPC_JSONRPC_VERSION = stringKey("rpc.jsonrpc.version");
+
+  /**
+   * `method` property from request. Unlike `rpc.method`, this may not relate to the actual method
+   * being called. Useful for client-side traces since client does not know what will be called on
+   * the server.
+   */
+  public static final AttributeKey<String> RPC_JSONRPC_METHOD = stringKey("rpc.jsonrpc.method");
+
+  /**
+   * `id` property of request or response. Since protocol allows id to be int, string, `null` or
+   * missing (for notifications), value is expected to be cast to string for simplicity. Use empty
+   * string in case of `null` value. Omit entirely if this is a notification.
+   */
+  public static final AttributeKey<String> RPC_JSONRPC_REQUEST_ID =
+      stringKey("rpc.jsonrpc.request_id");
+
+  /** `error.code` property of response if it is an error response. */
+  public static final AttributeKey<Long> RPC_JSONRPC_ERROR_CODE = longKey("rpc.jsonrpc.error_code");
+
+  /** `error.message` property of response if it is an error response. */
+  public static final AttributeKey<String> RPC_JSONRPC_ERROR_MESSAGE =
+      stringKey("rpc.jsonrpc.error_message");
+
   // Enum definitions
   public static final class DbSystemValues {
     /** Some other SQL database. Fallback only. See notes. */
@@ -730,6 +758,10 @@ public final class SemanticAttributes {
     public static final String GEODE = "geode";
     /** Elasticsearch. */
     public static final String ELASTICSEARCH = "elasticsearch";
+    /** Memcached. */
+    public static final String MEMCACHED = "memcached";
+    /** CockroachDB. */
+    public static final String COCKROACHDB = "cockroachdb";
 
     private DbSystemValues() {}
   }
