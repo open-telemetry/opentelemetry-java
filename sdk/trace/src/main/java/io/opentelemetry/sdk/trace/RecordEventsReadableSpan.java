@@ -299,7 +299,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         EventData.create(
             clock.now(),
             name,
-            ensureAttributesLimit(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
+            applyAttributesLimit(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
     return this;
   }
@@ -317,13 +317,13 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         EventData.create(
             unit.toNanos(timestamp),
             name,
-            ensureAttributesLimit(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
+            applyAttributesLimit(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
     return this;
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  static Attributes ensureAttributesLimit(final Attributes attributes, final int limit) {
+  static Attributes applyAttributesLimit(final Attributes attributes, final int limit) {
     if (attributes.isEmpty() || attributes.size() <= limit) {
       return attributes;
     }
