@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace.data;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
-import java.util.EnumMap;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -32,25 +31,6 @@ abstract class ImmutableStatusData implements StatusData {
   /** The operation contains an error. */
   static final StatusData ERROR = createInternal(StatusCode.ERROR, "");
 
-  // Visible for test
-  static final EnumMap<StatusCode, StatusData> codeToStatus = new EnumMap<>(StatusCode.class);
-
-  static {
-    codeToStatus.put(StatusCode.UNSET, StatusData.unset());
-    codeToStatus.put(StatusCode.OK, StatusData.ok());
-    codeToStatus.put(StatusCode.ERROR, StatusData.error());
-
-    // Ensure all values are in the map, even if we don't have constants defined.
-    // This can happen if the API version is newer than the SDK and new values were added there.
-    StatusCode[] codes = StatusCode.values();
-    for (StatusCode code : codes) {
-      StatusData status = codeToStatus.get(code);
-      if (status == null) {
-        codeToStatus.put(code, createInternal(code, ""));
-      }
-    }
-  }
-
   /**
    * Creates a derived instance of {@code Status} with the given description.
    *
@@ -59,7 +39,14 @@ abstract class ImmutableStatusData implements StatusData {
    */
   static StatusData create(StatusCode statusCode, String description) {
     if (description == null || description.isEmpty()) {
-      return codeToStatus.get(statusCode);
+      switch (statusCode) {
+        case UNSET:
+          return StatusData.unset();
+        case OK:
+          return StatusData.ok();
+        case ERROR:
+          return StatusData.error();
+      }
     }
     return createInternal(statusCode, description);
   }
