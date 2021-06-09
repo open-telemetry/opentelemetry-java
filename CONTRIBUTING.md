@@ -85,7 +85,6 @@ changes to the API (e.g., remove a public method) or to the ABI (e.g., change re
 * In general, we use the following ordering of class members:
     * Static fields (final before non-final)
     * Instance fields (final before non-final)
-    * Static construction methods (includes static factory methods and builder construction methods)
     * Constructors
       * In static utility classes (where all members are static), the private constructor
         (used to prevent construction) should be ordered after methods instead of before methods.
