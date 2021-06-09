@@ -2,6 +2,9 @@
 
 ## Unreleased:
 
+---
+## Version 1.3.0 - 2021-06-09
+
 ### API
 #### Enhancements
 - Parsing of the W3C Baggage header has been optimized.
@@ -20,6 +23,12 @@ it will treat these calls as no-ops.
 is published under the `io.opentelemetry.extension.noopapi` name.
 - The `io.opentelemetry.sdk.autoconfigure` module now supports the `OTEL_SERVICE_NAME`/`otel.service.name`
 environment variable/system property for configuring the SDK's `Resource` implementation.
+
+### Metrics (alpha)
+- The autoconfiguration code for metrics now supports durations to be provided with units attached to them (eg. "`100ms`"). This includes
+the following environment variables/system properties:
+  - `OTEL_EXPORTER_OTLP_TIMEOUT`/`otel.exporter.otlp.timeout`
+  - `OTEL_IMR_EXPORT_INTERVAL`/`otel.imr.export.interval`
 
 ---
 
