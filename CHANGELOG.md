@@ -2,6 +2,9 @@
 
 ## Unreleased:
 
+---
+## Version 1.3.0 - 2021-06-09
+
 ### API
 #### Enhancements
 - Parsing of the W3C Baggage header has been optimized.
