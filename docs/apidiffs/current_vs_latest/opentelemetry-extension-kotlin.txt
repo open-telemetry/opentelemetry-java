@@ -1,10 +1,2 @@
 Comparing source compatibility of  against 
-===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.extension.kotlin.ContextExtensionsKt  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	***  MODIFIED ANNOTATION: kotlin.Metadata
-		---  REMOVED ELEMENT: bv=1,0,3 (-)
-		***  MODIFIED ELEMENT: mv=1,5,1 (<- 1,4,1)
-		===  UNCHANGED ELEMENT: k=2
-		===  UNCHANGED ELEMENT: d1=��&#xA;�&#xA;���&#xA;���&#xA;���&#xA;����&#xA;����0�*�0��&#xA;����0�*�0��&#xA;����0�*�0�¨��
-		===  UNCHANGED ELEMENT: d2=asContextElement,Lkotlin/coroutines/CoroutineContext;,Lio/opentelemetry/context/Context;,Lio/opentelemetry/context/ImplicitContextKeyed;,getOpenTelemetryContext,opentelemetry-extension-kotlin
-		+++  NEW ELEMENT: xi=48 (+)
+No changes.
