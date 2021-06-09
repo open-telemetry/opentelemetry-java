@@ -42,7 +42,7 @@ jobs:
           properties: |
             testAdditionalJavaVersions=${{ matrix.testAdditionalJavaVersions }}
             org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }}
-      - uses: codecov/codecov-action@v1.5.0
+      - uses: codecov/codecov-action@v1.5.2
         if: ${{ matrix.coverage }}
       - uses: actions/upload-artifact@v2
         if: ${{ matrix.coverage }}
