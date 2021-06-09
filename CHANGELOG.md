@@ -2,6 +2,14 @@
 
 ## Unreleased:
 
+### Semantic Conventions (alpha)
+- The `SemanticAttributes` and `ResourceAttributes` classes have been updated to match the semantic conventions
+as of specification release `1.4.0`. These classes also now expose a `SCHEMA_URL` field which points at the 
+version of the OpenTelemetry schema the files were generated from. There are no breaking changes in this update, only additions.
+
+---
+## Version 1.3.0 - 2021-06-09
+
 ### API
 #### Enhancements
 - Parsing of the W3C Baggage header has been optimized.
@@ -21,10 +29,11 @@ is published under the `io.opentelemetry.extension.noopapi` name.
 - The `io.opentelemetry.sdk.autoconfigure` module now supports the `OTEL_SERVICE_NAME`/`otel.service.name`
 environment variable/system property for configuring the SDK's `Resource` implementation.
 
-### Semantic Conventions (alpha)
-- The `SemanticAttributes` and `ResourceAttributes` classes have been updated to match the semantic conventions
-as of specification release `1.4.0`. These classes also now expose a `SCHEMA_URL` field which points at the 
-version of the OpenTelemetry schema the files were generated from. There are no breaking changes in this update, only additions.
+### Metrics (alpha)
+- The autoconfiguration code for metrics now supports durations to be provided with units attached to them (eg. "`100ms`"). This includes
+the following environment variables/system properties:
+  - `OTEL_EXPORTER_OTLP_TIMEOUT`/`otel.exporter.otlp.timeout`
+  - `OTEL_IMR_EXPORT_INTERVAL`/`otel.imr.export.interval`
 
 ---
 
