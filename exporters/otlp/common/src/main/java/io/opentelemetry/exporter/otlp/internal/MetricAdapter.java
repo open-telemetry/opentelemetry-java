@@ -58,15 +58,7 @@ public final class MetricAdapter {
           new ArrayList<>(entryResource.getValue().size());
       for (Map.Entry<InstrumentationLibraryInfo, List<Metric>> entryLibrary :
           entryResource.getValue().entrySet()) {
-        InstrumentationLibraryMetrics.Builder metricsBuilder =
-            InstrumentationLibraryMetrics.newBuilder()
-                .setInstrumentationLibrary(
-                    CommonAdapter.toProtoInstrumentationLibrary(entryLibrary.getKey()))
-                .addAllMetrics(entryLibrary.getValue());
-        if (entryLibrary.getKey().getSchemaUrl() != null) {
-          metricsBuilder.setSchemaUrl(entryLibrary.getKey().getSchemaUrl());
-        }
-        instrumentationLibraryMetrics.add(metricsBuilder.build());
+        instrumentationLibraryMetrics.add(buildInstrumentationLibraryMetrics(entryLibrary));
       }
       resourceMetrics.add(
           ResourceMetrics.newBuilder()
@@ -75,6 +67,19 @@ public final class MetricAdapter {
               .build());
     }
     return resourceMetrics;
+  }
+
+  private static InstrumentationLibraryMetrics buildInstrumentationLibraryMetrics(
+      Map.Entry<InstrumentationLibraryInfo, List<Metric>> entryLibrary) {
+    InstrumentationLibraryMetrics.Builder metricsBuilder =
+        InstrumentationLibraryMetrics.newBuilder()
+            .setInstrumentationLibrary(
+                CommonAdapter.toProtoInstrumentationLibrary(entryLibrary.getKey()))
+            .addAllMetrics(entryLibrary.getValue());
+    if (entryLibrary.getKey().getSchemaUrl() != null) {
+      metricsBuilder.setSchemaUrl(entryLibrary.getKey().getSchemaUrl());
+    }
+    return metricsBuilder.build();
   }
 
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<Metric>>>

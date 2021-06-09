@@ -131,7 +131,7 @@ public final class GlobalOpenTelemetry {
    * TracerProvider}.
    *
    * <p>This is a shortcut method for {@code getTracerProvider().get(instrumentationName,
-   * instrumentationVersion)}
+   * instrumentationVersion, schemaUrl)}
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.

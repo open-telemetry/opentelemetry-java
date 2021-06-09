@@ -40,6 +40,8 @@ public abstract class InstrumentationLibraryInfo {
    * @param name name of the instrumentation library (e.g., "io.opentelemetry.contrib.mongodb"),
    *     must not be null
    * @param version version of the instrumentation library (e.g., "1.0.0"), might be null
+   * @param schemaUrl the URL of the OpenTelemetry schema being used by this instrumentation
+   *     library.
    * @return the new instance
    */
   public static InstrumentationLibraryInfo create(
