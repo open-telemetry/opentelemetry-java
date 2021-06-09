@@ -86,7 +86,7 @@ final class DefaultConfigProperties implements ConfigProperties {
    * Returns a long-valued configuration property.
    *
    * @return null if the property has not been configured.
-   * @throws NumberFormatException if the property is not a valid long.
+   * @throws ConfigurationException if the property is not a valid long.
    */
   @Override
   @Nullable
@@ -107,7 +107,7 @@ final class DefaultConfigProperties implements ConfigProperties {
    * Returns a double-valued configuration property.
    *
    * @return null if the property has not been configured.
-   * @throws NumberFormatException if the property is not a valid double.
+   * @throws ConfigurationException if the property is not a valid double.
    */
   @Override
   @Nullable
