@@ -17,6 +17,8 @@ import java.util.List;
 // DO NOT EDIT, this is an Auto-generated file from
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class SemanticAttributes {
+  /** The URL of the OpenTelemetry schema for these keys and values. */
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.4.0";
 
   /**
    * An identifier for the database management system (DBMS) product being used. See below for a
