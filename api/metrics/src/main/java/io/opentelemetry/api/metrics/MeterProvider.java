@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -54,7 +55,10 @@ public interface MeterProvider {
    *     library.
    * @return a tracer instance.
    */
-  default Meter get(String instrumentationName, String instrumentationVersion, String schemaUrl) {
-    return get(instrumentationName, instrumentationVersion);
+  default Meter get(
+      String instrumentationName, @Nullable String instrumentationVersion, String schemaUrl) {
+    return instrumentationVersion == null
+        ? get(instrumentationName)
+        : get(instrumentationName, instrumentationVersion);
   }
 }

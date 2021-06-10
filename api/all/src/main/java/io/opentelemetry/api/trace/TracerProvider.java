@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -60,7 +61,10 @@ public interface TracerProvider {
    *     library.
    * @return a tracer instance.
    */
-  default Tracer get(String instrumentationName, String instrumentationVersion, String schemaUrl) {
-    return get(instrumentationName, instrumentationVersion);
+  default Tracer get(
+      String instrumentationName, @Nullable String instrumentationVersion, String schemaUrl) {
+    return instrumentationVersion == null
+        ? get(instrumentationName)
+        : get(instrumentationName, instrumentationVersion);
   }
 }
