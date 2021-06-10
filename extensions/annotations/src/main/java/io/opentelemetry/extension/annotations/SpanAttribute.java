@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  *
  * @see <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation">OpenTelemetry
  *     OpenTelemetry Instrumentation for Java</a>
- * @since 1.2.0
+ * @since 1.4.0
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
