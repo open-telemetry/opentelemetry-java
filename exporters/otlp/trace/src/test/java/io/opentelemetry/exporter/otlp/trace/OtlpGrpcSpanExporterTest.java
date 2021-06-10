@@ -162,6 +162,14 @@ class OtlpGrpcSpanExporterTest {
   }
 
   @Test
+  void doubleShutdown() {
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
+    assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
   void testExport_Cancelled() {
     fakeCollector.setReturnedStatus(Status.CANCELLED);
     OtlpGrpcSpanExporter exporter =
