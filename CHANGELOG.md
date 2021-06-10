@@ -2,6 +2,11 @@
 
 ## Unreleased:
 
+### Semantic Conventions (alpha)
+- The `SemanticAttributes` and `ResourceAttributes` classes have been updated to match the semantic conventions
+as of specification release `1.4.0`. These classes also now expose a `SCHEMA_URL` field which points at the 
+version of the OpenTelemetry schema the files were generated from. There are no breaking changes in this update, only additions.
+
 ---
 ## Version 1.3.0 - 2021-06-09
 
