@@ -193,11 +193,11 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode shutdown() {
-    if (managedChannel.isShutdown()) {
-      return CompletableResultCode.ofSuccess();
-    }
     final CompletableResultCode result = new CompletableResultCode();
     managedChannel.notifyWhenStateChanged(ConnectivityState.SHUTDOWN, result::succeed);
+    if (managedChannel.isShutdown()) {
+      return result.succeed();
+    }
     managedChannel.shutdown();
     return result;
   }

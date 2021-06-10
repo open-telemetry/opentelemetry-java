@@ -179,11 +179,11 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode shutdown() {
-    if (managedChannel.isShutdown()) {
-      return CompletableResultCode.ofSuccess();
-    }
     final CompletableResultCode result = new CompletableResultCode();
     managedChannel.notifyWhenStateChanged(ConnectivityState.SHUTDOWN, result::succeed);
+    if (managedChannel.isShutdown()) {
+      return result.succeed();
+    }
     managedChannel.shutdown();
     this.spansSeen.unbind();
     this.spansExportedSuccess.unbind();
