@@ -60,6 +60,7 @@ public interface TracerProvider {
    * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
    *     library.
    * @return a tracer instance.
+   * @since 1.4.0
    */
   default Tracer get(
       String instrumentationName, @Nullable String instrumentationVersion, String schemaUrl) {

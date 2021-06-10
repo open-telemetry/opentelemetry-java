@@ -61,6 +61,7 @@ public final class ComponentRegistry<V> {
    * @param instrumentationVersion the version of the instrumentation library.
    * @param schemaUrl the URL of the OpenTelemetry schema used by the instrumentation library.
    * @return the registered value associated with this name and version.
+   * @since 1.4.0
    */
   public final V get(
       String instrumentationName,

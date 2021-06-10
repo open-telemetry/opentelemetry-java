@@ -6,6 +6,7 @@
 package io.opentelemetry.api.metrics;
 
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 
 /**
  * IMPORTANT: This is a temporary class, and solution for the metrics package until it will be
@@ -82,9 +83,10 @@ public final class GlobalMeterProvider {
    * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
    *     library.
    * @return a tracer instance.
+   * @since 1.4.0
    */
   public static Meter getMeter(
-      String instrumentationName, String instrumentationVersion, String schemaUrl) {
+      String instrumentationName, @Nullable String instrumentationVersion, String schemaUrl) {
     return get().get(instrumentationName, instrumentationVersion, schemaUrl);
   }
 }

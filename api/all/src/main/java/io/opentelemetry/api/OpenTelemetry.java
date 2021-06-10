@@ -8,6 +8,7 @@ package io.opentelemetry.api;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import javax.annotation.Nullable;
 
 /**
  * The entrypoint to telemetry functionality for tracing, metrics and baggage.
@@ -73,9 +74,10 @@ public interface OpenTelemetry {
    * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
    *     library.
    * @return a tracer instance.
+   * @since 1.4.0
    */
   default Tracer getTracer(
-      String instrumentationName, String instrumentationVersion, String schemaUrl) {
+      String instrumentationName, @Nullable String instrumentationVersion, String schemaUrl) {
     return getTracerProvider().get(instrumentationName, instrumentationVersion, schemaUrl);
   }
 

@@ -43,6 +43,7 @@ public abstract class InstrumentationLibraryInfo {
    * @param schemaUrl the URL of the OpenTelemetry schema being used by this instrumentation
    *     library.
    * @return the new instance
+   * @since 1.4.0
    */
   public static InstrumentationLibraryInfo create(
       String name, @Nullable String version, @Nullable String schemaUrl) {

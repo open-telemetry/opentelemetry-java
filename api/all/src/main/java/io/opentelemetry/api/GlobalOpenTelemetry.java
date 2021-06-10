@@ -139,9 +139,10 @@ public final class GlobalOpenTelemetry {
    * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
    *     library.
    * @return a tracer instance.
+   * @since 1.4.0
    */
   public static Tracer getTracer(
-      String instrumentationName, String instrumentationVersion, String schemaUrl) {
+      String instrumentationName, @Nullable String instrumentationVersion, String schemaUrl) {
     return get().getTracer(instrumentationName, instrumentationVersion, schemaUrl);
   }
 
