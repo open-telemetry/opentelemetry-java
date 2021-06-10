@@ -4,15 +4,11 @@ pluginManagement {
         id "com.github.johnrengelman.shadow" version "6.1.0"
         id 'com.google.protobuf' version '0.8.8'
     }
-
-    repositories {
-        gradlePluginPortal()
-        google()
-    }
 }
 
 rootProject.name = "opentelemetry-java-examples"
-include ":opentelemetry-examples-grpc",
+include ":opentelemetry-examples-autoconfigure",
+        ":opentelemetry-examples-grpc",
         ":opentelemetry-examples-http",
         ":opentelemetry-examples-jaeger",
         ":opentelemetry-examples-metrics",

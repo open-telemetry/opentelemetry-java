@@ -43,8 +43,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -55,12 +58,13 @@ import org.testcontainers.utility.MountableFile;
 @SuppressWarnings({"FutureReturnValueIgnored", "CatchAndPrintStackTrace"})
 public class OtlpPipelineStressTest {
 
-  public static final int OTLP_RECEIVER_PORT =
-      55680; // todo: switch to 4317 when that port makes it into the collector docker image.
+  public static final int OTLP_RECEIVER_PORT = 4317;
   public static final int COLLECTOR_PROXY_PORT = 44444;
   public static final int TOXIPROXY_CONTROL_PORT = 8474;
   public static Network network = Network.newNetwork();
   public static AtomicLong totalSpansReceivedByCollector = new AtomicLong();
+
+  private static final Logger logger = LoggerFactory.getLogger(OtlpPipelineStressTest.class);
 
   @Container
   public static GenericContainer<?> collectorContainer =
@@ -74,7 +78,7 @@ public class OtlpPipelineStressTest {
           .withCopyFileToContainer(
               MountableFile.forClasspathResource("otel-collector-config-perf.yaml"),
               "/etc/otel-collector-config-perf.yaml")
-          .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
+          .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("otel-collector")))
           .withLogConsumer(
               outputFrame -> {
                 String logline = outputFrame.getUtf8String();
@@ -134,7 +138,7 @@ public class OtlpPipelineStressTest {
 
     toxiproxyClient.reset();
     collectorProxy.delete();
-    System.out.println("totalSpansReceivedByCollector = " + totalSpansReceivedByCollector);
+    logger.info("totalSpansReceivedByCollector = {}", totalSpansReceivedByCollector);
   }
 
   @Test
@@ -164,7 +168,8 @@ public class OtlpPipelineStressTest {
               latch.await();
               runOnce(null, 30_000);
             } catch (InterruptedException e) {
-              e.printStackTrace();
+              Thread.currentThread().interrupt();
+              throw new IllegalStateException("Interrupted", e);
             }
           });
     }
@@ -200,7 +205,7 @@ public class OtlpPipelineStressTest {
           pointsByLabelset.forEach(
               (labels, longPoints) -> {
                 long total = longPoints.get(longPoints.size() - 1).getValue();
-                System.out.println(name + " : " + labels + " : " + total);
+                logger.info("{} : {} : {}", name, labels, total);
               });
         });
   }
@@ -252,7 +257,7 @@ public class OtlpPipelineStressTest {
             .setMetricExporter(metricExporter)
             .setMetricProducers(Collections.singleton(meterProvider))
             .setExportIntervalMillis(1000)
-            .build();
+            .buildAndStart();
 
     // set up the span exporter and wire it into the SDK
     OtlpGrpcSpanExporter spanExporter =

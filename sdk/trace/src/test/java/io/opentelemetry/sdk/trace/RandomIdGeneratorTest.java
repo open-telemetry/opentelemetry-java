@@ -19,11 +19,25 @@ class RandomIdGeneratorTest {
 
     // Can't assert values but can assert they're valid, try a lot as a sort of fuzz check.
     for (int i = 0; i < 1000; i++) {
-      CharSequence traceId = generator.generateTraceId();
-      assertThat(traceId.toString()).isNotEqualTo(TraceId.getInvalid());
+      String traceId = generator.generateTraceId();
+      assertThat(traceId).isNotEqualTo(TraceId.getInvalid());
 
-      CharSequence spanId = generator.generateSpanId();
-      assertThat(spanId.toString()).isNotEqualTo(SpanId.getInvalid());
+      String spanId = generator.generateSpanId();
+      assertThat(spanId).isNotEqualTo(SpanId.getInvalid());
+    }
+  }
+
+  @Test
+  void androidVersion() {
+    IdGenerator generator = AndroidFriendlyRandomIdGenerator.INSTANCE;
+
+    // Can't assert values but can assert they're valid, try a lot as a sort of fuzz check.
+    for (int i = 0; i < 1000; i++) {
+      String traceId = generator.generateTraceId();
+      assertThat(traceId).isNotEqualTo(TraceId.getInvalid());
+
+      String spanId = generator.generateSpanId();
+      assertThat(spanId).isNotEqualTo(SpanId.getInvalid());
     }
   }
 }

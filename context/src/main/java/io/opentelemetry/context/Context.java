@@ -100,6 +100,40 @@ public interface Context {
   }
 
   /**
+   * Returns an {@link Executor} which delegates to the provided {@code executor}, wrapping all
+   * invocations of {@link Executor#execute(Runnable)} with the {@linkplain Context#current()
+   * current context} at the time of invocation.
+   *
+   * <p>This is generally used to create an {@link Executor} which will forward the {@link Context}
+   * during an invocation to another thread. For example, you may use something like {@code Executor
+   * dbExecutor = Context.wrapTasks(threadPool)} to ensure calls like {@code dbExecutor.execute(()
+   * -> database.query())} have {@link Context} available on the thread executing database queries.
+   *
+   * @since 1.1.0
+   */
+  static Executor taskWrapping(Executor executor) {
+    return command -> executor.execute(Context.current().wrap(command));
+  }
+
+  /**
+   * Returns an {@link ExecutorService} which delegates to the provided {@code executorService},
+   * wrapping all invocations of {@link ExecutorService} methods such as {@link
+   * ExecutorService#execute(Runnable)} or {@link ExecutorService#submit(Runnable)} with the
+   * {@linkplain Context#current() current context} at the time of invocation.
+   *
+   * <p>This is generally used to create an {@link ExecutorService} which will forward the {@link
+   * Context} during an invocation to another thread. For example, you may use something like {@code
+   * ExecutorService dbExecutor = Context.wrapTasks(threadPool)} to ensure calls like {@code
+   * dbExecutor.execute(() -> database.query())} have {@link Context} available on the thread
+   * executing database queries.
+   *
+   * @since 1.1.0
+   */
+  static ExecutorService taskWrapping(ExecutorService executorService) {
+    return new CurrentContextExecutorService(executorService);
+  }
+
+  /**
    * Returns the value stored in this {@link Context} for the given {@link ContextKey}, or {@code
    * null} if there is no value for the key in this context.
    */

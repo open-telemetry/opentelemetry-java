@@ -2,13 +2,15 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.protobuf.gradle.*
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import io.morethan.jmhreport.gradle.JmhReportExtension
-import me.champeau.gradle.JMHPluginExtension
+import me.champeau.jmh.JmhParameters
+import me.champeau.gradle.japicmp.JapicmpTask
 import nebula.plugin.release.git.opinion.Strategies
+import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.ErrorProneOptions
 import net.ltgt.gradle.errorprone.ErrorPronePlugin
+import net.ltgt.gradle.nullaway.NullAwayOptions
 import org.gradle.api.plugins.JavaPlugin.*
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferPlugin
 import java.time.Duration
@@ -22,9 +24,48 @@ plugins {
     id("com.google.protobuf") apply false
     id("de.marcphilipp.nexus-publish") apply false
     id("io.morethan.jmhreport") apply false
-    id("me.champeau.gradle.jmh") apply false
+    id("me.champeau.jmh") apply false
     id("net.ltgt.errorprone") apply false
+    id("net.ltgt.nullaway") apply false
     id("ru.vyarus.animalsniffer") apply false
+    id("me.champeau.gradle.japicmp") apply false
+}
+
+
+/**
+ * Locate the project's artifact of a particular version.
+ */
+fun Project.findArtifact(version: String) : File {
+    val existingGroup = this.group
+    try {
+        // Temporarily change the group name because we want to fetch an artifact with the same
+        // Maven coordinates as the project, which Gradle would not allow otherwise.
+        this.group = "virtual_group"
+        val depModule = "io.opentelemetry:${base.archivesBaseName}:$version@jar"
+        val depJar = "${base.archivesBaseName}-${version}.jar"
+        val configuration: Configuration = configurations.detachedConfiguration(
+                dependencies.create(depModule)
+        )
+        return files(configuration.files).filter {
+            it.name.equals(depJar)
+        }.singleFile
+    } finally {
+        this.group = existingGroup
+    }
+}
+
+/**
+ * The latest *released* version of the project. Evaluated lazily so the work is only done if necessary.
+ */
+val latestReleasedVersion : String by lazy {
+    // hack to find the current released version of the project
+    val temp: Configuration = project.configurations.create("tempConfig")
+    // pick the api, since it's always there.
+    dependencies.add("tempConfig", "io.opentelemetry:opentelemetry-api:latest.release")
+    val moduleVersion = project.configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
+    project.configurations.remove(temp)
+    println("Discovered latest release version: " + moduleVersion)
+    moduleVersion
 }
 
 if (!JavaVersion.current().isJava11Compatible()) {
@@ -65,6 +106,8 @@ nexusStaging {
     delayBetweenRetriesInMillis = 10000
 }
 
+val enableNullaway: String? by project
+
 subprojects {
     group = "io.opentelemetry"
 
@@ -76,15 +119,13 @@ subprojects {
 
         plugins.apply("com.diffplug.spotless")
         plugins.apply("net.ltgt.errorprone")
+        plugins.apply("net.ltgt.nullaway")
 
         configure<BasePluginConvention> {
             archivesBaseName = "opentelemetry-${name}"
         }
 
         configure<JavaPluginExtension> {
-            sourceCompatibility = JavaVersion.VERSION_1_8
-            targetCompatibility = JavaVersion.VERSION_1_8
-
             toolchain {
                 languageVersion.set(JavaLanguageVersion.of(11))
             }
@@ -101,7 +142,7 @@ subprojects {
         }
 
         configure<JacocoPluginExtension> {
-            toolVersion = "0.8.6"
+            toolVersion = "0.8.7"
         }
 
         val javaToolchains = the<JavaToolchainService>()
@@ -109,7 +150,7 @@ subprojects {
         tasks {
             val testJava8 by registering(Test::class) {
                 javaLauncher.set(javaToolchains.launcherFor {
-                    languageVersion.set(JavaLanguageVersion.of(14))
+                    languageVersion.set(JavaLanguageVersion.of(8))
                 })
 
                 configure<JacocoTaskExtension> {
@@ -143,6 +184,10 @@ subprojects {
                             "-Werror"
                     ))
                 }
+                //disable deprecation warnings for the protobuf module
+                if (project.name == "proto") {
+                    options.compilerArgs.add("-Xlint:-deprecation")
+                }
 
                 options.encoding = "UTF-8"
 
@@ -155,6 +200,17 @@ subprojects {
                     disableWarningsInGeneratedCode.set(true)
                     allDisabledChecksAsWarnings.set(true)
 
+                    (this as ExtensionAware).extensions.configure<NullAwayOptions> {
+                        // Enable nullaway on main sources.
+                        // TODO(anuraaga): Remove enableNullaway flag when all errors fixed
+                        if (!name.contains("Test") && !name.contains("Jmh") && enableNullaway == "true") {
+                            severity.set(CheckSeverity.ERROR)
+                        } else {
+                            severity.set(CheckSeverity.OFF)
+                        }
+                        annotatedPackages.add("io.opentelemetry")
+                    }
+
                     // Doesn't currently use Var annotations.
                     disable("Var") // "-Xep:Var:OFF"
 
@@ -164,6 +220,8 @@ subprojects {
 
                     // AutoValueImmutableFields suggests returning Guava types from API methods
                     disable("AutoValueImmutableFields")
+                    // Suggests using Guava types for fields but we don't use Guava
+                    disable("ImmutableMemberCollection")
                     // "-Xep:AutoValueImmutableFields:OFF"
 
                     // Fully qualified names may be necessary when deprecating a class to avoid
@@ -171,7 +229,7 @@ subprojects {
                     disable("UnnecessarilyFullyQualified")
 
                     // Ignore warnings for protobuf and jmh generated files.
-                    excludedPaths.set(".*generated.*")
+                    excludedPaths.set(".*generated.*|.*internal.shaded.*")
                     // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
 
                     disable("Java7ApiChecker")
@@ -239,7 +297,12 @@ subprojects {
                     inputs.property("moduleName", moduleName)
 
                     manifest {
-                        attributes("Automatic-Module-Name" to moduleName)
+                        attributes(
+                                "Automatic-Module-Name" to moduleName,
+                                "Built-By" to System.getProperty("user.name"),
+                                "Built-JDK" to System.getProperty("java.version"),
+                                "Implementation-Title" to project.name,
+                                "Implementation-Version" to project.version)
                     }
                 }
             }
@@ -302,14 +365,19 @@ subprojects {
             }
         }
 
+        val dependencyManagement by configurations.creating {
+            isCanBeConsumed = false
+            isCanBeResolved = false
+            isVisible = false
+        }
+
         dependencies {
-            configurations.configureEach {
-                // Gradle and newer plugins will set these configuration properties correctly.
-                if (isCanBeResolved && !isCanBeConsumed
-                        // Older ones (like JMH) may not, so check the name as well.
-                        // Kotlin compiler classpaths don't support BOM nor need it.
-                        || name.endsWith("Classpath") && !name.startsWith("kotlin")) {
-                    add(name, platform(project(":dependencyManagement")))
+            add(dependencyManagement.name, platform(project(":dependencyManagement")))
+            afterEvaluate {
+                configurations.configureEach {
+                    if (isCanBeResolved && !isCanBeConsumed) {
+                        extendsFrom(dependencyManagement)
+                    }
                 }
             }
 
@@ -321,6 +389,7 @@ subprojects {
             add(TEST_COMPILE_ONLY_CONFIGURATION_NAME, "com.google.code.findbugs:jsr305")
 
             add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.junit.jupiter:junit-jupiter-api")
+            add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.junit.jupiter:junit-jupiter-params")
             add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "nl.jqno.equalsverifier:equalsverifier")
             add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.mockito:mockito-core")
             add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.mockito:mockito-junit-jupiter")
@@ -332,6 +401,7 @@ subprojects {
             add(TEST_RUNTIME_ONLY_CONFIGURATION_NAME, "org.junit.vintage:junit-vintage-engine")
 
             add(ErrorPronePlugin.CONFIGURATION_NAME, "com.google.errorprone:error_prone_core")
+            add(ErrorPronePlugin.CONFIGURATION_NAME, "com.uber.nullaway:nullaway")
 
             add(ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "com.google.guava:guava-beta-checker")
 
@@ -381,7 +451,7 @@ subprojects {
             }
         }
 
-        plugins.withId("me.champeau.gradle.jmh") {
+        plugins.withId("me.champeau.jmh") {
             // Always include the jmhreport plugin and run it after jmh task.
             plugins.apply("io.morethan.jmhreport")
             dependencies {
@@ -392,25 +462,31 @@ subprojects {
 
             // invoke jmh on a single benchmark class like so:
             //   ./gradlew -PjmhIncludeSingleClass=StatsTraceContextBenchmark clean :grpc-core:jmh
-            configure<JMHPluginExtension> {
-                failOnError = true
-                resultFormat = "JSON"
+            configure<JmhParameters> {
+                failOnError.set(true)
+                resultFormat.set("JSON")
                 // Otherwise an error will happen:
                 // Could not expand ZIP 'byte-buddy-agent-1.9.7.jar'.
-                isIncludeTests = false
-                profilers = listOf("gc")
+                includeTests.set(false)
+                profilers.add("gc")
                 val jmhIncludeSingleClass: String? by project
                 if (jmhIncludeSingleClass != null) {
-                    include = listOf(jmhIncludeSingleClass)
+                    includes.add(jmhIncludeSingleClass as String)
                 }
             }
 
             configure<JmhReportExtension> {
-                jmhResultPath = file("${buildDir}/reports/jmh/results.json").absolutePath
-                jmhReportOutput = file("${buildDir}/reports/jmh").absolutePath
+                jmhResultPath = file("${buildDir}/results/jmh/results.json").absolutePath
+                jmhReportOutput = file("${buildDir}/results/jmh").absolutePath
             }
 
             tasks {
+                // TODO(anuraaga): Unclear why this is triggering even though there don't seem to
+                // be duplicates, possibly a bug in JMH plugin.
+                named<ProcessResources>("processJmhResources") {
+                    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                }
+
                 named("jmh") {
                     finalizedBy(named("jmhReport"))
                 }
@@ -418,9 +494,54 @@ subprojects {
         }
     }
 
-    plugins.withId("maven-publish") {
-        plugins.apply("signing")
+    plugins.withId("me.champeau.gradle.japicmp") {
+        afterEvaluate {
+            tasks {
+                val jApiCmp by registering(JapicmpTask::class) {
+                    dependsOn("jar")
+                    // the japicmp "old" version is either the user-specified one, or the latest release.
+                    val userRequestedBase = project.properties["apiBaseVersion"] as String?
+                    val baselineVersion: String = userRequestedBase ?: latestReleasedVersion
+                    val baselineArtifact: File = project.findArtifact(baselineVersion)
+                    oldClasspath = files(baselineArtifact)
 
+                    // the japicmp "new" version is either the user-specified one, or the locally built jar.
+                    val newVersion : String? = project.properties["apiNewVersion"] as String?
+                    val newArtifact: File = if (newVersion == null) {
+                        val jar = getByName("jar") as Jar
+                        file(jar.archiveFile)
+                    } else {
+                        project.findArtifact(newVersion)
+                    }
+                    newClasspath = files(newArtifact)
+
+                    //only output changes, not everything
+                    isOnlyModified = true
+                    //this is needed so that we only consider the current artifact, and not dependencies
+                    isIgnoreMissingClasses = true
+                    // double wildcards don't seem to work here (*.internal.*)
+                    packageExcludes = listOf("*.internal", "io.opentelemetry.internal.shaded.jctools.*")
+                    if (newVersion == null) {
+                        val baseVersionString = if (userRequestedBase == null) "latest" else baselineVersion
+                        txtOutputFile = file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${project.base.archivesBaseName}.txt")
+                    } else {
+                        txtOutputFile = file("$rootDir/docs/apidiffs/${newVersion}_vs_${baselineVersion}/${project.base.archivesBaseName}.txt")
+                    }
+                }
+                // have the check task depend on the api comparison task, to make it more likely it will get used.
+                named("check") {
+                    dependsOn(jApiCmp)
+                }
+            }
+        }
+    }
+
+    plugins.withId("maven-publish") {
+        // generate the api diff report for any module that is stable and publishes a jar.
+        if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
+            plugins.apply("me.champeau.gradle.japicmp")
+        }
+        plugins.apply("signing")
         plugins.apply("de.marcphilipp.nexus-publish")
 
         configure<PublishingExtension> {

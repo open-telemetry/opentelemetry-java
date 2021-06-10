@@ -31,8 +31,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  *
  * <p>For improved readability, ignore the phaser lines as those are there to ensure deterministic
  * execution for the tests without sleeps.
- *
- * @author tylerbenson
  */
 class PromisePropagationTest {
   @RegisterExtension

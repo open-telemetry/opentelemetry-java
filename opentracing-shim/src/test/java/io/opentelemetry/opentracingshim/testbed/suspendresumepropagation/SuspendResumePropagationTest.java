@@ -20,8 +20,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 /**
  * These tests are intended to simulate the kind of async models that are common in java async
  * frameworks.
- *
- * @author tylerbenson
  */
 class SuspendResumePropagationTest {
   @RegisterExtension

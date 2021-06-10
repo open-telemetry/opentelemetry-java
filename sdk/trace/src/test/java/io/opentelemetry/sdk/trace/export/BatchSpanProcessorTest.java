@@ -197,12 +197,19 @@ class BatchSpanProcessorTest {
             .build();
 
     sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 50; i++) {
       createEndedSpan("notExported");
     }
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
-    assertThat(exported.size()).isEqualTo(98);
+    assertThat(exported.size()).isEqualTo(49);
+
+    for (int i = 0; i < 50; i++) {
+      createEndedSpan("notExported");
+    }
+    exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(49);
 
     batchSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
     exported = waitingSpanExporter.getExported();

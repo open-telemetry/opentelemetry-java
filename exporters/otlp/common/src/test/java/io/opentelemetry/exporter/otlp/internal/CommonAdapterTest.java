@@ -136,11 +136,13 @@ class CommonAdapterTest {
 
   @Test
   void toProtoInstrumentationLibrary() {
+    InstrumentationLibraryInfo info = InstrumentationLibraryInfo.create("name", "version");
     InstrumentationLibrary instrumentationLibrary =
-        CommonAdapter.toProtoInstrumentationLibrary(
-            InstrumentationLibraryInfo.create("name", "version"));
+        CommonAdapter.toProtoInstrumentationLibrary(info);
     assertThat(instrumentationLibrary.getName()).isEqualTo("name");
     assertThat(instrumentationLibrary.getVersion()).isEqualTo("version");
+    // Memoized
+    assertThat(CommonAdapter.toProtoInstrumentationLibrary(info)).isSameAs(instrumentationLibrary);
   }
 
   @Test

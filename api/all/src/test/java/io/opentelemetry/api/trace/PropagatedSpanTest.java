@@ -50,6 +50,10 @@ class PropagatedSpanTest {
     span.setAttribute(longArrayKey("NullArrayLong"), null);
     span.setAttribute(doubleArrayKey("NullArrayDouble"), null);
     span.setAttribute((String) null, null);
+    span.setAllAttributes(null);
+    span.setAllAttributes(Attributes.empty());
+    span.setAllAttributes(
+        Attributes.of(stringKey("MyStringAttributeKey"), "MyStringAttributeValue"));
     span.addEvent("event");
     span.addEvent("event", 0, TimeUnit.NANOSECONDS);
     span.addEvent("event", Instant.EPOCH);
@@ -69,6 +73,10 @@ class PropagatedSpanTest {
   @Test
   void defaultSpan_ToString() {
     Span span = Span.getInvalid();
-    assertThat(span.toString()).isEqualTo("DefaultSpan");
+    assertThat(span.toString())
+        .isEqualTo(
+            "PropagatedSpan{ImmutableSpanContext{traceId=00000000000000000000000000000000, "
+                + "spanId=0000000000000000, traceFlags=00, "
+                + "traceState=ArrayBasedTraceState{entries=[]}, remote=false, valid=false}}");
   }
 }

@@ -3,7 +3,7 @@ package io.opentelemetry.example.metrics;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
@@ -24,7 +24,7 @@ public final class LongCounterExample {
       openTelemetry.getTracer("io.opentelemetry.example.metrics", "0.13.1");
 
   private static final Meter sampleMeter =
-      GlobalMetricsProvider.getMeter("io.opentelemetry.example.metrics", "0.13.1");
+      GlobalMeterProvider.getMeter("io.opentelemetry.example.metrics", "0.13.1");
   private static final LongCounter directoryCounter =
       sampleMeter
           .longCounterBuilder("directories_search_count")

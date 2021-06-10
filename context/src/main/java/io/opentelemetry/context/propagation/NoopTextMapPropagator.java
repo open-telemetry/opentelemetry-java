@@ -27,6 +27,9 @@ final class NoopTextMapPropagator implements TextMapPropagator {
 
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
+    if (context == null) {
+      return Context.root();
+    }
     return context;
   }
 }

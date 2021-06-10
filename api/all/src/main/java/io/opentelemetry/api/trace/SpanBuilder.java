@@ -137,6 +137,9 @@ public interface SpanBuilder {
    * operations, where a single batch handler processes multiple requests from different traces or
    * the same trace.
    *
+   * <p>Implementations may ignore calls with an {@linkplain SpanContext#isValid() invalid span
+   * context}.
+   *
    * @param spanContext the context of the linked {@code Span}.
    * @return this.
    */
@@ -148,6 +151,9 @@ public interface SpanBuilder {
    * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
    * operations, where a single batch handler processes multiple requests from different traces or
    * the same trace.
+   *
+   * <p>Implementations may ignore calls with an {@linkplain SpanContext#isValid() invalid span
+   * context}.
    *
    * @param spanContext the context of the linked {@code Span}.
    * @param attributes the attributes of the {@code Link}.
@@ -221,6 +227,24 @@ public interface SpanBuilder {
    * @return this.
    */
   <T> SpanBuilder setAttribute(AttributeKey<T> key, T value);
+
+  /**
+   * Sets attributes to the {@link SpanBuilder}. If the {@link SpanBuilder} previously contained a
+   * mapping for any of the keys, the old values are replaced by the specified values.
+   *
+   * @param attributes the attributes
+   * @return this.
+   * @since 1.2.0
+   */
+  @SuppressWarnings("unchecked")
+  default SpanBuilder setAllAttributes(Attributes attributes) {
+    if (attributes == null || attributes.isEmpty()) {
+      return this;
+    }
+    attributes.forEach(
+        (attributeKey, value) -> setAttribute((AttributeKey<Object>) attributeKey, value));
+    return this;
+  }
 
   /**
    * Sets the {@link SpanKind} for the newly created {@code Span}. If not called, the implementation

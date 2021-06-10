@@ -52,6 +52,9 @@ class SpanBuilderTest {
               spanBuilder.setAttribute("key", .12345);
               spanBuilder.setAttribute("key", true);
               spanBuilder.setAttribute(stringKey("key"), "value");
+              spanBuilder.setAllAttributes(Attributes.of(stringKey("key"), "value"));
+              spanBuilder.setAllAttributes(Attributes.empty());
+              spanBuilder.setAllAttributes(null);
               spanBuilder.setStartTimestamp(12345L, TimeUnit.NANOSECONDS);
               spanBuilder.setStartTimestamp(Instant.EPOCH);
               spanBuilder.setStartTimestamp(null);

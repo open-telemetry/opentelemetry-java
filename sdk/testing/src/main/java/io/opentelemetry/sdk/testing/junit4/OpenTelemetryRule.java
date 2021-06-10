@@ -92,6 +92,7 @@ public final class OpenTelemetryRule extends ExternalResource {
 
   @Override
   protected void before() {
+    GlobalOpenTelemetry.resetForTest();
     GlobalOpenTelemetry.set(openTelemetry);
     clearSpans();
   }

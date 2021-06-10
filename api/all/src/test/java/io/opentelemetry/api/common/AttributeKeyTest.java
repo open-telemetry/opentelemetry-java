@@ -5,6 +5,8 @@
 
 package io.opentelemetry.api.common;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
@@ -14,5 +16,10 @@ class AttributeKeyTest {
   @SuppressWarnings("AutoValueSubclassLeaked")
   void equalsVerifier() {
     EqualsVerifier.forClass(AutoValue_AttributeKeyImpl.class).verify();
+  }
+
+  @Test
+  void nullToEmpty() {
+    assertThat(AttributeKey.stringKey(null).getKey()).isEmpty();
   }
 }

@@ -37,6 +37,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Collections;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 class SpanAdapterTest {
@@ -48,7 +49,11 @@ class SpanAdapterTest {
   private static final SpanContext SPAN_CONTEXT =
       SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
 
-  @Test
+  private static final SpanAdapter.ThreadLocalCache threadLocalCache =
+      new SpanAdapter.ThreadLocalCache();
+
+  // Repeat to reuse the cache. If we forgot to clear any reused builder it will fail.
+  @RepeatedTest(3)
   void toProtoSpan() {
     Span span =
         SpanAdapter.toProtoSpan(
@@ -69,7 +74,8 @@ class SpanAdapterTest {
                 .setLinks(Collections.singletonList(LinkData.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
                 .setStatus(StatusData.ok())
-                .build());
+                .build(),
+            threadLocalCache);
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(span.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
@@ -144,7 +150,8 @@ class SpanAdapterTest {
   void toProtoSpanEvent_WithoutAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                EventData.create(12345, "test_without_attributes", Attributes.empty())))
+                EventData.create(12345, "test_without_attributes", Attributes.empty()),
+                threadLocalCache))
         .isEqualTo(
             Span.Event.newBuilder()
                 .setTimeUnixNano(12345)
@@ -160,7 +167,8 @@ class SpanAdapterTest {
                     12345,
                     "test_with_attributes",
                     Attributes.of(stringKey("key_string"), "string"),
-                    5)))
+                    5),
+                threadLocalCache))
         .isEqualTo(
             Span.Event.newBuilder()
                 .setTimeUnixNano(12345)
@@ -176,7 +184,7 @@ class SpanAdapterTest {
 
   @Test
   void toProtoSpanLink_WithoutAttributes() {
-    assertThat(SpanAdapter.toProtoSpanLink(LinkData.create(SPAN_CONTEXT)))
+    assertThat(SpanAdapter.toProtoSpanLink(LinkData.create(SPAN_CONTEXT), threadLocalCache))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
@@ -188,7 +196,8 @@ class SpanAdapterTest {
   void toProtoSpanLink_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanLink(
-                LinkData.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
+                LinkData.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5),
+                threadLocalCache))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))

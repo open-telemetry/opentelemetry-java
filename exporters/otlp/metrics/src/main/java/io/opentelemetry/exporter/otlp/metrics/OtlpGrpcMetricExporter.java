@@ -9,12 +9,14 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
 import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc.MetricsServiceFutureStub;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
@@ -28,7 +30,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
 
-  private static final Logger logger = Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
+  private final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(OtlpGrpcMetricExporter.class.getName()));
 
   private final MetricsServiceFutureStub metricsService;
   private final ManagedChannel managedChannel;
@@ -78,7 +81,30 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
           @Override
           public void onFailure(Throwable t) {
-            logger.log(Level.WARNING, "Failed to export metrics", t);
+            Status status = Status.fromThrowable(t);
+            switch (status.getCode()) {
+              case UNIMPLEMENTED:
+                logger.log(
+                    Level.SEVERE,
+                    "Failed to export metrics. Server responded with UNIMPLEMENTED. "
+                        + "This usually means that your collector is not configured with an otlp "
+                        + "receiver in the \"pipelines\" section of the configuration. "
+                        + "Full error message: "
+                        + t.getMessage());
+                break;
+              case UNAVAILABLE:
+                logger.log(
+                    Level.SEVERE,
+                    "Failed to export metrics. Server is UNAVAILABLE. "
+                        + "Make sure your collector is running and reachable from this network."
+                        + t.getMessage());
+                break;
+              default:
+                logger.log(
+                    Level.WARNING, "Failed to export metrics. Error message: " + t.getMessage());
+                break;
+            }
+            logger.log(Level.FINEST, "Failed to export metrics. Details follow: " + t);
             result.fail();
           }
         },

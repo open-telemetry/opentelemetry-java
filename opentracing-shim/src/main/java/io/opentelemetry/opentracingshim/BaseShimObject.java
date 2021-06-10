@@ -6,7 +6,6 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.propagation.ContextPropagators;
 
 abstract class BaseShimObject {
 
@@ -28,7 +27,7 @@ abstract class BaseShimObject {
     return telemetryInfo.spanContextTable();
   }
 
-  ContextPropagators propagators() {
+  OpenTracingPropagators propagators() {
     return telemetryInfo.propagators();
   }
 }

@@ -17,7 +17,7 @@ public final class ProcessRuntimeResource {
 
   private static final Resource INSTANCE = buildResource();
 
-  /** Returns a factory of a {@link Resource} which provides information about the Java runtime. */
+  /** Returns a factory for a {@link Resource} which provides information about the Java runtime. */
   public static Resource get() {
     return INSTANCE;
   }

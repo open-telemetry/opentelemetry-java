@@ -26,9 +26,27 @@ public interface AggregatorFactory {
    *     if {@code true} OR {@link AggregationTemporality#DELTA} for all types except SumObserver
    *     and UpDownSumObserver which will always produce {@link AggregationTemporality#CUMULATIVE}.
    * @return an {@code AggregationFactory} that calculates sum of recorded measurements.
+   * @deprecated Use {@link AggregatorFactory#sum(AggregationTemporality)}
    */
+  @Deprecated
   static AggregatorFactory sum(boolean alwaysCumulative) {
-    return new SumAggregatorFactory(alwaysCumulative);
+    return new SumAggregatorFactory(
+        alwaysCumulative ? AggregationTemporality.CUMULATIVE : AggregationTemporality.DELTA);
+  }
+
+  /**
+   * Returns an {@code AggregationFactory} that calculates sum of recorded measurements.
+   *
+   * <p>This factory produces {@link Aggregator} that will always produce Sum metrics, the
+   * monotonicity is determined based on the instrument type (for Counter and SumObserver will be
+   * monotonic, otherwise not).
+   *
+   * @param temporality configures what temporality to be produced for the Sum metrics.
+   * @return an {@code AggregationFactory} that calculates sum of recorded measurements.
+   * @since 1.2.0
+   */
+  static AggregatorFactory sum(AggregationTemporality temporality) {
+    return new SumAggregatorFactory(temporality);
   }
 
   /**
@@ -85,6 +103,7 @@ public interface AggregatorFactory {
    * @param temporality configures what temporality to be produced for the Histogram metrics.
    * @param boundaries configures the fixed bucket boundaries.
    * @return an {@code AggregationFactory} that calculates histogram of recorded measurements.
+   * @since 1.1.0
    */
   static AggregatorFactory histogram(List<Double> boundaries, AggregationTemporality temporality) {
     return new HistogramAggregatorFactory(boundaries, temporality);

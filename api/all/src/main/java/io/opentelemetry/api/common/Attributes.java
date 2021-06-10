@@ -9,6 +9,7 @@ import static io.opentelemetry.api.common.ArrayBackedAttributes.sortAndFilterToA
 
 import java.util.Map;
 import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -33,6 +34,7 @@ import javax.annotation.concurrent.Immutable;
 public interface Attributes {
 
   /** Returns the value for the given {@link AttributeKey}, or {@code null} if not found. */
+  @Nullable
   <T> T get(AttributeKey<T> key);
 
   /** Iterates over all the key-value pairs of attributes contained by this instance. */

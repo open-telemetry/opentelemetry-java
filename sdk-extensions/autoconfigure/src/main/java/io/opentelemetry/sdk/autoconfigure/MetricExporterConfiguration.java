@@ -64,16 +64,19 @@ final class MetricExporterConfiguration {
     }
     OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
 
-    String endpoint = config.getString("otel.exporter.otlp.endpoint");
+    String endpoint = config.getString("otel.exporter.otlp.metrics.endpoint");
+    if (endpoint == null) {
+      endpoint = config.getString("otel.exporter.otlp.endpoint");
+    }
     if (endpoint != null) {
       builder.setEndpoint(endpoint);
     }
 
     config.getCommaSeparatedMap("otel.exporter.otlp.headers").forEach(builder::addHeader);
 
-    Long timeoutMillis = config.getLong("otel.exporter.otlp.timeout");
-    if (timeoutMillis != null) {
-      builder.setTimeout(Duration.ofMillis(timeoutMillis));
+    Duration timeout = config.getDuration("otel.exporter.otlp.timeout");
+    if (timeout != null) {
+      builder.setTimeout(timeout);
     }
 
     OtlpGrpcMetricExporter exporter = builder.build();
@@ -89,11 +92,11 @@ final class MetricExporterConfiguration {
         IntervalMetricReader.builder()
             .setMetricProducers(Collections.singleton(meterProvider))
             .setMetricExporter(exporter);
-    Long exportIntervalMillis = config.getLong("otel.imr.export.interval");
-    if (exportIntervalMillis != null) {
-      readerBuilder.setExportIntervalMillis(exportIntervalMillis);
+    Duration exportInterval = config.getDuration("otel.imr.export.interval");
+    if (exportInterval != null) {
+      readerBuilder.setExportIntervalMillis(exportInterval.toMillis());
     }
-    IntervalMetricReader reader = readerBuilder.build();
+    IntervalMetricReader reader = readerBuilder.buildAndStart();
     Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
   }
 

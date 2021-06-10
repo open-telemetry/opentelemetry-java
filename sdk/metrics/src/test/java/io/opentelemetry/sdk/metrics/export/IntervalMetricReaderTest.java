@@ -6,6 +6,11 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.metrics.common.Labels;
@@ -22,6 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
@@ -58,6 +65,28 @@ class IntervalMetricReaderTest {
   }
 
   @Test
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  void startOnlyOnce() {
+    ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
+
+    ScheduledFuture mock = mock(ScheduledFuture.class);
+    when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(mock);
+
+    IntervalMetricReader intervalMetricReader =
+        new IntervalMetricReader(
+            IntervalMetricReader.InternalState.builder()
+                .setMetricProducers(Collections.emptyList())
+                .setMetricExporter(mock(MetricExporter.class))
+                .build(),
+            scheduler);
+
+    intervalMetricReader.start();
+    intervalMetricReader.start();
+
+    verify(scheduler, times(1)).scheduleAtFixedRate(any(), anyLong(), anyLong(), any());
+  }
+
+  @Test
   void intervalExport() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     IntervalMetricReader intervalMetricReader =
@@ -65,7 +94,7 @@ class IntervalMetricReaderTest {
             .setExportIntervalMillis(100)
             .setMetricExporter(waitingMetricExporter)
             .setMetricProducers(Collections.singletonList(metricProducer))
-            .build();
+            .buildAndStart();
 
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(1))
@@ -88,11 +117,12 @@ class IntervalMetricReaderTest {
             .setExportIntervalMillis(100)
             .setMetricExporter(waitingMetricExporter)
             .setMetricProducers(Collections.singletonList(metricProducer))
-            .build();
+            .buildAndStart();
 
     try {
-      assertThat(waitingMetricExporter.waitForNumberOfExports(1))
-          .containsExactly(Collections.singletonList(METRIC_DATA));
+      assertThat(waitingMetricExporter.waitForNumberOfExports(2))
+          .containsExactly(
+              Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
     } finally {
       intervalMetricReader.shutdown();
     }
@@ -106,7 +136,7 @@ class IntervalMetricReaderTest {
             .setExportIntervalMillis(100_000)
             .setMetricExporter(waitingMetricExporter)
             .setMetricProducers(Collections.singletonList(metricProducer))
-            .build();
+            .buildAndStart();
 
     // Assume that this will be called in less than 100 seconds.
     intervalMetricReader.shutdown();
@@ -123,6 +153,7 @@ class IntervalMetricReaderTest {
     private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
     private final boolean shouldThrow;
     private final BlockingQueue<List<MetricData>> queue = new LinkedBlockingQueue<>();
+    private final List<Long> exportTimes = Collections.synchronizedList(new ArrayList<>());
 
     private WaitingMetricExporter() {
       this(false);
@@ -134,6 +165,7 @@ class IntervalMetricReaderTest {
 
     @Override
     public CompletableResultCode export(Collection<MetricData> metricList) {
+      exportTimes.add(System.currentTimeMillis());
       queue.offer(new ArrayList<>(metricList));
 
       if (shouldThrow) {

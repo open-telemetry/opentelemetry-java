@@ -21,6 +21,8 @@ import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -108,7 +110,7 @@ class LoggingMetricExporterTest {
     final AtomicBoolean flushed = new AtomicBoolean(false);
     Logger.getLogger(LoggingMetricExporter.class.getName())
         .addHandler(
-            new StreamHandler(System.err, new SimpleFormatter()) {
+            new StreamHandler(new PrintStream(new ByteArrayOutputStream()), new SimpleFormatter()) {
               @Override
               public synchronized void flush() {
                 flushed.set(true);

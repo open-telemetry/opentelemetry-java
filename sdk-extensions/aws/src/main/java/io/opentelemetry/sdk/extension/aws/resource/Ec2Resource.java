@@ -21,18 +21,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A factory of a {@link Resource} which provides information about the current EC2 instance if
+ * A factory for a {@link Resource} which provides information about the current EC2 instance if
  * running on AWS EC2.
  */
 public final class Ec2Resource {
 
   private static final Logger logger = Logger.getLogger(Ec2Resource.class.getName());
 
-  private static final Resource INSTANCE = buildResource();
-
   private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
   private static final String DEFAULT_IMDS_ENDPOINT = "169.254.169.254";
+
+  private static final Resource INSTANCE = buildResource();
 
   /**
    * Returns a @link Resource} which provides information about the current EC2 instance if running
@@ -94,7 +94,7 @@ public final class Ec2Resource {
             attrBuilders.put(ResourceAttributes.HOST_ID, value);
             break;
           case "availabilityZone":
-            attrBuilders.put(ResourceAttributes.CLOUD_ZONE, value);
+            attrBuilders.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, value);
             break;
           case "instanceType":
             attrBuilders.put(ResourceAttributes.HOST_TYPE, value);

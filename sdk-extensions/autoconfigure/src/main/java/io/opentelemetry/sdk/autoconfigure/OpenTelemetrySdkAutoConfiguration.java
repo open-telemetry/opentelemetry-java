@@ -8,7 +8,9 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.HashSet;
@@ -51,8 +53,14 @@ public final class OpenTelemetrySdkAutoConfiguration {
   }
 
   private static void configureMeterProvider(Resource resource, ConfigProperties config) {
-    SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().setResource(resource).buildAndRegisterGlobal();
+    SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
+
+    for (SdkMeterProviderConfigurer configurer :
+        ServiceLoader.load(SdkMeterProviderConfigurer.class)) {
+      configurer.configure(meterProviderBuilder);
+    }
+
+    SdkMeterProvider meterProvider = meterProviderBuilder.buildAndRegisterGlobal();
 
     String exporterName = config.getString("otel.metrics.exporter");
     if (exporterName == null) {

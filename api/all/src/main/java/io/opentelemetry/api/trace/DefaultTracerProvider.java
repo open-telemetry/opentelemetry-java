@@ -18,7 +18,7 @@ class DefaultTracerProvider implements TracerProvider {
 
   @Override
   public Tracer get(String instrumentationName) {
-    return get(instrumentationName, null);
+    return DefaultTracer.getInstance();
   }
 
   @Override

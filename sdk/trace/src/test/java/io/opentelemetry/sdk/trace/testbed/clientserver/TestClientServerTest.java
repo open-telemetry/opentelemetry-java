@@ -58,6 +58,11 @@ class TestClientServerTest {
     assertThat(finished).hasSize(2);
 
     finished = TestUtils.sortByStartTime(finished);
+    if (!finished.get(0).getKind().equals(SpanKind.CLIENT)) {
+      SpanData serverData = finished.get(0);
+      finished.set(0, finished.get(1));
+      finished.set(1, serverData);
+    }
     assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
     assertThat(finished.get(0).getKind()).isEqualTo(SpanKind.CLIENT);
     assertThat(finished.get(1).getKind()).isEqualTo(SpanKind.SERVER);

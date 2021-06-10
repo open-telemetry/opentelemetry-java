@@ -22,7 +22,15 @@ public interface AttributesBuilder {
   /** Create the {@link Attributes} from this. */
   Attributes build();
 
-  /** Puts a {@link AttributeKey} with associated value into this. */
+  /**
+   * Puts a {@link AttributeKey} with associated value into this.
+   *
+   * <p>The type parameter is unused.
+   */
+  // The type parameter was added unintentionally and unfortunately it is an API break for
+  // implementations of this interface to remove it. It doesn't affect users of the interface in
+  // any way, and has almost no effect on implementations, so we leave it until a future major
+  // version.
   <T> AttributesBuilder put(AttributeKey<Long> key, int value);
 
   /** Puts a {@link AttributeKey} with associated value into this. */
@@ -85,7 +93,10 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, String... value) {
-    return put(stringArrayKey(key), value == null ? null : Arrays.asList(value));
+    if (value == null) {
+      return this;
+    }
+    return put(stringArrayKey(key), Arrays.asList(value));
   }
 
   /**
@@ -97,6 +108,9 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, long... value) {
+    if (value == null) {
+      return this;
+    }
     return put(longArrayKey(key), toList(value));
   }
 
@@ -109,6 +123,9 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, double... value) {
+    if (value == null) {
+      return this;
+    }
     return put(doubleArrayKey(key), toList(value));
   }
 
@@ -121,6 +138,9 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   default AttributesBuilder put(String key, boolean... value) {
+    if (value == null) {
+      return this;
+    }
     return put(booleanArrayKey(key), toList(value));
   }
 

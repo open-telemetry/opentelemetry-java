@@ -72,7 +72,7 @@ class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
 
-    SpanData span = getSpanData(startMs, endMs, SpanKind.SERVER);
+    SpanData span = getSpanData(startMs, endMs, SpanKind.SERVER, 2, 4);
 
     // test
     io.jaegertracing.thriftjava.Span jaegerSpan = Adapter.toJaeger(span);
@@ -85,12 +85,16 @@ class AdapterTest {
     assertThat(jaegerSpan.getStartTime()).isEqualTo(MILLISECONDS.toMicros(startMs));
     assertThat(jaegerSpan.getDuration()).isEqualTo(MILLISECONDS.toMicros(duration));
 
-    assertThat(jaegerSpan.getTagsSize()).isEqualTo(5);
+    assertThat(jaegerSpan.getTagsSize()).isEqualTo(7);
     assertThat(getValue(jaegerSpan.getTags(), Adapter.KEY_SPAN_KIND).getVStr()).isEqualTo("server");
     assertThat(getValue(jaegerSpan.getTags(), Adapter.KEY_SPAN_STATUS_CODE).getVLong())
         .isEqualTo(0);
     assertThat(getValue(jaegerSpan.getTags(), Adapter.KEY_SPAN_STATUS_MESSAGE).getVStr())
         .isEqualTo("ok!");
+    assertThat(getValue(jaegerSpan.getTags(), Adapter.KEY_DROPPED_EVENTS_COUNT).getVLong())
+        .isEqualTo(1);
+    assertThat(getValue(jaegerSpan.getTags(), Adapter.KEY_DROPPED_ATTRIBUTES_COUNT).getVLong())
+        .isEqualTo(3);
 
     assertThat(jaegerSpan.getLogsSize()).isEqualTo(1);
     Log log = jaegerSpan.getLogs().get(0);
@@ -276,6 +280,11 @@ class AdapterTest {
   }
 
   private static SpanData getSpanData(long startMs, long endMs, SpanKind kind) {
+    return getSpanData(startMs, endMs, kind, 1, 1);
+  }
+
+  private static SpanData getSpanData(
+      long startMs, long endMs, SpanKind kind, int totalRecordedEvents, int totalAttributeCount) {
     Attributes attributes = Attributes.of(booleanKey("valueB"), true);
 
     LinkData link = LinkData.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
@@ -290,8 +299,9 @@ class AdapterTest {
         .setStartEpochNanos(MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(MILLISECONDS.toNanos(endMs))
         .setAttributes(Attributes.of(booleanKey("valueB"), true))
+        .setTotalAttributeCount(totalAttributeCount)
         .setEvents(Collections.singletonList(getTimedEvent()))
-        .setTotalRecordedEvents(1)
+        .setTotalRecordedEvents(totalRecordedEvents)
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)
         .setKind(kind)
@@ -339,6 +349,7 @@ class AdapterTest {
       }
     }
     assertThat(found).isTrue();
+    assertThat(spanIdFromLong(jaegerSpan.getParentSpanId())).isEqualTo(PARENT_SPAN_ID);
   }
 
   private static String traceIdFromLongs(long high, long low) {

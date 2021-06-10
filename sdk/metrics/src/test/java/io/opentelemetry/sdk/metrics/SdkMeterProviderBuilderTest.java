@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
@@ -17,9 +17,9 @@ class SdkMeterProviderBuilderTest {
   void buildAndRegisterGlobal() {
     SdkMeterProvider meterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
     try {
-      assertThat(GlobalMetricsProvider.get()).isSameAs(meterProvider);
+      assertThat(GlobalMeterProvider.get()).isSameAs(meterProvider);
     } finally {
-      GlobalMetricsProvider.set(null);
+      GlobalMeterProvider.set(null);
     }
   }
 

@@ -15,22 +15,39 @@ import java.util.List;
 // DO NOT EDIT, this is an Auto-generated file from
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class ResourceAttributes {
+  /** The URL of the OpenTelemetry schema for these keys and values. */
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.4.0";
 
   /** Name of the cloud provider. */
   public static final AttributeKey<String> CLOUD_PROVIDER = stringKey("cloud.provider");
 
-  /** The cloud account ID used to identify different entities. */
+  /** The cloud account ID the resource is assigned to. */
   public static final AttributeKey<String> CLOUD_ACCOUNT_ID = stringKey("cloud.account.id");
 
-  /** A specific geographical location where different entities can run. */
+  /**
+   * The geographical region the resource is running. Refer to your provider&#39;s docs to see the
+   * available regions, for example [AWS
+   * regions](https://aws.amazon.com/about-aws/global-infrastructure/regions_az/), [Azure
+   * regions](https://azure.microsoft.com/en-us/global-infrastructure/geographies/), or [Google
+   * Cloud regions](https://cloud.google.com/about/locations).
+   */
   public static final AttributeKey<String> CLOUD_REGION = stringKey("cloud.region");
 
   /**
-   * Zones are a sub set of the region connected through low-latency links.
+   * Cloud regions often have multiple, isolated locations known as zones to increase availability.
+   * Availability zone represents the zone where the resource is running.
    *
-   * <p>Note: In AWS, this is called availability-zone.
+   * <p>Note: Availability zones are called &#34;zones&#34; on Google Cloud.
    */
-  public static final AttributeKey<String> CLOUD_ZONE = stringKey("cloud.zone");
+  public static final AttributeKey<String> CLOUD_AVAILABILITY_ZONE =
+      stringKey("cloud.availability_zone");
+
+  /**
+   * The cloud platform in use.
+   *
+   * <p>Note: The prefix of the service SHOULD match the one specified in `cloud.provider`.
+   */
+  public static final AttributeKey<String> CLOUD_PLATFORM = stringKey("cloud.platform");
 
   /**
    * The Amazon Resource Name (ARN) of an [ECS container
@@ -60,6 +77,13 @@ public final class ResourceAttributes {
 
   /** The task definition family this task definition is a member of. */
   public static final AttributeKey<String> AWS_ECS_TASK_FAMILY = stringKey("aws.ecs.task.family");
+
+  /** The revision for this task definition. */
+  public static final AttributeKey<String> AWS_ECS_TASK_REVISION =
+      stringKey("aws.ecs.task.revision");
+
+  /** The ARN of an EKS cluster. */
+  public static final AttributeKey<String> AWS_EKS_CLUSTER_ARN = stringKey("aws.eks.cluster.arn");
 
   /**
    * The name(s) of the AWS log group(s) an application is writing to.
@@ -98,11 +122,14 @@ public final class ResourceAttributes {
   public static final AttributeKey<String> CONTAINER_NAME = stringKey("container.name");
 
   /**
-   * Container id. Usually a UUID, as for example used to [identify Docker
+   * Container ID. Usually a UUID, as for example used to [identify Docker
    * containers](https://docs.docker.com/engine/reference/run/#container-identification). The UUID
    * might be abbreviated.
    */
   public static final AttributeKey<String> CONTAINER_ID = stringKey("container.id");
+
+  /** The container runtime managing this container. */
+  public static final AttributeKey<String> CONTAINER_RUNTIME = stringKey("container.runtime");
 
   /** Name of the image the container was built on. */
   public static final AttributeKey<String> CONTAINER_IMAGE_NAME = stringKey("container.image.name");
@@ -116,6 +143,39 @@ public final class ResourceAttributes {
    */
   public static final AttributeKey<String> DEPLOYMENT_ENVIRONMENT =
       stringKey("deployment.environment");
+
+  /**
+   * A unique identifier representing the device.
+   *
+   * <p>Note: The device identifier MUST only be defined using the values outlined below. This value
+   * is not an advertising identifier and MUST NOT be used as such. On iOS (Swift or Objective-C),
+   * this value MUST be equal to the [vendor
+   * identifier](https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor).
+   * On Android (Java or Kotlin), this value MUST be equal to the Firebase Installation ID or a
+   * globally unique UUID which is persisted across sessions in your application. More information
+   * can be found [here](https://developer.android.com/training/articles/user-data-ids) on best
+   * practices and exact implementation details. Caution should be taken when storing personal data
+   * or anything which can identify a user. GDPR and data protection laws may apply, ensure you do
+   * your own due diligence.
+   */
+  public static final AttributeKey<String> DEVICE_ID = stringKey("device.id");
+
+  /**
+   * The model identifier for the device.
+   *
+   * <p>Note: It&#39;s recommended this value represents a machine readable version of the model
+   * identifier rather than the market or consumer-friendly name of the device.
+   */
+  public static final AttributeKey<String> DEVICE_MODEL_IDENTIFIER =
+      stringKey("device.model.identifier");
+
+  /**
+   * The marketing name for the device model.
+   *
+   * <p>Note: It&#39;s recommended this value represents a human readable version of the device
+   * model rather than a machine readable alternative.
+   */
+  public static final AttributeKey<String> DEVICE_MODEL_NAME = stringKey("device.model.name");
 
   /** The name of the function being executed. */
   public static final AttributeKey<String> FAAS_NAME = stringKey("faas.name");
@@ -143,7 +203,7 @@ public final class ResourceAttributes {
   /**
    * The amount of memory available to the serverless function in MiB.
    *
-   * <p>Note: It&#39;s recommended to set this attribute in since e.g. too little memory can easily
+   * <p>Note: It&#39;s recommended to set this attribute since e.g. too little memory can easily
    * stop a Java AWS Lambda function from working correctly. On AWS Lambda, the environment variable
    * `AWS_LAMBDA_FUNCTION_MEMORY_SIZE` provides this information.
    */
@@ -161,6 +221,9 @@ public final class ResourceAttributes {
   /** Type of host. For Cloud, this must be the machine type. */
   public static final AttributeKey<String> HOST_TYPE = stringKey("host.type");
 
+  /** The CPU architecture the host system is running on. */
+  public static final AttributeKey<String> HOST_ARCH = stringKey("host.arch");
+
   /** Name of the VM image or OS install the host was instantiated from. */
   public static final AttributeKey<String> HOST_IMAGE_NAME = stringKey("host.image.name");
 
@@ -175,6 +238,12 @@ public final class ResourceAttributes {
 
   /** The name of the cluster. */
   public static final AttributeKey<String> K8S_CLUSTER_NAME = stringKey("k8s.cluster.name");
+
+  /** The name of the Node. */
+  public static final AttributeKey<String> K8S_NODE_NAME = stringKey("k8s.node.name");
+
+  /** The UID of the Node. */
+  public static final AttributeKey<String> K8S_NODE_UID = stringKey("k8s.node.uid");
 
   /** The name of the namespace that the pod is running in. */
   public static final AttributeKey<String> K8S_NAMESPACE_NAME = stringKey("k8s.namespace.name");
@@ -232,6 +301,15 @@ public final class ResourceAttributes {
    * or `lsb_release -a` commands.
    */
   public static final AttributeKey<String> OS_DESCRIPTION = stringKey("os.description");
+
+  /** Human readable operating system name. */
+  public static final AttributeKey<String> OS_NAME = stringKey("os.name");
+
+  /**
+   * The version string of the operating system as defined in [Version
+   * Attributes](../../resource/semantic_conventions/README.md#version-attributes).
+   */
+  public static final AttributeKey<String> OS_VERSION = stringKey("os.version");
 
   /** Process identifier (PID). */
   public static final AttributeKey<Long> PROCESS_PID = longKey("process.pid");
@@ -321,14 +399,14 @@ public final class ResourceAttributes {
    * The string ID of the service instance.
    *
    * <p>Note: MUST be unique for each instance of the same `service.namespace,service.name` pair (in
-   * other words `service.namespace,service.name,service.id` triplet MUST be globally unique). The
-   * ID helps to distinguish instances of the same service that exist at the same time (e.g.
-   * instances of a horizontally scaled service). It is preferable for the ID to be persistent and
-   * stay the same for the lifetime of the service instance, however it is acceptable that the ID is
-   * ephemeral and changes during important lifetime events for the service (e.g. service restarts).
-   * If the service has no inherent unique ID that can be used as the value of this attribute it is
-   * recommended to generate a random Version 1 or Version 4 RFC 4122 UUID (services aiming for
-   * reproducible UUIDs may also use Version 5, see RFC 4122 for more recommendations).
+   * other words `service.namespace,service.name,service.instance.id` triplet MUST be globally
+   * unique). The ID helps to distinguish instances of the same service that exist at the same time
+   * (e.g. instances of a horizontally scaled service). It is preferable for the ID to be persistent
+   * and stay the same for the lifetime of the service instance, however it is acceptable that the
+   * ID is ephemeral and changes during important lifetime events for the service (e.g. service
+   * restarts). If the service has no inherent unique ID that can be used as the value of this
+   * attribute it is recommended to generate a random Version 1 or Version 4 RFC 4122 UUID (services
+   * aiming for reproducible UUIDs may also use Version 5, see RFC 4122 for more recommendations).
    */
   public static final AttributeKey<String> SERVICE_INSTANCE_ID = stringKey("service.instance.id");
 
@@ -350,6 +428,16 @@ public final class ResourceAttributes {
   public static final AttributeKey<String> TELEMETRY_AUTO_VERSION =
       stringKey("telemetry.auto.version");
 
+  /** The name of the web engine. */
+  public static final AttributeKey<String> WEBENGINE_NAME = stringKey("webengine.name");
+
+  /** The version of the web engine. */
+  public static final AttributeKey<String> WEBENGINE_VERSION = stringKey("webengine.version");
+
+  /** Additional description of the web engine (e.g. detailed version and edition information). */
+  public static final AttributeKey<String> WEBENGINE_DESCRIPTION =
+      stringKey("webengine.description");
+
   // Enum definitions
   public static final class CloudProviderValues {
     /** Amazon Web Services. */
@@ -362,47 +450,92 @@ public final class ResourceAttributes {
     private CloudProviderValues() {}
   }
 
-  public enum AwsEcsLaunchtypeValues {
+  public static final class CloudPlatformValues {
+    /** AWS Elastic Compute Cloud. */
+    public static final String AWS_EC2 = "aws_ec2";
+    /** AWS Elastic Container Service. */
+    public static final String AWS_ECS = "aws_ecs";
+    /** AWS Elastic Kubernetes Service. */
+    public static final String AWS_EKS = "aws_eks";
+    /** AWS Lambda. */
+    public static final String AWS_LAMBDA = "aws_lambda";
+    /** AWS Elastic Beanstalk. */
+    public static final String AWS_ELASTIC_BEANSTALK = "aws_elastic_beanstalk";
+    /** Azure Virtual Machines. */
+    public static final String AZURE_VM = "azure_vm";
+    /** Azure Container Instances. */
+    public static final String AZURE_CONTAINER_INSTANCES = "azure_container_instances";
+    /** Azure Kubernetes Service. */
+    public static final String AZURE_AKS = "azure_aks";
+    /** Azure Functions. */
+    public static final String AZURE_FUNCTIONS = "azure_functions";
+    /** Azure App Service. */
+    public static final String AZURE_APP_SERVICE = "azure_app_service";
+    /** Google Cloud Compute Engine (GCE). */
+    public static final String GCP_COMPUTE_ENGINE = "gcp_compute_engine";
+    /** Google Cloud Run. */
+    public static final String GCP_CLOUD_RUN = "gcp_cloud_run";
+    /** Google Cloud Kubernetes Engine (GKE). */
+    public static final String GCP_KUBERNETES_ENGINE = "gcp_kubernetes_engine";
+    /** Google Cloud Functions (GCF). */
+    public static final String GCP_CLOUD_FUNCTIONS = "gcp_cloud_functions";
+    /** Google Cloud App Engine (GAE). */
+    public static final String GCP_APP_ENGINE = "gcp_app_engine";
+
+    private CloudPlatformValues() {}
+  }
+
+  public static final class AwsEcsLaunchtypeValues {
     /** ec2. */
-    EC2("EC2"),
+    public static final String EC2 = "ec2";
     /** fargate. */
-    FARGATE("Fargate"),
-    ;
+    public static final String FARGATE = "fargate";
 
-    private final String value;
+    private AwsEcsLaunchtypeValues() {}
+  }
 
-    AwsEcsLaunchtypeValues(String value) {
-      this.value = value;
-    }
+  public static final class HostArchValues {
+    /** AMD64. */
+    public static final String AMD64 = "amd64";
+    /** ARM32. */
+    public static final String ARM32 = "arm32";
+    /** ARM64. */
+    public static final String ARM64 = "arm64";
+    /** Itanium. */
+    public static final String IA64 = "ia64";
+    /** 32-bit PowerPC. */
+    public static final String PPC32 = "ppc32";
+    /** 64-bit PowerPC. */
+    public static final String PPC64 = "ppc64";
+    /** 32-bit x86. */
+    public static final String X86 = "x86";
 
-    public String getValue() {
-      return value;
-    }
+    private HostArchValues() {}
   }
 
   public static final class OsTypeValues {
     /** Microsoft Windows. */
-    public static final String WINDOWS = "WINDOWS";
+    public static final String WINDOWS = "windows";
     /** Linux. */
-    public static final String LINUX = "LINUX";
+    public static final String LINUX = "linux";
     /** Apple Darwin. */
-    public static final String DARWIN = "DARWIN";
+    public static final String DARWIN = "darwin";
     /** FreeBSD. */
-    public static final String FREEBSD = "FREEBSD";
+    public static final String FREEBSD = "freebsd";
     /** NetBSD. */
-    public static final String NETBSD = "NETBSD";
+    public static final String NETBSD = "netbsd";
     /** OpenBSD. */
-    public static final String OPENBSD = "OPENBSD";
+    public static final String OPENBSD = "openbsd";
     /** DragonFly BSD. */
-    public static final String DRAGONFLYBSD = "DRAGONFLYBSD";
+    public static final String DRAGONFLYBSD = "dragonflybsd";
     /** HP-UX (Hewlett Packard Unix). */
-    public static final String HPUX = "HPUX";
+    public static final String HPUX = "hpux";
     /** AIX (Advanced Interactive eXecutive). */
-    public static final String AIX = "AIX";
+    public static final String AIX = "aix";
     /** Oracle Solaris. */
-    public static final String SOLARIS = "SOLARIS";
+    public static final String SOLARIS = "solaris";
     /** IBM z/OS. */
-    public static final String ZOS = "ZOS";
+    public static final String Z_OS = "z_os";
 
     private OsTypeValues() {}
   }

@@ -9,7 +9,6 @@ import static java.util.Collections.singletonList;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
-import io.opentelemetry.api.baggage.BaggageEntryMetadata;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -40,7 +39,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   }
 
   @Override
-  public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
+  public <C> void inject(Context context, @Nullable C carrier, TextMapSetter<C> setter) {
     if (context == null || setter == null) {
       return;
     }
@@ -78,35 +77,19 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
       return context;
     }
     if (baggageHeader.isEmpty()) {
-      return context.with(Baggage.empty());
+      return context;
     }
 
     BaggageBuilder baggageBuilder = Baggage.builder();
     try {
       extractEntries(baggageHeader, baggageBuilder);
     } catch (RuntimeException e) {
-      return context.with(Baggage.empty());
+      return context;
     }
     return context.with(baggageBuilder.build());
   }
 
   private static void extractEntries(String baggageHeader, BaggageBuilder baggageBuilder) {
-    // todo: optimize this implementation; it can probably done with a single pass through the
-    // string.
-    String[] entries = baggageHeader.split(",");
-    for (String entry : entries) {
-      String metadata = "";
-      int beginningOfMetadata = entry.indexOf(";");
-      if (beginningOfMetadata > 0) {
-        metadata = entry.substring(beginningOfMetadata + 1);
-        entry = entry.substring(0, beginningOfMetadata);
-      }
-      String[] keyAndValue = entry.split("=");
-      for (int i = 0; i < keyAndValue.length; i += 2) {
-        String key = keyAndValue[i].trim();
-        String value = keyAndValue[i + 1].trim();
-        baggageBuilder.put(key, value, BaggageEntryMetadata.create(metadata.trim()));
-      }
-    }
+    new Parser(baggageHeader).parseInto(baggageBuilder);
   }
 }

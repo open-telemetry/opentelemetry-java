@@ -15,7 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -77,19 +77,22 @@ class SdkSpanBuilderTest {
   }
 
   @Test
-  void setSpanKind_null() {
-    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).setSpanKind(null))
-        .isInstanceOf(NullPointerException.class);
-  }
-
-  @Test
-  void setParent_null() {
-    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).setParent(null))
-        .isInstanceOf(NullPointerException.class);
-  }
-
-  @Test
   void addLink() {
+    // Verify methods do not crash.
+    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
+    spanBuilder.addLink(sampledSpanContext);
+    spanBuilder.addLink(sampledSpanContext, Attributes.empty());
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      assertThat(span.toSpanData().getLinks()).hasSize(2);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void addLink_invalid() {
     // Verify methods do not crash.
     SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(Span.getInvalid().getSpanContext());
@@ -97,7 +100,7 @@ class SdkSpanBuilderTest {
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      assertThat(span.toSpanData().getLinks()).hasSize(2);
+      assertThat(span.toSpanData().getLinks()).isEmpty();
     } finally {
       span.end();
     }
@@ -174,22 +177,19 @@ class SdkSpanBuilderTest {
 
   @Test
   void addLinkSpanContext_null() {
-    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null))
-        .isInstanceOf(NullPointerException.class);
+    assertThatCode(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null)).doesNotThrowAnyException();
   }
 
   @Test
   void addLinkSpanContextAttributes_nullContext() {
-    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty()))
-        .isInstanceOf(NullPointerException.class);
+    assertThatCode(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty()))
+        .doesNotThrowAnyException();
   }
 
   @Test
   void addLinkSpanContextAttributes_nullAttributes() {
-    assertThatThrownBy(
-            () ->
-                sdkTracer.spanBuilder(SPAN_NAME).addLink(Span.getInvalid().getSpanContext(), null))
-        .isInstanceOf(NullPointerException.class);
+    assertThatCode(() -> sdkTracer.spanBuilder(SPAN_NAME).addLink(sampledSpanContext, null))
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -403,6 +403,101 @@ class SdkSpanBuilderTest {
     span.end();
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(1);
     assertThat(span.toSpanData().getAttributes().get(stringKey("cat"))).isEqualTo("meow");
+  }
+
+  @Test
+  void setAllAttributes() {
+    Attributes attributes =
+        Attributes.builder()
+            .put("string", "value")
+            .put("long", 12345L)
+            .put("double", .12345)
+            .put("boolean", true)
+            .put(stringKey("stringAttribute"), "attrvalue")
+            .build();
+
+    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME).setAllAttributes(attributes);
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      SpanData spanData = span.toSpanData();
+      Attributes attrs = spanData.getAttributes();
+      assertThat(attrs.size()).isEqualTo(5);
+      assertThat(attrs.get(stringKey("string"))).isEqualTo("value");
+      assertThat(attrs.get(longKey("long"))).isEqualTo(12345L);
+      assertThat(attrs.get(doubleKey("double"))).isEqualTo(0.12345);
+      assertThat(attrs.get(booleanKey("boolean"))).isEqualTo(true);
+      assertThat(attrs.get(stringKey("stringAttribute"))).isEqualTo("attrvalue");
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(5);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void setAllAttributes_mergesAttributes() {
+    Attributes attributes =
+        Attributes.builder()
+            .put("string", "value")
+            .put("long", 12345L)
+            .put("double", .12345)
+            .put("boolean", true)
+            .put(stringKey("stringAttribute"), "attrvalue")
+            .build();
+
+    SpanBuilder spanBuilder =
+        sdkTracer
+            .spanBuilder(SPAN_NAME)
+            .setAttribute("string", "otherValue")
+            .setAttribute("boolean", false)
+            .setAttribute("existingString", "existingValue")
+            .setAllAttributes(attributes);
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      SpanData spanData = span.toSpanData();
+      Attributes attrs = spanData.getAttributes();
+      assertThat(attrs.size()).isEqualTo(6);
+      assertThat(attrs.get(stringKey("string"))).isEqualTo("value");
+      assertThat(attrs.get(stringKey("existingString"))).isEqualTo("existingValue");
+      assertThat(attrs.get(longKey("long"))).isEqualTo(12345L);
+      assertThat(attrs.get(doubleKey("double"))).isEqualTo(0.12345);
+      assertThat(attrs.get(booleanKey("boolean"))).isEqualTo(true);
+      assertThat(attrs.get(stringKey("stringAttribute"))).isEqualTo("attrvalue");
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(8);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void setAllAttributes_nullAttributes() {
+    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME).setAllAttributes(null);
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      SpanData spanData = span.toSpanData();
+      Attributes attrs = spanData.getAttributes();
+      assertThat(attrs.size()).isEqualTo(0);
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(0);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void setAllAttributes_emptyAttributes() {
+    SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME).setAllAttributes(Attributes.empty());
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      SpanData spanData = span.toSpanData();
+      Attributes attrs = spanData.getAttributes();
+      assertThat(attrs.size()).isEqualTo(0);
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(0);
+    } finally {
+      span.end();
+    }
   }
 
   @Test
@@ -794,14 +889,6 @@ class SdkSpanBuilderTest {
   }
 
   @Test
-  void startTimestamp_null() {
-    assertThatThrownBy(
-            () -> sdkTracer.spanBuilder(SPAN_NAME).setStartTimestamp(-1, TimeUnit.NANOSECONDS))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Negative startTimestamp");
-  }
-
-  @Test
   void parent_clockIsSame() {
     Span parent = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
     try (Scope scope = parent.makeCurrent()) {
@@ -883,5 +970,48 @@ class SdkSpanBuilderTest {
                 + "totalRecordedLinks=0, "
                 + "status=ImmutableStatusData\\{statusCode=ERROR, description=error}, "
                 + "hasEnded=true}");
+  }
+
+  @Test
+  void doNotCrash() {
+    assertThatCode(
+            () -> {
+              SpanBuilder spanBuilder = sdkTracer.spanBuilder(null);
+              spanBuilder.setSpanKind(null);
+              spanBuilder.setParent(null);
+              spanBuilder.setNoParent();
+              spanBuilder.addLink(null);
+              spanBuilder.addLink(null, Attributes.empty());
+              spanBuilder.addLink(SpanContext.getInvalid(), null);
+              spanBuilder.setAttribute((String) null, "foo");
+              spanBuilder.setAttribute("foo", null);
+              spanBuilder.setAttribute(null, 0L);
+              spanBuilder.setAttribute(null, 0.0);
+              spanBuilder.setAttribute(null, false);
+              spanBuilder.setAttribute((AttributeKey<String>) null, "foo");
+              spanBuilder.setAttribute(stringKey(null), "foo");
+              spanBuilder.setAttribute(stringKey(""), "foo");
+              spanBuilder.setAttribute(stringKey("foo"), null);
+              spanBuilder.setStartTimestamp(-1, TimeUnit.MILLISECONDS);
+              spanBuilder.setStartTimestamp(1, null);
+              spanBuilder.setParent(Context.root().with(Span.wrap(null)));
+              spanBuilder.setParent(Context.root());
+              spanBuilder.setNoParent();
+              spanBuilder.addLink(Span.getInvalid().getSpanContext());
+              spanBuilder.addLink(Span.getInvalid().getSpanContext(), Attributes.empty());
+              spanBuilder.setAttribute("key", "value");
+              spanBuilder.setAttribute("key", 12345L);
+              spanBuilder.setAttribute("key", .12345);
+              spanBuilder.setAttribute("key", true);
+              spanBuilder.setAttribute(stringKey("key"), "value");
+              spanBuilder.setAllAttributes(Attributes.of(stringKey("key"), "value"));
+              spanBuilder.setAllAttributes(Attributes.empty());
+              spanBuilder.setAllAttributes(null);
+              spanBuilder.setStartTimestamp(12345L, TimeUnit.NANOSECONDS);
+              spanBuilder.setStartTimestamp(Instant.EPOCH);
+              spanBuilder.setStartTimestamp(null);
+              assertThat(spanBuilder.startSpan().getSpanContext().isValid()).isTrue();
+            })
+        .doesNotThrowAnyException();
   }
 }

@@ -38,6 +38,9 @@ public final class CompletableResultCode {
    * CompletableResultCode}s complete. If any of the results fail, the result will be failed.
    */
   public static CompletableResultCode ofAll(final Collection<CompletableResultCode> codes) {
+    if (codes.isEmpty()) {
+      return ofSuccess();
+    }
     final CompletableResultCode result = new CompletableResultCode();
     final AtomicInteger pending = new AtomicInteger(codes.size());
     final AtomicBoolean failed = new AtomicBoolean();

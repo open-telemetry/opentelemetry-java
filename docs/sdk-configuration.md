@@ -1,3 +1,7 @@
+> This is a design document and is not necessarily updated with evolving APIs. For up-to-date 
+> examples of SDK configuration see the 
+> [documentation](https://opentelemetry.io/docs/java/manual_instrumentation/).
+
 # Design for configuring the SDK
 
 This document outlines some of the goals we have for user configuration of the SDK. It is a
@@ -50,8 +54,7 @@ reference to "the SDK" in this document refers to the full SDK with all signals.
 
 - Make sure everything is auto-configurable. This is out of the scope of the SDK, and instead is
 left to auto-configuration layers, which are also described below but not as part of the core SDK. 
-In partiular, SignalProvider SPIs which currently exist are proposed to be removed from the SDK. The 
-SDK may provide an autoconfiguration extension as an option which is not internal to the main SDK 
+The SDK provides an autoconfiguration extension as an option which is not internal to the main SDK 
 components.
 
 ## Configuring an instance of the SDK
@@ -77,45 +80,55 @@ setting SDK implementations and is not meant for use with partial SDKs.
 
 ```java
 class OpenTelemetrySdkBuilder {
-  public OpenTelemetrySdkBuilder setTracerProvider(TracerSdkProvider tracerProvider);
-  public OpenTelemetrySdkBuilder setMeterProvider(MeterSdkProvider meterProvider);
-  public OpenTelemetrySdk buildAndSetAsGlobal();
-  public OpenTelemetrySdk buildWithoutSettingAsGlobal();
+  public OpenTelemetrySdkBuilder setTracerProvider(SdkTracerProvider tracerProvider);
+  public OpenTelemetrySdkBuilder setPropagators(ContextPropagators propagators);
+  public OpenTelemetrySdk buildAndRegisterGlobal();
+  public OpenTelemetrySdk build();
 }
 ```
+
+Metrics are yet GA and must be configured separately. Eventually, metrics configuration will become
+part of the `OpenTelemetrySdkBuilder`.
 
 A very simple configuration may look like this.
 
 ```java
 class HelloWorld {
-    public static void main(String[] args) {
-        TracerSdkProvider tracerProvider = TracerSdkProvider.builder()
-          .addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder())
-              .setEndpoint("spans-service:4317")
-              .build())
-          .build();
-        
-        MeterSdkProvider meterProvider = MeterSdkProvider.builder().build();
-        IntervalMetricReader.builder()
-          .setMetricProducers(meterProvider.getMetricProducer())
-          .setMetricExporter(PrometheusMetricServer.create())
-          .build();
-        
-        OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
-          .addPropagator(W3CHttpTraceContextPropagator.getInstance())
-          .setTracerProvider(tracerProvider)
-          .setMeterProvider(meterProvider)
-          .buildAndSetAsGlobal();
-   }
+  public static void main(String[] args) {
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(
+                    OtlpGrpcSpanExporter.builder()
+                        .setEndpoint("https://collector-service:4317")
+                        .build())
+                    .build())
+            .build();
+
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .setTracerProvider(tracerProvider)
+            .buildAndRegisterGlobal();
+
+    SdkMeterProvider meterProvider = SdkMeterProvider.builder().build();
+    GlobalMeterProvider.set(meterProvider);
+    IntervalMetricReader.builder()
+        .setMetricProducers(Collections.singletonList(meterProvider))
+        .setMetricExporter(
+            OtlpGrpcMetricExporter.builder().setEndpoint("https://collector-service:4317").build())
+        .build()
+        .start();
+ }
 }
 ```
 
 This
 
-- Exports spans using OTLP to `spans-service`
-  - Uses the BatchSpanProcessor. Future work is to make configuring this more intuitive
-- Exposes metrics using Prometheus format
-  - Future work is to make configuring this more intuitive
+- Exports spans using OTLP to `collector-service`
+  - Uses the BatchSpanProcessor.
+- Exports metrics using OTLP to `collector-service`
+  - Uses the IntervalMetricReader
 - Uses ParentBased(AlwaysOn) sampler
 - Uses standard random IDs
 - Uses a default Resource which simply consists of the SDK (or any other resources we decide to)
@@ -132,54 +145,66 @@ Let's look at a more complicated example
 
 ```java
 class HelloWorld {
-    public static void main(String[] args) {
-        Resource resource = Resource.getDefault().merge(CoolResource.getDefault());
-        Clock clock = AtomicClock.create();
-        TracerSdkProvider tracerProvider = TracerSdkProvider.builder()
+  public static void main(String[] args) {
+    Resource resource = Resource.getDefault().merge(CoolResource.getDefault());
+    Clock clock = AtomicClock.create();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
             .setResource(resource)
             .setClock(clock)
             .addSpanProcessor(CustomAttributeAddingProcessor.create())
             .addSpanProcessor(CustomEventAddingProcessor.create())
-            .addSpanProcessor(BatchSpanProcessor.builder(
-                OtlpGrpcSpanExporter.builder()
-                    .setEndpoint("spans-service:4317")
-                    .setTimeout(Duration.ofSeconds(10))
-                    .setBatchQueueSize(10000)
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(
+                    OtlpGrpcSpanExporter.builder()
+                        .setEndpoint("https://collector-service:4317")
+                        .setTimeout(Duration.ofSeconds(10))
+                        .build())
+                    .setMaxExportBatchSize(10000)
                     .build())
-                .build())
-            .addSpanProcessor(SimpleSpanProcessor.builder(
-                ZipkinExporter.builder()
-                    .setEndpoint("spans-service:4317")
-                    .build())
-                .build())
-            .setTraceSampler(Sampler.rateLimiting())
-            .setTraceLimits(TraceLimits.builder().setMaxAttributes(10).build())
+            .addSpanProcessor(
+                SimpleSpanProcessor.create(
+                    ZipkinSpanExporter.builder().setEndpoint("https://zipkin-service:9411").build()))
+            .setSampler(Sampler.traceIdRatioBased(0.5))
+            .setSpanLimits(SpanLimits.builder().setMaxNumberOfAttributes(10).build())
             .setIdGenerator(TimestampedIdGenerator.create())
             .build();
-        
-        MeterSdkProvider meterProvider = MeterSdkProvider.builder()
+
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setPropagators(
+                ContextPropagators.create(
+                    TextMapPropagator.composite(
+                        W3CTraceContextPropagator.getInstance(),
+                        B3Propagator.injectingSingleHeader())))
+            .setTracerProvider(tracerProvider)
+            .buildAndRegisterGlobal();
+
+    OpenTelemetrySdk openTelemetryForJaegerBackend =
+        OpenTelemetrySdk.builder()
+            .setPropagators(ContextPropagators.create(JaegerPropagator.getInstance()))
+            .setTracerProvider(tracerProvider)
+            .build();
+
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder()
             .setResource(resource)
             .setClock(clock)
-            .setMeterStuff(InProgressMetricsStuff.create())
+            .registerView(
+                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                View.builder()
+                    .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
+                    .setAggregatorFactory(AggregatorFactory.count(AggregationTemporality.DELTA))
+                    .build())
             .build();
-        IntervalMetricReader.builder()
-            .setMetricProducers(meterProvider.getMetricProducer())
-            .setMetricExporter(PrometheusMetricServer.create())
-            .build();
-        
-        OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
-            .addPropagator(W3CHttpTraceContextPropagator.getInstance())
-            .addPropagator(B3Propagator.getInstance())
-            .setTracerProvider(tracerProvider)
-            .setMeterProvider(meterProvider)
-            .buildAndSetAsGlobal();
- 
-        OpenTelemetrySdk openTelemetryForJaegerBackend = OpenTelemetrySdk.builder()
-           .addPropagator(JaegerPropagator.getInstance())
-           .setTracerProvider(tracerProvider)
-           .setMeterProvider(meterProvider)
-           .buildWithoutSettingAsGlobal();
-   }
+    GlobalMeterProvider.set(meterProvider);
+    IntervalMetricReader.builder()
+        .setMetricProducers(Collections.singletonList(meterProvider))
+        .setMetricExporter(
+            OtlpGrpcMetricExporter.builder().setEndpoint("https://collector-service:4317").build())
+        .build()
+        .start();
+ }
 }
 ```
 
@@ -228,66 +253,78 @@ public class OpenTelemetryModule {
 
     @Bean
     public TracerSdkProvider tracerProvider(Resource resource, Clock clock, MonitoringConfig config) {
-        return TracerSdkProvider.builder()
+        return SdkTracerProvider.builder()
             .setResource(resource)
             .setClock(clock)
             .addSpanProcessor(CustomAttributeAddingProcessor.create())
             .addSpanProcessor(CustomEventAddingProcessor.create())
-            .addSpanProcessor(BatchSpanProcessor.builder(
-                OtlpGrpcSpanExporter.builder()
-                    .setEndpoint(config.getOtlpExporter().getEndpoint())
-                    .setTimeout(config.getOtlpExporter().getTimeout())
+            .addSpanProcessor(
+                BatchSpanProcessor.builder(
+                    OtlpGrpcSpanExporter.builder()
+                        .setEndpoint(config.getOtlpExporter().getEndpoint())
+                        .setTimeout(config.getOtlpExporter().getTimeout())
+                        .build())
+                    .setBatchQueueSize(config.getOtlpExporter().getQueueSize())
+                    .setExporterTimeout(config.getOtlpExporter().getTimeout())
                     .build())
-                .setBatchQueueSize(config.getOtlpExporter().getQueueSize())
-                .setTimeout(config.getOtlpExporter().getTimeout())
-                .build())
-            .addSpanProcessor(SimpleSpanProcessor.builder(
-                ZipkinExporter.builder()
-                    .setEndpoint(config.getZipkinExporter().getEndpoint())
-                    .build())
-                .build())
-            .setTraceSampler(config.getSamplingRate() != 0 
-               ? Sampler.rateLimiting(config.getSamplingRate()) : Sampler.getDefault())
-            .setTraceLimits(TraceLimits.builder().setMaxAttributes(config.getMaxSpanAttributes()).build())
+            .addSpanProcessor(
+                SimpleSpanProcessor.create(
+                    ZipkinSpanExporter.builder()
+                        .setEndpoint(config.getZipkinExporter().getEndpoint())
+                        .build()))
+            .setSampler(
+                config.getSamplingRatio() != 0
+                    ? Sampler.traceIdRatioBased(config.getSamplingRatio())
+                    : Sampler.parentBased(Sampler.alwaysOn()))
+            .setSpanLimits(
+                SpanLimits.builder().setMaxNumberOfAttributes(config.getMaxSpanAttributes()).build())
             .setIdGenerator(TimestampedIdGenerator.create())
             .build();
     }
   
     @Bean
     public MeterSdkProvider meterProvider(Resource resource, Clock clock) {
-        return MeterSdkProvider.builder()
+        return SdkMeterProvider.builder()
             .setResource(resource)
             .setClock(clock)
-            .setMeterStuff(InProgressMetricsStuff.create())
+            .registerView(
+                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                View.builder()
+                    .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
+                    .setAggregatorFactory(AggregatorFactory.count(AggregationTemporality.DELTA))
+                    .build())
             .build();
     }
 
     @Bean
-    public IntervalMetricReader metricReader(MeterSdkProvider meterProvider) {
+    public IntervalMetricReader metricReader(SdkMeterProvider meterProvider) {
         return IntervalMetricReader.builder()
-            .addMetricProducer(meterProvider.getMetricProducer())
-            .addMetricExporter(PrometheusMetricServer.create())
+            .setMetricProducers(List.of(meterProvider))
+            .setMetricExporter(
+                OtlpGrpcMetricExporter.builder().setEndpoint("https://collector-service:4317").build())
             .build();
     }
 
     @Bean
-    public OpenTelemetry openTelemetry(TracerSdkProvider tracerProvider, MeterSdkProvider meterProvider) {
+    public OpenTelemetry openTelemetry(SdkTracerProvider tracerProvider, SdkMeterProvider meterProvider) {
+        GlobalMeterProvider.set(meterProvider);
         return OpenTelemetrySdk.builder()
-           .addPropagator(W3CHttpTraceContextPropagator.getInstance())
-           .addPropagator(B3Propagator.getInstance())
-           .setTracerProvider(tracerProvider)
-           .setMeterProvider(meterProvider)
-           .buildAndSetAsGlobal();
+            .setPropagators(
+                ContextPropagators.create(
+                    TextMapPropagator.composite(
+                        W3CTraceContextPropagator.getInstance(),
+                        B3Propagator.injectingSingleHeader())))
+            .setTracerProvider(tracerProvider)
+            .buildAndRegisterGlobal();
     }
 
     @Bean
     @ForJaeger
-    public OpenTelemetry openTelemetryJaeger(TracerSdkProvider tracerProvider, MeterSdkProvider meterProvider) {
+    public OpenTelemetry openTelemetryJaeger(SdkTracerProvider tracerProvider, SdkMeterProvider meterProvider) {
         return OpenTelemetrySdk.builder()
-           .addPropagator(JaegerPropagator.getInstance())
-           .setTracerProvider(tracerProvider)
-           .setMeterProvider(meterProvider)
-           .buildWithoutSettingAsGlobal();
+            .setPropagators(ContextPropagators.create(JaegerPropagator.getInstance()))
+            .setTracerProvider(tracerProvider)
+            .build();
     }
   
     @Bean
