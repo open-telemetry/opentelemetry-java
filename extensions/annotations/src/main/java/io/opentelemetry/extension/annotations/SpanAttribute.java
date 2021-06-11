@@ -5,18 +5,19 @@
 
 package io.opentelemetry.extension.annotations;
 
-import io.opentelemetry.api.trace.SpanKind;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation marks that an execution of this method or constructor should result in a new
- * {@link io.opentelemetry.api.trace.Span}.
+ * This annotation marks that a parameter of a method annotated by the {@link WithSpan} annotation
+ * should be added as an attribute to the newly created {@link io.opentelemetry.api.trace.Span}.
+ * Using this annotation is equivalent to calling {@code Span.currentSpan().setAttribute(...)}
+ * within the body of the method.
  *
  * <p>Application developers can use this annotation to signal OpenTelemetry auto-instrumentation
- * that a new span should be created whenever marked method is executed.
+ * that a new span attribute should be added to a span created when the parent method is executed.
  *
  * <p>If you are a library developer, then probably you should NOT use this annotation, because it
  * is non-functional without the OpenTelemetry auto-instrumentation agent, or some other annotation
@@ -24,18 +25,17 @@ import java.lang.annotation.Target;
  *
  * @see <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation">OpenTelemetry
  *     OpenTelemetry Instrumentation for Java</a>
+ * @since 1.4.0
  */
-@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface WithSpan {
+public @interface SpanAttribute {
   /**
-   * Optional name of the created span.
+   * Optional name of the attribute.
    *
-   * <p>If not specified, an appropriate default name should be created by auto-instrumentation.
-   * E.g. {@code "className"."method"}
+   * <p>If not specified and the code is compiled using the `{@code -parameters}` argument to
+   * `javac`, the parameter name will be used instead. If the parameter name is not available, e.g.,
+   * because the code was not compiled with that flag, the attribute will be ignored.
    */
   String value() default "";
-
-  /** Specify the {@link SpanKind} of span to be created. Defaults to {@link SpanKind#INTERNAL}. */
-  SpanKind kind() default SpanKind.INTERNAL;
 }
