@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -60,25 +61,24 @@ public final class SdkTracerProvider implements TracerProvider, Closeable {
 
   @Override
   public Tracer get(String instrumentationName) {
-    return get(instrumentationName, null);
+    return tracerBuilder(instrumentationName).build();
   }
 
   @Override
-  public Tracer get(String instrumentationName, @Nullable String instrumentationVersion) {
-    return get(instrumentationName, instrumentationVersion, null);
+  public Tracer get(String instrumentationName, String instrumentationVersion) {
+    return tracerBuilder(instrumentationName)
+        .setInstrumentationVersion(instrumentationVersion)
+        .build();
   }
 
   @Override
-  public Tracer get(
-      String instrumentationName,
-      @Nullable String instrumentationVersion,
-      @Nullable String schemaUrl) {
+  public TracerBuilder tracerBuilder(@Nullable String instrumentationName) {
     // Per the spec, both null and empty are "invalid" and a default value should be used.
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       logger.fine("Tracer requested without instrumentation name.");
       instrumentationName = DEFAULT_TRACER_NAME;
     }
-    return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion, schemaUrl);
+    return new SdkTracerBuilder(tracerSdkComponentRegistry, instrumentationName);
   }
 
   /** Returns the {@link SpanLimits} that are currently applied to created spans. */

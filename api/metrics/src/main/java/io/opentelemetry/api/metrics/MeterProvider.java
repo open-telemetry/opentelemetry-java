@@ -5,7 +5,6 @@
 
 package io.opentelemetry.api.metrics;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -45,21 +44,14 @@ public interface MeterProvider {
   Meter get(String instrumentationName, String instrumentationVersion);
 
   /**
-   * Gets or creates a named and versioned meter instance associated with a specific version of *
-   * the OpenTelemetry schema.
+   * Creates a MeterBuilder for a named meter instance.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
-   * @param instrumentationVersion The version of the instrumentation library.
-   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
-   *     library.
-   * @return a tracer instance.
+   * @return a MeterBuilder instance.
    * @since 1.4.0
    */
-  default Meter get(
-      String instrumentationName, @Nullable String instrumentationVersion, String schemaUrl) {
-    return instrumentationVersion == null
-        ? get(instrumentationName)
-        : get(instrumentationName, instrumentationVersion);
+  default MeterBuilder meterBuilder(String instrumentationName) {
+    return DefaultMeterBuilder.getInstance();
   }
 }

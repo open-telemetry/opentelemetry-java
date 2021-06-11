@@ -1,10 +1,16 @@
 Comparing source compatibility of  against 
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.api.GlobalOpenTelemetry  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.trace.Tracer getTracer(java.lang.String, java.lang.String, java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.api.trace.TracerBuilder tracerBuilder(java.lang.String)
 ***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.OpenTelemetry  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.Tracer getTracer(java.lang.String, java.lang.String, java.lang.String)
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.TracerBuilder tracerBuilder(java.lang.String)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.trace.TracerBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.trace.Tracer build()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.trace.TracerBuilder setInstrumentationVersion(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.trace.TracerBuilder setSchemaUrl(java.lang.String)
 ***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.trace.TracerProvider  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.Tracer get(java.lang.String, java.lang.String, java.lang.String)
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.trace.TracerBuilder tracerBuilder(java.lang.String)

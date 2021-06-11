@@ -33,10 +33,10 @@ class SdkTracerTest {
       (SdkTracer)
           SdkTracerProvider.builder()
               .build()
-              .get(
-                  INSTRUMENTATION_LIBRARY_NAME,
-                  INSTRUMENTATION_LIBRARY_VERSION,
-                  "http://schemaurl");
+              .tracerBuilder(INSTRUMENTATION_LIBRARY_NAME)
+              .setInstrumentationVersion(INSTRUMENTATION_LIBRARY_VERSION)
+              .setSchemaUrl("http://schemaurl")
+              .build();
 
   @Test
   void defaultSpanBuilder() {

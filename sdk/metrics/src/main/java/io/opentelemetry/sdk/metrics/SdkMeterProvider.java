@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
@@ -47,24 +48,23 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
 
   @Override
   public Meter get(String instrumentationName) {
-    return get(instrumentationName, null);
+    return meterBuilder(instrumentationName).build();
   }
 
   @Override
-  public Meter get(String instrumentationName, @Nullable String instrumentationVersion) {
-    return get(instrumentationName, instrumentationVersion, null);
+  public Meter get(String instrumentationName, String instrumentationVersion) {
+    return meterBuilder(instrumentationName)
+        .setInstrumentationVersion(instrumentationVersion)
+        .build();
   }
 
   @Override
-  public Meter get(
-      String instrumentationName,
-      @Nullable String instrumentationVersion,
-      @Nullable String schemaUrl) {
+  public MeterBuilder meterBuilder(@Nullable String instrumentationName) {
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("Meter requested without instrumentation name.");
       instrumentationName = DEFAULT_METER_NAME;
     }
-    return registry.get(instrumentationName, instrumentationVersion, schemaUrl);
+    return new SdkMeterBuilder(registry, instrumentationName);
   }
 
   @Override

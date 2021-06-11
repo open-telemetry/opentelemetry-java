@@ -62,20 +62,30 @@ class SdkMeterRegistryTest {
   void getSameInstanceForSameName_WithoutVersion() {
     assertThat(meterProvider.get("test")).isSameAs(meterProvider.get("test"));
     assertThat(meterProvider.get("test")).isSameAs(meterProvider.get("test", null));
-    assertThat(meterProvider.get("test")).isSameAs(meterProvider.get("test", null, null));
+    assertThat(meterProvider.get("test")).isSameAs(meterProvider.meterBuilder("test").build());
   }
 
   @Test
   void getSameInstanceForSameName_WithVersion() {
     assertThat(meterProvider.get("test", "version"))
         .isSameAs(meterProvider.get("test", "version"))
-        .isSameAs(meterProvider.get("test", "version", null));
+        .isSameAs(meterProvider.meterBuilder("test").setInstrumentationVersion("version").build());
   }
 
   @Test
   void getSameInstanceForSameName_WithVersionAndSchema() {
-    assertThat(meterProvider.get("test", "version", "http://url"))
-        .isSameAs(meterProvider.get("test", "version", "http://url"));
+    assertThat(
+            meterProvider
+                .meterBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
+                .build())
+        .isSameAs(
+            meterProvider
+                .meterBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
+                .build());
   }
 
   @Test
@@ -84,7 +94,11 @@ class SdkMeterRegistryTest {
         InstrumentationLibraryInfo.create("theName", "theVersion", "http://theschema");
     SdkMeter meter =
         (SdkMeter)
-            meterProvider.get(expected.getName(), expected.getVersion(), expected.getSchemaUrl());
+            meterProvider
+                .meterBuilder(expected.getName())
+                .setInstrumentationVersion(expected.getVersion())
+                .setSchemaUrl(expected.getSchemaUrl())
+                .build();
     assertThat(meter.getInstrumentationLibraryInfo()).isEqualTo(expected);
   }
 
@@ -135,7 +149,7 @@ class SdkMeterRegistryTest {
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
 
-    meter = (SdkMeter) meterProvider.get(null, null, null);
+    meter = (SdkMeter) meterProvider.meterBuilder(null).build();
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
   }
@@ -150,7 +164,7 @@ class SdkMeterRegistryTest {
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
 
-    meter = (SdkMeter) meterProvider.get("", "", "");
+    meter = (SdkMeter) meterProvider.meterBuilder("").build();
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
   }

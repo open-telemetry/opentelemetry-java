@@ -7,6 +7,7 @@ package io.opentelemetry.api;
 
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.lang.reflect.InvocationTargetException;
@@ -127,23 +128,17 @@ public final class GlobalOpenTelemetry {
   }
 
   /**
-   * Gets or creates a named and versioned tracer instance from the globally registered {@link
-   * TracerProvider}.
+   * Creates a TracerBuilder for a named {@link Tracer} instance.
    *
-   * <p>This is a shortcut method for {@code getTracerProvider().get(instrumentationName,
-   * instrumentationVersion, schemaUrl)}
+   * <p>This is a shortcut method for {@code get().tracerBuilder(instrumentationName)}
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
-   * @param instrumentationVersion The version of the instrumentation library (e.g., "1.0.0").
-   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
-   *     library.
-   * @return a tracer instance.
+   *     instrument*ed* library.
+   * @return a TracerBuilder instance.
    * @since 1.4.0
    */
-  public static Tracer getTracer(
-      String instrumentationName, @Nullable String instrumentationVersion, String schemaUrl) {
-    return get().getTracer(instrumentationName, instrumentationVersion, schemaUrl);
+  public static TracerBuilder tracerBuilder(String instrumentationName) {
+    return get().tracerBuilder(instrumentationName);
   }
 
   /**

@@ -6,7 +6,6 @@
 package io.opentelemetry.api.metrics;
 
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nullable;
 
 /**
  * IMPORTANT: This is a temporary class, and solution for the metrics package until it will be
@@ -71,22 +70,16 @@ public final class GlobalMeterProvider {
   }
 
   /**
-   * Gets or creates a named and versioned meter instance from the globally registered {@link
-   * MeterProvider}.
+   * Creates a {@link MeterBuilder} for a named meter instance.
    *
-   * <p>This is a shortcut method for {@code getGlobalMeterProvider().get(instrumentationName,
-   * instrumentationVersion)}
+   * <p>This is a shortcut method for {@code get().meterBuilder(instrumentationName)}
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
-   * @param instrumentationVersion The version of the instrumentation library.
-   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
-   *     library.
-   * @return a tracer instance.
+   * @return a MeterBuilder instance.
    * @since 1.4.0
    */
-  public static Meter getMeter(
-      String instrumentationName, @Nullable String instrumentationVersion, String schemaUrl) {
-    return get().get(instrumentationName, instrumentationVersion, schemaUrl);
+  public static MeterBuilder meterBuilder(String instrumentationName) {
+    return get().meterBuilder(instrumentationName);
   }
 }

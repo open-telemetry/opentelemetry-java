@@ -6,9 +6,9 @@
 package io.opentelemetry.api;
 
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import javax.annotation.Nullable;
 
 /**
  * The entrypoint to telemetry functionality for tracing, metrics and baggage.
@@ -65,20 +65,15 @@ public interface OpenTelemetry {
   }
 
   /**
-   * Gets or creates a named and versioned tracer instance from the {@link TracerProvider} in this
-   * {@link OpenTelemetry}.
+   * Creates a {@link TracerBuilder} for a named {@link Tracer} instance.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
-   * @param instrumentationVersion The version of the instrumentation library (e.g., "1.0.0").
-   * @param schemaUrl The URL of the OpenTelemetry schema being used by this instrumentation
-   *     library.
-   * @return a tracer instance.
+   *     instrument*ed* library.
+   * @return a TracerBuilder instance.
    * @since 1.4.0
    */
-  default Tracer getTracer(
-      String instrumentationName, @Nullable String instrumentationVersion, String schemaUrl) {
-    return getTracerProvider().get(instrumentationName, instrumentationVersion, schemaUrl);
+  default TracerBuilder tracerBuilder(String instrumentationName) {
+    return getTracerProvider().tracerBuilder(instrumentationName);
   }
 
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */
