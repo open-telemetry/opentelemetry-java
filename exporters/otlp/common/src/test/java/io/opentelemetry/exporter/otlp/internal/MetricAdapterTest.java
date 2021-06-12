@@ -568,7 +568,7 @@ class MetricAdapterTest {
     io.opentelemetry.proto.resource.v1.Resource emptyResourceProto =
         io.opentelemetry.proto.resource.v1.Resource.newBuilder().build();
     InstrumentationLibraryInfo instrumentationLibraryInfo =
-        InstrumentationLibraryInfo.create("name", "version");
+        InstrumentationLibraryInfo.create("name", "version", "http://url");
     InstrumentationLibrary instrumentationLibraryProto =
         InstrumentationLibrary.newBuilder().setName("name").setVersion("version").build();
     InstrumentationLibrary emptyInstrumentationLibraryProto =
@@ -652,6 +652,7 @@ class MetricAdapterTest {
                         InstrumentationLibraryMetrics.newBuilder()
                             .setInstrumentationLibrary(instrumentationLibraryProto)
                             .addAllMetrics(ImmutableList.of(metricDoubleSum, metricDoubleSum))
+                            .setSchemaUrl("http://url")
                             .build()))
                 .build(),
             ResourceMetrics.newBuilder()
@@ -659,11 +660,12 @@ class MetricAdapterTest {
                 .addAllInstrumentationLibraryMetrics(
                     ImmutableList.of(
                         InstrumentationLibraryMetrics.newBuilder()
-                            .setInstrumentationLibrary(emptyInstrumentationLibraryProto)
+                            .setInstrumentationLibrary(instrumentationLibraryProto)
                             .addAllMetrics(singletonList(metricDoubleSum))
+                            .setSchemaUrl("http://url")
                             .build(),
                         InstrumentationLibraryMetrics.newBuilder()
-                            .setInstrumentationLibrary(instrumentationLibraryProto)
+                            .setInstrumentationLibrary(emptyInstrumentationLibraryProto)
                             .addAllMetrics(singletonList(metricDoubleSum))
                             .build()))
                 .build());

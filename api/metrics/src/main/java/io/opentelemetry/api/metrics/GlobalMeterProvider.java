@@ -68,4 +68,18 @@ public final class GlobalMeterProvider {
   public static Meter getMeter(String instrumentationName, String instrumentationVersion) {
     return get().get(instrumentationName, instrumentationVersion);
   }
+
+  /**
+   * Creates a {@link MeterBuilder} for a named meter instance.
+   *
+   * <p>This is a shortcut method for {@code get().meterBuilder(instrumentationName)}
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @return a MeterBuilder instance.
+   * @since 1.4.0
+   */
+  public static MeterBuilder meterBuilder(String instrumentationName) {
+    return get().meterBuilder(instrumentationName);
+  }
 }

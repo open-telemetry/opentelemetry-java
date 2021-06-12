@@ -29,14 +29,19 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
+import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
@@ -51,6 +56,35 @@ class SpanAdapterTest {
 
   private static final SpanAdapter.ThreadLocalCache threadLocalCache =
       new SpanAdapter.ThreadLocalCache();
+
+  @Test
+  void toProtoResourceSpans() {
+    List<ResourceSpans> resourceSpans =
+        SpanAdapter.toProtoResourceSpans(
+            Collections.singleton(
+                TestSpanData.builder()
+                    .setHasEnded(true)
+                    .setSpanContext(SPAN_CONTEXT)
+                    .setParentSpanContext(SpanContext.getInvalid())
+                    .setName("GET /api/endpoint")
+                    .setKind(SpanKind.SERVER)
+                    .setStartEpochNanos(12345)
+                    .setEndEpochNanos(12349)
+                    .setStatus(StatusData.unset())
+                    .setInstrumentationLibraryInfo(
+                        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
+                    .build()));
+
+    assertThat(resourceSpans).hasSize(1);
+    ResourceSpans onlyResourceSpans = resourceSpans.get(0);
+    assertThat(onlyResourceSpans.getInstrumentationLibrarySpansCount()).isEqualTo(1);
+    InstrumentationLibrarySpans instrumentationLibrarySpans =
+        onlyResourceSpans.getInstrumentationLibrarySpans(0);
+    assertThat(instrumentationLibrarySpans.getSchemaUrl()).isEqualTo("http://url");
+    assertThat(instrumentationLibrarySpans.getInstrumentationLibrary())
+        .isEqualTo(
+            InstrumentationLibrary.newBuilder().setName("testLib").setVersion("1.0").build());
+  }
 
   // Repeat to reuse the cache. If we forgot to clear any reused builder it will fail.
   @RepeatedTest(3)
@@ -115,7 +149,8 @@ class SpanAdapterTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // setDeprecatedCode is deprecated.
+  @SuppressWarnings("deprecation")
+  // setDeprecatedCode is deprecated.
   void toProtoStatus() {
     assertThat(SpanAdapter.toStatusProto(StatusData.unset()))
         .isEqualTo(
