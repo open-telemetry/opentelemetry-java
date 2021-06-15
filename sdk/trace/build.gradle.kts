@@ -1,5 +1,5 @@
 plugins {
-    id("java-library")
+    id("otel.java-conventions")
     id("maven-publish")
 
     id("me.champeau.jmh")

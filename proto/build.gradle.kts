@@ -2,7 +2,7 @@ import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
 
 plugins {
-    id("java-library")
+    id("otel.java-conventions")
     id("maven-publish")
 
     id("com.google.protobuf")

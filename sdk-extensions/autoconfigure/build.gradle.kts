@@ -1,5 +1,5 @@
 plugins {
-    `java-library`
+    id("otel.java-conventions")
     `maven-publish`
 
     id("org.unbroken-dome.test-sets")
