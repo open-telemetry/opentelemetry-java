@@ -1,5 +1,5 @@
 plugins {
-    java
+    id("otel.java-conventions")
 
     id("com.github.johnrengelman.shadow")
 }

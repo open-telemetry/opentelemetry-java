@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    `java-library`
+    id("otel.java-conventions")
     `maven-publish`
 
     id("me.champeau.jmh")

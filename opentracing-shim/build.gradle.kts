@@ -1,5 +1,5 @@
 plugins {
-    `java-library`
+    id("otel.java-conventions")
     `maven-publish`
 }
 
