@@ -28,6 +28,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -301,6 +302,8 @@ class OtlpGrpcSpanExporterTest {
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
+        .setInstrumentationLibraryInfo(
+            InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
         .build();
   }
 

@@ -1,5 +1,5 @@
 plugins {
-    java
+    id("otel.java-conventions")
 }
 
 description = "OpenTelemetry All"

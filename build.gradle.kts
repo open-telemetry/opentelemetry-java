@@ -1,16 +1,10 @@
-import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.protobuf.gradle.*
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import io.morethan.jmhreport.gradle.JmhReportExtension
-import me.champeau.jmh.JmhParameters
 import me.champeau.gradle.japicmp.JapicmpTask
+import me.champeau.jmh.JmhParameters
 import nebula.plugin.release.git.opinion.Strategies
-import net.ltgt.gradle.errorprone.CheckSeverity
-import net.ltgt.gradle.errorprone.ErrorProneOptions
-import net.ltgt.gradle.errorprone.ErrorPronePlugin
-import net.ltgt.gradle.nullaway.NullAwayOptions
 import org.gradle.api.plugins.JavaPlugin.*
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferPlugin
 import java.time.Duration
@@ -25,12 +19,9 @@ plugins {
     id("de.marcphilipp.nexus-publish") apply false
     id("io.morethan.jmhreport") apply false
     id("me.champeau.jmh") apply false
-    id("net.ltgt.errorprone") apply false
-    id("net.ltgt.nullaway") apply false
     id("ru.vyarus.animalsniffer") apply false
     id("me.champeau.gradle.japicmp") apply false
 }
-
 
 /**
  * Locate the project's artifact of a particular version.
@@ -106,310 +97,10 @@ nexusStaging {
     delayBetweenRetriesInMillis = 10000
 }
 
-val enableNullaway: String? by project
-
 subprojects {
     group = "io.opentelemetry"
 
     plugins.withId("java") {
-        plugins.apply("checkstyle")
-        plugins.apply("eclipse")
-        plugins.apply("idea")
-        plugins.apply("jacoco")
-
-        plugins.apply("com.diffplug.spotless")
-        plugins.apply("net.ltgt.errorprone")
-        plugins.apply("net.ltgt.nullaway")
-
-        configure<BasePluginConvention> {
-            archivesBaseName = "opentelemetry-${name}"
-        }
-
-        configure<JavaPluginExtension> {
-            toolchain {
-                languageVersion.set(JavaLanguageVersion.of(11))
-            }
-
-            withJavadocJar()
-            withSourcesJar()
-        }
-
-        configure<CheckstyleExtension> {
-            configDirectory.set(file("$rootDir/buildscripts/"))
-            toolVersion = "8.12"
-            isIgnoreFailures = false
-            configProperties["rootDir"] = rootDir
-        }
-
-        configure<JacocoPluginExtension> {
-            toolVersion = "0.8.7"
-        }
-
-        val javaToolchains = the<JavaToolchainService>()
-
-        tasks {
-            val testJava8 by registering(Test::class) {
-                javaLauncher.set(javaToolchains.launcherFor {
-                    languageVersion.set(JavaLanguageVersion.of(8))
-                })
-
-                configure<JacocoTaskExtension> {
-                    enabled = false
-                }
-            }
-
-            val testAdditionalJavaVersions: String? by rootProject
-            if (testAdditionalJavaVersions == "true") {
-                named("check") {
-                    dependsOn(testJava8)
-                }
-            }
-
-            withType(JavaCompile::class) {
-                options.release.set(8)
-
-                if (name != "jmhCompileGeneratedClasses") {
-                    options.compilerArgs.addAll(listOf(
-                            "-Xlint:all",
-                            // We suppress the "try" warning because it disallows managing an auto-closeable with
-                            // try-with-resources without referencing the auto-closeable within the try block.
-                            "-Xlint:-try",
-                            // We suppress the "processing" warning as suggested in
-                            // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
-                            "-Xlint:-processing",
-                            // We suppress the "options" warning because it prevents compilation on modern JDKs
-                            "-Xlint:-options",
-
-                            // Fail build on any warning
-                            "-Werror"
-                    ))
-                }
-                //disable deprecation warnings for the protobuf module
-                if (project.name == "proto") {
-                    options.compilerArgs.add("-Xlint:-deprecation")
-                }
-
-                options.encoding = "UTF-8"
-
-                if (name.contains("Test")) {
-                    // serialVersionUID is basically guaranteed to be useless in tests
-                    options.compilerArgs.add("-Xlint:-serial")
-                }
-
-                (options as ExtensionAware).extensions.configure<ErrorProneOptions> {
-                    disableWarningsInGeneratedCode.set(true)
-                    allDisabledChecksAsWarnings.set(true)
-
-                    (this as ExtensionAware).extensions.configure<NullAwayOptions> {
-                        // Enable nullaway on main sources.
-                        // TODO(anuraaga): Remove enableNullaway flag when all errors fixed
-                        if (!name.contains("Test") && !name.contains("Jmh") && enableNullaway == "true") {
-                            severity.set(CheckSeverity.ERROR)
-                        } else {
-                            severity.set(CheckSeverity.OFF)
-                        }
-                        annotatedPackages.add("io.opentelemetry")
-                    }
-
-                    // Doesn't currently use Var annotations.
-                    disable("Var") // "-Xep:Var:OFF"
-
-                    // ImmutableRefactoring suggests using com.google.errorprone.annotations.Immutable,
-                    // but currently uses javax.annotation.concurrent.Immutable
-                    disable("ImmutableRefactoring") // "-Xep:ImmutableRefactoring:OFF"
-
-                    // AutoValueImmutableFields suggests returning Guava types from API methods
-                    disable("AutoValueImmutableFields")
-                    // Suggests using Guava types for fields but we don't use Guava
-                    disable("ImmutableMemberCollection")
-                    // "-Xep:AutoValueImmutableFields:OFF"
-
-                    // Fully qualified names may be necessary when deprecating a class to avoid
-                    // deprecation warning.
-                    disable("UnnecessarilyFullyQualified")
-
-                    // Ignore warnings for protobuf and jmh generated files.
-                    excludedPaths.set(".*generated.*|.*internal.shaded.*")
-                    // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
-
-                    disable("Java7ApiChecker")
-                    disable("AndroidJdkLibsChecker")
-                    //apparently disabling android doesn't disable this
-                    disable("StaticOrDefaultInterfaceMethod")
-
-                    //until we have everything converted, we need these
-                    disable("JdkObsolete")
-                    disable("UnnecessaryAnonymousClass")
-
-                    // Limits APIs
-                    disable("NoFunctionalReturnType")
-
-                    // We don't depend on Guava so use normal splitting
-                    disable("StringSplitter")
-
-                    // Prevents lazy initialization
-                    disable("InitializeInline")
-
-                    if (name.contains("Jmh") || name.contains("Test")) {
-                        // Allow underscore in test-type method names
-                        disable("MemberName")
-                    }
-                }
-            }
-
-            withType(Test::class) {
-                useJUnitPlatform()
-
-                testLogging {
-                    exceptionFormat = TestExceptionFormat.FULL
-                    showExceptions = true
-                    showCauses = true
-                    showStackTraces = true
-                }
-                maxHeapSize = "1500m"
-            }
-
-            withType(Javadoc::class) {
-                exclude("io/opentelemetry/**/internal/**")
-
-                with(options as StandardJavadocDocletOptions) {
-                    source = "8"
-                    encoding = "UTF-8"
-                    docEncoding = "UTF-8"
-                    breakIterator(true)
-
-                    addBooleanOption("html5", true)
-
-                    links("https://docs.oracle.com/javase/8/docs/api/")
-                    addBooleanOption("Xdoclint:all,-missing", true)
-
-                    afterEvaluate {
-                        val title = "${project.description}"
-                        docTitle = title
-                        windowTitle = title
-                    }
-                }
-            }
-
-            afterEvaluate {
-                withType(Jar::class) {
-                    val moduleName: String by project
-                    inputs.property("moduleName", moduleName)
-
-                    manifest {
-                        attributes(
-                                "Automatic-Module-Name" to moduleName,
-                                "Built-By" to System.getProperty("user.name"),
-                                "Built-JDK" to System.getProperty("java.version"),
-                                "Implementation-Title" to project.name,
-                                "Implementation-Version" to project.version)
-                    }
-                }
-            }
-        }
-
-        // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
-
-        // Do not generate reports for individual projects
-        tasks.named("jacocoTestReport") {
-            enabled = false
-        }
-
-        configurations {
-            val implementation by getting
-
-            create("transitiveSourceElements") {
-                isVisible = false
-                isCanBeResolved = false
-                isCanBeConsumed = true
-                extendsFrom(implementation)
-                attributes {
-                    attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
-                    attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
-                    attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("source-folders"))
-                }
-                val mainSources = the<JavaPluginConvention>().sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-                mainSources.java.srcDirs.forEach {
-                    outgoing.artifact(it)
-                }
-            }
-
-            create("coverageDataElements") {
-                isVisible = false
-                isCanBeResolved = false
-                isCanBeConsumed = true
-                extendsFrom(implementation)
-                attributes {
-                    attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
-                    attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
-                    attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("jacoco-coverage-data"))
-                }
-                // This will cause the test task to run if the coverage data is requested by the aggregation task
-                tasks.withType(Test::class) {
-                    outgoing.artifact(extensions.getByType<JacocoTaskExtension>().destinationFile!!)
-                }
-            }
-
-            configureEach {
-                resolutionStrategy {
-                    failOnVersionConflict()
-                    preferProjectModules()
-                }
-            }
-        }
-
-        configure<SpotlessExtension> {
-            java {
-                googleJavaFormat("1.9")
-                licenseHeaderFile(rootProject.file("buildscripts/spotless.license.java"), "(package|import|class|// Includes work from:)")
-            }
-        }
-
-        val dependencyManagement by configurations.creating {
-            isCanBeConsumed = false
-            isCanBeResolved = false
-            isVisible = false
-        }
-
-        dependencies {
-            add(dependencyManagement.name, platform(project(":dependencyManagement")))
-            afterEvaluate {
-                configurations.configureEach {
-                    if (isCanBeResolved && !isCanBeConsumed) {
-                        extendsFrom(dependencyManagement)
-                    }
-                }
-            }
-
-            add(COMPILE_ONLY_CONFIGURATION_NAME, "com.google.auto.value:auto-value-annotations")
-            add(COMPILE_ONLY_CONFIGURATION_NAME, "com.google.code.findbugs:jsr305")
-
-            add(TEST_COMPILE_ONLY_CONFIGURATION_NAME, "com.google.auto.value:auto-value-annotations")
-            add(TEST_COMPILE_ONLY_CONFIGURATION_NAME, "com.google.errorprone:error_prone_annotations")
-            add(TEST_COMPILE_ONLY_CONFIGURATION_NAME, "com.google.code.findbugs:jsr305")
-
-            add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.junit.jupiter:junit-jupiter-api")
-            add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.junit.jupiter:junit-jupiter-params")
-            add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "nl.jqno.equalsverifier:equalsverifier")
-            add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.mockito:mockito-core")
-            add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.mockito:mockito-junit-jupiter")
-            add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.assertj:assertj-core")
-            add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "org.awaitility:awaitility")
-            add(TEST_IMPLEMENTATION_CONFIGURATION_NAME, "io.github.netmikey.logunit:logunit-jul")
-
-            add(TEST_RUNTIME_ONLY_CONFIGURATION_NAME, "org.junit.jupiter:junit-jupiter-engine")
-            add(TEST_RUNTIME_ONLY_CONFIGURATION_NAME, "org.junit.vintage:junit-vintage-engine")
-
-            add(ErrorPronePlugin.CONFIGURATION_NAME, "com.google.errorprone:error_prone_core")
-            add(ErrorPronePlugin.CONFIGURATION_NAME, "com.uber.nullaway:nullaway")
-
-            add(ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "com.google.guava:guava-beta-checker")
-
-            // Workaround for @javax.annotation.Generated
-            // see: https://github.com/grpc/grpc-java/issues/3633
-            add(COMPILE_ONLY_CONFIGURATION_NAME, "javax.annotation:javax.annotation-api")
-        }
-
         plugins.withId("com.google.protobuf") {
             protobuf {
                 val versions: Map<String, String> by project
@@ -492,45 +183,45 @@ subprojects {
                 }
             }
         }
-    }
 
-    plugins.withId("me.champeau.gradle.japicmp") {
-        afterEvaluate {
-            tasks {
-                val jApiCmp by registering(JapicmpTask::class) {
-                    dependsOn("jar")
-                    // the japicmp "old" version is either the user-specified one, or the latest release.
-                    val userRequestedBase = project.properties["apiBaseVersion"] as String?
-                    val baselineVersion: String = userRequestedBase ?: latestReleasedVersion
-                    val baselineArtifact: File = project.findArtifact(baselineVersion)
-                    oldClasspath = files(baselineArtifact)
+        plugins.withId("me.champeau.gradle.japicmp") {
+            afterEvaluate {
+                tasks {
+                    val jApiCmp by registering(JapicmpTask::class) {
+                        dependsOn("jar")
+                        // the japicmp "old" version is either the user-specified one, or the latest release.
+                        val userRequestedBase = project.properties["apiBaseVersion"] as String?
+                        val baselineVersion: String = userRequestedBase ?: latestReleasedVersion
+                        val baselineArtifact: File = project.findArtifact(baselineVersion)
+                        oldClasspath = files(baselineArtifact)
 
-                    // the japicmp "new" version is either the user-specified one, or the locally built jar.
-                    val newVersion : String? = project.properties["apiNewVersion"] as String?
-                    val newArtifact: File = if (newVersion == null) {
-                        val jar = getByName("jar") as Jar
-                        file(jar.archiveFile)
-                    } else {
-                        project.findArtifact(newVersion)
+                        // the japicmp "new" version is either the user-specified one, or the locally built jar.
+                        val newVersion: String? = project.properties["apiNewVersion"] as String?
+                        val newArtifact: File = if (newVersion == null) {
+                            val jar = getByName("jar") as Jar
+                            file(jar.archiveFile)
+                        } else {
+                            project.findArtifact(newVersion)
+                        }
+                        newClasspath = files(newArtifact)
+
+                        //only output changes, not everything
+                        isOnlyModified = true
+                        //this is needed so that we only consider the current artifact, and not dependencies
+                        isIgnoreMissingClasses = true
+                        // double wildcards don't seem to work here (*.internal.*)
+                        packageExcludes = listOf("*.internal", "io.opentelemetry.internal.shaded.jctools.*")
+                        if (newVersion == null) {
+                            val baseVersionString = if (userRequestedBase == null) "latest" else baselineVersion
+                            txtOutputFile = file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${project.base.archivesBaseName}.txt")
+                        } else {
+                            txtOutputFile = file("$rootDir/docs/apidiffs/${newVersion}_vs_${baselineVersion}/${project.base.archivesBaseName}.txt")
+                        }
                     }
-                    newClasspath = files(newArtifact)
-
-                    //only output changes, not everything
-                    isOnlyModified = true
-                    //this is needed so that we only consider the current artifact, and not dependencies
-                    isIgnoreMissingClasses = true
-                    // double wildcards don't seem to work here (*.internal.*)
-                    packageExcludes = listOf("*.internal", "io.opentelemetry.internal.shaded.jctools.*")
-                    if (newVersion == null) {
-                        val baseVersionString = if (userRequestedBase == null) "latest" else baselineVersion
-                        txtOutputFile = file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${project.base.archivesBaseName}.txt")
-                    } else {
-                        txtOutputFile = file("$rootDir/docs/apidiffs/${newVersion}_vs_${baselineVersion}/${project.base.archivesBaseName}.txt")
+                    // have the check task depend on the api comparison task, to make it more likely it will get used.
+                    named("check") {
+                        dependsOn(jApiCmp)
                     }
-                }
-                // have the check task depend on the api comparison task, to make it more likely it will get used.
-                named("check") {
-                    dependsOn(jApiCmp)
                 }
             }
         }

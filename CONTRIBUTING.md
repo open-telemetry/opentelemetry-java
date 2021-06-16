@@ -83,12 +83,16 @@ changes to the API (e.g., remove a public method) or to the ABI (e.g., change re
 * The project aims to provide a consistent experience across all the public APIs. It is important to ensure consistency (same look and feel) across different public packages.
 * Use `final` for public classes everywhere it is possible, this ensures that these classes cannot be extended when the API does not intend to offer that functionality.
 * In general, we use the following ordering of class members:
-    * static fields (final before non-final)
-    * non-static fields (final before non-final)
-    * constructors
-    * static methods
-    * instance methods
-    * inner classes
+    * Static fields (final before non-final)
+    * Instance fields (final before non-final)
+    * Constructors
+      * In static utility classes (where all members are static), the private constructor
+        (used to prevent construction) should be ordered after methods instead of before methods.
+    * Methods
+      * If methods call each other, it's nice if the calling method is ordered (somewhere) above
+        the method that it calls. So, for one example, a private method would be ordered (somewhere) below
+        the non-private methods that use it.
+    * Nested classes
 * Adding `toString()` overrides on classes is encouraged, but we only use `toString()` to provide debugging assistance. The implementations
 of all `toString()` methods should be considered to be unstable unless explicitly documented otherwise.
 

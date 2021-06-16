@@ -42,4 +42,16 @@ public interface MeterProvider {
    * @return a tracer instance.
    */
   Meter get(String instrumentationName, String instrumentationVersion);
+
+  /**
+   * Creates a MeterBuilder for a named meter instance.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @return a MeterBuilder instance.
+   * @since 1.4.0
+   */
+  default MeterBuilder meterBuilder(String instrumentationName) {
+    return DefaultMeterBuilder.getInstance();
+  }
 }

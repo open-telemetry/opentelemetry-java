@@ -62,18 +62,43 @@ class SdkMeterRegistryTest {
   void getSameInstanceForSameName_WithoutVersion() {
     assertThat(meterProvider.get("test")).isSameAs(meterProvider.get("test"));
     assertThat(meterProvider.get("test")).isSameAs(meterProvider.get("test", null));
+    assertThat(meterProvider.get("test")).isSameAs(meterProvider.meterBuilder("test").build());
   }
 
   @Test
   void getSameInstanceForSameName_WithVersion() {
-    assertThat(meterProvider.get("test", "version")).isSameAs(meterProvider.get("test", "version"));
+    assertThat(meterProvider.get("test", "version"))
+        .isSameAs(meterProvider.get("test", "version"))
+        .isSameAs(meterProvider.meterBuilder("test").setInstrumentationVersion("version").build());
+  }
+
+  @Test
+  void getSameInstanceForSameName_WithVersionAndSchema() {
+    assertThat(
+            meterProvider
+                .meterBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
+                .build())
+        .isSameAs(
+            meterProvider
+                .meterBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
+                .build());
   }
 
   @Test
   void propagatesInstrumentationLibraryInfoToMeter() {
     InstrumentationLibraryInfo expected =
-        InstrumentationLibraryInfo.create("theName", "theVersion");
-    SdkMeter meter = (SdkMeter) meterProvider.get(expected.getName(), expected.getVersion());
+        InstrumentationLibraryInfo.create("theName", "theVersion", "http://theschema");
+    SdkMeter meter =
+        (SdkMeter)
+            meterProvider
+                .meterBuilder(expected.getName())
+                .setInstrumentationVersion(expected.getVersion())
+                .setSchemaUrl(expected.getSchemaUrl())
+                .build();
     assertThat(meter.getInstrumentationLibraryInfo()).isEqualTo(expected);
   }
 
@@ -123,6 +148,10 @@ class SdkMeterRegistryTest {
     meter = (SdkMeter) meterProvider.get(null, null);
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+
+    meter = (SdkMeter) meterProvider.meterBuilder(null).build();
+    assertThat(meter.getInstrumentationLibraryInfo().getName())
+        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
   }
 
   @Test
@@ -132,6 +161,10 @@ class SdkMeterRegistryTest {
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
 
     meter = (SdkMeter) meterProvider.get("", "");
+    assertThat(meter.getInstrumentationLibraryInfo().getName())
+        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+
+    meter = (SdkMeter) meterProvider.meterBuilder("").build();
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
   }

@@ -1,6 +1,5 @@
 pluginManagement {
     plugins {
-        id("com.diffplug.spotless") version "5.12.5"
         id("com.github.ben-manes.versions") version "0.39.0"
         id("com.github.johnrengelman.shadow") version "7.0.0"
         id("com.google.protobuf") version "0.8.16"
@@ -11,8 +10,6 @@ pluginManagement {
         id("io.morethan.jmhreport") version "0.9.0"
         id("me.champeau.jmh") version "0.6.5"
         id("nebula.release") version "15.3.1"
-        id("net.ltgt.errorprone") version "2.0.1"
-        id("net.ltgt.nullaway") version "1.1.0"
         id("org.checkerframework") version "0.5.20"
         id("org.jetbrains.kotlin.jvm") version "1.5.10"
         id("org.unbroken-dome.test-sets") version "4.0.0"
