@@ -58,7 +58,7 @@ public final class BeanstalkResource {
 
       if (!parser.isExpectedStartObjectToken()) {
         logger.log(Level.WARNING, "Invalid Beanstalk config: ", configPath);
-        return Resource.create(attrBuilders.build());
+        return Resource.create(attrBuilders.build(), ResourceAttributes.SCHEMA_URL);
       }
 
       while (parser.nextToken() != JsonToken.END_OBJECT) {
@@ -85,7 +85,7 @@ public final class BeanstalkResource {
 
     attrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, AwsResourceConstants.cloudProvider());
 
-    return Resource.create(attrBuilders.build());
+    return Resource.create(attrBuilders.build(), ResourceAttributes.SCHEMA_URL);
   }
 
   private BeanstalkResource() {}

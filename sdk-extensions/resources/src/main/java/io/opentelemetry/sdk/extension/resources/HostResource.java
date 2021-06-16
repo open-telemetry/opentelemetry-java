@@ -40,7 +40,7 @@ public final class HostResource {
       attributes.put(ResourceAttributes.HOST_ARCH, hostArch);
     }
 
-    return Resource.create(attributes.build());
+    return Resource.create(attributes.build(), ResourceAttributes.SCHEMA_URL);
   }
 
   private HostResource() {}

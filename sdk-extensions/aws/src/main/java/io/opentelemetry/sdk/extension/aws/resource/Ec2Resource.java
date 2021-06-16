@@ -119,7 +119,7 @@ public final class Ec2Resource {
 
     attrBuilders.put(ResourceAttributes.HOST_NAME, hostname);
 
-    return Resource.create(attrBuilders.build());
+    return Resource.create(attrBuilders.build(), ResourceAttributes.SCHEMA_URL);
   }
 
   private static String fetchToken(URL tokenUrl) {

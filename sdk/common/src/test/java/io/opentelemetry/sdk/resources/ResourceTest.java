@@ -145,6 +145,9 @@ class ResourceTest {
     new EqualsTester()
         .addEqualityGroup(Resource.create(attribute1), Resource.create(attribute1), resource1)
         .addEqualityGroup(Resource.create(attribute2), resource2)
+        .addEqualityGroup(
+            Resource.create(attribute1, "http://schema"),
+            Resource.create(attribute1, "http://schema"))
         .testEquals();
   }
 
@@ -155,6 +158,23 @@ class ResourceTest {
 
     Resource resource = Resource.empty().merge(resource1).merge(resource2);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
+  }
+
+  @Test
+  void testMergeResources_schema() {
+    Resource noSchemaOne = Resource.builder().put("a", 1).build();
+    Resource noSchemaTwo = Resource.builder().put("b", 2).build();
+    Resource schemaOne = Resource.builder().setSchemaUrl("http://schema.1").put("c", 3).build();
+    Resource schemaTwo = Resource.builder().setSchemaUrl("http://schema.2").put("d", 4).build();
+    Resource schemaTwoAgain =
+        Resource.builder().setSchemaUrl("http://schema.2").put("e", 5).build();
+
+    assertThat(noSchemaOne.merge(noSchemaTwo).getSchemaUrl()).isNull();
+    assertThat(schemaOne.merge(noSchemaOne).getSchemaUrl()).isEqualTo(schemaOne.getSchemaUrl());
+    assertThat(noSchemaOne.merge(schemaOne).getSchemaUrl()).isEqualTo(schemaOne.getSchemaUrl());
+    assertThat(schemaTwo.merge(schemaTwoAgain).getSchemaUrl()).isEqualTo(schemaTwo.getSchemaUrl());
+    assertThat(schemaOne.merge(schemaTwo).getSchemaUrl()).isNull();
+    assertThat(schemaTwo.merge(schemaOne).getSchemaUrl()).isNull();
   }
 
   @Test

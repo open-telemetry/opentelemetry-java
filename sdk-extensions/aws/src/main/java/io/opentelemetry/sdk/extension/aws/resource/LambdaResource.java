@@ -53,7 +53,7 @@ public final class LambdaResource {
       builder.put(ResourceAttributes.FAAS_VERSION, functionVersion);
     }
 
-    return Resource.create(builder.build());
+    return Resource.create(builder.build(), ResourceAttributes.SCHEMA_URL);
   }
 
   private static boolean isLambda(String... envVariables) {

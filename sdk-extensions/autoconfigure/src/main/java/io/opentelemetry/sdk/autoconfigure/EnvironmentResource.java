@@ -31,7 +31,7 @@ public final class EnvironmentResource {
   }
 
   static Resource create(ConfigProperties config) {
-    return Resource.create(getAttributes(config));
+    return Resource.create(getAttributes(config), ResourceAttributes.SCHEMA_URL);
   }
 
   // visible for testing
