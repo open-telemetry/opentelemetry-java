@@ -1,16 +1,10 @@
-import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.protobuf.gradle.*
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import io.morethan.jmhreport.gradle.JmhReportExtension
-import me.champeau.jmh.JmhParameters
 import me.champeau.gradle.japicmp.JapicmpTask
+import me.champeau.jmh.JmhParameters
 import nebula.plugin.release.git.opinion.Strategies
-import net.ltgt.gradle.errorprone.CheckSeverity
-import net.ltgt.gradle.errorprone.ErrorProneOptions
-import net.ltgt.gradle.errorprone.ErrorPronePlugin
-import net.ltgt.gradle.nullaway.NullAwayOptions
 import org.gradle.api.plugins.JavaPlugin.*
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferPlugin
 import java.time.Duration
