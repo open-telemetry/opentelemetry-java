@@ -3,7 +3,7 @@ plugins {
 }
 
 description = "Performance Testing Harness"
-extra["moduleName"] = "io.opentelemetry.perf-harness"
+otelJava.moduleName.set("io.opentelemetry.perf-harness")
 
 dependencies {
     implementation(project(":api:all"))

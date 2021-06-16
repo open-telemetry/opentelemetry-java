@@ -3,7 +3,7 @@ plugins {
 }
 
 description = "OpenTelemetry All"
-extra["moduleName"] = "io.opentelemetry.all"
+otelJava.moduleName.set("io.opentelemetry.all")
 
 tasks {
     // We don't compile much here, just some API boundary tests. This project is mostly for

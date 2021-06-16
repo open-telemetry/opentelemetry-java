@@ -1,3 +1,4 @@
+import io.opentelemetry.gradle.OtelJavaExtension
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import net.ltgt.gradle.nullaway.nullaway
@@ -16,6 +17,7 @@ plugins {
     id("net.ltgt.nullaway")
 }
 
+val otelJava = extensions.create<OtelJavaExtension>("otelJava")
 
 val enableNullaway: String? by project
 
@@ -188,26 +190,25 @@ tasks {
         }
     }
 
+    withType<Jar>().configureEach {
+        inputs.property("moduleName", otelJava.moduleName)
+
+        manifest {
+            attributes(
+                    "Automatic-Module-Name" to otelJava.moduleName,
+                    "Built-By" to System.getProperty("user.name"),
+                    "Built-JDK" to System.getProperty("java.version"),
+                    "Implementation-Title" to project.name,
+                    "Implementation-Version" to project.version)
+        }
+    }
+
     afterEvaluate {
         withType<Javadoc>().configureEach {
             with(options as StandardJavadocDocletOptions) {
                 val title = "${project.description}"
                 docTitle = title
                 windowTitle = title
-            }
-        }
-
-        withType<Jar>().configureEach {
-            val moduleName: String by project
-            inputs.property("moduleName", moduleName)
-
-            manifest {
-                attributes(
-                        "Automatic-Module-Name" to moduleName,
-                        "Built-By" to System.getProperty("user.name"),
-                        "Built-JDK" to System.getProperty("java.version"),
-                        "Implementation-Title" to project.name,
-                        "Implementation-Version" to project.version)
             }
         }
     }

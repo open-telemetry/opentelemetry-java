@@ -4,7 +4,7 @@ plugins {
 }
 
 description = "OpenTelemetry OpenCensus Shim"
-extra["moduleName"] = "io.opentelemetry.opencensusshim"
+otelJava.moduleName.set("io.opentelemetry.opencensusshim")
 
 dependencies {
     api(project(":api:all"))

@@ -8,7 +8,7 @@ plugins {
 }
 
 description = "OpenTelemetry Context (Incubator)"
-extra["moduleName"] = "io.opentelemetry.context"
+otelJava.moduleName.set("io.opentelemetry.context")
 
 testSets {
     create("grpcInOtelTest")

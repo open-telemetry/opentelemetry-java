@@ -9,7 +9,7 @@ plugins {
 // SDK modules that are still being developed.
 
 description = "OpenTelemetry SDK Tracing Incubator"
-extra["moduleName"] = "io.opentelemetry.sdk.extension.trace.incubator"
+otelJava.moduleName.set("io.opentelemetry.sdk.extension.trace.incubator")
 
 dependencies {
     api(project(":api:all"))

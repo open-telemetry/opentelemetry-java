@@ -11,7 +11,7 @@ plugins {
 }
 
 description = "OpenTelemetry Proto"
-extra["moduleName"] = "io.opentelemetry.proto"
+otelJava.moduleName.set("io.opentelemetry.proto")
 
 dependencies {
     api("com.google.protobuf:protobuf-java")

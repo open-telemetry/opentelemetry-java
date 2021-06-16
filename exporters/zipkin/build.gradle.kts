@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry - Zipkin Exporter"
-extra["moduleName"] = "io.opentelemetry.exporter.zipkin"
+otelJava.moduleName.set("io.opentelemetry.exporter.zipkin")
 
 dependencies {
     compileOnly("com.google.auto.value:auto-value")

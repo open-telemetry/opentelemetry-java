@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry SDK Auto-configuration"
-extra["moduleName"] = "io.opentelemetry.sdk.autoconfigure"
+otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure")
 
 testSets {
     create("testConfigError")

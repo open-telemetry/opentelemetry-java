@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry - zPages"
-extra["moduleName"] = "io.opentelemetry.sdk.extension.zpages"
+otelJava.moduleName.set("io.opentelemetry.sdk.extension.zpages")
 
 dependencies {
     implementation(project(":api:all"))
