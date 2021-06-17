@@ -4,7 +4,7 @@ plugins {
     id("otel.java-conventions")
     `maven-publish`
 
-    id("me.champeau.jmh")
+    id("otel.jmh-conventions")
     id("org.jetbrains.kotlin.jvm")
     id("org.unbroken-dome.test-sets")
     id("ru.vyarus.animalsniffer")

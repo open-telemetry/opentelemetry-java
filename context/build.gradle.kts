@@ -2,7 +2,7 @@ plugins {
     id("otel.java-conventions")
     id("maven-publish")
 
-    id("me.champeau.jmh")
+    id("otel.jmh-conventions")
     id("org.unbroken-dome.test-sets")
     id("ru.vyarus.animalsniffer")
 }

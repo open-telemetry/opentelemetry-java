@@ -1,8 +1,6 @@
 import com.google.protobuf.gradle.*
 import de.marcphilipp.gradle.nexus.NexusPublishExtension
-import io.morethan.jmhreport.gradle.JmhReportExtension
 import me.champeau.gradle.japicmp.JapicmpTask
-import me.champeau.jmh.JmhParameters
 import nebula.plugin.release.git.opinion.Strategies
 import org.gradle.api.plugins.JavaPlugin.*
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
@@ -18,7 +16,7 @@ plugins {
     id("com.google.protobuf") apply false
     id("de.marcphilipp.nexus-publish") apply false
     id("io.morethan.jmhreport") apply false
-    id("me.champeau.jmh") apply false
+    id("otel.jmh-conventions") apply false
     id("ru.vyarus.animalsniffer") apply false
     id("me.champeau.gradle.japicmp") apply false
 }
@@ -139,48 +137,6 @@ subprojects {
 
             configure<AnimalSnifferExtension> {
                 sourceSets = listOf(the<JavaPluginConvention>().sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME))
-            }
-        }
-
-        plugins.withId("me.champeau.jmh") {
-            // Always include the jmhreport plugin and run it after jmh task.
-            plugins.apply("io.morethan.jmhreport")
-            dependencies {
-                add("jmh", platform(project(":dependencyManagement")))
-                add("jmh", "org.openjdk.jmh:jmh-core")
-                add("jmh", "org.openjdk.jmh:jmh-generator-bytecode")
-            }
-
-            // invoke jmh on a single benchmark class like so:
-            //   ./gradlew -PjmhIncludeSingleClass=StatsTraceContextBenchmark clean :grpc-core:jmh
-            configure<JmhParameters> {
-                failOnError.set(true)
-                resultFormat.set("JSON")
-                // Otherwise an error will happen:
-                // Could not expand ZIP 'byte-buddy-agent-1.9.7.jar'.
-                includeTests.set(false)
-                profilers.add("gc")
-                val jmhIncludeSingleClass: String? by project
-                if (jmhIncludeSingleClass != null) {
-                    includes.add(jmhIncludeSingleClass as String)
-                }
-            }
-
-            configure<JmhReportExtension> {
-                jmhResultPath = file("${buildDir}/results/jmh/results.json").absolutePath
-                jmhReportOutput = file("${buildDir}/results/jmh").absolutePath
-            }
-
-            tasks {
-                // TODO(anuraaga): Unclear why this is triggering even though there don't seem to
-                // be duplicates, possibly a bug in JMH plugin.
-                named<ProcessResources>("processJmhResources") {
-                    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-                }
-
-                named("jmh") {
-                    finalizedBy(named("jmhReport"))
-                }
             }
         }
 
