@@ -10,9 +10,10 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -20,6 +21,7 @@ import javax.annotation.Nullable;
 /** Factory for {@link Resource} retrieving Container ID information. */
 public final class ContainerResource {
 
+  private static final Logger logger = Logger.getLogger(ContainerResource.class.getName());
   private static final String UNIQUE_HOST_NAME_FILE_NAME = "/proc/self/cgroup";
   private static final Pattern HEX_EXTRACTOR =
       Pattern.compile("^([\\w]*?-)?([a-fA-F0-9]+)(\\.[\\w]*?)?$");
@@ -39,8 +41,7 @@ public final class ContainerResource {
     if (containerId == null) {
       return Resource.empty();
     }
-    return Resource.create(
-        Attributes.builder().put(ResourceAttributes.CONTAINER_ID, containerId).build());
+    return Resource.create(Attributes.of(ResourceAttributes.CONTAINER_ID, containerId));
   }
 
   /**
@@ -56,30 +57,25 @@ public final class ContainerResource {
   @Nullable
   @SuppressWarnings("DefaultCharset")
   public String extractContainerId() {
-    File nameFile = new File(cgroupFilePath);
-    if (nameFile.exists() && nameFile.canRead()) {
-      try (FileReader fr = new FileReader(nameFile);
-          BufferedReader br = new BufferedReader(fr); ) {
-        String line;
-        while ((line = br.readLine()) != null) {
-          if (!line.isEmpty()) {
-            // This cgroup output line should have the container id in it
-            String[] sections = line.split(File.separator);
-            if (sections.length > 1) {
-              String lastSection = sections[sections.length - 1];
-              Matcher matcher = HEX_EXTRACTOR.matcher(lastSection);
-              if (matcher.matches() && matcher.group(2) != null && !matcher.group(2).isEmpty()) {
-                return matcher.group(2);
-              }
-            }
-          }
-          return null;
+    try (BufferedReader reader = new BufferedReader(new FileReader(cgroupFilePath))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        if (line.isEmpty()) {
+          continue;
         }
-      } catch (FileNotFoundException e) {
-        return null;
-      } catch (IOException e) {
-        return null;
+        // This cgroup output line should have the container id in it
+        String[] sections = line.split(File.separator);
+        if (sections.length <= 1) {
+          continue;
+        }
+        String lastSection = sections[sections.length - 1];
+        Matcher matcher = HEX_EXTRACTOR.matcher(lastSection);
+        if (matcher.matches() && matcher.group(2) != null && !matcher.group(2).isEmpty()) {
+          return matcher.group(2);
+        }
       }
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Unable to read file: " + e.getMessage());
     }
     return null;
   }
