@@ -33,10 +33,12 @@ public final class ContainerResource {
     this.cgroupFilePath = cgroupFilePath;
   }
 
+  private static final ContainerResource INSTANCE =
+      new ContainerResource(UNIQUE_HOST_NAME_FILE_NAME);
+
   /** Returns resource with container information. */
   public static Resource get() {
-    ContainerResource factory = new ContainerResource(UNIQUE_HOST_NAME_FILE_NAME);
-    String containerId = factory.extractContainerId();
+    String containerId = INSTANCE.extractContainerId();
 
     if (containerId == null) {
       return Resource.empty();
@@ -52,12 +54,18 @@ public final class ContainerResource {
    * <p>We see this with CRI-O "crio-abcdef1234567890ABCDEF.freetext", then use {@linkplain
    * ContainerResource#HEX_EXTRACTOR} to extract the container hex id
    *
+   * <p>package private for testing purposes
+   *
    * @return containerId
    */
   @Nullable
   @SuppressWarnings("DefaultCharset")
-  public String extractContainerId() {
-    try (BufferedReader reader = new BufferedReader(new FileReader(cgroupFilePath))) {
+  String extractContainerId() {
+    File nameFile = new File(cgroupFilePath);
+    if (!nameFile.exists() || !nameFile.canRead()) {
+      return null;
+    }
+    try (BufferedReader reader = new BufferedReader(new FileReader(nameFile))) {
       String line;
       while ((line = reader.readLine()) != null) {
         if (line.isEmpty()) {
