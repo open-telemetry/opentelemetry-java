@@ -2,8 +2,6 @@ Comparing source compatibility of  against
 +++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.extension.resources.ContainerResource  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) java.lang.String extractContainerId()
-		+++  NEW ANNOTATION: javax.annotation.Nullable
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.resources.Resource get()
 +++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.extension.resources.ContainerResourceProvider  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
