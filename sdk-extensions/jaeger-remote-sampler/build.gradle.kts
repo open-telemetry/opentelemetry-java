@@ -7,7 +7,7 @@ plugins {
 }
 
 description = "OpenTelemetry - Jaeger Remote sampler"
-extra["moduleName"] = "io.opentelemetry.sdk.extension.trace.jaeger"
+otelJava.moduleName.set("io.opentelemetry.sdk.extension.trace.jaeger")
 
 dependencies {
     api(project(":sdk:all"))

@@ -8,7 +8,7 @@ plugins {
 }
 
 description = "OpenTelemetry Protocol Trace Exporter"
-extra["moduleName"] = "io.opentelemetry.exporter.otlp.trace"
+otelJava.moduleName.set("io.opentelemetry.exporter.otlp.trace")
 
 testSets {
     create("testGrpcNetty")

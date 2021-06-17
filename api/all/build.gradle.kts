@@ -7,7 +7,7 @@ plugins {
 }
 
 description = "OpenTelemetry API"
-extra["moduleName"] = "io.opentelemetry.api"
+otelJava.moduleName.set("io.opentelemetry.api")
 base.archivesBaseName = "opentelemetry-api"
 
 dependencies {

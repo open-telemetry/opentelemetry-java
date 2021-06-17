@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry Protocol Metrics Exporter"
-extra["moduleName"] = "io.opentelemetry.exporter.otlp.metrics"
+otelJava.moduleName.set("io.opentelemetry.exporter.otlp.metrics")
 
 dependencies {
     api(project(":sdk:metrics"))

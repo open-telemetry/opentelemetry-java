@@ -11,7 +11,7 @@ plugins {
 }
 
 description = "OpenTelemetry Kotlin Extensions"
-extra["moduleName"] = "io.opentelemetry.extension.kotlin"
+otelJava.moduleName.set("io.opentelemetry.extension.kotlin")
 
 testSets {
     create("testStrictContext")

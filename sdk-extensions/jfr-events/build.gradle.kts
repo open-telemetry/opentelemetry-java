@@ -4,7 +4,7 @@ plugins {
 }
 
 description = "OpenTelemetry SDK Extension JFR"
-extra["moduleName"] = "io.opentelemetry.sdk.extension.jfr"
+otelJava.moduleName.set("io.opentelemetry.sdk.extension.jfr")
 
 dependencies {
     implementation(project(":api:all"))

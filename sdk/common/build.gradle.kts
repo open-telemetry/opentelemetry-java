@@ -7,7 +7,7 @@ plugins {
 }
 
 description = "OpenTelemetry SDK Common"
-extra["moduleName"] = "io.opentelemetry.sdk.common"
+otelJava.moduleName.set("io.opentelemetry.sdk.common")
 
 val mrJarVersions = listOf(9)
 

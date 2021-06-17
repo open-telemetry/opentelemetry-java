@@ -7,7 +7,7 @@ plugins {
 }
 
 description = "OpenTelemetry - Jaeger Exporter"
-extra["moduleName"] = "io.opentelemetry.exporter.jaeger"
+otelJava.moduleName.set("io.opentelemetry.exporter.jaeger")
 
 dependencies {
     api(project(":sdk:all"))

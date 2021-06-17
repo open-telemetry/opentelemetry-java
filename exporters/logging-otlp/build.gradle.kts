@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry Protocol JSON Logging Exporters"
-extra["moduleName"] = "io.opentelemetry.exporter.logging.otlp"
+otelJava.moduleName.set("io.opentelemetry.exporter.logging.otlp")
 
 dependencies {
     compileOnly(project(":sdk:trace"))

@@ -7,7 +7,7 @@ plugins {
 }
 
 description = "OpenTelemetry API"
-extra["moduleName"] = "io.opentelemetry.api.metrics"
+otelJava.moduleName.set("io.opentelemetry.api.metrics")
 
 dependencies {
     api(project(":api:all"))
