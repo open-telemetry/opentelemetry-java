@@ -1,5 +1,4 @@
 import com.google.protobuf.gradle.*
-import de.marcphilipp.gradle.nexus.NexusPublishExtension
 import io.morethan.jmhreport.gradle.JmhReportExtension
 import me.champeau.gradle.japicmp.JapicmpTask
 import me.champeau.jmh.JmhParameters
@@ -12,11 +11,10 @@ import java.time.Duration
 plugins {
     id("com.diffplug.spotless")
     id("com.github.ben-manes.versions")
-    id("io.codearte.nexus-staging")
+    id("io.github.gradle-nexus.publish-plugin")
     id("nebula.release")
 
     id("com.google.protobuf") apply false
-    id("de.marcphilipp.nexus-publish") apply false
     id("io.morethan.jmhreport") apply false
     id("me.champeau.jmh") apply false
     id("ru.vyarus.animalsniffer") apply false
@@ -86,15 +84,25 @@ if (file(".git").exists()) {
     releaseTask = tasks.register("release")
 }
 
-nexusStaging {
-    packageGroup = "io.opentelemetry"
-    username = System.getenv("SONATYPE_USER")
-    password = System.getenv("SONATYPE_KEY")
+nexusPublishing {
+    packageGroup.set("io.opentelemetry")
 
-    // We have many artifacts so Maven Central takes a long time on its compliance checks. This sets
-    // the timeout for waiting for the repository to close to a comfortable 50 minutes.
-    numberOfRetries = 300
-    delayBetweenRetriesInMillis = 10000
+    repositories {
+        sonatype {
+            username.set(System.getenv("SONATYPE_USER"))
+            password.set(System.getenv("SONATYPE_KEY"))
+        }
+    }
+
+    connectTimeout.set(Duration.ofMinutes(5))
+    clientTimeout.set(Duration.ofMinutes(5))
+
+    transitionCheckOptions {
+        // We have many artifacts so Maven Central takes a long time on its compliance checks. This sets
+        // the timeout for waiting for the repository to close to a comfortable 50 minutes.
+        maxRetries.set(300)
+        delayBetween.set(Duration.ofSeconds(10))
+    }
 }
 
 subprojects {
@@ -233,7 +241,6 @@ subprojects {
             plugins.apply("me.champeau.gradle.japicmp")
         }
         plugins.apply("signing")
-        plugins.apply("de.marcphilipp.nexus-publish")
 
         configure<PublishingExtension> {
             publications {
@@ -293,21 +300,11 @@ subprojects {
             }
         }
 
-        configure<NexusPublishExtension> {
-            repositories {
-                sonatype()
+        afterEvaluate {
+            val publishToSonatype by tasks.getting
+            releaseTask.configure {
+                finalizedBy(publishToSonatype)
             }
-
-            connectTimeout.set(Duration.ofMinutes(5))
-            clientTimeout.set(Duration.ofMinutes(5))
-        }
-
-        val publishToSonatype by tasks.getting
-        releaseTask.configure {
-            finalizedBy(publishToSonatype)
-        }
-        rootProject.tasks.named("closeAndReleaseRepository") {
-            mustRunAfter(publishToSonatype)
         }
 
         tasks.withType(Sign::class) {
