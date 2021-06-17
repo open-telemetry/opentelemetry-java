@@ -1,7 +1,4 @@
 import io.opentelemetry.gradle.OtelJavaExtension
-import net.ltgt.gradle.errorprone.CheckSeverity
-import net.ltgt.gradle.errorprone.errorprone
-import net.ltgt.gradle.nullaway.nullaway
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
@@ -10,16 +7,14 @@ plugins {
     checkstyle
     eclipse
     idea
-    jacoco
 
     id("com.diffplug.spotless")
-    id("net.ltgt.errorprone")
-    id("net.ltgt.nullaway")
+
+    id("otel.errorprone-conventions")
+    id("otel.jacoco-conventions")
 }
 
 val otelJava = extensions.create<OtelJavaExtension>("otelJava")
-
-val enableNullaway: String? by project
 
 base {
     // May be set already by a parent project, only set if not.
@@ -45,17 +40,13 @@ checkstyle {
     configProperties["rootDir"] = rootDir
 }
 
-jacoco {
-    toolVersion = "0.8.7"
-}
-
 tasks {
     val testJava8 by registering(Test::class) {
         javaLauncher.set(javaToolchains.launcherFor {
             languageVersion.set(JavaLanguageVersion.of(8))
         })
 
-        configure<JacocoTaskExtension> {
+        jacoco {
             enabled = false
         }
     }
@@ -98,66 +89,6 @@ tasks {
             if (name.contains("Test")) {
                 // serialVersionUID is basically guaranteed to be useless in tests
                 compilerArgs.add("-Xlint:-serial")
-            }
-
-            errorprone {
-                disableWarningsInGeneratedCode.set(true)
-                allDisabledChecksAsWarnings.set(true)
-
-                // Doesn't currently use Var annotations.
-                disable("Var") // "-Xep:Var:OFF"
-
-                // ImmutableRefactoring suggests using com.google.errorprone.annotations.Immutable,
-                // but currently uses javax.annotation.concurrent.Immutable
-                disable("ImmutableRefactoring") // "-Xep:ImmutableRefactoring:OFF"
-
-                // AutoValueImmutableFields suggests returning Guava types from API methods
-                disable("AutoValueImmutableFields")
-                // Suggests using Guava types for fields but we don't use Guava
-                disable("ImmutableMemberCollection")
-                // "-Xep:AutoValueImmutableFields:OFF"
-
-                // Fully qualified names may be necessary when deprecating a class to avoid
-                // deprecation warning.
-                disable("UnnecessarilyFullyQualified")
-
-                // Ignore warnings for protobuf and jmh generated files.
-                excludedPaths.set(".*generated.*|.*internal.shaded.*")
-                // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
-
-                disable("Java7ApiChecker")
-                disable("AndroidJdkLibsChecker")
-                //apparently disabling android doesn't disable this
-                disable("StaticOrDefaultInterfaceMethod")
-
-                //until we have everything converted, we need these
-                disable("JdkObsolete")
-                disable("UnnecessaryAnonymousClass")
-
-                // Limits APIs
-                disable("NoFunctionalReturnType")
-
-                // We don't depend on Guava so use normal splitting
-                disable("StringSplitter")
-
-                // Prevents lazy initialization
-                disable("InitializeInline")
-
-                if (name.contains("Jmh") || name.contains("Test")) {
-                    // Allow underscore in test-type method names
-                    disable("MemberName")
-                }
-            }
-
-            errorprone.nullaway {
-                // Enable nullaway on main sources.
-                // TODO(anuraaga): Remove enableNullaway flag when all errors fixed
-                if (!name.contains("Test") && !name.contains("Jmh") && enableNullaway == "true") {
-                    severity.set(CheckSeverity.ERROR)
-                } else {
-                    severity.set(CheckSeverity.OFF)
-                }
-                annotatedPackages.add("io.opentelemetry")
             }
         }
     }
@@ -214,53 +145,10 @@ tasks {
     }
 }
 
-// https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
-
-// Do not generate reports for individual projects
-tasks.named("jacocoTestReport") {
-    enabled = false
-}
-
-configurations {
-    val implementation by getting
-
-    create("transitiveSourceElements") {
-        isVisible = false
-        isCanBeResolved = false
-        isCanBeConsumed = true
-        extendsFrom(implementation)
-        attributes {
-            attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
-            attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
-            attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("source-folders"))
-        }
-        val mainSources = the<JavaPluginConvention>().sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-        mainSources.java.srcDirs.forEach {
-            outgoing.artifact(it)
-        }
-    }
-
-    create("coverageDataElements") {
-        isVisible = false
-        isCanBeResolved = false
-        isCanBeConsumed = true
-        extendsFrom(implementation)
-        attributes {
-            attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
-            attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
-            attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("jacoco-coverage-data"))
-        }
-        // This will cause the test task to run if the coverage data is requested by the aggregation task
-        tasks.withType(Test::class) {
-            outgoing.artifact(extensions.getByType<JacocoTaskExtension>().destinationFile!!)
-        }
-    }
-
-    configureEach {
-        resolutionStrategy {
-            failOnVersionConflict()
-            preferProjectModules()
-        }
+configurations.configureEach {
+    resolutionStrategy {
+        failOnVersionConflict()
+        preferProjectModules()
     }
 }
 
