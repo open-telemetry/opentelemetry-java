@@ -27,7 +27,7 @@ public final class ContainerResource {
       Pattern.compile("^([\\w]*?-)?([a-fA-F0-9]+)(\\.[\\w]*?)?$");
   private static final Resource INSTANCE = buildResource();
 
-  static Resource buildResource() {
+  private static Resource buildResource() {
     String containerId = extractContainerId(UNIQUE_HOST_NAME_FILE_NAME);
 
     if (containerId == null) {
