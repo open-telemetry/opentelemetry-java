@@ -19,6 +19,7 @@ import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -29,6 +30,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class Resource {
+  private static final Logger logger = Logger.getLogger(Resource.class.getName());
 
   private static final int MAX_LENGTH = 255;
   private static final String ERROR_MESSAGE_INVALID_CHARS =
@@ -162,7 +164,13 @@ public abstract class Resource {
     if (getSchemaUrl() == null) {
       return create(attrBuilder.build(), other.getSchemaUrl());
     }
-    if (!Objects.equals(other.getSchemaUrl(), getSchemaUrl())) {
+    if (!other.getSchemaUrl().equals(getSchemaUrl())) {
+      logger.info(
+          "Attempting to merge Resources with different schemaUrls. "
+              + "The resulting Resource will have no schemaUrl assigned. Schema 1: "
+              + getSchemaUrl()
+              + " Schema 2: "
+              + other.getSchemaUrl());
       // currently, behavior is undefined if schema URLs don't match. In the future, we may
       // apply schema transformations if possible.
       return create(attrBuilder.build(), null);

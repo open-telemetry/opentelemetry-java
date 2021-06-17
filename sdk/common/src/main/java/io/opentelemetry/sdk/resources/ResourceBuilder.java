@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.resources;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import javax.annotation.Nullable;
 
 /**
  * A builder of {@link Resource} that allows to add key-value pairs and copy attributes from other
@@ -18,7 +19,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 public class ResourceBuilder {
 
   private final AttributesBuilder attributesBuilder = Attributes.builder();
-  private String schemaUrl;
+  @Nullable private String schemaUrl;
 
   /**
    * Puts a String attribute into this.

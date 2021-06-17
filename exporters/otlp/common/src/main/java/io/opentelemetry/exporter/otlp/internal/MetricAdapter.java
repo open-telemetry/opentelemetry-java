@@ -60,17 +60,23 @@ public final class MetricAdapter {
           entryResource.getValue().entrySet()) {
         instrumentationLibraryMetrics.add(buildInstrumentationLibraryMetrics(entryLibrary));
       }
-      ResourceMetrics.Builder resourceMetricsBuilder =
-          ResourceMetrics.newBuilder()
-              .setResource(ResourceAdapter.toProtoResource(entryResource.getKey()))
-              .addAllInstrumentationLibraryMetrics(instrumentationLibraryMetrics);
-      String schemaUrl = entryResource.getKey().getSchemaUrl();
-      if (schemaUrl != null) {
-        resourceMetricsBuilder.setSchemaUrl(schemaUrl);
-      }
-      resourceMetrics.add(resourceMetricsBuilder.build());
+      resourceMetrics.add(
+          buildResourceMetrics(entryResource.getKey(), instrumentationLibraryMetrics));
     }
     return resourceMetrics;
+  }
+
+  private static ResourceMetrics buildResourceMetrics(
+      Resource resource, List<InstrumentationLibraryMetrics> instrumentationLibraryMetrics) {
+    ResourceMetrics.Builder resourceMetricsBuilder =
+        ResourceMetrics.newBuilder()
+            .setResource(ResourceAdapter.toProtoResource(resource))
+            .addAllInstrumentationLibraryMetrics(instrumentationLibraryMetrics);
+    String schemaUrl = resource.getSchemaUrl();
+    if (schemaUrl != null) {
+      resourceMetricsBuilder.setSchemaUrl(schemaUrl);
+    }
+    return resourceMetricsBuilder.build();
   }
 
   private static InstrumentationLibraryMetrics buildInstrumentationLibraryMetrics(
