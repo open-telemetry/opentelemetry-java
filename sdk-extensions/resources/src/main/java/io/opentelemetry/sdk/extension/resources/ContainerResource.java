@@ -25,25 +25,21 @@ public final class ContainerResource {
   private static final String UNIQUE_HOST_NAME_FILE_NAME = "/proc/self/cgroup";
   private static final Pattern HEX_EXTRACTOR =
       Pattern.compile("^([\\w]*?-)?([a-fA-F0-9]+)(\\.[\\w]*?)?$");
+  private static final Resource INSTANCE = buildResource();
 
-  private final String cgroupFilePath;
-
-  // package private for testing purposes
-  ContainerResource(String cgroupFilePath) {
-    this.cgroupFilePath = cgroupFilePath;
-  }
-
-  private static final ContainerResource INSTANCE =
-      new ContainerResource(UNIQUE_HOST_NAME_FILE_NAME);
-
-  /** Returns resource with container information. */
-  public static Resource get() {
-    String containerId = INSTANCE.extractContainerId();
+  static Resource buildResource() {
+    String containerId = extractContainerId(UNIQUE_HOST_NAME_FILE_NAME);
 
     if (containerId == null) {
       return Resource.empty();
+    } else {
+      return Resource.create(Attributes.of(ResourceAttributes.CONTAINER_ID, containerId));
     }
-    return Resource.create(Attributes.of(ResourceAttributes.CONTAINER_ID, containerId));
+  }
+
+  /** Returns resource with container information. */
+  public static Resource get() {
+    return INSTANCE;
   }
 
   /**
@@ -60,7 +56,7 @@ public final class ContainerResource {
    */
   @Nullable
   @SuppressWarnings("DefaultCharset")
-  String extractContainerId() {
+  static String extractContainerId(String cgroupFilePath) {
     File nameFile = new File(cgroupFilePath);
     if (!nameFile.exists() || !nameFile.canRead()) {
       return null;
@@ -87,4 +83,6 @@ public final class ContainerResource {
     }
     return null;
   }
+
+  private ContainerResource() {}
 }
