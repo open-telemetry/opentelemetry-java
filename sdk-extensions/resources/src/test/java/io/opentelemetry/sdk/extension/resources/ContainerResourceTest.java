@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.extension.resources;
 
+import static io.opentelemetry.sdk.extension.resources.ContainerResource.extractContainerId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.BufferedWriter;
@@ -56,21 +57,21 @@ public class ContainerResourceTest {
   @Test
   public void testInvalidContainer(@TempDir File tempFolder) throws IOException {
     File cgroup = createCGroup(new File(tempFolder, "cgroup1"), INVALID_CGROUP_LINE_1);
-    assertEquals(null, new ContainerResource(cgroup.getPath()).extractContainerId());
+    assertEquals(null, extractContainerId(cgroup.getPath()));
   }
 
   @Test
   public void testContainer(@TempDir File tempFolder) throws IOException {
     File cgroup = createCGroup(new File(tempFolder, "cgroup1"), CGROUP_LINE_1);
-    assertEquals(EXPECTED_CGROUP_1, new ContainerResource(cgroup.getPath()).extractContainerId());
+    assertEquals(EXPECTED_CGROUP_1, extractContainerId(cgroup.getPath()));
 
     File cgroup2 = createCGroup(new File(tempFolder, "cgroup2"), CGROUP_LINE_2);
-    assertEquals(EXPECTED_CGROUP_2, new ContainerResource(cgroup2.getPath()).extractContainerId());
+    assertEquals(EXPECTED_CGROUP_2, extractContainerId(cgroup2.getPath()));
 
     File cgroup3 = createCGroup(new File(tempFolder, "cgroup3"), CGROUP_LINE_3);
-    assertEquals(EXPECTED_CGROUP_3, new ContainerResource(cgroup3.getPath()).extractContainerId());
+    assertEquals(EXPECTED_CGROUP_3, extractContainerId(cgroup3.getPath()));
 
     File cgroup4 = createCGroup(new File(tempFolder, "cgroup4"), CGROUP_LINE_4);
-    assertEquals(EXPECTED_CGROUP_4, new ContainerResource(cgroup4.getPath()).extractContainerId());
+    assertEquals(EXPECTED_CGROUP_4, extractContainerId(cgroup4.getPath()));
   }
 }
