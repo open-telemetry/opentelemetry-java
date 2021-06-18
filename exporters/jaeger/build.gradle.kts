@@ -29,12 +29,3 @@ dependencies {
 
     testRuntimeOnly("io.grpc:grpc-netty-shaded")
 }
-
-// IntelliJ complains that the generated classes are not found, ask IntelliJ to include the
-// generated Java directories as source folders.
-idea {
-    module {
-        sourceDirs.add(file("build/generated/source/proto/main/java"))
-        // If you have additional sourceSets and/or codegen plugins, add all of them
-    }
-}

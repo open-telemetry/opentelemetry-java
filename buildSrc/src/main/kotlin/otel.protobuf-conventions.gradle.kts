@@ -1,9 +1,9 @@
 import com.google.protobuf.gradle.*
 
 plugins {
-    // Due to poor design in protobuf plugin, java must come first!
-    id("otel.java-conventions")
     id("com.google.protobuf")
+
+    id("otel.java-conventions")
 }
 
 protobuf {

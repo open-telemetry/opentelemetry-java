@@ -12,9 +12,6 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin")
     id("nebula.release")
 
-    id("com.google.protobuf") apply false
-    id("io.morethan.jmhreport") apply false
-    id("otel.jmh-conventions") apply false
     id("ru.vyarus.animalsniffer") apply false
     id("me.champeau.gradle.japicmp") apply false
 }
