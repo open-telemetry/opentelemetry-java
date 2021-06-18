@@ -1,8 +1,7 @@
 plugins {
-    id("otel.java-conventions")
+    id("otel.protobuf-conventions")
     `maven-publish`
 
-    id("com.google.protobuf")
     id("ru.vyarus.animalsniffer")
 }
 

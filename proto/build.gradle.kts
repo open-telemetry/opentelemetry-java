@@ -2,10 +2,9 @@ import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
 
 plugins {
-    id("otel.java-conventions")
+    id("otel.protobuf-conventions")
     id("maven-publish")
 
-    id("com.google.protobuf")
     id("de.undercouch.download")
     id("ru.vyarus.animalsniffer")
 }
