@@ -2,7 +2,7 @@ plugins {
     id("otel.java-conventions")
     id("maven-publish")
 
-    id("me.champeau.jmh")
+    id("otel.jmh-conventions")
 
     // TODO(anuraaga): Enable animalsniffer by the time we are getting ready to release a stable
     // version. Long/DoubleAdder are not part of Android API 21 which is our current target.

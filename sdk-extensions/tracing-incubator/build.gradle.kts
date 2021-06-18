@@ -2,7 +2,7 @@ plugins {
     id("otel.java-conventions")
     `maven-publish`
 
-    id("me.champeau.jmh")
+    id("otel.jmh-conventions")
     id("ru.vyarus.animalsniffer")
 }
 

@@ -3,7 +3,7 @@ plugins {
     `maven-publish`
 
     id("ru.vyarus.animalsniffer")
-    id("me.champeau.jmh")
+    id("otel.jmh-conventions")
 }
 
 description = "OpenTelemetry Extension : Trace Propagators"
