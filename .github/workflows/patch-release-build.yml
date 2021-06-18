@@ -75,7 +75,7 @@ jobs:
         with:
           job-id: jdk11
           remote-build-cache-proxy-enabled: false
-          arguments: final closeAndReleaseRepository --stacktrace -Prelease.version=${{ github.event.inputs.version }}
+          arguments: final closeAndReleaseSonatypeStagingRepository --stacktrace -Prelease.version=${{ github.event.inputs.version }}
         env:
           GRGIT_USER: ${{ github.actor }}
           GRGIT_PASS: ${{ secrets.GITHUB_TOKEN }}
