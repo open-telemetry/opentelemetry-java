@@ -13,7 +13,7 @@ on:
 
 jobs:
   prepare-release-branch:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     outputs:
       release-branch-name: ${{ steps.parse-release-branch.outputs.release-branch-name }}
     steps:
@@ -42,7 +42,7 @@ jobs:
           git checkout -b ${{ steps.parse-release-branch.outputs.release-branch-name }}
           git push --set-upstream origin ${{ steps.parse-release-branch.outputs.release-branch-name }}
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     needs: prepare-release-branch
     steps:
       - name: Checkout release branch

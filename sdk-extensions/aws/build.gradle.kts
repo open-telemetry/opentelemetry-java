@@ -2,7 +2,7 @@ plugins {
     id("otel.java-conventions")
     `maven-publish`
 
-    id("me.champeau.jmh")
+    id("otel.jmh-conventions")
 }
 
 description = "OpenTelemetry SDK AWS Instrumentation Support"

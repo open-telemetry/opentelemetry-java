@@ -6,8 +6,6 @@ pluginManagement {
         id("com.gradle.enterprise") version "3.6"
         id("de.undercouch.download") version "4.1.1"
         id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
-        id("io.morethan.jmhreport") version "0.9.0"
-        id("me.champeau.jmh") version "0.6.5"
         id("nebula.release") version "15.3.1"
         id("org.checkerframework") version "0.5.20"
         id("org.jetbrains.kotlin.jvm") version "1.5.10"
