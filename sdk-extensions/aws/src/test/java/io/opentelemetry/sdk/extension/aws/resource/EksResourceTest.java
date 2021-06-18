@@ -60,6 +60,7 @@ public class EksResourceTest {
             mockK8sKeystoreFile.getPath());
     Attributes attributes = eksResource.getAttributes();
 
+    assertThat(eksResource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(

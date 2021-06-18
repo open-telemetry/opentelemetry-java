@@ -19,9 +19,11 @@ class ProcessRuntimeResourceTest {
   @Test
   void shouldCreateRuntimeAttributes() {
     // when
-    Attributes attributes = ProcessRuntimeResource.buildResource().getAttributes();
+    Resource resource = ProcessRuntimeResource.buildResource();
+    Attributes attributes = resource.getAttributes();
 
     // then
+    assertThat(resource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
     assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_NAME)).isNotBlank();
     assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_VERSION)).isNotBlank();
     assertThat(attributes.get(ResourceAttributes.PROCESS_RUNTIME_DESCRIPTION)).isNotBlank();

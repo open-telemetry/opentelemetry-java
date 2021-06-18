@@ -73,7 +73,7 @@ public final class EksResource {
       attrBuilders.put(ResourceAttributes.CONTAINER_ID, containerId);
     }
 
-    return Resource.create(attrBuilders.build());
+    return Resource.create(attrBuilders.build(), ResourceAttributes.SCHEMA_URL);
   }
 
   private static boolean isEks(

@@ -78,7 +78,7 @@ public final class ProcessResource {
       attributes.put(ResourceAttributes.PROCESS_COMMAND_LINE, commandLine.toString());
     }
 
-    return Resource.create(attributes.build());
+    return Resource.create(attributes.build(), ResourceAttributes.SCHEMA_URL);
   }
 
   private ProcessResource() {}
