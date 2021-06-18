@@ -1,5 +1,4 @@
 import com.google.protobuf.gradle.*
-import me.champeau.gradle.japicmp.JapicmpTask
 import nebula.plugin.release.git.opinion.Strategies
 import org.gradle.api.plugins.JavaPlugin.*
 import ru.vyarus.gradle.plugin.animalsniffer.AnimalSnifferExtension
@@ -16,43 +15,6 @@ plugins {
     id("io.morethan.jmhreport") apply false
     id("otel.jmh-conventions") apply false
     id("ru.vyarus.animalsniffer") apply false
-    id("me.champeau.gradle.japicmp") apply false
-}
-
-/**
- * Locate the project's artifact of a particular version.
- */
-fun Project.findArtifact(version: String) : File {
-    val existingGroup = this.group
-    try {
-        // Temporarily change the group name because we want to fetch an artifact with the same
-        // Maven coordinates as the project, which Gradle would not allow otherwise.
-        this.group = "virtual_group"
-        val depModule = "io.opentelemetry:${base.archivesBaseName}:$version@jar"
-        val depJar = "${base.archivesBaseName}-${version}.jar"
-        val configuration: Configuration = configurations.detachedConfiguration(
-                dependencies.create(depModule)
-        )
-        return files(configuration.files).filter {
-            it.name.equals(depJar)
-        }.singleFile
-    } finally {
-        this.group = existingGroup
-    }
-}
-
-/**
- * The latest *released* version of the project. Evaluated lazily so the work is only done if necessary.
- */
-val latestReleasedVersion : String by lazy {
-    // hack to find the current released version of the project
-    val temp: Configuration = project.configurations.create("tempConfig")
-    // pick the api, since it's always there.
-    dependencies.add("tempConfig", "io.opentelemetry:opentelemetry-api:latest.release")
-    val moduleVersion = project.configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
-    project.configurations.remove(temp)
-    println("Discovered latest release version: " + moduleVersion)
-    moduleVersion
 }
 
 if (!JavaVersion.current().isJava11Compatible()) {
@@ -147,54 +109,12 @@ subprojects {
                 sourceSets = listOf(the<JavaPluginConvention>().sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME))
             }
         }
-
-        plugins.withId("me.champeau.gradle.japicmp") {
-            afterEvaluate {
-                tasks {
-                    val jApiCmp by registering(JapicmpTask::class) {
-                        dependsOn("jar")
-                        // the japicmp "old" version is either the user-specified one, or the latest release.
-                        val userRequestedBase = project.properties["apiBaseVersion"] as String?
-                        val baselineVersion: String = userRequestedBase ?: latestReleasedVersion
-                        val baselineArtifact: File = project.findArtifact(baselineVersion)
-                        oldClasspath = files(baselineArtifact)
-
-                        // the japicmp "new" version is either the user-specified one, or the locally built jar.
-                        val newVersion: String? = project.properties["apiNewVersion"] as String?
-                        val newArtifact: File = if (newVersion == null) {
-                            val jar = getByName("jar") as Jar
-                            file(jar.archiveFile)
-                        } else {
-                            project.findArtifact(newVersion)
-                        }
-                        newClasspath = files(newArtifact)
-
-                        //only output changes, not everything
-                        isOnlyModified = true
-                        //this is needed so that we only consider the current artifact, and not dependencies
-                        isIgnoreMissingClasses = true
-                        // double wildcards don't seem to work here (*.internal.*)
-                        packageExcludes = listOf("*.internal", "io.opentelemetry.internal.shaded.jctools.*")
-                        if (newVersion == null) {
-                            val baseVersionString = if (userRequestedBase == null) "latest" else baselineVersion
-                            txtOutputFile = file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${project.base.archivesBaseName}.txt")
-                        } else {
-                            txtOutputFile = file("$rootDir/docs/apidiffs/${newVersion}_vs_${baselineVersion}/${project.base.archivesBaseName}.txt")
-                        }
-                    }
-                    // have the check task depend on the api comparison task, to make it more likely it will get used.
-                    named("check") {
-                        dependsOn(jApiCmp)
-                    }
-                }
-            }
-        }
     }
 
     plugins.withId("maven-publish") {
         // generate the api diff report for any module that is stable and publishes a jar.
         if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
-            plugins.apply("me.champeau.gradle.japicmp")
+            plugins.apply("otel.japicmp-conventions")
         }
         plugins.apply("signing")
 

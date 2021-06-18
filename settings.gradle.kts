@@ -11,7 +11,6 @@ pluginManagement {
         id("org.jetbrains.kotlin.jvm") version "1.5.10"
         id("org.unbroken-dome.test-sets") version "4.0.0"
         id("ru.vyarus.animalsniffer") version "1.5.3"
-        id("me.champeau.gradle.japicmp") version "0.2.9"
     }
 }
 
