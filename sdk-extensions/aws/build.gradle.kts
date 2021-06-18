@@ -14,6 +14,8 @@ dependencies {
 
     compileOnly(project(":sdk-extensions:autoconfigure"))
 
+    annotationProcessor("com.google.auto.value:auto-value")
+
     implementation(project(":semconv"))
 
     implementation("com.fasterxml.jackson.core:jackson-core")
@@ -23,4 +25,5 @@ dependencies {
 
     testImplementation("com.linecorp.armeria:armeria-junit5")
     testImplementation("com.google.guava:guava")
+    testImplementation("org.slf4j:slf4j-simple")
 }
