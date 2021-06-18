@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.sdk.extension.aws.internal.JdkHttpClient;
 import java.io.UncheckedIOException;
 import java.util.Collections;
+import java.util.Map;
 
 final class XraySamplerClient {
 
@@ -21,11 +22,14 @@ final class XraySamplerClient {
           // In case API is extended with new fields.
           .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, /* state= */ false);
 
-  private final String host;
+  private static final Map<String, String> JSON_CONTENT_TYPE =
+      Collections.singletonMap("Content-Type", "application/json");
+
+  private final String getSamplingRulesEndpoint;
   private final JdkHttpClient httpClient;
 
   XraySamplerClient(String host) {
-    this.host = host;
+    this.getSamplingRulesEndpoint = host + "/GetSamplingRules";
     httpClient = new JdkHttpClient();
   }
 
@@ -39,11 +43,7 @@ final class XraySamplerClient {
 
     String response =
         httpClient.fetchString(
-            "POST",
-            host + "/GetSamplingRules",
-            Collections.singletonMap("Content-Type", "application/json"),
-            null,
-            requestBody);
+            "POST", getSamplingRulesEndpoint, JSON_CONTENT_TYPE, null, requestBody);
 
     try {
       return OBJECT_MAPPER.readValue(response, GetSamplingRulesResponse.class);
