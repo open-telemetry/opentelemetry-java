@@ -15,16 +15,12 @@ import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.logging.LoggingService;
-import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class XraySamplerClientTest {
-
-  @RegisterExtension
-  public static SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
 
   @RegisterExtension
   public static ServerExtension server =
