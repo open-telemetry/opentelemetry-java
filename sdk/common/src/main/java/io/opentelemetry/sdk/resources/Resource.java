@@ -127,6 +127,7 @@ public abstract class Resource {
    * Returns the URL of the OpenTelemetry schema used by this resource. May be null.
    *
    * @return An OpenTelemetry schema URL.
+   * @since 1.4.0
    */
   @Nullable
   public abstract String getSchemaUrl();

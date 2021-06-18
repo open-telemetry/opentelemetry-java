@@ -178,6 +178,7 @@ public class ResourceBuilder {
    *
    * @param schemaUrl The URL of the OpenTelemetry schema being used to create this Resource.
    * @return this
+   * @since 1.4.0
    */
   public ResourceBuilder setSchemaUrl(String schemaUrl) {
     this.schemaUrl = schemaUrl;

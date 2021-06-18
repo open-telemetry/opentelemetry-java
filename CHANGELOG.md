@@ -2,10 +2,33 @@
 
 ## Unreleased:
 
+### API
+#### Enhancements
+- You can now assign an OpenTelemetry schema URL to a `Tracer` via the new `TracerBuilder` class that is 
+accessed via the `TracerProvider` or any of the global instances that delegate to one.
+
+#### Extensions
+- A new `@SpanAttribute` annotation has been added for adding method parameters to spans automatically. This
+has no implementation in this release, but should be supported by the auto-instrumentation agent soon.
+
+### Exporters
+#### Bugfixes
+- Calling `shutdown()` multiple times on the OTLP and Jaeger GRPC-based exporters will now work correctly and return a proper
+implementation of `CompletableResultCode` for the calls beyond the first. 
+
+### SDK
+#### Enhancements
+- A `Resource` can now be assigned an OpenTelemetry schema URL via the `ResourceBuilder` or the `create(Attributes, String)` 
+method on the `Resource` itself.
+
 ### Semantic Conventions (alpha)
 - The `SemanticAttributes` and `ResourceAttributes` classes have been updated to match the semantic conventions
 as of specification release `1.4.0`. These classes also now expose a `SCHEMA_URL` field which points at the 
 version of the OpenTelemetry schema the files were generated from. There are no breaking changes in this update, only additions.
+
+### Metrics (alpha)
+- You can now assign an OpenTelemetry schema URL to a `Meter` via the new `MeterBuilder` class that is
+accessed via the `MeterProvider` or any global instances that delegate to one.
 
 ---
 ## Version 1.3.0 - 2021-06-09
