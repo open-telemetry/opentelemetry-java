@@ -1,8 +1,7 @@
 plugins {
-    id("otel.java-conventions")
+    id("otel.protobuf-conventions")
     `maven-publish`
 
-    id("com.google.protobuf")
     id("ru.vyarus.animalsniffer")
 }
 
@@ -29,13 +28,4 @@ dependencies {
     testImplementation(project(":sdk:testing"))
 
     testRuntimeOnly("io.grpc:grpc-netty-shaded")
-}
-
-// IntelliJ complains that the generated classes are not found, ask IntelliJ to include the
-// generated Java directories as source folders.
-idea {
-    module {
-        sourceDirs.add(file("build/generated/source/proto/main/java"))
-        // If you have additional sourceSets and/or codegen plugins, add all of them
-    }
 }
