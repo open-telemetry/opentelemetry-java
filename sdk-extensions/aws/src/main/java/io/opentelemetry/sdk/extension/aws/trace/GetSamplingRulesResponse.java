@@ -148,11 +148,9 @@ abstract class GetSamplingRulesResponse {
       abstract Builder setResourceArn(String resourceArn);
 
       @JsonProperty("RuleARN")
-      @Nullable
       abstract Builder setRuleArn(@Nullable String ruleArn);
 
       @JsonProperty("RuleName")
-      @Nullable
       abstract Builder setRuleName(@Nullable String ruleName);
 
       @JsonProperty("ServiceName")
