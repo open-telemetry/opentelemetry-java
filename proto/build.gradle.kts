@@ -2,10 +2,9 @@ import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
 
 plugins {
-    id("otel.java-conventions")
+    id("otel.protobuf-conventions")
     id("maven-publish")
 
-    id("com.google.protobuf")
     id("de.undercouch.download")
     id("ru.vyarus.animalsniffer")
 }
@@ -57,14 +56,5 @@ sourceSets {
         proto {
             srcDir("$buildDir/protos/opentelemetry-proto-${protoVersion}")
         }
-    }
-}
-
-// IntelliJ complains that the generated classes are not found, ask IntelliJ to include the
-// generated Java directories as source folders.
-idea {
-    module {
-        sourceDirs.add(file("build/generated/source/proto/main/java"))
-        // If you have additional sourceSets and/or codegen plugins, add all of them
     }
 }

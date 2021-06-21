@@ -19,6 +19,7 @@ import io.opentelemetry.api.internal.StringUtils;
 import io.opentelemetry.api.internal.Utils;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -29,6 +30,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class Resource {
+  private static final Logger logger = Logger.getLogger(Resource.class.getName());
 
   private static final int MAX_LENGTH = 255;
   private static final String ERROR_MESSAGE_INVALID_CHARS =
@@ -90,8 +92,22 @@ public abstract class Resource {
    *     ASCII string or exceed {@link #MAX_LENGTH} characters.
    */
   public static Resource create(Attributes attributes) {
+    return create(attributes, null);
+  }
+
+  /**
+   * Returns a {@link Resource}.
+   *
+   * @param attributes a map of {@link Attributes} that describe the resource.
+   * @param schemaUrl The URL of the OpenTelemetry schema used to create this Resource.
+   * @return a {@code Resource}.
+   * @throws NullPointerException if {@code attributes} is null.
+   * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
+   *     ASCII string or exceed {@link #MAX_LENGTH} characters.
+   */
+  public static Resource create(Attributes attributes, @Nullable String schemaUrl) {
     checkAttributes(Objects.requireNonNull(attributes, "attributes"));
-    return new AutoValue_Resource(attributes);
+    return new AutoValue_Resource(schemaUrl, attributes);
   }
 
   @Nullable
@@ -107,7 +123,13 @@ public abstract class Resource {
     return properties.getProperty("sdk.version");
   }
 
-  Resource() {}
+  /**
+   * Returns the URL of the OpenTelemetry schema used by this resource. May be null.
+   *
+   * @return An OpenTelemetry schema URL.
+   */
+  @Nullable
+  public abstract String getSchemaUrl();
 
   /**
    * Returns a map of attributes that describe the resource.
@@ -135,7 +157,25 @@ public abstract class Resource {
     AttributesBuilder attrBuilder = Attributes.builder();
     attrBuilder.putAll(this.getAttributes());
     attrBuilder.putAll(other.getAttributes());
-    return new AutoValue_Resource(attrBuilder.build());
+
+    if (other.getSchemaUrl() == null) {
+      return create(attrBuilder.build(), getSchemaUrl());
+    }
+    if (getSchemaUrl() == null) {
+      return create(attrBuilder.build(), other.getSchemaUrl());
+    }
+    if (!other.getSchemaUrl().equals(getSchemaUrl())) {
+      logger.info(
+          "Attempting to merge Resources with different schemaUrls. "
+              + "The resulting Resource will have no schemaUrl assigned. Schema 1: "
+              + getSchemaUrl()
+              + " Schema 2: "
+              + other.getSchemaUrl());
+      // currently, behavior is undefined if schema URLs don't match. In the future, we may
+      // apply schema transformations if possible.
+      return create(attrBuilder.build(), null);
+    }
+    return create(attrBuilder.build(), getSchemaUrl());
   }
 
   private static void checkAttributes(Attributes attributes) {
@@ -187,4 +227,6 @@ public abstract class Resource {
   public ResourceBuilder toBuilder() {
     return builder().putAll(this);
   }
+
+  Resource() {}
 }

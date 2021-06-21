@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.aws.resource;
+package io.opentelemetry.sdk.extension.aws.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -52,6 +52,23 @@ class JdkHttpClientTest {
     JdkHttpClient jdkHttpClient = new JdkHttpClient();
     String result = jdkHttpClient.fetchString("GET", urlStr, requestPropertyMap, null);
     assertThat(result).isEmpty();
+  }
+
+  @Test
+  void requestBody() {
+    server.enqueue(HttpResponse.of("expected result"));
+
+    String urlStr = String.format("http://localhost:%s%s", server.httpPort(), "/path");
+    JdkHttpClient jdkHttpClient = new JdkHttpClient();
+    String result =
+        jdkHttpClient.fetchString(
+            "POST", urlStr, Collections.emptyMap(), null, "body".getBytes(StandardCharsets.UTF_8));
+
+    assertThat(result).isEqualTo("expected result");
+
+    AggregatedHttpRequest request1 = server.takeRequest().request();
+    assertThat(request1.path()).isEqualTo("/path");
+    assertThat(request1.contentUtf8()).isEqualTo("body");
   }
 
   static class HttpsServerTest {

@@ -18,7 +18,7 @@ class EnvironmentResourceTest {
 
   @Test
   void get() {
-    assertThat(EnvironmentResource.get()).isNotNull();
+    assertThat(EnvironmentResource.get().getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
   }
 
   @Test

@@ -558,7 +558,8 @@ class MetricAdapterTest {
 
   @Test
   void toProtoResourceMetrics() {
-    Resource resource = Resource.create(Attributes.of(stringKey("ka"), "va"));
+    Resource resource =
+        Resource.create(Attributes.of(stringKey("ka"), "va"), "http://resource.url");
     io.opentelemetry.proto.resource.v1.Resource resourceProto =
         io.opentelemetry.proto.resource.v1.Resource.newBuilder()
             .addAllAttributes(
@@ -647,6 +648,7 @@ class MetricAdapterTest {
         .containsExactlyInAnyOrder(
             ResourceMetrics.newBuilder()
                 .setResource(resourceProto)
+                .setSchemaUrl("http://resource.url")
                 .addAllInstrumentationLibraryMetrics(
                     singletonList(
                         InstrumentationLibraryMetrics.newBuilder()

@@ -11,9 +11,6 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin")
     id("nebula.release")
 
-    id("com.google.protobuf") apply false
-    id("io.morethan.jmhreport") apply false
-    id("otel.jmh-conventions") apply false
     id("ru.vyarus.animalsniffer") apply false
 }
 
@@ -69,37 +66,6 @@ subprojects {
     group = "io.opentelemetry"
 
     plugins.withId("java") {
-        plugins.withId("com.google.protobuf") {
-            protobuf {
-                val versions: Map<String, String> by project
-                protoc {
-                    // The artifact spec for the Protobuf Compiler
-                    artifact = "com.google.protobuf:protoc:${versions["com.google.protobuf"]}"
-                }
-                plugins {
-                    id("grpc") {
-                        artifact = "io.grpc:protoc-gen-grpc-java:${versions["io.grpc"]}"
-                    }
-                }
-                generateProtoTasks {
-                    all().configureEach {
-                        plugins {
-                            id("grpc")
-                        }
-                    }
-                }
-            }
-
-            afterEvaluate {
-                // Classpath when compiling protos, we add dependency management directly
-                // since it doesn't follow Gradle conventions of naming / properties.
-                dependencies {
-                    add("compileProtoPath", platform(project(":dependencyManagement")))
-                    add("testCompileProtoPath", platform(project(":dependencyManagement")))
-                }
-            }
-        }
-
         plugins.withId("ru.vyarus.animalsniffer") {
             dependencies {
                 add(AnimalSnifferPlugin.SIGNATURE_CONF, "com.toasttab.android:gummy-bears-api-21:0.3.0:coreLib@signature")
