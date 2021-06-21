@@ -1,9 +1,9 @@
 plugins {
     id("otel.java-conventions")
-    id("maven-publish")
+    id("otel.publish-conventions")
 
     id("otel.jmh-conventions")
-    id("ru.vyarus.animalsniffer")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry API"

@@ -19,8 +19,8 @@ val otelJava = extensions.create<OtelJavaExtension>("otelJava")
 base {
     // May be set already by a parent project, only set if not.
     // TODO(anuraaga): Make this less hacky by creating a "module group" plugin.
-    if (!archivesBaseName.startsWith("opentelemetry-")) {
-        archivesBaseName = "opentelemetry-${name}"
+    if (!archivesName.get().startsWith("opentelemetry-")) {
+        archivesName.set("opentelemetry-${name}")
     }
 }
 

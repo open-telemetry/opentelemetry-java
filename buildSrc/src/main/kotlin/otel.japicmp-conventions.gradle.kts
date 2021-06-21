@@ -42,35 +42,38 @@ fun findArtifact(version: String): File {
     }
 }
 
-afterEvaluate {
-    tasks {
-        val jApiCmp by registering(JapicmpTask::class) {
-            dependsOn("jar")
-            // the japicmp "old" version is either the user-specified one, or the latest release.
-            val apiBaseVersion: String? by project
-            val baselineVersion = apiBaseVersion ?: latestReleasedVersion
-            val baselineArtifact = findArtifact(baselineVersion)
-            oldClasspath = files(baselineArtifact)
+// generate the api diff report for any module that is stable and publishes a jar.
+if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
+    afterEvaluate {
+        tasks {
+            val jApiCmp by registering(JapicmpTask::class) {
+                dependsOn("jar")
+                // the japicmp "old" version is either the user-specified one, or the latest release.
+                val apiBaseVersion: String? by project
+                val baselineVersion = apiBaseVersion ?: latestReleasedVersion
+                val baselineArtifact = findArtifact(baselineVersion)
+                oldClasspath = files(baselineArtifact)
 
-            // the japicmp "new" version is either the user-specified one, or the locally built jar.
-            val apiNewVersion: String? by project
-            val newArtifact = apiNewVersion?.let { findArtifact(it) }
-                    ?: file(getByName<Jar>("jar").archiveFile)
-            newClasspath = files(newArtifact)
+                // the japicmp "new" version is either the user-specified one, or the locally built jar.
+                val apiNewVersion: String? by project
+                val newArtifact = apiNewVersion?.let { findArtifact(it) }
+                        ?: file(getByName<Jar>("jar").archiveFile)
+                newClasspath = files(newArtifact)
 
-            //only output changes, not everything
-            isOnlyModified = true
-            //this is needed so that we only consider the current artifact, and not dependencies
-            isIgnoreMissingClasses = true
-            // double wildcards don't seem to work here (*.internal.*)
-            packageExcludes = listOf("*.internal", "io.opentelemetry.internal.shaded.jctools.*")
-            val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
-            txtOutputFile = apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_${baselineVersion}/${base.archivesName.get()}.txt") }
-                    ?: file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${base.archivesName.get()}.txt")
-        }
-        // have the check task depend on the api comparison task, to make it more likely it will get used.
-        named("check") {
-            dependsOn(jApiCmp)
+                //only output changes, not everything
+                isOnlyModified = true
+                //this is needed so that we only consider the current artifact, and not dependencies
+                isIgnoreMissingClasses = true
+                // double wildcards don't seem to work here (*.internal.*)
+                packageExcludes = listOf("*.internal", "io.opentelemetry.internal.shaded.jctools.*")
+                val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
+                txtOutputFile = apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_${baselineVersion}/${base.archivesName.get()}.txt") }
+                        ?: file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${base.archivesName.get()}.txt")
+            }
+            // have the check task depend on the api comparison task, to make it more likely it will get used.
+            named("check") {
+                dependsOn(jApiCmp)
+            }
         }
     }
 }

@@ -3,10 +3,10 @@ import de.undercouch.gradle.tasks.download.Verify
 
 plugins {
     id("otel.protobuf-conventions")
-    id("maven-publish")
+    id("otel.publish-conventions")
 
     id("de.undercouch.download")
-    id("ru.vyarus.animalsniffer")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Proto"
