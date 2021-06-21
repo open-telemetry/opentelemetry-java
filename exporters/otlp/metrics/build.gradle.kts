@@ -1,8 +1,8 @@
 plugins {
     id("otel.java-conventions")
-    `maven-publish`
+    id("otel.publish-conventions")
 
-    id("ru.vyarus.animalsniffer")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Protocol Metrics Exporter"

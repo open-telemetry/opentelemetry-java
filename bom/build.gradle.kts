@@ -1,6 +1,6 @@
 plugins {
     id("java-platform")
-    id("maven-publish")
+    id("otel.publish-conventions")
 }
 
 description = "OpenTelemetry Bill of Materials"
