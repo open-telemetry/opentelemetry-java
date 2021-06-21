@@ -2,17 +2,19 @@ plugins {
     id("otel.java-conventions")
     `maven-publish`
 
-    id("me.champeau.jmh")
+    id("otel.jmh-conventions")
 }
 
 description = "OpenTelemetry SDK AWS Instrumentation Support"
-extra["moduleName"] = "io.opentelemetry.sdk.extension.trace.aws"
+otelJava.moduleName.set("io.opentelemetry.sdk.extension.trace.aws")
 
 dependencies {
     api(project(":api:all"))
     api(project(":sdk:all"))
 
     compileOnly(project(":sdk-extensions:autoconfigure"))
+
+    annotationProcessor("com.google.auto.value:auto-value")
 
     implementation(project(":semconv"))
 
@@ -23,4 +25,5 @@ dependencies {
 
     testImplementation("com.linecorp.armeria:armeria-junit5")
     testImplementation("com.google.guava:guava")
+    testImplementation("org.slf4j:slf4j-simple")
 }

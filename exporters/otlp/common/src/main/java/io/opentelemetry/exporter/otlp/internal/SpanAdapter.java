@@ -74,6 +74,9 @@ public final class SpanAdapter {
         (resource, librarySpans) -> {
           ResourceSpans.Builder resourceSpansBuilder =
               ResourceSpans.newBuilder().setResource(ResourceAdapter.toProtoResource(resource));
+          if (resource.getSchemaUrl() != null) {
+            resourceSpansBuilder.setSchemaUrl(resource.getSchemaUrl());
+          }
           librarySpans.forEach(
               (library, spans) -> {
                 resourceSpansBuilder.addInstrumentationLibrarySpans(

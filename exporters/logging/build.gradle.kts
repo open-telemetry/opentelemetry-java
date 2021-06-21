@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry - Logging Exporter"
-extra["moduleName"] = "io.opentelemetry.exporter.logging"
+otelJava.moduleName.set("io.opentelemetry.exporter.logging")
 
 dependencies {
     api(project(":sdk:all"))

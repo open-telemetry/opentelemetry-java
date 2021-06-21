@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +27,11 @@ class LambdaResourceTest {
 
   @Test
   void shouldAddNonEmptyAttributes() {
-    Attributes attributes =
-        LambdaResource.buildResource(singletonMap("AWS_LAMBDA_FUNCTION_NAME", "my-function"))
-            .getAttributes();
+    Resource resource =
+        LambdaResource.buildResource(singletonMap("AWS_LAMBDA_FUNCTION_NAME", "my-function"));
+    Attributes attributes = resource.getAttributes();
+
+    assertThat(resource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
@@ -45,8 +48,10 @@ class LambdaResourceTest {
     envVars.put("AWS_LAMBDA_FUNCTION_NAME", "my-function");
     envVars.put("AWS_LAMBDA_FUNCTION_VERSION", "1.2.3");
 
-    Attributes attributes = LambdaResource.buildResource(envVars).getAttributes();
+    Resource resource = LambdaResource.buildResource(envVars);
+    Attributes attributes = resource.getAttributes();
 
+    assertThat(resource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(

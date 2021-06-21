@@ -11,6 +11,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +28,8 @@ class BeanstalkResourceTest {
         "{\"noise\": \"noise\", \"deployment_id\":4,\""
             + "version_label\":\"2\",\"environment_name\":\"HttpSubscriber-env\"}";
     Files.write(content.getBytes(Charsets.UTF_8), file);
-    Attributes attributes = BeanstalkResource.buildResource(file.getPath()).getAttributes();
+    Resource resource = BeanstalkResource.buildResource(file.getPath());
+    Attributes attributes = resource.getAttributes();
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(
@@ -35,6 +37,7 @@ class BeanstalkResourceTest {
                 ResourceAttributes.SERVICE_INSTANCE_ID, "4",
                 ResourceAttributes.SERVICE_VERSION, "2",
                 ResourceAttributes.SERVICE_NAMESPACE, "HttpSubscriber-env"));
+    assertThat(resource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
   }
 
   @Test

@@ -2,12 +2,12 @@ plugins {
     id("otel.java-conventions")
     id("maven-publish")
 
-    id("me.champeau.jmh")
+    id("otel.jmh-conventions")
     id("ru.vyarus.animalsniffer")
 }
 
 description = "OpenTelemetry SDK For Tracing"
-extra["moduleName"] = "io.opentelemetry.sdk.trace"
+otelJava.moduleName.set("io.opentelemetry.sdk.trace")
 
 evaluationDependsOn(":sdk:trace-shaded-deps")
 

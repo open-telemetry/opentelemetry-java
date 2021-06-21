@@ -4,14 +4,14 @@ plugins {
     id("otel.java-conventions")
     `maven-publish`
 
-    id("me.champeau.jmh")
+    id("otel.jmh-conventions")
     id("org.jetbrains.kotlin.jvm")
     id("org.unbroken-dome.test-sets")
     id("ru.vyarus.animalsniffer")
 }
 
 description = "OpenTelemetry Kotlin Extensions"
-extra["moduleName"] = "io.opentelemetry.extension.kotlin"
+otelJava.moduleName.set("io.opentelemetry.extension.kotlin")
 
 testSets {
     create("testStrictContext")

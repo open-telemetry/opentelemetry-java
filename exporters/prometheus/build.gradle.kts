@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry Prometheus Exporter"
-extra["moduleName"] = "io.opentelemetry.exporter.prometheus"
+otelJava.moduleName.set("io.opentelemetry.exporter.prometheus")
 
 dependencies {
     api(project(":sdk:metrics"))

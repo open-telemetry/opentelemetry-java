@@ -16,6 +16,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.extension.aws.internal.JdkHttpClient;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
@@ -60,6 +61,7 @@ public class EksResourceTest {
             mockK8sKeystoreFile.getPath());
     Attributes attributes = eksResource.getAttributes();
 
+    assertThat(eksResource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(

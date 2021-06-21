@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -33,7 +34,10 @@ class EcsResourceTest {
     when(mockDockerHelper.getContainerId()).thenReturn("0123456789A");
     Map<String, String> mockSysEnv = new HashMap<>();
     mockSysEnv.put(ECS_METADATA_KEY_V3, "ecs_metadata_v3_uri");
-    Attributes attributes = EcsResource.buildResource(mockSysEnv, mockDockerHelper).getAttributes();
+    Resource resource = EcsResource.buildResource(mockSysEnv, mockDockerHelper);
+    Attributes attributes = resource.getAttributes();
+
+    assertThat(resource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
     assertThat(attributes)
         .isEqualTo(
             Attributes.of(

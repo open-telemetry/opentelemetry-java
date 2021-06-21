@@ -2,13 +2,13 @@ plugins {
     id("otel.java-conventions")
     id("maven-publish")
 
-    id("me.champeau.jmh")
+    id("otel.jmh-conventions")
     id("org.unbroken-dome.test-sets")
     id("ru.vyarus.animalsniffer")
 }
 
 description = "OpenTelemetry Context (Incubator)"
-extra["moduleName"] = "io.opentelemetry.context"
+otelJava.moduleName.set("io.opentelemetry.context")
 
 testSets {
     create("grpcInOtelTest")

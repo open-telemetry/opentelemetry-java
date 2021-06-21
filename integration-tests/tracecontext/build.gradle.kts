@@ -5,7 +5,7 @@ plugins {
 }
 
 description = "OpenTelemetry W3C Context Propagation Integration Tests"
-extra["moduleName"] = "io.opentelemetry.tracecontext.integration.tests"
+otelJava.moduleName.set("io.opentelemetry.tracecontext.integration.tests")
 
 dependencies {
     implementation(project(":sdk:all"))

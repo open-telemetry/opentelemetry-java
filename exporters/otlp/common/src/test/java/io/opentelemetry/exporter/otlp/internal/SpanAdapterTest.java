@@ -36,6 +36,7 @@ import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
@@ -73,10 +74,13 @@ class SpanAdapterTest {
                     .setStatus(StatusData.unset())
                     .setInstrumentationLibraryInfo(
                         InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
+                    .setResource(
+                        Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
                     .build()));
 
     assertThat(resourceSpans).hasSize(1);
     ResourceSpans onlyResourceSpans = resourceSpans.get(0);
+    assertThat(onlyResourceSpans.getSchemaUrl()).isEqualTo("http://url");
     assertThat(onlyResourceSpans.getInstrumentationLibrarySpansCount()).isEqualTo(1);
     InstrumentationLibrarySpans instrumentationLibrarySpans =
         onlyResourceSpans.getInstrumentationLibrarySpans(0);

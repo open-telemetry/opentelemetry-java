@@ -7,7 +7,7 @@ plugins {
 // This project is not published, it is bundled into :sdk:trace
 
 description = "Internal use only - shaded dependencies of OpenTelemetry SDK for Tracing"
-extra["moduleName"] = "io.opentelemetry.sdk.trace.internal"
+otelJava.moduleName.set("io.opentelemetry.sdk.trace.internal")
 
 dependencies {
     implementation("org.jctools:jctools-core")

@@ -2,13 +2,13 @@ plugins {
     id("otel.java-conventions")
     `maven-publish`
 
-    id("me.champeau.jmh")
+    id("otel.jmh-conventions")
     id("org.unbroken-dome.test-sets")
     id("ru.vyarus.animalsniffer")
 }
 
 description = "OpenTelemetry Protocol Trace Exporter"
-extra["moduleName"] = "io.opentelemetry.exporter.otlp.trace"
+otelJava.moduleName.set("io.opentelemetry.exporter.otlp.trace")
 
 testSets {
     create("testGrpcNetty")

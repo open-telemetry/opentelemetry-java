@@ -3,7 +3,7 @@ plugins {
 }
 
 description = "OpenTelemetry Integration Tests"
-extra["moduleName"] = "io.opentelemetry.integration.tests"
+otelJava.moduleName.set("io.opentelemetry.integration.tests")
 
 dependencies {
     implementation(project(":sdk:all"))

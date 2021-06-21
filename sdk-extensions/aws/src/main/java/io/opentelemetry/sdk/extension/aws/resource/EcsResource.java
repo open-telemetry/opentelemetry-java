@@ -59,7 +59,7 @@ public final class EcsResource {
       attrBuilders.put(ResourceAttributes.CONTAINER_ID, containerId);
     }
 
-    return Resource.create(attrBuilders.build());
+    return Resource.create(attrBuilders.build(), ResourceAttributes.SCHEMA_URL);
   }
 
   private static boolean isOnEcs(Map<String, String> sysEnv) {
