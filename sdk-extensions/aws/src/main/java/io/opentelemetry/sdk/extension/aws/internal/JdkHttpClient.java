@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.aws.resource;
+package io.opentelemetry.sdk.extension.aws.internal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -26,17 +27,32 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
-class JdkHttpClient {
+/**
+ * A simple HTTP client based on the standard JDK {@link HttpURLConnection}. Not meant for high
+ * throughput.
+ */
+public final class JdkHttpClient {
 
   private static final Logger logger = Logger.getLogger(JdkHttpClient.class.getName());
 
   private static final int TIMEOUT_MILLIS = 2000;
 
-  String fetchString(
+  /** Fetch a string from a remote server. */
+  public String fetchString(
       String httpMethod,
       String urlStr,
       Map<String, String> requestPropertyMap,
       @Nullable String certPath) {
+    return fetchString(httpMethod, urlStr, requestPropertyMap, certPath, null);
+  }
+
+  /** Fetch a string from a remote server with a request body. */
+  public String fetchString(
+      String httpMethod,
+      String urlStr,
+      Map<String, String> requestPropertyMap,
+      @Nullable String certPath,
+      @Nullable byte[] requestBody) {
     final HttpURLConnection connection;
 
     try {
@@ -56,6 +72,13 @@ class JdkHttpClient {
 
       for (Map.Entry<String, String> requestProperty : requestPropertyMap.entrySet()) {
         connection.setRequestProperty(requestProperty.getKey(), requestProperty.getValue());
+      }
+
+      if (requestBody != null) {
+        connection.setDoOutput(true);
+        try (OutputStream outputStream = connection.getOutputStream()) {
+          outputStream.write(requestBody);
+        }
       }
 
       int responseCode = connection.getResponseCode();
