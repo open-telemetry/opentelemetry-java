@@ -1,0 +1,20 @@
+{
+  "SamplingStatisticsDocuments":[
+    {
+      "RuleName":"Test",
+      "ClientID":"ABCDEF1234567890ABCDEF10",
+      "Timestamp":"2021-06-21T06:46:07",
+      "RequestCount":110,
+      "SampledCount":30,
+      "BorrowCount":20
+    },
+    {
+      "RuleName":"polling-scorekeep",
+      "ClientID":"ABCDEF1234567890ABCDEF11",
+      "Timestamp":"2018-07-07T00:20:06",
+      "RequestCount":10500,
+      "SampledCount":31,
+      "BorrowCount":0
+    }
+  ]
+}
