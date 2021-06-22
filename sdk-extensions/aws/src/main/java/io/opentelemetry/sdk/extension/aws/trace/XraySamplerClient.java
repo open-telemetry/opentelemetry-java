@@ -43,18 +43,14 @@ import java.util.Map;
 
 final class XraySamplerClient {
 
-  private static final ObjectMapper OBJECT_MAPPER;
-
-  static {
-    OBJECT_MAPPER =
-        new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-            // AWS APIs return timestamps as floats.
-            .registerModule(
-                new SimpleModule().addDeserializer(Date.class, new FloatDateDeserializer()))
-            // In case API is extended with new fields.
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, /* state= */ false);
-  }
+  private static final ObjectMapper OBJECT_MAPPER =
+      new ObjectMapper()
+          .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+          // AWS APIs return timestamps as floats.
+          .registerModule(
+              new SimpleModule().addDeserializer(Date.class, new FloatDateDeserializer()))
+          // In case API is extended with new fields.
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, /* state= */ false);
 
   private static final Map<String, String> JSON_CONTENT_TYPE =
       Collections.singletonMap("Content-Type", "application/json");
@@ -65,6 +61,7 @@ final class XraySamplerClient {
 
   XraySamplerClient(String host) {
     this.getSamplingRulesEndpoint = host + "/GetSamplingRules";
+    // Lack of Get may look wrong but is correct.
     this.getSamplingTargetsEndpoint = host + "/SamplingTargets";
     httpClient = new JdkHttpClient();
   }

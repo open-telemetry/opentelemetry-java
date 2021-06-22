@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.extension.aws.trace;
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 
 import com.google.common.io.ByteStreams;
@@ -16,9 +17,11 @@ import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -90,6 +93,14 @@ class XraySamplerClientTest {
   }
 
   @Test
+  void getSamplingRules_malformed() {
+    server.enqueue(HttpResponse.of(HttpStatus.OK, MediaType.JSON, "notjson"));
+    assertThatThrownBy(() -> client.getSamplingRules(GetSamplingRulesRequest.create("token")))
+        .isInstanceOf(UncheckedIOException.class)
+        .hasMessage("Failed to deserialize response.");
+  }
+
+  @Test
   void getSamplingTargets() throws Exception {
     // Request and response adapted from
     // https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sampling.html
@@ -154,6 +165,17 @@ class XraySamplerClientTest {
               assertThat(statistics.getErrorCode()).isEqualTo("400");
               assertThat(statistics.getMessage()).isEqualTo("Unknown rule");
             });
+  }
+
+  @Test
+  void getSamplingTargets_malformed() {
+    server.enqueue(HttpResponse.of(HttpStatus.OK, MediaType.JSON, "notjson"));
+    assertThatThrownBy(
+            () ->
+                client.getSamplingTargets(
+                    GetSamplingTargetsRequest.create(Collections.emptyList())))
+        .isInstanceOf(UncheckedIOException.class)
+        .hasMessage("Failed to deserialize response.");
   }
 
   private static void enqueueResource(String resourcePath) throws Exception {
