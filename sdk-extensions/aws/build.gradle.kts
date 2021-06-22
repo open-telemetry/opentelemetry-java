@@ -26,4 +26,5 @@ dependencies {
     testImplementation("com.linecorp.armeria:armeria-junit5")
     testImplementation("com.google.guava:guava")
     testImplementation("org.slf4j:slf4j-simple")
+    testImplementation("org.skyscreamer:jsonassert")
 }
