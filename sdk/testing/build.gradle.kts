@@ -1,6 +1,6 @@
 plugins {
     id("otel.java-conventions")
-    id("maven-publish")
+    id("otel.publish-conventions")
 }
 
 description = "OpenTelemetry SDK Testing utilities"

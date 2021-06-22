@@ -1,4 +1,6 @@
 plugins {
+    `java-library`
+
     jacoco
 }
 
@@ -26,8 +28,7 @@ configurations {
             attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
             attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("source-folders"))
         }
-        val mainSources = the<JavaPluginConvention>().sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-        mainSources.java.srcDirs.forEach {
+        sourceSets.main.get().java.srcDirs.forEach {
             outgoing.artifact(it)
         }
     }
@@ -43,8 +44,8 @@ configurations {
             attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("jacoco-coverage-data"))
         }
         // This will cause the test task to run if the coverage data is requested by the aggregation task
-        tasks.withType(Test::class) {
-            outgoing.artifact(extensions.getByType<JacocoTaskExtension>().destinationFile!!)
+        tasks.withType<Test>().configureEach {
+            outgoing.artifact(the<JacocoTaskExtension>().destinationFile!!)
         }
     }
 }

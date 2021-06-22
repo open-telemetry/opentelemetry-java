@@ -2,12 +2,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("otel.java-conventions")
-    `maven-publish`
+    id("otel.publish-conventions")
 
     id("otel.jmh-conventions")
     id("org.jetbrains.kotlin.jvm")
     id("org.unbroken-dome.test-sets")
-    id("ru.vyarus.animalsniffer")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Kotlin Extensions"
