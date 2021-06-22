@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -23,6 +24,21 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 final class SamplingRuleApplier {
+
+  private static final Map<String, String> XRAY_CLOUD_PLATFORM;
+
+  static {
+    Map<String, String> xrayCloudPlatform = new HashMap<>();
+    xrayCloudPlatform.put(ResourceAttributes.CloudPlatformValues.AWS_EC2, "AWS::EC2::Instance");
+    xrayCloudPlatform.put(ResourceAttributes.CloudPlatformValues.AWS_ECS, "AWS::ECS::Container");
+    xrayCloudPlatform.put(ResourceAttributes.CloudPlatformValues.AWS_EKS, "AWS::EKS::Container");
+    xrayCloudPlatform.put(
+        ResourceAttributes.CloudPlatformValues.AWS_ELASTIC_BEANSTALK,
+        "AWS::ElasticBeanstalk::Environment");
+    xrayCloudPlatform.put(
+        ResourceAttributes.CloudPlatformValues.AWS_LAMBDA, "AWS::Lambda::Function");
+    XRAY_CLOUD_PLATFORM = Collections.unmodifiableMap(xrayCloudPlatform);
+  }
 
   private final Sampler fixedRateSampler;
 
@@ -109,11 +125,14 @@ final class SamplingRuleApplier {
       return arn;
     }
     String cloudPlatform = resource.getAttributes().get(ResourceAttributes.CLOUD_PLATFORM);
-    if (cloudPlatform == null
-        || !cloudPlatform.equals(ResourceAttributes.CloudPlatformValues.AWS_LAMBDA)) {
-      return null;
+    if (ResourceAttributes.CloudPlatformValues.AWS_LAMBDA.equals(cloudPlatform)) {
+      return getLambdaArn(attributes, resource);
     }
-    arn = resource.getAttributes().get(ResourceAttributes.FAAS_ID);
+    return null;
+  }
+
+  private static String getLambdaArn(Attributes attributes, Resource resource) {
+    String arn = resource.getAttributes().get(ResourceAttributes.FAAS_ID);
     if (arn != null) {
       return arn;
     }
@@ -126,20 +145,7 @@ final class SamplingRuleApplier {
     if (cloudPlatform == null) {
       return null;
     }
-    switch (cloudPlatform) {
-      case ResourceAttributes.CloudPlatformValues.AWS_EC2:
-        return "AWS::EC2::Instance";
-      case ResourceAttributes.CloudPlatformValues.AWS_ECS:
-        return "AWS::ECS::Container";
-      case ResourceAttributes.CloudPlatformValues.AWS_EKS:
-        return "AWS::EKS::Container";
-      case ResourceAttributes.CloudPlatformValues.AWS_ELASTIC_BEANSTALK:
-        return "AWS::ElasticBeanstalk::Environment";
-      case ResourceAttributes.CloudPlatformValues.AWS_LAMBDA:
-        return "AWS::Lambda::Function";
-      default:
-        return null;
-    }
+    return XRAY_CLOUD_PLATFORM.get(cloudPlatform);
   }
 
   private static Matcher toMatcher(String globPattern) {
