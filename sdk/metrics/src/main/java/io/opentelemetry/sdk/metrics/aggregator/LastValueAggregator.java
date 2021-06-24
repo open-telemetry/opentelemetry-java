@@ -7,10 +7,8 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.instrument.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
@@ -25,24 +23,21 @@ import java.util.concurrent.atomic.AtomicReference;
  * values once.
  */
 public class LastValueAggregator extends AbstractAggregator<DoubleAccumulation> {
-  private final InstrumentDescriptor instrument;
+  private final LastValueConfig config;
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibrary;
-  private final AggregationTemporality temporality;
   private final ExemplarSampler sampler;
 
   public LastValueAggregator(
-      InstrumentDescriptor instrument,
+      LastValueConfig config,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibrary,
       long startEpochNanos,
-      AggregationTemporality temporality,
       ExemplarSampler sampler) {
     super(startEpochNanos);
-    this.instrument = instrument;
+    this.config = config;
     this.resource = resource;
     this.instrumentationLibrary = instrumentationLibrary;
-    this.temporality = temporality;
     this.sampler = sampler;
   }
 
@@ -76,8 +71,7 @@ public class LastValueAggregator extends AbstractAggregator<DoubleAccumulation> 
 
   @Override
   protected boolean isStatefulCollector() {
-    return (temporality == AggregationTemporality.CUMULATIVE)
-        && instrument.getType().isSynchronous();
+    return false;
   }
 
   @Override
@@ -99,9 +93,9 @@ public class LastValueAggregator extends AbstractAggregator<DoubleAccumulation> 
     return MetricData.createDoubleGauge(
         resource,
         instrumentationLibrary,
-        instrument.getName(),
-        instrument.getDescription(),
-        instrument.getUnit(),
+        config.getName(),
+        config.getDescription(),
+        config.getUnit(),
         DoubleGaugeData.create(
             MetricDataUtils.toDoublePointList(accumulated, startEpochNanos, epochNanos)));
   }

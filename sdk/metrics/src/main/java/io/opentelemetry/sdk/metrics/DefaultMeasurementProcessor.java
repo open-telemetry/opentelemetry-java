@@ -13,9 +13,9 @@ import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.aggregator.HistogramConfig;
 import io.opentelemetry.sdk.metrics.aggregator.LastValueAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.LastValueConfig;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.SumConfig;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.instrument.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.state.InstrumentStorage;
 import io.opentelemetry.sdk.metrics.state.MeterProviderSharedState;
@@ -94,12 +94,12 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
+    LastValueConfig config = LastValueConfig.buildDefaultFromInstrument(instrument);
     return new LastValueAggregator(
-        instrument,
+        config,
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
         meterProviderSharedState.getStartEpochNanos(),
-        AggregationTemporality.CUMULATIVE,
         getDefaultExemplarSampler());
   }
 
