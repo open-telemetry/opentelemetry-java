@@ -19,7 +19,7 @@ What is not implemented
 
 # TODOs
 
-- [ ] Detangle `Aggregator<>` from `InstrumentInfo`.   `Aggregator` should be ignorant of `Instrument`, they only
+- [X] Detangle `Aggregator<>` from `InstrumentInfo`.   `Aggregator` should be ignorant of `Instrument`, they only
   care about which `Metric` they produce.
 - [X] Create "matchers" for `data` package that simplify testing.
 - Unit Tests
