@@ -14,9 +14,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.instrument.DoubleMeasurement;
-import io.opentelemetry.sdk.metrics.instrument.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.instrument.InstrumentType;
-import io.opentelemetry.sdk.metrics.instrument.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
@@ -32,13 +29,16 @@ public class DoubleHistogramAggregatorTest {
   private static final double[] boundaries = new double[] {10.0, 100.0, 1000.0};
   private static final DoubleHistogramAggregator aggregator =
       new DoubleHistogramAggregator(
-          InstrumentDescriptor.create(
-              "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
+          HistogramConfig.builder()
+              .setName("name")
+              .setDescription("description")
+              .setUnit("unit")
+              .setBoundaries(boundaries)
+              .setTemporality(AggregationTemporality.DELTA)
+              .build(),
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           /* startEpochNanos= */ 0,
-          AggregationTemporality.DELTA,
-          boundaries,
           ExemplarSampler.NEVER);
 
   @Test

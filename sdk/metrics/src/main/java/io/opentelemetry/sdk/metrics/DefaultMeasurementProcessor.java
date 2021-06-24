@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleHistogramAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.ExemplarSampler;
+import io.opentelemetry.sdk.metrics.aggregator.HistogramConfig;
 import io.opentelemetry.sdk.metrics.aggregator.LastValueAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.SumConfig;
@@ -131,15 +132,17 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
+    // TODO: default histogram boundaries?
+    HistogramConfig config =
+        HistogramConfig.buildDefaultFromInstrument(instrument).toBuilder()
+            .setBoundaries(getDefaultHistogramBoundaries())
+            .build();
     // The Double processor will convert LongMeasurements to doubles.
     return new DoubleHistogramAggregator(
-        instrument,
+        config,
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
         meterProviderSharedState.getStartEpochNanos(),
-        // TODO: Aggregation temporality, boundaries, sampling come from hint api..
-        AggregationTemporality.CUMULATIVE,
-        getDefaultHistogramBoundaries(),
         getDefaultExemplarSampler());
   }
 

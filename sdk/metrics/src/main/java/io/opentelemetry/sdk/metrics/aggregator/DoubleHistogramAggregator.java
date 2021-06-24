@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.instrument.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -27,33 +26,27 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>This aggregator supports {@code DoubleMeasurement} and {@code LongMeasurement} inputs.
  */
 public class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumulation> {
-  private final InstrumentDescriptor instrument;
+  private final HistogramConfig config;
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibrary;
-  private final AggregationTemporality temporality;
   private final ExemplarSampler sampler;
 
-  private final double[] boundaries;
   // a cache for converting to MetricData
   private final List<Double> boundaryList;
 
   public DoubleHistogramAggregator(
-      InstrumentDescriptor instrument,
+      HistogramConfig config,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibrary,
       long startEpochNanos,
-      AggregationTemporality temporality,
-      double[] boundaries,
       ExemplarSampler sampler) {
     super(startEpochNanos);
-    this.instrument = instrument;
+    this.config = config;
     this.resource = resource;
     this.instrumentationLibrary = instrumentationLibrary;
-    this.temporality = temporality;
-    this.boundaries = boundaries;
     this.sampler = sampler;
-    List<Double> boundaryList = new ArrayList<>(this.boundaries.length);
-    for (double v : this.boundaries) {
+    List<Double> boundaryList = new ArrayList<>(this.config.getBoundaries().length);
+    for (double v : this.config.getBoundaries()) {
       boundaryList.add(v);
     }
     this.boundaryList = Collections.unmodifiableList(boundaryList);
@@ -76,7 +69,7 @@ public class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccum
 
   @Override
   public SynchronousHandle<HistogramAccumulation> createStreamStorage() {
-    return new MyHandle(boundaries, sampler);
+    return new MyHandle(config.getBoundaries(), sampler);
   }
 
   // Note:  Storage handle has high contention and need atomic increments.
@@ -130,14 +123,14 @@ public class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccum
 
   @Override
   protected boolean isStatefulCollector() {
-    return temporality == AggregationTemporality.CUMULATIVE;
+    return config.getTemporality() == AggregationTemporality.CUMULATIVE;
   }
 
   @Override
   HistogramAccumulation asyncAccumulation(Measurement measurement) {
     double value = valueOf(measurement);
-    int bucketIndex = findBucketIndex(this.boundaries, value);
-    long[] counts = new long[this.boundaries.length + 1];
+    int bucketIndex = findBucketIndex(config.getBoundaries(), value);
+    long[] counts = new long[config.getBoundaries().length + 1];
     counts[bucketIndex] = 1;
     return HistogramAccumulation.create(value, counts, Collections.emptyList());
   }
@@ -166,11 +159,11 @@ public class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccum
     return MetricData.createDoubleHistogram(
         resource,
         instrumentationLibrary,
-        instrument.getName(),
-        instrument.getDescription(),
-        instrument.getUnit(),
+        config.getName(),
+        config.getDescription(),
+        config.getUnit(),
         DoubleHistogramData.create(
-            temporality,
+            config.getTemporality(),
             MetricDataUtils.toDoubleHistogramPointList(
                 accumulated,
                 isStatefulCollector() ? startEpochNanos : lastEpochNanos,
