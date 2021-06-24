@@ -5,84 +5,69 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricDataType;
-import java.util.Map;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import java.util.List;
 
 /**
- * Aggregator represents the abstract class for all the available aggregations that can be computed
- * during the accumulation phase for all the instrument.
+ * A processor that can generate aggregators for metrics streams while also combining those streams
+ * into {@link MetricData}
  *
- * <p>The synchronous instruments will create an {@link AggregatorHandle} to record individual
- * measurements synchronously, and for asynchronous the {@link #accumulateDouble(double)} or {@link
- * #accumulateLong(long)} will be used when reading values from the instrument callbacks.
+ * <p>Aggregators have the following lifecycle:
+ *
+ * <ul>
+ *   <li>During usage of synchronous instruments, {@link #createStreamStorage} is called for unique
+ *       {@link Attributes}. This method does not need to be threadsafe, but the returned handle
+ *       must support high concurrency aggregation.
+ *   <li>During a colletion phase, the aggregator will receive the following calls:
+ *       <ol>
+ *         <li>{@link #batchRecord} (for asynchronous instruments) or {@link
+ *             #batchStreamAccumulation} for synchronous instruments. These can be called multiple
+ *             times.
+ *         <li>{@link #completeCollectionCycle} - This is expected to return {@link MetricData} for
+ *             all metrics created by this aggregator. Additionally, the aggregator is expected to
+ *             reset its state for the next round of collection.
+ *       </ol>
+ *       The collection phase is considered "single threaded", and does not require (additonal)
+ *       locking.
+ * </ul>
  */
-@Immutable
 public interface Aggregator<T> {
   /**
-   * Returns a new {@link AggregatorHandle}. This MUST by used by the synchronous to aggregate
-   * recorded measurements during the collection cycle.
+   * Construct a handle for storing highly-concurrent measurement input.
    *
-   * @return a new {@link AggregatorHandle}.
+   * <p>SynchronousHandle instances *must* be threadsafe and allow for high contention across
+   * threads.
    */
-  AggregatorHandle<T> createHandle();
+  public SynchronousHandle<T> createStreamStorage();
 
   /**
-   * Returns a new {@code Accumulation} for the given value. This MUST be used by the asynchronous
-   * instruments to create {@code Accumulation} that are passed to the processor.
+   * Record an asynchronous measurement for this collection cycle.
    *
-   * @param value the given value to be used to create the {@code Accumulation}.
-   * @return a new {@code Accumulation} for the given value.
+   * <p>Asynchronous measurements are sent within "a single thread" (or effectively single thread)
+   * for this aggregator.
    */
-  default T accumulateLong(long value) {
-    throw new UnsupportedOperationException(
-        "This aggregator does not support recording long values.");
-  }
+  public void batchRecord(Measurement measurement);
 
   /**
-   * Returns a new {@code Accumulation} for the given value. This MUST be used by the asynchronous
-   * instruments to create {@code Accumulation} that are passed to the processor.
+   * Batches multiple entries together that are part of the same metric. It may remove attributes
+   * from the {@link Attributes} and merge aggregations together.
    *
-   * @param value the given value to be used to create the {@code Accumulation}.
-   * @return a new {@code Accumulation} for the given value.
+   * @param attributes the {@link Attributes} associated with this {@code MetricStreamProcessor}.
+   * @param accumulation the accumulation of measurments produced by the StorageHandle.
    */
-  default T accumulateDouble(double value) {
-    throw new UnsupportedOperationException(
-        "This aggregator does not support recording double values.");
-  }
+  public void batchStreamAccumulation(Attributes attributes, T accumulation);
 
   /**
-   * Returns the result of the merge of the given accumulations.
+   * Ends the current collection cycle and returns the list of metrics batched in this Batcher.
    *
-   * @param previousAccumulation the previously captured accumulation
-   * @param accumulation the newly captured accumulation
-   * @return the result of the merge of the given accumulations.
-   */
-  T merge(T previousAccumulation, T accumulation);
-
-  /**
-   * Returns {@code true} if the processor needs to keep the previous collected state in order to
-   * compute the desired metric.
+   * <p>There may be more than one MetricData in case a multi aggregator is configured.
    *
-   * @return {@code true} if the processor needs to keep the previous collected state.
-   */
-  boolean isStateful();
-
-  /**
-   * Returns the {@link MetricData} that this {@code Aggregation} will produce.
+   * <p>Based on the configured options this method may reset the internal state to produce deltas,
+   * or keep the internal state to produce cumulative metrics.
    *
-   * @param accumulationByLabels the map of Labels to Accumulation.
-   * @param startEpochNanos the startEpochNanos for the {@code Point}.
-   * @param epochNanos the epochNanos for the {@code Point}.
-   * @return the {@link MetricDataType} that this {@code Aggregation} will produce.
+   * @return the list of metrics batched in this prcoessor.
    */
-  @Nullable
-  MetricData toMetricData(
-      Map<Labels, T> accumulationByLabels,
-      long startEpochNanos,
-      long lastCollectionEpoch,
-      long epochNanos);
+  public List<MetricData> completeCollectionCycle(long epochNanos);
 }

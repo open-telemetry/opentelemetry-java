@@ -9,11 +9,11 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundDoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.resources.Resource;
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link DoubleUpDownCounterSdk}. */
 class DoubleUpDownCounterSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
+  private static final AttributeKey<String> FOO_KEY = stringKey("foo");
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
@@ -31,29 +32,34 @@ class DoubleUpDownCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = sdkMeterProvider.meterBuilder(getClass().getName()).build();
 
   @Test
-  void add_PreventNullLabels() {
+  void add_PreventNullAttributes() {
     assertThatThrownBy(
-            () -> sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build().add(1.0, null))
+            () ->
+                sdkMeter
+                    .upDownCounterBuilder("testUpDownCounter")
+                    .ofDoubles()
+                    .build()
+                    .add(1.0, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("Null attributes");
   }
 
   @Test
-  void bound_PreventNullLabels() {
+  void bound_PreventNullAttributes() {
     assertThatThrownBy(
-            () -> sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build().bind(null))
+            () -> sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build().bind(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("Null attributes");
   }
 
   @Test
   void collectMetrics_NoRecords() {
     DoubleUpDownCounter doubleUpDownCounter =
-        sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
-    BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind(Labels.of("foo", "bar"));
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
+    BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind(Attributes.of(FOO_KEY, "bar"));
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
@@ -66,12 +72,13 @@ class DoubleUpDownCounterSdkTest {
   void collectMetrics_WithEmptyLabel() {
     DoubleUpDownCounter doubleUpDownCounter =
         sdkMeter
-            .doubleUpDownCounterBuilder("testUpDownCounter")
+            .upDownCounterBuilder("testUpDownCounter")
+            .ofDoubles()
             .setDescription("description")
             .setUnit("ms")
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    doubleUpDownCounter.add(12d, Labels.empty());
+    doubleUpDownCounter.add(12d, Attributes.empty());
     doubleUpDownCounter.add(12d);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
@@ -100,17 +107,17 @@ class DoubleUpDownCounterSdkTest {
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleUpDownCounter doubleUpDownCounter =
-        sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
-    BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind(Labels.of("K", "V"));
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
+    BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind(Attributes.of(stringKey("K"), "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
-      doubleUpDownCounter.add(12.1d, Labels.empty());
+      doubleUpDownCounter.add(12.1d, Attributes.empty());
       bound.add(123.3d);
-      doubleUpDownCounter.add(21.4d, Labels.empty());
+      doubleUpDownCounter.add(21.4d, Attributes.empty());
       // Advancing time here should not matter.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(321.5d);
-      doubleUpDownCounter.add(111.1d, Labels.of("K", "V"));
+      doubleUpDownCounter.add(111.1d, Attributes.of(stringKey("K"), "V"));
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
@@ -138,7 +145,7 @@ class DoubleUpDownCounterSdkTest {
       // Repeat to prove we keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(222d);
-      doubleUpDownCounter.add(11d, Labels.empty());
+      doubleUpDownCounter.add(11d, Attributes.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
@@ -171,22 +178,21 @@ class DoubleUpDownCounterSdkTest {
   @SuppressWarnings("unchecked")
   void stressTest() {
     final DoubleUpDownCounter doubleUpDownCounter =
-        sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((DoubleUpDownCounterSdk) doubleUpDownCounter)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setMeter((SdkMeter) sdkMeter).setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterDirectCall(doubleUpDownCounter, "K", "V")));
+              1_000, 2, new OperationUpdaterDirectCall(doubleUpDownCounter, stringKey("K"), "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               1_000,
               2,
-              new OperationUpdaterWithBinding(doubleUpDownCounter.bind(Labels.of("K", "V")))));
+              new OperationUpdaterWithBinding(
+                  doubleUpDownCounter.bind(Attributes.of(stringKey("K"), "V")))));
     }
 
     stressTestBuilder.build().run();
@@ -218,24 +224,24 @@ class DoubleUpDownCounterSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final DoubleUpDownCounter doubleUpDownCounter =
-        sdkMeter.doubleUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder()
-            .setInstrument((DoubleUpDownCounterSdk) doubleUpDownCounter)
-            .setCollectionIntervalMs(100);
+        StressTestRunner.builder().setMeter((SdkMeter) sdkMeter).setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterDirectCall(doubleUpDownCounter, keys[i], values[i])));
+              2_000,
+              1,
+              new OperationUpdaterDirectCall(doubleUpDownCounter, stringKey(keys[i]), values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               2_000,
               1,
               new OperationUpdaterWithBinding(
-                  doubleUpDownCounter.bind(Labels.of(keys[i], values[i])))));
+                  doubleUpDownCounter.bind(Attributes.of(stringKey(keys[i]), values[i])))));
     }
 
     stressTestBuilder.build().run();
@@ -285,11 +291,11 @@ class DoubleUpDownCounterSdkTest {
   private static class OperationUpdaterDirectCall extends OperationUpdater {
 
     private final DoubleUpDownCounter doubleUpDownCounter;
-    private final String key;
+    private final AttributeKey<String> key;
     private final String value;
 
     private OperationUpdaterDirectCall(
-        DoubleUpDownCounter doubleUpDownCounter, String key, String value) {
+        DoubleUpDownCounter doubleUpDownCounter, AttributeKey<String> key, String value) {
       this.doubleUpDownCounter = doubleUpDownCounter;
       this.key = key;
       this.value = value;
@@ -297,7 +303,7 @@ class DoubleUpDownCounterSdkTest {
 
     @Override
     void update() {
-      doubleUpDownCounter.add(11.0, Labels.of(key, value));
+      doubleUpDownCounter.add(11.0, Attributes.of(key, value));
     }
 
     @Override

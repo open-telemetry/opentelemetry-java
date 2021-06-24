@@ -5,81 +5,101 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
+import io.opentelemetry.sdk.metrics.instrument.Measurement;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
-final class LongSumAggregator extends AbstractSumAggregator<Long> {
+// TODO - re-extract aggregation API from this, or is this ok?
+public class LongSumAggregator extends AbstractAggregator<LongAccumulation> {
+  private final SumConfig config;
+  private final Resource resource;
+  private final InstrumentationLibraryInfo instrumentationLibrary;
+  private final ExemplarSampler sampler;
 
-  LongSumAggregator(
+  public LongSumAggregator(
+      SumConfig config,
       Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
-      AggregationTemporality temporality) {
-    super(resource, instrumentationLibraryInfo, descriptor, temporality);
-  }
-
-  @Override
-  public AggregatorHandle<Long> createHandle() {
-    return new Handle();
-  }
-
-  @Override
-  public Long accumulateLong(long value) {
-    return value;
-  }
-
-  @Override
-  Long mergeSum(Long previousAccumulation, Long accumulation) {
-    return previousAccumulation + accumulation;
-  }
-
-  @Override
-  Long mergeDiff(Long previousAccumulation, Long accumulation) {
-    return accumulation - previousAccumulation;
-  }
-
-  @Override
-  public MetricData toMetricData(
-      Map<Labels, Long> accumulationByLabels,
+      InstrumentationLibraryInfo instrumentationLibrary,
       long startEpochNanos,
-      long lastCollectionEpoch,
-      long epochNanos) {
-    InstrumentDescriptor descriptor = getInstrumentDescriptor();
-    return MetricData.createLongSum(
-        getResource(),
-        getInstrumentationLibraryInfo(),
-        descriptor.getName(),
-        descriptor.getDescription(),
-        descriptor.getUnit(),
-        LongSumData.create(
-            isMonotonic(),
-            temporality(),
-            MetricDataUtils.toLongPointList(
-                accumulationByLabels,
-                temporality() == AggregationTemporality.CUMULATIVE
-                    ? startEpochNanos
-                    : lastCollectionEpoch,
-                epochNanos)));
+      ExemplarSampler sampler) {
+    super(startEpochNanos);
+    this.config = config;
+    this.resource = resource;
+    this.instrumentationLibrary = instrumentationLibrary;
+    this.sampler = sampler;
   }
 
-  static final class Handle extends AggregatorHandle<Long> {
-    private final LongAdder current = new LongAdder();
+  @Override
+  public SynchronousHandle<LongAccumulation> createStreamStorage() {
+    return new MyHandle(sampler);
+  }
 
-    @Override
-    protected Long doAccumulateThenReset() {
-      return this.current.sumThenReset();
+  // Note:  Storage handle has high contention and need atomic increments.
+  static class MyHandle extends SynchronousHandle<LongAccumulation> {
+    private final LongAdder count = new LongAdder();
+
+    MyHandle(ExemplarSampler sampler) {
+      super(sampler);
     }
 
     @Override
-    public void doRecordLong(long value) {
-      current.add(value);
+    protected void doRecord(Measurement value) {
+      count.add(((LongMeasurement) value).getValue());
     }
+
+    @Override
+    protected LongAccumulation doAccumulateThenReset(Iterable<Measurement> exemplars) {
+      return LongAccumulation.create(count.sumThenReset(), exemplars);
+    }
+  }
+
+  @Override
+  LongAccumulation asyncAccumulation(Measurement measurement) {
+    if (measurement instanceof LongMeasurement) {
+      return LongAccumulation.create(((LongMeasurement) measurement).getValue());
+    }
+    throw new IllegalArgumentException("LongSumAggregation can only handle long measurements.");
+  }
+
+  @Override
+  protected boolean isStatefulCollector() {
+    return config.getMeasurementTemporality() == AggregationTemporality.DELTA
+        && config.getTemporality() == AggregationTemporality.CUMULATIVE;
+  }
+
+  @Override
+  protected LongAccumulation merge(LongAccumulation current, LongAccumulation accumulated) {
+    return LongAccumulation.create(
+        current.getValue() + accumulated.getValue(), current.getExemplars());
+  }
+
+  @Override
+  protected MetricData buildMetric(
+      Map<Attributes, LongAccumulation> accumulated,
+      long startEpochNanos,
+      long lastEpochNanos,
+      long epochNanos) {
+    return MetricData.createLongSum(
+        resource,
+        instrumentationLibrary,
+        config.getName(),
+        config.getDescription(),
+        config.getUnit(),
+        LongSumData.create(
+            config.isMonotonic(),
+            config.getTemporality(),
+            MetricDataUtils.toLongPointList(
+                accumulated,
+                config.getTemporality() == AggregationTemporality.CUMULATIVE
+                    ? startEpochNanos
+                    : lastEpochNanos,
+                epochNanos)));
   }
 }
