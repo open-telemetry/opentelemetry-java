@@ -93,6 +93,7 @@ class AwsXrayRemoteSamplerTest {
   @AfterEach
   void tearDown() {
     sampler.close();
+    response.set(null);
   }
 
   @Test
