@@ -9,7 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.collect.ImmutableList;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -23,20 +24,21 @@ class MetricDataTest {
   private static final long EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(2000);
   private static final long LONG_VALUE = 10;
   private static final double DOUBLE_VALUE = 1.234;
+  private static final AttributeKey<String> KEY = AttributeKey.stringKey("key");
   private static final ValueAtPercentile MINIMUM_VALUE =
       ValueAtPercentile.create(0.0, DOUBLE_VALUE);
   private static final ValueAtPercentile MAXIMUM_VALUE =
       ValueAtPercentile.create(100.0, DOUBLE_VALUE);
   private static final LongPointData LONG_POINT =
-      LongPointData.create(START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), LONG_VALUE);
+      LongPointData.create(START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), LONG_VALUE);
   private static final DoublePointData DOUBLE_POINT =
       DoublePointData.create(
-          START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), DOUBLE_VALUE);
+          START_EPOCH_NANOS, EPOCH_NANOS, Attributes.of(KEY, "value"), DOUBLE_VALUE);
   private static final DoubleSummaryPointData SUMMARY_POINT =
       DoubleSummaryPointData.create(
           START_EPOCH_NANOS,
           EPOCH_NANOS,
-          Labels.of("key", "value"),
+          Attributes.of(KEY, "value"),
           LONG_VALUE,
           DOUBLE_VALUE,
           Arrays.asList(
@@ -46,7 +48,7 @@ class MetricDataTest {
       DoubleHistogramPointData.create(
           START_EPOCH_NANOS,
           EPOCH_NANOS,
-          Labels.of("key", "value"),
+          Attributes.of(KEY, "value"),
           DOUBLE_VALUE,
           ImmutableList.of(1.0),
           ImmutableList.of(1L, 1L));
@@ -75,8 +77,8 @@ class MetricDataTest {
   void metricData_LongPoints() {
     assertThat(LONG_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
     assertThat(LONG_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
-    assertThat(LONG_POINT.getLabels().size()).isEqualTo(1);
-    assertThat(LONG_POINT.getLabels().get("key")).isEqualTo("value");
+    assertThat(LONG_POINT.getAttributes().size()).isEqualTo(1);
+    assertThat(LONG_POINT.getAttributes().get(KEY)).isEqualTo("value");
     assertThat(LONG_POINT.getValue()).isEqualTo(LONG_VALUE);
     MetricData metricData =
         MetricData.createLongGauge(
@@ -107,8 +109,8 @@ class MetricDataTest {
   void metricData_DoublePoints() {
     assertThat(DOUBLE_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
     assertThat(DOUBLE_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
-    assertThat(DOUBLE_POINT.getLabels().size()).isEqualTo(1);
-    assertThat(DOUBLE_POINT.getLabels().get("key")).isEqualTo("value");
+    assertThat(DOUBLE_POINT.getAttributes().size()).isEqualTo(1);
+    assertThat(DOUBLE_POINT.getAttributes().get(KEY)).isEqualTo("value");
     assertThat(DOUBLE_POINT.getValue()).isEqualTo(DOUBLE_VALUE);
     MetricData metricData =
         MetricData.createDoubleGauge(
@@ -139,8 +141,8 @@ class MetricDataTest {
   void metricData_SummaryPoints() {
     assertThat(SUMMARY_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
     assertThat(SUMMARY_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
-    assertThat(SUMMARY_POINT.getLabels().size()).isEqualTo(1);
-    assertThat(SUMMARY_POINT.getLabels().get("key")).isEqualTo("value");
+    assertThat(SUMMARY_POINT.getAttributes().size()).isEqualTo(1);
+    assertThat(SUMMARY_POINT.getAttributes().get(KEY)).isEqualTo("value");
     assertThat(SUMMARY_POINT.getCount()).isEqualTo(LONG_VALUE);
     assertThat(SUMMARY_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
     assertThat(SUMMARY_POINT.getPercentileValues())
@@ -160,8 +162,8 @@ class MetricDataTest {
   void metricData_HistogramPoints() {
     assertThat(HISTOGRAM_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
     assertThat(HISTOGRAM_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
-    assertThat(HISTOGRAM_POINT.getLabels().size()).isEqualTo(1);
-    assertThat(HISTOGRAM_POINT.getLabels().get("key")).isEqualTo("value");
+    assertThat(HISTOGRAM_POINT.getAttributes().size()).isEqualTo(1);
+    assertThat(HISTOGRAM_POINT.getAttributes().get(KEY)).isEqualTo("value");
     assertThat(HISTOGRAM_POINT.getCount()).isEqualTo(2L);
     assertThat(HISTOGRAM_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
     assertThat(HISTOGRAM_POINT.getBoundaries()).isEqualTo(ImmutableList.of(1.0));
@@ -181,14 +183,14 @@ class MetricDataTest {
     assertThatThrownBy(
             () ->
                 DoubleHistogramPointData.create(
-                    0, 0, Labels.empty(), 0.0, ImmutableList.of(), ImmutableList.of()))
+                    0, 0, Attributes.empty(), 0.0, ImmutableList.of(), ImmutableList.of()))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(
             () ->
                 DoubleHistogramPointData.create(
                     0,
                     0,
-                    Labels.empty(),
+                    Attributes.empty(),
                     0.0,
                     ImmutableList.of(1.0, 1.0),
                     ImmutableList.of(0L, 0L, 0L)))
@@ -198,7 +200,7 @@ class MetricDataTest {
                 DoubleHistogramPointData.create(
                     0,
                     0,
-                    Labels.empty(),
+                    Attributes.empty(),
                     0.0,
                     ImmutableList.of(Double.NEGATIVE_INFINITY),
                     ImmutableList.of(0L, 0L)))

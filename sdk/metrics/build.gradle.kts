@@ -1,3 +1,5 @@
+import org.gradle.api.plugins.JavaPlugin.*
+
 plugins {
     id("otel.java-conventions")
     id("otel.publish-conventions")
@@ -13,6 +15,7 @@ description = "OpenTelemetry SDK Metrics"
 otelJava.moduleName.set("io.opentelemetry.sdk.metrics")
 
 dependencies {
+    api(project(":context"))
     api(project(":api:metrics"))
     api(project(":sdk:common"))
 
@@ -21,6 +24,7 @@ dependencies {
     testAnnotationProcessor("com.google.auto.value:auto-value")
 
     testImplementation(project(":sdk:testing"))
+    testImplementation(project(":sdk:metrics-testing"))
     testImplementation("com.google.guava:guava")
 }
 
@@ -38,5 +42,9 @@ tasks {
         doLast {
             File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
         }
+    }
+    withType(JavaCompile::class) {
+        // Ignore deprecation warnings that AutoValue creates for now.
+        options.compilerArgs.add("-Xlint:-deprecation")
     }
 }

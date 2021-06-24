@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
+import java.util.Collection;
+import java.util.Collections;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -17,7 +19,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class LongPointData implements PointData {
+public abstract class LongPointData implements SampledPointData {
 
   LongPointData() {}
 
@@ -29,7 +31,16 @@ public abstract class LongPointData implements PointData {
   public abstract long getValue();
 
   public static LongPointData create(
-      long startEpochNanos, long epochNanos, Labels labels, long value) {
-    return new AutoValue_LongPointData(startEpochNanos, epochNanos, labels, value);
+      long startEpochNanos,
+      long epochNanos,
+      Attributes attributes,
+      long value,
+      Collection<Exemplar> exemplars) {
+    return new AutoValue_LongPointData(startEpochNanos, epochNanos, attributes, exemplars, value);
+  }
+
+  public static LongPointData create(
+      long startEpochNanos, long epochNanos, Attributes attributes, long value) {
+    return create(startEpochNanos, epochNanos, attributes, value, Collections.emptyList());
   }
 }

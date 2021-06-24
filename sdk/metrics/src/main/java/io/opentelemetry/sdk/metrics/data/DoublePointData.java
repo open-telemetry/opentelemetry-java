@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
+import java.util.Collection;
+import java.util.Collections;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -15,10 +17,19 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class DoublePointData implements PointData {
+public abstract class DoublePointData implements SampledPointData {
   public static DoublePointData create(
-      long startEpochNanos, long epochNanos, Labels labels, double value) {
-    return new AutoValue_DoublePointData(startEpochNanos, epochNanos, labels, value);
+      long startEpochNanos, long epochNanos, Attributes attributes, double value) {
+    return create(startEpochNanos, epochNanos, attributes, value, Collections.emptyList());
+  }
+
+  public static DoublePointData create(
+      long startEpochNanos,
+      long epochNanos,
+      Attributes attributes,
+      double value,
+      Collection<Exemplar> exemplars) {
+    return new AutoValue_DoublePointData(startEpochNanos, epochNanos, attributes, exemplars, value);
   }
 
   DoublePointData() {}

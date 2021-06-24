@@ -6,8 +6,9 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -18,7 +19,8 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class DoubleHistogramPointData implements PointData {
+public abstract class DoubleHistogramPointData implements SampledPointData {
+
   /**
    * Creates a DoubleHistogramPointData. For a Histogram with N defined boundaries, there should be
    * N+1 counts.
@@ -29,10 +31,29 @@ public abstract class DoubleHistogramPointData implements PointData {
   public static DoubleHistogramPointData create(
       long startEpochNanos,
       long epochNanos,
-      Labels labels,
+      Attributes attributes,
       double sum,
       List<Double> boundaries,
       List<Long> counts) {
+    return create(
+        startEpochNanos, epochNanos, attributes, sum, boundaries, counts, Collections.emptyList());
+  }
+
+  /**
+   * Creates a DoubleHistogramPointData. For a Histogram with N defined boundaries, there should be
+   * N+1 counts.
+   *
+   * @return a DoubleHistogramPointData.
+   * @throws IllegalArgumentException if the given boundaries/counts were invalid
+   */
+  public static DoubleHistogramPointData create(
+      long startEpochNanos,
+      long epochNanos,
+      Attributes attributes,
+      double sum,
+      List<Double> boundaries,
+      List<Long> counts,
+      Collection<Exemplar> exemplars) {
     if (counts.size() != boundaries.size() + 1) {
       throw new IllegalArgumentException(
           "invalid counts: size should be "
@@ -55,7 +76,8 @@ public abstract class DoubleHistogramPointData implements PointData {
     return new AutoValue_DoubleHistogramPointData(
         startEpochNanos,
         epochNanos,
-        labels,
+        attributes,
+        exemplars,
         sum,
         totalCount,
         Collections.unmodifiableList(new ArrayList<>(boundaries)),
