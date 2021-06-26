@@ -59,7 +59,7 @@ final class SamplingRulesSampler implements Sampler {
     // In practice, X-Ray always returns a Default rule that matches all requests so it is a bug in
     // our code or X-Ray to reach here, fallback just in case.
     logger.log(
-        Level.WARNING,
+        Level.FINE,
         "No sampling rule matched the request. "
             + "This is a bug in either the OpenTelemetry SDK or X-Ray.");
     return fallbackSampler.shouldSample(
