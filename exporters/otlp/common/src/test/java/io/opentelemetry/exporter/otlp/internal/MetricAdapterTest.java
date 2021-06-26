@@ -13,7 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
@@ -46,16 +45,8 @@ import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class MetricAdapterTest {
-  @Test
-  void toProtoLabels() {
-    assertThat(MetricAdapter.toProtoLabels(Labels.empty())).isEmpty();
-    assertThat(MetricAdapter.toProtoLabels(Labels.of("k", "v")))
-        .containsExactly(KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build());
-    assertThat(MetricAdapter.toProtoLabels(Labels.of("k1", "v1", "k2", "v2")))
-        .containsExactly(
-            KeyValue.newBuilder().setKey("k1").setValue(stringValue("v1")).build(),
-            KeyValue.newBuilder().setKey("k2").setValue(stringValue("v2")).build());
-  }
+
+  private static final Attributes KV_ATTR = Attributes.of(stringKey("k"), "v");
 
   private static AnyValue stringValue(String v) {
     return AnyValue.newBuilder().setStringValue(v).build();
@@ -66,7 +57,7 @@ class MetricAdapterTest {
     assertThat(MetricAdapter.toIntDataPoints(Collections.emptyList())).isEmpty();
     assertThat(
             MetricAdapter.toIntDataPoints(
-                singletonList(LongPointData.create(123, 456, Labels.of("k", "v"), 5))))
+                singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -79,8 +70,8 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toIntDataPoints(
                 ImmutableList.of(
-                    LongPointData.create(123, 456, Labels.empty(), 5),
-                    LongPointData.create(321, 654, Labels.of("k", "v"), 7))))
+                    LongPointData.create(123, 456, Attributes.empty(), 5),
+                    LongPointData.create(321, 654, KV_ATTR, 7))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -102,7 +93,7 @@ class MetricAdapterTest {
     assertThat(MetricAdapter.toDoubleDataPoints(Collections.emptyList())).isEmpty();
     assertThat(
             MetricAdapter.toDoubleDataPoints(
-                singletonList(DoublePointData.create(123, 456, Labels.of("k", "v"), 5.1))))
+                singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -115,8 +106,8 @@ class MetricAdapterTest {
     assertThat(
             MetricAdapter.toDoubleDataPoints(
                 ImmutableList.of(
-                    DoublePointData.create(123, 456, Labels.empty(), 5.1),
-                    DoublePointData.create(321, 654, Labels.of("k", "v"), 7.1))))
+                    DoublePointData.create(123, 456, Attributes.empty(), 5.1),
+                    DoublePointData.create(321, 654, KV_ATTR, 7.1))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -141,7 +132,7 @@ class MetricAdapterTest {
                     DoubleSummaryPointData.create(
                         123,
                         456,
-                        Labels.of("k", "v"),
+                        KV_ATTR,
                         5,
                         14.2,
                         singletonList(ValueAtPercentile.create(0.0, 1.1))))))
@@ -164,11 +155,11 @@ class MetricAdapterTest {
             MetricAdapter.toSummaryDataPoints(
                 ImmutableList.of(
                     DoubleSummaryPointData.create(
-                        123, 456, Labels.empty(), 7, 15.3, Collections.emptyList()),
+                        123, 456, Attributes.empty(), 7, 15.3, Collections.emptyList()),
                     DoubleSummaryPointData.create(
                         321,
                         654,
-                        Labels.of("k", "v"),
+                        KV_ATTR,
                         9,
                         18.3,
                         ImmutableList.of(
@@ -208,14 +199,14 @@ class MetricAdapterTest {
             MetricAdapter.toHistogramDataPoints(
                 ImmutableList.of(
                     DoubleHistogramPointData.create(
+                        123, 456, KV_ATTR, 14.2, ImmutableList.of(1.0), ImmutableList.of(1L, 5L)),
+                    DoubleHistogramPointData.create(
                         123,
                         456,
-                        Labels.of("k", "v"),
-                        14.2,
-                        ImmutableList.of(1.0),
-                        ImmutableList.of(1L, 5L)),
-                    DoubleHistogramPointData.create(
-                        123, 456, Labels.empty(), 15.3, ImmutableList.of(), ImmutableList.of(7L)))))
+                        Attributes.empty(),
+                        15.3,
+                        ImmutableList.of(),
+                        ImmutableList.of(7L)))))
         .containsExactly(
             HistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -251,7 +242,7 @@ class MetricAdapterTest {
                     LongSumData.create(
                         /* isMonotonic= */ true,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(LongPointData.create(123, 456, Labels.of("k", "v"), 5))))))
+                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -286,8 +277,7 @@ class MetricAdapterTest {
                     DoubleSumData.create(
                         /* isMonotonic= */ true,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(
-                            DoublePointData.create(123, 456, Labels.of("k", "v"), 5.1))))))
+                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -326,7 +316,7 @@ class MetricAdapterTest {
                     LongSumData.create(
                         /* isMonotonic= */ false,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(LongPointData.create(123, 456, Labels.of("k", "v"), 5))))))
+                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -361,8 +351,7 @@ class MetricAdapterTest {
                     DoubleSumData.create(
                         /* isMonotonic= */ false,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(
-                            DoublePointData.create(123, 456, Labels.of("k", "v"), 5.1))))))
+                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -399,7 +388,7 @@ class MetricAdapterTest {
                     "description",
                     "1",
                     LongGaugeData.create(
-                        singletonList(LongPointData.create(123, 456, Labels.of("k", "v"), 5))))))
+                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -430,8 +419,7 @@ class MetricAdapterTest {
                     "description",
                     "1",
                     DoubleGaugeData.create(
-                        singletonList(
-                            DoublePointData.create(123, 456, Labels.of("k", "v"), 5.1))))))
+                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
@@ -470,7 +458,7 @@ class MetricAdapterTest {
                             DoubleSummaryPointData.create(
                                 123,
                                 456,
-                                Labels.of("k", "v"),
+                                KV_ATTR,
                                 5,
                                 33d,
                                 ImmutableList.of(
@@ -526,7 +514,7 @@ class MetricAdapterTest {
                             DoubleHistogramPointData.create(
                                 123,
                                 456,
-                                Labels.of("k", "v"),
+                                KV_ATTR,
                                 4.0,
                                 ImmutableList.of(),
                                 ImmutableList.of(33L)))))))
@@ -611,7 +599,7 @@ class MetricAdapterTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, Labels.of("k", "v"), 5.0)))),
+                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     MetricData.createDoubleSum(
                         resource,
                         instrumentationLibraryInfo,
@@ -622,7 +610,7 @@ class MetricAdapterTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, Labels.of("k", "v"), 5.0)))),
+                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     MetricData.createDoubleSum(
                         Resource.empty(),
                         instrumentationLibraryInfo,
@@ -633,7 +621,7 @@ class MetricAdapterTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, Labels.of("k", "v"), 5.0)))),
+                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     MetricData.createDoubleSum(
                         Resource.empty(),
                         InstrumentationLibraryInfo.empty(),
@@ -644,7 +632,7 @@ class MetricAdapterTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, Labels.of("k", "v"), 5.0)))))))
+                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))))))
         .containsExactlyInAnyOrder(
             ResourceMetrics.newBuilder()
                 .setResource(resourceProto)

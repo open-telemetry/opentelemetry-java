@@ -89,7 +89,7 @@ class LongValueRecorderSdkTest {
                         DoubleSummaryPointData.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
-                            Labels.empty(),
+                            Attributes.empty(),
                             2,
                             24,
                             valueAtPercentiles(12, 12))))));
@@ -122,14 +122,14 @@ class LongValueRecorderSdkTest {
                           DoubleSummaryPointData.create(
                               startTime,
                               testClock.now(),
-                              Labels.of("K", "V"),
+                              Attributes.builder().put("K", "V").build(),
                               3,
                               323,
                               valueAtPercentiles(-121, 321)),
                           DoubleSummaryPointData.create(
                               startTime,
                               testClock.now(),
-                              Labels.empty(),
+                              Attributes.empty(),
                               2,
                               -2,
                               valueAtPercentiles(-14, 12))))));
@@ -151,14 +151,14 @@ class LongValueRecorderSdkTest {
                           DoubleSummaryPointData.create(
                               startTime + SECOND_NANOS,
                               testClock.now(),
-                              Labels.of("K", "V"),
+                              Attributes.builder().put("K", "V").build(),
                               1,
                               222,
                               valueAtPercentiles(222, 222)),
                           DoubleSummaryPointData.create(
                               startTime + SECOND_NANOS,
                               testClock.now(),
-                              Labels.empty(),
+                              Attributes.empty(),
                               1,
                               17,
                               valueAtPercentiles(17, 17))))));
@@ -205,7 +205,7 @@ class LongValueRecorderSdkTest {
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of("K", "V"),
+                            Attributes.builder().put("K", "V").build(),
                             16_000,
                             160_000,
                             valueAtPercentiles(9, 11))))));
@@ -253,28 +253,28 @@ class LongValueRecorderSdkTest {
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[0], values[0]),
+                            Attributes.builder().put(keys[0], values[0]).build(),
                             2_000,
                             20_000,
                             valueAtPercentiles(9, 11)),
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[1], values[1]),
+                            Attributes.builder().put(keys[1], values[1]).build(),
                             2_000,
                             20_000,
                             valueAtPercentiles(9, 11)),
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[2], values[2]),
+                            Attributes.builder().put(keys[2], values[2]).build(),
                             2_000,
                             20_000,
                             valueAtPercentiles(9, 11)),
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[3], values[3]),
+                            Attributes.builder().put(keys[3], values[3]).build(),
                             2_000,
                             20_000,
                             valueAtPercentiles(9, 11))))));

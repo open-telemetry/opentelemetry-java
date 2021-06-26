@@ -1,10 +1,10 @@
 plugins {
-    id("java-library")
-    id("maven-publish")
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 }
 
 description = "OpenTelemetry SDK Testing utilities"
-extra["moduleName"] = "io.opentelemetry.sdk.metrics-testing"
+otelJava.moduleName.set("io.opentelemetry.sdk.metrics-testing")
 
 dependencies {
     api(project(":api:all"))

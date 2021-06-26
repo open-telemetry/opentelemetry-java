@@ -12,18 +12,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.LongExemplar;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -93,14 +90,8 @@ public class MetricAssertionsTest {
               // Points
               Collections.emptyList()));
 
-  private static final DoubleExemplar DOUBLE_EXEMPLAR =
-      DoubleExemplar.create(Attributes.empty(), 0, "span", "trace", 1.0);
-
   private static final DoublePointData DOUBLE_POINT_DATA =
-      DoublePointData.create(1, 2, Attributes.empty(), 3.0, Collections.emptyList());
-
-  private static final DoublePointData DOUBLE_POINT_DATA_WITH_EXEMPLAR =
-      DoublePointData.create(1, 2, Attributes.empty(), 3.0, Arrays.asList(DOUBLE_EXEMPLAR));
+      DoublePointData.create(1, 2, Attributes.empty(), 3.0);
 
   private static final MetricData LONG_GAUGE_METRIC =
       MetricData.createLongGauge(
@@ -139,14 +130,8 @@ public class MetricAssertionsTest {
               // Points
               Collections.emptyList()));
 
-  private static final LongExemplar LONG_EXEMPLAR =
-      LongExemplar.create(Attributes.empty(), 0, "span", "trace", 1);
-
   private static final LongPointData LONG_POINT_DATA =
-      LongPointData.create(1, 2, Attributes.empty(), 3, Collections.emptyList());
-
-  private static final LongPointData LONG_POINT_DATA_WITH_EXEMPLAR =
-      LongPointData.create(1, 2, Attributes.empty(), 3, Arrays.asList(LONG_EXEMPLAR));
+      LongPointData.create(1, 2, Attributes.empty(), 3);
 
   @Test
   void metric_passing() {
@@ -238,11 +223,7 @@ public class MetricAssertionsTest {
         .hasStartEpochNanos(1)
         .hasEpochNanos(2)
         .hasValue(3)
-        .hasAttributes(Attributes.empty())
-        .exemplars()
-        .isEmpty();
-
-    assertThat(DOUBLE_POINT_DATA_WITH_EXEMPLAR).hasExemplars(DOUBLE_EXEMPLAR);
+        .hasAttributes(Attributes.empty());
   }
 
   @Test
@@ -259,12 +240,6 @@ public class MetricAssertionsTest {
                 assertThat(DOUBLE_POINT_DATA)
                     .hasAttributes(Attributes.builder().put("x", "y").build()))
         .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(DOUBLE_POINT_DATA)
-                    .hasExemplars(
-                        DoubleExemplar.create(Attributes.empty(), 0, "span", "trace", 1.0)))
-        .isInstanceOf(AssertionError.class);
   }
 
   @Test
@@ -273,11 +248,7 @@ public class MetricAssertionsTest {
         .hasStartEpochNanos(1)
         .hasEpochNanos(2)
         .hasValue(3)
-        .hasAttributes(Attributes.empty())
-        .exemplars()
-        .isEmpty();
-
-    assertThat(LONG_POINT_DATA_WITH_EXEMPLAR).hasExemplars(LONG_EXEMPLAR);
+        .hasAttributes(Attributes.empty());
   }
 
   @Test
@@ -293,11 +264,6 @@ public class MetricAssertionsTest {
             () ->
                 assertThat(LONG_POINT_DATA)
                     .hasAttributes(Attributes.builder().put("x", "y").build()))
-        .isInstanceOf(AssertionError.class);
-    assertThatThrownBy(
-            () ->
-                assertThat(LONG_POINT_DATA)
-                    .hasExemplars(LongExemplar.create(Attributes.empty(), 0, "span", "trace", 1)))
         .isInstanceOf(AssertionError.class);
   }
 

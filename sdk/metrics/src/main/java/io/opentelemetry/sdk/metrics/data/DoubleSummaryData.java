@@ -23,7 +23,6 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-@Deprecated
 public abstract class DoubleSummaryData implements Data<DoubleSummaryPointData> {
   DoubleSummaryData() {}
 

@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.testing.assertj.metrics;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.PointData;
+import io.opentelemetry.sdk.testing.assertj.AttributesAssert;
+import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 
@@ -34,5 +36,10 @@ public class AbstractPointDataAssert<
     isNotNull();
     Assertions.assertThat(actual.getAttributes()).as("attributes").isEqualTo(expected);
     return myself;
+  }
+
+  public AttributesAssert attributes() {
+    isNotNull();
+    return OpenTelemetryAssertions.assertThat(actual.getAttributes());
   }
 }

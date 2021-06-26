@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -17,13 +18,7 @@ import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Arrays;
-import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleCounterSdk}. */
@@ -64,6 +59,7 @@ class DoubleCounterSdkTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectMetrics_WithEmptyLabel() {
     DoubleCounter doubleCounter =
         sdkMeter
@@ -74,28 +70,30 @@ class DoubleCounterSdkTest {
     testClock.advanceNanos(SECOND_NANOS);
     doubleCounter.add(12d, Labels.empty());
     doubleCounter.add(12d);
-    // TODO: This is not perfect because we compare double values using direct equal, maybe worth
-    //  changing to do a proper comparison for double values, here and everywhere else.
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createDoubleSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testCounter",
-                "description",
-                "ms",
-                DoubleSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Labels.empty(),
-                            24)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testCounter")
+                    .hasDescription("description")
+                    .hasUnit("ms")
+                    .hasDoubleSum()
+                    .isMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(24)));
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
@@ -110,42 +108,56 @@ class DoubleCounterSdkTest {
       bound.add(321.5d);
       doubleCounter.add(111.1d, Labels.of("K", "V"));
       assertThat(sdkMeterProvider.collectAllMetrics())
-          .containsExactly(
-              MetricData.createDoubleSum(
-                  RESOURCE,
-                  INSTRUMENTATION_LIBRARY_INFO,
-                  "testCounter",
-                  "",
-                  "1",
-                  DoubleSumData.create(
-                      /* isMonotonic= */ true,
-                      AggregationTemporality.CUMULATIVE,
-                      Arrays.asList(
-                          DoublePointData.create(
-                              startTime, testClock.now(), Labels.of("K", "V"), 555.9d),
-                          DoublePointData.create(
-                              startTime, testClock.now(), Labels.empty(), 33.5d)))));
+          .satisfiesExactly(
+              metric ->
+                  assertThat(metric)
+                      .hasResource(RESOURCE)
+                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasName("testCounter")
+                      .hasDescription("")
+                      .hasUnit("1")
+                      .hasDoubleSum()
+                      .isMonotonic()
+                      .isCumulative()
+                      .points()
+                      .allSatisfy(
+                          point ->
+                              assertThat(point)
+                                  .hasStartEpochNanos(startTime)
+                                  .hasEpochNanos(testClock.now()))
+                      .satisfiesExactlyInAnyOrder(
+                          point ->
+                              assertThat(point).hasAttributes(Attributes.empty()).hasValue(33.5),
+                          point ->
+                              assertThat(point)
+                                  .hasValue(555.9)
+                                  .attributes()
+                                  .hasSize(1)
+                                  .containsEntry("K", "V")));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       bound.add(222d);
       doubleCounter.add(11d, Labels.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
-          .containsExactly(
-              MetricData.createDoubleSum(
-                  RESOURCE,
-                  INSTRUMENTATION_LIBRARY_INFO,
-                  "testCounter",
-                  "",
-                  "1",
-                  DoubleSumData.create(
-                      /* isMonotonic= */ true,
-                      AggregationTemporality.CUMULATIVE,
-                      Arrays.asList(
-                          DoublePointData.create(
-                              startTime, testClock.now(), Labels.of("K", "V"), 777.9d),
-                          DoublePointData.create(
-                              startTime, testClock.now(), Labels.empty(), 44.5d)))));
+          .satisfiesExactly(
+              metric ->
+                  assertThat(metric)
+                      .hasDoubleSum()
+                      .isCumulative()
+                      .points()
+                      .allSatisfy(
+                          point ->
+                              assertThat(point)
+                                  .hasStartEpochNanos(startTime)
+                                  .hasEpochNanos(testClock.now()))
+                      .satisfiesExactlyInAnyOrder(
+                          point ->
+                              assertThat(point).hasAttributes(Attributes.empty()).hasValue(44.5),
+                          point ->
+                              assertThat(point)
+                                  .hasAttributes(Attributes.of(stringKey("K"), "V"))
+                                  .hasValue(777.9)));
     } finally {
       bound.unbind();
     }
@@ -168,6 +180,7 @@ class DoubleCounterSdkTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void stressTest() {
     final DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
 
@@ -187,19 +200,25 @@ class DoubleCounterSdkTest {
 
     stressTestBuilder.build().run();
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createDoubleSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testCounter",
-                "",
-                "1",
-                DoubleSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now(), testClock.now(), Labels.of("K", "V"), 80_000)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testCounter")
+                    .hasDoubleSum()
+                    .isCumulative()
+                    .isMonotonic()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(80_000)
+                                .attributes()
+                                .hasSize(1)
+                                .containsEntry("K", "V")));
   }
 
   @Test
@@ -227,37 +246,27 @@ class DoubleCounterSdkTest {
 
     stressTestBuilder.build().run();
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createDoubleSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testCounter",
-                "",
-                "1",
-                DoubleSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Arrays.asList(
-                        DoublePointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.of(keys[0], values[0]),
-                            40_000),
-                        DoublePointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.of(keys[1], values[1]),
-                            40_000),
-                        DoublePointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.of(keys[2], values[2]),
-                            40_000),
-                        DoublePointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.of(keys[3], values[3]),
-                            40_000)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasDoubleSum()
+                    .isCumulative()
+                    .isMonotonic()
+                    .points()
+                    .allSatisfy(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(40_000))
+                    .extracting(point -> point.getAttributes())
+                    .containsExactlyInAnyOrder(
+                        Attributes.of(stringKey(keys[0]), values[0]),
+                        Attributes.of(stringKey(keys[1]), values[1]),
+                        Attributes.of(stringKey(keys[2]), values[2]),
+                        Attributes.of(stringKey(keys[3]), values[3])));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {

@@ -10,7 +10,6 @@ import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
-@Deprecated
 public abstract class ValueAtPercentile {
   public static ValueAtPercentile create(double percentile, double value) {
     return new AutoValue_ValueAtPercentile(percentile, value);

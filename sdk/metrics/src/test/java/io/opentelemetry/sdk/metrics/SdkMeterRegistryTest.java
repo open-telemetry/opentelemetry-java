@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -15,12 +16,7 @@ import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SdkMeterProvider}. */
@@ -103,6 +99,7 @@ class SdkMeterRegistryTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void metricProducer_GetAllMetrics() {
     Meter sdkMeter1 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
     LongCounter longCounter1 = sdkMeter1.longCounterBuilder("testLongCounter").build();
@@ -112,31 +109,24 @@ class SdkMeterRegistryTest {
     longCounter2.add(10, Labels.empty());
 
     assertThat(meterProvider.collectAllMetrics())
+        .allSatisfy(
+            metric ->
+                assertThat(metric)
+                    .hasName("testLongCounter")
+                    .hasLongSum()
+                    .isCumulative()
+                    .isMonotonic()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasValue(10)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())))
+        .extracting(metric -> metric.getInstrumentationLibraryInfo())
         .containsExactlyInAnyOrder(
-            MetricData.createLongSum(
-                Resource.empty(),
-                ((SdkMeter) sdkMeter1).getInstrumentationLibraryInfo(),
-                "testLongCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 10)))),
-            MetricData.createLongSum(
-                Resource.empty(),
-                ((SdkMeter) sdkMeter2).getInstrumentationLibraryInfo(),
-                "testLongCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 10)))));
+            ((SdkMeter) sdkMeter1).getInstrumentationLibraryInfo(),
+            ((SdkMeter) sdkMeter2).getInstrumentationLibraryInfo());
   }
 
   @Test

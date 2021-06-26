@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -18,16 +19,10 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.LongValueRecorder;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -46,6 +41,8 @@ class BatchRecorderSdkTest {
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+
+  private static final Attributes attributeSet = Attributes.builder().put("key", "value").build();
 
   @Test
   void batchRecorder_badLabelSet() {
@@ -66,7 +63,6 @@ class BatchRecorderSdkTest {
         sdkMeter.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
     LongValueRecorder longValueRecorder =
         sdkMeter.longValueRecorderBuilder("testLongValueRecorder").build();
-    Labels labelSet = Labels.of("key", "value");
 
     BatchRecorder batchRecorder = sdkMeter.newBatchRecorder("key", "value");
 
@@ -92,7 +88,6 @@ class BatchRecorderSdkTest {
         longUpDownCounter,
         doubleValueRecorder,
         longValueRecorder,
-        labelSet,
         /* shouldHaveDeltas=*/ true);
 
     // a second record, with no recordings added should not change any of the values.
@@ -104,10 +99,10 @@ class BatchRecorderSdkTest {
         longUpDownCounter,
         doubleValueRecorder,
         longValueRecorder,
-        labelSet,
         /* shouldHaveDeltas=*/ false);
   }
 
+  @SuppressWarnings("unchecked")
   private void assertBatchRecordings(
       DoubleCounter doubleCounter,
       LongCounter longCounter,
@@ -115,62 +110,79 @@ class BatchRecorderSdkTest {
       LongUpDownCounter longUpDownCounter,
       DoubleValueRecorder doubleValueRecorder,
       LongValueRecorder longValueRecorder,
-      Labels labelSet,
       boolean shouldHaveDeltas) {
     assertThat(((AbstractInstrument) doubleCounter).collectAll(testClock.now()))
-        .containsExactly(
-            MetricData.createDoubleSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleCounter",
-                "",
-                "1",
-                DoubleSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now(), testClock.now(), labelSet, 24.2d)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testDoubleCounter")
+                    .hasDoubleSum()
+                    .isMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasEpochNanos(testClock.now())
+                                .hasStartEpochNanos(testClock.now())
+                                .hasValue(24.2d)
+                                .hasAttributes(attributeSet)));
     assertThat(((AbstractInstrument) longCounter).collectAll(testClock.now()))
-        .containsExactly(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(testClock.now(), testClock.now(), labelSet, 12)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testLongCounter")
+                    .hasLongSum()
+                    .isMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasEpochNanos(testClock.now())
+                                .hasStartEpochNanos(testClock.now())
+                                .hasValue(12)
+                                .hasAttributes(attributeSet)));
     assertThat(((AbstractInstrument) doubleUpDownCounter).collectAll(testClock.now()))
-        .containsExactly(
-            MetricData.createDoubleSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleUpDownCounter",
-                "",
-                "1",
-                DoubleSumData.create(
-                    /* isMonotonic= */ false,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now(), testClock.now(), labelSet, -12.1d)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testDoubleUpDownCounter")
+                    .hasDoubleSum()
+                    .isNotMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasEpochNanos(testClock.now())
+                                .hasStartEpochNanos(testClock.now())
+                                .hasValue(-12.1)
+                                .hasAttributes(attributeSet)));
     assertThat(((AbstractInstrument) longUpDownCounter).collectAll(testClock.now()))
-        .containsExactly(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongUpDownCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ false,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(testClock.now(), testClock.now(), labelSet, -12)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testLongUpDownCounter")
+                    .hasLongSum()
+                    .isNotMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasEpochNanos(testClock.now())
+                                .hasStartEpochNanos(testClock.now())
+                                .hasValue(-12)
+                                .hasAttributes(attributeSet)));
 
     if (shouldHaveDeltas) {
       assertThat(((AbstractInstrument) doubleValueRecorder).collectAll(testClock.now()))
@@ -186,7 +198,7 @@ class BatchRecorderSdkTest {
                           DoubleSummaryPointData.create(
                               testClock.now(),
                               testClock.now(),
-                              labelSet,
+                              attributeSet,
                               1,
                               13.1d,
                               Arrays.asList(
@@ -210,7 +222,7 @@ class BatchRecorderSdkTest {
                           DoubleSummaryPointData.create(
                               testClock.now(),
                               testClock.now(),
-                              labelSet,
+                              attributeSet,
                               1,
                               13,
                               Arrays.asList(

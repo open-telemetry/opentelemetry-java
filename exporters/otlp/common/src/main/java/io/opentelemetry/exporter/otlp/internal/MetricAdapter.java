@@ -9,9 +9,6 @@ import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATI
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED;
 
-import io.opentelemetry.api.metrics.common.Labels;
-import io.opentelemetry.proto.common.v1.AnyValue;
-import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
 import io.opentelemetry.proto.metrics.v1.Gauge;
 import io.opentelemetry.proto.metrics.v1.Histogram;
@@ -39,7 +36,6 @@ import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -199,10 +195,10 @@ public final class MetricAdapter {
               .setStartTimeUnixNano(longPoint.getStartEpochNanos())
               .setTimeUnixNano(longPoint.getEpochNanos())
               .setAsInt(longPoint.getValue());
-      Collection<KeyValue> labels = toProtoLabels(longPoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllAttributes(labels);
-      }
+      longPoint
+          .getAttributes()
+          .forEach(
+              (key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
       result.add(builder.build());
     }
     return result;
@@ -216,10 +212,10 @@ public final class MetricAdapter {
               .setStartTimeUnixNano(doublePoint.getStartEpochNanos())
               .setTimeUnixNano(doublePoint.getEpochNanos())
               .setAsDouble(doublePoint.getValue());
-      Collection<KeyValue> labels = toProtoLabels(doublePoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllAttributes(labels);
-      }
+      doublePoint
+          .getAttributes()
+          .forEach(
+              (key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
       result.add(builder.build());
     }
     return result;
@@ -234,10 +230,10 @@ public final class MetricAdapter {
               .setTimeUnixNano(doubleSummaryPoint.getEpochNanos())
               .setCount(doubleSummaryPoint.getCount())
               .setSum(doubleSummaryPoint.getSum());
-      List<KeyValue> labels = toProtoLabels(doubleSummaryPoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllAttributes(labels);
-      }
+      doubleSummaryPoint
+          .getAttributes()
+          .forEach(
+              (key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
       // Not calling directly addAllQuantileValues because that generates couple of unnecessary
       // allocations if empty list.
       if (!doubleSummaryPoint.getPercentileValues().isEmpty()) {
@@ -269,28 +265,12 @@ public final class MetricAdapter {
       if (!boundaries.isEmpty()) {
         builder.addAllExplicitBounds(boundaries);
       }
-      Collection<KeyValue> labels = toProtoLabels(doubleHistogramPoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllAttributes(labels);
-      }
+      doubleHistogramPoint
+          .getAttributes()
+          .forEach(
+              (key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
       result.add(builder.build());
     }
-    return result;
-  }
-
-  @SuppressWarnings("MixedMutabilityReturnType")
-  static List<KeyValue> toProtoLabels(Labels labels) {
-    if (labels.isEmpty()) {
-      return Collections.emptyList();
-    }
-    final List<KeyValue> result = new ArrayList<>(labels.size());
-    labels.forEach(
-        (key, value) ->
-            result.add(
-                KeyValue.newBuilder()
-                    .setKey(key)
-                    .setValue(AnyValue.newBuilder().setStringValue(value).build())
-                    .build()));
     return result;
   }
 

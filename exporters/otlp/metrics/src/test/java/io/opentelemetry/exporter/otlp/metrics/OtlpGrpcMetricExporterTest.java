@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.metrics;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -17,7 +18,7 @@ import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
@@ -300,7 +301,7 @@ class OtlpGrpcMetricExporterTest {
             /* isMonotonic= */ true,
             AggregationTemporality.CUMULATIVE,
             Collections.singletonList(
-                LongPointData.create(startNs, endNs, Labels.of("k", "v"), 5))));
+                LongPointData.create(startNs, endNs, Attributes.of(stringKey("k"), "v"), 5))));
   }
 
   private static final class FakeCollector extends MetricsServiceGrpc.MetricsServiceImplBase {

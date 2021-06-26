@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
@@ -13,11 +14,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongValueObserverSdk}. */
@@ -54,6 +51,7 @@ class LongValueObserverSdkTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     sdkMeter
         .longValueObserverBuilder("testObserver")
@@ -61,27 +59,37 @@ class LongValueObserverSdkTest {
         .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createLongGauge(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "",
-                "1",
-                LongGaugeData.create(
-                    Collections.singletonList(
-                        LongPointData.create(0, testClock.now(), Labels.of("k", "v"), 12)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testObserver")
+                    .hasLongGauge()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.builder().put("k", "v").build())
+                                .hasValue(12)));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createLongGauge(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "",
-                "1",
-                LongGaugeData.create(
-                    Collections.singletonList(
-                        LongPointData.create(0, testClock.now(), Labels.of("k", "v"), 12)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testObserver")
+                    .hasLongGauge()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.builder().put("k", "v").build())
+                                .hasValue(12)));
   }
 }

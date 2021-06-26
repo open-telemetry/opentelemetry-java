@@ -16,7 +16,6 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-@Deprecated
 public abstract class DoubleSummaryPointData implements PointData {
   public static DoubleSummaryPointData create(
       long startEpochNanos,
