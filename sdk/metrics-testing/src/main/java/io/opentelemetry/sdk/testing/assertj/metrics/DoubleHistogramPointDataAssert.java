@@ -11,7 +11,8 @@ import org.assertj.core.api.Assertions;
 
 /** Test assertions for {@link DoubleHistogramPointData}. */
 public class DoubleHistogramPointDataAssert
-    extends AbstractPointDataAssert<DoubleHistogramPointDataAssert, DoubleHistogramPointData> {
+    extends AbstractSampledPointDataAssert<
+        DoubleHistogramPointDataAssert, DoubleHistogramPointData> {
 
   protected DoubleHistogramPointDataAssert(DoubleHistogramPointData actual) {
     super(actual, DoubleHistogramPointDataAssert.class);

@@ -10,7 +10,7 @@ import org.assertj.core.api.Assertions;
 
 /** Test assertions for {@link DoublePointData}. */
 public class DoublePointDataAssert
-    extends AbstractPointDataAssert<DoublePointDataAssert, DoublePointData> {
+    extends AbstractSampledPointDataAssert<DoublePointDataAssert, DoublePointData> {
 
   protected DoublePointDataAssert(DoublePointData actual) {
     super(actual, DoublePointDataAssert.class);

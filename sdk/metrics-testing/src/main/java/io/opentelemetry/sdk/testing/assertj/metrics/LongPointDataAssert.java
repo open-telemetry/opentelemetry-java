@@ -10,7 +10,7 @@ import org.assertj.core.api.Assertions;
 
 /** Test assertions for {@link LongPointData}. */
 public class LongPointDataAssert
-    extends AbstractPointDataAssert<LongPointDataAssert, LongPointData> {
+    extends AbstractSampledPointDataAssert<LongPointDataAssert, LongPointData> {
 
   protected LongPointDataAssert(LongPointData actual) {
     super(actual, LongPointDataAssert.class);
