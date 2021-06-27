@@ -1,0 +1,42 @@
+{
+  "SamplingRuleRecords": [
+    {
+      "SamplingRule": {
+        "RuleName": "Test",
+        "RuleARN": "arn:aws:xray:us-east-1:595986152929:sampling-rule/Test",
+        "ResourceARN": "*",
+        "Priority": 1,
+        "FixedRate": 0.0,
+        "ReservoirSize": 1,
+        "ServiceName": "cat-service",
+        "ServiceType": "*",
+        "Host": "*",
+        "HTTPMethod": "*",
+        "URLPath": "*",
+        "Version": 1,
+        "Attributes": {}
+      },
+      "CreatedAt": "2021-06-18T17:28:15+09:00",
+      "ModifiedAt": "2021-06-18T17:28:15+09:00"
+    },
+    {
+      "SamplingRule": {
+        "RuleName": "Default",
+        "RuleARN": "arn:aws:xray:us-east-1:595986152929:sampling-rule/Default",
+        "ResourceARN": "*",
+        "Priority": 10000,
+        "FixedRate": 1.0,
+        "ReservoirSize": 1,
+        "ServiceName": "*",
+        "ServiceType": "*",
+        "Host": "*",
+        "HTTPMethod": "*",
+        "URLPath": "*",
+        "Version": 1,
+        "Attributes": {}
+      },
+      "CreatedAt": "1970-01-01T09:00:00+09:00",
+      "ModifiedAt": "1970-01-01T09:00:00+09:00"
+    }
+  ]
+}
