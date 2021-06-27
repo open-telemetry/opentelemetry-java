@@ -9,7 +9,13 @@ import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATI
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED;
 
+import com.google.protobuf.ByteString;
+import com.google.protobuf.UnsafeByteOperations;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
+import io.opentelemetry.proto.metrics.v1.Exemplar;
 import io.opentelemetry.proto.metrics.v1.Gauge;
 import io.opentelemetry.proto.metrics.v1.Histogram;
 import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
@@ -21,6 +27,7 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
@@ -28,6 +35,7 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.LongExemplar;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
@@ -199,6 +207,7 @@ public final class MetricAdapter {
           .getAttributes()
           .forEach(
               (key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
+      longPoint.getExemplars().forEach(e -> builder.addExemplars(toExemplar(e)));
       result.add(builder.build());
     }
     return result;
@@ -216,6 +225,7 @@ public final class MetricAdapter {
           .getAttributes()
           .forEach(
               (key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
+      doublePoint.getExemplars().forEach(e -> builder.addExemplars(toExemplar(e)));
       result.add(builder.build());
     }
     return result;
@@ -269,9 +279,43 @@ public final class MetricAdapter {
           .getAttributes()
           .forEach(
               (key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
+      doubleHistogramPoint.getExemplars().forEach(e -> builder.addExemplars(toExemplar(e)));
       result.add(builder.build());
     }
     return result;
+  }
+
+  static Exemplar toExemplar(io.opentelemetry.sdk.metrics.data.Exemplar exemplar) {
+    // TODO - Use a thread local cache for spanid/traceid -> byte conversion.
+    Exemplar.Builder builder = Exemplar.newBuilder();
+    builder.setTimeUnixNano(exemplar.getRecordTimeNanos());
+    if (exemplar.getSpanId() != null) {
+      builder.setSpanId(convertSpanId(exemplar.getSpanId()));
+    }
+    if (exemplar.getTraceId() != null) {
+      builder.setTraceId(convertTraceId(exemplar.getTraceId()));
+    }
+    exemplar
+        .getFilteredAttributes()
+        .forEach(
+            (key, value) ->
+                builder.addFilteredAttributes(CommonAdapter.toProtoAttribute(key, value)));
+    if (exemplar instanceof LongExemplar) {
+      builder.setAsInt(((LongExemplar) exemplar).getValue());
+    } else if (exemplar instanceof DoubleExemplar) {
+      builder.setAsDouble(((DoubleExemplar) exemplar).getValue());
+    }
+    return builder.build();
+  }
+
+  private static ByteString convertTraceId(String id) {
+    return UnsafeByteOperations.unsafeWrap(
+        OtelEncodingUtils.bytesFromBase16(id, TraceId.getLength()));
+  }
+
+  private static ByteString convertSpanId(String id) {
+    return UnsafeByteOperations.unsafeWrap(
+        OtelEncodingUtils.bytesFromBase16(id, SpanId.getLength()));
   }
 
   private MetricAdapter() {}
