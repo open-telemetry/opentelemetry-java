@@ -12,6 +12,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractIterableAssert;
 import org.assertj.core.api.Assertions;
 
+/** Test assertions for {@link DoubleHistogramData}. */
 public class DoubleHistogramAssert
     extends AbstractAssert<DoubleHistogramAssert, DoubleHistogramData> {
 
@@ -19,6 +20,7 @@ public class DoubleHistogramAssert
     super(actual, DoubleHistogramAssert.class);
   }
 
+  /** Ensures that {@code aggregation_temporality} field is {@code CUMULATIVE}. */
   public DoubleHistogramAssert isCumulative() {
     isNotNull();
     if (actual.getAggregationTemporality() != AggregationTemporality.CUMULATIVE) {
@@ -32,6 +34,7 @@ public class DoubleHistogramAssert
     return this;
   }
 
+  /** Ensures that {@code aggregation_temporality} field is {@code DELTA}. */
   public DoubleHistogramAssert isDelta() {
     isNotNull();
     if (actual.getAggregationTemporality() != AggregationTemporality.DELTA) {
@@ -45,6 +48,7 @@ public class DoubleHistogramAssert
     return this;
   }
 
+  /** Returns convenience API to assert against the {@code points} field. */
   public AbstractIterableAssert<
           ?, ? extends Iterable<? extends DoubleHistogramPointData>, DoubleHistogramPointData, ?>
       points() {

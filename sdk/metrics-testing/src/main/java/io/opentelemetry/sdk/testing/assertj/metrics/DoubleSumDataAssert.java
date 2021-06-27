@@ -10,11 +10,13 @@ import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import org.assertj.core.api.AbstractIterableAssert;
 import org.assertj.core.api.Assertions;
 
+/** Test assertions for {@link DoubleSumData}. */
 public class DoubleSumDataAssert extends AbstractSumDataAssert<DoubleSumDataAssert, DoubleSumData> {
   protected DoubleSumDataAssert(DoubleSumData actual) {
     super(actual, DoubleSumDataAssert.class);
   }
 
+  /** Returns convenience API to assert against the {@code points} field. */
   public AbstractIterableAssert<
           ?, ? extends Iterable<? extends DoublePointData>, DoublePointData, ?>
       points() {

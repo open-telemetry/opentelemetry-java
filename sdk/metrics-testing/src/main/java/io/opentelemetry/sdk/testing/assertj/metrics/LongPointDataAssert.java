@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.testing.assertj.metrics;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import org.assertj.core.api.Assertions;
 
-/** Assertions for an exported {@link LongPointData}. */
+/** Test assertions for {@link LongPointData}. */
 public class LongPointDataAssert
     extends AbstractPointDataAssert<LongPointDataAssert, LongPointData> {
 
@@ -16,6 +16,7 @@ public class LongPointDataAssert
     super(actual, LongPointDataAssert.class);
   }
 
+  /** Ensures the {@code as_int} field matches the expected value. */
   public LongPointDataAssert hasValue(long expected) {
     isNotNull();
     Assertions.assertThat(actual.getValue()).as("value").isEqualTo(expected);

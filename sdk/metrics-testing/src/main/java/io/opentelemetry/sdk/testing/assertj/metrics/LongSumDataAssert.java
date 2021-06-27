@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.metrics.data.LongSumData;
 import org.assertj.core.api.AbstractIterableAssert;
 import org.assertj.core.api.Assertions;
 
+/** Test assertions for {@link LongSumData}. */
 public class LongSumDataAssert extends AbstractSumDataAssert<LongSumDataAssert, LongSumData> {
   protected LongSumDataAssert(LongSumData actual) {
     super(actual, LongSumDataAssert.class);

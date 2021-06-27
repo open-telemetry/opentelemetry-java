@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.SumData;
 import org.assertj.core.api.AbstractAssert;
 
+/** Test assertions for {@link SumData}. */
 public class AbstractSumDataAssert<
         SumAssertT extends AbstractSumDataAssert<SumAssertT, SumT>, SumT extends SumData<?>>
     extends AbstractAssert<SumAssertT, SumT> {
@@ -16,6 +17,7 @@ public class AbstractSumDataAssert<
     super(actual, assertClass);
   }
 
+  /** Ensures that {@code is_monotonic} field is true. */
   public SumAssertT isMonotonic() {
     isNotNull();
     if (!actual.isMonotonic()) {
@@ -25,6 +27,7 @@ public class AbstractSumDataAssert<
     return myself;
   }
 
+  /** Ensures that {@code is_monotonic} field is false. */
   public SumAssertT isNotMonotonic() {
     isNotNull();
     if (actual.isMonotonic()) {
@@ -38,6 +41,7 @@ public class AbstractSumDataAssert<
     return myself;
   }
 
+  /** Ensures that {@code aggregation_temporality} field is {@code CUMULATIVE}. */
   public SumAssertT isCumulative() {
     isNotNull();
     if (actual.getAggregationTemporality() != AggregationTemporality.CUMULATIVE) {
@@ -51,6 +55,7 @@ public class AbstractSumDataAssert<
     return myself;
   }
 
+  /** Ensures that {@code aggregation_temporality} field is {@code DELTA}. */
   public SumAssertT isDelta() {
     isNotNull();
     if (actual.getAggregationTemporality() != AggregationTemporality.DELTA) {

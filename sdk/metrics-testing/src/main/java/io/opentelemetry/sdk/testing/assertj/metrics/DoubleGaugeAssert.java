@@ -11,6 +11,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractIterableAssert;
 import org.assertj.core.api.Assertions;
 
+/** Test assertions for {@link DoubleGaugeData}. */
 public class DoubleGaugeAssert extends AbstractAssert<DoubleGaugeAssert, DoubleGaugeData> {
   protected DoubleGaugeAssert(DoubleGaugeData actual) {
     super(actual, DoubleGaugeAssert.class);

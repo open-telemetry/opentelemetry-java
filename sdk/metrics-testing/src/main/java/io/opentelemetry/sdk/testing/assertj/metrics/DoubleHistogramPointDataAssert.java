@@ -9,7 +9,7 @@ import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 
-/** Assertions for an exported {@link DoubleHistogramPointData}. */
+/** Test assertions for {@link DoubleHistogramPointData}. */
 public class DoubleHistogramPointDataAssert
     extends AbstractPointDataAssert<DoubleHistogramPointDataAssert, DoubleHistogramPointData> {
 
@@ -17,18 +17,25 @@ public class DoubleHistogramPointDataAssert
     super(actual, DoubleHistogramPointDataAssert.class);
   }
 
+  /** Ensures the {@code sum} field matches the expected value. */
   public DoubleHistogramPointDataAssert hasSum(double expected) {
     isNotNull();
     Assertions.assertThat(actual.getSum()).as("sum").isEqualTo(expected);
     return this;
   }
 
+  /** Ensures the {@code count} field matches the expected value. */
   public DoubleHistogramPointDataAssert hasCount(long expected) {
     isNotNull();
     Assertions.assertThat(actual.getCount()).as("count").isEqualTo(expected);
     return this;
   }
 
+  /**
+   * Ensures the {@code boundaries} field matches the expected value.
+   *
+   * @param boundaries The set of bucket boundaries in the same order as the expected collection.
+   */
   public DoubleHistogramPointDataAssert hasBucketBoundaries(double... boundaries) {
     isNotNull();
     Double[] bigBoundaries =
@@ -37,6 +44,11 @@ public class DoubleHistogramPointDataAssert
     return this;
   }
 
+  /**
+   * Ensures the {@code counts} field matches the expected value.
+   *
+   * @param counts The set of bucket counts in the same order as the expected collection.
+   */
   public DoubleHistogramPointDataAssert hasBucketCounts(long... counts) {
     isNotNull();
     Long[] bigCounts = Arrays.stream(counts).mapToObj(Long::valueOf).toArray(idx -> new Long[idx]);

@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import org.assertj.core.api.Assertions;
 
+/** Test assertions for data heading to exporters within the Metrics SDK. */
 public final class MetricAssertions extends Assertions {
   /** Returns an assertion for {@link MetricData}. */
   public static MetricDataAssert assertThat(MetricData metric) {

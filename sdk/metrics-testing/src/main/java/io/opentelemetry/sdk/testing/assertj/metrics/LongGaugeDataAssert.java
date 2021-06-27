@@ -11,11 +11,13 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractIterableAssert;
 import org.assertj.core.api.Assertions;
 
+/** Test assertions for {@link LongGaugeData}. */
 public class LongGaugeDataAssert extends AbstractAssert<LongGaugeDataAssert, LongGaugeData> {
   protected LongGaugeDataAssert(LongGaugeData actual) {
     super(actual, LongGaugeDataAssert.class);
   }
 
+  /** Returns convenience API to assert against the {@code points} field. */
   public AbstractIterableAssert<?, ? extends Iterable<? extends LongPointData>, LongPointData, ?>
       points() {
     isNotNull();

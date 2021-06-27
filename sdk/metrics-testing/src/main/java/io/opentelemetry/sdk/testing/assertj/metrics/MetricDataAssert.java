@@ -11,12 +11,13 @@ import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.resources.Resource;
 import org.assertj.core.api.AbstractAssert;
 
+/** Test assertions for {@link MetricData}. */
 public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricData> {
   protected MetricDataAssert(MetricData actual) {
     super(actual, MetricDataAssert.class);
-    // TODO Auto-generated constructor stub
   }
 
+  /** Ensures the {@link Resource} associated with a metric matches the expected value. */
   public MetricDataAssert hasResource(Resource resource) {
     isNotNull();
     if (!actual.getResource().equals(resource)) {
@@ -30,6 +31,10 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
     return this;
   }
 
+  /**
+   * Ensures the {@link InstrumentationLibraryInfo} associated with a metric matches the expected
+   * value.
+   */
   public MetricDataAssert hasInstrumentationLibrary(
       InstrumentationLibraryInfo instrumentationLibrary) {
     isNotNull();
@@ -44,6 +49,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
     return this;
   }
 
+  /** Ensures the {@code name} field matches the expected value. */
   public MetricDataAssert hasName(String name) {
     isNotNull();
     if (!actual.getName().equals(name)) {
@@ -57,6 +63,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
     return this;
   }
 
+  /** Ensures the {@code description} field matches the expected value. */
   public MetricDataAssert hasDescription(String description) {
     isNotNull();
     if (!actual.getDescription().equals(description)) {
@@ -70,6 +77,7 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
     return this;
   }
 
+  /** Ensures the {@code unit} field matches the expected value. */
   public MetricDataAssert hasUnit(String unit) {
     isNotNull();
     if (!actual.getUnit().equals(unit)) {
@@ -83,6 +91,11 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
     return this;
   }
 
+  /**
+   * Ensures this {@link MetricData} is a {@code DoubleHistogram}.
+   *
+   * @return convenience API to assert against the {@code DoubleHistogram}.
+   */
   public DoubleHistogramAssert hasDoubleHistogram() {
     isNotNull();
     if (actual.getType() != MetricDataType.HISTOGRAM) {
@@ -96,6 +109,11 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
     return new DoubleHistogramAssert(actual.getDoubleHistogramData());
   }
 
+  /**
+   * Ensures this {@link MetricData} is a {@code DoubleGauge}.
+   *
+   * @return convenience API to assert against the {@code DoubleGauge}.
+   */
   public DoubleGaugeAssert hasDoubleGauge() {
     isNotNull();
     if (actual.getType() != MetricDataType.DOUBLE_GAUGE) {
@@ -109,6 +127,11 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
     return new DoubleGaugeAssert(actual.getDoubleGaugeData());
   }
 
+  /**
+   * Ensures this {@link MetricData} is a {@code DoubleSum}.
+   *
+   * @return convenience API to assert against the {@code DoubleSum}.
+   */
   public DoubleSumDataAssert hasDoubleSum() {
     isNotNull();
     if (actual.getType() != MetricDataType.DOUBLE_SUM) {
@@ -122,6 +145,11 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
     return new DoubleSumDataAssert(actual.getDoubleSumData());
   }
 
+  /**
+   * Ensures this {@link MetricData} is a {@code LongGauge}.
+   *
+   * @return convenience API to assert against the {@code LongGauge}.
+   */
   public LongGaugeDataAssert hasLongGauge() {
     isNotNull();
     if (actual.getType() != MetricDataType.LONG_GAUGE) {
@@ -135,6 +163,11 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
     return new LongGaugeDataAssert(actual.getLongGaugeData());
   }
 
+  /**
+   * Ensures this {@link MetricData} is a {@code LongSum}.
+   *
+   * @return convenience API to assert against the {@code LongSum}.
+   */
   public LongSumDataAssert hasLongSum() {
     isNotNull();
     if (actual.getType() != MetricDataType.LONG_SUM) {
