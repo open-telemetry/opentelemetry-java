@@ -11,9 +11,8 @@ import javax.annotation.concurrent.Immutable;
 /**
  * A point in the "Metric stream" data model.
  *
- * <p>This is distinguish from {@link io.opentelemetry.sdk.metrics.instrument.Measurement} in that
- * it may have aggregated data, and has its type defined by the metric data model (no longer an
- * instrument).
+ * <p>This is distinguish from {@code Measurement} in that it may have aggregated data, and has its
+ * type defined by the metric data model (no longer an instrument).
  */
 @Immutable
 public interface PointData {

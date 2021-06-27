@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.testing.assertj.metrics;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import org.assertj.core.api.Assertions;
 
-/** Assertions for an exported {@link DoublePointData}. */
+/** Assertions for an exported {@link LongPointData}. */
 public class LongPointDataAssert
     extends AbstractPointDataAssert<LongPointDataAssert, LongPointData> {
 
