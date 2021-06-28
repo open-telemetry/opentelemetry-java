@@ -22,7 +22,7 @@ final class MetricDataUtils {
   // Temporary workaround while new API/SDK is implemented.
   static Attributes toAttributes(Labels labels) {
     AttributesBuilder result = Attributes.builder();
-    labels.forEach((k, v) -> result.put(k, v));
+    labels.forEach(result::put);
     return result.build();
   }
 
