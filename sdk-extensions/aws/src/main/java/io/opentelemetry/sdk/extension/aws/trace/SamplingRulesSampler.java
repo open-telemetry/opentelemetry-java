@@ -27,6 +27,7 @@ final class SamplingRulesSampler implements Sampler {
   private final SamplingRuleApplier[] ruleAppliers;
 
   SamplingRulesSampler(
+      String clientId,
       Resource resource,
       Sampler fallbackSampler,
       List<GetSamplingRulesResponse.SamplingRuleRecord> rules) {
@@ -37,7 +38,7 @@ final class SamplingRulesSampler implements Sampler {
             .map(GetSamplingRulesResponse.SamplingRuleRecord::getRule)
             // Lower priority value takes precedence so normal ascending sort.
             .sorted(Comparator.comparingInt(GetSamplingRulesResponse.SamplingRule::getPriority))
-            .map(SamplingRuleApplier::new)
+            .map(rule -> new SamplingRuleApplier(clientId, rule))
             .toArray(SamplingRuleApplier[]::new);
   }
 

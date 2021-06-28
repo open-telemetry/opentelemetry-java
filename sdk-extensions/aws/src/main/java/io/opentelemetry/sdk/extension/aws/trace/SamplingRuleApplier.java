@@ -12,13 +12,16 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -40,7 +43,11 @@ final class SamplingRuleApplier {
     XRAY_CLOUD_PLATFORM = Collections.unmodifiableMap(xrayCloudPlatform);
   }
 
+  private final String clientId;
+  private final String ruleName;
+  private final Sampler reservoirSampler;
   private final Sampler fixedRateSampler;
+  private final boolean borrowing;
 
   private final Map<String, Matcher> attributeMatchers;
   private final Matcher urlPathMatcher;
@@ -50,7 +57,21 @@ final class SamplingRuleApplier {
   private final Matcher serviceTypeMatcher;
   private final Matcher resourceArnMatcher;
 
-  SamplingRuleApplier(GetSamplingRulesResponse.SamplingRule rule) {
+  private final Statistics statistics;
+
+  SamplingRuleApplier(String clientId, GetSamplingRulesResponse.SamplingRule rule) {
+    this.clientId = clientId;
+    ruleName = rule.getRuleName();
+    if (rule.getReservoirSize() > 0) {
+      // Until calling GetSamplingTargets, the default is to borrow 1/s if reservoir size is
+      // positive.
+      reservoirSampler = new RateLimitingSampler(1);
+      borrowing = true;
+    } else {
+      // No reservoir sampling, we will always use the fixed rate.
+      reservoirSampler = Sampler.alwaysOff();
+      borrowing = false;
+    }
     fixedRateSampler = Sampler.parentBased(Sampler.traceIdRatioBased(rule.getFixedRate()));
 
     if (rule.getAttributes().isEmpty()) {
@@ -67,6 +88,8 @@ final class SamplingRuleApplier {
     hostMatcher = toMatcher(rule.getHost());
     serviceTypeMatcher = toMatcher(rule.getServiceType());
     resourceArnMatcher = toMatcher(rule.getResourceArn());
+
+    statistics = new Statistics();
   }
 
   boolean matches(String name, Attributes attributes, Resource resource) {
@@ -114,8 +137,39 @@ final class SamplingRuleApplier {
       SpanKind spanKind,
       Attributes attributes,
       List<LinkData> parentLinks) {
-    return fixedRateSampler.shouldSample(
-        parentContext, traceId, name, spanKind, attributes, parentLinks);
+    // Incrementing requests first ensures sample / borrow rate are positive.
+    statistics.requests.increment();
+    SamplingResult result =
+        reservoirSampler.shouldSample(
+            parentContext, traceId, name, spanKind, attributes, parentLinks);
+    if (result.getDecision() != SamplingDecision.DROP) {
+      // We use the result from the reservoir sampler if it worked.
+      if (borrowing) {
+        statistics.borrowed.increment();
+      }
+      statistics.sampled.increment();
+      return result;
+    }
+    result =
+        fixedRateSampler.shouldSample(
+            parentContext, traceId, name, spanKind, attributes, parentLinks);
+    if (result.getDecision() != SamplingDecision.DROP) {
+      statistics.sampled.increment();
+    }
+    return result;
+  }
+
+  GetSamplingTargetsRequest.SamplingStatisticsDocument snapshot(Date now) {
+    return GetSamplingTargetsRequest.SamplingStatisticsDocument.newBuilder()
+        .setClientId(clientId)
+        .setRuleName(ruleName)
+        .setTimestamp(now)
+        // Resetting requests first ensures that sample / borrow rate are positive after the reset.
+        // Snapshotting is not concurrent so this ensures they are always positive.
+        .setRequestCount(statistics.requests.sumThenReset())
+        .setSampledCount(statistics.sampled.sumThenReset())
+        .setBorrowCount(statistics.borrowed.sumThenReset())
+        .build();
   }
 
   @Nullable
@@ -250,5 +304,15 @@ final class SamplingRuleApplier {
     public String toString() {
       return pattern.toString();
     }
+  }
+
+  // We keep track of sampling requests and decisions to report to X-Ray to allow it to allocate
+  // quota from the central reservoir. We do not lock around updates because sampling is called on
+  // the hot, highly-contended path and locking would have significant overhead. The actual possible
+  // error should not be off to significantly affect quotas in practice.
+  private static class Statistics {
+    final LongAdder requests = new LongAdder();
+    final LongAdder sampled = new LongAdder();
+    final LongAdder borrowed = new LongAdder();
   }
 }
