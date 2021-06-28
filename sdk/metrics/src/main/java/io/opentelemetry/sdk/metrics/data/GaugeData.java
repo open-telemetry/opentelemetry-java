@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.data;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A gauage metric point.
+ * A gauge metric point.
  *
  * <p>See:
  * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#gauge
