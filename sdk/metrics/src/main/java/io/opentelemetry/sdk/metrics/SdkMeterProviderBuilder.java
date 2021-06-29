@@ -46,7 +46,13 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
-  public SdkMeterProviderBuilder setMesaurementProcessor(MeasurementProcessor processor) {
+  /**
+   * Assign a {@link MeasurementProcessor} for this SDK.
+   * 
+   * @param processor The mechanism of converting measurements into metrics.
+   * @return this
+   */
+  public SdkMeterProviderBuilder setMeasurementProcessor(MeasurementProcessor processor) {
     Objects.requireNonNull(processor, "processor");
     this.processor = processor;
     return this;

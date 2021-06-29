@@ -37,7 +37,7 @@ public abstract class LastValueConfig {
         .build();
   }
 
-  /** Builder for {@link LastValueConfig} */
+  /** Builder for {@link LastValueConfig}. */
   @AutoValue.Builder
   abstract static class Builder {
     abstract Builder setName(String name);

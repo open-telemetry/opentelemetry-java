@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * A processor that can generate aggregators for metrics streams while also combining those streams
- * into {@link MetricData}
+ * into {@link MetricData}.
  *
  * <p>Aggregators have the following lifecycle:
  *

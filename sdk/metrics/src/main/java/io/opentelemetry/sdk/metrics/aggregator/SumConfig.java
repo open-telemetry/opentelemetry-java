@@ -68,7 +68,7 @@ public abstract class SumConfig {
         .build();
   }
 
-  /** Builder for {@link SumConfig} */
+  /** Builder for {@link SumConfig}. */
   @AutoValue.Builder
   abstract static class Builder {
     abstract Builder setName(String name);

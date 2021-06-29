@@ -27,6 +27,15 @@ public class DoubleSumAggregator extends AbstractAggregator<DoubleAccumulation> 
   private final InstrumentationLibraryInfo instrumentationLibrary;
   private final ExemplarSampler sampler;
 
+  /**
+   * Construct a sum from measurements.
+   * 
+   * @param config Configuration for the sum aggregation.
+   * @param resource Resource to assocaiate metrics.
+   * @param instrumentationLibrary InstrumentationLibrary to associate metrics.
+   * @param startEpochNanos The start-of-application time.
+   * @param sampler When/how to pull Exemplars.
+   */
   public DoubleSumAggregator(
       SumConfig config,
       Resource resource,

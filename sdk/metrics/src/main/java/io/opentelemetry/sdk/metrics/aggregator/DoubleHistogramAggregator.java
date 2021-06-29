@@ -34,6 +34,15 @@ public class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccum
   // a cache for converting to MetricData
   private final List<Double> boundaryList;
 
+  /**
+   * Construct a histogram from measurements.
+   * 
+   * @param config Configuration for the histogram aggregation.
+   * @param resource Resource to assocaiate metrics.
+   * @param instrumentationLibrary InstrumentationLibrary to associate metrics.
+   * @param startEpochNanos The start-of-application time.
+   * @param sampler When/how to pull Exemplars.
+   */
   public DoubleHistogramAggregator(
       HistogramConfig config,
       Resource resource,

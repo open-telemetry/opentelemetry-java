@@ -63,7 +63,7 @@ public abstract class HistogramConfig {
         .build();
   }
 
-  /** Builder for {@link SumConfig} */
+  /** Builder for {@link SumConfig}. */
   @AutoValue.Builder
   public abstract static class Builder {
     public abstract Builder setName(String name);

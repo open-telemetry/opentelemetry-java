@@ -16,13 +16,27 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
-// TODO - re-extract aggregation API from this, or is this ok?
+/**
+ * An aggregator which returns Sum metrics.
+ *
+ * <p>This aggregator supports generating DELTA or CUMULATIVE sums, as well as monotonic or
+ * non-monotonic.
+ */
 public class LongSumAggregator extends AbstractAggregator<LongAccumulation> {
   private final SumConfig config;
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibrary;
   private final ExemplarSampler sampler;
 
+  /**
+   * Construct a sum from measurements.
+   * 
+   * @param config Configuration for the sum aggregation.
+   * @param resource Resource to assocaiate metrics.
+   * @param instrumentationLibrary InstrumentationLibrary to associate metrics.
+   * @param startEpochNanos The start-of-application time.
+   * @param sampler When/how to pull Exemplars.
+   */
   public LongSumAggregator(
       SumConfig config,
       Resource resource,

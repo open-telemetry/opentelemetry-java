@@ -28,6 +28,15 @@ public class LastValueAggregator extends AbstractAggregator<DoubleAccumulation> 
   private final InstrumentationLibraryInfo instrumentationLibrary;
   private final ExemplarSampler sampler;
 
+  /**
+   * Construct a gauge from measurements.
+   * 
+   * @param config Configuration for the gauge aggregation.
+   * @param resource Resource to assocaiate metrics.
+   * @param instrumentationLibrary InstrumentationLibrary to associate metrics.
+   * @param startEpochNanos The start-of-application time.
+   * @param sampler When/how to pull Exemplars.
+   */
   public LastValueAggregator(
       LastValueConfig config,
       Resource resource,
