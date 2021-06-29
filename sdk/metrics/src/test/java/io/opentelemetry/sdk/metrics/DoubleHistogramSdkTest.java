@@ -43,7 +43,7 @@ public class DoubleHistogramSdkTest {
       SdkMeterProvider.builder()
           .setClock(testClock)
           .setResource(RESOURCE)
-          .setMesaurementProcessor(
+          .setMeasurementProcessor(
               DefaultMeasurementProcessor.builder()
                   .setDefaultHistogramBoundaries(DEFAULT_HISTOGRAM_BOUNDARIES)
                   .build())

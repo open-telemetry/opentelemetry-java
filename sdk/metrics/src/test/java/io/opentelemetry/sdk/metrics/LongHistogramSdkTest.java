@@ -43,7 +43,7 @@ public class LongHistogramSdkTest {
       SdkMeterProvider.builder()
           .setClock(testClock)
           .setResource(RESOURCE)
-          .setMesaurementProcessor(
+          .setMeasurementProcessor(
               DefaultMeasurementProcessor.builder()
                   // Force consistent histogram defaults for testing.
                   .setDefaultHistogramBoundaries(new double[] {0, 100, 1000, 10000})
