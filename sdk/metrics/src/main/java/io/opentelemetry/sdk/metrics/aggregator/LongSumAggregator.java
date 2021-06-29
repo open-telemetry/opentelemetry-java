@@ -30,7 +30,7 @@ public class LongSumAggregator extends AbstractAggregator<LongAccumulation> {
 
   /**
    * Construct a sum from measurements.
-   * 
+   *
    * @param config Configuration for the sum aggregation.
    * @param resource Resource to assocaiate metrics.
    * @param instrumentationLibrary InstrumentationLibrary to associate metrics.

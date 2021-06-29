@@ -30,7 +30,7 @@ public class LastValueAggregator extends AbstractAggregator<DoubleAccumulation> 
 
   /**
    * Construct a gauge from measurements.
-   * 
+   *
    * @param config Configuration for the gauge aggregation.
    * @param resource Resource to assocaiate metrics.
    * @param instrumentationLibrary InstrumentationLibrary to associate metrics.

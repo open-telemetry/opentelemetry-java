@@ -36,7 +36,7 @@ public class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccum
 
   /**
    * Construct a histogram from measurements.
-   * 
+   *
    * @param config Configuration for the histogram aggregation.
    * @param resource Resource to assocaiate metrics.
    * @param instrumentationLibrary InstrumentationLibrary to associate metrics.

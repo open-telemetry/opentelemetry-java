@@ -48,7 +48,7 @@ public final class SdkMeterProviderBuilder {
 
   /**
    * Assign a {@link MeasurementProcessor} for this SDK.
-   * 
+   *
    * @param processor The mechanism of converting measurements into metrics.
    * @return this
    */

@@ -26,11 +26,27 @@ public interface MeterProvider {
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
+   * @return a meter instance.
+   */
+  default Meter get(String instrumentationName) {
+    return meterBuilder(instrumentationName).build();
+  }
+
+  /**
+   * Gets or creates a named and versioned meter instance.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
    * @param instrumentationVersion The version of the instrumentation library.
    * @param schemaUrl Specifies the Schema URL that should be recorded in the emitted metrics.
-   * @return a tracer instance.
+   * @return a meter instance.
    */
-  Meter get(String instrumentationName, String instrumentationVersion, String schemaUrl);
+  default Meter get(String instrumentationName, String instrumentationVersion, String schemaUrl) {
+    return meterBuilder(instrumentationName)
+        .setInstrumentationVersion(instrumentationVersion)
+        .setSchemaUrl(schemaUrl)
+        .build();
+  }
 
   /**
    * Creates a MeterBuilder for a named meter instance.
@@ -40,41 +56,9 @@ public interface MeterProvider {
    * @return a MeterBuilder instance.
    * @since 1.4.0
    */
-  default MeterBuilder meterBuilder(String instrumentationName) {
-    return new DefaultMeterBuilder(this, instrumentationName);
-  }
+  MeterBuilder meterBuilder(String instrumentationName);
 
   public static MeterProvider noop() {
     return NoopMeterProvider.getInstance();
-  }
-
-  /** Default implementation of meter builder that delegates to `get` on MeterProvider. */
-  static class DefaultMeterBuilder implements MeterBuilder {
-    private final MeterProvider provider;
-    private final String name;
-    private String version = null;
-    private String schemaUrl = null;
-
-    DefaultMeterBuilder(MeterProvider provider, String name) {
-      this.provider = provider;
-      this.name = name;
-    }
-
-    @Override
-    public MeterBuilder setSchemaUrl(String schemaUrl) {
-      this.schemaUrl = schemaUrl;
-      return this;
-    }
-
-    @Override
-    public MeterBuilder setInstrumentationVersion(String instrumentationVersion) {
-      this.version = instrumentationVersion;
-      return this;
-    }
-
-    @Override
-    public Meter build() {
-      return provider.get(name, version, schemaUrl);
-    }
   }
 }

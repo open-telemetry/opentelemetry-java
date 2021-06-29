@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
@@ -41,12 +42,12 @@ public class SdkMeterProvider implements MeterProvider, MetricProducer {
   }
 
   @Override
-  public Meter get(String instrumentationName, String instrumentationVersion, String schemaUrl) {
+  public MeterBuilder meterBuilder(String instrumentationName) {
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("Meter requested without instrumentation name.");
       instrumentationName = DEFAULT_METER_NAME;
     }
-    return registry.get(instrumentationName, instrumentationVersion, schemaUrl);
+    return new MyMeterBuilder(instrumentationName);
   }
 
   @Override
@@ -57,6 +58,34 @@ public class SdkMeterProvider implements MeterProvider, MetricProducer {
       result.addAll(meter.collectAll(sharedState.getClock().now()));
     }
     return Collections.unmodifiableCollection(result);
+  }
+
+  /** Implementation of MeterBuilder that registers on this provider. */
+  private class MyMeterBuilder implements MeterBuilder {
+    private final String instrumentationName;
+    private String instrumentationVersion;
+    private String schemaUrl;
+
+    public MyMeterBuilder(String name) {
+      this.instrumentationName = name;
+    }
+
+    @Override
+    public MeterBuilder setSchemaUrl(String schemaUrl) {
+      this.schemaUrl = schemaUrl;
+      return this;
+    }
+
+    @Override
+    public final MeterBuilder setInstrumentationVersion(String instrumentationVersion) {
+      this.instrumentationVersion = instrumentationVersion;
+      return this;
+    }
+
+    @Override
+    public final Meter build() {
+      return registry.get(instrumentationName, instrumentationVersion, schemaUrl);
+    }
   }
 
   public static SdkMeterProviderBuilder builder() {
