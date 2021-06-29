@@ -34,16 +34,7 @@ public final class AwsXrayRemoteSampler implements Sampler, Closeable {
       AwsXrayRemoteSampler.class.getSimpleName() + "_WorkerThread";
 
   // Unique per-process client ID, generated as a random string.
-  private static final String CLIENT_ID;
-
-  static {
-    SecureRandom rand = new SecureRandom();
-    byte[] bytes = new byte[12];
-    rand.nextBytes(bytes);
-    char[] clientIdChars = new char[24];
-    OtelEncodingUtils.bytesToBase16(bytes, clientIdChars, 12);
-    CLIENT_ID = new String(clientIdChars);
-  }
+  private static final String CLIENT_ID = generateClientId();
 
   private final Resource resource;
   private final Sampler initialSampler;
@@ -103,8 +94,7 @@ public final class AwsXrayRemoteSampler implements Sampler, Closeable {
           client.getSamplingRules(GetSamplingRulesRequest.create(null));
       if (!response.equals(previousRulesResponse)) {
         sampler =
-            new SamplingRulesSampler(
-                CLIENT_ID, resource, initialSampler, response.getSamplingRules());
+            new XrayRulesSampler(CLIENT_ID, resource, initialSampler, response.getSamplingRules());
         previousRulesResponse = response;
       }
     } catch (Throwable t) {
@@ -117,5 +107,14 @@ public final class AwsXrayRemoteSampler implements Sampler, Closeable {
     pollFuture.cancel(true);
     executor.shutdownNow();
     // No flushing behavior so no need to wait for the shutdown.
+  }
+
+  private static String generateClientId() {
+    SecureRandom rand = new SecureRandom();
+    byte[] bytes = new byte[12];
+    rand.nextBytes(bytes);
+    char[] clientIdChars = new char[24];
+    OtelEncodingUtils.bytesToBase16(bytes, clientIdChars, 12);
+    return new String(clientIdChars);
   }
 }
