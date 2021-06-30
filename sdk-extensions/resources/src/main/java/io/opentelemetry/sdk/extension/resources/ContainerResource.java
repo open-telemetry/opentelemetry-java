@@ -8,32 +8,37 @@ package io.opentelemetry.sdk.extension.resources;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 
 /** Factory for {@link Resource} retrieving Container ID information. */
 public final class ContainerResource {
 
   private static final Logger logger = Logger.getLogger(ContainerResource.class.getName());
-  private static final String UNIQUE_HOST_NAME_FILE_NAME = "/proc/self/cgroup";
-  private static final Pattern HEX_EXTRACTOR =
-      Pattern.compile("^([\\w]*?-)?([a-fA-F0-9]+)(\\.[\\w]*?)?$");
-  private static final Resource INSTANCE = buildResource();
+  private static final Path UNIQUE_HOST_NAME_FILE_NAME = Paths.get("/proc/self/cgroup");
+  private static final Pattern HEX_EXTRACTOR = Pattern.compile("^([a-fA-F0-9]+)$");
+  private static final Resource INSTANCE = buildResource(UNIQUE_HOST_NAME_FILE_NAME);
 
-  private static Resource buildResource() {
-    String containerId = extractContainerId(UNIQUE_HOST_NAME_FILE_NAME);
+  // package private for testing
+  static Resource buildResource(Path path) {
+    Optional<String> containerId = extractContainerId(path);
 
-    if (containerId == null) {
-      return Resource.empty();
+    if (containerId.isPresent()) {
+      return Resource.create(Attributes.of(ResourceAttributes.CONTAINER_ID, containerId.get()));
     } else {
-      return Resource.create(Attributes.of(ResourceAttributes.CONTAINER_ID, containerId));
+      return Resource.empty();
     }
   }
 
@@ -54,32 +59,44 @@ public final class ContainerResource {
    *
    * @return containerId
    */
+  @IgnoreJRERequirement
   @Nullable
   @SuppressWarnings("DefaultCharset")
-  static String extractContainerId(String cgroupFilePath) {
-    File nameFile = new File(cgroupFilePath);
-    if (!nameFile.exists() || !nameFile.canRead()) {
-      return null;
+  private static Optional<String> extractContainerId(Path cgroupFilePath) {
+    if (!Files.exists(cgroupFilePath) || !Files.isReadable(cgroupFilePath)) {
+      return Optional.empty();
     }
-    try (BufferedReader reader = new BufferedReader(new FileReader(nameFile))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        if (line.isEmpty()) {
-          continue;
-        }
-        // This cgroup output line should have the container id in it
-        String[] sections = line.split(File.separator);
-        if (sections.length <= 1) {
-          continue;
-        }
-        String lastSection = sections[sections.length - 1];
-        Matcher matcher = HEX_EXTRACTOR.matcher(lastSection);
-        if (matcher.matches() && matcher.group(2) != null && !matcher.group(2).isEmpty()) {
-          return matcher.group(2);
-        }
-      }
+    try (Stream<String> lines = Files.lines(cgroupFilePath)) {
+      return lines
+          .filter(line -> !line.isEmpty())
+          .map(line -> getIdFromLine(line))
+          .filter(Objects::nonNull)
+          .findFirst();
     } catch (IOException e) {
       logger.log(Level.WARNING, "Unable to read file: " + e.getMessage());
+    }
+    return Optional.empty();
+  }
+
+  @SuppressWarnings("SystemOut")
+  private static String getIdFromLine(String line) {
+    // This cgroup output line should have the container id in it
+    System.out.println("Processing: " + line);
+    String[] sections = line.split(File.separator);
+    if (sections.length <= 1) {
+      return null;
+    }
+
+    String lastSection = sections[sections.length - 1];
+    int startIdx = lastSection.indexOf("-");
+    int endIdx = lastSection.lastIndexOf(".");
+
+    Matcher matcher =
+        HEX_EXTRACTOR.matcher(
+            lastSection.substring(
+                startIdx == -1 ? 0 : startIdx + 1, endIdx == -1 ? lastSection.length() : endIdx));
+    if (matcher.matches() && matcher.group(1) != null && !matcher.group(1).isEmpty()) {
+      return matcher.group(1);
     }
     return null;
   }
