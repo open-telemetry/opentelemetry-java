@@ -44,7 +44,9 @@ configurations {
             attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named("jacoco-coverage-data"))
         }
         // This will cause the test task to run if the coverage data is requested by the aggregation task
-        tasks.withType<Test>().configureEach {
+        // The tasks must be eagerly evaluated (no configureEach) to ensure jacoco is wired up
+        // correctly.
+        tasks.withType<Test>() {
             outgoing.artifact(the<JacocoTaskExtension>().destinationFile!!)
         }
     }
