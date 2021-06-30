@@ -5,13 +5,15 @@
 
 package io.opentelemetry.sdk.extension.resources;
 
-import static io.opentelemetry.sdk.extension.resources.ContainerResource.extractContainerId;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static io.opentelemetry.sdk.extension.resources.ContainerResource.buildResource;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -39,39 +41,44 @@ public class ContainerResourceTest {
 
   // with prefix
   private static final String CGROUP_LINE_4 =
-      "13:name=systemd:/podruntime/docker/kubepods/docker-dc579f8a8319c8cf7d38e1adf263bc08d23";
+      "//\n"
+          + "1:name=systemd:/podruntime/docker/kubepods/docker-dc579f8a8319c8cf7d38e1adf263bc08d23"
+          + "2:name=systemd:/podruntime/docker/kubepods/docker-dc579f8a8319c8cf7d38e1adf263bc08d23"
+          + "3:name=systemd:/podruntime/docker/kubepods/docker-dc579f8a8319c8cf7d38e1adf263bc08d23";
+
   private static final String EXPECTED_CGROUP_4 = "dc579f8a8319c8cf7d38e1adf263bc08d23";
 
-  @SuppressWarnings("DefaultCharset")
-  public File createCGroup(File file, String line) throws IOException {
-    file.createNewFile();
-    try (FileWriter os = new FileWriter(file);
-        BufferedWriter bw = new BufferedWriter(os)) {
-      bw.write("");
-      bw.write(line);
-      bw.flush();
-    }
-    return file;
+  @Test
+  public void testNegativeCases(@TempDir Path tempFolder) throws IOException {
+    // invalid containerId (non-hex)
+    Path cgroup = createCGroup(tempFolder.resolve("cgroup1"), INVALID_CGROUP_LINE_1);
+    assertThat(buildResource(cgroup)).isEqualTo(Resource.empty());
+
+    // test invalid file
+    cgroup = tempFolder.resolve("DoesNotExist");
+    assertThat(buildResource(cgroup)).isEqualTo(Resource.empty());
   }
 
   @Test
-  public void testInvalidContainer(@TempDir File tempFolder) throws IOException {
-    File cgroup = createCGroup(new File(tempFolder, "cgroup1"), INVALID_CGROUP_LINE_1);
-    assertEquals(null, extractContainerId(cgroup.getPath()));
+  public void testContainer(@TempDir Path tempFolder) throws IOException {
+    Path cgroup = createCGroup(tempFolder.resolve("cgroup1"), CGROUP_LINE_1);
+    assertThat(getContainerId(buildResource(cgroup))).isEqualTo(EXPECTED_CGROUP_1);
+
+    Path cgroup2 = createCGroup(tempFolder.resolve("cgroup2"), CGROUP_LINE_2);
+    assertThat(getContainerId(buildResource(cgroup2))).isEqualTo(EXPECTED_CGROUP_2);
+
+    Path cgroup3 = createCGroup(tempFolder.resolve("cgroup3"), CGROUP_LINE_3);
+    assertThat(getContainerId(buildResource(cgroup3))).isEqualTo(EXPECTED_CGROUP_3);
+
+    Path cgroup4 = createCGroup(tempFolder.resolve("cgroup4"), CGROUP_LINE_4);
+    assertThat(getContainerId(buildResource(cgroup4))).isEqualTo(EXPECTED_CGROUP_4);
   }
 
-  @Test
-  public void testContainer(@TempDir File tempFolder) throws IOException {
-    File cgroup = createCGroup(new File(tempFolder, "cgroup1"), CGROUP_LINE_1);
-    assertEquals(EXPECTED_CGROUP_1, extractContainerId(cgroup.getPath()));
+  private static String getContainerId(Resource resource) {
+    return resource.getAttributes().get(ResourceAttributes.CONTAINER_ID);
+  }
 
-    File cgroup2 = createCGroup(new File(tempFolder, "cgroup2"), CGROUP_LINE_2);
-    assertEquals(EXPECTED_CGROUP_2, extractContainerId(cgroup2.getPath()));
-
-    File cgroup3 = createCGroup(new File(tempFolder, "cgroup3"), CGROUP_LINE_3);
-    assertEquals(EXPECTED_CGROUP_3, extractContainerId(cgroup3.getPath()));
-
-    File cgroup4 = createCGroup(new File(tempFolder, "cgroup4"), CGROUP_LINE_4);
-    assertEquals(EXPECTED_CGROUP_4, extractContainerId(cgroup4.getPath()));
+  public static Path createCGroup(Path path, String line) throws IOException {
+    return Files.write(path, line.getBytes(StandardCharsets.UTF_8));
   }
 }
