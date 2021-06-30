@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.extension.resources;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -82,7 +81,7 @@ public final class ContainerResource {
   private static String getIdFromLine(String line) {
     // This cgroup output line should have the container id in it
     System.out.println("Processing: " + line);
-    String[] sections = line.split(File.separator);
+    String[] sections = line.split("/");
     if (sections.length <= 1) {
       return null;
     }
