@@ -33,19 +33,19 @@ abstract class GetSamplingTargetsRequest {
     }
 
     @JsonProperty("BorrowCount")
-    abstract int getBorrowCount();
+    abstract long getBorrowCount();
 
     @JsonProperty("ClientID")
     abstract String getClientId();
 
     @JsonProperty("RequestCount")
-    abstract int getRequestCount();
+    abstract long getRequestCount();
 
     @JsonProperty("RuleName")
     abstract String getRuleName();
 
     @JsonProperty("SampledCount")
-    abstract int getSampledCount();
+    abstract long getSampledCount();
 
     @JsonProperty("Timestamp")
     @JsonFormat(
@@ -56,15 +56,15 @@ abstract class GetSamplingTargetsRequest {
 
     @AutoValue.Builder
     abstract static class Builder {
-      abstract Builder setBorrowCount(int borrowCount);
+      abstract Builder setBorrowCount(long borrowCount);
 
       abstract Builder setClientId(String clientId);
 
-      abstract Builder setRequestCount(int requestCount);
+      abstract Builder setRequestCount(long requestCount);
 
       abstract Builder setRuleName(String ruleName);
 
-      abstract Builder setSampledCount(int sampledCount);
+      abstract Builder setSampledCount(long sampledCount);
 
       abstract Builder setTimestamp(Date timestamp);
 

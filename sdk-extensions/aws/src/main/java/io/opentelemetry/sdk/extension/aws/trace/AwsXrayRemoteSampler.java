@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.extension.aws.trace;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
@@ -14,6 +15,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.io.Closeable;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,6 +32,9 @@ public final class AwsXrayRemoteSampler implements Sampler, Closeable {
 
   private static final String WORKER_THREAD_NAME =
       AwsXrayRemoteSampler.class.getSimpleName() + "_WorkerThread";
+
+  // Unique per-process client ID, generated as a random string.
+  private static final String CLIENT_ID = generateClientId();
 
   private final Resource resource;
   private final Sampler initialSampler;
@@ -88,7 +93,8 @@ public final class AwsXrayRemoteSampler implements Sampler, Closeable {
       GetSamplingRulesResponse response =
           client.getSamplingRules(GetSamplingRulesRequest.create(null));
       if (!response.equals(previousRulesResponse)) {
-        sampler = new SamplingRulesSampler(resource, initialSampler, response.getSamplingRules());
+        sampler =
+            new XrayRulesSampler(CLIENT_ID, resource, initialSampler, response.getSamplingRules());
         previousRulesResponse = response;
       }
     } catch (Throwable t) {
@@ -101,5 +107,14 @@ public final class AwsXrayRemoteSampler implements Sampler, Closeable {
     pollFuture.cancel(true);
     executor.shutdownNow();
     // No flushing behavior so no need to wait for the shutdown.
+  }
+
+  private static String generateClientId() {
+    SecureRandom rand = new SecureRandom();
+    byte[] bytes = new byte[12];
+    rand.nextBytes(bytes);
+    char[] clientIdChars = new char[24];
+    OtelEncodingUtils.bytesToBase16(bytes, clientIdChars, 12);
+    return new String(clientIdChars);
   }
 }

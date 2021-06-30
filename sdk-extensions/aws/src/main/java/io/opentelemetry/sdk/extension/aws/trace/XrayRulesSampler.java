@@ -18,15 +18,16 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-final class SamplingRulesSampler implements Sampler {
+final class XrayRulesSampler implements Sampler {
 
-  private static final Logger logger = Logger.getLogger(SamplingRulesSampler.class.getName());
+  private static final Logger logger = Logger.getLogger(XrayRulesSampler.class.getName());
 
   private final Resource resource;
   private final Sampler fallbackSampler;
   private final SamplingRuleApplier[] ruleAppliers;
 
-  SamplingRulesSampler(
+  XrayRulesSampler(
+      String clientId,
       Resource resource,
       Sampler fallbackSampler,
       List<GetSamplingRulesResponse.SamplingRuleRecord> rules) {
@@ -37,7 +38,7 @@ final class SamplingRulesSampler implements Sampler {
             .map(GetSamplingRulesResponse.SamplingRuleRecord::getRule)
             // Lower priority value takes precedence so normal ascending sort.
             .sorted(Comparator.comparingInt(GetSamplingRulesResponse.SamplingRule::getPriority))
-            .map(SamplingRuleApplier::new)
+            .map(rule -> new SamplingRuleApplier(clientId, rule))
             .toArray(SamplingRuleApplier[]::new);
   }
 
