@@ -78,7 +78,7 @@ public class ContainerResourceTest {
     return resource.getAttributes().get(ResourceAttributes.CONTAINER_ID);
   }
 
-  public static Path createCGroup(Path path, String line) throws IOException {
+  private static Path createCGroup(Path path, String line) throws IOException {
     return Files.write(path, line.getBytes(StandardCharsets.UTF_8));
   }
 }
