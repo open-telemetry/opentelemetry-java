@@ -24,10 +24,10 @@ import javax.annotation.concurrent.Immutable;
 final class TraceIdRatioBasedSampler implements Sampler {
 
   private static final SamplingResult POSITIVE_SAMPLING_RESULT =
-      SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE);
+      SamplingResult.recordAndSample();
 
   private static final SamplingResult NEGATIVE_SAMPLING_RESULT =
-      SamplingResult.create(SamplingDecision.DROP);
+      SamplingResult.drop();
 
   private final long idUpperBound;
   private final String description;

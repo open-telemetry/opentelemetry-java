@@ -16,38 +16,37 @@ class SamplingResultTest {
 
   @Test
   void noAttributes() {
-    assertThat(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE))
-        .isSameAs(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
-    assertThat(SamplingResult.create(SamplingDecision.DROP))
-        .isSameAs(SamplingResult.create(SamplingDecision.DROP));
+    assertThat(SamplingResult.recordAndSample()).isSameAs(SamplingResult.recordAndSample());
+    assertThat(SamplingResult.drop()).isSameAs(SamplingResult.drop());
 
-    assertThat(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE).getDecision())
+    assertThat(SamplingResult.recordAndSample().getDecision())
         .isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
-    assertThat(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE).getAttributes().isEmpty())
+    assertThat(SamplingResult.recordAndSample().getAttributes().isEmpty())
         .isTrue();
-    assertThat(SamplingResult.create(SamplingDecision.DROP).getDecision())
+    assertThat(SamplingResult.drop().getDecision())
         .isEqualTo(SamplingDecision.DROP);
-    assertThat(SamplingResult.create(SamplingDecision.DROP).getAttributes().isEmpty()).isTrue();
+    assertThat(SamplingResult.drop().getAttributes().isEmpty())
+        .isTrue();
   }
 
   @Test
   void emptyAttributes() {
-    assertThat(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE, Attributes.empty()))
-        .isSameAs(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
-    assertThat(SamplingResult.create(SamplingDecision.DROP, Attributes.empty()))
-        .isSameAs(SamplingResult.create(SamplingDecision.DROP));
+    assertThat(SamplingResult.recordAndSample(Attributes.empty()))
+        .isSameAs(SamplingResult.recordAndSample());
+    assertThat(SamplingResult.drop(Attributes.empty()))
+        .isSameAs(SamplingResult.drop());
   }
 
   @Test
   void hasAttributes() {
     final Attributes attrs = Attributes.of(longKey("foo"), 42L, stringKey("bar"), "baz");
     final SamplingResult sampledSamplingResult =
-        SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE, attrs);
+        SamplingResult.recordAndSample(attrs);
     assertThat(sampledSamplingResult.getDecision()).isEqualTo(SamplingDecision.RECORD_AND_SAMPLE);
     assertThat(sampledSamplingResult.getAttributes()).isEqualTo(attrs);
 
     final SamplingResult notSampledSamplingResult =
-        SamplingResult.create(SamplingDecision.DROP, attrs);
+        SamplingResult.drop(attrs);
     assertThat(notSampledSamplingResult.getDecision()).isEqualTo(SamplingDecision.DROP);
     assertThat(notSampledSamplingResult.getAttributes()).isEqualTo(attrs);
   }

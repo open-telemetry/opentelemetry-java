@@ -386,8 +386,7 @@ class SdkSpanBuilderTest {
               SpanKind spanKind,
               Attributes attributes,
               List<LinkData> parentLinks) {
-            return SamplingResult.create(
-                SamplingDecision.RECORD_AND_SAMPLE,
+            return SamplingResult.recordAndSample(
                 Attributes.builder().put("cat", "meow").build());
           }
 

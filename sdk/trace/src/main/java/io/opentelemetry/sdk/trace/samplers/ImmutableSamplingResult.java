@@ -13,14 +13,26 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 abstract class ImmutableSamplingResult implements SamplingResult {
 
-  static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT =
+  private static final SamplingResult EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT_NEW =
       ImmutableSamplingResult.createWithoutAttributes(SamplingDecision.RECORD_AND_SAMPLE);
 
-  static final SamplingResult EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT =
+  private static final SamplingResult EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT_NEW =
       ImmutableSamplingResult.createWithoutAttributes(SamplingDecision.DROP);
 
-  static final SamplingResult EMPTY_RECORDED_SAMPLING_RESULT =
+  private static final SamplingResult EMPTY_RECORDED_SAMPLING_RESULT_NEW =
       ImmutableSamplingResult.createWithoutAttributes(SamplingDecision.RECORD_ONLY);
+
+  static SamplingResult getEmptyRecordedAndSampledSamplingResult() {
+    return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT_NEW;
+  }
+
+  static SamplingResult getEmptyNotSampledOrRecordedSamplingResult() {
+    return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT_NEW;
+  }
+
+  static SamplingResult getEmptyRecordedSamplingResult() {
+    return EMPTY_RECORDED_SAMPLING_RESULT_NEW;
+  }
 
   static SamplingResult createSamplingResult(SamplingDecision decision, Attributes attributes) {
     return new AutoValue_ImmutableSamplingResult(decision, attributes);

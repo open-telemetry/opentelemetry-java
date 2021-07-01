@@ -70,7 +70,7 @@ class SamplingRuleApplierTest {
                   SpanKind.CLIENT,
                   Attributes.empty(),
                   Collections.emptyList()))
-          .isEqualTo(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
+          .isEqualTo(SamplingResult.recordAndSample());
 
       Date now = new Date();
       GetSamplingTargetsRequest.SamplingStatisticsDocument statistics = applier.snapshot(now);
@@ -225,7 +225,7 @@ class SamplingRuleApplierTest {
                   SpanKind.CLIENT,
                   Attributes.empty(),
                   Collections.emptyList()))
-          .isEqualTo(SamplingResult.create(SamplingDecision.DROP));
+          .isEqualTo(SamplingResult.drop());
 
       Date now = new Date();
       GetSamplingTargetsRequest.SamplingStatisticsDocument statistics = applier.snapshot(now);
@@ -523,7 +523,7 @@ class SamplingRuleApplierTest {
                 SpanKind.CLIENT,
                 Attributes.empty(),
                 Collections.emptyList()))
-        .isEqualTo(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
+        .isEqualTo(SamplingResult.recordAndSample());
     // Can only borrow one per second. If a second passes between these two lines of code, the test
     // will be flaky. Revisit if we ever see it, it's unlikely but can be fixed by injecting a
     // a clock.
@@ -535,7 +535,7 @@ class SamplingRuleApplierTest {
                 SpanKind.CLIENT,
                 Attributes.empty(),
                 Collections.emptyList()))
-        .isEqualTo(SamplingResult.create(SamplingDecision.DROP));
+        .isEqualTo(SamplingResult.drop());
 
     Date now = new Date();
     GetSamplingTargetsRequest.SamplingStatisticsDocument statistics = applier.snapshot(now);
@@ -566,7 +566,7 @@ class SamplingRuleApplierTest {
                           SpanKind.CLIENT,
                           Attributes.empty(),
                           Collections.emptyList()))
-                  .isEqualTo(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
+                  .isEqualTo(SamplingResult.recordAndSample());
             });
 
     now = new Date();

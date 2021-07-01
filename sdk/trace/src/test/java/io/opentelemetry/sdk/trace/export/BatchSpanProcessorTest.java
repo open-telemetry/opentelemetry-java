@@ -393,11 +393,11 @@ class BatchSpanProcessorTest {
             .build();
 
     when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
-        .thenReturn(SamplingResult.create(SamplingDecision.DROP));
+        .thenReturn(SamplingResult.drop());
     sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_1).startSpan().end();
     sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_2).startSpan().end();
     when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
-        .thenReturn(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
+        .thenReturn(SamplingResult.recordAndSample());
     ReadableSpan span = createEndedSpan(SPAN_NAME_2);
     // Spans are recorded and exported in the same order as they are ended, we test that a non
     // sampled span is not exported by creating and ending a sampled span after a non sampled span
@@ -415,7 +415,7 @@ class BatchSpanProcessorTest {
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
 
     when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
-        .thenReturn(SamplingResult.create(SamplingDecision.RECORD_ONLY));
+        .thenReturn(SamplingResult.recordOnly());
     sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
@@ -427,7 +427,7 @@ class BatchSpanProcessorTest {
 
     createEndedSpan(SPAN_NAME_1);
     when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
-        .thenReturn(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
+        .thenReturn(SamplingResult.recordAndSample());
     ReadableSpan span = createEndedSpan(SPAN_NAME_2);
 
     // Spans are recorded and exported in the same order as they are ended, we test that a non

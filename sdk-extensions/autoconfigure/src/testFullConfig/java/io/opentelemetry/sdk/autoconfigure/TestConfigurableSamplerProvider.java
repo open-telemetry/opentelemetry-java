@@ -42,7 +42,7 @@ public class TestConfigurableSamplerProvider implements ConfigurableSamplerProvi
         SpanKind spanKind,
         Attributes attributes,
         List<LinkData> parentLinks) {
-      return SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE);
+      return SamplingResult.recordAndSample();
     }
 
     @Override
