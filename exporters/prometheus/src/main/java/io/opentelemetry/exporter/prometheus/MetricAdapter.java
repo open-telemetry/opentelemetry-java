@@ -203,7 +203,7 @@ final class MetricAdapter {
     List<Long> counts = doubleHistogramPointData.getCounts();
     for (int i = 0; i < counts.size(); i++) {
       List<String> labelValuesWithLe = new ArrayList<>(labelValues.size() + 1);
-      double boundary = i < boundaries.size() ? boundaries.get(i) : Double.POSITIVE_INFINITY;
+      double boundary = (i < boundaries.size()) ? boundaries.get(i) : Double.POSITIVE_INFINITY;
       labelValuesWithLe.addAll(labelValues);
       labelValuesWithLe.add(doubleToGoString(boundary));
 
@@ -218,6 +218,23 @@ final class MetricAdapter {
               cumulativeCount,
               filterExemplars(doubleHistogramPointData.getExemplars(), lower, boundary)));
     }
+  }
+
+  private static Optional<Exemplar> filterExemplars(
+      Collection<Exemplar> exemplars, double min, double max) {
+    return exemplars.stream()
+        .filter(exemplar -> valueOf(exemplar) <= max && valueOf(exemplar) > min)
+        .findAny();
+  }
+
+  private static double valueOf(Exemplar exemplar) {
+    double value = 0;
+    if (exemplar instanceof LongExemplar) {
+      value = ((LongExemplar) exemplar).getValue();
+    } else if (exemplar instanceof DoubleExemplar) {
+      value = ((DoubleExemplar) exemplar).getValue();
+    }
+    return value;
   }
 
   private static int estimateNumSamples(int numPoints, MetricDataType type) {
@@ -269,23 +286,6 @@ final class MetricAdapter {
           exemplar.getSpanId());
     }
     return new io.prometheus.client.exemplars.Exemplar(valueOf(exemplar));
-  }
-
-  private static Optional<Exemplar> filterExemplars(
-      Collection<Exemplar> exemplars, double min, double max) {
-    return exemplars.stream()
-        .filter(exemplar -> valueOf(exemplar) <= max && valueOf(exemplar) > min)
-        .findAny();
-  }
-
-  private static double valueOf(Exemplar exemplar) {
-    double value = 0;
-    if (exemplar instanceof LongExemplar) {
-      value = ((LongExemplar) exemplar).getValue();
-    } else if (exemplar instanceof DoubleExemplar) {
-      value = ((DoubleExemplar) exemplar).getValue();
-    }
-    return value;
   }
 
   private MetricAdapter() {}

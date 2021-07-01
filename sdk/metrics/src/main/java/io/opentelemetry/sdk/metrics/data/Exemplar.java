@@ -29,14 +29,14 @@ public interface Exemplar {
   /**
    * (Optional) Span ID of the exemplar trace.
    *
-   * <p>span_id may be missing if the measurement is not recorded inside a trace or the trace was
+   * <p>Span ID may be missing if the measurement is not recorded inside a trace or the trace was
    * not sampled.
    */
   String getSpanId();
   /**
    * (Optional) Trace ID of the exemplar trace.
    *
-   * <p>trace_id may be missing if the measurement is not recorded inside a trace or if the trace is
+   * <p>Trace ID may be missing if the measurement is not recorded inside a trace or if the trace is
    * not sampled.
    */
   String getTraceId();

@@ -30,11 +30,30 @@ public abstract class LongPointData implements SampledPointData {
    */
   public abstract long getValue();
 
+  /**
+   * Creates a {@link LongPointData}.
+   *
+   * @param startEpochNanos (optional) The starting time for the period where this point was
+   *     sampled.
+   * @param epochNanos The ending time for the period when this value was sampled.
+   * @param attributes The set of attributes associated with this point.
+   * @param value The value that was sampled.
+   */
   public static LongPointData create(
       long startEpochNanos, long epochNanos, Attributes attributes, long value) {
     return create(startEpochNanos, epochNanos, attributes, value, Collections.emptyList());
   }
 
+  /**
+   * Creates a {@link LongPointData}.
+   *
+   * @param startEpochNanos (optional) The starting time for the period where this point was
+   *     sampled.
+   * @param epochNanos The ending time for the period when this value was sampled.
+   * @param attributes The set of attributes associated with this point.
+   * @param value The value that was sampled.
+   * @param exemplars A collection of interesting sampled values from this time period.
+   */
   public static LongPointData create(
       long startEpochNanos,
       long epochNanos,
