@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import java.util.Arrays;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * An {@code AttributesProcessor} is used by {@code View}s to define the actual recorded set of
@@ -16,6 +18,7 @@ import io.opentelemetry.context.Context;
  * Metric vs. the inbound set of attributes from a measurement.
  */
 @FunctionalInterface
+@Immutable
 public interface AttributesProcessor {
 
   /**
@@ -35,6 +38,14 @@ public interface AttributesProcessor {
     return true;
   }
 
+  /** Joins this attribute processor with another that operates after this one. */
+  default AttributesProcessor then(AttributesProcessor other) {
+    if (other instanceof JoinedAttribtuesProcessor) {
+      return ((JoinedAttribtuesProcessor) other).prepend(this);
+    }
+    return new JoinedAttribtuesProcessor(Arrays.asList(this, other));
+  }
+
   /** No-op version of attributes processer, returns what it gets. */
   public static AttributesProcessor NOOP =
       new AttributesProcessor() {
@@ -46,6 +57,11 @@ public interface AttributesProcessor {
         @Override
         public boolean usesContext() {
           return false;
+        }
+
+        @Override
+        public String toString() {
+          return "NoopAttributesProcessor";
         }
       };
 }
