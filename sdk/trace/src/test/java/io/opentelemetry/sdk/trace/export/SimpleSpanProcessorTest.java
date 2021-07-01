@@ -32,7 +32,6 @@ import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.Collections;
 import java.util.List;

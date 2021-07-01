@@ -16,7 +16,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
