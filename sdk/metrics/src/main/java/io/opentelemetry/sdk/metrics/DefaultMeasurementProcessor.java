@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.state.InstrumentStorage;
 import io.opentelemetry.sdk.metrics.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.state.WriteableInstrumentStorage;
+import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
 import java.util.function.Consumer;
 
 /** A default implementation of measurement processor. */
@@ -50,20 +51,18 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
+    // TODO: Check views.
+
+    // Default storage.
     switch (instrument.getType()) {
       case COUNTER:
       case UP_DOWN_COUNTER:
         return InstrumentStorage.createSynchronous(
-            instrument,
-            meterProviderSharedState,
-            meterSharedState,
-            sum(instrument, meterProviderSharedState, meterSharedState));
+            sum(instrument, meterProviderSharedState, meterSharedState), AttributesProcessor.NOOP);
       case HISTOGRAM:
         return InstrumentStorage.createSynchronous(
-            instrument,
-            meterProviderSharedState,
-            meterSharedState,
-            histogram(instrument, meterProviderSharedState, meterSharedState));
+            histogram(instrument, meterProviderSharedState, meterSharedState),
+            AttributesProcessor.NOOP);
       default:
         throw new IllegalArgumentException(
             "Unsupported synchronous metric: " + instrument.getType());
@@ -76,14 +75,24 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       Consumer<T> callback) {
+    // TODO: Check views.
+
+    // TODO: Check if name conflicts with view, but view was not selected, then we have naming
+    // conflict.
+
+    // Default storage.
     switch (instrument.getType()) {
       case OBSERVABLE_SUM:
       case OBSERVBALE_UP_DOWN_SUM:
         return InstrumentStorage.createAsynchronous(
-            instrument, callback, sum(instrument, meterProviderSharedState, meterSharedState));
+            callback,
+            sum(instrument, meterProviderSharedState, meterSharedState),
+            AttributesProcessor.NOOP);
       case OBSERVABLE_GAUGE:
         return InstrumentStorage.createAsynchronous(
-            instrument, callback, gauge(instrument, meterProviderSharedState, meterSharedState));
+            callback,
+            gauge(instrument, meterProviderSharedState, meterSharedState),
+            AttributesProcessor.NOOP);
       default:
         throw new IllegalArgumentException(
             "Unsupported asynchronous metric: " + instrument.getType());

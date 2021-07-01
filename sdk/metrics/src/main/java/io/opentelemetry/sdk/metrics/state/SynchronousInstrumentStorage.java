@@ -6,11 +6,12 @@
 package io.opentelemetry.sdk.metrics.state;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.SynchronousHandle;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.instrument.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,37 +27,47 @@ import java.util.concurrent.locks.ReentrantLock;
 final class SynchronousInstrumentStorage<T> implements WriteableInstrumentStorage {
   private final ConcurrentHashMap<Attributes, SynchronousHandle<T>> perAttrributeStorage;
   private final ReentrantLock collectLock;
-  private final InstrumentDescriptor descriptor;
   private final Aggregator<T> aggregator;
+  private final AttributesProcessor attributesProcessor;
 
   public static <T> SynchronousInstrumentStorage<T> create(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      Aggregator<T> aggregator) {
-    return new SynchronousInstrumentStorage<T>(descriptor, aggregator);
+      Aggregator<T> aggregator, AttributesProcessor attributesProcessor) {
+    return new SynchronousInstrumentStorage<T>(aggregator, attributesProcessor);
   }
 
-  SynchronousInstrumentStorage(InstrumentDescriptor descriptor, Aggregator<T> aggregator) {
+  SynchronousInstrumentStorage(Aggregator<T> aggregator, AttributesProcessor attributesProcessor) {
     perAttrributeStorage = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
-    this.descriptor = descriptor;
     this.aggregator = aggregator;
+    this.attributesProcessor = attributesProcessor;
   }
 
-  @Override
-  public InstrumentDescriptor getDescriptor() {
-    return descriptor;
-  }
+  private final StorageHandle lateBoundStorageHandle =
+      new StorageHandle() {
+        @Override
+        public void record(Measurement measurement) {
+          SynchronousInstrumentStorage.this.record(measurement);
+        }
+
+        @Override
+        public void release() {}
+      };
 
   /**
    * Obtain exclusive write access to metric stream for this instrument defined by this set of
    * attributes.
    */
   @Override
-  public SynchronousHandle<T> bind(Attributes attributes) {
+  public StorageHandle bind(Attributes attributes) {
     Objects.requireNonNull(attributes, "attributes");
-    // TODO - equivalent of labels processor?
+    if (attributesProcessor.usesContext()) {
+      return lateBoundStorageHandle;
+    }
+    return doBind(attributesProcessor.process(attributes, Context.current()));
+  }
+
+  /** version of "bind" that does NOT call attributesProcessor. */
+  private StorageHandle doBind(Attributes attributes) {
     SynchronousHandle<T> storageHandle = perAttrributeStorage.get(attributes);
     if (storageHandle != null && storageHandle.acquire()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
@@ -85,7 +96,8 @@ final class SynchronousInstrumentStorage<T> implements WriteableInstrumentStorag
   /** Writes a measurement into the appropriate metric stream. */
   @Override
   public void record(Measurement measurement) {
-    SynchronousHandle<T> handle = bind(measurement.getAttributes());
+    StorageHandle handle =
+        doBind(attributesProcessor.process(measurement.getAttributes(), measurement.getContext()));
     try {
       handle.record(measurement);
     } finally {

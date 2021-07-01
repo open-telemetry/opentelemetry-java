@@ -19,6 +19,12 @@ import java.util.function.Supplier;
  *
  * <p>This class is intended to match specification restrictions on Meter, providing a shared-state
  * backing for Meters.
+ *
+ * <p>Going forward, this registry needs to be modified to support/allow the following: 1. The
+ * InstrumentStorage APi should be passed to the synchronous instrument for writing. 2. For
+ * Asynchronous instruments, we want to make sure metrics are collected appropriately. 3. When a
+ * view exists, we replace the normal InstrumentStorage returned with a "view" version. This should:
+ * aggreate appropriate instruments returned + join async builders if appropriate, etc.
  */
 public final class InstrumentStorageRegistry {
   private final ConcurrentMap<String, InstrumentStorage> registry = new ConcurrentHashMap<>();
@@ -40,11 +46,8 @@ public final class InstrumentStorageRegistry {
     InstrumentStorage oldOrNewInstrument =
         registry.computeIfAbsent(
             descriptor.getName().toLowerCase(), (key) -> instrumentBuilder.get());
-    if (!descriptor.isCompatibleWith(oldOrNewInstrument.getDescriptor())) {
-      // TODO: Add details on the differences and possibly who registered the previous.
-      throw new IllegalArgumentException(
-          "Instrument with same name and different descriptor already created.");
-    }
+    // TODO: We want to amke sure the storage for this instrument is compatible with the previous.
+    // TODO: We also want to allow "views" to present writable interfaces for instruments.
     return (I) oldOrNewInstrument;
   }
 
