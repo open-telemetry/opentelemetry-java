@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.metrics.common.Labels;
@@ -67,9 +68,7 @@ public class SynchronousInstrumentAccumulatorTest {
     md.stream()
         .flatMap(m -> m.getLongGaugeData().getPoints().stream())
         .forEach(
-            p ->
-                assertThat(p.getLabels().asMap())
-                    .isEqualTo(labels.toBuilder().put("modifiedK", "modifiedV").build().asMap()));
+            p -> assertThat(p.getAttributes()).hasSize(1).containsEntry("modifiedK", "modifiedV"));
   }
 
   @Test

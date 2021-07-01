@@ -7,8 +7,14 @@ package io.opentelemetry.sdk.metrics.data;
 
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * A sum metric point.
+ *
+ * <p>See:
+ * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#sums
+ */
 @Immutable
-interface SumData<T extends PointData> extends Data<T> {
+public interface SumData<T extends PointData> extends Data<T> {
   /**
    * Returns "true" if the sum is monotonic.
    *

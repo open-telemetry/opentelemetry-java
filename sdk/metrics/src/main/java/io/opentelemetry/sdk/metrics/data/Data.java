@@ -8,6 +8,12 @@ package io.opentelemetry.sdk.metrics.data;
 import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * A collection of data points associated to a metric.
+ *
+ * <p>Loosely equivalent with "Metric" message in OTLP. See:
+ * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#metric-points
+ */
 @Immutable
 interface Data<T extends PointData> {
   /**

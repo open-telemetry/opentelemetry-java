@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,6 +19,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class DoubleHistogramPointData implements PointData {
+
   /**
    * Creates a DoubleHistogramPointData. For a Histogram with N defined boundaries, there should be
    * N+1 counts.
@@ -29,7 +30,7 @@ public abstract class DoubleHistogramPointData implements PointData {
   public static DoubleHistogramPointData create(
       long startEpochNanos,
       long epochNanos,
-      Labels labels,
+      Attributes attributes,
       double sum,
       List<Double> boundaries,
       List<Long> counts) {
@@ -55,7 +56,7 @@ public abstract class DoubleHistogramPointData implements PointData {
     return new AutoValue_DoubleHistogramPointData(
         startEpochNanos,
         epochNanos,
-        labels,
+        attributes,
         sum,
         totalCount,
         Collections.unmodifiableList(new ArrayList<>(boundaries)),

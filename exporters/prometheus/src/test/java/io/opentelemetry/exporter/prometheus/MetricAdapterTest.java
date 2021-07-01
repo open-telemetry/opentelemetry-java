@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
@@ -36,6 +35,8 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link MetricAdapter}. */
 class MetricAdapterTest {
 
+  private static final Attributes KP_VP_ATTR = Attributes.of(stringKey("kp"), "vp");
+
   private static final MetricData MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -46,8 +47,7 @@ class MetricAdapterTest {
           DoubleSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.CUMULATIVE,
-              Collections.singletonList(
-                  DoublePointData.create(123, 456, Labels.of("kp", "vp"), 5))));
+              Collections.singletonList(DoublePointData.create(123, 456, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM =
       MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -58,8 +58,7 @@ class MetricAdapterTest {
           DoubleSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.CUMULATIVE,
-              Collections.singletonList(
-                  DoublePointData.create(123, 456, Labels.of("kp", "vp"), 5))));
+              Collections.singletonList(DoublePointData.create(123, 456, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_DELTA_DOUBLE_SUM =
       MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -70,8 +69,7 @@ class MetricAdapterTest {
           DoubleSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.DELTA,
-              Collections.singletonList(
-                  DoublePointData.create(123, 456, Labels.of("kp", "vp"), 5))));
+              Collections.singletonList(DoublePointData.create(123, 456, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_DELTA_DOUBLE_SUM =
       MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -82,8 +80,7 @@ class MetricAdapterTest {
           DoubleSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.DELTA,
-              Collections.singletonList(
-                  DoublePointData.create(123, 456, Labels.of("kp", "vp"), 5))));
+              Collections.singletonList(DoublePointData.create(123, 456, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_CUMULATIVE_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -94,7 +91,7 @@ class MetricAdapterTest {
           LongSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.CUMULATIVE,
-              Collections.singletonList(LongPointData.create(123, 456, Labels.of("kp", "vp"), 5))));
+              Collections.singletonList(LongPointData.create(123, 456, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -105,7 +102,7 @@ class MetricAdapterTest {
           LongSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.CUMULATIVE,
-              Collections.singletonList(LongPointData.create(123, 456, Labels.of("kp", "vp"), 5))));
+              Collections.singletonList(LongPointData.create(123, 456, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_DELTA_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -116,7 +113,7 @@ class MetricAdapterTest {
           LongSumData.create(
               /* isMonotonic= */ true,
               AggregationTemporality.DELTA,
-              Collections.singletonList(LongPointData.create(123, 456, Labels.of("kp", "vp"), 5))));
+              Collections.singletonList(LongPointData.create(123, 456, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_DELTA_LONG_SUM =
       MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -127,7 +124,7 @@ class MetricAdapterTest {
           LongSumData.create(
               /* isMonotonic= */ false,
               AggregationTemporality.DELTA,
-              Collections.singletonList(LongPointData.create(123, 456, Labels.of("kp", "vp"), 5))));
+              Collections.singletonList(LongPointData.create(123, 456, KP_VP_ATTR, 5))));
 
   private static final MetricData DOUBLE_GAUGE =
       MetricData.createDoubleGauge(
@@ -137,8 +134,7 @@ class MetricAdapterTest {
           "description",
           "1",
           DoubleGaugeData.create(
-              Collections.singletonList(
-                  DoublePointData.create(123, 456, Labels.of("kp", "vp"), 5))));
+              Collections.singletonList(DoublePointData.create(123, 456, KP_VP_ATTR, 5))));
   private static final MetricData LONG_GAUGE =
       MetricData.createLongGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -147,7 +143,7 @@ class MetricAdapterTest {
           "description",
           "1",
           LongGaugeData.create(
-              Collections.singletonList(LongPointData.create(123, 456, Labels.of("kp", "vp"), 5))));
+              Collections.singletonList(LongPointData.create(123, 456, KP_VP_ATTR, 5))));
   private static final MetricData SUMMARY =
       MetricData.createDoubleSummary(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -158,7 +154,7 @@ class MetricAdapterTest {
           DoubleSummaryData.create(
               Collections.singletonList(
                   DoubleSummaryPointData.create(
-                      123, 456, Labels.of("kp", "vp"), 5, 7, Collections.emptyList()))));
+                      123, 456, KP_VP_ATTR, 5, 7, Collections.emptyList()))));
   private static final MetricData HISTOGRAM =
       MetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
@@ -172,7 +168,7 @@ class MetricAdapterTest {
                   DoubleHistogramPointData.create(
                       123,
                       456,
-                      Labels.of("kp", "vp"),
+                      KP_VP_ATTR,
                       1.0,
                       Collections.emptyList(),
                       Collections.singletonList(2L)))));
@@ -240,8 +236,8 @@ class MetricAdapterTest {
                 "full_name",
                 MetricDataType.LONG_SUM,
                 ImmutableList.of(
-                    LongPointData.create(123, 456, Labels.empty(), 5),
-                    LongPointData.create(321, 654, Labels.of("kp", "vp"), 7))))
+                    LongPointData.create(123, 456, Attributes.empty(), 5),
+                    LongPointData.create(321, 654, KP_VP_ATTR, 7))))
         .containsExactly(
             new Sample("full_name", Collections.emptyList(), Collections.emptyList(), 5),
             new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 7));
@@ -251,8 +247,8 @@ class MetricAdapterTest {
                 "full_name",
                 MetricDataType.LONG_GAUGE,
                 ImmutableList.of(
-                    LongPointData.create(123, 456, Labels.empty(), 5),
-                    LongPointData.create(321, 654, Labels.of("kp", "vp"), 7))))
+                    LongPointData.create(123, 456, Attributes.empty(), 5),
+                    LongPointData.create(321, 654, KP_VP_ATTR, 7))))
         .containsExactly(
             new Sample("full_name", Collections.emptyList(), Collections.emptyList(), 5),
             new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 7));
@@ -269,8 +265,7 @@ class MetricAdapterTest {
             MetricAdapter.toSamples(
                 "full_name",
                 MetricDataType.DOUBLE_SUM,
-                Collections.singletonList(
-                    DoublePointData.create(123, 456, Labels.of("kp", "vp"), 5))))
+                Collections.singletonList(DoublePointData.create(123, 456, KP_VP_ATTR, 5))))
         .containsExactly(
             new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 5));
 
@@ -279,8 +274,8 @@ class MetricAdapterTest {
                 "full_name",
                 MetricDataType.DOUBLE_GAUGE,
                 ImmutableList.of(
-                    DoublePointData.create(123, 456, Labels.empty(), 5),
-                    DoublePointData.create(321, 654, Labels.of("kp", "vp"), 7))))
+                    DoublePointData.create(123, 456, Attributes.empty(), 5),
+                    DoublePointData.create(321, 654, KP_VP_ATTR, 7))))
         .containsExactly(
             new Sample("full_name", Collections.emptyList(), Collections.emptyList(), 5),
             new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 7));
@@ -300,7 +295,7 @@ class MetricAdapterTest {
                     DoubleSummaryPointData.create(
                         321,
                         654,
-                        Labels.of("kp", "vp"),
+                        KP_VP_ATTR,
                         9,
                         18.3,
                         ImmutableList.of(ValueAtPercentile.create(0.9, 1.1))))))
@@ -319,11 +314,11 @@ class MetricAdapterTest {
                 MetricDataType.SUMMARY,
                 ImmutableList.of(
                     DoubleSummaryPointData.create(
-                        123, 456, Labels.empty(), 7, 15.3, Collections.emptyList()),
+                        123, 456, Attributes.empty(), 7, 15.3, Collections.emptyList()),
                     DoubleSummaryPointData.create(
                         321,
                         654,
-                        Labels.of("kp", "vp"),
+                        KP_VP_ATTR,
                         9,
                         18.3,
                         ImmutableList.of(
@@ -360,7 +355,7 @@ class MetricAdapterTest {
                     DoubleHistogramPointData.create(
                         321,
                         654,
-                        Labels.of("kp", "vp"),
+                        KP_VP_ATTR,
                         18.3,
                         ImmutableList.of(1.0),
                         ImmutableList.of(4L, 9L)))))

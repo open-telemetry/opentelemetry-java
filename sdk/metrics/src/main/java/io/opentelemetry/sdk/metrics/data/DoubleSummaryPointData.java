@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -20,12 +20,12 @@ public abstract class DoubleSummaryPointData implements PointData {
   public static DoubleSummaryPointData create(
       long startEpochNanos,
       long epochNanos,
-      Labels labels,
+      Attributes attributes,
       long count,
       double sum,
       List<ValueAtPercentile> percentileValues) {
     return new AutoValue_DoubleSummaryPointData(
-        startEpochNanos, epochNanos, labels, count, sum, percentileValues);
+        startEpochNanos, epochNanos, attributes, count, sum, percentileValues);
   }
 
   DoubleSummaryPointData() {}

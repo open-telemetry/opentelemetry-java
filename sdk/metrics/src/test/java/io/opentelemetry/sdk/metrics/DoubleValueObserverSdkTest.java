@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
@@ -13,11 +14,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleValueObserverSdk}. */
@@ -54,6 +51,7 @@ class DoubleValueObserverSdkTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     sdkMeter
         .doubleValueObserverBuilder("testObserver")
@@ -63,27 +61,41 @@ class DoubleValueObserverSdkTest {
         .build();
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createDoubleGauge(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "My own DoubleValueObserver",
-                "ms",
-                DoubleGaugeData.create(
-                    Collections.singletonList(
-                        DoublePointData.create(0, testClock.now(), Labels.of("k", "v"), 12.1d)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testObserver")
+                    .hasDescription("My own DoubleValueObserver")
+                    .hasUnit("ms")
+                    .hasDoubleGauge()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.builder().put("k", "v").build())
+                                .hasValue(12.1d)));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createDoubleGauge(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testObserver",
-                "My own DoubleValueObserver",
-                "ms",
-                DoubleGaugeData.create(
-                    Collections.singletonList(
-                        DoublePointData.create(0, testClock.now(), Labels.of("k", "v"), 12.1d)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testObserver")
+                    .hasDescription("My own DoubleValueObserver")
+                    .hasUnit("ms")
+                    .hasDoubleGauge()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(0)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.builder().put("k", "v").build())
+                                .hasValue(12.1d)));
   }
 }

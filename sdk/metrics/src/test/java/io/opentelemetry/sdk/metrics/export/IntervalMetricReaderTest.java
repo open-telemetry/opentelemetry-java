@@ -13,7 +13,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -45,7 +45,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class IntervalMetricReaderTest {
   private static final List<LongPointData> LONG_POINT_LIST =
-      Collections.singletonList(LongPointData.create(1000, 3000, Labels.empty(), 1234567));
+      Collections.singletonList(LongPointData.create(1000, 3000, Attributes.empty(), 1234567));
 
   private static final MetricData METRIC_DATA =
       MetricData.createLongSum(

@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.prometheus;
 
 import static io.prometheus.client.Collector.doubleToGoString;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
@@ -102,15 +101,17 @@ final class MetricAdapter {
     final List<Sample> samples = new ArrayList<>(estimateNumSamples(points.size(), type));
 
     for (PointData pointData : points) {
-      List<String> labelNames = Collections.emptyList();
-      List<String> labelValues = Collections.emptyList();
-      Labels labels = pointData.getLabels();
-      if (labels.size() != 0) {
-        labelNames = new ArrayList<>(labels.size());
-        labelValues = new ArrayList<>(labels.size());
-
-        labels.forEach(new Consumer(labelNames, labelValues));
-      }
+      Attributes attributes = pointData.getAttributes();
+      final List<String> labelNames = new ArrayList<>(attributes.size());
+      final List<String> labelValues = new ArrayList<>(attributes.size());
+      attributes.forEach(
+          (key, value) -> {
+            String sanitizedLabelName = sanitizer.apply(key.getKey());
+            labelNames.add(sanitizedLabelName);
+            // TODO: We want to create an error-log if there is overlap in toString of attribute
+            // values for the same key name.
+            labelValues.add(value == null ? "" : value.toString());
+          });
 
       switch (type) {
         case DOUBLE_SUM:
@@ -134,23 +135,6 @@ final class MetricAdapter {
       }
     }
     return samples;
-  }
-
-  private static final class Consumer implements BiConsumer<String, String> {
-    final List<String> labelNames;
-    final List<String> labelValues;
-
-    private Consumer(List<String> labelNames, List<String> labelValues) {
-      this.labelNames = labelNames;
-      this.labelValues = labelValues;
-    }
-
-    @Override
-    public void accept(String labelName, String value) {
-      String sanitizedLabelName = sanitizer.apply(labelName);
-      labelNames.add(sanitizedLabelName);
-      labelValues.add(value == null ? "" : value);
-    }
   }
 
   private static void addSummarySamples(

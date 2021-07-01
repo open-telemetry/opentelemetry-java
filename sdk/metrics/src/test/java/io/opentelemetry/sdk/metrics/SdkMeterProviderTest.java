@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -22,14 +23,8 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.LongGaugeData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -55,6 +50,7 @@ public class SdkMeterProviderTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectAllSyncInstruments() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
@@ -76,92 +72,117 @@ public class SdkMeterProviderTest {
     doubleValueRecorder.record(10.1, Labels.empty());
 
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactlyInAnyOrder(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 10)))),
-            MetricData.createDoubleSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleCounter",
-                "",
-                "1",
-                DoubleSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 10.1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongUpDownCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ false,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now(), testClock.now(), Labels.empty(), -10)))),
-            MetricData.createDoubleSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleUpDownCounter",
-                "",
-                "1",
-                DoubleSumData.create(
-                    /* isMonotonic= */ false,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now(), testClock.now(), Labels.empty(), -10.1)))),
-            MetricData.createDoubleSummary(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongValueRecorder",
-                "",
-                "1",
-                DoubleSummaryData.create(
-                    Collections.singletonList(
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.empty(),
-                            1,
-                            10,
-                            Arrays.asList(
-                                ValueAtPercentile.create(0, 10),
-                                ValueAtPercentile.create(100, 10)))))),
-            MetricData.createDoubleSummary(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleValueRecorder",
-                "",
-                "1",
-                DoubleSummaryData.create(
-                    Collections.singletonList(
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.empty(),
-                            1,
-                            10.1d,
-                            Arrays.asList(
-                                ValueAtPercentile.create(0, 10.1d),
-                                ValueAtPercentile.create(100, 10.1d)))))));
+        .allSatisfy(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasDescription("")
+                    .hasUnit("1"))
+        .satisfiesExactlyInAnyOrder(
+            // Note: summary metric is being deprecated.
+            metric ->
+                assertThat(metric)
+                    .isEqualTo(
+                        MetricData.createDoubleSummary(
+                            RESOURCE,
+                            INSTRUMENTATION_LIBRARY_INFO,
+                            "testDoubleValueRecorder",
+                            "",
+                            "1",
+                            DoubleSummaryData.create(
+                                Collections.singletonList(
+                                    DoubleSummaryPointData.create(
+                                        testClock.now(),
+                                        testClock.now(),
+                                        Attributes.empty(),
+                                        1,
+                                        10.1d,
+                                        Arrays.asList(
+                                            ValueAtPercentile.create(0, 10.1d),
+                                            ValueAtPercentile.create(100, 10.1d))))))),
+            metric ->
+                assertThat(metric)
+                    .hasName("testDoubleCounter")
+                    .hasDoubleSum()
+                    .isMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10.1)),
+
+            // Note: Summary is deprecated, we don't have a nice matcher for this.
+            metric ->
+                assertThat(metric)
+                    .isEqualTo(
+                        MetricData.createDoubleSummary(
+                            RESOURCE,
+                            INSTRUMENTATION_LIBRARY_INFO,
+                            "testLongValueRecorder",
+                            "",
+                            "1",
+                            DoubleSummaryData.create(
+                                Collections.singletonList(
+                                    DoubleSummaryPointData.create(
+                                        testClock.now(),
+                                        testClock.now(),
+                                        Attributes.empty(),
+                                        1,
+                                        10,
+                                        Arrays.asList(
+                                            ValueAtPercentile.create(0, 10),
+                                            ValueAtPercentile.create(100, 10))))))),
+            metric ->
+                assertThat(metric)
+                    .hasName("testLongUpDownCounter")
+                    .hasLongSum()
+                    .isNotMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(-10)),
+            metric ->
+                assertThat(metric)
+                    .hasName("testLongCounter")
+                    .hasLongSum()
+                    .isMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10)),
+            metric ->
+                assertThat(metric)
+                    .hasName("testDoubleUpDownCounter")
+                    .hasDoubleSum()
+                    .isNotMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(-10.1)));
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectAllSyncInstruments_OverwriteTemporality() {
     sdkMeterProviderBuilder.registerView(
         InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
@@ -176,40 +197,48 @@ public class SdkMeterProviderTest {
     testClock.advanceNanos(50);
 
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactlyInAnyOrder(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 10)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testLongCounter")
+                    .hasLongSum()
+                    .isMonotonic()
+                    .isDelta()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10)));
 
     longCounter.add(10, Labels.empty());
     testClock.advanceNanos(50);
 
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactlyInAnyOrder(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 10)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasLongSum()
+                    .isMonotonic()
+                    .isDelta()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10)));
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectAllSyncInstruments_DeltaCount() {
     registerViewForAllTypes(
         sdkMeterProviderBuilder, AggregatorFactory.count(AggregationTemporality.DELTA));
@@ -235,79 +264,32 @@ public class SdkMeterProviderTest {
     testClock.advanceNanos(50);
 
     assertThat(sdkMeterProvider.collectAllMetrics())
+        .allSatisfy(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasDescription("")
+                    .hasUnit("1")
+                    .hasLongSum()
+                    .isMonotonic()
+                    .isDelta()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(1)))
+        .extracting(metric -> metric.getName())
         .containsExactlyInAnyOrder(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongUpDownCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleUpDownCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongValueRecorder",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleValueRecorder",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))));
+            "testLongCounter",
+            "testDoubleCounter",
+            "testLongUpDownCounter",
+            "testDoubleUpDownCounter",
+            "testLongValueRecorder",
+            "testDoubleValueRecorder");
 
     testClock.advanceNanos(50);
 
@@ -319,82 +301,36 @@ public class SdkMeterProviderTest {
     doubleValueRecorder.record(10.1, Labels.empty());
 
     assertThat(sdkMeterProvider.collectAllMetrics())
+        .allSatisfy(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasDescription("")
+                    .hasUnit("1")
+                    .hasLongSum()
+                    .isMonotonic()
+                    .isDelta()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(1)))
+        .extracting(metric -> metric.getName())
         .containsExactlyInAnyOrder(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongUpDownCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleUpDownCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongValueRecorder",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleValueRecorder",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.DELTA,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))));
+            "testLongCounter",
+            "testDoubleCounter",
+            "testLongUpDownCounter",
+            "testDoubleUpDownCounter",
+            "testLongValueRecorder",
+            "testDoubleValueRecorder");
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
@@ -425,76 +361,98 @@ public class SdkMeterProviderTest {
         .build();
 
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactlyInAnyOrder(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongSumObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 10)))),
-            MetricData.createDoubleSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleSumObserver",
-                "",
-                "1",
-                DoubleSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now(), testClock.now(), Labels.empty(), 10.1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongUpDownSumObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ false,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now(), testClock.now(), Labels.empty(), -10)))),
-            MetricData.createDoubleSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleUpDownSumObserver",
-                "",
-                "1",
-                DoubleSumData.create(
-                    /* isMonotonic= */ false,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        DoublePointData.create(
-                            testClock.now(), testClock.now(), Labels.empty(), -10.1)))),
-            MetricData.createLongGauge(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongValueObserver",
-                "",
-                "1",
-                LongGaugeData.create(
-                    Collections.singletonList(
-                        LongPointData.create(0, testClock.now(), Labels.empty(), 10)))),
-            MetricData.createDoubleGauge(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleValueObserver",
-                "",
-                "1",
-                DoubleGaugeData.create(
-                    Collections.singletonList(
-                        DoublePointData.create(0, testClock.now(), Labels.empty(), 10.1)))));
+        .allSatisfy(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasDescription("")
+                    .hasUnit("1"))
+        .satisfiesExactlyInAnyOrder(
+            metric ->
+                assertThat(metric)
+                    .hasName("testLongSumObserver")
+                    .hasLongSum()
+                    .isMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10)),
+            metric ->
+                assertThat(metric)
+                    .hasName("testDoubleSumObserver")
+                    .hasDoubleSum()
+                    .isMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10.1)),
+            metric ->
+                assertThat(metric)
+                    .hasName("testLongUpDownSumObserver")
+                    .hasLongSum()
+                    .isNotMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(-10)),
+            metric ->
+                assertThat(metric)
+                    .hasName("testDoubleUpDownSumObserver")
+                    .hasDoubleSum()
+                    .isNotMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(-10.1)),
+            metric ->
+                assertThat(metric)
+                    .hasName("testLongValueObserver")
+                    .hasLongGauge()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(0) // Gauges have no start time?
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10)),
+            metric ->
+                assertThat(metric)
+                    .hasName("testDoubleValueObserver")
+                    .hasDoubleGauge()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(0) // Gauges have no start time?
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(10.1)));
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments_CumulativeCount() {
     registerViewForAllTypes(
         sdkMeterProviderBuilder, AggregatorFactory.count(AggregationTemporality.CUMULATIVE));
@@ -529,156 +487,62 @@ public class SdkMeterProviderTest {
     testClock.advanceNanos(50);
 
     assertThat(sdkMeterProvider.collectAllMetrics())
+        .allSatisfy(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasDescription("")
+                    .hasUnit("1")
+                    .hasLongSum()
+                    .isMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(1)))
+        .extracting(metric -> metric.getName())
         .containsExactlyInAnyOrder(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongSumObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleSumObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongUpDownSumObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleUpDownSumObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongValueObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleValueObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 50, testClock.now(), Labels.empty(), 1)))));
+            "testLongSumObserver",
+            "testDoubleSumObserver",
+            "testLongUpDownSumObserver",
+            "testDoubleUpDownSumObserver",
+            "testLongValueObserver",
+            "testDoubleValueObserver");
 
     testClock.advanceNanos(50);
 
     assertThat(sdkMeterProvider.collectAllMetrics())
+        .allSatisfy(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasDescription("")
+                    .hasUnit("1")
+                    .hasLongSum()
+                    .isMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now() - 100)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(2)))
+        .extracting(metric -> metric.getName())
         .containsExactlyInAnyOrder(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongSumObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 100, testClock.now(), Labels.empty(), 2)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleSumObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 100, testClock.now(), Labels.empty(), 2)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongUpDownSumObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 100, testClock.now(), Labels.empty(), 2)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleUpDownSumObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 100, testClock.now(), Labels.empty(), 2)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testLongValueObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 100, testClock.now(), Labels.empty(), 2)))),
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testDoubleValueObserver",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - 100, testClock.now(), Labels.empty(), 2)))));
+            "testLongSumObserver",
+            "testDoubleSumObserver",
+            "testLongUpDownSumObserver",
+            "testDoubleUpDownSumObserver",
+            "testLongValueObserver",
+            "testDoubleValueObserver");
   }
 
   private static void registerViewForAllTypes(
