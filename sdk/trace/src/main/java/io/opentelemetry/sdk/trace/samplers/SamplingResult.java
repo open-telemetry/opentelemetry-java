@@ -23,8 +23,8 @@ import javax.annotation.concurrent.Immutable;
 public interface SamplingResult {
 
   /**
-   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_AND_SAMPLE} with
-   * no attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
+   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_AND_SAMPLE}
+   * with no attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
    *
    * <p>Use {@link #recordAndSample(Attributes)} if you need attributes.
    *
@@ -37,8 +37,9 @@ public interface SamplingResult {
   }
 
   /**
-   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_AND_SAMPLE} with
-   * the given {@code attributes} and {@link SamplingResult#getDecision()} returning {@code decision}.
+   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_AND_SAMPLE}
+   * with the given {@code attributes} and {@link SamplingResult#getDecision()} returning
+   * {@code decision}.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
@@ -54,7 +55,8 @@ public interface SamplingResult {
     requireNonNull(attributes, "attributes");
     return attributes.isEmpty()
         ? ImmutableSamplingResult.getEmptyRecordedAndSampledSamplingResult()
-        : ImmutableSamplingResult.createSamplingResult(SamplingDecision.RECORD_AND_SAMPLE, attributes);
+        : ImmutableSamplingResult.createSamplingResult(
+            SamplingDecision.RECORD_AND_SAMPLE, attributes);
   }
 
   /**
@@ -73,7 +75,8 @@ public interface SamplingResult {
 
   /**
    * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_ONLY} with
-   * the given {@code attributes} and {@link SamplingResult#getDecision()} returning {@code decision}.
+   * the given {@code attributes} and {@link SamplingResult#getDecision()} returning
+   * {@code decision}.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
@@ -108,7 +111,8 @@ public interface SamplingResult {
 
   /**
    * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#DROP} with
-   * the given {@code attributes} and {@link SamplingResult#getDecision()} returning {@code decision}.
+   * the given {@code attributes} and {@link SamplingResult#getDecision()} returning
+   * {@code decision}.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
