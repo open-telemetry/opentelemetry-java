@@ -200,6 +200,7 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 - [Giovanni Liva](https://github.com/thisthat), Dynatrace
 - [Christian Neumüller](https://github.com/Oberon00), Dynatrace
 - [Carlos Alberto](https://github.com/carlosalberto), LightStep
+- [Jakub Wach](https://github.com/kubawach), Splunk
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
 
