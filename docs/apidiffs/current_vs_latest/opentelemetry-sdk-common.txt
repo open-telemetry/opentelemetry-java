@@ -1,4 +1,7 @@
 Comparing source compatibility of  against 
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.common.Clock  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++! NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.Clock getDefault()
 **** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.common.InstrumentationLibraryInfo  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.InstrumentationLibraryInfo create(java.lang.String, java.lang.String, java.lang.String)

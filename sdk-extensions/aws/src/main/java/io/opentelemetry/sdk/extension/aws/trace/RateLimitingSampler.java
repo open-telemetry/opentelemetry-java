@@ -10,7 +10,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.RateLimiter;
-import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
@@ -23,7 +22,7 @@ final class RateLimitingSampler implements Sampler {
   private final int numPerSecond;
 
   RateLimitingSampler(int numPerSecond) {
-    this(numPerSecond, SystemClock.getInstance());
+    this(numPerSecond, Clock.getDefault());
   }
 
   // Visible for testing

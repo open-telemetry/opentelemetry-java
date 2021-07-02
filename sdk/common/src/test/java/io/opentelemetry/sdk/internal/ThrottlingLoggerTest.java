@@ -12,6 +12,7 @@ import static org.slf4j.event.Level.WARN;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.Test;

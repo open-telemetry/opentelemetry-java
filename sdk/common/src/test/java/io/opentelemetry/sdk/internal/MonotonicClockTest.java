@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.testing.time.TestClock;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link MonotonicClock}. */

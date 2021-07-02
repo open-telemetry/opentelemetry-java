@@ -10,6 +10,15 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Interface for getting the current time. */
 @ThreadSafe
 public interface Clock {
+
+  /**
+   * Returns a default {@link Clock} which reads from {@linkplain System#currentTimeMillis() system
+   * time}.
+   */
+  static Clock getDefault() {
+    return SystemClock.getInstance();
+  }
+
   /**
    * Obtains the current epoch timestamp in nanos from this clock.
    *

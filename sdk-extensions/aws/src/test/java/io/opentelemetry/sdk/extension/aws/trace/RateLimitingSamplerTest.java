@@ -11,7 +11,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;

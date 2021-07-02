@@ -1,2 +1,11 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.time.TestClock  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) void advanceMillis(long)
+	+++  NEW METHOD: PUBLIC(+) void advanceNanos(long)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.time.TestClock create()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.time.TestClock create(long)
+	+++  NEW METHOD: PUBLIC(+) long nanoTime()
+	+++  NEW METHOD: PUBLIC(+) long now()
+	+++  NEW METHOD: PUBLIC(+) void setTime(long)

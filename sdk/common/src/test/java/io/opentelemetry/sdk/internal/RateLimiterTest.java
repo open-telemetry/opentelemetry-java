@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.common.Clock;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnJre;
 import org.junit.jupiter.api.condition.EnabledOnJre;
@@ -22,7 +23,7 @@ class SystemClockTest {
     // If we test many times, we can be fairly sure we didn't just get lucky with having a rounded
     // result on a higher than expected precision timestamp.
     for (int i = 0; i < 100; i++) {
-      long now = SystemClock.getInstance().now();
+      long now = Clock.getDefault().now();
       assertThat(now % 1000000).isZero();
     }
   }
@@ -34,7 +35,7 @@ class SystemClockTest {
     // coincidentally rounded to millis precision.
     int numHasMicros = 0;
     for (int i = 0; i < 100; i++) {
-      long now = SystemClock.getInstance().now();
+      long now = Clock.getDefault().now();
       if (now % 1000000 != 0) {
         numHasMicros++;
       }
