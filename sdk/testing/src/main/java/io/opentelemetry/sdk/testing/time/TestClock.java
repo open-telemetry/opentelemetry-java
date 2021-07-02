@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.testing.time;
 
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -28,45 +30,27 @@ public final class TestClock implements Clock {
    */
   public static TestClock create() {
     // Set Time to Tuesday, May 7, 2019 12:00:00 AM GMT-07:00 DST
-    return create(TimeUnit.MILLISECONDS.toNanos(1_557_212_400_000L));
+    return create(Instant.ofEpochMilli(1_557_212_400_000L));
   }
 
-  /**
-   * Creates a clock with the given time.
-   *
-   * @param epochNanos the initial time in nanos since epoch.
-   * @return a new {@code TestClock} with the given time.
-   */
-  public static TestClock create(long epochNanos) {
-    return new TestClock(epochNanos);
+  /** Creates a clock with the given time. */
+  public static TestClock create(Instant instant) {
+    return new TestClock(toNanos(instant));
   }
 
-  /**
-   * Sets the time.
-   *
-   * @param epochNanos the new time.
-   */
-  public synchronized void setTime(long epochNanos) {
-    currentEpochNanos = epochNanos;
+  /** Sets the current time. */
+  public synchronized void setTime(Instant instant) {
+    currentEpochNanos = toNanos(instant);
   }
 
-  /**
-   * Advances the time by millis and mutates this instance.
-   *
-   * @param millis the increase in time.
-   */
-  public synchronized void advanceMillis(long millis) {
-    long nanos = TimeUnit.MILLISECONDS.toNanos(millis);
-    currentEpochNanos += nanos;
+  /** Advances the time and mutates this instance. */
+  public synchronized void advance(Duration duration) {
+    advance(duration.toNanos(), TimeUnit.NANOSECONDS);
   }
 
-  /**
-   * Advances the time by nanos and mutates this instance.
-   *
-   * @param nanos the increase in time.
-   */
-  public synchronized void advanceNanos(long nanos) {
-    currentEpochNanos += nanos;
+  /** Advances the time and mutates this instance. */
+  public synchronized void advance(long duration, TimeUnit unit) {
+    currentEpochNanos += unit.toNanos(duration);
   }
 
   @Override
@@ -77,5 +61,9 @@ public final class TestClock implements Clock {
   @Override
   public synchronized long nanoTime() {
     return currentEpochNanos;
+  }
+
+  private static long toNanos(Instant instant) {
+    return TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
   }
 }

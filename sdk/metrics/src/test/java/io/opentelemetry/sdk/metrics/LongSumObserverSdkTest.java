@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.common.Labels;
@@ -20,6 +19,7 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongSumObserverSdk}. */
@@ -67,7 +67,7 @@ class LongSumObserverSdkTest {
         .longSumObserverBuilder("testObserver")
         .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
         .build();
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -88,7 +88,7 @@ class LongSumObserverSdkTest {
                                 .attributes()
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -128,7 +128,7 @@ class LongSumObserverSdkTest {
         .longSumObserverBuilder("testObserver")
         .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
         .build();
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -149,7 +149,7 @@ class LongSumObserverSdkTest {
                                 .attributes()
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
             metric ->

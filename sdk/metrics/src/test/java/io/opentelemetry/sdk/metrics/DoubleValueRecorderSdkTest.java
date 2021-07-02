@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -74,7 +75,7 @@ class DoubleValueRecorderSdkTest {
             .setDescription("description")
             .setUnit("ms")
             .build();
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleRecorder.record(12d, Labels.empty());
     doubleRecorder.record(12d);
     assertThat(sdkMeterProvider.collectAllMetrics())
@@ -108,7 +109,7 @@ class DoubleValueRecorderSdkTest {
       bound.record(123.3d);
       doubleRecorder.record(-13.1d, Labels.empty());
       // Advancing time here should not matter.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321.5d);
       doubleRecorder.record(-121.5d, Labels.of("K", "V"));
       assertThat(sdkMeterProvider.collectAllMetrics())
@@ -137,7 +138,7 @@ class DoubleValueRecorderSdkTest {
                               valueAtPercentiles(-13.1d, 12.1d))))));
 
       // Repeat to prove we don't keep previous values.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222d);
       doubleRecorder.record(17d, Labels.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())

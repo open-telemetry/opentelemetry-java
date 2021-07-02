@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -30,6 +29,7 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -194,7 +194,7 @@ public class SdkMeterProviderTest {
 
     LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
     longCounter.add(10, Labels.empty());
-    testClock.advanceNanos(50);
+    testClock.advance(Duration.ofNanos(50));
 
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
@@ -216,7 +216,7 @@ public class SdkMeterProviderTest {
                                 .hasValue(10)));
 
     longCounter.add(10, Labels.empty());
-    testClock.advanceNanos(50);
+    testClock.advance(Duration.ofNanos(50));
 
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
@@ -261,7 +261,7 @@ public class SdkMeterProviderTest {
         sdkMeter.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
     doubleValueRecorder.record(10.1, Labels.empty());
 
-    testClock.advanceNanos(50);
+    testClock.advance(Duration.ofNanos(50));
 
     assertThat(sdkMeterProvider.collectAllMetrics())
         .allSatisfy(
@@ -291,7 +291,7 @@ public class SdkMeterProviderTest {
             "testLongValueRecorder",
             "testDoubleValueRecorder");
 
-    testClock.advanceNanos(50);
+    testClock.advance(Duration.ofNanos(50));
 
     longCounter.add(10, Labels.empty());
     longUpDownCounter.add(-10, Labels.empty());
@@ -484,7 +484,7 @@ public class SdkMeterProviderTest {
         .setUpdater(doubleResult -> doubleResult.observe(10.1, Labels.empty()))
         .build();
 
-    testClock.advanceNanos(50);
+    testClock.advance(Duration.ofNanos(50));
 
     assertThat(sdkMeterProvider.collectAllMetrics())
         .allSatisfy(
@@ -514,7 +514,7 @@ public class SdkMeterProviderTest {
             "testLongValueObserver",
             "testDoubleValueObserver");
 
-    testClock.advanceNanos(50);
+    testClock.advance(Duration.ofNanos(50));
 
     assertThat(sdkMeterProvider.collectAllMetrics())
         .allSatisfy(

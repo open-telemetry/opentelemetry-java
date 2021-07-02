@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -157,7 +158,7 @@ public final class TracezDataAggregatorTest {
   void getSpanLatencyCounts_oneSpanPerLatencyBucket() {
     for (LatencyBoundary bucket : LatencyBoundary.values()) {
       Span span = tracer.spanBuilder(SPAN_NAME_ONE).startSpan();
-      testClock.advanceNanos(bucket.getLatencyLowerBound());
+      testClock.advance(Duration.ofNanos(bucket.getLatencyLowerBound()));
       span.end();
     }
     /* getSpanLatencyCounts should return 1 span per latency bucket */
@@ -181,7 +182,7 @@ public final class TracezDataAggregatorTest {
     /* getOkSpans should return an empty List */
     assertThat(dataAggregator.getOkSpans(SPAN_NAME_ONE, 0, Long.MAX_VALUE)).isEmpty();
     span1.end();
-    testClock.advanceNanos(1000);
+    testClock.advance(Duration.ofNanos(1000));
     span2.end();
     /* getOkSpans should return a List with both spans */
     List<SpanData> spans = dataAggregator.getOkSpans(SPAN_NAME_ONE, 0, Long.MAX_VALUE);

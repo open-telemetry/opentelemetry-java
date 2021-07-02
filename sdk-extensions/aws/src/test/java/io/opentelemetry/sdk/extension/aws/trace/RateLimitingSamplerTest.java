@@ -13,6 +13,7 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
+import java.time.Duration;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -49,7 +50,7 @@ class RateLimitingSamplerTest {
                 .getDecision())
         .isEqualTo(SamplingDecision.DROP);
 
-    clock.advanceMillis(100);
+    clock.advance(Duration.ofMillis(100));
     // Balance restored after a second, not yet
     assertThat(
             sampler
@@ -62,7 +63,7 @@ class RateLimitingSamplerTest {
                     Collections.emptyList())
                 .getDecision())
         .isEqualTo(SamplingDecision.DROP);
-    clock.advanceMillis(900);
+    clock.advance(Duration.ofMillis(900));
     // Balance restored
     assertThat(
             sampler
