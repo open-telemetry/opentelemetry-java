@@ -8,6 +8,7 @@ package io.opentelemetry.context.propagation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -167,5 +168,33 @@ class MultiTextMapPropagatorTest {
     Context context = Context.current().with(KEY, "treasure");
     new MultiTextMapPropagator(propagator1, propagator2).inject(context, carrier, null);
     assertThat(carrier).isEmpty();
+  }
+
+  @Test
+  void different_inject_and_extract() {
+    Map<String, String> carrier = new HashMap<>();
+
+    TextMapPropagator prop = TextMapPropagator.builder()
+        .injector(propagator1)
+        .extractor(propagator2)
+        .propagator(propagator3)
+        .build();
+
+    Context context1 = mock(Context.class);
+    Context context2 = mock(Context.class);
+    Context expectedContext = mock(Context.class);
+
+    when(propagator2.extract(context1, carrier, getter)).thenReturn(context2);
+    when(propagator3.extract(context2, carrier, getter)).thenReturn(expectedContext);
+
+    assertThat(prop.extract(context1, carrier, getter)).isEqualTo(expectedContext);
+
+    Context context = mock(Context.class);
+    TextMapSetter<Map<String, String>> setter = Map::put;
+
+    prop.inject(context, carrier, setter);
+    verify(propagator1).inject(context, carrier, setter);
+    verify(propagator2, never()).inject(context, carrier, setter);
+    verify(propagator3).inject(context, carrier, setter);
   }
 }
