@@ -23,6 +23,53 @@ import javax.annotation.concurrent.Immutable;
 public interface SamplingResult {
 
   /**
+   * Returns a {@link SamplingResult} with no attributes and {@link SamplingResult#getDecision()}
+   * returning {@code decision}.
+   *
+   * <p>This is meant for use by custom {@link Sampler} implementations.
+   *
+   * <p>Use {@link #create(SamplingDecision, Attributes)} if you need attributes.
+   *
+   * @param decision The decision made on the span.
+   * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
+   */
+  @SuppressWarnings("UngroupedOverloads")
+  static SamplingResult create(SamplingDecision decision) {
+    switch (decision) {
+      case RECORD_AND_SAMPLE:
+        return ImmutableSamplingResult.EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
+      case RECORD_ONLY:
+        return ImmutableSamplingResult.EMPTY_RECORDED_SAMPLING_RESULT;
+      case DROP:
+        return ImmutableSamplingResult.EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
+    }
+    throw new AssertionError("unrecognised samplingResult");
+  }
+
+  /**
+   * Returns a {@link SamplingResult} with the given {@code attributes} and {@link
+   * SamplingResult#getDecision()} returning {@code decision}.
+   *
+   * <p>This is meant for use by custom {@link Sampler} implementations.
+   *
+   * <p>Using {@link #create(SamplingDecision)} instead of this method is slightly faster and
+   * shorter if you don't need attributes.
+   *
+   * @param decision The decision made on the span.
+   * @param attributes The attributes to return from {@link SamplingResult#getAttributes()}. A
+   *     different object instance with the same elements may be returned.
+   * @return A {@link SamplingResult} with the attributes equivalent to {@code attributes} and the
+   *     provided {@code decision}.
+   */
+  @SuppressWarnings("UngroupedOverloads")
+  static SamplingResult create(SamplingDecision decision, Attributes attributes) {
+    requireNonNull(attributes, "attributes");
+    return attributes.isEmpty()
+        ? create(decision)
+        : ImmutableSamplingResult.createSamplingResult(decision, attributes);
+  }
+
+  /**
    * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_AND_SAMPLE}
    * with no attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
    *
@@ -38,18 +85,18 @@ public interface SamplingResult {
 
   /**
    * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_AND_SAMPLE}
-   * with the given {@code attributes} and {@link SamplingResult#getDecision()} returning
-   * {@code decision}.
+   * with the given {@code attributes} and {@link SamplingResult#getDecision()} returning {@code
+   * decision}.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
-   * <p>Using {@link #recordAndSample()} instead of this method is slightly faster and
-   * shorter if you don't need attributes.
+   * <p>Using {@link #recordAndSample()} instead of this method is slightly faster and shorter if
+   * you don't need attributes.
    *
    * @param attributes The attributes to return from {@link SamplingResult#getAttributes()}. A
    *     different object instance with the same elements may be returned.
    * @return A {@link SamplingResult} with the attributes equivalent to {@code attributes} and the
-   * {@link SamplingDecision#RECORD_AND_SAMPLE}
+   *     {@link SamplingDecision#RECORD_AND_SAMPLE}
    */
   static SamplingResult recordAndSample(Attributes attributes) {
     requireNonNull(attributes, "attributes");
@@ -60,8 +107,8 @@ public interface SamplingResult {
   }
 
   /**
-   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_ONLY} with
-   * no attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
+   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_ONLY} with no
+   * attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
    *
    * <p>Use {@link #recordOnly(Attributes)} if you need attributes.
    *
@@ -74,19 +121,18 @@ public interface SamplingResult {
   }
 
   /**
-   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_ONLY} with
-   * the given {@code attributes} and {@link SamplingResult#getDecision()} returning
-   * {@code decision}.
+   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_ONLY} with the
+   * given {@code attributes} and {@link SamplingResult#getDecision()} returning {@code decision}.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
-   * <p>Using {@link #recordOnly()}  instead of this method is slightly faster and
-   * shorter if you don't need attributes.
+   * <p>Using {@link #recordOnly()} instead of this method is slightly faster and shorter if you
+   * don't need attributes.
    *
    * @param attributes The attributes to return from {@link SamplingResult#getAttributes()}. A
    *     different object instance with the same elements may be returned.
    * @return A {@link SamplingResult} with the attributes equivalent to {@code attributes} and the
-   * {@link SamplingDecision#RECORD_ONLY}
+   *     {@link SamplingDecision#RECORD_ONLY}
    */
   static SamplingResult recordOnly(Attributes attributes) {
     requireNonNull(attributes, "attributes");
@@ -96,8 +142,8 @@ public interface SamplingResult {
   }
 
   /**
-   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#DROP} with
-   * no attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
+   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#DROP} with no
+   * attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
    *
    * <p>Use {@link #drop(Attributes)} if you need attributes.
    *
@@ -110,19 +156,18 @@ public interface SamplingResult {
   }
 
   /**
-   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#DROP} with
-   * the given {@code attributes} and {@link SamplingResult#getDecision()} returning
-   * {@code decision}.
+   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#DROP} with the given
+   * {@code attributes} and {@link SamplingResult#getDecision()} returning {@code decision}.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
-   * <p>Using {@link #drop()} instead of this method is slightly faster and
-   * shorter if you don't need attributes.
+   * <p>Using {@link #drop()} instead of this method is slightly faster and shorter if you don't
+   * need attributes.
    *
    * @param attributes The attributes to return from {@link SamplingResult#getAttributes()}. A
    *     different object instance with the same elements may be returned.
    * @return A {@link SamplingResult} with the attributes equivalent to {@code attributes} and the
-   * {@link SamplingDecision#DROP}
+   *     {@link SamplingDecision#DROP}
    */
   static SamplingResult drop(Attributes attributes) {
     requireNonNull(attributes, "attributes");
