@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.api.common.Attributes;
+import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -38,4 +39,8 @@ public interface PointData {
    * @return the attributes associated with this {@code Point}.
    */
   Attributes getAttributes();
+  /**
+   * (Optional) List of exemplars collected from measurements that were used to form the data point.
+   */
+  Collection<Exemplar> getExemplars();
 }

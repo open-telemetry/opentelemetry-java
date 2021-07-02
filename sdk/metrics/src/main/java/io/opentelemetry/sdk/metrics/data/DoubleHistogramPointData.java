@@ -19,7 +19,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class DoubleHistogramPointData implements SampledPointData {
+public abstract class DoubleHistogramPointData implements PointData {
 
   /**
    * Creates a DoubleHistogramPointData. For a Histogram with N defined boundaries, there should be

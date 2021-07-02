@@ -17,7 +17,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class DoublePointData implements SampledPointData {
+public abstract class DoublePointData implements PointData {
 
   /**
    * Creates a {@link DoublePointData}.

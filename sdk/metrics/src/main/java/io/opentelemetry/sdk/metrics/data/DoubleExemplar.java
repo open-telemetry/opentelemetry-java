@@ -18,7 +18,7 @@ public abstract class DoubleExemplar implements Exemplar {
    * Construct a new exemplar.
    *
    * @param filteredAttributes The set of {@link Attributes} not already associated with the {@link
-   *     SampledPointData}.
+   *     PointData}.
    * @param recordTimeNanos The time when the sample qas recorded in nanoseconds.
    * @param spanId (optional) The associated {@code SpanId}
    * @param traceId (optional) The associated {@code TraceId}

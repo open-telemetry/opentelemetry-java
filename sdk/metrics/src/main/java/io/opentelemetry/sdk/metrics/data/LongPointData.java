@@ -19,7 +19,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class LongPointData implements SampledPointData {
+public abstract class LongPointData implements PointData {
 
   LongPointData() {}
 
