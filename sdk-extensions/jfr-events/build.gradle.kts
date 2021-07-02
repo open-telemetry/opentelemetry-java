@@ -16,11 +16,12 @@ tasks {
         options.release.set(11)
     }
 
-    named("testJava8") {
-        enabled = false
-    }
+    test {
+        val testJavaVersion: String? by project
+        if (testJavaVersion == "8") {
+            enabled = false
+        }
 
-    named("test") {
         // Disabled due to https://bugs.openjdk.java.net/browse/JDK-8245283
         configure<JacocoTaskExtension> {
             enabled = false
