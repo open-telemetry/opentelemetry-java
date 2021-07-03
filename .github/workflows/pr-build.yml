@@ -43,7 +43,7 @@ jobs:
           remote-build-cache-proxy-enabled: false
           arguments: build --stacktrace ${{ matrix.coverage && 'jacocoTestReport' || '' }}
           properties: |
-            testJavaVersion=${{ matrix.testJavaVersion }}
+            testJavaVersion=${{ matrix.test-java-version }}
             org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }}
       - uses: codecov/codecov-action@v1.5.2
         if: ${{ matrix.coverage }}
