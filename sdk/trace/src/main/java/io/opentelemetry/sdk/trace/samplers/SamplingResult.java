@@ -33,7 +33,6 @@ public interface SamplingResult {
    * @param decision The decision made on the span.
    * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
-  @SuppressWarnings("UngroupedOverloads")
   static SamplingResult create(SamplingDecision decision) {
     switch (decision) {
       case RECORD_AND_SAMPLE:
@@ -61,7 +60,6 @@ public interface SamplingResult {
    * @return A {@link SamplingResult} with the attributes equivalent to {@code attributes} and the
    *     provided {@code decision}.
    */
-  @SuppressWarnings("UngroupedOverloads")
   static SamplingResult create(SamplingDecision decision, Attributes attributes) {
     requireNonNull(attributes, "attributes");
     return attributes.isEmpty()
