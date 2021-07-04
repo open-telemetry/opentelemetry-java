@@ -36,6 +36,7 @@ enum ThreadLocalContextStorage implements ContextStorage {
             Level.FINE,
             "Context in storage not the expected context, Scope.close was not called correctly");
       }
+      NoopScope.INSTANCE.close();
       THREAD_LOCAL_STORAGE.set(beforeAttach);
     };
   }
@@ -50,6 +51,8 @@ enum ThreadLocalContextStorage implements ContextStorage {
     INSTANCE;
 
     @Override
-    public void close() {}
+    public void close() {
+      logger.log(Level.SEVERE, "Scope garbage collected before being closed.");
+    }
   }
 }
