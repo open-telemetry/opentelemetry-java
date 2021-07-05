@@ -18,11 +18,11 @@ public interface Clock {
 
   /**
    * Returns the current epoch timestamp in nanos from this clock. This timestamp should only be
-   * used to compute a current or start time. To compute a duration, the end of the duration should
-   * always be obtained using {@link #nanoTime()}. For example, this usage is correct.
+   * used to compute a current time. To compute a duration, timestamps should always be obtained
+   * using {@link #nanoTime()}. For example, this usage is correct.
    *
    * <pre>{@code
-   * long startNanos = clock.now();
+   * long startNanos = clock.nanoTime();
    * // Spend time...
    * long durationNanos = clock.nanoTime() - startNanos;
    *
