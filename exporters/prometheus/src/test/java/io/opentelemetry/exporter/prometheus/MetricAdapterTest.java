@@ -32,6 +32,8 @@ import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.exemplars.Exemplar;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+
 import org.assertj.core.presentation.StandardRepresentation;
 import org.junit.jupiter.api.Test;
 
@@ -178,7 +180,7 @@ class MetricAdapterTest {
                       Collections.singletonList(
                           LongExemplar.create(
                               Attributes.empty(),
-                              1L,
+                              TimeUnit.MILLISECONDS.toNanos(1L),
                               /* spanId= */ "span_id",
                               /* traceId= */ "trace_id",
                               /* value= */ 4))))));
@@ -392,13 +394,13 @@ class MetricAdapterTest {
                 ImmutableList.of("kp", "le"),
                 ImmutableList.of("vp", "1.0"),
                 4,
-                new Exemplar(0d, 0L, "traceid", "other_trace_id", "spanid", "other_span_id")),
+                new Exemplar(0d, 0L, "trace_id", "other_trace_id", "span_id", "other_span_id")),
             new Sample(
                 "full_name_bucket",
                 ImmutableList.of("kp", "le"),
                 ImmutableList.of("vp", "+Inf"),
                 13,
-                new Exemplar(2d, 0L, "traceid", "my_trace_id", "spanid", "my_span_id")));
+                new Exemplar(2d, 0L, "trace_id", "my_trace_id", "span_id", "my_span_id")));
   }
 
   @Test

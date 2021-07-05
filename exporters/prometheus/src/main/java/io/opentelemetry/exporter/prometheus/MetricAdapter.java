@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
@@ -275,14 +276,14 @@ final class MetricAdapter {
   }
 
   private static io.prometheus.client.exemplars.Exemplar toPrometheusExemplar(Exemplar exemplar) {
-    // TODO: Keep filtered attributes for prometheus?
     if (exemplar.getSpanId() != null && exemplar.getTraceId() != null) {
       return new io.prometheus.client.exemplars.Exemplar(
           valueOf(exemplar),
-          exemplar.getRecordTimeNanos(),
-          "traceid",
+          // Convert to ms for prometheus, truncate nanosecond preceision.
+          TimeUnit.NANOSECONDS.toMillis(exemplar.getRecordTimeNanos()),
+          "trace_id",
           exemplar.getTraceId(),
-          "spanid",
+          "span_id",
           exemplar.getSpanId());
     }
     return new io.prometheus.client.exemplars.Exemplar(valueOf(exemplar));
