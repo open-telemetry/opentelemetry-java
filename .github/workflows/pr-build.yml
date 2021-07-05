@@ -39,7 +39,6 @@ jobs:
         with:
           distribution: adopt
           java-version: 16
-          java-package: jre
       - id: setup-java-11
         name: Setup Java 11
         uses: actions/setup-java@v2
