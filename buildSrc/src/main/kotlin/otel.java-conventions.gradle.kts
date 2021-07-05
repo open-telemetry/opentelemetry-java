@@ -40,24 +40,9 @@ checkstyle {
     configProperties["rootDir"] = rootDir
 }
 
+val testJavaVersion = gradle.startParameter.projectProperties.get("testJavaVersion")?.let(JavaVersion::toVersion)
+
 tasks {
-    val testJava8 by registering(Test::class) {
-        javaLauncher.set(javaToolchains.launcherFor {
-            languageVersion.set(JavaLanguageVersion.of(8))
-        })
-
-        jacoco {
-            enabled = false
-        }
-    }
-
-    val testAdditionalJavaVersions: String? by rootProject
-    if (testAdditionalJavaVersions == "true") {
-        named("check") {
-            dependsOn(testJava8)
-        }
-    }
-
     withType<JavaCompile>().configureEach {
         with(options) {
             release.set(8)
@@ -95,6 +80,12 @@ tasks {
 
     withType<Test>().configureEach {
         useJUnitPlatform()
+
+        if (testJavaVersion != null) {
+            javaLauncher.set(javaToolchains.launcherFor {
+                languageVersion.set(JavaLanguageVersion.of(testJavaVersion.majorVersion))
+            })
+        }
 
         testLogging {
             exceptionFormat = TestExceptionFormat.FULL
