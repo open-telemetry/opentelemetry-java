@@ -22,11 +22,9 @@ public interface Clock {
    * using {@link #nanoTime()}. For example, this usage is correct.
    *
    * <pre>{@code
-   *
    * long startNanos = clock.nanoTime();
    * // Spend time...
    * long durationNanos = clock.nanoTime() - startNanos;
-   *
    * }</pre>
    *
    * <p>This usage is not correct.
@@ -35,7 +33,6 @@ public interface Clock {
    * long startNanos = clock.now();
    * // Spend time...
    * long durationNanos = clock.now() - startNanos;
-   *
    * }</pre>
    */
   long now();
