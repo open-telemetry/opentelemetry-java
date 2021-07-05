@@ -33,7 +33,6 @@ import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.exemplars.Exemplar;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-
 import org.assertj.core.presentation.StandardRepresentation;
 import org.junit.jupiter.api.Test;
 
