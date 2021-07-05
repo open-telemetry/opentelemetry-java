@@ -31,7 +31,8 @@ final class CompositeTextMapPropagator implements TextMapPropagator {
     this.allFields = Collections.unmodifiableList(getAllFields(this.injectors));
   }
 
-  CompositeTextMapPropagator(List<TextMapPropagator> extractors, List<TextMapPropagator> injectors) {
+  CompositeTextMapPropagator(
+      List<TextMapPropagator> extractors, List<TextMapPropagator> injectors) {
     this.extractors = new TextMapPropagator[extractors.size()];
     extractors.toArray(this.extractors);
 

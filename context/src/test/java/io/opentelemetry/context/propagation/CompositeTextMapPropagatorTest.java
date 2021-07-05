@@ -174,11 +174,12 @@ class CompositeTextMapPropagatorTest {
   void different_inject_and_extract() {
     Map<String, String> carrier = new HashMap<>();
 
-    TextMapPropagator prop = TextMapPropagator.builder()
-        .addInjector(propagator1)
-        .addExtractor(propagator2)
-        .addPropagator(propagator3)
-        .build();
+    TextMapPropagator prop =
+        TextMapPropagator.builder()
+            .addInjector(propagator1)
+            .addExtractor(propagator2)
+            .addPropagator(propagator3)
+            .build();
 
     Context context1 = mock(Context.class);
     Context context2 = mock(Context.class);
@@ -200,22 +201,24 @@ class CompositeTextMapPropagatorTest {
 
   @Test
   void addPropagator_null() {
-    assertThrows(
-        NullPointerException.class,
-        () -> TextMapPropagator.builder().addPropagator(null));
+    assertThrows(NullPointerException.class, () -> TextMapPropagator.builder().addPropagator(null));
   }
 
   @Test
   void addExtractor_null() {
-    assertThrows(
-        NullPointerException.class,
-        () -> TextMapPropagator.builder().addExtractor(null));
+    assertThrows(NullPointerException.class, () -> TextMapPropagator.builder().addExtractor(null));
   }
 
   @Test
   void addInjector_null() {
-    assertThrows(
-        NullPointerException.class,
-        () -> TextMapPropagator.builder().addInjector(null));
+    assertThrows(NullPointerException.class, () -> TextMapPropagator.builder().addInjector(null));
   }
+
+  @Test
+  void empty_builder_returns_noop() {
+    assertThat(
+        TextMapPropagator.builder().build()
+    ).isSameAs(NoopTextMapPropagator.getInstance());
+  }
+
 }

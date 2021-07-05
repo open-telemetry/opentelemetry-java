@@ -44,8 +44,8 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface TextMapPropagator {
 
   /**
-   * Returns a composite text map propagator builder that allows to specify specific propagators
-   * as extractors and specific propagators as injectors.
+   * Returns a composite text map propagator builder that allows to specify specific propagators as
+   * extractors and specific propagators as injectors.
    */
   static CompositeTextMapPropagatorBuilder builder() {
     return new CompositeTextMapPropagatorBuilder();
