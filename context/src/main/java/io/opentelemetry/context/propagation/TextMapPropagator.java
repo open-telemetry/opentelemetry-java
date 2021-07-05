@@ -80,7 +80,7 @@ public interface TextMapPropagator {
     if (propagatorsList.size() == 1) {
       return propagatorsList.get(0);
     }
-    return new MultiTextMapPropagator(propagatorsList);
+    return new CompositeTextMapPropagator(propagatorsList);
   }
 
   /** Returns a {@link TextMapPropagator} which does no injection or extraction. */

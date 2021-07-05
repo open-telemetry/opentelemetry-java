@@ -7,9 +7,10 @@ package io.opentelemetry.context.propagation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
- * A builder for configuring an {@link TextMapPropagator} specifying which propagators should be
+ * A builder for configuring a {@link TextMapPropagator} specifying which propagators should be
  * used for extracting the context and which should be used for injecting the context.
  */
 public final class CompositeTextMapPropagatorBuilder {
@@ -28,25 +29,28 @@ public final class CompositeTextMapPropagatorBuilder {
   }
 
   /**
-   * Add a {@link TextMapPropagator} to be used only to extract the context.
+   * Adds a {@link TextMapPropagator} to be used only when extracting context.
    */
-  public CompositeTextMapPropagatorBuilder extractor(TextMapPropagator propagator) {
+  public CompositeTextMapPropagatorBuilder addExtractor(TextMapPropagator propagator) {
+    Objects.requireNonNull(propagator, "propagator");
     this.extractors.add(propagator);
     return this;
   }
 
   /**
-   * Add a {@link TextMapPropagator} to be used only to inject the context.
+   * Adds a {@link TextMapPropagator} to be used only when injecting context.
    */
-  public CompositeTextMapPropagatorBuilder injector(TextMapPropagator propagator) {
+  public CompositeTextMapPropagatorBuilder addInjector(TextMapPropagator propagator) {
+    Objects.requireNonNull(propagator, "propagator");
     this.injectors.add(propagator);
     return this;
   }
 
   /**
-   * Add a {@link TextMapPropagator} to be used both to extract and inject the context.
+   * Adds a {@link TextMapPropagator} to be used both when extracting and injecting context.
    */
-  public CompositeTextMapPropagatorBuilder propagator(TextMapPropagator propagator) {
+  public CompositeTextMapPropagatorBuilder addPropagator(TextMapPropagator propagator) {
+    Objects.requireNonNull(propagator, "propagator");
     this.injectors.add(propagator);
     this.extractors.add(propagator);
     return this;
@@ -65,6 +69,6 @@ public final class CompositeTextMapPropagatorBuilder {
       this.extractors.add(TextMapPropagator.noop());
     }
 
-    return new MultiTextMapPropagator(this.extractors, this.injectors);
+    return new CompositeTextMapPropagator(this.extractors, this.injectors);
   }
 }

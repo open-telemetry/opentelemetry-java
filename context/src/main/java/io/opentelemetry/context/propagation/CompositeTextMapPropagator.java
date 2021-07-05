@@ -15,23 +15,23 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 
-final class MultiTextMapPropagator implements TextMapPropagator {
+final class CompositeTextMapPropagator implements TextMapPropagator {
   private final TextMapPropagator[] extractors;
   private final TextMapPropagator[] injectors;
   private final Collection<String> allFields;
 
-  MultiTextMapPropagator(TextMapPropagator... textPropagators) {
+  CompositeTextMapPropagator(TextMapPropagator... textPropagators) {
     this(Arrays.asList(textPropagators));
   }
 
-  MultiTextMapPropagator(List<TextMapPropagator> textPropagators) {
+  CompositeTextMapPropagator(List<TextMapPropagator> textPropagators) {
     this.extractors = new TextMapPropagator[textPropagators.size()];
     textPropagators.toArray(this.extractors);
     this.injectors = this.extractors; // No need to copy
     this.allFields = Collections.unmodifiableList(getAllFields(this.injectors));
   }
 
-  MultiTextMapPropagator(List<TextMapPropagator> extractors, List<TextMapPropagator> injectors) {
+  CompositeTextMapPropagator(List<TextMapPropagator> extractors, List<TextMapPropagator> injectors) {
     this.extractors = new TextMapPropagator[extractors.size()];
     extractors.toArray(this.extractors);
 
