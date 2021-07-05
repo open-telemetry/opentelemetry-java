@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A builder for configuring an {@link TextMapPropagator} specifying which propagators should be used for extracting the context and which should be used for injecting the context.
+ * A builder for configuring an {@link TextMapPropagator} specifying which propagators should be
+ * used for extracting the context and which should be used for injecting the context.
  */
 public final class CompositeTextMapPropagatorBuilder {
 
@@ -52,7 +53,7 @@ public final class CompositeTextMapPropagatorBuilder {
   }
 
   /**
-   * Returns the built {@link TextMapPropagator}
+   * Returns the built {@link TextMapPropagator}.
    *
    * @see CompositeTextMapPropagatorBuilder
    */
