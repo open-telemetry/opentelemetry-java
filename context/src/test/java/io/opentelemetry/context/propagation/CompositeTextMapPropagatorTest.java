@@ -216,9 +216,6 @@ class CompositeTextMapPropagatorTest {
 
   @Test
   void empty_builder_returns_noop() {
-    assertThat(
-        TextMapPropagator.builder().build()
-    ).isSameAs(NoopTextMapPropagator.getInstance());
+    assertThat(TextMapPropagator.builder().build()).isSameAs(NoopTextMapPropagator.getInstance());
   }
-
 }
