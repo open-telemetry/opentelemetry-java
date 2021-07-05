@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.internal;
+package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.Clock;
 import javax.annotation.concurrent.Immutable;
@@ -19,7 +19,7 @@ import javax.annotation.concurrent.Immutable;
  * it is not recommended to use only one instance for a very long period of time.
  */
 @Immutable
-public final class MonotonicClock implements Clock {
+final class MonotonicClock {
   private final Clock clock;
   private final long epochNanos;
   private final long nanoTime;
@@ -42,18 +42,16 @@ public final class MonotonicClock implements Clock {
 
   /**
    * Returns the current epoch timestamp in nanos calculated using {@link System#nanoTime()} since
-   * the reference time read in the constructor.
+   * the reference time read in the constructor. This time can be used for computing durations.
    *
    * @return the current epoch timestamp in nanos.
    */
-  @Override
-  public long now() {
+  long now() {
     long deltaNanos = clock.nanoTime() - this.nanoTime;
     return epochNanos + deltaNanos;
   }
 
-  @Override
-  public long nanoTime() {
+  long nanoTime() {
     return clock.nanoTime();
   }
 }

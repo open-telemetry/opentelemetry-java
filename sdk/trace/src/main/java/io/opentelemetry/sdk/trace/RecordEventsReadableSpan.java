@@ -14,7 +14,6 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -57,7 +56,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   // The kind of the span.
   private final SpanKind kind;
   // The clock used to get the time.
-  private final Clock clock;
+  private final MonotonicClock clock;
   // The resource associated with this span.
   private final Resource resource;
   // instrumentation library of the named tracer which created this span
@@ -98,7 +97,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       SpanContext parentSpanContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
-      Clock clock,
+      MonotonicClock clock,
       Resource resource,
       @Nullable AttributesMap attributes,
       List<LinkData> links,
@@ -146,7 +145,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       @Nonnull Context parentContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
-      Clock clock,
+      MonotonicClock clock,
       Resource resource,
       AttributesMap attributes,
       List<LinkData> links,
@@ -240,12 +239,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
   }
 
-  /**
-   * Returns the {@code Clock} used by this {@code Span}.
-   *
-   * @return the {@code Clock} used by this {@code Span}.
-   */
-  Clock getClock() {
+  /** Returns the {@link MonotonicClock} used by this {@link Span}. */
+  MonotonicClock getClock() {
     return clock;
   }
 

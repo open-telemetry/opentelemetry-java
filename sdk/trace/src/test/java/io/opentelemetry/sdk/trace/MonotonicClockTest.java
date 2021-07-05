@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.internal;
+package io.opentelemetry.sdk.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.internal.TestClock;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link MonotonicClock}. */
