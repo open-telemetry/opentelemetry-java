@@ -71,7 +71,8 @@ public interface SamplingResult {
    * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_AND_SAMPLE}
    * with no attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
    *
-   * <p>This is meant for use by custom {@link Sampler} implementations.
+   * <p>This is meant for use by custom {@link Sampler} implementations and is equivalent to calling
+   * {@code SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE)}.
    *
    * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
@@ -83,7 +84,8 @@ public interface SamplingResult {
    * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_ONLY} with no
    * attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
    *
-   * <p>This is meant for use by custom {@link Sampler} implementations.
+   * <p>This is meant for use by custom {@link Sampler} implementations and is equivalent to calling
+   * {@code SamplingResult.create(SamplingDecision.RECORD_ONLY)}.
    *
    * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
@@ -95,7 +97,8 @@ public interface SamplingResult {
    * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#DROP} with no
    * attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
    *
-   * <p>This is meant for use by custom {@link Sampler} implementations.
+   * <p>This is meant for use by custom {@link Sampler} implementations and is equivalent to calling
+   * {@code SamplingResult.create(SamplingDecision.DROP)}.
    *
    * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
