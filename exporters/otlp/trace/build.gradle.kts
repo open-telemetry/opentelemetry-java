@@ -35,12 +35,15 @@ dependencies {
 
     add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
     add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
+    add("testGrpcNettyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
     add("testGrpcNettyShadedImplementation", "com.linecorp.armeria:armeria-grpc")
     add("testGrpcNettyShadedImplementation", "com.linecorp.armeria:armeria-junit5")
+    add("testGrpcNettyShadedRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
     add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-grpc")
     add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-junit5")
+    add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
     add("testGrpcNettyRuntimeOnly", "io.grpc:grpc-netty")
 

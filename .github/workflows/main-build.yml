@@ -17,6 +17,7 @@ jobs:
         test-java-version:
           - 8
           - 11
+          - 16
         include:
           - os: ubuntu-18.04
             test-java-version: 11
@@ -26,11 +27,18 @@ jobs:
         with:
           fetch-depth: 0
       - id: setup-java-8
-        name: Setup Java 8
+        name: Setup Java 8 for tests
         uses: actions/setup-java@v2
         with:
           distribution: adopt
           java-version: 8
+          java-package: jre
+      - id: setup-java-16
+        name: Setup Java 16 for tests
+        uses: actions/setup-java@v2
+        with:
+          distribution: adopt
+          java-version: 16
           java-package: jre
       - id: setup-java-11
         name: Setup Java 11
@@ -44,7 +52,7 @@ jobs:
           arguments: build --stacktrace ${{ matrix.coverage && 'jacocoTestReport' || '' }}
           properties: |
             testJavaVersion=${{ matrix.test-java-version }}
-            org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }}
+            org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }},${{ steps.setup-java-16.outputs.path }}
       - uses: codecov/codecov-action@v1.5.2
         if: ${{ matrix.coverage }}
       - uses: actions/upload-artifact@v2
