@@ -40,4 +40,11 @@ public interface Exemplar {
    * not sampled.
    */
   String getTraceId();
+
+  /**
+   * Coerces this exemplar to a double value.
+   *
+   * <p>Note: This could createa a loss of precision from {@code long} measurements.
+   */
+  double getValueAsDouble();
 }

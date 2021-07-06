@@ -9,13 +9,11 @@ import static io.prometheus.client.Collector.doubleToGoString;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.Exemplar;
-import io.opentelemetry.sdk.metrics.data.LongExemplar;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -29,9 +27,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 
 /**
  * Util methods to convert OpenTelemetry Metrics data models to Prometheus data models.
@@ -128,7 +126,7 @@ final class MetricAdapter {
                   labelNames,
                   labelValues,
                   doublePoint.getValue(),
-                  doublePoint.getExemplars().stream().findAny()));
+                  lastExemplarOrNull(doublePoint.getExemplars())));
           break;
         case LONG_SUM:
         case LONG_GAUGE:
@@ -139,7 +137,7 @@ final class MetricAdapter {
                   labelNames,
                   labelValues,
                   longPoint.getValue(),
-                  longPoint.getExemplars().stream().findAny()));
+                  lastExemplarOrNull(longPoint.getExemplars())));
           break;
         case SUMMARY:
           addSummarySamples(
@@ -200,42 +198,46 @@ final class MetricAdapter {
     labelNamesWithLe.add(LABEL_NAME_LE);
 
     long cumulativeCount = 0;
-    List<Double> boundaries = doubleHistogramPointData.getBoundaries();
     List<Long> counts = doubleHistogramPointData.getCounts();
     for (int i = 0; i < counts.size(); i++) {
       List<String> labelValuesWithLe = new ArrayList<>(labelValues.size() + 1);
-      double boundary = (i < boundaries.size()) ? boundaries.get(i) : Double.POSITIVE_INFINITY;
+      // This is the upper boundary (inclusive). I.e. all values should be < this value (LE -
+      // Less-then-or-Equal).
+      double boundary = doubleHistogramPointData.getBucketUpperBound(i);
       labelValuesWithLe.addAll(labelValues);
       labelValuesWithLe.add(doubleToGoString(boundary));
 
       cumulativeCount += counts.get(i);
-      // TODO: We need to select our exemplar samples FROM the bucket counts and put them in here.
-      double lower = i > 0 ? boundaries.get(i - 1) : Double.NEGATIVE_INFINITY;
       samples.add(
           createSample(
               name + SAMPLE_SUFFIX_BUCKET,
               labelNamesWithLe,
               labelValuesWithLe,
               cumulativeCount,
-              filterExemplars(doubleHistogramPointData.getExemplars(), lower, boundary)));
+              filterExemplars(
+                  doubleHistogramPointData.getExemplars(),
+                  doubleHistogramPointData.getBucketLowerBound(i),
+                  boundary)));
     }
   }
 
-  private static Optional<Exemplar> filterExemplars(
-      Collection<Exemplar> exemplars, double min, double max) {
-    return exemplars.stream()
-        .filter(exemplar -> valueOf(exemplar) <= max && valueOf(exemplar) > min)
-        .findAny();
+  private static Exemplar lastExemplarOrNull(Collection<Exemplar> exemplars) {
+    Exemplar result = null;
+    for (Exemplar e : exemplars) {
+      result = e;
+    }
+    return result;
   }
 
-  private static double valueOf(Exemplar exemplar) {
-    double value = 0;
-    if (exemplar instanceof LongExemplar) {
-      value = ((LongExemplar) exemplar).getValue();
-    } else if (exemplar instanceof DoubleExemplar) {
-      value = ((DoubleExemplar) exemplar).getValue();
+  private static Exemplar filterExemplars(Collection<Exemplar> exemplars, double min, double max) {
+    Exemplar result = null;
+    for (Exemplar e : exemplars) {
+      double value = e.getValueAsDouble();
+      if (value <= max && value > min) {
+        result = e;
+      }
     }
-    return value;
+    return result;
   }
 
   private static int estimateNumSamples(int numPoints, MetricDataType type) {
@@ -269,16 +271,17 @@ final class MetricAdapter {
       List<String> labelNames,
       List<String> labelValues,
       double value,
-      Optional<Exemplar> exemplar) {
-    return exemplar
-        .map(e -> new Sample(name, labelNames, labelValues, value, toPrometheusExemplar(e)))
-        .orElseGet(() -> new Sample(name, labelNames, labelValues, value));
+      @Nullable Exemplar exemplar) {
+    if (exemplar != null) {
+      return new Sample(name, labelNames, labelValues, value, toPrometheusExemplar(exemplar));
+    }
+    return new Sample(name, labelNames, labelValues, value);
   }
 
   private static io.prometheus.client.exemplars.Exemplar toPrometheusExemplar(Exemplar exemplar) {
     if (exemplar.getSpanId() != null && exemplar.getTraceId() != null) {
       return new io.prometheus.client.exemplars.Exemplar(
-          valueOf(exemplar),
+          exemplar.getValueAsDouble(),
           // Convert to ms for prometheus, truncate nanosecond preceision.
           TimeUnit.NANOSECONDS.toMillis(exemplar.getRecordTimeNanos()),
           "trace_id",
@@ -286,7 +289,7 @@ final class MetricAdapter {
           "span_id",
           exemplar.getSpanId());
     }
-    return new io.prometheus.client.exemplars.Exemplar(valueOf(exemplar));
+    return new io.prometheus.client.exemplars.Exemplar(exemplar.getValueAsDouble());
   }
 
   private MetricAdapter() {}

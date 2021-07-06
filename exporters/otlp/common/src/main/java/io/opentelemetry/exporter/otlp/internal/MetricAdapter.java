@@ -27,6 +27,7 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
@@ -47,9 +48,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Converter from SDK {@link MetricData} to OTLP {@link ResourceMetrics}. */
 public final class MetricAdapter {
+
+  private static final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(MetricAdapter.class.getName()));
 
   /** Converts the provided {@link MetricData} to {@link ResourceMetrics}. */
   public static List<ResourceMetrics> toProtoResourceMetrics(Collection<MetricData> metricData) {
@@ -304,6 +310,10 @@ public final class MetricAdapter {
       builder.setAsInt(((LongExemplar) exemplar).getValue());
     } else if (exemplar instanceof DoubleExemplar) {
       builder.setAsDouble(((DoubleExemplar) exemplar).getValue());
+    } else {
+      if (logger.isLoggable(Level.SEVERE)) {
+        logger.log(Level.SEVERE, "Unable to convert unknown exemplar type: " + exemplar);
+      }
     }
     return builder.build();
   }

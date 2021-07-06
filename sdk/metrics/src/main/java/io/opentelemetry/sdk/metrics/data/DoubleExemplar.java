@@ -20,8 +20,8 @@ public abstract class DoubleExemplar implements Exemplar {
    * @param filteredAttributes The set of {@link Attributes} not already associated with the {@link
    *     PointData}.
    * @param recordTimeNanos The time when the sample qas recorded in nanoseconds.
-   * @param spanId (optional) The associated {@code SpanId}
-   * @param traceId (optional) The associated {@code TraceId}
+   * @param spanId (optional) The associated SpanId.
+   * @param traceId (optional) The associated TraceId.
    * @param value The value recorded.
    */
   public static DoubleExemplar create(
@@ -38,4 +38,9 @@ public abstract class DoubleExemplar implements Exemplar {
 
   /** Numerical value of the measurement that was recorded. */
   public abstract double getValue();
+
+  @Override
+  public final double getValueAsDouble() {
+    return getValue();
+  }
 }

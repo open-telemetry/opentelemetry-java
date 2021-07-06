@@ -379,7 +379,7 @@ class MetricAdapterTest {
                             /*value=*/ 0),
                         LongExemplar.create(
                             Attributes.empty(),
-                            /*recordTime=*/ 0,
+                            /*recordTime=*/ TimeUnit.MILLISECONDS.toNanos(2),
                             "my_span_id",
                             "my_trace_id",
                             /*value=*/ 2)))));
@@ -399,7 +399,7 @@ class MetricAdapterTest {
                 ImmutableList.of("kp", "le"),
                 ImmutableList.of("vp", "+Inf"),
                 13,
-                new Exemplar(2d, 0L, "trace_id", "my_trace_id", "span_id", "my_span_id")));
+                new Exemplar(2d, 2L, "trace_id", "my_trace_id", "span_id", "my_span_id")));
   }
 
   @Test
