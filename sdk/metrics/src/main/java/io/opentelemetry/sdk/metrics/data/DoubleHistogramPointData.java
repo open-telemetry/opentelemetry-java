@@ -117,7 +117,7 @@ public abstract class DoubleHistogramPointData implements PointData {
   public abstract List<Long> getCounts();
 
   /**
-   * Returns the lower bound (all values will have been >) of a bucket.
+   * Returns the lower bound of a bucket (all values would have been greater than).
    *
    * @param bucketIndex The bucket index, should match {@link #getCounts()} index.
    */
@@ -125,7 +125,7 @@ public abstract class DoubleHistogramPointData implements PointData {
     return bucketIndex > 0 ? getBoundaries().get(bucketIndex - 1) : Double.NEGATIVE_INFINITY;
   }
   /**
-   * Returns the upper (inclusive) bound (all values will have been <=) of a bucket.
+   * Returns the upper inclusive bound of a bucket (all values would have been less then or equal).
    *
    * @param bucketIndex The bucket index, should match {@link #getCounts()} index.
    */

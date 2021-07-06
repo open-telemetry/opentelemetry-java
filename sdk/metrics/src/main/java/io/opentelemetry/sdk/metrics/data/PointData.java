@@ -39,8 +39,6 @@ public interface PointData {
    * @return the attributes associated with this {@code Point}.
    */
   Attributes getAttributes();
-  /**
-   * List of exemplars collected from measurements that were used to form the data point.
-   */
+  /** List of exemplars collected from measurements that were used to form the data point. */
   Collection<Exemplar> getExemplars();
 }
