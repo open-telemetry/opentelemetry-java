@@ -28,7 +28,7 @@ public class AsynchronousInstrumentStorageTest {
                 measure.observe(1.0, Attributes.of(stringKey("k"), "v")),
             mockAggregator,
             (attributes, context) -> Attributes.empty());
-    storage.collectAndReset(0);
+    storage.collectAndReset(null, null, 0);
 
     Mockito.verify(mockAggregator)
         .batchRecord(DoubleMeasurement.create(1.0, Attributes.empty(), Context.root()));
@@ -44,7 +44,7 @@ public class AsynchronousInstrumentStorageTest {
                 measure.observe(1.0, Attributes.of(stringKey("k"), "v")),
             mockAggregator,
             AttributesProcessor.NOOP);
-    storage.collectAndReset(0);
+    storage.collectAndReset(null, null, 0);
 
     // Verify aggregator received mesurement and completion timestmap.
     Mockito.verify(mockAggregator)

@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.CollectionHandle;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.SynchronousHandle;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -15,6 +16,7 @@ import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -107,7 +109,8 @@ final class SynchronousInstrumentStorage<T> implements WriteableInstrumentStorag
 
   /** Collects bucketed metrics and resets the underlying storage for the next collection period. */
   @Override
-  public List<MetricData> collectAndReset(long epochNanos) {
+  public List<MetricData> collectAndReset(
+      CollectionHandle collector, Set<CollectionHandle> allCollectors, long epochNanos) {
     collectLock.lock();
     try {
       for (Map.Entry<Attributes, SynchronousHandle<T>> entry : perAttrributeStorage.entrySet()) {

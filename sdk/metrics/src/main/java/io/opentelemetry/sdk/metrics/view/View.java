@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.instrument.InstrumentDescriptor;
-
 import javax.annotation.Nullable;
 
 /** Configuratioon for a view */
@@ -30,7 +29,6 @@ public interface View {
    * attributes.
    */
   AttributesProcessor getAttributesProcessor();
-
 
   public static ViewBuilder builder() {
     return null;

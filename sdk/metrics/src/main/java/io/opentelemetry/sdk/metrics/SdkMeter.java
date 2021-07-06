@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.state.MeterSharedState;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /** {@link SdkMeter} is SDK implementation of {@link Meter}. */
 public class SdkMeter implements Meter {
@@ -59,12 +60,13 @@ public class SdkMeter implements Meter {
   }
 
   /** Collects all the metric recordings that changed since the previous call. */
-  Collection<MetricData> collectAll(long epochNanos) {
+  Collection<MetricData> collectAll(
+      CollectionHandle collector, Set<CollectionHandle> allCollectors, long epochNanos) {
     InstrumentStorageRegistry instrumentRegistry = meterSharedState.getInstrumentStorageRegistry();
     Collection<InstrumentStorage> instruments = instrumentRegistry.getInstruments();
     List<MetricData> result = new ArrayList<>(instruments.size());
     for (InstrumentStorage instrument : instruments) {
-      result.addAll(instrument.collectAndReset(epochNanos));
+      result.addAll(instrument.collectAndReset(collector, allCollectors, epochNanos));
     }
     return result;
   }

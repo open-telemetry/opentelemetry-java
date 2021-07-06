@@ -10,12 +10,14 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.api.metrics.ObservableMeasurement;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.CollectionHandle;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.instrument.DoubleMeasurement;
 import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
 import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -52,7 +54,8 @@ public final class AsynchronousInstrumentStorage implements InstrumentStorage {
   }
 
   @Override
-  public List<MetricData> collectAndReset(long epochNanos) {
+  public List<MetricData> collectAndReset(
+      CollectionHandle collector, Set<CollectionHandle> allCollectors, long epochNanos) {
     collectLock.lock();
     try {
       metricUpdater.accept(aggregator, attributesProcessor);

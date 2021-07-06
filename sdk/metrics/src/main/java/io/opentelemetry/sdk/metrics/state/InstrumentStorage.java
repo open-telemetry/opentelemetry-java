@@ -6,16 +6,25 @@
 package io.opentelemetry.sdk.metrics.state;
 
 import io.opentelemetry.api.metrics.ObservableMeasurement;
+import io.opentelemetry.sdk.metrics.CollectionHandle;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /** A storage location for metric data collected by a specific instrument instance. */
 public interface InstrumentStorage {
-  /** Collects the metrics from this storage and resets for the next collection period. */
-  List<MetricData> collectAndReset(long epochNanos);
+  /**
+   * Collects the metrics from this storage and resets for the next collection period.
+   *
+   * @param collector The current pipeline collecting metrics.
+   * @param allCollectors All (registered) pipelines that could collect metrics.
+   * @param epochNanos The timestamp for this collection.
+   */
+  List<MetricData> collectAndReset(
+      CollectionHandle collector, Set<CollectionHandle> allCollectors, long epochNanos);
 
   /**
    * Construct storage for a synchronous insturment.

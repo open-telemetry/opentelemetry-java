@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -33,6 +34,8 @@ public class SdkMeterProvider implements MeterProvider, MetricProducer {
   static final String DEFAULT_METER_NAME = "unknown";
   private final ComponentRegistry<SdkMeter> registry;
   private final MeterProviderSharedState sharedState;
+  private final CollectionHandle global = CollectionHandle.create();
+  private final Set<CollectionHandle> onlyGlobalCollection = CollectionHandle.of(global);
 
   SdkMeterProvider(Clock clock, Resource resource, MeasurementProcessor processor) {
     this.sharedState = MeterProviderSharedState.create(clock, resource, processor);
@@ -55,7 +58,7 @@ public class SdkMeterProvider implements MeterProvider, MetricProducer {
     Collection<SdkMeter> meters = registry.getComponents();
     List<MetricData> result = new ArrayList<>(meters.size());
     for (SdkMeter meter : meters) {
-      result.addAll(meter.collectAll(sharedState.getClock().now()));
+      result.addAll(meter.collectAll(global, onlyGlobalCollection, sharedState.getClock().now()));
     }
     return Collections.unmodifiableCollection(result);
   }

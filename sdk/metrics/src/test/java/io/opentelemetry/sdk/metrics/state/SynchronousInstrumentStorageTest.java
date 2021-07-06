@@ -24,7 +24,7 @@ public class SynchronousInstrumentStorageTest {
     final Aggregator<Object> mockAggregator = Mockito.mock(Aggregator.class);
     SynchronousInstrumentStorage<Object> storage =
         SynchronousInstrumentStorage.create(mockAggregator, AttributesProcessor.NOOP);
-    storage.collectAndReset(0);
+    storage.collectAndReset(null, null, 0);
 
     // Verify aggregator received mesurement and completion timestmap.
     Mockito.verify(mockAggregator).completeCollectionCycle(0);
@@ -46,7 +46,7 @@ public class SynchronousInstrumentStorageTest {
     storage.bind(KV).record(LongMeasurement.create(1, KV, Context.root()));
     // Binding a handle with no value will NOT cause accumulation.
     storage.bind(Attributes.of(AttributeKey.stringKey("k"), "unused"));
-    storage.collectAndReset(0);
+    storage.collectAndReset(null, null, 0);
     Mockito.verify(mockAggregator).batchStreamAccumulation(Attributes.empty(), "result");
     Mockito.verify(mockAggregator).batchStreamAccumulation(KV, "result");
     Mockito.verify(mockAggregator).completeCollectionCycle(0);
@@ -76,7 +76,7 @@ public class SynchronousInstrumentStorageTest {
     storage.bind(KV).record(LongMeasurement.create(1, KV, Context.root()));
     // Binding a handle with no value will NOT cause accumulation.
     storage.bind(Attributes.of(AttributeKey.stringKey("k"), "unused"));
-    storage.collectAndReset(0);
+    storage.collectAndReset(null, null, 0);
     Mockito.verify(mockAggregator).batchStreamAccumulation(Attributes.empty(), "result");
     Mockito.verify(mockAggregator).batchStreamAccumulation(KV2, "result");
     Mockito.verify(mockAggregator).completeCollectionCycle(0);
