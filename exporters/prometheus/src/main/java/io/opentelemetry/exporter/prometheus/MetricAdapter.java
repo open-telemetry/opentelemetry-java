@@ -282,8 +282,8 @@ final class MetricAdapter {
     if (exemplar.getSpanId() != null && exemplar.getTraceId() != null) {
       return new io.prometheus.client.exemplars.Exemplar(
           exemplar.getValueAsDouble(),
-          // Convert to ms for prometheus, truncate nanosecond preceision.
-          TimeUnit.NANOSECONDS.toMillis(exemplar.getRecordTimeNanos()),
+          // Convert to ms for prometheus, truncate nanosecond precision.
+          TimeUnit.NANOSECONDS.toMillis(exemplar.getEpochNanos()),
           "trace_id",
           exemplar.getTraceId(),
           "span_id",

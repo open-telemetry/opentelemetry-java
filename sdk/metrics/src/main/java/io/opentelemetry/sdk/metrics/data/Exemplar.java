@@ -24,7 +24,7 @@ public interface Exemplar {
   Attributes getFilteredAttributes();
 
   /** Returns the timestamp in nanos when measurement was collected. */
-  long getRecordTimeNanos();
+  long getEpochNanos();
 
   /**
    * (Optional) Span ID of the exemplar trace.

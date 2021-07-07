@@ -294,7 +294,7 @@ public final class MetricAdapter {
   static Exemplar toExemplar(io.opentelemetry.sdk.metrics.data.Exemplar exemplar) {
     // TODO - Use a thread local cache for spanid/traceid -> byte conversion.
     Exemplar.Builder builder = Exemplar.newBuilder();
-    builder.setTimeUnixNano(exemplar.getRecordTimeNanos());
+    builder.setTimeUnixNano(exemplar.getEpochNanos());
     if (exemplar.getSpanId() != null) {
       builder.setSpanId(convertSpanId(exemplar.getSpanId()));
     }
