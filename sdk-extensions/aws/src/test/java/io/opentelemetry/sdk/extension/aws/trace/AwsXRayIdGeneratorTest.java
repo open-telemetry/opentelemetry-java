@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link AwsXrayIdGenerator}. */
+@SuppressWarnings("deprecation") // we still test it, even if deprecated
 class AwsXRayIdGeneratorTest {
 
   @Test
