@@ -24,6 +24,8 @@ dependencies {
     testImplementation(project(":sdk-extensions:autoconfigure"))
 
     testImplementation("com.linecorp.armeria:armeria-junit5")
+    testRuntimeOnly("org.bouncycastle:bcpkix-jdk15on")
+
     testImplementation("com.google.guava:guava")
     testImplementation("org.slf4j:slf4j-simple")
     testImplementation("org.skyscreamer:jsonassert")
