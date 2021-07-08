@@ -246,6 +246,22 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return this;
   }
 
+  /**
+   * Asserts that the span under assertion has the same number of events as provided {@code
+   * assertions} and executes each {@link EventDataAssert} in {@code assertions} in order with the
+   * corresponding event.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final SpanDataAssert hasEventsSatisfyingExactly(Consumer<EventDataAssert>... assertions) {
+    assertThat(actual.getEvents())
+        .hasSize(assertions.length)
+        .zipSatisfy(
+            Arrays.asList(assertions),
+            (event, assertion) -> assertion.accept(new EventDataAssert(event)));
+    return this;
+  }
+
   /** Asserts the span has the given links. */
   public SpanDataAssert hasLinks(Iterable<LinkData> links) {
     isNotNull();

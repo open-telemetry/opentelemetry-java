@@ -162,6 +162,8 @@ class OpenTelemetryAssertionsTest {
                       attributes -> assertThat(attributes).isEqualTo(Attributes.empty()))
                   .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty());
             })
+        .hasEventsSatisfyingExactly(
+            event -> event.hasName("event"), event -> event.hasName("event2"))
         .hasLinks(LINKS)
         .hasLinks(LINKS.toArray(new LinkData[0]))
         .hasLinksSatisfying(links -> assertThat(links).hasSize(LINKS.size()))
