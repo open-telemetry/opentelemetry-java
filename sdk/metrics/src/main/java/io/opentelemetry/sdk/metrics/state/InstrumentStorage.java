@@ -41,6 +41,7 @@ public interface InstrumentStorage {
    *
    * <p>This storage will poll for data when asked.
    */
+  @SuppressWarnings("unused")
   public static <T> InstrumentStorage createAsynchronous(
       Consumer<? extends ObservableMeasurement> callback,
       Aggregator<T> aggregator,

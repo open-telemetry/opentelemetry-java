@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.DoubleAdder;
  * <p>This aggregator supports generating DELTA or CUMULATIVE sums, as well as monotonic or
  * non-monotonic.
  */
-public class DoubleSumAggregator extends AbstractAggregator<DoubleAccumulation> {
+public class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {
   private final SumConfig config;
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibrary;
@@ -42,7 +42,6 @@ public class DoubleSumAggregator extends AbstractAggregator<DoubleAccumulation> 
       InstrumentationLibraryInfo instrumentationLibrary,
       long startEpochNanos,
       ExemplarSampler sampler) {
-    super(startEpochNanos);
     this.config = config;
     this.resource = resource;
     this.instrumentationLibrary = instrumentationLibrary;
@@ -55,7 +54,7 @@ public class DoubleSumAggregator extends AbstractAggregator<DoubleAccumulation> 
   }
 
   @Override
-  DoubleAccumulation asyncAccumulation(Measurement measurement) {
+  public DoubleAccumulation asyncAccumulation(Measurement measurement) {
     // TODO: Use measurement as exemplar?
     return DoubleAccumulation.create(measurement.asDouble().getValue());
   }
@@ -80,20 +79,14 @@ public class DoubleSumAggregator extends AbstractAggregator<DoubleAccumulation> 
   }
 
   @Override
-  protected boolean isStatefulCollector() {
-    return config.getMeasurementTemporality() == AggregationTemporality.DELTA
-        && config.getTemporality() == AggregationTemporality.CUMULATIVE;
-  }
-
-  @Override
-  protected DoubleAccumulation merge(DoubleAccumulation current, DoubleAccumulation accumulated) {
+  public DoubleAccumulation merge(DoubleAccumulation current, DoubleAccumulation accumulated) {
     // Drop previous exemplars when aggregating.
     return DoubleAccumulation.create(
         current.getValue() + accumulated.getValue(), current.getExemplars());
   }
 
   @Override
-  protected MetricData buildMetric(
+  public MetricData buildMetric(
       Map<Attributes, DoubleAccumulation> accumulated,
       long startEpochNanos,
       long lastEpochNanos,
@@ -113,5 +106,26 @@ public class DoubleSumAggregator extends AbstractAggregator<DoubleAccumulation> 
                     ? startEpochNanos
                     : lastEpochNanos,
                 epochNanos)));
+  }
+
+  @Override
+  public Map<Attributes, DoubleAccumulation> diffPrevious(
+      Map<Attributes, DoubleAccumulation> previous,
+      Map<Attributes, DoubleAccumulation> current,
+      boolean isAsynchronousMeasurement) {
+    if (config.getTemporality() == AggregationTemporality.CUMULATIVE) {
+
+      // TODO: MERGE EVERYTHING!
+      previous.forEach(
+          (k, v) -> {
+            if (current.containsKey(k)) {
+              current.put(k, merge(current.get(k), v));
+            } else {
+              current.put(k, v);
+            }
+          });
+    }
+
+    return current;
   }
 }

@@ -39,7 +39,6 @@ public class CollectionHandleTest {
     assertThat(mutable.contains(two)).isTrue();
   }
 
-
   @Test
   public void mutableSet_allowsContainsAll() {
     CollectionHandle one = CollectionHandle.create();
@@ -48,8 +47,8 @@ public class CollectionHandleTest {
     Set<CollectionHandle> mutable = CollectionHandle.mutableSet();
     mutable.add(one);
     mutable.add(two);
-    Set<CollectionHandle> mutableCopy = CollectionHandle.of(one,two);
-    Set<CollectionHandle> mutablePlus = CollectionHandle.of(one,two,three);
+    Set<CollectionHandle> mutableCopy = CollectionHandle.of(one, two);
+    Set<CollectionHandle> mutablePlus = CollectionHandle.of(one, two, three);
 
     assertThat(mutable.containsAll(mutableCopy)).isTrue();
     assertThat(mutable.containsAll(mutablePlus)).isFalse();
@@ -61,7 +60,7 @@ public class CollectionHandleTest {
     CollectionHandle one = CollectionHandle.create();
     CollectionHandle two = CollectionHandle.create();
     CollectionHandle three = CollectionHandle.create();
-    Set<CollectionHandle> set = CollectionHandle.of(one,two,three);
+    Set<CollectionHandle> set = CollectionHandle.of(one, two, three);
     assertThat(set).hasSize(3);
     Iterator<CollectionHandle> iterator = set.iterator();
     assertThat(iterator.hasNext()).isTrue();

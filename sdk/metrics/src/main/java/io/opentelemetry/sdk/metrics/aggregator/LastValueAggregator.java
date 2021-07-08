@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * problem because LastValueAggregator is currently only available for Observers which record all
  * values once.
  */
-public class LastValueAggregator extends AbstractAggregator<DoubleAccumulation> {
+public class LastValueAggregator implements Aggregator<DoubleAccumulation> {
   private final LastValueConfig config;
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibrary;
@@ -43,7 +43,6 @@ public class LastValueAggregator extends AbstractAggregator<DoubleAccumulation> 
       InstrumentationLibraryInfo instrumentationLibrary,
       long startEpochNanos,
       ExemplarSampler sampler) {
-    super(startEpochNanos);
     this.config = config;
     this.resource = resource;
     this.instrumentationLibrary = instrumentationLibrary;
@@ -79,22 +78,17 @@ public class LastValueAggregator extends AbstractAggregator<DoubleAccumulation> 
   }
 
   @Override
-  protected boolean isStatefulCollector() {
-    return false;
-  }
-
-  @Override
-  DoubleAccumulation asyncAccumulation(Measurement measurement) {
+  public DoubleAccumulation asyncAccumulation(Measurement measurement) {
     return DoubleAccumulation.create(measurement.asDouble().getValue());
   }
 
   @Override
-  protected DoubleAccumulation merge(DoubleAccumulation current, DoubleAccumulation accumulated) {
+  public DoubleAccumulation merge(DoubleAccumulation current, DoubleAccumulation accumulated) {
     return current;
   }
 
   @Override
-  protected MetricData buildMetric(
+  public MetricData buildMetric(
       Map<Attributes, DoubleAccumulation> accumulated,
       long startEpochNanos,
       long lastEpochNanos,
@@ -107,5 +101,13 @@ public class LastValueAggregator extends AbstractAggregator<DoubleAccumulation> 
         config.getUnit(),
         DoubleGaugeData.create(
             MetricDataUtils.toDoublePointList(accumulated, startEpochNanos, epochNanos)));
+  }
+
+  @Override
+  public Map<Attributes, DoubleAccumulation> diffPrevious(
+      Map<Attributes, DoubleAccumulation> previous,
+      Map<Attributes, DoubleAccumulation> current,
+      boolean isAsynchronousMeasurement) {
+    return current;
   }
 }

@@ -25,7 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * <p>This aggregator supports {@code DoubleMeasurement} and {@code LongMeasurement} inputs.
  */
-public class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumulation> {
+public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulation> {
   private final HistogramConfig config;
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibrary;
@@ -49,7 +49,6 @@ public class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccum
       InstrumentationLibraryInfo instrumentationLibrary,
       long startEpochNanos,
       ExemplarSampler sampler) {
-    super(startEpochNanos);
     this.config = config;
     this.resource = resource;
     this.instrumentationLibrary = instrumentationLibrary;
@@ -131,12 +130,7 @@ public class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccum
   }
 
   @Override
-  protected boolean isStatefulCollector() {
-    return config.getTemporality() == AggregationTemporality.CUMULATIVE;
-  }
-
-  @Override
-  HistogramAccumulation asyncAccumulation(Measurement measurement) {
+  public HistogramAccumulation asyncAccumulation(Measurement measurement) {
     double value = valueOf(measurement);
     int bucketIndex = findBucketIndex(config.getBoundaries(), value);
     long[] counts = new long[config.getBoundaries().length + 1];
@@ -160,7 +154,7 @@ public class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccum
   }
 
   @Override
-  protected MetricData buildMetric(
+  public MetricData buildMetric(
       Map<Attributes, HistogramAccumulation> accumulated,
       long startEpochNanos,
       long lastEpochNanos,
@@ -175,8 +169,30 @@ public class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccum
             config.getTemporality(),
             MetricDataUtils.toDoubleHistogramPointList(
                 accumulated,
-                isStatefulCollector() ? startEpochNanos : lastEpochNanos,
+                config.getTemporality() == AggregationTemporality.CUMULATIVE
+                    ? startEpochNanos
+                    : lastEpochNanos,
                 epochNanos,
                 boundaryList)));
+  }
+
+  @Override
+  public Map<Attributes, HistogramAccumulation> diffPrevious(
+      Map<Attributes, HistogramAccumulation> previous,
+      Map<Attributes, HistogramAccumulation> current,
+      boolean isAsynchronousMeasurement) {
+    // TODO: Share this.
+    if (config.getTemporality() == AggregationTemporality.CUMULATIVE) {
+      previous.forEach(
+          (k, v) -> {
+            if (current.containsKey(k)) {
+              current.put(k, merge(current.get(k), v));
+            } else {
+              current.put(k, v);
+            }
+          });
+    }
+
+    return current;
   }
 }

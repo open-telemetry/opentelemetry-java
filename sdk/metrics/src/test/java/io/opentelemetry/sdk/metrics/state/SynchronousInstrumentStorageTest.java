@@ -8,26 +8,36 @@ package io.opentelemetry.sdk.metrics.state;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.CollectionHandle;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.aggregator.SynchronousHandle;
 import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
 import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class SynchronousInstrumentStorageTest {
+
+  private final CollectionHandle collector1 = CollectionHandle.create();
+  private final CollectionHandle collector2 = CollectionHandle.create();
+  private final Set<CollectionHandle> collectors = CollectionHandle.of(collector1, collector2);
+
   @Test
   @SuppressWarnings("unchecked")
   public void synchronousStorage_sendsCompleteCollectionCycleToAggregator() {
     final Aggregator<Object> mockAggregator = Mockito.mock(Aggregator.class);
     SynchronousInstrumentStorage<Object> storage =
         SynchronousInstrumentStorage.create(mockAggregator, AttributesProcessor.NOOP);
-    storage.collectAndReset(null, null, 0);
+    storage.collectAndReset(collector1, collectors, 10);
 
     // Verify aggregator received mesurement and completion timestmap.
-    Mockito.verify(mockAggregator).completeCollectionCycle(0);
+    Mockito.verify(mockAggregator).buildMetric(Collections.emptyMap(), 0, 0, 10);
   }
 
   @Test
@@ -46,10 +56,10 @@ public class SynchronousInstrumentStorageTest {
     storage.bind(KV).record(LongMeasurement.create(1, KV, Context.root()));
     // Binding a handle with no value will NOT cause accumulation.
     storage.bind(Attributes.of(AttributeKey.stringKey("k"), "unused"));
-    storage.collectAndReset(null, null, 0);
-    Mockito.verify(mockAggregator).batchStreamAccumulation(Attributes.empty(), "result");
-    Mockito.verify(mockAggregator).batchStreamAccumulation(KV, "result");
-    Mockito.verify(mockAggregator).completeCollectionCycle(0);
+    storage.collectAndReset(collector1, collectors, 10);
+    // Verify aggregator received measurements.
+    Mockito.verify(mockAggregator)
+        .buildMetric(makeMeasurement(KV, "result", Attributes.empty(), "result"), 0, 0, 10);
   }
 
   @Test
@@ -76,10 +86,9 @@ public class SynchronousInstrumentStorageTest {
     storage.bind(KV).record(LongMeasurement.create(1, KV, Context.root()));
     // Binding a handle with no value will NOT cause accumulation.
     storage.bind(Attributes.of(AttributeKey.stringKey("k"), "unused"));
-    storage.collectAndReset(null, null, 0);
-    Mockito.verify(mockAggregator).batchStreamAccumulation(Attributes.empty(), "result");
-    Mockito.verify(mockAggregator).batchStreamAccumulation(KV2, "result");
-    Mockito.verify(mockAggregator).completeCollectionCycle(0);
+    storage.collectAndReset(collector1, collectors, 10);
+    Mockito.verify(mockAggregator)
+        .buildMetric(makeMeasurement(KV2, "result", Attributes.empty(), "result"), 0, 0, 10);
   }
 
   /** Stubbed version of synchronous handle for testing. */
@@ -95,5 +104,15 @@ public class SynchronousInstrumentStorageTest {
 
     @Override
     protected void doRecord(Measurement value) {}
+  }
+
+  private static Map<Attributes, Object> makeMeasurement(Object... values) {
+    Map<Attributes, Object> result = new HashMap<>();
+    int idx = 0;
+    while (idx + 1 < values.length) {
+      result.put((Attributes) values[idx], values[idx + 1]);
+      idx += 2;
+    }
+    return result;
   }
 }

@@ -15,63 +15,123 @@ import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.instrument.DoubleMeasurement;
 import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
+import io.opentelemetry.sdk.metrics.instrument.Measurement;
 import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public final class AsynchronousInstrumentStorage implements InstrumentStorage {
+public final class AsynchronousInstrumentStorage<T> implements InstrumentStorage {
   private final ReentrantLock collectLock = new ReentrantLock();
-  private final BiConsumer<Aggregator<?>, AttributesProcessor> metricUpdater;
-  private final Aggregator<?> aggregator;
+  private final BiConsumer<Consumer<Measurement>, AttributesProcessor> metricUpdater;
+  private final Aggregator<T> aggregator;
   private final AttributesProcessor attributesProcessor;
+  private final Map<CollectionHandle, Map<Attributes, T>> previousCollections;
 
-  static <T> AsynchronousInstrumentStorage create(
+  static <T> AsynchronousInstrumentStorage<T> create(
       Consumer<? extends ObservableMeasurement> callback,
       Aggregator<T> aggregator,
       AttributesProcessor attributesProcessor) {
-    return new AsynchronousInstrumentStorage(
+    return new AsynchronousInstrumentStorage<>(
         wrapCallback(callback), aggregator, attributesProcessor);
   }
 
   /** Type gymnastics to handle both long/double observable measurements. */
   @SuppressWarnings("unchecked")
   private static <T extends ObservableMeasurement>
-      BiConsumer<Aggregator<?>, AttributesProcessor> wrapCallback(Consumer<T> callback) {
+      BiConsumer<Consumer<Measurement>, AttributesProcessor> wrapCallback(Consumer<T> callback) {
     return (storage, processor) ->
         callback.accept((T) new MyObservableMeasurement(storage, processor));
   }
 
   private AsynchronousInstrumentStorage(
-      BiConsumer<Aggregator<?>, AttributesProcessor> metricUpdater,
-      Aggregator<?> aggregator,
+      BiConsumer<Consumer<Measurement>, AttributesProcessor> metricUpdater,
+      Aggregator<T> aggregator,
       AttributesProcessor attributesProcessor) {
     this.metricUpdater = metricUpdater;
     this.aggregator = aggregator;
     this.attributesProcessor = attributesProcessor;
+    this.previousCollections = new HashMap<>();
   }
 
   @Override
   public List<MetricData> collectAndReset(
-      CollectionHandle collector, Set<CollectionHandle> allCollectors, long epochNanos) {
+      CollectionHandle collector, Set<CollectionHandle> allCollectors, long epochNanos
+      // TODO: long lastEpochNanos?
+      // TODO: long startEpochNanos
+      ) {
+    // TODO: Collector specific storage and previous calculations.
     collectLock.lock();
     try {
-      metricUpdater.accept(aggregator, attributesProcessor);
-      return aggregator.completeCollectionCycle(epochNanos);
+      final Map<Attributes, T> currentMeasurements = new HashMap<>();
+      // Construct a lambda that will record measurements in this new hashmap.
+      Consumer<Measurement> recorder =
+          (measurement) -> {
+            T current = aggregator.asyncAccumulation(measurement);
+            // Ignore null measurements.
+            if (current == null) {
+              return;
+            }
+            if (currentMeasurements.containsKey(measurement.getAttributes())) {
+              // TODO: This behave preceeds us, but seems borked.   Should we allow multiple
+              // asynchronous
+              // measurements and merge them or consider this an error and only take the latest?
+              currentMeasurements.put(
+                  measurement.getAttributes(),
+                  aggregator.merge(currentMeasurements.get(measurement.getAttributes()), current));
+            } else {
+              currentMeasurements.put(measurement.getAttributes(), current);
+            }
+          };
+      metricUpdater.accept(recorder, attributesProcessor);
+
+      // Calculate resulting metric.
+      MetricData metricResult =
+          aggregator.buildMetric(
+              accountForPrevious(collector, currentMeasurements), /* TODO: start */
+              0, /* TODO: diff */
+              0,
+              epochNanos);
+      if (metricResult != null) {
+        return Collections.singletonList(metricResult);
+      }
+      return Collections.emptyList();
     } finally {
       collectLock.unlock();
     }
   }
 
+  /**
+   * This method allows comparison of current value against previous. Used by "DELTA" accumulators.
+   */
+  private Map<Attributes, T> accountForPrevious(
+      CollectionHandle collector, Map<Attributes, T> currentMeasurements) {
+    // Allow aggregator to diff vs. previous.
+    final Map<Attributes, T> previous = previousCollections.put(collector, currentMeasurements);
+    final Map<Attributes, T> result;
+    if (previous != null) {
+      result =
+          aggregator.diffPrevious(
+              previous, currentMeasurements, /*isAsynchronousMeasurement=*/ true);
+    } else {
+      result = currentMeasurements;
+    }
+    return result;
+  }
+
   /** Converts from observable callbacks to measurements. */
   static class MyObservableMeasurement
       implements ObservableLongMeasurement, ObservableDoubleMeasurement {
-    private final Aggregator<?> storage;
+    private final Consumer<Measurement> storage;
     private final AttributesProcessor attributesProcessor;
 
-    MyObservableMeasurement(Aggregator<?> storage, AttributesProcessor attributesProcessor) {
+    MyObservableMeasurement(
+        Consumer<Measurement> storage, AttributesProcessor attributesProcessor) {
       this.storage = storage;
       this.attributesProcessor = attributesProcessor;
     }
@@ -79,7 +139,7 @@ public final class AsynchronousInstrumentStorage implements InstrumentStorage {
     @Override
     public void observe(double value, Attributes attributes) {
       final Attributes realAttributes = attributesProcessor.process(attributes, Context.current());
-      storage.batchRecord(DoubleMeasurement.createNoContext(value, realAttributes));
+      storage.accept(DoubleMeasurement.createNoContext(value, realAttributes));
     }
 
     @Override
@@ -90,7 +150,7 @@ public final class AsynchronousInstrumentStorage implements InstrumentStorage {
     @Override
     public void observe(long value, Attributes attributes) {
       final Attributes realAttributes = attributesProcessor.process(attributes, Context.current());
-      storage.batchRecord(LongMeasurement.createNoContext(value, realAttributes));
+      storage.accept(LongMeasurement.createNoContext(value, realAttributes));
     }
 
     @Override

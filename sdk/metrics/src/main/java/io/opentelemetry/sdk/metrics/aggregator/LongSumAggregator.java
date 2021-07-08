@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.LongAdder;
  * <p>This aggregator supports generating DELTA or CUMULATIVE sums, as well as monotonic or
  * non-monotonic.
  */
-public class LongSumAggregator extends AbstractAggregator<LongAccumulation> {
+public class LongSumAggregator implements Aggregator<LongAccumulation> {
   private final SumConfig config;
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibrary;
@@ -43,7 +43,6 @@ public class LongSumAggregator extends AbstractAggregator<LongAccumulation> {
       InstrumentationLibraryInfo instrumentationLibrary,
       long startEpochNanos,
       ExemplarSampler sampler) {
-    super(startEpochNanos);
     this.config = config;
     this.resource = resource;
     this.instrumentationLibrary = instrumentationLibrary;
@@ -75,7 +74,7 @@ public class LongSumAggregator extends AbstractAggregator<LongAccumulation> {
   }
 
   @Override
-  LongAccumulation asyncAccumulation(Measurement measurement) {
+  public LongAccumulation asyncAccumulation(Measurement measurement) {
     if (measurement instanceof LongMeasurement) {
       return LongAccumulation.create(((LongMeasurement) measurement).getValue());
     }
@@ -83,19 +82,13 @@ public class LongSumAggregator extends AbstractAggregator<LongAccumulation> {
   }
 
   @Override
-  protected boolean isStatefulCollector() {
-    return config.getMeasurementTemporality() == AggregationTemporality.DELTA
-        && config.getTemporality() == AggregationTemporality.CUMULATIVE;
-  }
-
-  @Override
-  protected LongAccumulation merge(LongAccumulation current, LongAccumulation accumulated) {
+  public LongAccumulation merge(LongAccumulation current, LongAccumulation accumulated) {
     return LongAccumulation.create(
         current.getValue() + accumulated.getValue(), current.getExemplars());
   }
 
   @Override
-  protected MetricData buildMetric(
+  public MetricData buildMetric(
       Map<Attributes, LongAccumulation> accumulated,
       long startEpochNanos,
       long lastEpochNanos,
@@ -115,5 +108,25 @@ public class LongSumAggregator extends AbstractAggregator<LongAccumulation> {
                     ? startEpochNanos
                     : lastEpochNanos,
                 epochNanos)));
+  }
+
+  @Override
+  public Map<Attributes, LongAccumulation> diffPrevious(
+      Map<Attributes, LongAccumulation> previous,
+      Map<Attributes, LongAccumulation> current,
+      boolean isAsynchronousMeasurement) {
+    // TODO: Share this.
+    if (config.getTemporality() == AggregationTemporality.CUMULATIVE) {
+      previous.forEach(
+          (k, v) -> {
+            if (current.containsKey(k)) {
+              current.put(k, merge(current.get(k), v));
+            } else {
+              current.put(k, v);
+            }
+          });
+    }
+
+    return current;
   }
 }
