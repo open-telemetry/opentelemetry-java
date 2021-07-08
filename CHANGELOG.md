@@ -17,6 +17,9 @@ has no implementation in this release, but should be supported by the auto-instr
 implementation of `CompletableResultCode` for the calls beyond the first. 
 
 ### SDK
+#### Bugfixes
+- If the `jdk.unsupported` package is not available, the `BatchSpanProcessor` will now fall back to a supported, standard `Queue` implementation.
+
 #### Enhancements
 - A `Resource` can now be assigned an OpenTelemetry schema URL via the `ResourceBuilder` or the `create(Attributes, String)` 
 method on the `Resource` itself.
@@ -29,6 +32,7 @@ version of the OpenTelemetry schema the files were generated from. There are no 
 ### Metrics (alpha)
 - You can now assign an OpenTelemetry schema URL to a `Meter` via the new `MeterBuilder` class that is
 accessed via the `MeterProvider` or any global instances that delegate to one.
+- The metrics SDK now utilizes `Attributes` rather than `Labels` internally.
 
 ---
 ## Version 1.3.0 - 2021-06-09
