@@ -9,10 +9,14 @@ plugins {
 
 val enableNullaway: String? by project
 
+val disableErrorProne = properties["disableErrorProne"]
+
 tasks {
     withType<JavaCompile>().configureEach {
         with(options) {
             errorprone {
+                enabled = (disableErrorProne != "true")
+
                 disableWarningsInGeneratedCode.set(true)
                 allDisabledChecksAsWarnings.set(true)
 
