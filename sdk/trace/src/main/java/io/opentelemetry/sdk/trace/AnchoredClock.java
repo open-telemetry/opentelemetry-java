@@ -13,10 +13,11 @@ import javax.annotation.concurrent.Immutable;
  * not be taken from the system, but instead are computed by adding {@linkplain System#nanoTime()
  * monotonic time} to the anchor point.
  *
- * <p>This is needed because Java has millisecond granularity for epoch times and tracing events are
- * recorded more often. Instead of computing a true wall time for every timestamp within a trace, we
- * compute it once at the local root and then anchor all descendant span timestamps to this root's
- * timestamp.
+ * <p>This is needed because Java has lower granularity for epoch times and tracing events are
+ * recorded more often. There is also a performance improvement in avoiding referencing the system's
+ * wall time where possible. Instead of computing a true wall time for every timestamp within a
+ * trace, we compute it once at the local root and then anchor all descendant span timestamps to
+ * this root's timestamp.
  */
 @Immutable
 final class AnchoredClock {
