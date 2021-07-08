@@ -485,9 +485,7 @@ ij_shell_redirect_followed_by_space = false
 ij_shell_switch_cases_indented = false
 
 [{*.gant, *.gradle, *.groovy, *.gson, *.gy}]
-indent_size = 4
-tab_width = 4
-ij_continuation_indent_size = 8
+ij_continuation_indent_size = 2
 ij_groovy_align_group_field_declarations = false
 ij_groovy_align_multiline_array_initializer_expression = false
 ij_groovy_align_multiline_assignment = false
@@ -529,7 +527,7 @@ ij_groovy_call_parameters_wrap = off
 ij_groovy_catch_on_new_line = false
 ij_groovy_class_annotation_wrap = split_into_lines
 ij_groovy_class_brace_style = end_of_line
-ij_groovy_class_count_to_use_import_on_demand = 5
+ij_groovy_class_count_to_use_import_on_demand = 999
 ij_groovy_do_while_brace_force = never
 ij_groovy_else_on_new_line = false
 ij_groovy_enum_constants_wrap = off
@@ -571,7 +569,7 @@ ij_groovy_method_parameters_new_line_after_left_paren = false
 ij_groovy_method_parameters_right_paren_on_new_line = false
 ij_groovy_method_parameters_wrap = off
 ij_groovy_modifier_list_wrap = false
-ij_groovy_names_count_to_use_import_on_demand = 3
+ij_groovy_names_count_to_use_import_on_demand = 999
 ij_groovy_parameter_annotation_wrap = off
 ij_groovy_parentheses_expression_new_line_after_left_paren = false
 ij_groovy_parentheses_expression_right_paren_on_new_line = false
@@ -665,10 +663,8 @@ ij_groovy_while_brace_force = never
 ij_groovy_while_on_new_line = false
 ij_groovy_wrap_long_lines = false
 
-[{*.gradle.kts, *.kt, *.kts, *.main.kts}]
-indent_size = 4
-tab_width = 4
-ij_continuation_indent_size = 8
+[{*.kt, *.kts}]
+ij_continuation_indent_size = 2
 ij_kotlin_align_in_columns_case_branch = false
 ij_kotlin_align_multiline_binary_operation = false
 ij_kotlin_align_multiline_extends_list = false
@@ -713,8 +709,8 @@ ij_kotlin_method_call_chain_wrap = off
 ij_kotlin_method_parameters_new_line_after_left_paren = false
 ij_kotlin_method_parameters_right_paren_on_new_line = false
 ij_kotlin_method_parameters_wrap = off
-ij_kotlin_name_count_to_use_star_import = 5
-ij_kotlin_name_count_to_use_star_import_for_members = 3
+ij_kotlin_name_count_to_use_star_import = 999
+ij_kotlin_name_count_to_use_star_import_for_members = 999
 ij_kotlin_parameter_annotation_wrap = off
 ij_kotlin_space_after_comma = true
 ij_kotlin_space_after_extend_colon = true

@@ -119,6 +119,15 @@ class OpenTelemetryAssertionsTest {
         .startsAt(100, TimeUnit.NANOSECONDS)
         .startsAt(Instant.ofEpochSecond(0, 100))
         .hasAttributes(ATTRIBUTES)
+        .hasAttributes(
+            attributeEntry("bear", "mya"),
+            attributeEntry("warm", true),
+            attributeEntry("temperature", 30),
+            attributeEntry("length", 1.2),
+            attributeEntry("colors", "red", "blue"),
+            attributeEntry("conditions", false, true),
+            attributeEntry("scores", 0L, 1L),
+            attributeEntry("coins", 0.01, 0.05, 0.1))
         .hasAttributesSatisfying(
             attributes ->
                 assertThat(attributes)
@@ -202,6 +211,8 @@ class OpenTelemetryAssertionsTest {
     assertThatThrownBy(() -> assertThat(SPAN1).startsAt(Instant.EPOCH))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasAttributes(Attributes.empty()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> assertThat(SPAN1).hasAttributes(attributeEntry("food", "burger")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
