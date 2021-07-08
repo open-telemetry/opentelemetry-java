@@ -56,7 +56,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   // The kind of the span.
   private final SpanKind kind;
   // The clock used to get the time.
-  private final MonotonicClock clock;
+  private final AnchoredClock clock;
   // The resource associated with this span.
   private final Resource resource;
   // instrumentation library of the named tracer which created this span
@@ -97,7 +97,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       SpanContext parentSpanContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
-      MonotonicClock clock,
+      AnchoredClock clock,
       Resource resource,
       @Nullable AttributesMap attributes,
       List<LinkData> links,
@@ -145,7 +145,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       @Nonnull Context parentContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
-      MonotonicClock clock,
+      AnchoredClock clock,
       Resource resource,
       AttributesMap attributes,
       List<LinkData> links,
@@ -239,8 +239,8 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
   }
 
-  /** Returns the {@link MonotonicClock} used by this {@link Span}. */
-  MonotonicClock getClock() {
+  /** Returns the {@link AnchoredClock} used by this {@link Span}. */
+  AnchoredClock getClock() {
     return clock;
   }
 

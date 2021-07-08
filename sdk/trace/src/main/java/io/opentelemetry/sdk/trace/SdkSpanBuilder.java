@@ -234,12 +234,12 @@ final class SdkSpanBuilder implements SpanBuilder {
         startEpochNanos);
   }
 
-  private static MonotonicClock getClock(Span parent, Clock clock) {
+  private static AnchoredClock getClock(Span parent, Clock clock) {
     if (parent instanceof RecordEventsReadableSpan) {
       RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parent;
       return parentRecordEventsSpan.getClock();
     } else {
-      return MonotonicClock.create(clock);
+      return AnchoredClock.create(clock);
     }
   }
 
