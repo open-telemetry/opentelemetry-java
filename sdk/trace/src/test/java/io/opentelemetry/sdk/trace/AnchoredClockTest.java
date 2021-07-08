@@ -16,15 +16,6 @@ class AnchoredClockTest {
   private final TestClock testClock = TestClock.create(EPOCH_NANOS);
 
   @Test
-  void nanoTime() {
-    assertThat(testClock.now()).isEqualTo(EPOCH_NANOS);
-    AnchoredClock anchoredClock = AnchoredClock.create(testClock);
-    assertThat(anchoredClock.nanoTime()).isEqualTo(testClock.nanoTime());
-    testClock.advanceNanos(12345);
-    assertThat(anchoredClock.nanoTime()).isEqualTo(testClock.nanoTime());
-  }
-
-  @Test
   void now_PositiveIncrease() {
     AnchoredClock anchoredClock = AnchoredClock.create(testClock);
     assertThat(anchoredClock.now()).isEqualTo(testClock.now());

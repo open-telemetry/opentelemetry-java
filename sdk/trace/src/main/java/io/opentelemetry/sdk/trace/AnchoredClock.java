@@ -50,8 +50,4 @@ final class AnchoredClock {
     long deltaNanos = clock.nanoTime() - this.nanoTime;
     return epochNanos + deltaNanos;
   }
-
-  long nanoTime() {
-    return clock.nanoTime();
-  }
 }
