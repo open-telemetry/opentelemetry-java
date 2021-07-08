@@ -242,6 +242,9 @@ class OpenTelemetryAssertionsTest {
                     .hasEventsSatisfying(events -> assertThat(events.get(0)).hasName("notevent")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
+            () -> assertThat(SPAN1).hasEventsSatisfyingExactly(event -> event.hasName("notevent")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
             () ->
                 assertThat(SPAN1)
                     .hasEventsSatisfying(events -> assertThat(events.get(0)).hasTimestamp(1)))
