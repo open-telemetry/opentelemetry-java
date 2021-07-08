@@ -27,7 +27,7 @@ public interface Clock {
    * long durationNanos = clock.nanoTime() - startNanos;
    * }</pre>
    *
-   * <p>This usage is not correct.
+   * <p>This usage is NOT correct.
    *
    * <pre>{@code
    * long startNanos = clock.now();
