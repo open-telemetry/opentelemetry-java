@@ -121,6 +121,7 @@ public final class IntervalMetricReader {
       doRun().join(internalState.getExportIntervalMillis(), TimeUnit.MILLISECONDS);
     }
 
+    // Make sure not to throw any exceptions.
     CompletableResultCode doRun() {
       final CompletableResultCode flushResult = new CompletableResultCode();
       if (exportAvailable.compareAndSet(true, false)) {
