@@ -3,3 +3,5 @@ Comparing source compatibility of  against
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasAttributes(java.util.Map$Entry[])
 		+++  NEW ANNOTATION: java.lang.SafeVarargs
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasEventsSatisfyingExactly(java.util.function.Consumer[])
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
