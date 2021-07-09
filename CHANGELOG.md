@@ -2,6 +2,8 @@
 
 ## Unreleased:
 
+## Version 1.4.0 - 2021-07-10
+
 ### API
 #### Enhancements
 - You can now assign an OpenTelemetry schema URL to a `Tracer` via the new `TracerBuilder` class that is 
