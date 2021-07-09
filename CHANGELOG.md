@@ -23,6 +23,8 @@ implementation of `CompletableResultCode` for the calls beyond the first.
 #### Enhancements
 - A `Resource` can now be assigned an OpenTelemetry schema URL via the `ResourceBuilder` or the `create(Attributes, String)` 
 method on the `Resource` itself.
+- You can now obtain a default `Clock` based on system time via `Clock.getDefault`. The sdk-testing artifact also provides
+a `TestClock` for unit testing.
 
 ### Semantic Conventions (alpha)
 - The `SemanticAttributes` and `ResourceAttributes` classes have been updated to match the semantic conventions
