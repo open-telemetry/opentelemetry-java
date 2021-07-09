@@ -52,6 +52,14 @@ public final class TraceAssert
     return this;
   }
 
+  /**
+   * Returns the {@linkplain SpanData span} at the {@code index} within the trace. This can be
+   * useful for asserting the parent of a span.
+   */
+  public SpanData getSpan(int index) {
+    return actual.get(0);
+  }
+
   @Override
   protected SpanDataAssert toAssert(SpanData value, String description) {
     return new SpanDataAssert(value).as(description);
