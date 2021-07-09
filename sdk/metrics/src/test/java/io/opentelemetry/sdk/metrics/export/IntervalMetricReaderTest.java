@@ -109,6 +109,51 @@ class IntervalMetricReaderTest {
   }
 
   @Test
+  void forceFlush() throws Exception {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+    IntervalMetricReader intervalMetricReader =
+        IntervalMetricReader.builder()
+            // Will force flush.
+            .setExportIntervalMillis(Long.MAX_VALUE)
+            .setMetricExporter(waitingMetricExporter)
+            .setMetricProducers(Collections.singletonList(metricProducer))
+            .buildAndStart();
+
+    assertThat(intervalMetricReader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+    try {
+      assertThat(waitingMetricExporter.waitForNumberOfExports(1))
+          .containsExactly(Collections.singletonList(METRIC_DATA));
+    } finally {
+      intervalMetricReader.shutdown();
+    }
+  }
+
+  @Test
+  void forceFlushGlobal() throws Exception {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+    IntervalMetricReader intervalMetricReader =
+        IntervalMetricReader.builder()
+            // Will force flush.
+            .setExportIntervalMillis(Long.MAX_VALUE)
+            .setMetricExporter(waitingMetricExporter)
+            .setMetricProducers(Collections.singletonList(metricProducer))
+            .build()
+            .startAndRegisterGlobal();
+
+    assertThat(IntervalMetricReader.forceFlushGlobal().join(10, TimeUnit.SECONDS).isSuccess())
+        .isTrue();
+
+    try {
+      assertThat(waitingMetricExporter.waitForNumberOfExports(1))
+          .containsExactly(Collections.singletonList(METRIC_DATA));
+    } finally {
+      intervalMetricReader.shutdown();
+      IntervalMetricReader.resetGlobalForTest();
+    }
+  }
+
+  @Test
   @Timeout(2)
   public void intervalExport_exporterThrowsException() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
