@@ -13,6 +13,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
@@ -37,19 +38,21 @@ class DoubleSumObserverSdkTest {
   @Test
   void collectMetrics_NoRecords() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+    MetricProducer collector = sdkMeterProvider.newMetricProducer();
     sdkMeter(sdkMeterProvider)
         .counterBuilder("testObserver")
         .ofDoubles()
         .setDescription("My own DoubleSumObserver")
         .setUnit("ms")
         .buildWithCallback(result -> {});
-    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
+    assertThat(collector.collectAllMetrics()).isEmpty();
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+    MetricProducer collector = sdkMeterProvider.newMetricProducer();
     sdkMeterProvider
         .meterBuilder(getClass().getName())
         .build()
@@ -58,8 +61,8 @@ class DoubleSumObserverSdkTest {
         .setDescription("My own DoubleSumObserver")
         .setUnit("ms")
         .buildWithCallback(result -> result.observe(12.1d, Attributes.of(stringKey("k"), "v")));
-        testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    assertThat(collector.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -82,7 +85,7 @@ class DoubleSumObserverSdkTest {
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(collector.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

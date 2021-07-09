@@ -12,6 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
@@ -36,23 +37,25 @@ class LongSumObserverSdkTest {
   @Test
   void collectMetrics_NoRecords() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+    MetricProducer collector = sdkMeterProvider.newMetricProducer();
     sdkMeter(sdkMeterProvider)
         .counterBuilder("testObserver")
         .setDescription("My own LongSumObserver")
         .setUnit("ms")
         .buildWithCallback(result -> {});
-    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
+    assertThat(collector.collectAllMetrics()).isEmpty();
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+    MetricProducer collector = sdkMeterProvider.newMetricProducer();
     sdkMeter(sdkMeterProvider)
         .counterBuilder("testObserver")
         .buildWithCallback(result -> result.observe(12, Attributes.of(stringKey("k"), "v")));
-        testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    assertThat(collector.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -72,8 +75,8 @@ class LongSumObserverSdkTest {
                                 .attributes()
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
-    testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    assertThat(collector.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

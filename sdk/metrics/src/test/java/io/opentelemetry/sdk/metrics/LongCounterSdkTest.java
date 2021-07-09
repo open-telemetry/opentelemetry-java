@@ -16,6 +16,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
@@ -33,6 +34,7 @@ class LongCounterSdkTest {
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
   private final Meter sdkMeter = sdkMeterProvider.meterBuilder(getClass().getName()).build();
+  private final MetricProducer collector = sdkMeterProvider.newMetricProducer();
 
   @Test
   void add_PreventNullAttributes() {
@@ -53,7 +55,7 @@ class LongCounterSdkTest {
     LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
     BoundLongCounter bound = longCounter.bind(Attributes.of(FOO_KEY, "bar"));
     try {
-      assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
+      assertThat(collector.collectAllMetrics()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -67,7 +69,7 @@ class LongCounterSdkTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longCounter.add(12, Attributes.empty());
     longCounter.add(12);
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(collector.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -104,7 +106,7 @@ class LongCounterSdkTest {
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(321);
       longCounter.add(111, Attributes.of(FOO_KEY, "V"));
-      assertThat(sdkMeterProvider.collectAllMetrics())
+      assertThat(collector.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -131,7 +133,7 @@ class LongCounterSdkTest {
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(222);
       longCounter.add(11, Attributes.empty());
-      assertThat(sdkMeterProvider.collectAllMetrics())
+      assertThat(collector.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -194,7 +196,7 @@ class LongCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(collector.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -242,7 +244,7 @@ class LongCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(collector.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

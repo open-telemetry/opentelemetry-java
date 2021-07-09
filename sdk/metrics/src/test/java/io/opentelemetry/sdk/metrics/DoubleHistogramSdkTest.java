@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 // import java.util.Arrays;
 import java.util.Collection;
@@ -49,6 +50,7 @@ public class DoubleHistogramSdkTest {
                   .build())
           .build();
   private final Meter sdkMeter = sdkMeterProvider.meterBuilder(getClass().getName()).build();
+  private final MetricProducer collector = sdkMeterProvider.newMetricProducer();
 
   @Test
   void record_PreventNullAttributes() {
@@ -69,7 +71,7 @@ public class DoubleHistogramSdkTest {
     DoubleHistogram histogram = sdkMeter.histogramBuilder("histogram").build();
     BoundDoubleHistogram bound = histogram.bind(Attributes.of(FOO_KEY, "bar"));
     try {
-      assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
+      assertThat(collector.collectAllMetrics()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -88,7 +90,7 @@ public class DoubleHistogramSdkTest {
     histogram.record(12d);
     histogram.record(112d);
     // Note: histograms have lots of arrays/lists so we need to deep-inspect things.
-    Collection<MetricData> metrics = sdkMeterProvider.collectAllMetrics();
+    Collection<MetricData> metrics = collector.collectAllMetrics();
     assertThat(metrics).hasSize(1);
     MetricData metric = metrics.iterator().next();
     assertThat(metric)
@@ -126,7 +128,7 @@ public class DoubleHistogramSdkTest {
     histogram.record(111.1d, Attributes.of(FOO_KEY, "V"));
 
     // Note: histograms have lots of arrays/lists so we need to deep-inspect things.
-    Collection<MetricData> metrics = sdkMeterProvider.collectAllMetrics();
+    Collection<MetricData> metrics = collector.collectAllMetrics();
     assertThat(metrics).hasSize(1);
     MetricData metric = metrics.iterator().next();
     assertThat(metric)
@@ -157,7 +159,7 @@ public class DoubleHistogramSdkTest {
     bound.record(222d);
     histogram.record(11d, Attributes.empty());
 
-    metrics = sdkMeterProvider.collectAllMetrics();
+    metrics = collector.collectAllMetrics();
     assertThat(metrics).hasSize(1);
     metric = metrics.iterator().next();
     assertThat(metric)
@@ -205,7 +207,7 @@ public class DoubleHistogramSdkTest {
               new OperationUpdaterWithBinding(histogram.bind(Attributes.of(FOO_KEY, "V")))));
     }
     stressTestBuilder.build().run();
-    Collection<MetricData> metrics = sdkMeterProvider.collectAllMetrics();
+    Collection<MetricData> metrics = collector.collectAllMetrics();
     assertThat(metrics).hasSize(1);
     MetricData metric = metrics.iterator().next();
     assertThat(metric)
@@ -243,7 +245,7 @@ public class DoubleHistogramSdkTest {
                   histogram.bind(Attributes.of(keys.get(i), values[i])))));
     }
     stressTestBuilder.build().run();
-    Collection<MetricData> metrics = sdkMeterProvider.collectAllMetrics();
+    Collection<MetricData> metrics = collector.collectAllMetrics();
     assertThat(metrics).hasSize(1);
     MetricData metric = metrics.iterator().next();
     assertThat(metric)

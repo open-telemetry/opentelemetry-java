@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 // import java.util.Arrays;
 import java.util.Collection;
@@ -50,6 +51,7 @@ public class LongHistogramSdkTest {
                   .build())
           .build();
   private final Meter sdkMeter = sdkMeterProvider.meterBuilder(getClass().getName()).build();
+  private final MetricProducer collector = sdkMeterProvider.newMetricProducer();
 
   // TODO: Figure out how to set these on the instrument!
   // private static final double[] DEFAULT_HISTOGRAM_BOUNDARIES = {0, 100, 1000, 10000};
@@ -74,7 +76,7 @@ public class LongHistogramSdkTest {
     LongHistogram histogram = sdkMeter.histogramBuilder("histogram").ofLongs().build();
     BoundLongHistogram bound = histogram.bind(Attributes.of(FOO_KEY, "bar"));
     try {
-      assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
+      assertThat(collector.collectAllMetrics()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -95,7 +97,7 @@ public class LongHistogramSdkTest {
     histogram.record(12);
     histogram.record(112);
     // Note: histograms have lots of arrays/lists so we need to deep-inspect things.
-    Collection<MetricData> metrics = sdkMeterProvider.collectAllMetrics();
+    Collection<MetricData> metrics = collector.collectAllMetrics();
     assertThat(metrics).hasSize(1);
     MetricData metric = metrics.iterator().next();
     assertThat(metric.getResource()).isEqualTo(RESOURCE);
@@ -133,7 +135,7 @@ public class LongHistogramSdkTest {
     histogram.record(111, Attributes.of(FOO_KEY, "V"));
 
     // Note: histograms have lots of arrays/lists so we need to deep-inspect things.
-    Collection<MetricData> metrics = sdkMeterProvider.collectAllMetrics();
+    Collection<MetricData> metrics = collector.collectAllMetrics();
     assertThat(metrics).hasSize(1);
     MetricData metric = metrics.iterator().next();
     assertThat(metric.getName()).isEqualTo("histogram");
@@ -164,7 +166,7 @@ public class LongHistogramSdkTest {
     bound.record(222);
     histogram.record(11, Attributes.empty());
 
-    metrics = sdkMeterProvider.collectAllMetrics();
+    metrics = collector.collectAllMetrics();
     assertThat(metrics).hasSize(1);
     metric = metrics.iterator().next();
     assertThat(metric.getName()).isEqualTo("histogram");
@@ -208,7 +210,7 @@ public class LongHistogramSdkTest {
               new OperationUpdaterWithBinding(histogram.bind(Attributes.of(FOO_KEY, "V")))));
     }
     stressTestBuilder.build().run();
-    Collection<MetricData> metrics = sdkMeterProvider.collectAllMetrics();
+    Collection<MetricData> metrics = collector.collectAllMetrics();
     assertThat(metrics).hasSize(1);
     MetricData metric = metrics.iterator().next();
     assertThat(metric.getName()).isEqualTo("histogram");
@@ -245,7 +247,7 @@ public class LongHistogramSdkTest {
                   histogram.bind(Attributes.of(keys.get(i), values[i])))));
     }
     stressTestBuilder.build().run();
-    Collection<MetricData> metrics = sdkMeterProvider.collectAllMetrics();
+    Collection<MetricData> metrics = collector.collectAllMetrics();
     assertThat(metrics).hasSize(1);
     MetricData metric = metrics.iterator().next();
     assertThat(metric.getName()).isEqualTo("histogram");
