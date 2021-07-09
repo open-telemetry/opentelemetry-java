@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
@@ -16,9 +15,10 @@ import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleCounterSdk}. */
@@ -67,7 +67,7 @@ class DoubleCounterSdkTest {
             .setDescription("description")
             .setUnit("ms")
             .build();
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleCounter.add(12d, Labels.empty());
     doubleCounter.add(12d);
     assertThat(sdkMeterProvider.collectAllMetrics())
@@ -104,7 +104,7 @@ class DoubleCounterSdkTest {
       bound.add(123.3d);
       doubleCounter.add(21.4d, Labels.empty());
       // Advancing time here should not matter.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(321.5d);
       doubleCounter.add(111.1d, Labels.of("K", "V"));
       assertThat(sdkMeterProvider.collectAllMetrics())
@@ -136,7 +136,7 @@ class DoubleCounterSdkTest {
                                   .containsEntry("K", "V")));
 
       // Repeat to prove we keep previous values.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(222d);
       doubleCounter.add(11d, Labels.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())

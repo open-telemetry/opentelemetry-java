@@ -15,13 +15,14 @@ import io.opentelemetry.api.metrics.LongValueRecorder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +74,7 @@ class LongValueRecorderSdkTest {
             .setDescription("description")
             .setUnit("By")
             .build();
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longRecorder.record(12, Labels.empty());
     longRecorder.record(12);
     assertThat(sdkMeterProvider.collectAllMetrics())
@@ -106,7 +107,7 @@ class LongValueRecorderSdkTest {
       bound.record(123);
       longRecorder.record(-14, Labels.empty());
       // Advancing time here should not matter.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321);
       longRecorder.record(-121, Labels.of("K", "V"));
       assertThat(sdkMeterProvider.collectAllMetrics())
@@ -135,7 +136,7 @@ class LongValueRecorderSdkTest {
                               valueAtPercentiles(-14, 12))))));
 
       // Repeat to prove we don't keep previous values.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222);
       longRecorder.record(17, Labels.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())

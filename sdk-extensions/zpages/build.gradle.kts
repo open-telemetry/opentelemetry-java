@@ -12,6 +12,8 @@ dependencies {
     implementation(project(":api:all"))
     implementation(project(":sdk:all"))
 
+    testImplementation(project(":sdk:testing"))
+
     testImplementation("com.google.guava:guava")
     
     compileOnly("com.sun.net.httpserver:http")

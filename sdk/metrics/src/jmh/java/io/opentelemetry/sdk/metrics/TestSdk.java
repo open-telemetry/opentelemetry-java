@@ -7,8 +7,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
@@ -31,7 +31,7 @@ public enum TestSdk {
         Meter build() {
           MeterProviderSharedState meterProviderSharedState =
               MeterProviderSharedState.create(
-                  SystemClock.getInstance(),
+                  Clock.getDefault(),
                   Resource.empty(),
                   new ViewRegistry(
                       new EnumMap<InstrumentType, LinkedHashMap<Pattern, View>>(

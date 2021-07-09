@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.internal;
+package io.opentelemetry.sdk.common;
 
-import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.internal.JavaVersionSpecific;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** A {@link Clock} that uses {@link System#currentTimeMillis()} and {@link System#nanoTime()}. */
 @ThreadSafe
-public final class SystemClock implements Clock {
+final class SystemClock implements Clock {
 
   private static final SystemClock INSTANCE = new SystemClock();
 
@@ -21,7 +21,7 @@ public final class SystemClock implements Clock {
    *
    * @return a {@code MillisClock}.
    */
-  public static SystemClock getInstance() {
+  static Clock getInstance() {
     return INSTANCE;
   }
 

@@ -7,7 +7,9 @@ package io.opentelemetry.sdk.testing.assertj;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -19,6 +21,7 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
@@ -210,6 +213,18 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return this;
   }
 
+  /** Asserts the span has the given attributes. */
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  @SafeVarargs
+  public final SpanDataAssert hasAttributes(Map.Entry<? extends AttributeKey<?>, ?>... entries) {
+    AttributesBuilder attributesBuilder = Attributes.builder();
+    for (Map.Entry<? extends AttributeKey<?>, ?> attr : entries) {
+      attributesBuilder.put((AttributeKey) attr.getKey(), attr.getValue());
+    }
+    Attributes attributes = attributesBuilder.build();
+    return hasAttributes(attributes);
+  }
+
   private boolean attributesAreEqual(Attributes attributes) {
     // compare as maps, since implementations do not have equals that work correctly across
     // implementations.
@@ -243,6 +258,22 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
   public SpanDataAssert hasEventsSatisfying(Consumer<List<? extends EventData>> condition) {
     isNotNull();
     assertThat(actual.getEvents()).satisfies(condition);
+    return this;
+  }
+
+  /**
+   * Asserts that the span under assertion has the same number of events as provided {@code
+   * assertions} and executes each {@link EventDataAssert} in {@code assertions} in order with the
+   * corresponding event.
+   */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public final SpanDataAssert hasEventsSatisfyingExactly(Consumer<EventDataAssert>... assertions) {
+    assertThat(actual.getEvents())
+        .hasSize(assertions.length)
+        .zipSatisfy(
+            Arrays.asList(assertions),
+            (event, assertion) -> assertion.accept(new EventDataAssert(event)));
     return this;
   }
 

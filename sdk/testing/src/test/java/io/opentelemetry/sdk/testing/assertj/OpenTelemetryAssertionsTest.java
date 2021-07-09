@@ -119,6 +119,15 @@ class OpenTelemetryAssertionsTest {
         .startsAt(100, TimeUnit.NANOSECONDS)
         .startsAt(Instant.ofEpochSecond(0, 100))
         .hasAttributes(ATTRIBUTES)
+        .hasAttributes(
+            attributeEntry("bear", "mya"),
+            attributeEntry("warm", true),
+            attributeEntry("temperature", 30),
+            attributeEntry("length", 1.2),
+            attributeEntry("colors", "red", "blue"),
+            attributeEntry("conditions", false, true),
+            attributeEntry("scores", 0L, 1L),
+            attributeEntry("coins", 0.01, 0.05, 0.1))
         .hasAttributesSatisfying(
             attributes ->
                 assertThat(attributes)
@@ -162,6 +171,8 @@ class OpenTelemetryAssertionsTest {
                       attributes -> assertThat(attributes).isEqualTo(Attributes.empty()))
                   .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty());
             })
+        .hasEventsSatisfyingExactly(
+            event -> event.hasName("event"), event -> event.hasName("event2"))
         .hasLinks(LINKS)
         .hasLinks(LINKS.toArray(new LinkData[0]))
         .hasLinksSatisfying(links -> assertThat(links).hasSize(LINKS.size()))
@@ -203,6 +214,8 @@ class OpenTelemetryAssertionsTest {
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasAttributes(Attributes.empty()))
         .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> assertThat(SPAN1).hasAttributes(attributeEntry("food", "burger")))
+        .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
                 assertThat(SPAN1)
@@ -238,6 +251,9 @@ class OpenTelemetryAssertionsTest {
             () ->
                 assertThat(SPAN1)
                     .hasEventsSatisfying(events -> assertThat(events.get(0)).hasName("notevent")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () -> assertThat(SPAN1).hasEventsSatisfyingExactly(event -> event.hasName("notevent")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->

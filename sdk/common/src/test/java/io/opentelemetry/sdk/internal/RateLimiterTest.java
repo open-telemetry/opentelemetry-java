@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -32,18 +34,18 @@ class RateLimiterTest {
     assertThat(limiter.trySpend(1.0)).isTrue();
     assertThat(limiter.trySpend(1.0)).isFalse();
     // move time 250ms forward, not enough credits to pay for 1.0 item
-    clock.advanceNanos(TimeUnit.MILLISECONDS.toNanos(250));
+    clock.advance(Duration.ofNanos(TimeUnit.MILLISECONDS.toNanos(250)));
     assertThat(limiter.trySpend(1.0)).isFalse();
 
     // move time 500ms forward, now enough credits to pay for 1.0 item
-    clock.advanceNanos(TimeUnit.MILLISECONDS.toNanos(500));
+    clock.advance(Duration.ofNanos(TimeUnit.MILLISECONDS.toNanos(500)));
 
     assertThat(limiter.trySpend(1.0)).isTrue();
     assertThat(limiter.trySpend(1.0)).isFalse();
 
     // move time 5s forward, enough to accumulate credits for 10 messages, but it should still be
     // capped at 2
-    clock.advanceNanos(TimeUnit.MILLISECONDS.toNanos(5000));
+    clock.advance(Duration.ofNanos(TimeUnit.MILLISECONDS.toNanos(5000)));
 
     assertThat(limiter.trySpend(1.0)).isTrue();
     assertThat(limiter.trySpend(1.0)).isTrue();
@@ -58,7 +60,7 @@ class RateLimiterTest {
     RateLimiter limiter = new RateLimiter(5.0 / 60.0, 5.0, clock);
     for (int i = 0; i < 100; i++) {
       assertThat(limiter.trySpend(1.0)).isTrue();
-      clock.advanceNanos(TimeUnit.SECONDS.toNanos(20));
+      clock.advance(Duration.ofNanos(TimeUnit.SECONDS.toNanos(20)));
     }
   }
 
@@ -78,18 +80,18 @@ class RateLimiterTest {
     assertThat(limiter.trySpend(0.25)).isTrue();
     assertThat(limiter.trySpend(0.25)).isFalse();
     // move time 250ms forward, not enough credits to pay for 1.0 item
-    clock.advanceNanos(TimeUnit.MILLISECONDS.toNanos(250));
+    clock.advance(Duration.ofNanos(TimeUnit.MILLISECONDS.toNanos(250)));
     assertThat(limiter.trySpend(0.25)).isFalse();
 
     // move time 500ms forward, now enough credits to pay for 1.0 item
-    clock.advanceNanos(TimeUnit.MILLISECONDS.toNanos(500));
+    clock.advance(Duration.ofNanos(TimeUnit.MILLISECONDS.toNanos(500)));
 
     assertThat(limiter.trySpend(0.25)).isTrue();
     assertThat(limiter.trySpend(0.25)).isFalse();
 
     // move time 5s forward, enough to accumulate credits for 10 messages, but it should still be
     // capped at 2
-    clock.advanceNanos(TimeUnit.MILLISECONDS.toNanos(5000));
+    clock.advance(Duration.ofNanos(TimeUnit.MILLISECONDS.toNanos(5000)));
 
     assertThat(limiter.trySpend(0.25)).isTrue();
     assertThat(limiter.trySpend(0.25)).isTrue();
@@ -103,13 +105,13 @@ class RateLimiterTest {
     TestClock clock = TestClock.create();
     RateLimiter limiter = new RateLimiter(0.1, 1.0, clock);
 
-    clock.advanceNanos(TimeUnit.MICROSECONDS.toNanos(100));
+    clock.advance(Duration.ofNanos(TimeUnit.MICROSECONDS.toNanos(100)));
     assertThat(limiter.trySpend(1.0)).isTrue();
     assertThat(limiter.trySpend(1.0)).isFalse();
 
     // move time 20s forward, enough to accumulate credits for 2 messages, but it should still be
     // capped at 1
-    clock.advanceNanos(TimeUnit.MILLISECONDS.toNanos(20000));
+    clock.advance(Duration.ofNanos(TimeUnit.MILLISECONDS.toNanos(20000)));
 
     assertThat(limiter.trySpend(1.0)).isTrue();
     assertThat(limiter.trySpend(1.0)).isFalse();
@@ -127,19 +129,21 @@ class RateLimiterTest {
     assertThat(limiter.trySpend(100)).isTrue(); // consume initial (max) balance
     assertThat(limiter.trySpend(1)).isFalse();
 
-    clock.advanceNanos(TimeUnit.MILLISECONDS.toNanos(49)); // add 49 credits
+    // add 49 credits
+    clock.advance(Duration.ofNanos(TimeUnit.MILLISECONDS.toNanos(49)));
     assertThat(limiter.trySpend(50)).isFalse();
 
-    clock.advanceNanos(TimeUnit.MILLISECONDS.toNanos(1)); // add one credit
+    // add one credit
+    clock.advance(Duration.ofNanos(TimeUnit.MILLISECONDS.toNanos(1)));
     assertThat(limiter.trySpend(50)).isTrue(); // consume accrued balance
     assertThat(limiter.trySpend(1)).isFalse();
 
-    clock.advanceNanos(
-        TimeUnit.MILLISECONDS.toNanos(1_000_000)); // add a lot of credits (max out balance)
+    // add a lot of credits (max out balance)
+    clock.advance(Duration.ofNanos(TimeUnit.MILLISECONDS.toNanos(1_000_000)));
     assertThat(limiter.trySpend(1)).isTrue(); // take one credit
 
-    clock.advanceNanos(
-        TimeUnit.MILLISECONDS.toNanos(1_000_000)); // add a lot of credits (max out balance)
+    // add a lot of credits (max out balance)
+    clock.advance(Duration.ofNanos(TimeUnit.MILLISECONDS.toNanos(1_000_000)));
     assertThat(limiter.trySpend(101)).isFalse(); // can't consume more than max balance
     assertThat(limiter.trySpend(100)).isTrue(); // consume max balance
     assertThat(limiter.trySpend(1)).isFalse();
