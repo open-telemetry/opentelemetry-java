@@ -33,7 +33,7 @@ import java.util.logging.Logger;
  * may be used outside the multi-release JAR, e.g., in testing or when a user shades without
  * creating their own multi-release JAR.
  */
-class JavaVersionSpecific {
+public class JavaVersionSpecific {
 
   private static final Logger logger = Logger.getLogger(JavaVersionSpecific.class.getName());
 
@@ -46,7 +46,7 @@ class JavaVersionSpecific {
   }
 
   /** Returns the {@link JavaVersionSpecific} for the current version of Java. */
-  static JavaVersionSpecific get() {
+  public static JavaVersionSpecific get() {
     return CURRENT;
   }
 
@@ -55,7 +55,7 @@ class JavaVersionSpecific {
   }
 
   /** Returns the number of nanoseconds since the epoch (00:00:00, 01-Jan-1970, GMT). */
-  long currentTimeNanos() {
+  public long currentTimeNanos() {
     return TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
   }
 }

@@ -12,6 +12,8 @@ import static org.slf4j.event.Level.WARN;
 
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.jupiter.api.Test;
@@ -84,25 +86,25 @@ class ThrottlingLoggerTest {
     assertThat(logs.size()).isEqualTo(1);
     logger.log(Level.WARNING, "oh no!");
     assertThat(logs.size()).isEqualTo(2);
-    clock.advanceMillis(30_001);
+    clock.advance(Duration.ofMillis(30_001));
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.WARNING, "oh no!");
     assertThat(logs.size()).isEqualTo(4);
 
-    clock.advanceMillis(30_001);
+    clock.advance(Duration.ofMillis(30_001));
     logger.log(Level.WARNING, "oh no 2nd minute!");
     logger.log(Level.WARNING, "oh no 2nd minute!");
     assertThat(logs.size()).isEqualTo(6);
-    clock.advanceMillis(30_001);
+    clock.advance(Duration.ofMillis(30_001));
     logger.log(Level.WARNING, "oh no 2nd minute!");
     logger.log(Level.WARNING, "oh no 2nd minute!");
     assertThat(logs.size()).isEqualTo(8);
 
-    clock.advanceMillis(30_001);
+    clock.advance(Duration.ofMillis(30_001));
     logger.log(Level.WARNING, "oh no 3rd minute!");
     logger.log(Level.WARNING, "oh no 3rd minute!");
     assertThat(logs.size()).isEqualTo(10);
-    clock.advanceMillis(30_001);
+    clock.advance(Duration.ofMillis(30_001));
     logger.log(Level.WARNING, "oh no 3rd minute!");
     logger.log(Level.WARNING, "oh no 3rd minute!");
     assertThat(logs.size()).isEqualTo(12);
@@ -129,13 +131,13 @@ class ThrottlingLoggerTest {
     logs.assertContains(
         "Too many log messages detected. Will only log once per minute from now on.");
 
-    clock.advanceMillis(60_001);
+    clock.advance(Duration.ofMillis(60_001));
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.WARNING, "oh no I should be suppressed!");
     assertThat(logs.getEvents()).hasSize(8);
     assertThat(logs.getEvents().get(7).getMessage()).isEqualTo("oh no!");
 
-    clock.advanceMillis(60_001);
+    clock.advance(Duration.ofMillis(60_001));
     logger.log(Level.WARNING, "oh no!");
     logger.log(Level.WARNING, "oh no I should be suppressed!");
     assertThat(logs.getEvents()).hasSize(9);

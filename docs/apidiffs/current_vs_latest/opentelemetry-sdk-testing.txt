@@ -5,3 +5,13 @@ Comparing source compatibility of  against
 		+++  NEW ANNOTATION: java.lang.SafeVarargs
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasEventsSatisfyingExactly(java.util.function.Consumer[])
 		+++  NEW ANNOTATION: java.lang.SafeVarargs
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.time.TestClock  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) void advance(java.time.Duration)
+	+++  NEW METHOD: PUBLIC(+) void advance(long, java.util.concurrent.TimeUnit)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.time.TestClock create()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.testing.time.TestClock create(java.time.Instant)
+	+++  NEW METHOD: PUBLIC(+) long nanoTime()
+	+++  NEW METHOD: PUBLIC(+) long now()
+	+++  NEW METHOD: PUBLIC(+) void setTime(java.time.Instant)

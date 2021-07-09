@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
@@ -16,9 +15,10 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongCounterSdk}. */
@@ -67,7 +67,7 @@ class LongCounterSdkTest {
             .setDescription("description")
             .setUnit("By")
             .build();
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longCounter.add(12, Labels.empty());
     longCounter.add(12);
     assertThat(sdkMeterProvider.collectAllMetrics())
@@ -104,7 +104,7 @@ class LongCounterSdkTest {
       bound.add(123);
       longCounter.add(21, Labels.empty());
       // Advancing time here should not matter.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(321);
       longCounter.add(111, Labels.of("K", "V"));
       assertThat(sdkMeterProvider.collectAllMetrics())
@@ -131,7 +131,7 @@ class LongCounterSdkTest {
                                   .hasValue(555)));
 
       // Repeat to prove we keep previous values.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(222);
       longCounter.add(11, Labels.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())

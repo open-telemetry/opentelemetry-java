@@ -27,8 +27,8 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -36,6 +36,7 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +62,6 @@ class RecordEventsReadableSpanTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final String SPAN_NEW_NAME = "NewName";
   private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
-  private static final long MILLIS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
   private final IdGenerator idsGenerator = IdGenerator.random();
@@ -91,7 +91,7 @@ class RecordEventsReadableSpanTest {
       builder.put(entry.getKey(), entry.getValue());
     }
     expectedAttributes = builder.build();
-    testClock = TestClock.create(START_EPOCH_NANOS);
+    testClock = TestClock.create(Instant.ofEpochSecond(0, START_EPOCH_NANOS));
   }
 
   @Test
@@ -266,7 +266,7 @@ class RecordEventsReadableSpanTest {
   void setStatus() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.CONSUMER);
     try {
-      testClock.advanceMillis(MILLIS_PER_SECOND);
+      testClock.advance(Duration.ofSeconds(1));
       assertThat(span.toSpanData().getStatus()).isEqualTo(StatusData.unset());
       span.setStatus(StatusCode.ERROR, "CANCELLED");
       assertThat(span.toSpanData().getStatus())
@@ -314,10 +314,10 @@ class RecordEventsReadableSpanTest {
   void getLatencyNs_ActiveSpan() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     try {
-      testClock.advanceMillis(MILLIS_PER_SECOND);
+      testClock.advance(Duration.ofSeconds(1));
       long elapsedTimeNanos1 = testClock.now() - START_EPOCH_NANOS;
       assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos1);
-      testClock.advanceMillis(MILLIS_PER_SECOND);
+      testClock.advance(Duration.ofSeconds(1));
       long elapsedTimeNanos2 = testClock.now() - START_EPOCH_NANOS;
       assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos2);
     } finally {
@@ -328,11 +328,11 @@ class RecordEventsReadableSpanTest {
   @Test
   void getLatencyNs_EndedSpan() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
-    testClock.advanceMillis(MILLIS_PER_SECOND);
+    testClock.advance(Duration.ofSeconds(1));
     span.end();
     long elapsedTimeNanos = testClock.now() - START_EPOCH_NANOS;
     assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos);
-    testClock.advanceMillis(MILLIS_PER_SECOND);
+    testClock.advance(Duration.ofSeconds(1));
     assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos);
   }
 
@@ -728,7 +728,7 @@ class RecordEventsReadableSpanTest {
     try {
       for (int i = 0; i < 2 * maxNumberOfEvents; i++) {
         span.addEvent("event2", Attributes.empty());
-        testClock.advanceMillis(MILLIS_PER_SECOND);
+        testClock.advance(Duration.ofSeconds(1));
       }
       SpanData spanData = span.toSpanData();
 
@@ -762,7 +762,7 @@ class RecordEventsReadableSpanTest {
     exception.printStackTrace(new PrintWriter(writer));
     String stacktrace = writer.toString();
 
-    testClock.advanceNanos(1000);
+    testClock.advance(Duration.ofNanos(1000));
     long timestamp = testClock.now();
 
     span.recordException(exception);
@@ -819,7 +819,7 @@ class RecordEventsReadableSpanTest {
     exception.printStackTrace(new PrintWriter(writer));
     String stacktrace = writer.toString();
 
-    testClock.advanceNanos(1000);
+    testClock.advance(Duration.ofNanos(1000));
     long timestamp = testClock.now();
 
     span.recordException(
@@ -944,9 +944,9 @@ class RecordEventsReadableSpanTest {
       @Nullable String descriptio) {
     span.setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
     attributes.forEach(span::setAttribute);
-    testClock.advanceMillis(MILLIS_PER_SECOND);
+    testClock.advance(Duration.ofSeconds(1));
     span.addEvent("event2", Attributes.empty());
-    testClock.advanceMillis(MILLIS_PER_SECOND);
+    testClock.advance(Duration.ofSeconds(1));
     span.updateName(SPAN_NEW_NAME);
     if (canonicalCode != null) {
       span.setStatus(canonicalCode, descriptio);
@@ -1023,14 +1023,14 @@ class RecordEventsReadableSpanTest {
             1,
             0);
     long startEpochNanos = clock.now();
-    clock.advanceMillis(4);
+    clock.advance(Duration.ofMillis(4));
     long firstEventEpochNanos = clock.now();
     readableSpan.addEvent("event1", event1Attributes);
-    clock.advanceMillis(6);
+    clock.advance(Duration.ofMillis(6));
     long secondEventTimeNanos = clock.now();
     readableSpan.addEvent("event2", event2Attributes);
 
-    clock.advanceMillis(100);
+    clock.advance(Duration.ofMillis(100));
     readableSpan.end();
     long endEpochNanos = clock.now();
 
