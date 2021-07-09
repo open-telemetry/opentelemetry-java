@@ -1,5 +1,7 @@
 Comparing source compatibility of  against 
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.SpanDataAssert  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasAttributes(java.util.Map$Entry[])
+		+++  NEW ANNOTATION: java.lang.SafeVarargs
 	+++  NEW METHOD: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasEventsSatisfyingExactly(java.util.function.Consumer[])
 		+++  NEW ANNOTATION: java.lang.SafeVarargs
