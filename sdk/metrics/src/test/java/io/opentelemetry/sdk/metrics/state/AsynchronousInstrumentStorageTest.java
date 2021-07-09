@@ -36,7 +36,7 @@ public class AsynchronousInstrumentStorageTest {
                 measure.observe(1.0, Attributes.of(stringKey("k"), "v")),
             mockAggregator,
             (attributes, context) -> Attributes.empty());
-    storage.collectAndReset(collector, collectors, 0);
+    storage.collectAndReset(collector, collectors, 0, 0);
     Mockito.verify(mockAggregator)
         .asyncAccumulation(DoubleMeasurement.create(1.0, Attributes.empty(), Context.root()));
   }
@@ -53,7 +53,7 @@ public class AsynchronousInstrumentStorageTest {
             (ObservableDoubleMeasurement measure) -> measure.observe(1.0, kv),
             mockAggregator,
             AttributesProcessor.NOOP);
-    storage.collectAndReset(collector, collectors, 0);
+    storage.collectAndReset(collector, collectors, 0, 0);
 
     // Verify aggregator received mesurement and completion timestmap.
     Mockito.verify(mockAggregator)
@@ -96,7 +96,7 @@ public class AsynchronousInstrumentStorageTest {
             (ObservableDoubleMeasurement measure) -> measure.observe(1.0, kv),
             mockAggregator,
             AttributesProcessor.NOOP);
-    storage.collectAndReset(collector, collectors, 0);
+    storage.collectAndReset(collector, collectors, 0, 0);
 
     // Verify aggregator received mesurement and completion timestmap.
     Mockito.verify(mockAggregator)
@@ -107,14 +107,14 @@ public class AsynchronousInstrumentStorageTest {
     Mockito.verify(mockAggregator).buildMetric(expectedMeasurements, 0, 0, 0);
 
     // Now run a second time, expecting a diff with previous to double the count.
-    storage.collectAndReset(collector, collectors, 10);
+    storage.collectAndReset(collector, collectors, 0, 10);
     Map<Attributes, Double> expectedMeasurements2 = new HashMap<>();
     expectedMeasurements2.put(kv, 2d);
     Mockito.verify(mockAggregator).buildMetric(expectedMeasurements2, 0, 0, 10);
 
     // Every time we "diff" one recording with another, we expect to add ju8st the previous,
     // receiving 2 again.
-    storage.collectAndReset(collector, collectors, 20);
+    storage.collectAndReset(collector, collectors, 0, 20);
     Map<Attributes, Double> expectedMeasurements3 = new HashMap<>();
     expectedMeasurements3.put(kv, 2d);
     Mockito.verify(mockAggregator).buildMetric(expectedMeasurements3, 0, 0, 20);
@@ -152,7 +152,7 @@ public class AsynchronousInstrumentStorageTest {
             (ObservableDoubleMeasurement measure) -> measure.observe(1.0, kv),
             mockAggregator,
             AttributesProcessor.NOOP);
-    storage.collectAndReset(collector, collectors, 0);
+    storage.collectAndReset(collector, collectors, 0, 0);
 
     // Verify aggregator received mesurement and completion timestmap.
     Mockito.verify(mockAggregator)
@@ -162,7 +162,7 @@ public class AsynchronousInstrumentStorageTest {
     expectedMeasurements.put(kv, 1d);
     Mockito.verify(mockAggregator).buildMetric(expectedMeasurements, 0, 0, 0);
     // Now call for a different collector and make sure we don't see previous values of the first.
-    storage.collectAndReset(collector2, collectors, 10);
+    storage.collectAndReset(collector2, collectors, 0, 10);
     Mockito.verify(mockAggregator).buildMetric(expectedMeasurements, 0, 0, 10);
   }
 }

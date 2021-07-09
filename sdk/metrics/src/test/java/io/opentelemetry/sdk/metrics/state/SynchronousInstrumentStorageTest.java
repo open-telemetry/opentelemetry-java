@@ -34,7 +34,7 @@ public class SynchronousInstrumentStorageTest {
     final Aggregator<Object> mockAggregator = Mockito.mock(Aggregator.class);
     SynchronousInstrumentStorage<Object> storage =
         SynchronousInstrumentStorage.create(mockAggregator, AttributesProcessor.NOOP);
-    storage.collectAndReset(collector1, collectors, 10);
+    storage.collectAndReset(collector1, collectors, 0, 10);
 
     // Verify aggregator received mesurement and completion timestmap.
     Mockito.verify(mockAggregator).buildMetric(Collections.emptyMap(), 0, 0, 10);
@@ -56,7 +56,7 @@ public class SynchronousInstrumentStorageTest {
     storage.bind(KV).record(LongMeasurement.create(1, KV, Context.root()));
     // Binding a handle with no value will NOT cause accumulation.
     storage.bind(Attributes.of(AttributeKey.stringKey("k"), "unused"));
-    storage.collectAndReset(collector1, collectors, 10);
+    storage.collectAndReset(collector1, collectors, 0, 10);
     // Verify aggregator received measurements.
     Mockito.verify(mockAggregator)
         .buildMetric(makeMeasurement(KV, "result", Attributes.empty(), "result"), 0, 0, 10);
@@ -86,7 +86,7 @@ public class SynchronousInstrumentStorageTest {
     storage.bind(KV).record(LongMeasurement.create(1, KV, Context.root()));
     // Binding a handle with no value will NOT cause accumulation.
     storage.bind(Attributes.of(AttributeKey.stringKey("k"), "unused"));
-    storage.collectAndReset(collector1, collectors, 10);
+    storage.collectAndReset(collector1, collectors, 0, 10);
     Mockito.verify(mockAggregator)
         .buildMetric(makeMeasurement(KV2, "result", Attributes.empty(), "result"), 0, 0, 10);
   }

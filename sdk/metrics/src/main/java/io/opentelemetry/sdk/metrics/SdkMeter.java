@@ -66,7 +66,9 @@ public class SdkMeter implements Meter {
     Collection<InstrumentStorage> instruments = instrumentRegistry.getInstruments();
     List<MetricData> result = new ArrayList<>(instruments.size());
     for (InstrumentStorage instrument : instruments) {
-      result.addAll(instrument.collectAndReset(collector, allCollectors, epochNanos));
+      result.addAll(
+          instrument.collectAndReset(
+              collector, allCollectors, meterProviderSharedState.getStartEpochNanos(), epochNanos));
     }
     return result;
   }

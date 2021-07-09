@@ -40,14 +40,12 @@ public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulati
    * @param config Configuration for the histogram aggregation.
    * @param resource Resource to assocaiate metrics.
    * @param instrumentationLibrary InstrumentationLibrary to associate metrics.
-   * @param startEpochNanos The start-of-application time.
    * @param sampler When/how to pull Exemplars.
    */
   public DoubleHistogramAggregator(
       HistogramConfig config,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibrary,
-      long startEpochNanos,
       ExemplarSampler sampler) {
     this.config = config;
     this.resource = resource;

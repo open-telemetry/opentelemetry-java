@@ -33,7 +33,6 @@ class LongSumAggregatorTest {
               .build(),
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          /* startEpochNanos = */ 0,
           ExemplarSampler.NEVER);
 
   @Test
@@ -100,7 +99,6 @@ class LongSumAggregatorTest {
                     .build(),
                 Resource.getDefault(),
                 InstrumentationLibraryInfo.empty(),
-                /* startEpochNanos = */ 0,
                 ExemplarSampler.NEVER);
         LongAccumulation merged = aggregator.merge(agg(1L), agg(2L));
         assertThat(merged)

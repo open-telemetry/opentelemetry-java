@@ -150,7 +150,8 @@ final class SynchronousInstrumentStorage<T> implements WriteableInstrumentStorag
    * to report for this synchronous instrument.
    */
   @GuardedBy("collectLock")
-  private MetricData buildMetricFor(CollectionHandle collector, long epochNanos) {
+  private MetricData buildMetricFor(
+      CollectionHandle collector, long startEpochNanos, long epochNanos) {
     Map<Attributes, T> result = new HashMap<>();
     // Next merge the delta w/ the last set of points.
     for (DeltaAccumulation<T> point : savedDeltas) {
@@ -169,12 +170,12 @@ final class SynchronousInstrumentStorage<T> implements WriteableInstrumentStorag
               last.getAccumlation(), result, /*isAsynchronousMeasurement=*/ false);
       lastEpochNanos = last.getEpochNanos();
     } else {
-      lastEpochNanos = 0; // TODO: use startEpochNanos
+      lastEpochNanos = startEpochNanos;
     }
 
     // Now write the aggregated value back, and generate final metric.
     reportHistory.put(collector, new LastReportedAccumulation<>(result, epochNanos));
-    return aggregator.buildMetric(result, /*startEpochNanos=*/ 0, lastEpochNanos, epochNanos);
+    return aggregator.buildMetric(result, startEpochNanos, lastEpochNanos, epochNanos);
   }
 
   /** Merges accumulations from {@code toMerge} into {@code result}. */
@@ -211,14 +212,17 @@ final class SynchronousInstrumentStorage<T> implements WriteableInstrumentStorag
   /** Collects bucketed metrics and resets the underlying storage for the next collection period. */
   @Override
   public List<MetricData> collectAndReset(
-      CollectionHandle collector, Set<CollectionHandle> allCollectors, long epochNanos) {
+      CollectionHandle collector,
+      Set<CollectionHandle> allCollectors,
+      long startEpochNanos,
+      long epochNanos) {
     collectLock.lock();
     try {
       // TODO: Refactor this for per-collector storage.
       // First reset currently accumulating synchronous handles.
       savedDeltas.add(collectSynchronousDeltaAccumulationAndReset());
       // Next build metric from past history and latest deltas.
-      MetricData result = buildMetricFor(collector, epochNanos);
+      MetricData result = buildMetricFor(collector, startEpochNanos, epochNanos);
       // finally, cleanup stale deltas.
       cleanup(allCollectors);
       if (result != null) {

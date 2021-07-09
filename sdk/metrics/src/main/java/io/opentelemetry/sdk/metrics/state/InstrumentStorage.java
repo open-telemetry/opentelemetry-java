@@ -24,7 +24,10 @@ public interface InstrumentStorage {
    * @param epochNanos The timestamp for this collection.
    */
   List<MetricData> collectAndReset(
-      CollectionHandle collector, Set<CollectionHandle> allCollectors, long epochNanos);
+      CollectionHandle collector,
+      Set<CollectionHandle> allCollectors,
+      long startEpochNanos,
+      long epochNanos);
 
   /**
    * Construct storage for a synchronous insturment.
@@ -32,7 +35,7 @@ public interface InstrumentStorage {
    * <p>This guarantees a high-concurrency friendly implementation.
    */
   public static <T> WriteableInstrumentStorage createSynchronous(
-      Aggregator<T> aggregator, AttributesProcessor processor) {
+      long startEpochNanos, Aggregator<T> aggregator, AttributesProcessor processor) {
     return SynchronousInstrumentStorage.create(aggregator, processor);
   }
 
@@ -43,6 +46,7 @@ public interface InstrumentStorage {
    */
   @SuppressWarnings("unused")
   public static <T> InstrumentStorage createAsynchronous(
+      long startEpochNanos,
       Consumer<? extends ObservableMeasurement> callback,
       Aggregator<T> aggregator,
       AttributesProcessor processor) {

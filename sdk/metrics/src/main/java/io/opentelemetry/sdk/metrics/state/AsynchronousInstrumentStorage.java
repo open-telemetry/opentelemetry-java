@@ -61,10 +61,10 @@ public final class AsynchronousInstrumentStorage<T> implements InstrumentStorage
 
   @Override
   public List<MetricData> collectAndReset(
-      CollectionHandle collector, Set<CollectionHandle> allCollectors, long epochNanos
-      // TODO: long lastEpochNanos?
-      // TODO: long startEpochNanos
-      ) {
+      CollectionHandle collector,
+      Set<CollectionHandle> allCollectors,
+      long startEpochNanos,
+      long epochNanos) {
     // TODO: Collector specific storage and previous calculations.
     collectLock.lock();
     try {
@@ -93,8 +93,8 @@ public final class AsynchronousInstrumentStorage<T> implements InstrumentStorage
       // Calculate resulting metric.
       MetricData metricResult =
           aggregator.buildMetric(
-              accountForPrevious(collector, currentMeasurements), /* TODO: start */
-              0, /* TODO: diff */
+              accountForPrevious(collector, currentMeasurements),
+              startEpochNanos, /* TODO: diff */
               0,
               epochNanos);
       if (metricResult != null) {

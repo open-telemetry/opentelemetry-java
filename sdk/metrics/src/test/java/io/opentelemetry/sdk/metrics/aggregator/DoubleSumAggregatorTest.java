@@ -33,7 +33,6 @@ class DoubleSumAggregatorTest {
               .build(),
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          /* startEpochNanos= */ 0L,
           ExemplarSampler.NEVER);
 
   @Test
@@ -98,7 +97,6 @@ class DoubleSumAggregatorTest {
                     .build(),
                 Resource.getDefault(),
                 InstrumentationLibraryInfo.empty(),
-                /* startEpochNanos= */ 0,
                 ExemplarSampler.NEVER);
         DoubleAccumulation merged = aggregator.merge(agg(1), agg(2));
         assertThat(merged.getValue())

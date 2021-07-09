@@ -38,7 +38,6 @@ public class DoubleHistogramAggregatorTest {
               .build(),
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          /* startEpochNanos= */ 0,
           ExemplarSampler.NEVER);
 
   @Test

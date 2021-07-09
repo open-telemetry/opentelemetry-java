@@ -15,7 +15,6 @@ import java.util.Map;
  * into {@link MetricData}.
  *
  * <p>Aggregators have the following lifecycle:
- * </ul>
  */
 public interface Aggregator<T> {
 

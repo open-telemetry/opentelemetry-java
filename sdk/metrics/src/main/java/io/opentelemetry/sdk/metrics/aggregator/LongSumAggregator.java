@@ -34,14 +34,12 @@ public class LongSumAggregator implements Aggregator<LongAccumulation> {
    * @param config Configuration for the sum aggregation.
    * @param resource Resource to assocaiate metrics.
    * @param instrumentationLibrary InstrumentationLibrary to associate metrics.
-   * @param startEpochNanos The start-of-application time.
    * @param sampler When/how to pull Exemplars.
    */
   public LongSumAggregator(
       SumConfig config,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibrary,
-      long startEpochNanos,
       ExemplarSampler sampler) {
     this.config = config;
     this.resource = resource;

@@ -21,7 +21,7 @@ public interface AggregatorFactory<A> {
    */
   public static AggregatorFactory<DoubleAccumulation> lastValue(final LastValueConfig config) {
     return (resource, instrumentationLibrary, startEpochNanos, sampler) ->
-        new LastValueAggregator(config, resource, instrumentationLibrary, startEpochNanos, sampler);
+        new LastValueAggregator(config, resource, instrumentationLibrary, sampler);
   }
 
   /**
@@ -32,7 +32,7 @@ public interface AggregatorFactory<A> {
    */
   public static AggregatorFactory<LongAccumulation> longSum(final SumConfig config) {
     return (resource, instrumentationLibrary, startEpochNanos, sampler) ->
-        new LongSumAggregator(config, resource, instrumentationLibrary, startEpochNanos, sampler);
+        new LongSumAggregator(config, resource, instrumentationLibrary, sampler);
   }
 
   /**
@@ -43,7 +43,7 @@ public interface AggregatorFactory<A> {
    */
   public static AggregatorFactory<DoubleAccumulation> doubleSum(final SumConfig config) {
     return (resource, instrumentationLibrary, startEpochNanos, sampler) ->
-        new DoubleSumAggregator(config, resource, instrumentationLibrary, startEpochNanos, sampler);
+        new DoubleSumAggregator(config, resource, instrumentationLibrary, sampler);
   }
 
   /**
@@ -55,8 +55,7 @@ public interface AggregatorFactory<A> {
   public static AggregatorFactory<HistogramAccumulation> doubleHistogram(
       final HistogramConfig config) {
     return (resource, instrumentationLibrary, startEpochNanos, sampler) ->
-        new DoubleHistogramAggregator(
-            config, resource, instrumentationLibrary, startEpochNanos, sampler);
+        new DoubleHistogramAggregator(config, resource, instrumentationLibrary, sampler);
   }
 
   /**

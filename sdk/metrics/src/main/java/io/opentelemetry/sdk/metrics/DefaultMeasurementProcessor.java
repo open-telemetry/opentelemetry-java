@@ -58,9 +58,12 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
       case COUNTER:
       case UP_DOWN_COUNTER:
         return InstrumentStorage.createSynchronous(
-            sum(instrument, meterProviderSharedState, meterSharedState), AttributesProcessor.NOOP);
+            meterProviderSharedState.getStartEpochNanos(),
+            sum(instrument, meterProviderSharedState, meterSharedState),
+            AttributesProcessor.NOOP);
       case HISTOGRAM:
         return InstrumentStorage.createSynchronous(
+            meterProviderSharedState.getStartEpochNanos(),
             histogram(instrument, meterProviderSharedState, meterSharedState),
             AttributesProcessor.NOOP);
       default:
@@ -85,11 +88,13 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
       case OBSERVABLE_SUM:
       case OBSERVBALE_UP_DOWN_SUM:
         return InstrumentStorage.createAsynchronous(
+            meterProviderSharedState.getStartEpochNanos(),
             callback,
             sum(instrument, meterProviderSharedState, meterSharedState),
             AttributesProcessor.NOOP);
       case OBSERVABLE_GAUGE:
         return InstrumentStorage.createAsynchronous(
+            meterProviderSharedState.getStartEpochNanos(),
             callback,
             gauge(instrument, meterProviderSharedState, meterSharedState),
             AttributesProcessor.NOOP);
@@ -108,7 +113,6 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
         config,
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
-        meterProviderSharedState.getStartEpochNanos(),
         getDefaultExemplarSampler());
   }
 
@@ -124,14 +128,12 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
             config,
             meterProviderSharedState.getResource(),
             meterSharedState.getInstrumentationLibraryInfo(),
-            meterProviderSharedState.getStartEpochNanos(),
             getDefaultExemplarSampler());
       case DOUBLE:
         return new DoubleSumAggregator(
             config,
             meterProviderSharedState.getResource(),
             meterSharedState.getInstrumentationLibraryInfo(),
-            meterProviderSharedState.getStartEpochNanos(),
             getDefaultExemplarSampler());
     }
     throw new IllegalArgumentException("Unsupported sum: " + instrument.getValueType());
@@ -151,7 +153,6 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
         config,
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
-        meterProviderSharedState.getStartEpochNanos(),
         getDefaultExemplarSampler());
   }
 
