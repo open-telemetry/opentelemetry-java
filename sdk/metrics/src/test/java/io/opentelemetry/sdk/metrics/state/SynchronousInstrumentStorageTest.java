@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.state;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -15,7 +17,6 @@ import io.opentelemetry.sdk.metrics.aggregator.SynchronousHandle;
 import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
 import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -30,14 +31,11 @@ public class SynchronousInstrumentStorageTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void synchronousStorage_sendsCompleteCollectionCycleToAggregator() {
+  public void synchronousStorage_returnsNoMetricsWithNoData() {
     final Aggregator<Object> mockAggregator = Mockito.mock(Aggregator.class);
     SynchronousInstrumentStorage<Object> storage =
         SynchronousInstrumentStorage.create(mockAggregator, AttributesProcessor.NOOP);
-    storage.collectAndReset(collector1, collectors, 0, 10);
-
-    // Verify aggregator received mesurement and completion timestmap.
-    Mockito.verify(mockAggregator).buildMetric(Collections.emptyMap(), 0, 0, 10);
+    assertThat(storage.collectAndReset(collector1, collectors, 0, 10)).isEmpty();
   }
 
   @Test
