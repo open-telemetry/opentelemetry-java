@@ -175,6 +175,10 @@ final class SynchronousInstrumentStorage<T> implements WriteableInstrumentStorag
 
     // Now write the aggregated value back, and generate final metric.
     reportHistory.put(collector, new LastReportedAccumulation<>(result, epochNanos));
+    // Don't make a metric if we have no values.
+    if (result.isEmpty()) {
+      return null;
+    }
     return aggregator.buildMetric(result, startEpochNanos, lastEpochNanos, epochNanos);
   }
 

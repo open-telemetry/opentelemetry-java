@@ -90,13 +90,13 @@ public final class AsynchronousInstrumentStorage<T> implements InstrumentStorage
           };
       metricUpdater.accept(recorder, attributesProcessor);
 
+      Map<Attributes, T> result = accountForPrevious(collector, currentMeasurements);
+      if (result.isEmpty()) {
+        return Collections.emptyList();
+      }
       // Calculate resulting metric.
       MetricData metricResult =
-          aggregator.buildMetric(
-              accountForPrevious(collector, currentMeasurements),
-              startEpochNanos, /* TODO: diff */
-              0,
-              epochNanos);
+          aggregator.buildMetric(result, startEpochNanos, /* TODO: diff */ 0, epochNanos);
       if (metricResult != null) {
         return Collections.singletonList(metricResult);
       }

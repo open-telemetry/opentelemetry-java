@@ -180,7 +180,8 @@ public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulati
       Map<Attributes, HistogramAccumulation> current,
       boolean isAsynchronousMeasurement) {
     // TODO: Share this.
-    if (config.getTemporality() == AggregationTemporality.CUMULATIVE) {
+    if (config.getTemporality() == AggregationTemporality.CUMULATIVE
+        && !isAsynchronousMeasurement) {
       previous.forEach(
           (k, v) -> {
             if (current.containsKey(k)) {

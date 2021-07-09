@@ -111,7 +111,8 @@ public class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {
       Map<Attributes, DoubleAccumulation> previous,
       Map<Attributes, DoubleAccumulation> current,
       boolean isAsynchronousMeasurement) {
-    if (config.getTemporality() == AggregationTemporality.CUMULATIVE) {
+    if (config.getTemporality() == AggregationTemporality.CUMULATIVE
+        && !isAsynchronousMeasurement) {
 
       // TODO: MERGE EVERYTHING!
       previous.forEach(
@@ -123,6 +124,7 @@ public class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {
             }
           });
     }
+    // TODO: IF asynch + delta, then diff.
 
     return current;
   }

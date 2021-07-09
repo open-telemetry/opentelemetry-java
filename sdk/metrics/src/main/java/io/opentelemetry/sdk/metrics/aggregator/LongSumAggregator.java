@@ -114,7 +114,8 @@ public class LongSumAggregator implements Aggregator<LongAccumulation> {
       Map<Attributes, LongAccumulation> current,
       boolean isAsynchronousMeasurement) {
     // TODO: Share this.
-    if (config.getTemporality() == AggregationTemporality.CUMULATIVE) {
+    if (config.getTemporality() == AggregationTemporality.CUMULATIVE
+        && !isAsynchronousMeasurement) {
       previous.forEach(
           (k, v) -> {
             if (current.containsKey(k)) {
