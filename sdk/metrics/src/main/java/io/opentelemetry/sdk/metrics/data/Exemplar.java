@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.api.common.Attributes;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -29,16 +30,18 @@ public interface Exemplar {
   /**
    * (Optional) Span ID of the exemplar trace.
    *
-   * <p>Span ID may be missing if the measurement is not recorded inside a trace or the trace was
-   * not sampled.
+   * <p>Span ID may be {@code null} if the measurement is not recorded inside a trace or the trace
+   * was not sampled.
    */
+  @Nullable
   String getSpanId();
   /**
    * (Optional) Trace ID of the exemplar trace.
    *
-   * <p>Trace ID may be missing if the measurement is not recorded inside a trace or if the trace is
-   * not sampled.
+   * <p>Trace ID may be {@code null} if the measurement is not recorded inside a trace or if the
+   * trace is not sampled.
    */
+  @Nullable
   String getTraceId();
 
   /**

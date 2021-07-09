@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.data;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -53,7 +52,7 @@ public abstract class DoubleHistogramPointData implements PointData {
       double sum,
       List<Double> boundaries,
       List<Long> counts,
-      Collection<Exemplar> exemplars) {
+      List<Exemplar> exemplars) {
     if (counts.size() != boundaries.size() + 1) {
       throw new IllegalArgumentException(
           "invalid counts: size should be "

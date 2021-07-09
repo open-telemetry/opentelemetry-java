@@ -433,7 +433,10 @@ class MetricAdapterTest {
           return sb.toString();
         }
       }
-      return object.toString();
+      if (object != null) {
+        return super.fallbackToStringOf(object);
+      }
+      return "null";
     }
     /** Convert an exemplar into a human readable string. */
     private static String exemplarToString(Exemplar exemplar) {

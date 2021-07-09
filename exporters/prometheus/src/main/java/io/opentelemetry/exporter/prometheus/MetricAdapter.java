@@ -221,6 +221,7 @@ final class MetricAdapter {
     }
   }
 
+  @Nullable
   private static Exemplar lastExemplarOrNull(Collection<Exemplar> exemplars) {
     Exemplar result = null;
     for (Exemplar e : exemplars) {
@@ -229,6 +230,7 @@ final class MetricAdapter {
     return result;
   }
 
+  @Nullable
   private static Exemplar filterExemplars(Collection<Exemplar> exemplars, double min, double max) {
     Exemplar result = null;
     for (Exemplar e : exemplars) {

@@ -23,7 +23,6 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -100,7 +99,8 @@ public class MetricAssertionsTest {
       DoublePointData.create(1, 2, Attributes.empty(), 3.0, Collections.emptyList());
 
   private static final DoublePointData DOUBLE_POINT_DATA_WITH_EXEMPLAR =
-      DoublePointData.create(1, 2, Attributes.empty(), 3.0, Arrays.asList(DOUBLE_EXEMPLAR));
+      DoublePointData.create(
+          1, 2, Attributes.empty(), 3.0, Collections.singletonList(DOUBLE_EXEMPLAR));
 
   private static final MetricData LONG_GAUGE_METRIC =
       MetricData.createLongGauge(
@@ -146,7 +146,7 @@ public class MetricAssertionsTest {
       LongPointData.create(1, 2, Attributes.empty(), 3, Collections.emptyList());
 
   private static final LongPointData LONG_POINT_DATA_WITH_EXEMPLAR =
-      LongPointData.create(1, 2, Attributes.empty(), 3, Arrays.asList(LONG_EXEMPLAR));
+      LongPointData.create(1, 2, Attributes.empty(), 3, Collections.singletonList(LONG_EXEMPLAR));
 
   @Test
   void metric_passing() {
