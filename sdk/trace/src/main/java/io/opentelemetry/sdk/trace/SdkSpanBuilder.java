@@ -21,7 +21,6 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -235,12 +234,12 @@ final class SdkSpanBuilder implements SpanBuilder {
         startEpochNanos);
   }
 
-  private static Clock getClock(Span parent, Clock clock) {
+  private static AnchoredClock getClock(Span parent, Clock clock) {
     if (parent instanceof RecordEventsReadableSpan) {
       RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parent;
       return parentRecordEventsSpan.getClock();
     } else {
-      return MonotonicClock.create(clock);
+      return AnchoredClock.create(clock);
     }
   }
 
