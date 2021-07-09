@@ -57,7 +57,7 @@ public final class TraceAssert
    * useful for asserting the parent of a span.
    */
   public SpanData getSpan(int index) {
-    return actual.get(0);
+    return actual.get(index);
   }
 
   @Override
