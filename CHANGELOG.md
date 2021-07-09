@@ -35,6 +35,7 @@ version of the OpenTelemetry schema the files were generated from. There are no 
 - You can now assign an OpenTelemetry schema URL to a `Meter` via the new `MeterBuilder` class that is
 accessed via the `MeterProvider` or any global instances that delegate to one.
 - The metrics SDK now utilizes `Attributes` rather than `Labels` internally.
+- You can now register an `IntervalMetricReader` as global and `forceFlush` the global reader.
 
 ---
 ## Version 1.3.0 - 2021-06-09

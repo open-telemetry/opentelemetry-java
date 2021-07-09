@@ -96,7 +96,7 @@ final class MetricExporterConfiguration {
     if (exportInterval != null) {
       readerBuilder.setExportIntervalMillis(exportInterval.toMillis());
     }
-    IntervalMetricReader reader = readerBuilder.buildAndStart();
+    IntervalMetricReader reader = readerBuilder.build().startAndRegisterGlobal();
     Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
   }
 
