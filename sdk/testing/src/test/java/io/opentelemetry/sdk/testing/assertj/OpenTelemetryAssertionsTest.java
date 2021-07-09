@@ -171,6 +171,8 @@ class OpenTelemetryAssertionsTest {
                       attributes -> assertThat(attributes).isEqualTo(Attributes.empty()))
                   .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty());
             })
+        .hasEventsSatisfyingExactly(
+            event -> event.hasName("event"), event -> event.hasName("event2"))
         .hasLinks(LINKS)
         .hasLinks(LINKS.toArray(new LinkData[0]))
         .hasLinksSatisfying(links -> assertThat(links).hasSize(LINKS.size()))
@@ -249,6 +251,9 @@ class OpenTelemetryAssertionsTest {
             () ->
                 assertThat(SPAN1)
                     .hasEventsSatisfying(events -> assertThat(events.get(0)).hasName("notevent")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () -> assertThat(SPAN1).hasEventsSatisfyingExactly(event -> event.hasName("notevent")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->

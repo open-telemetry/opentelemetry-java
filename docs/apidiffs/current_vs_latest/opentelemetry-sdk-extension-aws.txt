@@ -1,16 +1,2 @@
 Comparing source compatibility of  against 
-+++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.extension.aws.trace.AwsXrayRemoteSampler  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) void close()
-	+++  NEW METHOD: PUBLIC(+) java.lang.String getDescription()
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.extension.aws.trace.AwsXrayRemoteSamplerBuilder newBuilder(io.opentelemetry.sdk.resources.Resource)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.samplers.SamplingResult shouldSample(io.opentelemetry.context.Context, java.lang.String, java.lang.String, io.opentelemetry.api.trace.SpanKind, io.opentelemetry.api.common.Attributes, java.util.List)
-+++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.extension.aws.trace.AwsXrayRemoteSamplerBuilder  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.extension.aws.trace.AwsXrayRemoteSampler build()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.extension.aws.trace.AwsXrayRemoteSamplerBuilder setEndpoint(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.extension.aws.trace.AwsXrayRemoteSamplerBuilder setInitialSampler(io.opentelemetry.sdk.trace.samplers.Sampler)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.extension.aws.trace.AwsXrayRemoteSamplerBuilder setPollingInterval(java.time.Duration)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.extension.aws.trace.AwsXrayRemoteSamplerBuilder setPollingInterval(long, java.util.concurrent.TimeUnit)
+No changes.
