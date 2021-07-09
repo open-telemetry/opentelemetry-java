@@ -112,6 +112,15 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
     return this;
   }
 
+  /**
+   * Asserts the span has the given parent {@link SpanData span}.
+   *
+   * <p>Equivalent to {@code span.hasParentSpanId(parent.getSpanId())}.
+   */
+  public SpanDataAssert hasParent(SpanData parent) {
+    return hasParentSpanId(parent.getSpanId());
+  }
+
   /** Asserts the span has the given {@link Resource}. */
   public SpanDataAssert hasResource(Resource resource) {
     isNotNull();
