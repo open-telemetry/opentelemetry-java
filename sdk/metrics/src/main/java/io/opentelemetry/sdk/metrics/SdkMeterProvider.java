@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
@@ -20,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
 /**
@@ -28,14 +30,16 @@ import java.util.logging.Logger;
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * OpenTelemetry}.
  */
-public class SdkMeterProvider implements MeterProvider, MetricProducer {
+public class SdkMeterProvider implements MeterProvider {
 
   private static final Logger LOGGER = Logger.getLogger(SdkMeterProvider.class.getName());
   static final String DEFAULT_METER_NAME = "unknown";
   private final ComponentRegistry<SdkMeter> registry;
   private final MeterProviderSharedState sharedState;
-  private final CollectionHandle global = CollectionHandle.create();
-  private final Set<CollectionHandle> onlyGlobalCollection = CollectionHandle.of(global);
+  private final ReentrantLock collectorsLock = new ReentrantLock();
+
+  @GuardedBy("collectorsLock")
+  private final Set<CollectionHandle> collectors = CollectionHandle.mutableSet();
 
   SdkMeterProvider(Clock clock, Resource resource, MeasurementProcessor processor) {
     this.sharedState = MeterProviderSharedState.create(clock, resource, processor);
@@ -53,14 +57,42 @@ public class SdkMeterProvider implements MeterProvider, MetricProducer {
     return new MyMeterBuilder(instrumentationName);
   }
 
-  @Override
-  public Collection<MetricData> collectAllMetrics() {
-    Collection<SdkMeter> meters = registry.getComponents();
-    List<MetricData> result = new ArrayList<>(meters.size());
-    for (SdkMeter meter : meters) {
-      result.addAll(meter.collectAll(global, onlyGlobalCollection, sharedState.getClock().now()));
+  // TODO - This should be static, and not dynamically registered.
+  public MetricProducer newMetricProducer() {
+    collectorsLock.lock();
+    try {
+      CollectionHandle handle = CollectionHandle.create();
+      collectors.add(handle);
+      return new LeasedMetricProducer(handle);
+    } finally {
+      collectorsLock.unlock();
     }
-    return Collections.unmodifiableCollection(result);
+  }
+
+  /** Helper class to expose registered metric exports. */
+  private class LeasedMetricProducer implements MetricProducer {
+    private final CollectionHandle handle;
+
+    LeasedMetricProducer(CollectionHandle handle) {
+      this.handle = handle;
+    }
+
+    @Override
+    public Collection<MetricData> collectAllMetrics() {
+      Collection<SdkMeter> meters = registry.getComponents();
+      List<MetricData> result = new ArrayList<>(meters.size());
+      Set<CollectionHandle> allCollectors;
+      collectorsLock.lock();
+      try {
+        allCollectors = collectors;
+      } finally {
+        collectorsLock.unlock();
+      }
+      for (SdkMeter meter : meters) {
+        result.addAll(meter.collectAll(handle, allCollectors, sharedState.getClock().now()));
+      }
+      return Collections.unmodifiableCollection(result);
+    }
   }
 
   /** Implementation of MeterBuilder that registers on this provider. */
