@@ -1,17 +1,2 @@
 Comparing source compatibility of  against 
-***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.common.Clock  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++! NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.Clock getDefault()
-**** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.common.InstrumentationLibraryInfo  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.common.InstrumentationLibraryInfo create(java.lang.String, java.lang.String, java.lang.String)
-	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getSchemaUrl()
-		+++  NEW ANNOTATION: javax.annotation.Nullable
-**** MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.resources.Resource  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.resources.Resource create(io.opentelemetry.api.common.Attributes, java.lang.String)
-	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getSchemaUrl()
-		+++  NEW ANNOTATION: javax.annotation.Nullable
-***  MODIFIED CLASS: PUBLIC io.opentelemetry.sdk.resources.ResourceBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder setSchemaUrl(java.lang.String)
+No changes.
