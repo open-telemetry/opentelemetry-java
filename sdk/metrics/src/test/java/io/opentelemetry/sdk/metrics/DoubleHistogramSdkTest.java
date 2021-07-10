@@ -16,14 +16,13 @@ import io.opentelemetry.api.metrics.BoundDoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
-// import java.util.Arrays;
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import java.util.Collection;
-// import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,7 +32,6 @@ import org.junit.jupiter.api.Test;
 public class DoubleHistogramSdkTest {
   // TODO - use hint api for these.
   private static final double[] DEFAULT_HISTOGRAM_BOUNDARIES = {0, 100, 1000, 10000};
-  private static final long SECOND_NANOS = 1_000_000_000;
   private static final AttributeKey<String> FOO_KEY = stringKey("foo");
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
@@ -85,7 +83,7 @@ public class DoubleHistogramSdkTest {
     DoubleHistogram histogram =
         sdkMeter.histogramBuilder("histogram").setDescription("description").setUnit("ms").build();
 
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofSeconds(1));
     histogram.record(12d, Attributes.empty());
     histogram.record(12d);
     histogram.record(112d);
@@ -123,7 +121,7 @@ public class DoubleHistogramSdkTest {
     bound.record(123.3d);
     histogram.record(21.4d, Attributes.empty());
     // Advancing time here should not matter.
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofSeconds(1));
     bound.record(321.5d);
     histogram.record(111.1d, Attributes.of(FOO_KEY, "V"));
 
@@ -155,7 +153,7 @@ public class DoubleHistogramSdkTest {
                     .hasBucketCounts(0, 0, 3, 0, 0)
                     .hasAttributes(Attributes.of(FOO_KEY, "V")));
     // Repeat to prove we keep previous values.
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofSeconds(1));
     bound.record(222d);
     histogram.record(11d, Attributes.empty());
 

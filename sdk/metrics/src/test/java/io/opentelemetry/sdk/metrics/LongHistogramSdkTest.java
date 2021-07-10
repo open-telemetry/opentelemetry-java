@@ -15,7 +15,6 @@ import io.opentelemetry.api.metrics.BoundLongHistogram;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
@@ -23,9 +22,9 @@ import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
-// import java.util.Arrays;
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import java.util.Collection;
-// import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -92,7 +91,7 @@ public class LongHistogramSdkTest {
             .setUnit("ms")
             .build();
 
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     histogram.record(12, Attributes.empty());
     histogram.record(12);
     histogram.record(112);
@@ -130,7 +129,7 @@ public class LongHistogramSdkTest {
     bound.record(123);
     histogram.record(21, Attributes.empty());
     // Advancing time here should not matter.
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     bound.record(321);
     histogram.record(111, Attributes.of(FOO_KEY, "V"));
 
@@ -162,7 +161,7 @@ public class LongHistogramSdkTest {
       }
     }
     // Repeat to prove we keep previous values.
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     bound.record(222);
     histogram.record(11, Attributes.empty());
 

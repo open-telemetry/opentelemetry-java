@@ -54,7 +54,7 @@ class LongSumObserverSdkTest {
     sdkMeter(sdkMeterProvider)
         .counterBuilder("testObserver")
         .buildWithCallback(result -> result.observe(12, Attributes.of(stringKey("k"), "v")));
-testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(collector.collectAllMetrics())
         .satisfiesExactly(
             metric ->
@@ -75,7 +75,7 @@ testClock.advance(Duration.ofNanos(SECOND_NANOS));
                                 .attributes()
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
-testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(collector.collectAllMetrics())
         .satisfiesExactly(
             metric ->

@@ -43,7 +43,7 @@ public class MetricDataUtilsTest {
     assertThat(exemplars).hasSize(1);
     Exemplar exemplar = exemplars.iterator().next();
     assertThat(exemplar.getFilteredAttributes()).isEqualTo(Attributes.empty());
-    assertThat(exemplar.getRecordTimeNanos()).isEqualTo(1L);
+    assertThat(exemplar.getEpochNanos()).isEqualTo(1L);
     assertThat(exemplar.getTraceId()).isEqualTo(TRACE_ID);
     assertThat(exemplar.getSpanId()).isEqualTo(SPAN_ID);
     assertThat(((LongExemplar) exemplar).getValue()).isEqualTo(1L);
@@ -64,7 +64,7 @@ public class MetricDataUtilsTest {
     assertThat(exemplars).hasSize(1);
     Exemplar exemplar = exemplars.iterator().next();
     assertThat(exemplar.getFilteredAttributes()).isEqualTo(Attributes.empty());
-    assertThat(exemplar.getRecordTimeNanos()).isEqualTo(1L);
+    assertThat(exemplar.getEpochNanos()).isEqualTo(1L);
     assertThat(exemplar.getTraceId()).isEqualTo(TRACE_ID);
     assertThat(exemplar.getSpanId()).isEqualTo(SPAN_ID);
     assertThat(((DoubleExemplar) exemplar).getValue()).isEqualTo(1d);

@@ -71,7 +71,7 @@ class LongUpDownCounterSdkTest {
             .setDescription("description")
             .setUnit("By")
             .build();
-testClock.advance(Duration.ofNanos(SECOND_NANOS));
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longUpDownCounter.add(12, Attributes.empty());
     longUpDownCounter.add(12);
     assertThat(collector.collectAllMetrics())
