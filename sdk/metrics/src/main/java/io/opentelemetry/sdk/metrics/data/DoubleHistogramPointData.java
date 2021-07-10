@@ -34,6 +34,25 @@ public abstract class DoubleHistogramPointData implements PointData {
       double sum,
       List<Double> boundaries,
       List<Long> counts) {
+    return create(
+        startEpochNanos, epochNanos, attributes, sum, boundaries, counts, Collections.emptyList());
+  }
+
+  /**
+   * Creates a DoubleHistogramPointData. For a Histogram with N defined boundaries, there should be
+   * N+1 counts.
+   *
+   * @return a DoubleHistogramPointData.
+   * @throws IllegalArgumentException if the given boundaries/counts were invalid
+   */
+  public static DoubleHistogramPointData create(
+      long startEpochNanos,
+      long epochNanos,
+      Attributes attributes,
+      double sum,
+      List<Double> boundaries,
+      List<Long> counts,
+      List<Exemplar> exemplars) {
     if (counts.size() != boundaries.size() + 1) {
       throw new IllegalArgumentException(
           "invalid counts: size should be "
@@ -57,6 +76,7 @@ public abstract class DoubleHistogramPointData implements PointData {
         startEpochNanos,
         epochNanos,
         attributes,
+        exemplars,
         sum,
         totalCount,
         Collections.unmodifiableList(new ArrayList<>(boundaries)),
@@ -94,6 +114,25 @@ public abstract class DoubleHistogramPointData implements PointData {
    * @return the read-only counts in each bucket. <b>do not mutate</b> the returned object.
    */
   public abstract List<Long> getCounts();
+
+  /**
+   * Returns the lower bound of a bucket (all values would have been greater than).
+   *
+   * @param bucketIndex The bucket index, should match {@link #getCounts()} index.
+   */
+  public double getBucketLowerBound(int bucketIndex) {
+    return bucketIndex > 0 ? getBoundaries().get(bucketIndex - 1) : Double.NEGATIVE_INFINITY;
+  }
+  /**
+   * Returns the upper inclusive bound of a bucket (all values would have been less then or equal).
+   *
+   * @param bucketIndex The bucket index, should match {@link #getCounts()} index.
+   */
+  public double getBucketUpperBound(int bucketIndex) {
+    return (bucketIndex < getBoundaries().size())
+        ? getBoundaries().get(bucketIndex)
+        : Double.POSITIVE_INFINITY;
+  }
 
   private static boolean isStrictlyIncreasing(List<Double> xs) {
     for (int i = 0; i < xs.size() - 1; i++) {

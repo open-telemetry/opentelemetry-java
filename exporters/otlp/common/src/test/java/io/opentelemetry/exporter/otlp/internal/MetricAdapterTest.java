@@ -12,10 +12,12 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.protobuf.ByteString;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.metrics.v1.Exemplar;
 import io.opentelemetry.proto.metrics.v1.Gauge;
 import io.opentelemetry.proto.metrics.v1.Histogram;
 import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
@@ -28,6 +30,7 @@ import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
@@ -35,12 +38,14 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.LongExemplar;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -57,7 +62,19 @@ class MetricAdapterTest {
     assertThat(MetricAdapter.toIntDataPoints(Collections.emptyList())).isEmpty();
     assertThat(
             MetricAdapter.toIntDataPoints(
-                singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))
+                singletonList(
+                    LongPointData.create(
+                        123,
+                        456,
+                        KV_ATTR,
+                        5,
+                        Arrays.asList(
+                            LongExemplar.create(
+                                Attributes.of(stringKey("test"), "value"),
+                                2,
+                                /*spanId=*/ "0000000000000002",
+                                /*traceId=*/ "00000000000000000000000000000001",
+                                1))))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -66,6 +83,20 @@ class MetricAdapterTest {
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
                 .setAsInt(5)
+                .addExemplars(
+                    Exemplar.newBuilder()
+                        .setTimeUnixNano(2)
+                        .addFilteredAttributes(
+                            KeyValue.newBuilder()
+                                .setKey("test")
+                                .setValue(stringValue("value"))
+                                .build())
+                        .setSpanId(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 2}))
+                        .setTraceId(
+                            ByteString.copyFrom(
+                                new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}))
+                        .setAsInt(1)
+                        .build())
                 .build());
     assertThat(
             MetricAdapter.toIntDataPoints(
@@ -206,7 +237,14 @@ class MetricAdapterTest {
                         Attributes.empty(),
                         15.3,
                         ImmutableList.of(),
-                        ImmutableList.of(7L)))))
+                        ImmutableList.of(7L),
+                        ImmutableList.of(
+                            DoubleExemplar.create(
+                                Attributes.of(stringKey("test"), "value"),
+                                2,
+                                /*spanId=*/ "0000000000000002",
+                                /*traceId=*/ "00000000000000000000000000000001",
+                                1.5))))))
         .containsExactly(
             HistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -226,6 +264,20 @@ class MetricAdapterTest {
                 .setCount(7)
                 .setSum(15.3)
                 .addBucketCounts(7)
+                .addExemplars(
+                    Exemplar.newBuilder()
+                        .setTimeUnixNano(2)
+                        .addFilteredAttributes(
+                            KeyValue.newBuilder()
+                                .setKey("test")
+                                .setValue(stringValue("value"))
+                                .build())
+                        .setSpanId(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 2}))
+                        .setTraceId(
+                            ByteString.copyFrom(
+                                new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}))
+                        .setAsDouble(1.5)
+                        .build())
                 .build());
   }
 
