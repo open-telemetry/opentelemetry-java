@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.metrics.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.state.WriteableInstrumentStorage;
 import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.view.View;
 import java.util.function.Consumer;
 
 /** A default implementation of measurement processor. */
@@ -51,7 +52,25 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
-    // TODO: Check views.
+    // First check views
+    for (View view : meterProviderSharedState.getViews()) {
+      if (view.getInstrumentSelection()
+          .matches(instrument, meterSharedState.getInstrumentationLibraryInfo())) {
+        return InstrumentStorage.createSynchronous(
+            meterProviderSharedState.getStartEpochNanos(),
+            // aggregator factory is a bit odd...
+            view.getAggregator(instrument)
+                .create(
+                    meterProviderSharedState.getResource(),
+                    meterSharedState.getInstrumentationLibraryInfo(),
+                    meterProviderSharedState.getStartEpochNanos(),
+                    getDefaultExemplarSampler()),
+            view.getAttributesProcessor());
+      }
+    }
+
+    // TODO: Check if name conflicts with view, but view was not selected, then we have naming
+    // conflict.
 
     // Default storage.
     switch (instrument.getType()) {
@@ -78,8 +97,22 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       Consumer<T> callback) {
-    // TODO: Check views.
-
+    // Check views.
+    for (View view : meterProviderSharedState.getViews()) {
+      if (view.getInstrumentSelection()
+          .matches(instrument, meterSharedState.getInstrumentationLibraryInfo())) {
+        return InstrumentStorage.createAsynchronous(
+            meterProviderSharedState.getStartEpochNanos(),
+            callback,
+            view.getAggregator(instrument)
+                .create(
+                    meterProviderSharedState.getResource(),
+                    meterSharedState.getInstrumentationLibraryInfo(),
+                    meterProviderSharedState.getStartEpochNanos(),
+                    getDefaultExemplarSampler()),
+            view.getAttributesProcessor());
+      }
+    }
     // TODO: Check if name conflicts with view, but view was not selected, then we have naming
     // conflict.
 

@@ -9,6 +9,9 @@ import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -20,6 +23,7 @@ public final class SdkMeterProviderBuilder {
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
   private MeasurementProcessor processor = DefaultMeasurementProcessor.builder().build();
+  private final List<View> views = new ArrayList<>();
 
   SdkMeterProviderBuilder() {}
 
@@ -66,7 +70,7 @@ public final class SdkMeterProviderBuilder {
    */
   @SuppressWarnings("unused")
   public SdkMeterProviderBuilder registerView(View view) {
-    // TODO: Implement.
+    views.add(view);
     return this;
   }
 
@@ -94,6 +98,6 @@ public final class SdkMeterProviderBuilder {
    * @see GlobalMeterProvider
    */
   public SdkMeterProvider build() {
-    return new SdkMeterProvider(clock, resource, processor);
+    return new SdkMeterProvider(clock, resource, processor, Collections.unmodifiableList(views));
   }
 }

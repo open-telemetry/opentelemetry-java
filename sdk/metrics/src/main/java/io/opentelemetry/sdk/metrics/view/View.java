@@ -30,7 +30,8 @@ public interface View {
    */
   AttributesProcessor getAttributesProcessor();
 
+  /** Summons a new builder for views. */
   public static ViewBuilder builder() {
-    return null;
+    return new ViewBuilderImpl();
   }
 }

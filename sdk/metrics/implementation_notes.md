@@ -23,12 +23,18 @@ What is not implemented
   care about which `Metric` they produce.
 - [X] Create "matchers" for `data` package that simplify testing.
 - Unit Tests
-  - [ ] Exemplar generation in MetricDataUtils
-  - [ ] Exemplars from all Synchronous Instruments.
-  - [ ] Asynchronous Instrument Unit tests
+  - [X] Exemplar generation in MetricDataUtils
+  - [X] Exemplars from all Synchronous Instruments.
+  - [X] Asynchronous Instrument Unit tests
   - [ ] More in-depth aggregator unit tests.
-- [ ] Exemplars in OTLP exporter
+- [X] Exemplars in OTLP exporter
 - [ ] Reworked View API (prototype the PR proposal)
+  - [X] Prototype Impelmentation
+  - [X] Updated Autoconfigure tests
+  - [ ] Robust unit tests + feedback to SiG
+- [ ] Multiple Exporters
+  - [X] Basline Implementation
+  - [ ] Robust unit tests. 
 
 ## Metrics API SiG Discusison Points
 
@@ -49,8 +55,8 @@ What is not implemented
 
 - [X] One builder per-instrument w/ `build` and `buildWithCallback` for Async vs. Sync seems ok.
 - [ ] Counters = `long`, everything else = `double`? (What we have is coompromise).
-- [ ] Create a draft PR for evaluation going forward.
-- [ ] Create assert helpers for Metric data model, add notice that hashcode/equals are not accurate.
+- [X] Create a draft PR for evaluation going forward.
+- [X] Create assert helpers for Metric data model, add notice that hashcode/equals are not accurate.
 - [ ] Look in JCStress
 
 ## Implementation notes and design changes.
@@ -82,4 +88,7 @@ What is not implemented
 - New API/SDK specification does not determine where start/stop times are recorded or calculated nor if they
   stick to measurements. Need to follow up on how to handle this with shared state, `MeasurementProcessor` and `MetricProcessor`.
 - Prototype working `Exemplar` and `ExemplarSampler` mechanism for all synchronous instruments.
+- Major rework of `LabelsProcessor` to `AttributesProcessor` where ONLY allowed version are predefined static methods from `AttributesProcessors`.
+  - This can pull attributes from baggage.
+  - This has simple regex filtering, or additions.
   

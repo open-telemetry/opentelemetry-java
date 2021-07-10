@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,8 +42,9 @@ public class SdkMeterProvider implements MeterProvider {
   @GuardedBy("collectorsLock")
   private final Set<CollectionHandle> collectors = CollectionHandle.mutableSet();
 
-  SdkMeterProvider(Clock clock, Resource resource, MeasurementProcessor processor) {
-    this.sharedState = MeterProviderSharedState.create(clock, resource, processor);
+  SdkMeterProvider(
+      Clock clock, Resource resource, MeasurementProcessor processor, List<View> views) {
+    this.sharedState = MeterProviderSharedState.create(clock, resource, processor, views);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));

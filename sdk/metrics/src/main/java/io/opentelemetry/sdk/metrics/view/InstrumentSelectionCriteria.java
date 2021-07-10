@@ -32,7 +32,7 @@ public abstract class InstrumentSelectionCriteria {
   public abstract Pattern getInstrumentPattern();
 
   /** Returns true if a given instrument matches this filter. */
-  boolean matches(
+  public boolean matches(
       InstrumentDescriptor instrument, InstrumentationLibraryInfo instrumentationLibrary) {
     if (!getInstrumentPattern().matcher(instrument.getName()).matches()) {
       return false;
@@ -50,5 +50,27 @@ public abstract class InstrumentSelectionCriteria {
       return false;
     }
     return true;
+  }
+
+  /** Returns a new builder for instrument selection. */
+  public static Builder builder() {
+    return new AutoValue_InstrumentSelectionCriteria.Builder();
+  }
+
+  @AutoValue.Builder
+  public abstract static class Builder {
+    public final Builder setInstrumentName(String name) {
+      return setInstrumentPattern(Pattern.compile(Pattern.quote(name)));
+    }
+
+    public abstract Builder setInstrumentPattern(Pattern namePattern);
+
+    public abstract Builder setInstrumentationLibraryName(String name);
+
+    public abstract Builder setInstrumentationLibraryVersion(String version);
+
+    public abstract Builder setInstrumentationSchemaUrl(String url);
+
+    public abstract InstrumentSelectionCriteria build();
   }
 }

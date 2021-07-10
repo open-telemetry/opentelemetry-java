@@ -70,19 +70,19 @@ public abstract class SumConfig {
 
   /** Builder for {@link SumConfig}. */
   @AutoValue.Builder
-  abstract static class Builder {
-    abstract Builder setName(String name);
+  public abstract static class Builder {
+    public abstract Builder setName(String name);
 
-    abstract Builder setDescription(String name);
+    public abstract Builder setDescription(String name);
 
-    abstract Builder setUnit(String unit);
+    public abstract Builder setUnit(String unit);
 
-    abstract Builder setMonotonic(boolean monotonic);
+    public abstract Builder setMonotonic(boolean monotonic);
 
-    abstract Builder setTemporality(AggregationTemporality temporality);
+    public abstract Builder setTemporality(AggregationTemporality temporality);
 
-    abstract Builder setMeasurementTemporality(AggregationTemporality temporality);
+    public abstract Builder setMeasurementTemporality(AggregationTemporality temporality);
 
-    abstract SumConfig build();
+    public abstract SumConfig build();
   }
 }

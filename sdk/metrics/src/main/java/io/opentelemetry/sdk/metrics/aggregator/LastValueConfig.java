@@ -39,13 +39,13 @@ public abstract class LastValueConfig {
 
   /** Builder for {@link LastValueConfig}. */
   @AutoValue.Builder
-  abstract static class Builder {
-    abstract Builder setName(String name);
+  public abstract static class Builder {
+    public abstract Builder setName(String name);
 
-    abstract Builder setDescription(String name);
+    public abstract Builder setDescription(String name);
 
-    abstract Builder setUnit(String unit);
+    public abstract Builder setUnit(String unit);
 
-    abstract LastValueConfig build();
+    public abstract LastValueConfig build();
   }
 }
