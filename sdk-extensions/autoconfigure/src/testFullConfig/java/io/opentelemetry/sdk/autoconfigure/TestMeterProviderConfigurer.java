@@ -5,29 +5,30 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.instrument.InstrumentType;
+import io.opentelemetry.sdk.metrics.view.AttributesProcessors;
+import io.opentelemetry.sdk.metrics.view.InstrumentSelectionCriteria;
 import io.opentelemetry.sdk.metrics.view.View;
 
 public class TestMeterProviderConfigurer implements SdkMeterProviderConfigurer {
 
   @Override
+  @SuppressWarnings("unused")
   public void configure(SdkMeterProviderBuilder meterProviderBuilder) {
-    LabelsProcessorFactory labelsProcessorFactory =
-        (resource, instrumentationLibraryInfo, descriptor) ->
-            (ctx, labels) -> labels.toBuilder().put("configured", "true").build();
-
     for (InstrumentType instrumentType : InstrumentType.values()) {
       meterProviderBuilder.registerView(
-          InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
           View.builder()
-              .setAggregatorFactory(AggregatorFactory.count(AggregationTemporality.DELTA))
-              .setLabelsProcessorFactory(labelsProcessorFactory)
+              // TODO: Reimplement selection criteria.
+              .setSelection(/*TODO*/ (InstrumentSelectionCriteria) null)
+              // TODO: What aggregation do we want?
+              .asSum()
+              .withDeltaAggregation()
+              .addAttributesProcessor(
+                  AttributesProcessors.appendAttributes(
+                      Attributes.builder().put("configured", true).build()))
               .build());
     }
   }

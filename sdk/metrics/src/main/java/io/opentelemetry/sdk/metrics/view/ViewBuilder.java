@@ -31,4 +31,6 @@ public interface ViewBuilder {
 
   /** The `description`. If not provided, the Instrument `description` would be used by default. */
   ViewBuilder setDescription(String name);
+
+  View build();
 }

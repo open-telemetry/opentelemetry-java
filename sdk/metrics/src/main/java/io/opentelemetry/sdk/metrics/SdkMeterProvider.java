@@ -58,6 +58,16 @@ public class SdkMeterProvider implements MeterProvider {
   }
 
   // TODO - This should be static, and not dynamically registered.
+
+  /**
+   * Construct a new MetricProducer that will collect + export metrics.
+   *
+   * <p>{@link MetricProducer} instances are isolated from each other, and can independently sample
+   * metrics from this {@link MeterProvider}. However, all metric data will be cached until read by
+   * all {@link MetricProducer}s that have been created from this {@link MeterProvider}.
+   *
+   * @return A mechanism of pulling metrics.
+   */
   public MetricProducer newMetricProducer() {
     collectorsLock.lock();
     try {

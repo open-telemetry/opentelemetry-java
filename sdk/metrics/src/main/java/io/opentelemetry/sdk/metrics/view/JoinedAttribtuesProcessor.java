@@ -17,7 +17,7 @@ public final class JoinedAttribtuesProcessor implements AttributesProcessor {
   private final Collection<AttributesProcessor> processors;
   private final boolean usesContextCache;
 
-  public JoinedAttribtuesProcessor(Collection<AttributesProcessor> processors) {
+  JoinedAttribtuesProcessor(Collection<AttributesProcessor> processors) {
     this.processors = processors;
     this.usesContextCache =
         processors.stream().map(AttributesProcessor::usesContext).reduce(false, (l, r) -> l || r);

@@ -42,7 +42,7 @@ public class SynchronousInstrumentStorageTest {
   @SuppressWarnings("unchecked")
   public void synchronousStorage_pullsHandlesFromAggregatorPerAttribute() {
     final Aggregator<Object> mockAggregator = Mockito.mock(Aggregator.class);
-    final Attributes KV = Attributes.of(AttributeKey.stringKey("k"), "v");
+    final Attributes kv = Attributes.of(AttributeKey.stringKey("k"), "v");
     Mockito.when(mockAggregator.createStreamStorage()).thenAnswer(invocation -> new NoopHandle());
     SynchronousInstrumentStorage<Object> storage =
         SynchronousInstrumentStorage.create(mockAggregator, AttributesProcessor.NOOP);
@@ -51,28 +51,28 @@ public class SynchronousInstrumentStorageTest {
     storage
         .bind(Attributes.empty())
         .record(LongMeasurement.create(1, Attributes.empty(), Context.root()));
-    storage.bind(KV).record(LongMeasurement.create(1, KV, Context.root()));
+    storage.bind(kv).record(LongMeasurement.create(1, kv, Context.root()));
     // Binding a handle with no value will NOT cause accumulation.
     storage.bind(Attributes.of(AttributeKey.stringKey("k"), "unused"));
     storage.collectAndReset(collector1, collectors, 0, 10);
     // Verify aggregator received measurements.
     Mockito.verify(mockAggregator)
-        .buildMetric(makeMeasurement(KV, "result", Attributes.empty(), "result"), 0, 0, 10);
+        .buildMetric(makeMeasurement(kv, "result", Attributes.empty(), "result"), 0, 0, 10);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void synchronousStorage_usesAttributeProcessor() {
     final Aggregator<Object> mockAggregator = Mockito.mock(Aggregator.class);
-    final Attributes KV = Attributes.of(AttributeKey.stringKey("k"), "v");
-    final Attributes KV2 = Attributes.of(AttributeKey.stringKey("k"), "v2");
+    final Attributes kv = Attributes.of(AttributeKey.stringKey("k"), "v");
+    final Attributes kv2 = Attributes.of(AttributeKey.stringKey("k"), "v2");
     Mockito.when(mockAggregator.createStreamStorage()).thenAnswer(invocation -> new NoopHandle());
     SynchronousInstrumentStorage<Object> storage =
         SynchronousInstrumentStorage.create(
             mockAggregator,
             (attributes, context) -> {
-              if (attributes.equals(KV)) {
-                return KV2;
+              if (attributes.equals(kv)) {
+                return kv2;
               }
               return attributes;
             });
@@ -81,12 +81,12 @@ public class SynchronousInstrumentStorageTest {
     storage
         .bind(Attributes.empty())
         .record(LongMeasurement.create(1, Attributes.empty(), Context.root()));
-    storage.bind(KV).record(LongMeasurement.create(1, KV, Context.root()));
+    storage.bind(kv).record(LongMeasurement.create(1, kv, Context.root()));
     // Binding a handle with no value will NOT cause accumulation.
     storage.bind(Attributes.of(AttributeKey.stringKey("k"), "unused"));
     storage.collectAndReset(collector1, collectors, 0, 10);
     Mockito.verify(mockAggregator)
-        .buildMetric(makeMeasurement(KV2, "result", Attributes.empty(), "result"), 0, 0, 10);
+        .buildMetric(makeMeasurement(kv2, "result", Attributes.empty(), "result"), 0, 0, 10);
   }
 
   /** Stubbed version of synchronous handle for testing. */

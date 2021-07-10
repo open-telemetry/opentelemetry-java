@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.sdk.internal.Clock;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.resources.Resource;
 
 @SuppressWarnings("ImmutableEnumChecker")

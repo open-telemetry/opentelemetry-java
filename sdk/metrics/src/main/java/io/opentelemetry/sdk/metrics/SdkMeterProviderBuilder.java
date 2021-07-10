@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Objects;
 
@@ -55,6 +56,17 @@ public final class SdkMeterProviderBuilder {
   public SdkMeterProviderBuilder setMeasurementProcessor(MeasurementProcessor processor) {
     Objects.requireNonNull(processor, "processor");
     this.processor = processor;
+    return this;
+  }
+
+  /**
+   * Registers a new {@link View} for processing measurements.
+   *
+   * @return this
+   */
+  @SuppressWarnings("unused")
+  public SdkMeterProviderBuilder registerView(View view) {
+    // TODO: Implement.
     return this;
   }
 
