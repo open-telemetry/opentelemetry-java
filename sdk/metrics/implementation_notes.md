@@ -11,11 +11,13 @@ So far the following is implemented:
 - Asynchronous Instruments
 - Exemplar collection + SDK hook for sampling (**This was not in previous implementation**)
 - Tests for MeterProvider->Meter->Instrument->Storage
-
-What is not implemented
-- MetricProcessor
 - Views
 - Testing API
+
+What is not implemented:
+- MetricProcessor and better "Export" config
+- Robust unit tests for Views
+- Robust unit tests for multi-exporter paths
 
 # TODOs
 
