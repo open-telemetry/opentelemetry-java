@@ -36,7 +36,8 @@ public class SdkMeterProviderTest {
   @Test
   @SuppressWarnings("unchecked")
   void sdkMeterProvider_supportsMultipleCollectorsDelta() {
-    // Note: we use a view to do delta aggregation, but any view ALWAYS uses double-precision right now.
+    // Note: we use a view to do delta aggregation, but any view ALWAYS uses double-precision right
+    // now.
     SdkMeterProvider meterProvider =
         sdkMeterProviderBuilder
             .registerView(
