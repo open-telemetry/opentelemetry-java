@@ -77,7 +77,7 @@ public interface SamplingResult {
    * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
   static SamplingResult recordAndSample() {
-    return ImmutableSamplingResult.getEmptyRecordedAndSampledSamplingResult();
+    return ImmutableSamplingResult.EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
   }
 
   /**
@@ -90,7 +90,7 @@ public interface SamplingResult {
    * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
   static SamplingResult recordOnly() {
-    return ImmutableSamplingResult.getEmptyRecordedSamplingResult();
+    return ImmutableSamplingResult.EMPTY_RECORDED_SAMPLING_RESULT;
   }
 
   /**
@@ -103,7 +103,7 @@ public interface SamplingResult {
    * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
    */
   static SamplingResult drop() {
-    return ImmutableSamplingResult.getEmptyNotSampledOrRecordedSamplingResult();
+    return ImmutableSamplingResult.EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
   }
 
   /**

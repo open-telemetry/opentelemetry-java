@@ -1,2 +1,17 @@
 Comparing source compatibility of  against 
-No changes.
+***! MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.SpanDataAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	---! REMOVED METHOD: PUBLIC(-) FINAL(-) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasAttributes(java.util.Map$Entry[])
+		---  REMOVED ANNOTATION: java.lang.SafeVarargs
+	---! REMOVED METHOD: PUBLIC(-) FINAL(-) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasEventsSatisfyingExactly(java.util.function.Consumer[])
+		---  REMOVED ANNOTATION: java.lang.SafeVarargs
+---! REMOVED CLASS: PUBLIC(-) FINAL(-) io.opentelemetry.sdk.testing.time.TestClock  (not serializable)
+	---  CLASS FILE FORMAT VERSION: n.a. <- 52.0
+	---! REMOVED SUPERCLASS: java.lang.Object
+	---! REMOVED METHOD: PUBLIC(-) void advance(java.time.Duration)
+	---! REMOVED METHOD: PUBLIC(-) void advance(long, java.util.concurrent.TimeUnit)
+	---! REMOVED METHOD: PUBLIC(-) STATIC(-) io.opentelemetry.sdk.testing.time.TestClock create()
+	---! REMOVED METHOD: PUBLIC(-) STATIC(-) io.opentelemetry.sdk.testing.time.TestClock create(java.time.Instant)
+	---! REMOVED METHOD: PUBLIC(-) long nanoTime()
+	---! REMOVED METHOD: PUBLIC(-) long now()
+	---! REMOVED METHOD: PUBLIC(-) void setTime(java.time.Instant)

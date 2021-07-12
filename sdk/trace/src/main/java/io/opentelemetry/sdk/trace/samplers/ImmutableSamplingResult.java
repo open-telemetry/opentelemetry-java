@@ -22,18 +22,6 @@ abstract class ImmutableSamplingResult implements SamplingResult {
   static final SamplingResult EMPTY_RECORDED_SAMPLING_RESULT =
       ImmutableSamplingResult.createWithoutAttributes(SamplingDecision.RECORD_ONLY);
 
-  static SamplingResult getEmptyRecordedAndSampledSamplingResult() {
-    return EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
-  }
-
-  static SamplingResult getEmptyNotSampledOrRecordedSamplingResult() {
-    return EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
-  }
-
-  static SamplingResult getEmptyRecordedSamplingResult() {
-    return EMPTY_RECORDED_SAMPLING_RESULT;
-  }
-
   static SamplingResult createSamplingResult(SamplingDecision decision, Attributes attributes) {
     return new AutoValue_ImmutableSamplingResult(decision, attributes);
   }
