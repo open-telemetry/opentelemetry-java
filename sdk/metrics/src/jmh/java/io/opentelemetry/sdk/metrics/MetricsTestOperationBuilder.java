@@ -88,6 +88,28 @@ public enum MetricsTestOperationBuilder {
           }
         };
       }),
+  DoubleHistogramRecorderRecord(
+      meter -> {
+        return new Operation() {
+          final DoubleValueRecorder metric =
+              meter.doubleValueRecorderBuilder("double_histogram_recorder").build();
+          final BoundDoubleValueRecorder boundMetric =
+              meter
+                  .doubleValueRecorderBuilder("bound_double_histogram_recorder")
+                  .build()
+                  .bind(Labels.of("KEY", "VALUE"));
+
+          @Override
+          public void perform(Labels labels) {
+            metric.record(5.0d, labels);
+          }
+
+          @Override
+          public void performBound() {
+            boundMetric.record(5.0d);
+          }
+        };
+      }),
   LongValueRecorderRecord(
       meter -> {
         return new Operation() {
