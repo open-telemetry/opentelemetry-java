@@ -125,10 +125,15 @@ is a representation of the entity producing telemetry.
 | System property          | Environment variable     | Description                                                                        |
 |--------------------------|--------------------------|------------------------------------------------------------------------------------|
 | otel.resource.attributes | OTEL_RESOURCE_ATTRIBUTES | Specify resource attributes in the following format: key1=val1,key2=val2,key3=val3 |
+| otel.service.name        | OTEL_SERVICE_NAME        | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes` |
 
 You almost always want to specify the [`service.name`](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/resource/semantic_conventions#service) for your application.
 It corresponds to how you describe the application, for example `authservice` could be an application that authenticates requests, and `cats` could be an application that returns information about [cats](https://en.wikipedia.org/wiki/Cat).
-This means you would specify resource attributes something like `OTEL_RESOURCE_ATTRIBUTES=service.name=authservice`, or `-Dotel.resource.attributes=service.name=cats,service.namespace=mammals`.
+You would specify that by setting service name property in one of the following ways:
+* directly via `OTEL_SERVICE_NAME=authservice` or `-Dotel.service.name=cats`
+* by `service.name` resource attribute like `OTEL_RESOURCE_ATTRIBUTES=service.name=authservice`, or `-Dotel.resource.attributes=service.name=cats,service.namespace=mammals`.
+
+If not specified, SDK defaults service name value to `unknown_service:java`.
 
 ## Batch span processor
 
