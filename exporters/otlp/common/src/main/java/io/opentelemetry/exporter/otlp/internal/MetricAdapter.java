@@ -11,7 +11,6 @@ import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATI
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.UnsafeByteOperations;
-import io.opentelemetry.api.common.AttributeType;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanId;
@@ -340,13 +339,11 @@ public final class MetricAdapter {
     attributes.forEach(
         (key, value) -> {
           attributeSetter.accept(CommonAdapter.toProtoAttribute(key, value));
-          if (key.getType() == AttributeType.STRING) {
-            labelSetter.accept(
-                io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                    .setKey(key.getKey())
-                    .setValue((String) value)
-                    .build());
-          }
+          labelSetter.accept(
+              io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                  .setKey(key.getKey())
+                  .setValue(value.toString())
+                  .build());
         });
   }
 
