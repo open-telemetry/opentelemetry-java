@@ -133,7 +133,7 @@ You would specify that by setting service name property in one of the following 
 * directly via `OTEL_SERVICE_NAME=authservice` or `-Dotel.service.name=cats`
 * by `service.name` resource attribute like `OTEL_RESOURCE_ATTRIBUTES=service.name=authservice`, or `-Dotel.resource.attributes=service.name=cats,service.namespace=mammals`.
 
-If not specified, SDK defaults service name value to `unknown_service:java`.
+If not specified, SDK defaults the service name to `unknown_service:java`.
 
 ## Batch span processor
 
