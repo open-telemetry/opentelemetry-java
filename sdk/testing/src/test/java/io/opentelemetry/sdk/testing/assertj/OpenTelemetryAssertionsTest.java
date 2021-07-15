@@ -196,6 +196,7 @@ class OpenTelemetryAssertionsTest {
     assertThatThrownBy(() -> assertThat(SPAN1).isNotSampled()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasTraceState(TraceState.getDefault()))
         .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> assertThat(SPAN1).hasNoParent()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasParentSpanId("foo"))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasResource(Resource.empty()))

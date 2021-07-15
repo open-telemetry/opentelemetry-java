@@ -86,7 +86,7 @@ class OpenTelemetryExtensionTest {
                 trace
                     .hasTraceId(traceId)
                     .hasSpansSatisfyingExactly(
-                        s -> s.hasName("testa1"),
+                        s -> s.hasName("testa1").hasNoParent(),
                         s ->
                             s.hasName("testa2")
                                 .hasParentSpanId(trace.getSpan(0).getSpanId())
