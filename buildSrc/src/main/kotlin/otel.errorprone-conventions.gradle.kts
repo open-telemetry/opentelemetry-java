@@ -17,7 +17,7 @@ tasks {
             errorprone {
                 if (disableErrorProne) {
                     logger.warn("Errorprone has been disabled. Build may not result in a valid PR build.")
-                    enabled = false
+                    isEnabled.set(false)
                 }
 
                 disableWarningsInGeneratedCode.set(true)
