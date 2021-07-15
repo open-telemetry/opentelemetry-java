@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -119,6 +120,25 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
    */
   public SpanDataAssert hasParent(SpanData parent) {
     return hasParentSpanId(parent.getSpanId());
+  }
+
+  /**
+   * Asserts the span has no parent {@link SpanData span}.
+   *
+   * <p>Equivalent to {@code span.hasParentSpanId(SpanId.getInvalid())}.
+   */
+  public SpanDataAssert hasNoParent() {
+    isNotNull();
+    String actualParentSpanId = actual.getParentSpanId();
+    if (!actualParentSpanId.equals(SpanId.getInvalid())) {
+      failWithActualExpectedAndMessage(
+          actualParentSpanId,
+          SpanId.getInvalid(),
+          "Expected span [%s] to have no parent but had parent span ID <%s>",
+          actual.getName(),
+          actualParentSpanId);
+    }
+    return this;
   }
 
   /** Asserts the span has the given {@link Resource}. */
