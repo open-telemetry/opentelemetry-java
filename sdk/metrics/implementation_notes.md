@@ -29,14 +29,27 @@ What is not implemented:
   - [X] Exemplars from all Synchronous Instruments.
   - [X] Asynchronous Instrument Unit tests
   - [ ] More in-depth aggregator unit tests.
+  - [ ] Aggregator performance tests
 - [X] Exemplars in OTLP exporter
 - [ ] Reworked View API (prototype the PR proposal)
   - [X] Prototype Impelmentation
   - [X] Updated Autoconfigure tests
+  - [ ] Minimize configuration to match current SDK proposal (e.g. don't expose AttributesProcessor)
   - [ ] Robust unit tests + feedback to SiG
 - [ ] Multiple Exporters
   - [X] Basline Implementation
   - [ ] Robust unit tests. 
+- [ ] Remove allocations from hot-path of sycnhronous recording
+  - [ ] Write `recordDouble` and `recordLong` through Storage -> Aggreggator
+  - [ ] Implement resorvoir sampling for Exemplars
+- [ ] Experiement with ONLY producing DELTA synchronous + CUMULATIVE asynchronous measurements at the metric-producer level, and providing DELTA->CUMULATIVE helper for Exporters.
+
+
+
+## Quick Notes From benchmarking
+
+- Still see 2x performance boost for "bound" instruments.
+- Escape Analysis worked for Gauge/Sum synchronous instruments, but not for Histograms.  Just enough code path to cause tons of allocations, going to remove those from the hotpath as is possible
 
 ## Metrics API SiG Discusison Points
 

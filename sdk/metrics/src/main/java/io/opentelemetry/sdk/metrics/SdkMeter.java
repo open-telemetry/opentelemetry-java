@@ -5,16 +5,11 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.CounterBuilder;
-import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.metrics.GaugeBuilder;
-import io.opentelemetry.api.metrics.HistogramBuilder;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongUpDownCounter;
+import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
+import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
+import io.opentelemetry.api.metrics.LongCounterBuilder;
+import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
-import io.opentelemetry.api.metrics.ObservableLongMeasurement;
-import io.opentelemetry.api.metrics.UpDownCounterBuilder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.state.InstrumentStorage;
@@ -39,24 +34,24 @@ public class SdkMeter implements Meter {
   }
 
   @Override
-  public CounterBuilder<LongCounter, ObservableLongMeasurement> counterBuilder(String name) {
-    return new SdkCounterBuilder<>(meterProviderSharedState, meterSharedState, name);
+  public LongCounterBuilder counterBuilder(String name) {
+    return new LongSdkCounterBuilder(meterProviderSharedState, meterSharedState, name, "", "1");
   }
 
   @Override
-  public UpDownCounterBuilder<LongUpDownCounter, ObservableLongMeasurement> upDownCounterBuilder(
-      String name) {
-    return new SdkUpDownCounterBuilder<>(meterProviderSharedState, meterSharedState, name);
+  public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
+    return new LongSdkUpDownCounterBuilder(
+        meterProviderSharedState, meterSharedState, name, "", "1");
   }
 
   @Override
-  public HistogramBuilder<DoubleHistogram> histogramBuilder(String name) {
-    return new SdkHistogramBuilder<>(meterProviderSharedState, meterSharedState, name);
+  public DoubleHistogramBuilder histogramBuilder(String name) {
+    return new DoubleSdkHistogramBuilder(meterProviderSharedState, meterSharedState, name, "", "1");
   }
 
   @Override
-  public GaugeBuilder<ObservableDoubleMeasurement> gaugeBuilder(String name) {
-    return new SdkGaugeBuilder<>(meterProviderSharedState, meterSharedState, name);
+  public DoubleGaugeBuilder gaugeBuilder(String name) {
+    return new DoubleSdkGaugeBuilder(meterProviderSharedState, meterSharedState, name, "", "1");
   }
 
   /** Collects all the metric recordings that changed since the previous call. */

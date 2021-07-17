@@ -30,12 +30,7 @@ public class NoopMeterTest {
   @Test
   void noopLongCounter_doesNotThrow() {
     LongCounter counter =
-        meter
-            .counterBuilder("size")
-            .ofLongs()
-            .setDescription("The size I'm measuring")
-            .setUnit("1")
-            .build();
+        meter.counterBuilder("size").setDescription("The size I'm measuring").setUnit("1").build();
     counter.add(1);
     counter.add(1, Attributes.of(stringKey("thing"), "car"));
     counter.add(1, Attributes.of(stringKey("thing"), "car"), Context.current());
@@ -46,7 +41,6 @@ public class NoopMeterTest {
     BoundLongCounter counter =
         meter
             .counterBuilder("size")
-            .ofLongs()
             .setDescription("The size I'm measuring")
             .setUnit("1")
             .build()
@@ -88,7 +82,6 @@ public class NoopMeterTest {
     LongUpDownCounter counter =
         meter
             .upDownCounterBuilder("size")
-            .ofLongs()
             .setDescription("The size I'm measuring")
             .setUnit("1")
             .build();
@@ -102,7 +95,6 @@ public class NoopMeterTest {
     BoundLongUpDownCounter counter =
         meter
             .upDownCounterBuilder("size")
-            .ofLongs()
             .setDescription("The size I'm measuring")
             .setUnit("1")
             .build()
@@ -172,7 +164,6 @@ public class NoopMeterTest {
     DoubleHistogram histogram =
         meter
             .histogramBuilder("size")
-            .ofDoubles()
             .setDescription("The size I'm measuring")
             .setUnit("1")
             .build();
@@ -186,7 +177,6 @@ public class NoopMeterTest {
     BoundDoubleHistogram histogram =
         meter
             .histogramBuilder("size")
-            .ofDoubles()
             .setDescription("The size I'm measuring")
             .setUnit("1")
             .build()
@@ -213,7 +203,6 @@ public class NoopMeterTest {
   void noopObservableDoubleGauage_doesNotThrow() {
     meter
         .gaugeBuilder("temperature")
-        .ofDoubles()
         .setDescription("The current temperature")
         .setUnit("C")
         .buildWithCallback(
@@ -227,7 +216,6 @@ public class NoopMeterTest {
   void noopObservableLongCounter_doesNotThrow() {
     meter
         .counterBuilder("temperature")
-        .ofLongs()
         .setDescription("The current temperature")
         .setUnit("C")
         .buildWithCallback(
@@ -255,7 +243,6 @@ public class NoopMeterTest {
   void noopObservableLongUpDownCounter_doesNotThrow() {
     meter
         .upDownCounterBuilder("temperature")
-        .ofLongs()
         .setDescription("The current temperature")
         .setUnit("C")
         .buildWithCallback(

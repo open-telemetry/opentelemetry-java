@@ -28,7 +28,7 @@ public interface Meter {
    * @return a builder for configuring a new Counter instrument. Defaults to recording long values,
    *     but may be changed.
    */
-  public CounterBuilder<LongCounter, ObservableLongMeasurement> counterBuilder(String name);
+  public LongCounterBuilder counterBuilder(String name);
 
   /**
    * Construct an up-down-counter instrument.
@@ -40,8 +40,7 @@ public interface Meter {
    * @return a builder for configuring a new Counter synchronous instrument. Defaults to recording
    *     long values, but may be changed.
    */
-  public UpDownCounterBuilder<LongUpDownCounter, ObservableLongMeasurement> upDownCounterBuilder(
-      String name);
+  public LongUpDownCounterBuilder upDownCounterBuilder(String name);
 
   /**
    * Construct a Histogram instrument.
@@ -50,12 +49,12 @@ public interface Meter {
    * @return a builder for configuring a new Histogram synchronous instrument. Defaults to recording
    *     double values, but may be changed.
    */
-  public HistogramBuilder<DoubleHistogram> histogramBuilder(String name);
+  public DoubleHistogramBuilder histogramBuilder(String name);
 
   /**
    * Construct an asynchronous gauge.
    *
-   * @return a builder used for configuring how to report gauage measurements on demand.
+   * @return a builder used for configuring how to report gauge measurements on demand.
    */
-  public GaugeBuilder<ObservableDoubleMeasurement> gaugeBuilder(String name);
+  public DoubleGaugeBuilder gaugeBuilder(String name);
 }
