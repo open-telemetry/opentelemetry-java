@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundDoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.instrument.DoubleMeasurement;
 import io.opentelemetry.sdk.metrics.state.StorageHandle;
 import io.opentelemetry.sdk.metrics.state.WriteableInstrumentStorage;
 import java.util.Objects;
@@ -24,7 +23,7 @@ public class DoubleUpDownCounterSdk implements DoubleUpDownCounter {
 
   @Override
   public void add(double value, Attributes attributes, Context context) {
-    storage.record(DoubleMeasurement.create(value, attributes, context));
+    storage.recordDouble(value, attributes, context);
   }
 
   @Override
@@ -55,7 +54,7 @@ public class DoubleUpDownCounterSdk implements DoubleUpDownCounter {
 
     @Override
     public void add(double value, Context context) {
-      handle.record(DoubleMeasurement.create(value, attributes, context));
+      handle.recordDouble(value, attributes, context);
     }
 
     @Override

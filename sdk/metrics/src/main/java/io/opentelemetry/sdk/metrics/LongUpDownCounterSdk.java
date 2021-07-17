@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
 import io.opentelemetry.sdk.metrics.state.StorageHandle;
 import io.opentelemetry.sdk.metrics.state.WriteableInstrumentStorage;
 import java.util.Objects;
@@ -24,7 +23,7 @@ public class LongUpDownCounterSdk implements LongUpDownCounter {
 
   @Override
   public void add(long value, Attributes attributes, Context context) {
-    storage.record(LongMeasurement.create(value, attributes, context));
+    storage.recordLong(value, attributes, context);
   }
 
   @Override
@@ -55,7 +54,7 @@ public class LongUpDownCounterSdk implements LongUpDownCounter {
 
     @Override
     public void add(long value, Context context) {
-      handle.record(LongMeasurement.create(value, attributes, context));
+      handle.recordLong(value, attributes, context);
     }
 
     @Override

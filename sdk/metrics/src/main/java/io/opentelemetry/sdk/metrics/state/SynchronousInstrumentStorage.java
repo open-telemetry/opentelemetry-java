@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.metrics.CollectionHandle;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.SynchronousHandle;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.instrument.Measurement;
 import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,12 +55,17 @@ final class SynchronousInstrumentStorage<T> implements WriteableInstrumentStorag
   private final StorageHandle lateBoundStorageHandle =
       new StorageHandle() {
         @Override
-        public void record(Measurement measurement) {
-          SynchronousInstrumentStorage.this.record(measurement);
+        public void release() {}
+
+        @Override
+        public void recordLong(long value, Attributes attributes, Context context) {
+          SynchronousInstrumentStorage.this.recordLong(value, attributes, context);
         }
 
         @Override
-        public void release() {}
+        public void recordDouble(double value, Attributes attributes, Context context) {
+          SynchronousInstrumentStorage.this.recordDouble(value, attributes, context);
+        }
       };
 
   /**
@@ -106,11 +110,22 @@ final class SynchronousInstrumentStorage<T> implements WriteableInstrumentStorag
 
   /** Writes a measurement into the appropriate metric stream. */
   @Override
-  public void record(Measurement measurement) {
-    StorageHandle handle =
-        doBind(attributesProcessor.process(measurement.getAttributes(), measurement.getContext()));
+  public void recordLong(long value, Attributes attributes, Context context) {
+    Objects.requireNonNull(attributes, "Null attributes");
+    StorageHandle handle = doBind(attributesProcessor.process(attributes, context));
     try {
-      handle.record(measurement);
+      handle.recordLong(value, attributes, context);
+    } finally {
+      handle.release();
+    }
+  }
+
+  @Override
+  public void recordDouble(double value, Attributes attributes, Context context) {
+    Objects.requireNonNull(attributes, "Null attributes");
+    StorageHandle handle = doBind(attributesProcessor.process(attributes, context));
+    try {
+      handle.recordDouble(value, attributes, context);
     } finally {
       handle.release();
     }

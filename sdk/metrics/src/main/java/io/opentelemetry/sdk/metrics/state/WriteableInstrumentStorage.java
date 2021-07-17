@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.state;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import io.opentelemetry.context.Context;
 
 /** Instrument storage that allows synchronous instrument writing. */
 public interface WriteableInstrumentStorage extends InstrumentStorage {
@@ -14,5 +14,7 @@ public interface WriteableInstrumentStorage extends InstrumentStorage {
   StorageHandle bind(Attributes attributes);
 
   /** Records a measurement. */
-  void record(Measurement measurement);
+  void recordLong(long value, Attributes attributes, Context context);
+  /** Records a measurement. */
+  void recordDouble(double value, Attributes attributes, Context context);
 }

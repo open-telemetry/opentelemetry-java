@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundDoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.instrument.DoubleMeasurement;
 import io.opentelemetry.sdk.metrics.state.StorageHandle;
 import io.opentelemetry.sdk.metrics.state.WriteableInstrumentStorage;
 import java.util.Objects;
@@ -27,7 +26,7 @@ public class DoubleCounterSdk implements DoubleCounter {
     if (value < 0) {
       throw new IllegalArgumentException("Counters can only increase");
     }
-    storage.record(DoubleMeasurement.create(value, attributes, context));
+    storage.recordDouble(value, attributes, context);
   }
 
   @Override
@@ -65,7 +64,7 @@ public class DoubleCounterSdk implements DoubleCounter {
       if (value < 0) {
         throw new IllegalArgumentException("Counters can only increase");
       }
-      handle.record(DoubleMeasurement.create(value, attributes, context));
+      handle.recordDouble(value, attributes, context);
     }
 
     @Override

@@ -13,7 +13,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.instrument.DoubleMeasurement;
 import io.opentelemetry.sdk.metrics.instrument.InstrumentType;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -43,23 +42,23 @@ class DoubleSumAggregatorTest {
   @Test
   void multipleRecords() {
     SynchronousHandle<DoubleAccumulation> aggregatorHandle = aggregator.createStreamStorage();
-    aggregatorHandle.record(raw(12.1));
-    aggregatorHandle.record(raw(12.1));
-    aggregatorHandle.record(raw(12.1));
-    aggregatorHandle.record(raw(12.1));
-    aggregatorHandle.record(raw(12.1));
+    aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.root());
+    aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.root());
+    aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.root());
+    aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.root());
+    aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.root());
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(12.1 * 5));
   }
 
   @Test
   void multipleRecords_WithNegatives() {
     SynchronousHandle<DoubleAccumulation> aggregatorHandle = aggregator.createStreamStorage();
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(-23));
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(-11));
+    aggregatorHandle.recordDouble(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordDouble(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordDouble(-23, Attributes.empty(), Context.root());
+    aggregatorHandle.recordDouble(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordDouble(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordDouble(-11, Attributes.empty(), Context.root());
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(14));
   }
 
@@ -68,13 +67,13 @@ class DoubleSumAggregatorTest {
     SynchronousHandle<DoubleAccumulation> aggregatorHandle = aggregator.createStreamStorage();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
-    aggregatorHandle.record(raw(13));
-    aggregatorHandle.record(raw(12));
+    aggregatorHandle.recordDouble(13, Attributes.empty(), Context.root());
+    aggregatorHandle.recordDouble(12, Attributes.empty(), Context.root());
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(25));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(-25));
+    aggregatorHandle.recordDouble(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordDouble(-25, Attributes.empty(), Context.root());
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(-13));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
@@ -112,7 +111,7 @@ class DoubleSumAggregatorTest {
   @SuppressWarnings("unchecked")
   void buildMetric() {
     SynchronousHandle<DoubleAccumulation> aggregatorHandle = aggregator.createStreamStorage();
-    aggregatorHandle.record(raw(10));
+    aggregatorHandle.recordDouble(10, Attributes.empty(), Context.root());
 
     MetricData metricData =
         aggregator.buildMetric(
@@ -132,10 +131,6 @@ class DoubleSumAggregatorTest {
                     .hasEpochNanos(100)
                     .hasAttributes(Attributes.empty())
                     .hasValue(10));
-  }
-
-  private static DoubleMeasurement raw(double value) {
-    return DoubleMeasurement.create(value, Attributes.empty(), Context.root());
   }
 
   private static DoubleAccumulation agg(double value) {

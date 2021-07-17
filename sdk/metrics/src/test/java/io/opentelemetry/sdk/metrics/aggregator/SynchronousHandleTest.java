@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.instrument.DoubleMeasurement;
 import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
@@ -79,7 +80,7 @@ public class SynchronousHandleTest {
   void testRecordings() {
     TestSynchronousHandle storage = new TestSynchronousHandle();
 
-    storage.record(LongMeasurement.createNoContext(22, Attributes.empty()));
+    storage.recordLong(22, Attributes.empty(), Context.root());
     assertThat(storage.recordedLong.get()).isEqualTo(22);
     assertThat(storage.recordedDouble.get()).isEqualTo(0);
 
@@ -87,7 +88,7 @@ public class SynchronousHandleTest {
     assertThat(storage.recordedLong.get()).isEqualTo(0);
     assertThat(storage.recordedDouble.get()).isEqualTo(0);
 
-    storage.record(DoubleMeasurement.createNoContext(33.55, Attributes.empty()));
+    storage.recordDouble(33.55, Attributes.empty(), Context.root());
     assertThat(storage.recordedLong.get()).isEqualTo(0);
     assertThat(storage.recordedDouble.get()).isEqualTo(33.55);
 
@@ -103,7 +104,7 @@ public class SynchronousHandleTest {
     // First record one measurement as exemplar and see if it is passed correctly.
     final LongMeasurement firstMeasurement =
         LongMeasurement.createNoContext(22, Attributes.empty());
-    storage.record(firstMeasurement);
+    storage.recordLong(22, Attributes.empty(), Context.root());
     assertThat(storage.recordedLong.get()).isEqualTo(22);
     assertThat(storage.recordedDouble.get()).isEqualTo(0);
     assertThat(storage.recordedExemplars.get()).isEmpty();
@@ -118,9 +119,9 @@ public class SynchronousHandleTest {
         LongMeasurement.createNoContext(44, Attributes.empty());
     final LongMeasurement thirdMeasurement =
         LongMeasurement.createNoContext(33, Attributes.empty());
-    storage.record(secondMeasurement);
+    storage.recordLong(44, Attributes.empty(), Context.root());
     assertThat(storage.recordedLong.get()).isEqualTo(44);
-    storage.record(thirdMeasurement);
+    storage.recordLong(33, Attributes.empty(), Context.root());
     assertThat(storage.recordedLong.get()).isEqualTo(33);
     storage.accumulateThenReset();
     assertThat(storage.recordedExemplars.get())

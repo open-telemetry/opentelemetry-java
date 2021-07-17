@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.metrics.CollectionHandle;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.aggregator.SynchronousHandle;
-import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
 import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
 import java.util.HashMap;
@@ -48,10 +47,8 @@ public class SynchronousInstrumentStorageTest {
         SynchronousInstrumentStorage.create(mockAggregator, AttributesProcessor.NOOP);
     // Now we make sure we create N storage handles, and ensure the attributes
     // show up when we aggregate via `batchStreamAccumulate`.
-    storage
-        .bind(Attributes.empty())
-        .record(LongMeasurement.create(1, Attributes.empty(), Context.root()));
-    storage.bind(kv).record(LongMeasurement.create(1, kv, Context.root()));
+    storage.bind(Attributes.empty()).recordLong(1, Attributes.empty(), Context.root());
+    storage.bind(kv).recordLong(1, kv, Context.root());
     // Binding a handle with no value will NOT cause accumulation.
     storage.bind(Attributes.of(AttributeKey.stringKey("k"), "unused"));
     storage.collectAndReset(collector1, collectors, 0, 10);
@@ -78,10 +75,8 @@ public class SynchronousInstrumentStorageTest {
             });
     // Now we make sure we create N storage handles, and ensure the attributes
     // show up when we aggregate via `batchStreamAccumulate`.
-    storage
-        .bind(Attributes.empty())
-        .record(LongMeasurement.create(1, Attributes.empty(), Context.root()));
-    storage.bind(kv).record(LongMeasurement.create(1, kv, Context.root()));
+    storage.bind(Attributes.empty()).recordLong(1, Attributes.empty(), Context.root());
+    storage.bind(kv).recordLong(1, kv, Context.root());
     // Binding a handle with no value will NOT cause accumulation.
     storage.bind(Attributes.of(AttributeKey.stringKey("k"), "unused"));
     storage.collectAndReset(collector1, collectors, 0, 10);

@@ -14,7 +14,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.instrument.InstrumentType;
-import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -43,11 +42,11 @@ class LongSumAggregatorTest {
   @Test
   void multipleRecords() {
     SynchronousHandle<LongAccumulation> aggregatorHandle = aggregator.createStreamStorage();
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(12));
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.root());
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(12 * 5));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
@@ -55,12 +54,12 @@ class LongSumAggregatorTest {
   @Test
   void multipleRecords_WithNegatives() {
     SynchronousHandle<LongAccumulation> aggregatorHandle = aggregator.createStreamStorage();
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(-23));
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(-11));
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordLong(-23, Attributes.empty(), Context.root());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordLong(-11, Attributes.empty(), Context.root());
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(14));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
@@ -70,13 +69,13 @@ class LongSumAggregatorTest {
     SynchronousHandle<LongAccumulation> aggregatorHandle = aggregator.createStreamStorage();
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
-    aggregatorHandle.record(raw(13));
-    aggregatorHandle.record(raw(12));
+    aggregatorHandle.recordLong(13, Attributes.empty(), Context.root());
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.root());
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(25));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
 
-    aggregatorHandle.record(raw(12));
-    aggregatorHandle.record(raw(-25));
+    aggregatorHandle.recordLong(12, Attributes.empty(), Context.root());
+    aggregatorHandle.recordLong(-25, Attributes.empty(), Context.root());
     assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(-13));
     assertThat(aggregatorHandle.accumulateThenReset()).isNull();
   }
@@ -114,7 +113,7 @@ class LongSumAggregatorTest {
   @SuppressWarnings("unchecked")
   void buildMetric() {
     SynchronousHandle<LongAccumulation> aggregatorHandle = aggregator.createStreamStorage();
-    aggregatorHandle.record(raw(10));
+    aggregatorHandle.recordLong(10, Attributes.empty(), Context.root());
 
     MetricData metricData =
         aggregator.buildMetric(
@@ -134,10 +133,6 @@ class LongSumAggregatorTest {
                     .hasEpochNanos(100)
                     .hasAttributes(Attributes.empty())
                     .hasValue(10));
-  }
-
-  private static LongMeasurement raw(long value) {
-    return LongMeasurement.create(value, Attributes.empty(), Context.root());
   }
 
   private static LongAccumulation agg(long value) {

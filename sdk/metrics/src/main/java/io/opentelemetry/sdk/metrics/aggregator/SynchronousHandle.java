@@ -5,6 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.instrument.DoubleMeasurement;
+import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
 import io.opentelemetry.sdk.metrics.state.StorageHandle;
 import java.util.concurrent.atomic.AtomicLong;
@@ -101,16 +105,24 @@ public abstract class SynchronousHandle<T> implements StorageHandle {
    */
   protected abstract T doAccumulateThenReset(Iterable<Measurement> exemplars);
 
-  /**
-   * Updates the current aggregator with a newly recorded {@link Measurement}.
-   *
-   * @param value the new {@link Measurement} value to be added.
-   */
   @Override
-  public final void record(Measurement value) {
-    doRecord(value);
-    if (sampler.shouldSample(value)) {
-      exemplars.add(value);
+  public final void recordLong(long value, Attributes attributes, Context context) {
+    // TODO: Remove measurement from here and directly pass primitives.
+    Measurement measurement = LongMeasurement.create(value, attributes, context);
+    doRecord(measurement);
+    if (sampler.shouldSample(measurement)) {
+      exemplars.add(measurement);
+    }
+    hasRecordings = true;
+  }
+
+  @Override
+  public final void recordDouble(double value, Attributes attributes, Context context) {
+    // TODO: Remove measurement from here and directly pass primitives.
+    Measurement measurement = DoubleMeasurement.create(value, attributes, context);
+    doRecord(measurement);
+    if (sampler.shouldSample(measurement)) {
+      exemplars.add(measurement);
     }
     hasRecordings = true;
   }

@@ -9,7 +9,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
 import io.opentelemetry.sdk.metrics.state.StorageHandle;
 import io.opentelemetry.sdk.metrics.state.WriteableInstrumentStorage;
 import java.util.Objects;
@@ -27,7 +26,7 @@ public class LongCounterSdk implements LongCounter {
     if (value < 0) {
       throw new IllegalArgumentException("Counters can only increase");
     }
-    storage.record(LongMeasurement.create(value, attributes, context));
+    storage.recordLong(value, attributes, context);
   }
 
   @Override
@@ -61,7 +60,7 @@ public class LongCounterSdk implements LongCounter {
       if (value < 0) {
         throw new IllegalArgumentException("Counters can only increase");
       }
-      handle.record(LongMeasurement.create(value, attributes, context));
+      handle.recordLong(value, attributes, context);
     }
 
     @Override
