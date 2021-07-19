@@ -7,11 +7,14 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import io.opentelemetry.sdk.metrics.state.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,7 +78,7 @@ public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulati
 
   @Override
   public SynchronousHandle<HistogramAccumulation> createStreamStorage() {
-    return new MyHandle(config.getBoundaries(), sampler);
+    return new MyHandle(config.getBoundaries(), sampler.createReservoir(this));
   }
 
   // Note:  Storage handle has high contention and need atomic increments.
@@ -91,29 +94,15 @@ public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulati
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    MyHandle(double[] boundaries, ExemplarSampler sampler) {
-      super(sampler);
+    MyHandle(double[] boundaries, ExemplarReservoir exemplars) {
+      super(exemplars);
       this.boundaries = boundaries;
       this.counts = new long[this.boundaries.length + 1];
       this.sum = 0;
     }
 
     @Override
-    protected void doRecord(Measurement measurement) {
-      double value = valueOf(measurement);
-      int bucketIndex = findBucketIndex(this.boundaries, value);
-
-      lock.lock();
-      try {
-        this.sum += value;
-        this.counts[bucketIndex]++;
-      } finally {
-        lock.unlock();
-      }
-    }
-
-    @Override
-    protected HistogramAccumulation doAccumulateThenReset(Iterable<Measurement> exemplars) {
+    protected HistogramAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
       lock.lock();
       try {
         HistogramAccumulation acc =
@@ -121,6 +110,25 @@ public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulati
         this.sum = 0;
         Arrays.fill(this.counts, 0);
         return acc;
+      } finally {
+        lock.unlock();
+      }
+    }
+
+    @Override
+    protected void doRecordLong(long value, Attributes attributes, Context context) {
+      // Convert long to double here.
+      // TODO: Some kind of percision error log/message?
+      doRecordDouble(value, attributes, context);
+    }
+
+    @Override
+    protected void doRecordDouble(double value, Attributes attributes, Context context) {
+      int bucketIndex = findBucketIndex(this.boundaries, value);
+      lock.lock();
+      try {
+        this.sum += value;
+        this.counts[bucketIndex]++;
       } finally {
         lock.unlock();
       }

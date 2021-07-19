@@ -6,8 +6,9 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import java.util.Collections;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /** An accumulation representing {@code long} values and exemplars. */
@@ -15,7 +16,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 abstract class LongAccumulation {
 
-  static LongAccumulation create(long value, Iterable<Measurement> exemplars) {
+  static LongAccumulation create(long value, List<Exemplar> exemplars) {
     return new AutoValue_LongAccumulation(value, exemplars);
   }
 
@@ -29,5 +30,5 @@ abstract class LongAccumulation {
   abstract long getValue();
 
   /** Sampled measurements recorded during this accumulation. */
-  abstract Iterable<Measurement> getExemplars();
+  abstract List<Exemplar> getExemplars();
 }

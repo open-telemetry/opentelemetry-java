@@ -52,7 +52,7 @@ public class DoubleHistogramAggregatorTest {
     aggregatorHandle.recordDouble(150, Attributes.empty(), Context.root());
     // Mix long + double recordings.
     aggregatorHandle.recordLong(2000, Attributes.empty(), Context.root());
-    assertThat(aggregatorHandle.accumulateThenReset())
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(
             HistogramAccumulation.create(2175, new long[] {1, 1, 1, 1}, Collections.emptyList()));
   }
@@ -60,19 +60,19 @@ public class DoubleHistogramAggregatorTest {
   @Test
   void toAccumulationAndReset() {
     SynchronousHandle<HistogramAccumulation> aggregatorHandle = aggregator.createStreamStorage();
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(100, Attributes.empty(), Context.root());
-    assertThat(aggregatorHandle.accumulateThenReset())
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(
             HistogramAccumulation.create(100, new long[] {0, 1, 0, 0}, Collections.emptyList()));
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(0, Attributes.empty(), Context.root());
-    assertThat(aggregatorHandle.accumulateThenReset())
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(
             HistogramAccumulation.create(0, new long[] {1, 0, 0, 0}, Collections.emptyList()));
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
@@ -82,7 +82,8 @@ public class DoubleHistogramAggregatorTest {
 
     MetricData metricData =
         aggregator.buildMetric(
-            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(
+                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
             0,
             10,
             100);
@@ -113,14 +114,15 @@ public class DoubleHistogramAggregatorTest {
                           for (int j = 0; j < numberOfUpdates; j++) {
                             aggregatorHandle.recordLong(v, Attributes.empty(), Context.root());
                             if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                              summarizer.process(aggregatorHandle.accumulateThenReset());
+                              summarizer.process(
+                                  aggregatorHandle.accumulateThenReset(Attributes.empty()));
                             }
                           }
                         }))
             .collect(Collectors.toList()));
 
     // make sure everything gets merged when all the aggregation is done.
-    summarizer.process(aggregatorHandle.accumulateThenReset());
+    summarizer.process(aggregatorHandle.accumulateThenReset(Attributes.empty()));
 
     assertThat(summarizer.accumulation)
         .isEqualTo(

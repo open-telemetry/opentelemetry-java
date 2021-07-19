@@ -12,11 +12,11 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.CollectionHandle;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.aggregator.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.aggregator.SynchronousHandle;
-import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -87,16 +87,19 @@ public class SynchronousInstrumentStorageTest {
   /** Stubbed version of synchronous handle for testing. */
   private static class NoopHandle extends SynchronousHandle<Object> {
     NoopHandle() {
-      super(ExemplarSampler.NEVER);
+      super(ExemplarReservoir.EMPTY);
     }
 
     @Override
-    protected Object doAccumulateThenReset(Iterable<Measurement> exemplars) {
+    protected Object doAccumulateThenReset(List<Exemplar> exemplars) {
       return "result";
     }
 
     @Override
-    protected void doRecord(Measurement value) {}
+    protected void doRecordLong(long value, Attributes attributes, Context context) {}
+
+    @Override
+    protected void doRecordDouble(double value, Attributes attributes, Context context) {}
   }
 
   private static Map<Attributes, Object> makeMeasurement(Object... values) {

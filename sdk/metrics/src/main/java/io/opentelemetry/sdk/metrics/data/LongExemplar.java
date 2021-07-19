@@ -42,4 +42,10 @@ public abstract class LongExemplar implements Exemplar {
   public final double getValueAsDouble() {
     return (double) getValue();
   }
+
+  @Override
+  public final LongExemplar filterAttributes(Attributes pointAttributes) {
+    // TODO: implement
+    return this;
+  }
 }

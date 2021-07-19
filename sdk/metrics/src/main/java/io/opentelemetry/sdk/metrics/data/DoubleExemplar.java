@@ -43,4 +43,10 @@ public abstract class DoubleExemplar implements Exemplar {
   public final double getValueAsDouble() {
     return getValue();
   }
+
+  @Override
+  public final DoubleExemplar filterAttributes(Attributes pointAttributes) {
+    // TODO: implement
+    return this;
+  }
 }

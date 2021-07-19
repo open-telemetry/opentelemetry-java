@@ -6,7 +6,8 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -18,7 +19,7 @@ abstract class HistogramAccumulation {
    *
    * @return a new {@link HistogramAccumulation} with the given values.
    */
-  static HistogramAccumulation create(double sum, long[] counts, Iterable<Measurement> exemplars) {
+  static HistogramAccumulation create(double sum, long[] counts, List<Exemplar> exemplars) {
     return new AutoValue_HistogramAccumulation(sum, counts, exemplars);
   }
 
@@ -41,5 +42,5 @@ abstract class HistogramAccumulation {
   abstract long[] getCounts();
 
   /** Sampled measurements recorded during this accumulation. */
-  abstract Iterable<Measurement> getExemplars();
+  abstract List<Exemplar> getExemplars();
 }

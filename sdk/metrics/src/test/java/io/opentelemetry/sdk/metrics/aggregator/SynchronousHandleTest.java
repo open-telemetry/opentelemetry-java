@@ -10,10 +10,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.util.concurrent.AtomicDouble;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.instrument.DoubleMeasurement;
-import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
-import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.LongExemplar;
+import io.opentelemetry.sdk.metrics.state.ExemplarReservoir;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
@@ -84,7 +87,7 @@ public class SynchronousHandleTest {
     assertThat(storage.recordedLong.get()).isEqualTo(22);
     assertThat(storage.recordedDouble.get()).isEqualTo(0);
 
-    storage.accumulateThenReset();
+    storage.accumulateThenReset(Attributes.empty());
     assertThat(storage.recordedLong.get()).isEqualTo(0);
     assertThat(storage.recordedDouble.get()).isEqualTo(0);
 
@@ -92,38 +95,41 @@ public class SynchronousHandleTest {
     assertThat(storage.recordedLong.get()).isEqualTo(0);
     assertThat(storage.recordedDouble.get()).isEqualTo(33.55);
 
-    storage.accumulateThenReset();
+    storage.accumulateThenReset(Attributes.empty());
     assertThat(storage.recordedLong.get()).isEqualTo(0);
     assertThat(storage.recordedDouble.get()).isEqualTo(0);
   }
 
   @Test
   void testExemplars() {
-    TestSynchronousHandle storage = new TestSynchronousHandle(/* sampler=*/ (measurement) -> true);
+    TestSynchronousHandle storage = new TestSynchronousHandle(new EverythingResorvoir());
 
     // First record one measurement as exemplar and see if it is passed correctly.
-    final LongMeasurement firstMeasurement =
-        LongMeasurement.createNoContext(22, Attributes.empty());
+    final Exemplar firstMeasurement =
+        LongExemplar.create(
+            Attributes.empty(), /*recordTimeNanos=*/ 0L, /*trace_id*/ null, /*span_id*/ null, 22);
     storage.recordLong(22, Attributes.empty(), Context.root());
     assertThat(storage.recordedLong.get()).isEqualTo(22);
     assertThat(storage.recordedDouble.get()).isEqualTo(0);
     assertThat(storage.recordedExemplars.get()).isEmpty();
 
-    storage.accumulateThenReset();
+    storage.accumulateThenReset(Attributes.empty());
     assertThat(storage.recordedLong.get()).isEqualTo(0);
     assertThat(storage.recordedDouble.get()).isEqualTo(0);
     assertThat(storage.recordedExemplars.get()).containsExactlyInAnyOrder(firstMeasurement);
 
     // Now record two measurements and see if they both get sampled as exemplar.
-    final LongMeasurement secondMeasurement =
-        LongMeasurement.createNoContext(44, Attributes.empty());
-    final LongMeasurement thirdMeasurement =
-        LongMeasurement.createNoContext(33, Attributes.empty());
+    final Exemplar secondMeasurement =
+        LongExemplar.create(
+            Attributes.empty(), /*recordTimeNanos=*/ 0L, /*trace_id*/ null, /*span_id*/ null, 44);
+    final Exemplar thirdMeasurement =
+        LongExemplar.create(
+            Attributes.empty(), /*recordTimeNanos=*/ 0L, /*trace_id*/ null, /*span_id*/ null, 33);
     storage.recordLong(44, Attributes.empty(), Context.root());
     assertThat(storage.recordedLong.get()).isEqualTo(44);
     storage.recordLong(33, Attributes.empty(), Context.root());
     assertThat(storage.recordedLong.get()).isEqualTo(33);
-    storage.accumulateThenReset();
+    storage.accumulateThenReset(Attributes.empty());
     assertThat(storage.recordedExemplars.get())
         .containsExactlyInAnyOrder(secondMeasurement, thirdMeasurement);
   }
@@ -131,20 +137,20 @@ public class SynchronousHandleTest {
   private static class TestSynchronousHandle extends SynchronousHandle<Void> {
     final AtomicLong recordedLong = new AtomicLong();
     final AtomicDouble recordedDouble = new AtomicDouble();
-    final AtomicReference<Iterable<Measurement>> recordedExemplars =
+    final AtomicReference<List<Exemplar>> recordedExemplars =
         new AtomicReference<>(Collections.emptyList());
 
     TestSynchronousHandle() {
-      super(ExemplarSampler.NEVER);
+      this(ExemplarReservoir.EMPTY);
     }
 
-    TestSynchronousHandle(ExemplarSampler sampler) {
+    TestSynchronousHandle(ExemplarReservoir sampler) {
       super(sampler);
     }
 
     @Nullable
     @Override
-    protected Void doAccumulateThenReset(Iterable<Measurement> exemplars) {
+    protected Void doAccumulateThenReset(List<Exemplar> exemplars) {
       recordedLong.set(0);
       recordedDouble.set(0);
       recordedExemplars.set(exemplars);
@@ -152,12 +158,35 @@ public class SynchronousHandleTest {
     }
 
     @Override
-    protected void doRecord(Measurement value) {
-      if (value instanceof LongMeasurement) {
-        recordedLong.set(((LongMeasurement) value).getValue());
-      } else {
-        recordedDouble.set(((DoubleMeasurement) value).getValue());
-      }
+    protected void doRecordLong(long value, Attributes attributes, Context context) {
+      recordedLong.lazySet(value);
+    }
+
+    @Override
+    protected void doRecordDouble(double value, Attributes attributes, Context context) {
+      recordedDouble.lazySet(value);
+    }
+  }
+
+  /** Test class that stores ALL exemplars offered. Thread-Unsafe. */
+  private static class EverythingResorvoir implements ExemplarReservoir {
+    private List<Exemplar> collection = new ArrayList<>();
+
+    @Override
+    public void offerMeasurementLong(long value, Attributes attributes, Context context) {
+      collection.add(LongExemplar.create(attributes, 0, null, null, value));
+    }
+
+    @Override
+    public void offerMeasurementDouble(double value, Attributes attributes, Context context) {
+      collection.add(DoubleExemplar.create(attributes, 0, null, null, value));
+    }
+
+    @Override
+    public List<Exemplar> collectAndReset(Attributes pointAttributes) {
+      List<Exemplar> result = collection;
+      this.collection = new ArrayList<>();
+      return result;
     }
   }
 }

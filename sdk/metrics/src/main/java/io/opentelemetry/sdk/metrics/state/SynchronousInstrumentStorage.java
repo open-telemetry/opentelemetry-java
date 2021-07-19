@@ -150,7 +150,7 @@ final class SynchronousInstrumentStorage<T> implements WriteableInstrumentStorag
         // acquire but because we requested a specific value only one will succeed.
         perAttrributeStorage.remove(entry.getKey(), entry.getValue());
       }
-      T accumulation = entry.getValue().accumulateThenReset();
+      T accumulation = entry.getValue().accumulateThenReset(entry.getKey());
       if (accumulation == null) {
         continue;
       }

@@ -6,11 +6,15 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import io.opentelemetry.sdk.metrics.state.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -49,29 +53,34 @@ public class LastValueAggregator implements Aggregator<DoubleAccumulation> {
 
   @Override
   public SynchronousHandle<DoubleAccumulation> createStreamStorage() {
-    return new MyHandle(sampler);
+    return new MyHandle(sampler.createReservoir(this));
   }
 
   // Note:  Storage handle has high contention and need atomic increments.
   static class MyHandle extends SynchronousHandle<DoubleAccumulation> {
     private final AtomicReference<Double> latest = new AtomicReference<>(null);
 
-    MyHandle(ExemplarSampler sampler) {
-      super(sampler);
+    MyHandle(ExemplarReservoir exemplars) {
+      super(exemplars);
     }
 
     @Override
-    protected void doRecord(Measurement value) {
-      latest.lazySet(value.asDouble().getValue());
-    }
-
-    @Override
-    protected DoubleAccumulation doAccumulateThenReset(Iterable<Measurement> exemplars) {
+    protected DoubleAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
       Double result = latest.getAndSet(null);
       if (result == null) {
         return null;
       }
       return DoubleAccumulation.create(result, exemplars);
+    }
+
+    @Override
+    protected void doRecordLong(long value, Attributes attributes, Context context) {
+      doRecordDouble(value, attributes, context);
+    }
+
+    @Override
+    protected void doRecordDouble(double value, Attributes attributes, Context context) {
+      latest.lazySet(value);
     }
   }
 

@@ -6,12 +6,16 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import io.opentelemetry.sdk.metrics.state.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
 
@@ -48,7 +52,7 @@ public class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {
 
   @Override
   public SynchronousHandle<DoubleAccumulation> createStreamStorage() {
-    return new MyHandle(sampler);
+    return new MyHandle(sampler.createReservoir(this));
   }
 
   @Override
@@ -61,18 +65,23 @@ public class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {
   static class MyHandle extends SynchronousHandle<DoubleAccumulation> {
     private final DoubleAdder count = new DoubleAdder();
 
-    MyHandle(ExemplarSampler sampler) {
-      super(sampler);
+    MyHandle(ExemplarReservoir exemplars) {
+      super(exemplars);
     }
 
     @Override
-    protected void doRecord(Measurement value) {
-      count.add(value.asDouble().getValue());
-    }
-
-    @Override
-    protected DoubleAccumulation doAccumulateThenReset(Iterable<Measurement> exemplars) {
+    protected DoubleAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
       return DoubleAccumulation.create(count.sumThenReset(), exemplars);
+    }
+
+    @Override
+    protected void doRecordLong(long value, Attributes attributes, Context context) {
+      doRecordDouble(value, attributes, context);
+    }
+
+    @Override
+    protected void doRecordDouble(double value, Attributes attributes, Context context) {
+      count.add(value);
     }
   }
 

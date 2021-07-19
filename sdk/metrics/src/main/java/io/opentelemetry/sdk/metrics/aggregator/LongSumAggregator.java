@@ -6,13 +6,17 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import io.opentelemetry.sdk.metrics.state.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -49,25 +53,32 @@ public class LongSumAggregator implements Aggregator<LongAccumulation> {
 
   @Override
   public SynchronousHandle<LongAccumulation> createStreamStorage() {
-    return new MyHandle(sampler);
+    return new MyHandle(sampler.createReservoir(this));
   }
 
   // Note:  Storage handle has high contention and need atomic increments.
   static class MyHandle extends SynchronousHandle<LongAccumulation> {
     private final LongAdder count = new LongAdder();
 
-    MyHandle(ExemplarSampler sampler) {
-      super(sampler);
+    MyHandle(ExemplarReservoir exemplars) {
+      super(exemplars);
     }
 
     @Override
-    protected void doRecord(Measurement value) {
-      count.add(((LongMeasurement) value).getValue());
-    }
-
-    @Override
-    protected LongAccumulation doAccumulateThenReset(Iterable<Measurement> exemplars) {
+    protected LongAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
       return LongAccumulation.create(count.sumThenReset(), exemplars);
+    }
+
+    @Override
+    protected void doRecordLong(long value, Attributes attributes, Context context) {
+      count.add(value);
+    }
+
+    @Override
+    protected void doRecordDouble(double value, Attributes attributes, Context context) {
+      // TODO: Error, or warn in some fashion?
+      // For now just round down.
+      count.add((long) value);
     }
   }
 

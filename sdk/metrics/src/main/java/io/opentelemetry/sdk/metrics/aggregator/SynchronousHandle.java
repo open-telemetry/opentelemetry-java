@@ -7,10 +7,10 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.instrument.DoubleMeasurement;
-import io.opentelemetry.sdk.metrics.instrument.LongMeasurement;
-import io.opentelemetry.sdk.metrics.instrument.Measurement;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.state.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.state.StorageHandle;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -41,14 +41,12 @@ public abstract class SynchronousHandle<T> implements StorageHandle {
   // it should be picked up in the next, assuming that more recordings are being made.
   private volatile boolean hasRecordings = false;
   // Determine if a measurement should go into exemplar pool.
-  private final ExemplarSampler sampler;
-  private final ExemplarList exemplars;
+  private final ExemplarReservoir exemplars;
 
-  protected SynchronousHandle(ExemplarSampler sampler) {
+  protected SynchronousHandle(ExemplarReservoir exemplars) {
     // Start with this binding already bound.
     this.refCountMapped = new AtomicLong(2);
-    this.sampler = sampler;
-    this.exemplars = new ExemplarList();
+    this.exemplars = exemplars;
   }
 
   /**
@@ -89,12 +87,12 @@ public abstract class SynchronousHandle<T> implements StorageHandle {
    * Aggregator}.
    */
   @Nullable
-  public final T accumulateThenReset() {
+  public final T accumulateThenReset(Attributes attributes) {
     if (!hasRecordings) {
       return null;
     }
     hasRecordings = false;
-    return doAccumulateThenReset(exemplars.collectAndReset());
+    return doAccumulateThenReset(exemplars.collectAndReset(attributes));
   }
 
   /**
@@ -103,33 +101,29 @@ public abstract class SynchronousHandle<T> implements StorageHandle {
    * <p>Note: There's a bit of a race condition (today) where exemplars MAY be reported from the
    * previous collection period.
    */
-  protected abstract T doAccumulateThenReset(Iterable<Measurement> exemplars);
+  protected abstract T doAccumulateThenReset(List<Exemplar> exemplars);
 
   @Override
   public final void recordLong(long value, Attributes attributes, Context context) {
-    // TODO: Remove measurement from here and directly pass primitives.
-    Measurement measurement = LongMeasurement.create(value, attributes, context);
-    doRecord(measurement);
-    if (sampler.shouldSample(measurement)) {
-      exemplars.add(measurement);
-    }
+    doRecordLong(value, attributes, context);
+    exemplars.offerMeasurementLong(value, attributes, context);
     hasRecordings = true;
   }
 
   @Override
   public final void recordDouble(double value, Attributes attributes, Context context) {
-    // TODO: Remove measurement from here and directly pass primitives.
-    Measurement measurement = DoubleMeasurement.create(value, attributes, context);
-    doRecord(measurement);
-    if (sampler.shouldSample(measurement)) {
-      exemplars.add(measurement);
-    }
+    doRecordDouble(value, attributes, context);
+    exemplars.offerMeasurementDouble(value, attributes, context);
     hasRecordings = true;
   }
-
   /**
    * Concrete Aggregator instances should implement this method in order support recordings of
    * measurements.
    */
-  protected abstract void doRecord(Measurement value);
+  protected abstract void doRecordLong(long value, Attributes attributes, Context context);
+  /**
+   * Concrete Aggregator instances should implement this method in order support recordings of
+   * measurements.
+   */
+  protected abstract void doRecordDouble(double value, Attributes attributes, Context context);
 }

@@ -47,7 +47,7 @@ class DoubleSumAggregatorTest {
     aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.root());
     aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.root());
     aggregatorHandle.recordDouble(12.1, Attributes.empty(), Context.root());
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(12.1 * 5));
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(agg(12.1 * 5));
   }
 
   @Test
@@ -59,23 +59,23 @@ class DoubleSumAggregatorTest {
     aggregatorHandle.recordDouble(12, Attributes.empty(), Context.root());
     aggregatorHandle.recordDouble(12, Attributes.empty(), Context.root());
     aggregatorHandle.recordDouble(-11, Attributes.empty(), Context.root());
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(14));
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(agg(14));
   }
 
   @Test
   void toAccumulationAndReset() {
     SynchronousHandle<DoubleAccumulation> aggregatorHandle = aggregator.createStreamStorage();
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(13, Attributes.empty(), Context.root());
     aggregatorHandle.recordDouble(12, Attributes.empty(), Context.root());
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(25));
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(agg(25));
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(12, Attributes.empty(), Context.root());
     aggregatorHandle.recordDouble(-25, Attributes.empty(), Context.root());
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(agg(-13));
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(agg(-13));
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
@@ -115,7 +115,8 @@ class DoubleSumAggregatorTest {
 
     MetricData metricData =
         aggregator.buildMetric(
-            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(
+                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
             0,
             10,
             100);

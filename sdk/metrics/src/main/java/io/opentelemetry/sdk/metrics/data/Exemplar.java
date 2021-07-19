@@ -50,4 +50,13 @@ public interface Exemplar {
    * <p>Note: This could createa a loss of precision from {@code long} measurements.
    */
   double getValueAsDouble();
+
+  /**
+   * Utility method that will remove attribtues from an exemplar and return a new one with the
+   * filtered set.
+   *
+   * @param pointAttributes The attributes included in a metric point.
+   * @return The resulting exemplar with filtered attribtues being further filtered.
+   */
+  Exemplar filterAttributes(Attributes pointAttributes);
 }
