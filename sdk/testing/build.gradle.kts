@@ -16,5 +16,7 @@ dependencies {
 
     annotationProcessor("com.google.auto.value:auto-value")
 
+    implementation(project(":semconv"))
+
     testImplementation("junit:junit")
 }
