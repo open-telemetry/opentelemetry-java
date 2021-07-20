@@ -87,7 +87,7 @@ public interface SamplingResult {
    * <p>This is meant for use by custom {@link Sampler} implementations and is equivalent to calling
    * {@code SamplingResult.create(SamplingDecision.RECORD_ONLY)}.
    *
-   * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
+   * @return A "record only" {@link SamplingResult} with empty attributes.
    */
   static SamplingResult recordOnly() {
     return ImmutableSamplingResult.EMPTY_RECORDED_SAMPLING_RESULT;
