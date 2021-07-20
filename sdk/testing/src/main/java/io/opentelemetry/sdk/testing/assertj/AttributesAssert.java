@@ -38,6 +38,11 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
     return this;
   }
 
+  /** Asserts the attributes have the given key and value. */
+  public AttributesAssert containsEntry(AttributeKey<Long> key, int value) {
+    return containsEntry(key, (long) value);
+  }
+
   /** Asserts the attributes have the given key and string value. */
   public AttributesAssert containsEntry(String key, String value) {
     return containsEntry(AttributeKey.stringKey(key), value);

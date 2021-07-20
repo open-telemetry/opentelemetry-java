@@ -146,6 +146,8 @@ class OpenTelemetryAssertionsTest {
                     .containsEntry("bear", "mya")
                     .containsEntry("warm", true)
                     .containsEntry("temperature", 30)
+                    .containsEntry(AttributeKey.longKey("temperature"), 30L)
+                    .containsEntry(AttributeKey.longKey("temperature"), 30)
                     .containsEntry("length", 1.2)
                     .containsEntry("colors", "red", "blue")
                     .containsEntryWithStringValuesOf("colors", Arrays.asList("red", "blue"))
