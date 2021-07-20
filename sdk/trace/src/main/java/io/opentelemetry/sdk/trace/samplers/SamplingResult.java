@@ -69,7 +69,7 @@ public interface SamplingResult {
 
   /**
    * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_AND_SAMPLE}
-   * with no attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
+   * with no attributes.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations and is equivalent to calling
    * {@code SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE)}.
