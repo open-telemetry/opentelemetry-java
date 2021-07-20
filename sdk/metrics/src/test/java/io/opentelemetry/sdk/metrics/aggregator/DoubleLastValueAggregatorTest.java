@@ -5,15 +5,15 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -62,6 +62,7 @@ class DoubleLastValueAggregatorTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void toMetricData() {
     AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
@@ -73,15 +74,17 @@ class DoubleLastValueAggregatorTest {
             10,
             100);
     assertThat(metricData)
-        .isEqualTo(
-            MetricData.createDoubleGauge(
-                Resource.getDefault(),
-                InstrumentationLibraryInfo.empty(),
-                "name",
-                "description",
-                "unit",
-                DoubleGaugeData.create(
-                    Collections.singletonList(
-                        DoublePointData.create(0, 100, Labels.empty(), 10)))));
+        .hasName("name")
+        .hasDescription("description")
+        .hasUnit("unit")
+        .hasDoubleGauge()
+        .points()
+        .satisfiesExactly(
+            point ->
+                assertThat(point)
+                    .hasAttributes(Attributes.empty())
+                    .hasStartEpochNanos(0)
+                    .hasEpochNanos(100)
+                    .hasValue(10));
   }
 }

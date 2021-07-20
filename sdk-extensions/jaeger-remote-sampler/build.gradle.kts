@@ -17,6 +17,8 @@ dependencies {
     implementation("io.grpc:grpc-stub")
     implementation("com.google.protobuf:protobuf-java")
 
+    testImplementation(project(":sdk:testing"))
+
     testImplementation("io.grpc:grpc-testing")
     testImplementation("org.testcontainers:junit-jupiter")
 

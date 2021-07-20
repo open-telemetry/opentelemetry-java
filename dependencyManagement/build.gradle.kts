@@ -91,6 +91,7 @@ val DEPENDENCIES = listOf(
         "nl.jqno.equalsverifier:equalsverifier:3.6.1",
         "org.assertj:assertj-core:3.19.0",
         "org.awaitility:awaitility:4.1.0",
+        "org.bouncycastle:bcpkix-jdk15on:1.69",
         "org.codehaus.mojo:animal-sniffer-annotations:1.20",
         "org.curioswitch.curiostack:protobuf-jackson:1.2.0",
         "org.jctools:jctools-core:3.3.0",

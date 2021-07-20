@@ -1,3 +1,5 @@
+import org.gradle.api.plugins.JavaPlugin.*
+
 plugins {
     id("otel.java-conventions")
     id("otel.publish-conventions")
@@ -20,6 +22,7 @@ dependencies {
 
     testAnnotationProcessor("com.google.auto.value:auto-value")
 
+    testImplementation(project(":sdk:metrics-testing"))
     testImplementation(project(":sdk:testing"))
     testImplementation("com.google.guava:guava")
 }
@@ -38,5 +41,9 @@ tasks {
         doLast {
             File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
         }
+    }
+    withType(JavaCompile::class) {
+        // Ignore deprecation warnings that AutoValue creates for now.
+        options.compilerArgs.add("-Xlint:-deprecation")
     }
 }

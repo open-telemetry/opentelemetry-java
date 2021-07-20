@@ -5,8 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.AbstractSumAggregator.MergeStrategy;
@@ -14,8 +16,6 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -99,6 +99,7 @@ class DoubleSumAggregatorTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void toMetricData() {
     AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
@@ -110,17 +111,16 @@ class DoubleSumAggregatorTest {
             10,
             100);
     assertThat(metricData)
-        .isEqualTo(
-            MetricData.createDoubleSum(
-                Resource.getDefault(),
-                InstrumentationLibraryInfo.empty(),
-                "name",
-                "description",
-                "unit",
-                DoubleSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        DoublePointData.create(0, 100, Labels.empty(), 10)))));
+        .hasDoubleSum()
+        .isCumulative()
+        .isMonotonic()
+        .points()
+        .satisfiesExactly(
+            point ->
+                assertThat(point)
+                    .hasStartEpochNanos(0)
+                    .hasEpochNanos(100)
+                    .hasAttributes(Attributes.empty())
+                    .hasValue(10));
   }
 }

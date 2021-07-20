@@ -14,8 +14,11 @@ tasks {
         options.release.set(11)
     }
 
-    named("testJava8") {
-        enabled = false
+    val testJavaVersion: String? by project
+    if (testJavaVersion == "8") {
+        test {
+            enabled = false
+        }
     }
 }
 

@@ -9,10 +9,17 @@ plugins {
 
 val enableNullaway: String? by project
 
+val disableErrorProne = properties["disableErrorProne"]?.toString()?.toBoolean() ?: false
+
 tasks {
     withType<JavaCompile>().configureEach {
         with(options) {
             errorprone {
+                if (disableErrorProne) {
+                    logger.warn("Errorprone has been disabled. Build may not result in a valid PR build.")
+                    isEnabled.set(false)
+                }
+
                 disableWarningsInGeneratedCode.set(true)
                 allDisabledChecksAsWarnings.set(true)
 

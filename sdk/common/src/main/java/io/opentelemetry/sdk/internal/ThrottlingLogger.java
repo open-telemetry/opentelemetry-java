@@ -27,7 +27,7 @@ public class ThrottlingLogger {
 
   /** Create a new logger which will enforce a max number of messages per minute. */
   public ThrottlingLogger(Logger delegate) {
-    this(delegate, SystemClock.getInstance());
+    this(delegate, Clock.getDefault());
   }
 
   // visible for testing
