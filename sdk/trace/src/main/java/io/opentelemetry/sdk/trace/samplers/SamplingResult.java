@@ -68,6 +68,45 @@ public interface SamplingResult {
   }
 
   /**
+   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_AND_SAMPLE}
+   * with no attributes.
+   *
+   * <p>This is meant for use by custom {@link Sampler} implementations and is equivalent to calling
+   * {@code SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE)}.
+   *
+   * @return A "record and sample" {@link SamplingResult} with empty attributes.
+   */
+  static SamplingResult recordAndSample() {
+    return ImmutableSamplingResult.EMPTY_RECORDED_AND_SAMPLED_SAMPLING_RESULT;
+  }
+
+  /**
+   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#RECORD_ONLY} with no
+   * attributes.
+   *
+   * <p>This is meant for use by custom {@link Sampler} implementations and is equivalent to calling
+   * {@code SamplingResult.create(SamplingDecision.RECORD_ONLY)}.
+   *
+   * @return A "record only" {@link SamplingResult} with empty attributes.
+   */
+  static SamplingResult recordOnly() {
+    return ImmutableSamplingResult.EMPTY_RECORDED_SAMPLING_RESULT;
+  }
+
+  /**
+   * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#DROP} with no
+   * attributes.
+   *
+   * <p>This is meant for use by custom {@link Sampler} implementations and is equivalent to calling
+   * {@code SamplingResult.create(SamplingDecision.DROP)}.
+   *
+   * @return A "drop" {@link SamplingResult} with empty attributes.
+   */
+  static SamplingResult drop() {
+    return ImmutableSamplingResult.EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
+  }
+
+  /**
    * Return decision on whether a span should be recorded, recorded and sampled or not recorded.
    *
    * @return sampling result.
