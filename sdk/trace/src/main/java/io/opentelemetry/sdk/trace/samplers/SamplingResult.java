@@ -100,7 +100,7 @@ public interface SamplingResult {
    * <p>This is meant for use by custom {@link Sampler} implementations and is equivalent to calling
    * {@code SamplingResult.create(SamplingDecision.DROP)}.
    *
-   * @return A {@link SamplingResult} with empty attributes and the provided {@code decision}.
+   * @return A "drop" {@link SamplingResult} with empty attributes.
    */
   static SamplingResult drop() {
     return ImmutableSamplingResult.EMPTY_NOT_SAMPLED_OR_RECORDED_SAMPLING_RESULT;
