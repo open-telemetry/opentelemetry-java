@@ -95,7 +95,7 @@ public interface SamplingResult {
 
   /**
    * Returns a {@link SamplingResult} corresponding to {@link SamplingDecision#DROP} with no
-   * attributes and {@link SamplingResult#getDecision()} returning {@code decision}.
+   * attributes.
    *
    * <p>This is meant for use by custom {@link Sampler} implementations and is equivalent to calling
    * {@code SamplingResult.create(SamplingDecision.DROP)}.
