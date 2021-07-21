@@ -36,7 +36,12 @@ you must run a local docker daemon.
 check formatting:
 
     `./gradlew build`
+    
+4. If you are a Windows user, use the alternate command mentioned below to run tests and
+check formatting:
 
+     `gradlew.bat`
+     
 ## Checks
 
 Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
@@ -45,6 +50,13 @@ with the `check` task.
 ```bash
 $ ./gradlew check
 ```
+
+Note: this gradle task will potentially generate changes to files in the `docs/apidiffs/current_vs_latest`
+directory. Please make sure to include any changes to these files in your pull request.
+
+## PR Review
+After you submit a PR, it will be reviewed by the project maintainers and approvers. Not all maintainers need to review a
+particular PR, but merging to the base branch is authorized to restricted members (administrators).
 
 ## Style guideline
 
@@ -71,12 +83,16 @@ changes to the API (e.g., remove a public method) or to the ABI (e.g., change re
 * The project aims to provide a consistent experience across all the public APIs. It is important to ensure consistency (same look and feel) across different public packages.
 * Use `final` for public classes everywhere it is possible, this ensures that these classes cannot be extended when the API does not intend to offer that functionality.
 * In general, we use the following ordering of class members:
-    * static fields (final before non-final)
-    * non-static fields (final before non-final)
-    * constructors
-    * static methods
-    * instance methods
-    * inner classes
+    * Static fields (final before non-final)
+    * Instance fields (final before non-final)
+    * Constructors
+      * In static utility classes (where all members are static), the private constructor
+        (used to prevent construction) should be ordered after methods instead of before methods.
+    * Methods
+      * If methods call each other, it's nice if the calling method is ordered (somewhere) above
+        the method that it calls. So, for one example, a private method would be ordered (somewhere) below
+        the non-private methods that use it.
+    * Nested classes
 * Adding `toString()` overrides on classes is encouraged, but we only use `toString()` to provide debugging assistance. The implementations
 of all `toString()` methods should be considered to be unstable unless explicitly documented otherwise.
 
@@ -110,6 +126,7 @@ It does not support all required rules, so you still have to run `spotlessApply`
   Javadoc, though the style of documentation is up to the author.
 * Try to do the least amount of change when modifying existing documentation.
   Don't change the style unless you have a good reason.
+* We do not use `@author` tags in our javadoc.
 * Our javadoc is available via [javadoc.io}(https://javadoc.io/doc/io.opentelemetry/opentelemetry-api)
 
 ### AutoValue

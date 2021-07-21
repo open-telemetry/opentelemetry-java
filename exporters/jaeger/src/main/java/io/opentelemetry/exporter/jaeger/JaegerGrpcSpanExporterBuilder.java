@@ -63,7 +63,7 @@ public final class JaegerGrpcSpanExporterBuilder {
   }
 
   /**
-   * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
+   * Sets the maximum time to wait for the collector to process an exported batch of spans. If
    * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
    */
   public JaegerGrpcSpanExporterBuilder setTimeout(long timeout, TimeUnit unit) {
@@ -74,7 +74,7 @@ public final class JaegerGrpcSpanExporterBuilder {
   }
 
   /**
-   * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
+   * Sets the maximum time to wait for the collector to process an exported batch of spans. If
    * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
    */
   public JaegerGrpcSpanExporterBuilder setTimeout(Duration timeout) {

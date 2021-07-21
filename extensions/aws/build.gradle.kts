@@ -1,12 +1,12 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("ru.vyarus.animalsniffer")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry API Extensions for AWS"
-extra["moduleName"] = "io.opentelemetry.extension.aws"
+otelJava.moduleName.set("io.opentelemetry.extension.aws")
 
 dependencies {
     api(project(":api:all"))

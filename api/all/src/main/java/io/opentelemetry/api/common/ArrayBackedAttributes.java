@@ -8,6 +8,7 @@ package io.opentelemetry.api.common;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import java.util.ArrayList;
 import java.util.Comparator;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -32,6 +33,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
 
   @SuppressWarnings("unchecked")
   @Override
+  @Nullable
   public <T> T get(AttributeKey<T> key) {
     return (T) super.get(key);
   }
@@ -41,7 +43,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
     // so they will then be removed by the sortAndFilter method.
     for (int i = 0; i < data.length; i += 2) {
       AttributeKey<?> key = (AttributeKey<?>) data[i];
-      if (key != null && (key.getKey() == null || "".equals(key.getKey()))) {
+      if (key != null && key.getKey().isEmpty()) {
         data[i] = null;
       }
     }

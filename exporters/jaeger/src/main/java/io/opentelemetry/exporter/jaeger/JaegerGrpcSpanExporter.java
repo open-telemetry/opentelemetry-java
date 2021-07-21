@@ -15,6 +15,7 @@ import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -36,15 +37,16 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class JaegerGrpcSpanExporter implements SpanExporter {
 
-  private static final Logger logger = Logger.getLogger(JaegerGrpcSpanExporter.class.getName());
   private static final String DEFAULT_HOST_NAME = "unknown";
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
   private static final String HOSTNAME_KEY = "hostname";
   private static final String IP_KEY = "ip";
   private static final String IP_DEFAULT = "0.0.0.0";
-  private final CollectorServiceGrpc.CollectorServiceFutureStub stub;
+  private final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(JaegerGrpcSpanExporter.class.getName()));
 
+  private final CollectorServiceGrpc.CollectorServiceFutureStub stub;
   private final Model.Process.Builder processBuilder;
   private final ManagedChannel managedChannel;
   private final long timeoutNanos;
@@ -192,14 +194,10 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = new CompletableResultCode();
-    managedChannel.notifyWhenStateChanged(
-        ConnectivityState.SHUTDOWN,
-        new Runnable() {
-          @Override
-          public void run() {
-            result.succeed();
-          }
-        });
+    managedChannel.notifyWhenStateChanged(ConnectivityState.SHUTDOWN, result::succeed);
+    if (managedChannel.isShutdown()) {
+      return result.succeed();
+    }
     managedChannel.shutdown();
     return result;
   }

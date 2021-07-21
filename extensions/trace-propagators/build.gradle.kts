@@ -1,16 +1,18 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("ru.vyarus.animalsniffer")
-    id("me.champeau.gradle.jmh")
+    id("otel.animalsniffer-conventions")
+    id("otel.jmh-conventions")
 }
 
 description = "OpenTelemetry Extension : Trace Propagators"
-extra["moduleName"] = "io.opentelemetry.extension.trace.propagation"
+otelJava.moduleName.set("io.opentelemetry.extension.trace.propagation")
 
 dependencies {
     api(project(":api:all"))
+
+    compileOnly(project(":sdk-extensions:autoconfigure"))
 
     testImplementation("io.jaegertracing:jaeger-client")
     testImplementation("com.google.guava:guava")

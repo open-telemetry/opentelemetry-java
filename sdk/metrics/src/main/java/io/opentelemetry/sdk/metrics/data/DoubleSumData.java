@@ -9,6 +9,7 @@ import com.google.auto.value.AutoValue;
 import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
+/** {@link SumData} recorded uses {@code double}s. */
 @Immutable
 @AutoValue
 public abstract class DoubleSumData implements SumData<DoublePointData> {

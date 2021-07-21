@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.extension.aws.internal.JdkHttpClient;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.File;
@@ -22,13 +23,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A factory of a {@link Resource} which provides information about the current ECS container if
+ * A factory for a {@link Resource} which provides information about the current ECS container if
  * running on AWS EKS.
  */
 public final class EksResource {
   private static final Logger logger = Logger.getLogger(EksResource.class.getName());
-
-  private static final Resource INSTANCE = buildResource();
 
   static final String K8S_SVC_URL = "https://kubernetes.default.svc";
   static final String AUTH_CONFIGMAP_PATH = "/api/v1/namespaces/kube-system/configmaps/aws-auth";
@@ -39,8 +38,10 @@ public final class EksResource {
   private static final String K8S_CERT_PATH =
       "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
 
+  private static final Resource INSTANCE = buildResource();
+
   /**
-   * Returns a factory of a {@link Resource} which provides information about the current ECS
+   * Returns a factory for a {@link Resource} which provides information about the current ECS
    * container if running on AWS EKS.
    */
   public static Resource get() {
@@ -73,7 +74,7 @@ public final class EksResource {
       attrBuilders.put(ResourceAttributes.CONTAINER_ID, containerId);
     }
 
-    return Resource.create(attrBuilders.build());
+    return Resource.create(attrBuilders.build(), ResourceAttributes.SCHEMA_URL);
   }
 
   private static boolean isEks(

@@ -6,23 +6,19 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Arrays;
-import java.util.Collections;
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongUpDownCounterSdk}. */
@@ -35,7 +31,7 @@ class LongUpDownCounterSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void add_PreventNullLabels() {
@@ -54,7 +50,7 @@ class LongUpDownCounterSdkTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    LongUpDownCounterSdk longUpDownCounter =
+    LongUpDownCounter longUpDownCounter =
         sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.of("foo", "bar"));
     try {
@@ -65,39 +61,44 @@ class LongUpDownCounterSdkTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectMetrics_WithEmptyLabel() {
-    LongUpDownCounterSdk longUpDownCounter =
+    LongUpDownCounter longUpDownCounter =
         sdkMeter
             .longUpDownCounterBuilder("testUpDownCounter")
             .setDescription("description")
             .setUnit("By")
             .build();
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longUpDownCounter.add(12, Labels.empty());
     longUpDownCounter.add(12);
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testUpDownCounter",
-                "description",
-                "By",
-                LongSumData.create(
-                    /* isMonotonic= */ false,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Labels.empty(),
-                            24)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testUpDownCounter")
+                    .hasDescription("description")
+                    .hasUnit("By")
+                    .hasLongSum()
+                    .isNotMonotonic()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasValue(24)));
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    LongUpDownCounterSdk longUpDownCounter =
+    LongUpDownCounter longUpDownCounter =
         sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.of("K", "V"));
     try {
@@ -106,56 +107,73 @@ class LongUpDownCounterSdkTest {
       bound.add(123);
       longUpDownCounter.add(21, Labels.empty());
       // Advancing time here should not matter.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(321);
       longUpDownCounter.add(111, Labels.of("K", "V"));
       assertThat(sdkMeterProvider.collectAllMetrics())
-          .containsExactly(
-              MetricData.createLongSum(
-                  RESOURCE,
-                  INSTRUMENTATION_LIBRARY_INFO,
-                  "testUpDownCounter",
-                  "",
-                  "1",
-                  LongSumData.create(
-                      /* isMonotonic= */ false,
-                      AggregationTemporality.CUMULATIVE,
-                      Arrays.asList(
-                          LongPointData.create(
-                              startTime, testClock.now(), Labels.of("K", "V"), 555),
-                          LongPointData.create(startTime, testClock.now(), Labels.empty(), 33)))));
+          .satisfiesExactly(
+              metric ->
+                  assertThat(metric)
+                      .hasResource(RESOURCE)
+                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasName("testUpDownCounter")
+                      .hasLongSum()
+                      .isNotMonotonic()
+                      .isCumulative()
+                      .points()
+                      .allSatisfy(
+                          point ->
+                              assertThat(point)
+                                  .hasStartEpochNanos(startTime)
+                                  .hasEpochNanos(testClock.now()))
+                      .satisfiesExactlyInAnyOrder(
+                          point -> assertThat(point).hasAttributes(Attributes.empty()).hasValue(33),
+                          point ->
+                              assertThat(point)
+                                  .hasAttributes(Attributes.of(stringKey("K"), "V"))
+                                  .hasValue(555)));
 
       // Repeat to prove we keep previous values.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(222);
       longUpDownCounter.add(11, Labels.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
-          .containsExactly(
-              MetricData.createLongSum(
-                  RESOURCE,
-                  INSTRUMENTATION_LIBRARY_INFO,
-                  "testUpDownCounter",
-                  "",
-                  "1",
-                  LongSumData.create(
-                      /* isMonotonic= */ false,
-                      AggregationTemporality.CUMULATIVE,
-                      Arrays.asList(
-                          LongPointData.create(
-                              startTime, testClock.now(), Labels.of("K", "V"), 777),
-                          LongPointData.create(startTime, testClock.now(), Labels.empty(), 44)))));
+          .satisfiesExactly(
+              metric ->
+                  assertThat(metric)
+                      .hasResource(RESOURCE)
+                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasName("testUpDownCounter")
+                      .hasLongSum()
+                      .isNotMonotonic()
+                      .isCumulative()
+                      .points()
+                      .allSatisfy(
+                          point ->
+                              assertThat(point)
+                                  .hasStartEpochNanos(startTime)
+                                  .hasEpochNanos(testClock.now()))
+                      .satisfiesExactlyInAnyOrder(
+                          point -> assertThat(point).hasAttributes(Attributes.empty()).hasValue(44),
+                          point ->
+                              assertThat(point)
+                                  .hasAttributes(Attributes.of(stringKey("K"), "V"))
+                                  .hasValue(777)));
     } finally {
       bound.unbind();
     }
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void stressTest() {
-    final LongUpDownCounterSdk longUpDownCounter =
+    final LongUpDownCounter longUpDownCounter =
         sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(longUpDownCounter).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((LongUpDownCounterSdk) longUpDownCounter)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -170,30 +188,39 @@ class LongUpDownCounterSdkTest {
 
     stressTestBuilder.build().run();
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testUpDownCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ false,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(
-                        LongPointData.create(
-                            testClock.now(), testClock.now(), Labels.of("K", "V"), 160_000)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testUpDownCounter")
+                    .hasLongSum()
+                    .isCumulative()
+                    .isNotMonotonic()
+                    .points()
+                    .satisfiesExactlyInAnyOrder(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(160_000)
+                                .attributes()
+                                .hasSize(1)
+                                .containsEntry("K", "V")));
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongUpDownCounterSdk longUpDownCounter =
+    final LongUpDownCounter longUpDownCounter =
         sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(longUpDownCounter).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((LongUpDownCounterSdk) longUpDownCounter)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -210,37 +237,28 @@ class LongUpDownCounterSdkTest {
 
     stressTestBuilder.build().run();
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createLongSum(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testUpDownCounter",
-                "",
-                "1",
-                LongSumData.create(
-                    /* isMonotonic= */ false,
-                    AggregationTemporality.CUMULATIVE,
-                    Arrays.asList(
-                        LongPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.of(keys[0], values[0]),
-                            20_000),
-                        LongPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.of(keys[1], values[1]),
-                            20_000),
-                        LongPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.of(keys[2], values[2]),
-                            20_000),
-                        LongPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Labels.of(keys[3], values[3]),
-                            20_000)))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testUpDownCounter")
+                    .hasLongSum()
+                    .isCumulative()
+                    .isNotMonotonic()
+                    .points()
+                    .allSatisfy(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasValue(20_000))
+                    .extracting(point -> point.getAttributes())
+                    .containsExactlyInAnyOrder(
+                        Attributes.of(stringKey(keys[0]), values[0]),
+                        Attributes.of(stringKey(keys[1]), values[1]),
+                        Attributes.of(stringKey(keys[2]), values[2]),
+                        Attributes.of(stringKey(keys[3]), values[3])));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {

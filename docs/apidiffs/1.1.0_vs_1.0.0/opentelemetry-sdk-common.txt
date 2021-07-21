@@ -1,0 +1,22 @@
+Comparing source compatibility of  against 
+***  MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.resources.Resource  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.resources.ResourceBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder toBuilder()
++++  NEW CLASS: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW CONSTRUCTOR: PUBLIC(+) ResourceBuilder()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.Resource build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder put(java.lang.String, java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder put(java.lang.String, long)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder put(java.lang.String, double)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder put(java.lang.String, boolean)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder put(java.lang.String, java.lang.String[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder put(java.lang.String, long[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder put(java.lang.String, double[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder put(java.lang.String, boolean[])
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder put(io.opentelemetry.api.common.AttributeKey, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder put(io.opentelemetry.api.common.AttributeKey, int)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder putAll(io.opentelemetry.api.common.Attributes)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.ResourceBuilder putAll(io.opentelemetry.sdk.resources.Resource)

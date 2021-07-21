@@ -1,17 +1,29 @@
-plugins {
-    id("java-library")
-    id("maven-publish")
+import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 
-    id("me.champeau.gradle.jmh")
-    id("ru.vyarus.animalsniffer")
+plugins {
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
+
+    id("otel.jmh-conventions")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry SDK For Tracing"
-extra["moduleName"] = "io.opentelemetry.sdk.trace"
+otelJava.moduleName.set("io.opentelemetry.sdk.trace")
+
+
+sourceSets {
+    main {
+        val traceShadedDeps = project(":sdk:trace-shaded-deps")
+        output.dir(traceShadedDeps.file("build/extracted/shadow"), "builtBy" to ":sdk:trace-shaded-deps:extractShadowJar")
+    }
+}
 
 dependencies {
     api(project(":api:all"))
     api(project(":sdk:common"))
+
+    compileOnly(project(":sdk:trace-shaded-deps"))
 
     implementation(project(":api:metrics"))
     implementation(project(":semconv"))
@@ -30,6 +42,7 @@ dependencies {
         // dependencies.
         isTransitive = false
     }
+    jmh(project(":exporters:jaeger-thrift"))
     jmh(project(":exporters:otlp:trace")) {
         // The opentelemetry-exporter-otlp-trace depends on this project itself. So don"t pull in
         // the transitive dependencies.
@@ -61,5 +74,11 @@ tasks {
         doLast {
             File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
         }
+    }
+
+    withType<AnimalSniffer>().configureEach {
+        // We catch NoClassDefFoundError to fallback to non-jctools queues.
+        exclude("**/internal/shaded/jctools/**")
+        exclude("**/internal/JcTools*")
     }
 }

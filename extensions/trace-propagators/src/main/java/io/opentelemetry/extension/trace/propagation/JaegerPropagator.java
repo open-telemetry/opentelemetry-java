@@ -7,6 +7,8 @@ package io.opentelemetry.extension.trace.propagation;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.baggage.BaggageBuilder;
+import io.opentelemetry.api.internal.StringUtils;
+import io.opentelemetry.api.internal.TemporaryBuffers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -99,24 +101,20 @@ public final class JaegerPropagator implements TextMapPropagator {
   private static <C> void injectSpan(
       SpanContext spanContext, @Nullable C carrier, TextMapSetter<C> setter) {
 
-    char[] chars = new char[PROPAGATION_HEADER_SIZE];
+    char[] chars = TemporaryBuffers.chars(PROPAGATION_HEADER_SIZE);
 
     String traceId = spanContext.getTraceId();
-    for (int i = 0; i < traceId.length(); i++) {
-      chars[i] = traceId.charAt(i);
-    }
+    traceId.getChars(0, traceId.length(), chars, 0);
 
     chars[SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     String spanId = spanContext.getSpanId();
-    for (int i = 0; i < spanId.length(); i++) {
-      chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
-    }
+    spanId.getChars(0, spanId.length(), chars, SPAN_ID_OFFSET);
 
     chars[PARENT_SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     chars[PARENT_SPAN_ID_OFFSET] = DEPRECATED_PARENT_SPAN;
     chars[SAMPLED_FLAG_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     chars[SAMPLED_FLAG_OFFSET] = spanContext.isSampled() ? IS_SAMPLED_CHAR : NOT_SAMPLED_CHAR;
-    setter.set(carrier, PROPAGATION_HEADER, new String(chars));
+    setter.set(carrier, PROPAGATION_HEADER, new String(chars, 0, PROPAGATION_HEADER_SIZE));
   }
 
   private static <C> void injectBaggage(
@@ -214,10 +212,13 @@ public final class JaegerPropagator implements TextMapPropagator {
     return buildSpanContext(traceId, spanId, flags);
   }
 
-  private static <C> Baggage getBaggageFromHeader(C carrier, TextMapGetter<C> getter) {
+  @Nullable
+  private static <C> Baggage getBaggageFromHeader(@Nullable C carrier, TextMapGetter<C> getter) {
     BaggageBuilder builder = null;
 
-    for (String key : getter.keys(carrier)) {
+    Iterable<String> keys = carrier != null ? getter.keys(carrier) : Collections.emptyList();
+
+    for (String key : keys) {
       if (key.startsWith(BAGGAGE_PREFIX)) {
         if (key.length() == BAGGAGE_PREFIX.length()) {
           continue;
@@ -226,9 +227,19 @@ public final class JaegerPropagator implements TextMapPropagator {
         if (builder == null) {
           builder = Baggage.builder();
         }
-        builder.put(key.substring(BAGGAGE_PREFIX.length()), getter.get(carrier, key));
+
+        String value = getter.get(carrier, key);
+        if (value != null) {
+          builder.put(key.substring(BAGGAGE_PREFIX.length()), value);
+        }
       } else if (key.equals(BAGGAGE_HEADER)) {
-        builder = parseBaggageHeader(getter.get(carrier, key), builder);
+        String value = getter.get(carrier, key);
+        if (value != null) {
+          if (builder == null) {
+            builder = Baggage.builder();
+          }
+          builder = parseBaggageHeader(value, builder);
+        }
       }
     }
     return builder == null ? null : builder.build();
@@ -238,9 +249,6 @@ public final class JaegerPropagator implements TextMapPropagator {
     for (String part : header.split("\\s*,\\s*")) {
       String[] kv = part.split("\\s*=\\s*");
       if (kv.length == 2) {
-        if (builder == null) {
-          builder = Baggage.builder();
-        }
         builder.put(kv[0], kv[1]);
       } else {
         logger.fine("malformed token in " + BAGGAGE_HEADER + " header: " + part);

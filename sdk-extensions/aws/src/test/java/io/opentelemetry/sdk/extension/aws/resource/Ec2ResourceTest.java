@@ -15,6 +15,7 @@ import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.ServiceLoader;
 import org.junit.jupiter.api.Test;
@@ -50,13 +51,14 @@ class Ec2ResourceTest {
     server.enqueue(HttpResponse.of(MediaType.JSON_UTF_8, IDENTITY_DOCUMENT));
     server.enqueue(HttpResponse.of("ec2-1-2-3-4"));
 
-    Attributes attributes =
-        Ec2Resource.buildResource("localhost:" + server.httpPort()).getAttributes();
+    Resource resource = Ec2Resource.buildResource("localhost:" + server.httpPort());
+    assertThat(resource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
+    Attributes attributes = resource.getAttributes();
     AttributesBuilder expectedAttrBuilders = Attributes.builder();
 
     expectedAttrBuilders.put(ResourceAttributes.CLOUD_PROVIDER, "aws");
     expectedAttrBuilders.put(ResourceAttributes.HOST_ID, "i-1234567890abcdef0");
-    expectedAttrBuilders.put(ResourceAttributes.CLOUD_ZONE, "us-west-2b");
+    expectedAttrBuilders.put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "us-west-2b");
     expectedAttrBuilders.put(ResourceAttributes.HOST_TYPE, "t2.micro");
     expectedAttrBuilders.put(ResourceAttributes.HOST_IMAGE_ID, "ami-5fb8c835");
     expectedAttrBuilders.put(ResourceAttributes.CLOUD_ACCOUNT_ID, "123456789012");
@@ -83,14 +85,15 @@ class Ec2ResourceTest {
     server.enqueue(HttpResponse.of(MediaType.JSON_UTF_8, IDENTITY_DOCUMENT));
     server.enqueue(HttpResponse.of("ec2-1-2-3-4"));
 
-    Attributes attributes =
-        Ec2Resource.buildResource("localhost:" + server.httpPort()).getAttributes();
+    Resource resource = Ec2Resource.buildResource("localhost:" + server.httpPort());
+    assertThat(resource.getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
+    Attributes attributes = resource.getAttributes();
 
     AttributesBuilder expectedAttrBuilders =
         Attributes.builder()
             .put(ResourceAttributes.CLOUD_PROVIDER, "aws")
             .put(ResourceAttributes.HOST_ID, "i-1234567890abcdef0")
-            .put(ResourceAttributes.CLOUD_ZONE, "us-west-2b")
+            .put(ResourceAttributes.CLOUD_AVAILABILITY_ZONE, "us-west-2b")
             .put(ResourceAttributes.HOST_TYPE, "t2.micro")
             .put(ResourceAttributes.HOST_IMAGE_ID, "ami-5fb8c835")
             .put(ResourceAttributes.CLOUD_ACCOUNT_ID, "123456789012")

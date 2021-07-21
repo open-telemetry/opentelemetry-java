@@ -93,8 +93,6 @@ class NotOnClasspathTest {
                     ConfigProperties.createForTest(
                         Collections.singletonMap("otel.propagators", "b3"))))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining(
-            "b3 propagator enabled but opentelemetry-extension-trace-propagators not found on "
-                + "classpath");
+        .hasMessageContaining("Unrecognized value for otel.propagators: b3");
   }
 }

@@ -145,6 +145,9 @@ class ResourceTest {
     new EqualsTester()
         .addEqualityGroup(Resource.create(attribute1), Resource.create(attribute1), resource1)
         .addEqualityGroup(Resource.create(attribute2), resource2)
+        .addEqualityGroup(
+            Resource.create(attribute1, "http://schema"),
+            Resource.create(attribute1, "http://schema"))
         .testEquals();
   }
 
@@ -155,6 +158,23 @@ class ResourceTest {
 
     Resource resource = Resource.empty().merge(resource1).merge(resource2);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
+  }
+
+  @Test
+  void testMergeResources_schema() {
+    Resource noSchemaOne = Resource.builder().put("a", 1).build();
+    Resource noSchemaTwo = Resource.builder().put("b", 2).build();
+    Resource schemaOne = Resource.builder().setSchemaUrl("http://schema.1").put("c", 3).build();
+    Resource schemaTwo = Resource.builder().setSchemaUrl("http://schema.2").put("d", 4).build();
+    Resource schemaTwoAgain =
+        Resource.builder().setSchemaUrl("http://schema.2").put("e", 5).build();
+
+    assertThat(noSchemaOne.merge(noSchemaTwo).getSchemaUrl()).isNull();
+    assertThat(schemaOne.merge(noSchemaOne).getSchemaUrl()).isEqualTo(schemaOne.getSchemaUrl());
+    assertThat(noSchemaOne.merge(schemaOne).getSchemaUrl()).isEqualTo(schemaOne.getSchemaUrl());
+    assertThat(schemaTwo.merge(schemaTwoAgain).getSchemaUrl()).isEqualTo(schemaTwo.getSchemaUrl());
+    assertThat(schemaOne.merge(schemaTwo).getSchemaUrl()).isNull();
+    assertThat(schemaTwo.merge(schemaOne).getSchemaUrl()).isNull();
   }
 
   @Test
@@ -192,5 +212,77 @@ class ResourceTest {
     assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_NAME)).isEqualTo("opentelemetry");
     assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
     assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_VERSION)).isNotNull();
+  }
+
+  @Test
+  void shouldBuilderNotFailWithNullResource() {
+    // given
+    ResourceBuilder builder = Resource.getDefault().toBuilder();
+
+    // when
+    builder.putAll((Resource) null);
+
+    // then no exception is thrown
+    // and
+    assertThat(builder.build().getAttributes().get(ResourceAttributes.SERVICE_NAME))
+        .isEqualTo("unknown_service:java");
+  }
+
+  @Test
+  void shouldBuilderCopyResource() {
+    // given
+    ResourceBuilder builder = Resource.getDefault().toBuilder();
+
+    // when
+    builder.put("dog says what?", "woof");
+
+    // then
+    Resource resource = builder.build();
+    assertThat(resource).isNotSameAs(Resource.getDefault());
+    assertThat(resource.getAttributes().get(stringKey("dog says what?"))).isEqualTo("woof");
+  }
+
+  @Test
+  void shouldBuilderHelperMethodsBuildResource() {
+    // given
+    ResourceBuilder builder = Resource.getDefault().toBuilder();
+    Attributes sourceAttributes = Attributes.of(stringKey("hello"), "world");
+    Resource source = Resource.create(sourceAttributes);
+    Attributes sourceAttributes2 = Attributes.of(stringKey("OpenTelemetry"), "Java");
+
+    // when
+    Resource resource =
+        builder
+            .put("long", 42L)
+            .put("double", Math.E)
+            .put("boolean", true)
+            .put("string", "abc")
+            .put("long array", 1L, 2L, 3L)
+            .put("double array", Math.E, Math.PI)
+            .put("boolean array", true, false)
+            .put("string array", "first", "second")
+            .put(longKey("long key"), 4242L)
+            .put(longKey("int in disguise"), 21)
+            .putAll(source)
+            .putAll(sourceAttributes2)
+            .build();
+
+    // then
+    Attributes attributes = resource.getAttributes();
+    assertThat(attributes.get(longKey("long"))).isEqualTo(42L);
+    assertThat(attributes.get(doubleKey("double"))).isEqualTo(Math.E);
+    assertThat(attributes.get(booleanKey("boolean"))).isEqualTo(true);
+    assertThat(attributes.get(stringKey("string"))).isEqualTo("abc");
+    assertThat(attributes.get(longArrayKey("long array"))).isEqualTo(Arrays.asList(1L, 2L, 3L));
+    assertThat(attributes.get(doubleArrayKey("double array")))
+        .isEqualTo(Arrays.asList(Math.E, Math.PI));
+    assertThat(attributes.get(booleanArrayKey("boolean array")))
+        .isEqualTo(Arrays.asList(true, false));
+    assertThat(attributes.get(stringArrayKey("string array")))
+        .isEqualTo(Arrays.asList("first", "second"));
+    assertThat(attributes.get(longKey("long key"))).isEqualTo(4242L);
+    assertThat(attributes.get(longKey("int in disguise"))).isEqualTo(21);
+    assertThat(attributes.get(stringKey("hello"))).isEqualTo("world");
+    assertThat(attributes.get(stringKey("OpenTelemetry"))).isEqualTo("Java");
   }
 }

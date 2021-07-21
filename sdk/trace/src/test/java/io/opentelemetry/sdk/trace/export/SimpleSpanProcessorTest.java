@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -31,7 +32,6 @@ import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.Collections;
 import java.util.List;
@@ -131,7 +131,7 @@ class SimpleSpanProcessorTest {
             .build();
 
     when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
-        .thenReturn(SamplingResult.create(SamplingDecision.DROP));
+        .thenReturn(SamplingResult.drop());
 
     try {
       Tracer tracer = sdkTracerProvider.get(getClass().getName());
@@ -139,7 +139,7 @@ class SimpleSpanProcessorTest {
       tracer.spanBuilder(SPAN_NAME).startSpan();
 
       when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
-          .thenReturn(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
+          .thenReturn(SamplingResult.recordAndSample());
       Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
       span.end();
 
@@ -190,8 +190,58 @@ class SimpleSpanProcessorTest {
   }
 
   @Test
+  void forceFlush() {
+    CompletableResultCode export1 = new CompletableResultCode();
+    CompletableResultCode export2 = new CompletableResultCode();
+
+    when(spanExporter.export(any())).thenReturn(export1, export2);
+
+    SpanData spanData = TestUtils.makeBasicSpan();
+    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+
+    simpleSampledSpansProcessor.onEnd(readableSpan);
+    simpleSampledSpansProcessor.onEnd(readableSpan);
+
+    verify(spanExporter, times(2)).export(Collections.singletonList(spanData));
+
+    CompletableResultCode flush = simpleSampledSpansProcessor.forceFlush();
+    assertThat(flush.isDone()).isFalse();
+
+    export1.succeed();
+    assertThat(flush.isDone()).isFalse();
+
+    export2.succeed();
+    assertThat(flush.isDone()).isTrue();
+    assertThat(flush.isSuccess()).isTrue();
+  }
+
+  @Test
   void shutdown() {
-    simpleSampledSpansProcessor.shutdown();
+    CompletableResultCode export1 = new CompletableResultCode();
+    CompletableResultCode export2 = new CompletableResultCode();
+
+    when(spanExporter.export(any())).thenReturn(export1, export2);
+
+    SpanData spanData = TestUtils.makeBasicSpan();
+    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+
+    simpleSampledSpansProcessor.onEnd(readableSpan);
+    simpleSampledSpansProcessor.onEnd(readableSpan);
+
+    verify(spanExporter, times(2)).export(Collections.singletonList(spanData));
+
+    CompletableResultCode shutdown = simpleSampledSpansProcessor.shutdown();
+    assertThat(shutdown.isDone()).isFalse();
+
+    export1.succeed();
+    assertThat(shutdown.isDone()).isFalse();
+    verify(spanExporter, never()).shutdown();
+
+    export2.succeed();
+    assertThat(shutdown.isDone()).isTrue();
+    assertThat(shutdown.isSuccess()).isTrue();
     verify(spanExporter).shutdown();
   }
 

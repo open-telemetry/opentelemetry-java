@@ -213,8 +213,14 @@ class JaegerPropagatorTest {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(PROPAGATION_HEADER, "aa:bb:cc");
 
-    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
+  }
+
+  private void verifyInvalidBehavior(Map<String, String> invalidHeaders) {
+    Context input = Context.current();
+    Context result = jaegerPropagator.extract(input, invalidHeaders, getter);
+    assertThat(result).isSameAs(input);
+    assertThat(getSpanContext(result)).isSameAs(SpanContext.getInvalid());
   }
 
   @Test
@@ -222,8 +228,7 @@ class JaegerPropagatorTest {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(PROPAGATION_HEADER, "aa:bb:cc:dd:ee");
 
-    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -234,8 +239,7 @@ class JaegerPropagatorTest {
         generateTraceIdHeaderValue(
             "abcdefghijklmnopabcdefghijklmnop", SPAN_ID, DEPRECATED_PARENT_SPAN, "0"));
 
-    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -245,8 +249,7 @@ class JaegerPropagatorTest {
         PROPAGATION_HEADER,
         generateTraceIdHeaderValue(TRACE_ID + "00", SPAN_ID, DEPRECATED_PARENT_SPAN, "0"));
 
-    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -256,8 +259,7 @@ class JaegerPropagatorTest {
         PROPAGATION_HEADER,
         generateTraceIdHeaderValue(TRACE_ID, "abcdefghijklmnop", DEPRECATED_PARENT_SPAN, "0"));
 
-    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -267,8 +269,7 @@ class JaegerPropagatorTest {
         PROPAGATION_HEADER,
         generateTraceIdHeaderValue(TRACE_ID, SPAN_ID + "00", DEPRECATED_PARENT_SPAN, "0"));
 
-    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -278,8 +279,7 @@ class JaegerPropagatorTest {
         PROPAGATION_HEADER,
         generateTraceIdHeaderValue(TRACE_ID, SPAN_ID, DEPRECATED_PARENT_SPAN, ""));
 
-    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -289,8 +289,7 @@ class JaegerPropagatorTest {
         PROPAGATION_HEADER,
         generateTraceIdHeaderValue(TRACE_ID, SPAN_ID, DEPRECATED_PARENT_SPAN, "10220"));
 
-    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test
@@ -300,8 +299,7 @@ class JaegerPropagatorTest {
         PROPAGATION_HEADER,
         generateTraceIdHeaderValue(TRACE_ID, SPAN_ID, DEPRECATED_PARENT_SPAN, "abcdefr"));
 
-    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
-        .isSameAs(SpanContext.getInvalid());
+    verifyInvalidBehavior(invalidHeaders);
   }
 
   @Test

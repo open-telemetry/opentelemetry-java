@@ -6,10 +6,5 @@
 <suppressions>
   <!-- Suppress Javadoc-related checks in non-public code. -->
   <suppress checks="JavadocParagraph|JavadocMethod" files="[\\/](jmh|test)[\\/]" />
-  <!--
-  package-info.java will generally have very long @link or <a> tags, encourage good documentation
-  by not being strict about this check. Spotless will still ensure it's as compact as possible in
-  most cases.
-  -->
-  <suppress checks="LineLength" files="package-info.java" />
+  <suppress checks="SummaryJavadoc" files="SemanticAttributes|ResourceAttributes"/>
 </suppressions>

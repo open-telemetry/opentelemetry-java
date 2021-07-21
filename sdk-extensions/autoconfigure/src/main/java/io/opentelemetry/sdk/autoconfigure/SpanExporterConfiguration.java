@@ -70,7 +70,10 @@ final class SpanExporterConfiguration {
         "opentelemetry-exporter-otlp");
     OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder();
 
-    String endpoint = config.getString("otel.exporter.otlp.endpoint");
+    String endpoint = config.getString("otel.exporter.otlp.traces.endpoint");
+    if (endpoint == null) {
+      endpoint = config.getString("otel.exporter.otlp.endpoint");
+    }
     if (endpoint != null) {
       builder.setEndpoint(endpoint);
     }
@@ -112,6 +115,11 @@ final class SpanExporterConfiguration {
       builder.setEndpoint(endpoint);
     }
 
+    Duration timeout = config.getDuration("otel.exporter.jaeger.timeout");
+    if (timeout != null) {
+      builder.setTimeout(timeout);
+    }
+
     return builder.build();
   }
 
@@ -125,6 +133,11 @@ final class SpanExporterConfiguration {
     String endpoint = config.getString("otel.exporter.zipkin.endpoint");
     if (endpoint != null) {
       builder.setEndpoint(endpoint);
+    }
+
+    Duration timeout = config.getDuration("otel.exporter.zipkin.timeout");
+    if (timeout != null) {
+      builder.setReadTimeout(timeout);
     }
 
     return builder.build();

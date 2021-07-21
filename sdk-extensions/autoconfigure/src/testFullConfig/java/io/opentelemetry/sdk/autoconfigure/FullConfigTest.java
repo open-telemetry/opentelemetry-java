@@ -12,6 +12,7 @@ import com.linecorp.armeria.common.RequestHeaders;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.GrpcService;
+import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
@@ -29,6 +30,9 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
+import io.opentelemetry.proto.metrics.v1.Metric;
+import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -100,6 +104,7 @@ class FullConfigTest {
                       })
                   .useBlockingTaskExecutor(true)
                   .build());
+          sb.decorator(LoggingService.newDecorator());
         }
       };
 
@@ -121,6 +126,7 @@ class FullConfigTest {
     keys.addAll(W3CTraceContextPropagator.getInstance().fields());
     keys.addAll(W3CBaggagePropagator.getInstance().fields());
     keys.addAll(B3Propagator.injectingSingleHeader().fields());
+    keys.addAll(B3Propagator.injectingMultiHeaders().fields());
     keys.addAll(JaegerPropagator.getInstance().fields());
     keys.addAll(OtTracePropagator.getInstance().fields());
     keys.addAll(AwsXrayPropagator.getInstance().fields());
@@ -171,5 +177,46 @@ class FullConfigTest {
                 .setKey("cat")
                 .setValue(AnyValue.newBuilder().setStringValue("meow").build())
                 .build());
+
+    ExportMetricsServiceRequest metricRequest = otlpMetricsRequests.take();
+    assertThat(metricRequest.getResourceMetrics(0).getResource().getAttributesList())
+        .contains(
+            KeyValue.newBuilder()
+                .setKey("service.name")
+                .setValue(AnyValue.newBuilder().setStringValue("test").build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("cat")
+                .setValue(AnyValue.newBuilder().setStringValue("meow").build())
+                .build());
+    for (ResourceMetrics resourceMetrics : metricRequest.getResourceMetricsList()) {
+      for (InstrumentationLibraryMetrics instrumentationLibraryMetrics :
+          resourceMetrics.getInstrumentationLibraryMetricsList()) {
+        for (Metric metric : instrumentationLibraryMetrics.getMetricsList()) {
+          assertThat(getFirstDataPointLabels(metric))
+              .contains(
+                  KeyValue.newBuilder()
+                      .setKey("configured")
+                      .setValue(AnyValue.newBuilder().setStringValue("true").build())
+                      .build());
+        }
+      }
+    }
+  }
+
+  private static List<KeyValue> getFirstDataPointLabels(Metric metric) {
+    switch (metric.getDataCase()) {
+      case GAUGE:
+        return metric.getGauge().getDataPoints(0).getAttributesList();
+      case SUM:
+        return metric.getSum().getDataPoints(0).getAttributesList();
+      case HISTOGRAM:
+        return metric.getHistogram().getDataPoints(0).getAttributesList();
+      case SUMMARY:
+        return metric.getSummary().getDataPoints(0).getAttributesList();
+      default:
+        throw new IllegalArgumentException(
+            "Unrecognized metric data case: " + metric.getDataCase().name());
+    }
   }
 }

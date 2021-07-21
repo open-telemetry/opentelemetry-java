@@ -5,9 +5,16 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * A point in the "Metric stream" data model.
+ *
+ * <p>This is distinguished from {@code Measurement} in that it may have aggregated data, and has
+ * its type defined by the metric data model (no longer an instrument).
+ */
 @Immutable
 public interface PointData {
   /**
@@ -27,9 +34,11 @@ public interface PointData {
   long getEpochNanos();
 
   /**
-   * Returns the labels associated with this {@code Point}.
+   * Returns the attributes associated with this {@code Point}.
    *
-   * @return the labels associated with this {@code Point}.
+   * @return the attributes associated with this {@code Point}.
    */
-  Labels getLabels();
+  Attributes getAttributes();
+  /** List of exemplars collected from measurements that were used to form the data point. */
+  List<Exemplar> getExemplars();
 }

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import java.util.List;
 
 abstract class AbstractAccumulator {
@@ -26,6 +27,20 @@ abstract class AbstractAccumulator {
         .getViewRegistry()
         .findView(descriptor)
         .getAggregatorFactory()
+        .create(
+            meterProviderSharedState.getResource(),
+            meterSharedState.getInstrumentationLibraryInfo(),
+            descriptor);
+  }
+
+  static LabelsProcessor getLabelsProcessor(
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      InstrumentDescriptor descriptor) {
+    return meterProviderSharedState
+        .getViewRegistry()
+        .findView(descriptor)
+        .getLabelsProcessorFactory()
         .create(
             meterProviderSharedState.getResource(),
             meterSharedState.getInstrumentationLibraryInfo(),

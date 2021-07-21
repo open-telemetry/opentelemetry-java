@@ -1,17 +1,17 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("me.champeau.gradle.jmh")
+    id("otel.jmh-conventions")
     id("org.jetbrains.kotlin.jvm")
     id("org.unbroken-dome.test-sets")
-    id("ru.vyarus.animalsniffer")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Kotlin Extensions"
-extra["moduleName"] = "io.opentelemetry.extension.kotlin"
+otelJava.moduleName.set("io.opentelemetry.extension.kotlin")
 
 testSets {
     create("testStrictContext")

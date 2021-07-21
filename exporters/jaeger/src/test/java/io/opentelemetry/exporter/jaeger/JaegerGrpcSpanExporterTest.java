@@ -303,6 +303,12 @@ class JaegerGrpcSpanExporterTest {
         .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
   }
 
+  @Test
+  void doubleShutdown() {
+    assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
   static class MockCollectorService extends CollectorServiceGrpc.CollectorServiceImplBase {
     @Override
     public void postSpans(

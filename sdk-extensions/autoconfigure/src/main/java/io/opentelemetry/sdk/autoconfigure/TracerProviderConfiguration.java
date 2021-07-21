@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableSamplerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -18,7 +19,10 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
+import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 final class TracerProviderConfiguration {
 
@@ -115,6 +119,14 @@ final class TracerProviderConfiguration {
 
   // Visible for testing
   static Sampler configureSampler(String sampler, ConfigProperties config) {
+    Map<String, Sampler> spiSamplers =
+        StreamSupport.stream(
+                ServiceLoader.load(ConfigurableSamplerProvider.class).spliterator(), false)
+            .collect(
+                Collectors.toMap(
+                    ConfigurableSamplerProvider::getName,
+                    provider -> provider.createSampler(config)));
+
     switch (sampler) {
       case "always_on":
         return Sampler.alwaysOn();
@@ -141,7 +153,12 @@ final class TracerProviderConfiguration {
           return Sampler.parentBased(Sampler.traceIdRatioBased(ratio));
         }
       default:
-        throw new ConfigurationException("Unrecognized value for otel.traces.sampler: " + sampler);
+        Sampler spiSampler = spiSamplers.get(sampler);
+        if (spiSampler == null) {
+          throw new ConfigurationException(
+              "Unrecognized value for otel.traces.sampler: " + sampler);
+        }
+        return spiSampler;
     }
   }
 

@@ -21,13 +21,15 @@ class ViewRegistryTest {
     AggregatorFactory factory = AggregatorFactory.lastValue();
     View view = View.builder().setAggregatorFactory(factory).build();
 
-    ViewRegistry viewRegistry = new ViewRegistry();
-    viewRegistry.registerView(
-        InstrumentSelector.builder()
-            .setInstrumentType(InstrumentType.COUNTER)
-            .setInstrumentNameRegex(".*")
-            .build(),
-        view);
+    ViewRegistry viewRegistry =
+        ViewRegistry.builder()
+            .addView(
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.COUNTER)
+                    .setInstrumentNameRegex(".*")
+                    .build(),
+                view)
+            .build();
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
@@ -46,13 +48,15 @@ class ViewRegistryTest {
     AggregatorFactory factory = AggregatorFactory.lastValue();
     View view = View.builder().setAggregatorFactory(factory).build();
 
-    ViewRegistry viewRegistry = new ViewRegistry();
-    viewRegistry.registerView(
-        InstrumentSelector.builder()
-            .setInstrumentType(InstrumentType.COUNTER)
-            .setInstrumentNameRegex("overridden")
-            .build(),
-        view);
+    ViewRegistry viewRegistry =
+        ViewRegistry.builder()
+            .addView(
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.COUNTER)
+                    .setInstrumentNameRegex("overridden")
+                    .build(),
+                view)
+            .build();
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
@@ -73,19 +77,21 @@ class ViewRegistryTest {
     AggregatorFactory factory2 = AggregatorFactory.minMaxSumCount();
     View view2 = View.builder().setAggregatorFactory(factory2).build();
 
-    ViewRegistry viewRegistry = new ViewRegistry();
-    viewRegistry.registerView(
-        InstrumentSelector.builder()
-            .setInstrumentType(InstrumentType.COUNTER)
-            .setInstrumentNameRegex(".*")
-            .build(),
-        view1);
-    viewRegistry.registerView(
-        InstrumentSelector.builder()
-            .setInstrumentType(InstrumentType.COUNTER)
-            .setInstrumentNameRegex("overridden")
-            .build(),
-        view2);
+    ViewRegistry viewRegistry =
+        ViewRegistry.builder()
+            .addView(
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.COUNTER)
+                    .setInstrumentNameRegex(".*")
+                    .build(),
+                view1)
+            .addView(
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.COUNTER)
+                    .setInstrumentNameRegex("overridden")
+                    .build(),
+                view2)
+            .build();
 
     assertThat(
             viewRegistry.findView(
@@ -104,13 +110,15 @@ class ViewRegistryTest {
     AggregatorFactory factory = AggregatorFactory.lastValue();
     View view = View.builder().setAggregatorFactory(factory).build();
 
-    ViewRegistry viewRegistry = new ViewRegistry();
-    viewRegistry.registerView(
-        InstrumentSelector.builder()
-            .setInstrumentNameRegex("overrid(es|den)")
-            .setInstrumentType(InstrumentType.COUNTER)
-            .build(),
-        view);
+    ViewRegistry viewRegistry =
+        ViewRegistry.builder()
+            .addView(
+                InstrumentSelector.builder()
+                    .setInstrumentNameRegex("overrid(es|den)")
+                    .setInstrumentType(InstrumentType.COUNTER)
+                    .build(),
+                view)
+            .build();
 
     assertThat(
             viewRegistry.findView(
@@ -132,7 +140,7 @@ class ViewRegistryTest {
 
   @Test
   void defaults() {
-    ViewRegistry viewRegistry = new ViewRegistry();
+    ViewRegistry viewRegistry = ViewRegistry.builder().build();
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(

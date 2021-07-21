@@ -1,14 +1,14 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("me.champeau.gradle.jmh")
+    id("otel.jmh-conventions")
     id("org.unbroken-dome.test-sets")
-    id("ru.vyarus.animalsniffer")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Protocol Trace Exporter"
-extra["moduleName"] = "io.opentelemetry.exporter.otlp.trace"
+otelJava.moduleName.set("io.opentelemetry.exporter.otlp.trace")
 
 testSets {
     create("testGrpcNetty")
@@ -35,12 +35,15 @@ dependencies {
 
     add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
     add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
+    add("testGrpcNettyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
     add("testGrpcNettyShadedImplementation", "com.linecorp.armeria:armeria-grpc")
     add("testGrpcNettyShadedImplementation", "com.linecorp.armeria:armeria-junit5")
+    add("testGrpcNettyShadedRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
     add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-grpc")
     add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-junit5")
+    add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
     add("testGrpcNettyRuntimeOnly", "io.grpc:grpc-netty")
 

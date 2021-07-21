@@ -1,13 +1,13 @@
 plugins {
-    id("java-library")
-    id("maven-publish")
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("me.champeau.gradle.jmh")
-    id("ru.vyarus.animalsniffer")
+    id("otel.jmh-conventions")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry SDK"
-extra["moduleName"] = "io.opentelemetry.sdk"
+otelJava.moduleName.set("io.opentelemetry.sdk")
 base.archivesBaseName = "opentelemetry-sdk"
 
 dependencies {

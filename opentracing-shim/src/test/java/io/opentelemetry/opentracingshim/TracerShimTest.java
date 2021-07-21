@@ -7,7 +7,7 @@ package io.opentelemetry.opentracingshim;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -31,14 +31,13 @@ class TracerShimTest {
   @RegisterExtension public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
   TracerShim tracerShim;
+  Tracer tracer;
 
   @BeforeEach
   void setUp() {
+    tracer = otelTesting.getOpenTelemetry().getTracer("opentracingshim");
     tracerShim =
-        new TracerShim(
-            new TelemetryInfo(
-                otelTesting.getOpenTelemetry().getTracer("opentracingshim"),
-                ContextPropagators.noop()));
+        new TracerShim(new TelemetryInfo(tracer, OpenTracingPropagators.builder().build()));
   }
 
   @Test
@@ -97,6 +96,86 @@ class TracerShimTest {
     Map<String, String> map = new HashMap<>();
     tracerShim.inject(null, Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
     assertThat(map).isEmpty();
+  }
+
+  @Test
+  void inject_textMap() {
+    Map<String, String> map = new HashMap<>();
+    CustomTextMapPropagator textMapPropagator = new CustomTextMapPropagator();
+    CustomTextMapPropagator httpHeadersPropagator = new CustomTextMapPropagator();
+    TelemetryInfo telemetryInfo =
+        new TelemetryInfo(
+            tracer,
+            OpenTracingPropagators.builder()
+                .setTextMap(textMapPropagator)
+                .setHttpHeaders(httpHeadersPropagator)
+                .build());
+    tracerShim = new TracerShim(telemetryInfo);
+    io.opentelemetry.api.trace.Span span = telemetryInfo.tracer().spanBuilder("span").startSpan();
+    SpanContext context = new SpanShim(telemetryInfo, span).context();
+
+    tracerShim.inject(context, Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
+    assertThat(textMapPropagator.isInjected()).isTrue();
+    assertThat(httpHeadersPropagator.isInjected()).isFalse();
+  }
+
+  @Test
+  void inject_httpHeaders() {
+    Map<String, String> map = new HashMap<>();
+    CustomTextMapPropagator textMapPropagator = new CustomTextMapPropagator();
+    CustomTextMapPropagator httpHeadersPropagator = new CustomTextMapPropagator();
+    TelemetryInfo telemetryInfo =
+        new TelemetryInfo(
+            tracer,
+            OpenTracingPropagators.builder()
+                .setTextMap(textMapPropagator)
+                .setHttpHeaders(httpHeadersPropagator)
+                .build());
+    tracerShim = new TracerShim(telemetryInfo);
+    io.opentelemetry.api.trace.Span span = telemetryInfo.tracer().spanBuilder("span").startSpan();
+    SpanContext context = new SpanShim(telemetryInfo, span).context();
+
+    tracerShim.inject(context, Format.Builtin.HTTP_HEADERS, new TextMapAdapter(map));
+    assertThat(textMapPropagator.isInjected()).isFalse();
+    assertThat(httpHeadersPropagator.isInjected()).isTrue();
+  }
+
+  @Test
+  void extract_textMap() {
+    Map<String, String> map = new HashMap<>();
+    CustomTextMapPropagator textMapPropagator = new CustomTextMapPropagator();
+    CustomTextMapPropagator httpHeadersPropagator = new CustomTextMapPropagator();
+    tracerShim =
+        new TracerShim(
+            new TelemetryInfo(
+                tracer,
+                OpenTracingPropagators.builder()
+                    .setTextMap(textMapPropagator)
+                    .setHttpHeaders(httpHeadersPropagator)
+                    .build()));
+
+    tracerShim.extract(Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
+    assertThat(textMapPropagator.isExtracted()).isTrue();
+    assertThat(httpHeadersPropagator.isExtracted()).isFalse();
+  }
+
+  @Test
+  void extract_httpHeaders() {
+    Map<String, String> map = new HashMap<>();
+    CustomTextMapPropagator textMapPropagator = new CustomTextMapPropagator();
+    CustomTextMapPropagator httpHeadersPropagator = new CustomTextMapPropagator();
+    tracerShim =
+        new TracerShim(
+            new TelemetryInfo(
+                tracer,
+                OpenTracingPropagators.builder()
+                    .setTextMap(textMapPropagator)
+                    .setHttpHeaders(httpHeadersPropagator)
+                    .build()));
+
+    tracerShim.extract(Format.Builtin.HTTP_HEADERS, new TextMapAdapter(map));
+    assertThat(textMapPropagator.isExtracted()).isFalse();
+    assertThat(httpHeadersPropagator.isExtracted()).isTrue();
   }
 
   @Test

@@ -5,7 +5,9 @@
 
 package io.opentelemetry.api;
 
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import java.lang.reflect.InvocationTargetException;
@@ -13,7 +15,6 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -124,6 +125,20 @@ public final class GlobalOpenTelemetry {
    */
   public static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
     return get().getTracer(instrumentationName, instrumentationVersion);
+  }
+
+  /**
+   * Creates a TracerBuilder for a named {@link Tracer} instance.
+   *
+   * <p>This is a shortcut method for {@code get().tracerBuilder(instrumentationName)}
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @return a TracerBuilder instance.
+   * @since 1.4.0
+   */
+  public static TracerBuilder tracerBuilder(String instrumentationName) {
+    return get().tracerBuilder(instrumentationName);
   }
 
   /**

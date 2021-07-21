@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -18,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-import javax.annotation.concurrent.GuardedBy;
 
 final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumulation> {
   private final double[] boundaries;

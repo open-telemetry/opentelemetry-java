@@ -1,12 +1,12 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("ru.vyarus.animalsniffer")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry - Jaeger Thrift Exporter"
-extra["moduleName"] = "io.opentelemetry.exporter.jaeger.thrift"
+otelJava.moduleName.set("io.opentelemetry.exporter.jaeger.thrift")
 
 dependencies {
     api(project(":sdk:all"))

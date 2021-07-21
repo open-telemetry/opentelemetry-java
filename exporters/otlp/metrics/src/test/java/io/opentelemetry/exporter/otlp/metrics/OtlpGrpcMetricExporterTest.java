@@ -5,10 +5,12 @@
 
 package io.opentelemetry.exporter.otlp.metrics;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.io.Closer;
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
 import io.grpc.Status;
@@ -16,7 +18,7 @@ import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
@@ -40,6 +42,9 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
+import org.slf4j.event.LoggingEvent;
 
 class OtlpGrpcMetricExporterTest {
 
@@ -49,6 +54,9 @@ class OtlpGrpcMetricExporterTest {
       InProcessChannelBuilder.forName(serverName).directExecutor().build();
 
   private final Closer closer = Closer.create();
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(OtlpGrpcMetricExporter.class);
 
   @BeforeEach
   public void setup() throws IOException {
@@ -216,6 +224,31 @@ class OtlpGrpcMetricExporterTest {
     } finally {
       exporter.shutdown();
     }
+    LoggingEvent log =
+        logs.assertContains(
+            "Failed to export metrics. Server is UNAVAILABLE. "
+                + "Make sure your collector is running and reachable from this network.");
+    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+  }
+
+  @Test
+  void testExport_Unimplemented() {
+    fakeCollector.setReturnedStatus(Status.UNIMPLEMENTED);
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
+    try {
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())).isSuccess())
+          .isFalse();
+    } finally {
+      exporter.shutdown();
+    }
+    LoggingEvent log =
+        logs.assertContains(
+            "Failed to export metrics. Server responded with UNIMPLEMENTED. "
+                + "This usually means that your collector is not configured with an otlp "
+                + "receiver in the \"pipelines\" section of the configuration. "
+                + "Full error message: UNIMPLEMENTED");
+    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
   }
 
   @Test
@@ -268,7 +301,7 @@ class OtlpGrpcMetricExporterTest {
             /* isMonotonic= */ true,
             AggregationTemporality.CUMULATIVE,
             Collections.singletonList(
-                LongPointData.create(startNs, endNs, Labels.of("k", "v"), 5))));
+                LongPointData.create(startNs, endNs, Attributes.of(stringKey("k"), "v"), 5))));
   }
 
   private static final class FakeCollector extends MetricsServiceGrpc.MetricsServiceImplBase {

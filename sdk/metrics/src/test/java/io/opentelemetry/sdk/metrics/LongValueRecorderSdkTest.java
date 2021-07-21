@@ -12,15 +12,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongValueRecorder;
 import io.opentelemetry.api.metrics.LongValueRecorder;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +38,7 @@ class LongValueRecorderSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void record_PreventNullLabels() {
@@ -55,7 +57,7 @@ class LongValueRecorderSdkTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    LongValueRecorderSdk longRecorder = sdkMeter.longValueRecorderBuilder("testRecorder").build();
+    LongValueRecorder longRecorder = sdkMeter.longValueRecorderBuilder("testRecorder").build();
     BoundLongValueRecorder bound = longRecorder.bind(Labels.of("key", "value"));
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
@@ -66,13 +68,13 @@ class LongValueRecorderSdkTest {
 
   @Test
   void collectMetrics_WithEmptyLabel() {
-    LongValueRecorderSdk longRecorder =
+    LongValueRecorder longRecorder =
         sdkMeter
             .longValueRecorderBuilder("testRecorder")
             .setDescription("description")
             .setUnit("By")
             .build();
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     longRecorder.record(12, Labels.empty());
     longRecorder.record(12);
     assertThat(sdkMeterProvider.collectAllMetrics())
@@ -88,7 +90,7 @@ class LongValueRecorderSdkTest {
                         DoubleSummaryPointData.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
-                            Labels.empty(),
+                            Attributes.empty(),
                             2,
                             24,
                             valueAtPercentiles(12, 12))))));
@@ -97,7 +99,7 @@ class LongValueRecorderSdkTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    LongValueRecorderSdk longRecorder = sdkMeter.longValueRecorderBuilder("testRecorder").build();
+    LongValueRecorder longRecorder = sdkMeter.longValueRecorderBuilder("testRecorder").build();
     BoundLongValueRecorder bound = longRecorder.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
@@ -105,7 +107,7 @@ class LongValueRecorderSdkTest {
       bound.record(123);
       longRecorder.record(-14, Labels.empty());
       // Advancing time here should not matter.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321);
       longRecorder.record(-121, Labels.of("K", "V"));
       assertThat(sdkMeterProvider.collectAllMetrics())
@@ -121,20 +123,20 @@ class LongValueRecorderSdkTest {
                           DoubleSummaryPointData.create(
                               startTime,
                               testClock.now(),
-                              Labels.of("K", "V"),
+                              Attributes.builder().put("K", "V").build(),
                               3,
                               323,
                               valueAtPercentiles(-121, 321)),
                           DoubleSummaryPointData.create(
                               startTime,
                               testClock.now(),
-                              Labels.empty(),
+                              Attributes.empty(),
                               2,
                               -2,
                               valueAtPercentiles(-14, 12))))));
 
       // Repeat to prove we don't keep previous values.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222);
       longRecorder.record(17, Labels.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
@@ -150,14 +152,14 @@ class LongValueRecorderSdkTest {
                           DoubleSummaryPointData.create(
                               startTime + SECOND_NANOS,
                               testClock.now(),
-                              Labels.of("K", "V"),
+                              Attributes.builder().put("K", "V").build(),
                               1,
                               222,
                               valueAtPercentiles(222, 222)),
                           DoubleSummaryPointData.create(
                               startTime + SECOND_NANOS,
                               testClock.now(),
-                              Labels.empty(),
+                              Attributes.empty(),
                               1,
                               17,
                               valueAtPercentiles(17, 17))))));
@@ -168,11 +170,13 @@ class LongValueRecorderSdkTest {
 
   @Test
   void stressTest() {
-    final LongValueRecorderSdk longRecorder =
+    final LongValueRecorder longRecorder =
         sdkMeter.longValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(longRecorder).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((LongValueRecorderSdk) longRecorder)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -202,7 +206,7 @@ class LongValueRecorderSdkTest {
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of("K", "V"),
+                            Attributes.builder().put("K", "V").build(),
                             16_000,
                             160_000,
                             valueAtPercentiles(9, 11))))));
@@ -212,11 +216,13 @@ class LongValueRecorderSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongValueRecorderSdk longRecorder =
+    final LongValueRecorder longRecorder =
         sdkMeter.longValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(longRecorder).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((LongValueRecorderSdk) longRecorder)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -248,28 +254,28 @@ class LongValueRecorderSdkTest {
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[0], values[0]),
+                            Attributes.builder().put(keys[0], values[0]).build(),
                             2_000,
                             20_000,
                             valueAtPercentiles(9, 11)),
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[1], values[1]),
+                            Attributes.builder().put(keys[1], values[1]).build(),
                             2_000,
                             20_000,
                             valueAtPercentiles(9, 11)),
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[2], values[2]),
+                            Attributes.builder().put(keys[2], values[2]).build(),
                             2_000,
                             20_000,
                             valueAtPercentiles(9, 11)),
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[3], values[3]),
+                            Attributes.builder().put(keys[3], values[3]).build(),
                             2_000,
                             20_000,
                             valueAtPercentiles(9, 11))))));

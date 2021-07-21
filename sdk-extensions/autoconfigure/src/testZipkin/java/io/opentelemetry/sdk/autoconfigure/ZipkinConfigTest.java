@@ -52,6 +52,7 @@ class ZipkinConfigTest {
     String endpoint = "localhost:" + server.httpPort();
 
     System.setProperty("otel.exporter.zipkin.endpoint", "http://" + endpoint + "/api/v2/spans");
+    System.setProperty("otel.exporter.zipkin.timeout", "5s");
 
     OpenTelemetrySdkAutoConfiguration.initialize();
 

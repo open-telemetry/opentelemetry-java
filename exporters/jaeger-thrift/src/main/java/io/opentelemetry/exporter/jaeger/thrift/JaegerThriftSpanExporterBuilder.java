@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.jaeger.thrift;
 
 import io.jaegertracing.thrift.internal.senders.HttpSender;
 import io.jaegertracing.thrift.internal.senders.ThriftSender;
+import org.apache.thrift.transport.TTransportException;
 
 /** Builder utility for this exporter. */
 public final class JaegerThriftSpanExporterBuilder {
@@ -46,7 +47,11 @@ public final class JaegerThriftSpanExporterBuilder {
    */
   public JaegerThriftSpanExporter build() {
     if (thriftSender == null) {
-      thriftSender = new HttpSender.Builder(endpoint).build();
+      try {
+        thriftSender = new HttpSender.Builder(endpoint).build();
+      } catch (TTransportException e) {
+        throw new IllegalStateException("Failed to construct a thrift HttpSender.", e);
+      }
     }
     return new JaegerThriftSpanExporter(thriftSender);
   }

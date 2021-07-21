@@ -1,12 +1,12 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
     id("org.unbroken-dome.test-sets")
 }
 
 description = "OpenTelemetry SDK Auto-configuration"
-extra["moduleName"] = "io.opentelemetry.sdk.autoconfigure"
+otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure")
 
 testSets {
     create("testConfigError")
@@ -26,7 +26,6 @@ dependencies {
 
     implementation(project(":semconv"))
 
-    compileOnly(project(":extensions:trace-propagators"))
     compileOnly(project(":exporters:jaeger"))
     compileOnly(project(":exporters:logging"))
     compileOnly(project(":exporters:otlp:all"))
@@ -34,6 +33,8 @@ dependencies {
     compileOnly(project(":exporters:prometheus"))
     compileOnly("io.prometheus:simpleclient_httpserver")
     compileOnly(project(":exporters:zipkin"))
+
+    testImplementation(project(path=":sdk:trace-shaded-deps"))
 
     testImplementation(project(":proto"))
     testImplementation(project(":sdk:testing"))

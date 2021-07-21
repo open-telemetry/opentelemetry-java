@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.testing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
@@ -38,7 +38,8 @@ class InMemoryMetricExporterTest {
             /* isMonotonic= */ true,
             AggregationTemporality.CUMULATIVE,
             Collections.singletonList(
-                LongPointData.create(startNs, endNs, Labels.of("k", "v"), 5))));
+                LongPointData.create(
+                    startNs, endNs, Attributes.builder().put("k", "v").build(), 5))));
   }
 
   @Test

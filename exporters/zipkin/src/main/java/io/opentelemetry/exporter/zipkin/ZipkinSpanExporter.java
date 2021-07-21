@@ -14,6 +14,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -42,9 +43,12 @@ import zipkin2.reporter.Sender;
  */
 public final class ZipkinSpanExporter implements SpanExporter {
   public static final String DEFAULT_ENDPOINT = "http://localhost:9411/api/v2/spans";
+  public static final Logger baseLogger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
-  private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
+  private final ThrottlingLogger logger = new ThrottlingLogger(baseLogger);
 
+  static final String OTEL_DROPPED_ATTRIBUTES_COUNT = "otel.dropped_attributes_count";
+  static final String OTEL_DROPPED_EVENTS_COUNT = "otel.dropped_events_count";
   static final String OTEL_STATUS_CODE = "otel.status_code";
   static final AttributeKey<String> STATUS_ERROR = stringKey("error");
 
@@ -77,7 +81,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       }
     } catch (Exception e) {
       // don't crash the caller if there was a problem reading nics.
-      logger.log(Level.FINE, "error reading nics", e);
+      baseLogger.log(Level.FINE, "error reading nics", e);
     }
     return null;
   }
@@ -105,6 +109,11 @@ public final class ZipkinSpanExporter implements SpanExporter {
     Attributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
         (key, value) -> spanBuilder.putTag(key.getKey(), valueToString(key, value)));
+    int droppedAttributes = spanData.getTotalAttributeCount() - spanAttributes.size();
+    if (droppedAttributes > 0) {
+      spanBuilder.putTag(OTEL_DROPPED_ATTRIBUTES_COUNT, String.valueOf(droppedAttributes));
+    }
+
     StatusData status = spanData.getStatus();
 
     // include status code & error.
@@ -130,6 +139,10 @@ public final class ZipkinSpanExporter implements SpanExporter {
 
     for (EventData annotation : spanData.getEvents()) {
       spanBuilder.addAnnotation(toEpochMicros(annotation.getEpochNanos()), annotation.getName());
+    }
+    int droppedEvents = spanData.getTotalRecordedEvents() - spanData.getEvents().size();
+    if (droppedEvents > 0) {
+      spanBuilder.putTag(OTEL_DROPPED_EVENTS_COUNT, String.valueOf(droppedEvents));
     }
 
     return spanBuilder.build();

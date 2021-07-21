@@ -14,32 +14,12 @@ spans will be sent to a Jaeger gRPC endpoint running on `localhost`:
 ```java
 JaegerGrpcSpanExporter exporter =
         JaegerGrpcSpanExporter.builder()
-            .setEndpoint("localhost:14250")
-            .setServiceName("my-service")
+            .setEndpoint("http://localhost:14250")
             .build();
 ```
 
-Service name and Endpoint can be also configured via environment variables or system properties.
-
-```java
-// Using environment variables
-JaegerGrpcSpanExporter exporter = 
-        JaegerGrpcSpanExporter.builder()
-            .readEnvironmentVariables()
-            .build()
-```
-
-```java
-// Using system properties
-JaegerGrpcSpanExporter exporter = 
-        JaegerGrpcSpanExporter.builder()
-            .readSystemProperties()
-            .build()
-```
-
-The Jaeger gRPC span exporter will look for the following environment variables / system properties:
-* `OTEL_EXPORTER_JAEGER_SERVICE_NAME` / `otel.exporter.jaeger.service.name`
-* `OTEL_EXPORTER_JAEGER_ENDPOINT` / `otel.exporter.jaeger.endpoint`
+If you need configuration via environment variables and/or system properties, you will want to use
+the [autoconfigure](../../sdk-extensions/autoconfigure) module.
 
 ## Compatibility
 
@@ -47,7 +27,8 @@ As with the OpenTelemetry SDK itself, this exporter is compatible with Java 8+ a
 
 ## Proto files
 
-The proto files in this repository were copied over from the [Jaeger main repository][proto-origin]. At this moment, they have to be manually synchronize, but a [discussion exists][proto-discussion] on how to properly consume them in a more appropriate manner.
+The proto files in this repository were copied over from the [Jaeger main repository][proto-origin]. 
+At this moment, they have to be manually synchronized, but a [discussion exists][proto-discussion] on how to properly consume them in a more appropriate manner.
 
 [proto-origin]: https://github.com/jaegertracing/jaeger/tree/5b8c1f40f932897b9322bf3f110d830536ae4c71/model/proto
 [proto-discussion]: https://github.com/open-telemetry/opentelemetry-java/issues/235

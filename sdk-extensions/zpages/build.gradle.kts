@@ -1,16 +1,18 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("me.champeau.gradle.jmh")
+    id("otel.jmh-conventions")
 }
 
 description = "OpenTelemetry - zPages"
-extra["moduleName"] = "io.opentelemetry.sdk.extension.zpages"
+otelJava.moduleName.set("io.opentelemetry.sdk.extension.zpages")
 
 dependencies {
     implementation(project(":api:all"))
     implementation(project(":sdk:all"))
+
+    testImplementation(project(":sdk:testing"))
 
     testImplementation("com.google.guava:guava")
     

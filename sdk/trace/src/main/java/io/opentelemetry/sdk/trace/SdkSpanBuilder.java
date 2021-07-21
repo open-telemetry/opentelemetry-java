@@ -12,7 +12,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
@@ -22,14 +21,12 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -41,13 +38,12 @@ final class SdkSpanBuilder implements SpanBuilder {
   private final TracerSharedState tracerSharedState;
   private final SpanLimits spanLimits;
 
-  @Nullable private Context parent;
+  @Nullable private Context parent; // null means: Use current context.
   private SpanKind spanKind = SpanKind.INTERNAL;
   @Nullable private AttributesMap attributes;
   @Nullable private List<LinkData> links;
   private int totalNumberOfLinksAdded = 0;
   private long startEpochNanos = 0;
-  private boolean isRootSpan;
 
   SdkSpanBuilder(
       String spanName,
@@ -62,45 +58,56 @@ final class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder setParent(Context context) {
-    Objects.requireNonNull(context, "context");
-    this.isRootSpan = false;
+    if (context == null) {
+      return this;
+    }
     this.parent = context;
     return this;
   }
 
   @Override
   public SpanBuilder setNoParent() {
-    this.isRootSpan = true;
-    this.parent = null;
+    this.parent = Context.root();
     return this;
   }
 
   @Override
   public SpanBuilder setSpanKind(SpanKind spanKind) {
-    this.spanKind = Objects.requireNonNull(spanKind, "spanKind");
+    if (spanKind == null) {
+      return this;
+    }
+    this.spanKind = spanKind;
     return this;
   }
 
   @Override
   public SpanBuilder addLink(SpanContext spanContext) {
+    if (spanContext == null || !spanContext.isValid()) {
+      return this;
+    }
     addLink(LinkData.create(spanContext));
     return this;
   }
 
   @Override
   public SpanBuilder addLink(SpanContext spanContext, Attributes attributes) {
+    if (spanContext == null || !spanContext.isValid()) {
+      return this;
+    }
+    if (attributes == null) {
+      attributes = Attributes.empty();
+    }
     int totalAttributeCount = attributes.size();
     addLink(
         LinkData.create(
             spanContext,
-            RecordEventsReadableSpan.copyAndLimitAttributes(
+            RecordEventsReadableSpan.applyAttributesLimit(
                 attributes, spanLimits.getMaxNumberOfAttributesPerLink()),
             totalAttributeCount));
     return this;
   }
 
   private void addLink(LinkData link) {
-    Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     if (links == null) {
       links = new ArrayList<>(spanLimits.getMaxNumberOfLinks());
@@ -136,8 +143,7 @@ final class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public <T> SpanBuilder setAttribute(AttributeKey<T> key, T value) {
-    Objects.requireNonNull(key, "key");
-    if (value == null) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
     if (attributes == null) {
@@ -150,7 +156,9 @@ final class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder setStartTimestamp(long startTimestamp, TimeUnit unit) {
-    Utils.checkArgument(startTimestamp >= 0, "Negative startTimestamp");
+    if (startTimestamp < 0 || unit == null) {
+      return this;
+    }
     startEpochNanos = unit.toNanos(startTimestamp);
     return this;
   }
@@ -158,11 +166,10 @@ final class SdkSpanBuilder implements SpanBuilder {
   @Override
   @SuppressWarnings({"unchecked", "rawtypes"})
   public Span startSpan() {
-    final Context parentContext =
-        isRootSpan ? Context.root() : parent == null ? Context.current() : parent;
+    final Context parentContext = parent == null ? Context.current() : parent;
     final Span parentSpan = Span.fromContext(parentContext);
     final SpanContext parentSpanContext = parentSpan.getSpanContext();
-    String traceId;
+    final String traceId;
     IdGenerator idGenerator = tracerSharedState.getIdGenerator();
     String spanId = idGenerator.generateSpanId();
     if (!parentSpanContext.isValid()) {
@@ -227,12 +234,12 @@ final class SdkSpanBuilder implements SpanBuilder {
         startEpochNanos);
   }
 
-  private static Clock getClock(Span parent, Clock clock) {
+  private static AnchoredClock getClock(Span parent, Clock clock) {
     if (parent instanceof RecordEventsReadableSpan) {
       RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parent;
       return parentRecordEventsSpan.getClock();
     } else {
-      return MonotonicClock.create(clock);
+      return AnchoredClock.create(clock);
     }
   }
 

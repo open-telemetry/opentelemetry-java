@@ -16,6 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -23,7 +24,6 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +33,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -197,12 +196,19 @@ class BatchSpanProcessorTest {
             .build();
 
     sdkTracerProvider = SdkTracerProvider.builder().addSpanProcessor(batchSpanProcessor).build();
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 50; i++) {
       createEndedSpan("notExported");
     }
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
-    assertThat(exported.size()).isEqualTo(98);
+    assertThat(exported.size()).isEqualTo(49);
+
+    for (int i = 0; i < 50; i++) {
+      createEndedSpan("notExported");
+    }
+    exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(49);
 
     batchSpanProcessor.forceFlush().join(10, TimeUnit.SECONDS);
     exported = waitingSpanExporter.getExported();
@@ -358,6 +364,7 @@ class BatchSpanProcessorTest {
     // Still processing new spans.
     CountDownLatch exportedAgain = new CountDownLatch(1);
     reset(mockSpanExporter);
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(mockSpanExporter.export(
             argThat(
                 spans -> {
@@ -386,11 +393,11 @@ class BatchSpanProcessorTest {
             .build();
 
     when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
-        .thenReturn(SamplingResult.create(SamplingDecision.DROP));
+        .thenReturn(SamplingResult.drop());
     sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_1).startSpan().end();
     sdkTracerProvider.get("test").spanBuilder(SPAN_NAME_2).startSpan().end();
     when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
-        .thenReturn(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
+        .thenReturn(SamplingResult.recordAndSample());
     ReadableSpan span = createEndedSpan(SPAN_NAME_2);
     // Spans are recorded and exported in the same order as they are ended, we test that a non
     // sampled span is not exported by creating and ending a sampled span after a non sampled span
@@ -408,7 +415,7 @@ class BatchSpanProcessorTest {
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
 
     when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
-        .thenReturn(SamplingResult.create(SamplingDecision.RECORD_ONLY));
+        .thenReturn(SamplingResult.recordOnly());
     sdkTracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(
@@ -420,7 +427,7 @@ class BatchSpanProcessorTest {
 
     createEndedSpan(SPAN_NAME_1);
     when(mockSampler.shouldSample(any(), any(), any(), any(), any(), anyList()))
-        .thenReturn(SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE));
+        .thenReturn(SamplingResult.recordAndSample());
     ReadableSpan span = createEndedSpan(SPAN_NAME_2);
 
     // Spans are recorded and exported in the same order as they are ended, we test that a non

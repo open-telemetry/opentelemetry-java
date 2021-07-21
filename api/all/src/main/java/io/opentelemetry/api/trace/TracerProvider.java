@@ -28,7 +28,9 @@ public interface TracerProvider {
    * Gets or creates a named tracer instance.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null. If the
+   *     instrumented library is providing its own instrumentation, this should match the library
+   *     name.
    * @return a tracer instance.
    */
   Tracer get(String instrumentationName);
@@ -37,9 +39,23 @@ public interface TracerProvider {
    * Gets or creates a named and versioned tracer instance.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null. If the
+   *     instrumented library is providing its own instrumentation, this should match the library
+   *     name.
    * @param instrumentationVersion The version of the instrumentation library (e.g., "1.0.0").
    * @return a tracer instance.
    */
   Tracer get(String instrumentationName, String instrumentationVersion);
+
+  /**
+   * Creates a TracerBuilder for a named {@link Tracer} instance.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @return a TracerBuilder instance.
+   * @since 1.4.0
+   */
+  default TracerBuilder tracerBuilder(String instrumentationName) {
+    return DefaultTracerBuilder.getInstance();
+  }
 }

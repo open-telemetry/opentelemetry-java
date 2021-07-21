@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
 import com.google.common.io.Closer;
+import io.github.netmikey.logunit.api.LogCapturer;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
 import io.grpc.Status;
@@ -27,6 +28,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -39,6 +41,9 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.event.Level;
+import org.slf4j.event.LoggingEvent;
 
 class OtlpGrpcSpanExporterTest {
 
@@ -51,6 +56,9 @@ class OtlpGrpcSpanExporterTest {
       InProcessChannelBuilder.forName(serverName).directExecutor().build();
 
   private final Closer closer = Closer.create();
+
+  @RegisterExtension
+  LogCapturer logs = LogCapturer.create().captureForType(OtlpGrpcSpanExporter.class);
 
   @BeforeEach
   public void setup() throws IOException {
@@ -155,6 +163,14 @@ class OtlpGrpcSpanExporterTest {
   }
 
   @Test
+  void doubleShutdown() {
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
+    assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
   void testExport_Cancelled() {
     fakeCollector.setReturnedStatus(Status.CANCELLED);
     OtlpGrpcSpanExporter exporter =
@@ -217,6 +233,31 @@ class OtlpGrpcSpanExporterTest {
     } finally {
       exporter.shutdown();
     }
+    LoggingEvent log =
+        logs.assertContains(
+            "Failed to export spans. Server is UNAVAILABLE. "
+                + "Make sure your collector is running and reachable from this network.");
+    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+  }
+
+  @Test
+  void testExport_Unimplemented() {
+    fakeCollector.setReturnedStatus(Status.UNIMPLEMENTED);
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
+    try {
+      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())).isSuccess())
+          .isFalse();
+    } finally {
+      exporter.shutdown();
+    }
+    LoggingEvent log =
+        logs.assertContains(
+            "Failed to export spans. Server responded with UNIMPLEMENTED. "
+                + "This usually means that your collector is not configured with an otlp "
+                + "receiver in the \"pipelines\" section of the configuration. "
+                + "Full error message: UNIMPLEMENTED");
+    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
   }
 
   @Test
@@ -261,6 +302,8 @@ class OtlpGrpcSpanExporterTest {
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
+        .setInstrumentationLibraryInfo(
+            InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
         .build();
   }
 

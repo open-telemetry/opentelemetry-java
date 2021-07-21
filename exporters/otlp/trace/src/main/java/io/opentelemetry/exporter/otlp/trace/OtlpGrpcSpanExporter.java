@@ -10,8 +10,9 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
 import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMetricsProvider;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
@@ -21,6 +22,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc.TraceServiceFutureStub;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
@@ -34,14 +36,15 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
 
-  private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
   private static final String EXPORTER_NAME = OtlpGrpcSpanExporter.class.getSimpleName();
-
   private static final Labels EXPORTER_NAME_LABELS = Labels.of("exporter", EXPORTER_NAME);
   private static final Labels EXPORT_SUCCESS_LABELS =
       Labels.of("exporter", EXPORTER_NAME, "success", "true");
   private static final Labels EXPORT_FAILURE_LABELS =
       Labels.of("exporter", EXPORTER_NAME, "success", "false");
+
+  private final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(OtlpGrpcSpanExporter.class.getName()));
 
   private final TraceServiceFutureStub traceService;
 
@@ -59,7 +62,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    *     0 or to a negative value, the exporter will wait indefinitely.
    */
   OtlpGrpcSpanExporter(ManagedChannel channel, long timeoutNanos) {
-    Meter meter = GlobalMetricsProvider.getMeter("io.opentelemetry.exporters.otlp");
+    Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.exporters.otlp");
     this.spansSeen =
         meter.longCounterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
     LongCounter spansExportedCounter = meter.longCounterBuilder("spansExportedByExporter").build();
@@ -106,8 +109,33 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
           @Override
           public void onFailure(Throwable t) {
             spansExportedFailure.add(spans.size());
-            logger.log(Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
-            logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
+            Status status = Status.fromThrowable(t);
+            switch (status.getCode()) {
+              case UNIMPLEMENTED:
+                logger.log(
+                    Level.SEVERE,
+                    "Failed to export spans. Server responded with UNIMPLEMENTED. "
+                        + "This usually means that your collector is not configured with an otlp "
+                        + "receiver in the \"pipelines\" section of the configuration. "
+                        + "Full error message: "
+                        + t.getMessage());
+                break;
+              case UNAVAILABLE:
+                logger.log(
+                    Level.SEVERE,
+                    "Failed to export spans. Server is UNAVAILABLE. "
+                        + "Make sure your collector is running and reachable from this network. "
+                        + "Full error message:"
+                        + t.getMessage());
+                break;
+              default:
+                logger.log(
+                    Level.WARNING, "Failed to export spans. Error message: " + t.getMessage());
+                break;
+            }
+            if (logger.isLoggable(Level.FINEST)) {
+              logger.log(Level.FINEST, "Failed to export spans. Details follow: " + t);
+            }
             result.fail();
           }
         },
@@ -153,6 +181,9 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = new CompletableResultCode();
     managedChannel.notifyWhenStateChanged(ConnectivityState.SHUTDOWN, result::succeed);
+    if (managedChannel.isShutdown()) {
+      return result.succeed();
+    }
     managedChannel.shutdown();
     this.spansSeen.unbind();
     this.spansExportedSuccess.unbind();

@@ -17,7 +17,7 @@ public final class OsResource {
   private static final Resource INSTANCE = buildResource();
 
   /**
-   * Returns a factory of a {@link Resource} which provides information about the current operating
+   * Returns a factory for a {@link Resource} which provides information about the current operating
    * system.
    */
   public static Resource get() {
@@ -55,7 +55,7 @@ public final class OsResource {
     String osDescription = version != null ? os + ' ' + version : os;
     attributes.put(ResourceAttributes.OS_DESCRIPTION, osDescription);
 
-    return Resource.create(attributes.build());
+    return Resource.create(attributes.build(), ResourceAttributes.SCHEMA_URL);
   }
 
   @Nullable
@@ -82,7 +82,7 @@ public final class OsResource {
     } else if (os.startsWith("solaris")) {
       return ResourceAttributes.OsTypeValues.SOLARIS;
     } else if (os.startsWith("z/os")) {
-      return ResourceAttributes.OsTypeValues.ZOS;
+      return ResourceAttributes.OsTypeValues.Z_OS;
     }
     return null;
   }

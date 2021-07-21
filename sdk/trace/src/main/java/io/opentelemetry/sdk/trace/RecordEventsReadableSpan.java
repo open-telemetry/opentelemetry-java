@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -32,7 +32,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
@@ -57,7 +56,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   // The kind of the span.
   private final SpanKind kind;
   // The clock used to get the time.
-  private final Clock clock;
+  private final AnchoredClock clock;
   // The resource associated with this span.
   private final Resource resource;
   // instrumentation library of the named tracer which created this span
@@ -98,7 +97,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       SpanContext parentSpanContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
-      Clock clock,
+      AnchoredClock clock,
       Resource resource,
       @Nullable AttributesMap attributes,
       List<LinkData> links,
@@ -146,7 +145,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       @Nonnull Context parentContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
-      Clock clock,
+      AnchoredClock clock,
       Resource resource,
       AttributesMap attributes,
       List<LinkData> links,
@@ -240,18 +239,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     }
   }
 
-  /**
-   * Returns the {@code Clock} used by this {@code Span}.
-   *
-   * @return the {@code Clock} used by this {@code Span}.
-   */
-  Clock getClock() {
+  /** Returns the {@link AnchoredClock} used by this {@link Span}. */
+  AnchoredClock getClock() {
     return clock;
   }
 
   @Override
   public <T> ReadWriteSpan setAttribute(AttributeKey<T> key, T value) {
-    if (key == null || key.getKey() == null || key.getKey().length() == 0 || value == null) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
     synchronized (lock) {
@@ -299,7 +294,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         EventData.create(
             clock.now(),
             name,
-            copyAndLimitAttributes(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
+            applyAttributesLimit(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
     return this;
   }
@@ -317,13 +312,13 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         EventData.create(
             unit.toNanos(timestamp),
             name,
-            copyAndLimitAttributes(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
+            applyAttributesLimit(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
             totalAttributeCount));
     return this;
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  static Attributes copyAndLimitAttributes(final Attributes attributes, final int limit) {
+  static Attributes applyAttributesLimit(final Attributes attributes, final int limit) {
     if (attributes.isEmpty() || attributes.size() <= limit) {
       return attributes;
     }
@@ -481,6 +476,12 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private List<EventData> getImmutableTimedEvents() {
     if (events.isEmpty()) {
       return Collections.emptyList();
+    }
+
+    // if the span has ended, then the events are unmodifiable
+    // so we can return them directly and save copying all the data.
+    if (hasEnded) {
+      return Collections.unmodifiableList(events);
     }
 
     return Collections.unmodifiableList(new ArrayList<>(events));

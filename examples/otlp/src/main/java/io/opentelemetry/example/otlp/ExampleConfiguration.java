@@ -65,7 +65,7 @@ public final class ExampleConfiguration {
             .setMetricExporter(metricExporter)
             .setMetricProducers(Collections.singleton(meterProvider))
             .setExportIntervalMillis(1000)
-            .build();
+            .buildAndStart();
 
     Runtime.getRuntime().addShutdownHook(new Thread(intervalMetricReader::shutdown));
 

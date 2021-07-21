@@ -5,6 +5,7 @@
 
 package io.opentelemetry.opencensusshim;
 
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -51,11 +52,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.data.DoublePointData;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricDataType;
-import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -359,7 +356,7 @@ class InteroperabilityTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // Summary is deprecated in census
+  @SuppressWarnings({"deprecation", "unchecked"}) // Summary is deprecated in census
   void testSupportedMetricsExportedCorrectly() {
     Tagger tagger = Tags.getTagger();
     Measure.MeasureLong latency =
@@ -422,42 +419,49 @@ class InteroperabilityTest {
     assertThat(metricData.size()).isEqualTo(4);
 
     MetricData metric = metricData.get(0);
-    assertThat(metric.getName()).isEqualTo("double_gauge");
-    assertThat(metric.getDescription()).isEqualTo("double gauge");
-    assertThat(metric.getUnit()).isEqualTo("ms");
-    assertThat(metric.getType()).isEqualTo(MetricDataType.DOUBLE_GAUGE);
-    assertThat(metric.getDoubleGaugeData().getPoints().size()).isEqualTo(1);
-    PointData pointData = metric.getDoubleGaugeData().getPoints().iterator().next();
-    assertThat(((DoublePointData) pointData).getValue()).isEqualTo(60);
-    assertThat(pointData.getLabels().size()).isEqualTo(0);
-
+    assertThat(metric)
+        .hasName("double_gauge")
+        .hasDescription("double gauge")
+        .hasUnit("ms")
+        .hasDoubleGauge()
+        .points()
+        .satisfiesExactly(point -> assertThat(point).hasValue(60).attributes().hasSize(0));
     metric = metricData.get(1);
-    assertThat(metric.getName()).isEqualTo("double_sum");
-    assertThat(metric.getDescription()).isEqualTo("double sum");
-    assertThat(metric.getUnit()).isEqualTo("ms");
-    assertThat(metric.getType()).isEqualTo(MetricDataType.DOUBLE_SUM);
-    assertThat(metric.getDoubleSumData().getPoints().size()).isEqualTo(1);
-    pointData = metric.getDoubleSumData().getPoints().iterator().next();
-    assertThat(((DoublePointData) pointData).getValue()).isEqualTo(60);
-    assertThat(pointData.getLabels().size()).isEqualTo(0);
-
+    assertThat(metric)
+        .hasName("double_sum")
+        .hasDescription("double sum")
+        .hasUnit("ms")
+        .hasDoubleSum()
+        .points()
+        .satisfiesExactly(point -> assertThat(point).hasValue(60).attributes().hasSize(0));
     metric = metricData.get(2);
-    assertThat(metric.getName()).isEqualTo("long_gauge");
-    assertThat(metric.getDescription()).isEqualTo("long gauge");
-    assertThat(metric.getUnit()).isEqualTo("ms");
-    assertThat(metric.getType()).isEqualTo(MetricDataType.LONG_GAUGE);
-    assertThat(metric.getLongGaugeData().getPoints().size()).isEqualTo(1);
-
+    assertThat(metric)
+        .hasName("long_gauge")
+        .hasDescription("long gauge")
+        .hasUnit("ms")
+        .hasLongGauge()
+        .points()
+        .satisfiesExactly(
+            point ->
+                assertThat(point)
+                    .hasValue(50)
+                    .attributes()
+                    .hasSize(1)
+                    .containsEntry(tagKey.getName(), tagValue.asString()));
     metric = metricData.get(3);
-    assertThat(metric.getName()).isEqualTo("long_sum");
-    assertThat(metric.getDescription()).isEqualTo("long sum");
-    assertThat(metric.getUnit()).isEqualTo("ms");
-    assertThat(metric.getType()).isEqualTo(MetricDataType.LONG_SUM);
-    assertThat(metric.getLongSumData().getPoints().size()).isEqualTo(1);
-    pointData = metric.getLongSumData().getPoints().iterator().next();
-    assertThat(((LongPointData) pointData).getValue()).isEqualTo(50);
-    assertThat(pointData.getLabels().size()).isEqualTo(1);
-    assertThat(pointData.getLabels().get(tagKey.getName())).isEqualTo(tagValue.asString());
+    assertThat(metric)
+        .hasName("long_sum")
+        .hasDescription("long sum")
+        .hasUnit("ms")
+        .hasLongSum()
+        .points()
+        .satisfiesExactly(
+            point ->
+                assertThat(point)
+                    .hasValue(50)
+                    .attributes()
+                    .hasSize(1)
+                    .containsEntry(tagKey.getName(), tagValue.asString()));
   }
 
   @Test

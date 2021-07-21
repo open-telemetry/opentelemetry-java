@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -17,12 +19,21 @@ import java.util.Map;
 final class MetricDataUtils {
   private MetricDataUtils() {}
 
+  // Temporary workaround while new API/SDK is implemented.
+  static Attributes toAttributes(Labels labels) {
+    AttributesBuilder result = Attributes.builder();
+    labels.forEach(result::put);
+    return result.build();
+  }
+
   static List<LongPointData> toLongPointList(
       Map<Labels, Long> accumulationMap, long startEpochNanos, long epochNanos) {
     List<LongPointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(LongPointData.create(startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(
+                LongPointData.create(
+                    startEpochNanos, epochNanos, toAttributes(labels), accumulation)));
     return points;
   }
 
@@ -31,7 +42,9 @@ final class MetricDataUtils {
     List<DoublePointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(DoublePointData.create(startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(
+                DoublePointData.create(
+                    startEpochNanos, epochNanos, toAttributes(labels), accumulation)));
     return points;
   }
 
@@ -60,7 +73,12 @@ final class MetricDataUtils {
           }
           points.add(
               DoubleHistogramPointData.create(
-                  startEpochNanos, epochNanos, labels, aggregator.getSum(), boundaries, counts));
+                  startEpochNanos,
+                  epochNanos,
+                  toAttributes(labels),
+                  aggregator.getSum(),
+                  boundaries,
+                  counts));
         });
     return points;
   }

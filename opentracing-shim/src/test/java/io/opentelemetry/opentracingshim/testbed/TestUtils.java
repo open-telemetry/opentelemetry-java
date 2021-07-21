@@ -102,8 +102,8 @@ public final class TestUtils {
     try {
       TimeUnit.MILLISECONDS.sleep(new Random().nextInt(500));
     } catch (InterruptedException e) {
-      e.printStackTrace();
       Thread.currentThread().interrupt();
+      throw new IllegalStateException("Interrupted", e);
     }
   }
 
@@ -112,8 +112,8 @@ public final class TestUtils {
     try {
       TimeUnit.MILLISECONDS.sleep(milliseconds);
     } catch (InterruptedException e) {
-      e.printStackTrace();
       Thread.currentThread().interrupt();
+      throw new IllegalStateException("Interrupted", e);
     }
   }
 

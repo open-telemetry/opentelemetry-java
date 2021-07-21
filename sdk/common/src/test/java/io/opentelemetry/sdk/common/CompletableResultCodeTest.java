@@ -11,6 +11,7 @@ import static org.awaitility.Awaitility.await;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -132,6 +133,8 @@ class CompletableResultCodeTest {
     result3.succeed();
     assertThat(all.isDone()).isTrue();
     assertThat(all.isSuccess()).isTrue();
+
+    assertThat(CompletableResultCode.ofAll(Collections.emptyList()).isSuccess()).isTrue();
   }
 
   @Test

@@ -15,5 +15,5 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
  */
 public interface SdkTracerProviderConfigurer {
   /** Configures the {@link SdkTracerProviderBuilder}. */
-  void configure(SdkTracerProviderBuilder tracerProvider);
+  void configure(SdkTracerProviderBuilder tracerProviderBuilder);
 }

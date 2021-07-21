@@ -12,15 +12,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundDoubleValueRecorder;
 import io.opentelemetry.api.metrics.DoubleValueRecorder;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.time.TestClock;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +38,7 @@ class DoubleValueRecorderSdkTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
-  private final SdkMeter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
   void record_PreventNullLabels() {
@@ -55,7 +57,7 @@ class DoubleValueRecorderSdkTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleValueRecorderSdk doubleRecorder =
+    DoubleValueRecorder doubleRecorder =
         sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
     BoundDoubleValueRecorder bound = doubleRecorder.bind(Labels.of("key", "value"));
     try {
@@ -67,13 +69,13 @@ class DoubleValueRecorderSdkTest {
 
   @Test
   void collectMetrics_WithEmptyLabel() {
-    DoubleValueRecorderSdk doubleRecorder =
+    DoubleValueRecorder doubleRecorder =
         sdkMeter
             .doubleValueRecorderBuilder("testRecorder")
             .setDescription("description")
             .setUnit("ms")
             .build();
-    testClock.advanceNanos(SECOND_NANOS);
+    testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleRecorder.record(12d, Labels.empty());
     doubleRecorder.record(12d);
     assertThat(sdkMeterProvider.collectAllMetrics())
@@ -89,7 +91,7 @@ class DoubleValueRecorderSdkTest {
                         DoubleSummaryPointData.create(
                             testClock.now() - SECOND_NANOS,
                             testClock.now(),
-                            Labels.empty(),
+                            Attributes.empty(),
                             2,
                             24d,
                             valueAtPercentiles(12d, 12d))))));
@@ -98,7 +100,7 @@ class DoubleValueRecorderSdkTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    DoubleValueRecorderSdk doubleRecorder =
+    DoubleValueRecorder doubleRecorder =
         sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
     BoundDoubleValueRecorder bound = doubleRecorder.bind(Labels.of("K", "V"));
     try {
@@ -107,7 +109,7 @@ class DoubleValueRecorderSdkTest {
       bound.record(123.3d);
       doubleRecorder.record(-13.1d, Labels.empty());
       // Advancing time here should not matter.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321.5d);
       doubleRecorder.record(-121.5d, Labels.of("K", "V"));
       assertThat(sdkMeterProvider.collectAllMetrics())
@@ -123,20 +125,20 @@ class DoubleValueRecorderSdkTest {
                           DoubleSummaryPointData.create(
                               startTime,
                               testClock.now(),
-                              Labels.of("K", "V"),
+                              Attributes.builder().put("K", "V").build(),
                               3,
                               323.3d,
                               valueAtPercentiles(-121.5d, 321.5d)),
                           DoubleSummaryPointData.create(
                               startTime,
                               testClock.now(),
-                              Labels.empty(),
+                              Attributes.empty(),
                               2,
                               -1.0d,
                               valueAtPercentiles(-13.1d, 12.1d))))));
 
       // Repeat to prove we don't keep previous values.
-      testClock.advanceNanos(SECOND_NANOS);
+      testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222d);
       doubleRecorder.record(17d, Labels.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
@@ -152,14 +154,14 @@ class DoubleValueRecorderSdkTest {
                           DoubleSummaryPointData.create(
                               startTime + SECOND_NANOS,
                               testClock.now(),
-                              Labels.of("K", "V"),
+                              Attributes.builder().put("K", "V").build(),
                               1,
                               222.0d,
                               valueAtPercentiles(222.0, 222.0d)),
                           DoubleSummaryPointData.create(
                               startTime + SECOND_NANOS,
                               testClock.now(),
-                              Labels.empty(),
+                              Attributes.empty(),
                               1,
                               17.0d,
                               valueAtPercentiles(17d, 17d))))));
@@ -170,11 +172,13 @@ class DoubleValueRecorderSdkTest {
 
   @Test
   void stressTest() {
-    final DoubleValueRecorderSdk doubleRecorder =
+    final DoubleValueRecorder doubleRecorder =
         sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleRecorder).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((DoubleValueRecorderSdk) doubleRecorder)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -201,7 +205,7 @@ class DoubleValueRecorderSdkTest {
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of("K", "V"),
+                            Attributes.of(stringKey("K"), "V"),
                             8_000,
                             80_000,
                             valueAtPercentiles(9.0, 11.0))))));
@@ -211,11 +215,13 @@ class DoubleValueRecorderSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleValueRecorderSdk doubleRecorder =
+    final DoubleValueRecorder doubleRecorder =
         sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleRecorder).setCollectionIntervalMs(100);
+        StressTestRunner.builder()
+            .setInstrument((DoubleValueRecorderSdk) doubleRecorder)
+            .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
@@ -246,28 +252,28 @@ class DoubleValueRecorderSdkTest {
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[0], values[0]),
+                            Attributes.of(stringKey(keys[0]), values[0]),
                             4_000,
                             40_000d,
                             valueAtPercentiles(9.0, 11.0)),
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[1], values[1]),
+                            Attributes.of(stringKey(keys[1]), values[1]),
                             4_000,
                             40_000d,
                             valueAtPercentiles(9.0, 11.0)),
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[2], values[2]),
+                            Attributes.of(stringKey(keys[2]), values[2]),
                             4_000,
                             40_000d,
                             valueAtPercentiles(9.0, 11.0)),
                         DoubleSummaryPointData.create(
                             testClock.now(),
                             testClock.now(),
-                            Labels.of(keys[3], values[3]),
+                            Attributes.of(stringKey(keys[3]), values[3]),
                             4_000,
                             40_000d,
                             valueAtPercentiles(9.0, 11.0))))));

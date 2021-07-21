@@ -27,8 +27,8 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.time.TestClock;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -36,6 +36,7 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +62,6 @@ class RecordEventsReadableSpanTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final String SPAN_NEW_NAME = "NewName";
   private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
-  private static final long MILLIS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
   private final IdGenerator idsGenerator = IdGenerator.random();
@@ -91,7 +91,7 @@ class RecordEventsReadableSpanTest {
       builder.put(entry.getKey(), entry.getValue());
     }
     expectedAttributes = builder.build();
-    testClock = TestClock.create(START_EPOCH_NANOS);
+    testClock = TestClock.create(Instant.ofEpochSecond(0, START_EPOCH_NANOS));
   }
 
   @Test
@@ -196,6 +196,17 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
+  void toSpanData_immutableEvents_ended() {
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    span.end();
+    SpanData spanData = span.toSpanData();
+
+    assertThatThrownBy(
+            () -> spanData.getEvents().add(EventData.create(1000, "test", Attributes.empty())))
+        .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
   void toSpanData_RootSpan() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
@@ -255,7 +266,7 @@ class RecordEventsReadableSpanTest {
   void setStatus() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.CONSUMER);
     try {
-      testClock.advanceMillis(MILLIS_PER_SECOND);
+      testClock.advance(Duration.ofSeconds(1));
       assertThat(span.toSpanData().getStatus()).isEqualTo(StatusData.unset());
       span.setStatus(StatusCode.ERROR, "CANCELLED");
       assertThat(span.toSpanData().getStatus())
@@ -303,10 +314,10 @@ class RecordEventsReadableSpanTest {
   void getLatencyNs_ActiveSpan() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
     try {
-      testClock.advanceMillis(MILLIS_PER_SECOND);
+      testClock.advance(Duration.ofSeconds(1));
       long elapsedTimeNanos1 = testClock.now() - START_EPOCH_NANOS;
       assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos1);
-      testClock.advanceMillis(MILLIS_PER_SECOND);
+      testClock.advance(Duration.ofSeconds(1));
       long elapsedTimeNanos2 = testClock.now() - START_EPOCH_NANOS;
       assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos2);
     } finally {
@@ -317,11 +328,11 @@ class RecordEventsReadableSpanTest {
   @Test
   void getLatencyNs_EndedSpan() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
-    testClock.advanceMillis(MILLIS_PER_SECOND);
+    testClock.advance(Duration.ofSeconds(1));
     span.end();
     long elapsedTimeNanos = testClock.now() - START_EPOCH_NANOS;
     assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos);
-    testClock.advanceMillis(MILLIS_PER_SECOND);
+    testClock.advance(Duration.ofSeconds(1));
     assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos);
   }
 
@@ -461,6 +472,118 @@ class RecordEventsReadableSpanTest {
     span.setAttribute(longArrayKey("longArrayAttribute"), Arrays.asList(12345L, null));
     span.setAttribute(doubleArrayKey("doubleArrayAttribute"), Arrays.asList(1.2345, null));
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
+  }
+
+  @Test
+  void setAllAttributes() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    Attributes attributes =
+        Attributes.builder()
+            .put("StringKey", "StringVal")
+            .put("NullStringKey", (String) null)
+            .put("EmptyStringKey", "")
+            .put(stringKey("NullStringAttributeValue"), null)
+            .put(stringKey("EmptyStringAttributeValue"), "")
+            .put("LongKey", 1000L)
+            .put(longKey("LongKey2"), 5)
+            .put(longKey("LongKey3"), 6L)
+            .put("DoubleKey", 10.0)
+            .put("BooleanKey", false)
+            .put(
+                stringArrayKey("ArrayStringKey"),
+                Arrays.asList("StringVal", null, "", "StringVal2"))
+            .put(longArrayKey("ArrayLongKey"), Arrays.asList(1L, 2L, 3L, 4L, 5L))
+            .put(doubleArrayKey("ArrayDoubleKey"), Arrays.asList(0.1, 2.3, 4.5, 6.7, 8.9))
+            .put(booleanArrayKey("ArrayBooleanKey"), Arrays.asList(true, false, false, true))
+            // These should be dropped
+            .put(stringArrayKey("NullArrayStringKey"), null)
+            .put(longArrayKey("NullArrayLongKey"), null)
+            .put(doubleArrayKey("NullArrayDoubleKey"), null)
+            .put(booleanArrayKey("NullArrayBooleanKey"), null)
+            // These should be maintained
+            .put(longArrayKey("ArrayWithNullLongKey"), Arrays.asList(new Long[] {null}))
+            .put(stringArrayKey("ArrayWithNullStringKey"), Arrays.asList(new String[] {null}))
+            .put(doubleArrayKey("ArrayWithNullDoubleKey"), Arrays.asList(new Double[] {null}))
+            .put(booleanArrayKey("ArrayWithNullBooleanKey"), Arrays.asList(new Boolean[] {null}))
+            .build();
+
+    try {
+      span.setAllAttributes(attributes);
+    } finally {
+      span.end();
+    }
+
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getAttributes().size()).isEqualTo(16);
+    assertThat(spanData.getAttributes().get(stringKey("StringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringKey("EmptyStringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringKey("EmptyStringAttributeValue"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longKey("LongKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longKey("LongKey2"))).isEqualTo(5L);
+    assertThat(spanData.getAttributes().get(longKey("LongKey3"))).isEqualTo(6L);
+    assertThat(spanData.getAttributes().get(doubleKey("DoubleKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(booleanKey("BooleanKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringArrayKey("ArrayStringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longArrayKey("ArrayLongKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayDoubleKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(booleanArrayKey("ArrayBooleanKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(longArrayKey("ArrayWithNullLongKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(stringArrayKey("ArrayWithNullStringKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayWithNullDoubleKey"))).isNotNull();
+    assertThat(spanData.getAttributes().get(booleanArrayKey("ArrayWithNullBooleanKey")))
+        .isNotNull();
+    assertThat(spanData.getAttributes().get(stringArrayKey("ArrayStringKey")).size()).isEqualTo(4);
+    assertThat(spanData.getAttributes().get(longArrayKey("ArrayLongKey")).size()).isEqualTo(5);
+    assertThat(spanData.getAttributes().get(doubleArrayKey("ArrayDoubleKey")).size()).isEqualTo(5);
+    assertThat(spanData.getAttributes().get(booleanArrayKey("ArrayBooleanKey")).size())
+        .isEqualTo(4);
+  }
+
+  @Test
+  void setAllAttributes_mergesAttributes() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    Attributes attributes =
+        Attributes.builder()
+            .put("StringKey", "StringVal")
+            .put("LongKey", 1000L)
+            .put("DoubleKey", 10.0)
+            .put("BooleanKey", false)
+            .build();
+
+    try {
+      span.setAttribute("StringKey", "OtherStringVal")
+          .setAttribute("ExistingStringKey", "ExistingStringVal")
+          .setAttribute("LongKey", 2000L)
+          .setAllAttributes(attributes);
+    } finally {
+      span.end();
+    }
+
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getAttributes().size()).isEqualTo(5);
+    assertThat(spanData.getAttributes().get(stringKey("StringKey")))
+        .isNotNull()
+        .isEqualTo("StringVal");
+    assertThat(spanData.getAttributes().get(stringKey("ExistingStringKey")))
+        .isNotNull()
+        .isEqualTo("ExistingStringVal");
+    assertThat(spanData.getAttributes().get(longKey("LongKey"))).isNotNull().isEqualTo(1000L);
+    assertThat(spanData.getAttributes().get(doubleKey("DoubleKey"))).isNotNull().isEqualTo(10.0);
+    assertThat(spanData.getAttributes().get(booleanKey("BooleanKey"))).isNotNull().isEqualTo(false);
+  }
+
+  @Test
+  void setAllAttributes_nullAttributes() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    span.setAllAttributes(null);
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(0);
+  }
+
+  @Test
+  void setAllAttributes_emptyAttributes() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    span.setAllAttributes(Attributes.empty());
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(0);
   }
 
   @Test
@@ -605,7 +728,7 @@ class RecordEventsReadableSpanTest {
     try {
       for (int i = 0; i < 2 * maxNumberOfEvents; i++) {
         span.addEvent("event2", Attributes.empty());
-        testClock.advanceMillis(MILLIS_PER_SECOND);
+        testClock.advance(Duration.ofSeconds(1));
       }
       SpanData spanData = span.toSpanData();
 
@@ -639,7 +762,7 @@ class RecordEventsReadableSpanTest {
     exception.printStackTrace(new PrintWriter(writer));
     String stacktrace = writer.toString();
 
-    testClock.advanceNanos(1000);
+    testClock.advance(Duration.ofNanos(1000));
     long timestamp = testClock.now();
 
     span.recordException(exception);
@@ -696,7 +819,7 @@ class RecordEventsReadableSpanTest {
     exception.printStackTrace(new PrintWriter(writer));
     String stacktrace = writer.toString();
 
-    testClock.advanceNanos(1000);
+    testClock.advance(Duration.ofNanos(1000));
     long timestamp = testClock.now();
 
     span.recordException(
@@ -805,7 +928,7 @@ class RecordEventsReadableSpanTest {
             Context.root(),
             config,
             spanProcessor,
-            testClock,
+            AnchoredClock.create(testClock),
             resource,
             attributes,
             links,
@@ -821,9 +944,9 @@ class RecordEventsReadableSpanTest {
       @Nullable String descriptio) {
     span.setAttribute("MySingleStringAttributeKey", "MySingleStringAttributeValue");
     attributes.forEach(span::setAttribute);
-    testClock.advanceMillis(MILLIS_PER_SECOND);
+    testClock.advance(Duration.ofSeconds(1));
     span.addEvent("event2", Attributes.empty());
-    testClock.advanceMillis(MILLIS_PER_SECOND);
+    testClock.advance(Duration.ofSeconds(1));
     span.updateName(SPAN_NEW_NAME);
     if (canonicalCode != null) {
       span.setStatus(canonicalCode, descriptio);
@@ -893,21 +1016,21 @@ class RecordEventsReadableSpanTest {
             Context.root(),
             spanLimits,
             spanProcessor,
-            clock,
+            AnchoredClock.create(clock),
             resource,
             attributesWithCapacity,
             Collections.singletonList(link1),
             1,
             0);
     long startEpochNanos = clock.now();
-    clock.advanceMillis(4);
+    clock.advance(Duration.ofMillis(4));
     long firstEventEpochNanos = clock.now();
     readableSpan.addEvent("event1", event1Attributes);
-    clock.advanceMillis(6);
+    clock.advance(Duration.ofMillis(6));
     long secondEventTimeNanos = clock.now();
     readableSpan.addEvent("event2", event2Attributes);
 
-    clock.advanceMillis(100);
+    clock.advance(Duration.ofMillis(100));
     readableSpan.end();
     long endEpochNanos = clock.now();
 

@@ -18,21 +18,24 @@ import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
 class ResourceAdapterTest {
+
   @Test
   void toProtoResource() {
-    assertThat(
-            ResourceAdapter.toProtoResource(
-                    Resource.create(
-                        Attributes.of(
-                            booleanKey("key_bool"),
-                            true,
-                            stringKey("key_string"),
-                            "string",
-                            longKey("key_int"),
-                            100L,
-                            doubleKey("key_double"),
-                            100.3)))
-                .getAttributesList())
+    Resource resource =
+        Resource.create(
+            Attributes.of(
+                booleanKey("key_bool"),
+                true,
+                stringKey("key_string"),
+                "string",
+                longKey("key_int"),
+                100L,
+                doubleKey("key_double"),
+                100.3));
+    io.opentelemetry.proto.resource.v1.Resource protoResource =
+        ResourceAdapter.toProtoResource(resource);
+
+    assertThat(protoResource.getAttributesList())
         .containsExactlyInAnyOrder(
             KeyValue.newBuilder()
                 .setKey("key_bool")
@@ -50,6 +53,8 @@ class ResourceAdapterTest {
                 .setKey("key_double")
                 .setValue(AnyValue.newBuilder().setDoubleValue(100.3).build())
                 .build());
+    // Memoized
+    assertThat(ResourceAdapter.toProtoResource(resource)).isSameAs(protoResource);
   }
 
   @Test

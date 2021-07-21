@@ -29,14 +29,21 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
+import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.Collections;
+import java.util.List;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 class SpanAdapterTest {
@@ -48,7 +55,43 @@ class SpanAdapterTest {
   private static final SpanContext SPAN_CONTEXT =
       SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
 
+  private static final SpanAdapter.ThreadLocalCache threadLocalCache =
+      new SpanAdapter.ThreadLocalCache();
+
   @Test
+  void toProtoResourceSpans() {
+    List<ResourceSpans> resourceSpans =
+        SpanAdapter.toProtoResourceSpans(
+            Collections.singleton(
+                TestSpanData.builder()
+                    .setHasEnded(true)
+                    .setSpanContext(SPAN_CONTEXT)
+                    .setParentSpanContext(SpanContext.getInvalid())
+                    .setName("GET /api/endpoint")
+                    .setKind(SpanKind.SERVER)
+                    .setStartEpochNanos(12345)
+                    .setEndEpochNanos(12349)
+                    .setStatus(StatusData.unset())
+                    .setInstrumentationLibraryInfo(
+                        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
+                    .setResource(
+                        Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
+                    .build()));
+
+    assertThat(resourceSpans).hasSize(1);
+    ResourceSpans onlyResourceSpans = resourceSpans.get(0);
+    assertThat(onlyResourceSpans.getSchemaUrl()).isEqualTo("http://url");
+    assertThat(onlyResourceSpans.getInstrumentationLibrarySpansCount()).isEqualTo(1);
+    InstrumentationLibrarySpans instrumentationLibrarySpans =
+        onlyResourceSpans.getInstrumentationLibrarySpans(0);
+    assertThat(instrumentationLibrarySpans.getSchemaUrl()).isEqualTo("http://url");
+    assertThat(instrumentationLibrarySpans.getInstrumentationLibrary())
+        .isEqualTo(
+            InstrumentationLibrary.newBuilder().setName("testLib").setVersion("1.0").build());
+  }
+
+  // Repeat to reuse the cache. If we forgot to clear any reused builder it will fail.
+  @RepeatedTest(3)
   void toProtoSpan() {
     Span span =
         SpanAdapter.toProtoSpan(
@@ -69,7 +112,8 @@ class SpanAdapterTest {
                 .setLinks(Collections.singletonList(LinkData.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
                 .setStatus(StatusData.ok())
-                .build());
+                .build(),
+            threadLocalCache);
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(span.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
@@ -109,7 +153,8 @@ class SpanAdapterTest {
   }
 
   @Test
-  @SuppressWarnings("deprecation") // setDeprecatedCode is deprecated.
+  @SuppressWarnings("deprecation")
+  // setDeprecatedCode is deprecated.
   void toProtoStatus() {
     assertThat(SpanAdapter.toStatusProto(StatusData.unset()))
         .isEqualTo(
@@ -144,7 +189,8 @@ class SpanAdapterTest {
   void toProtoSpanEvent_WithoutAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                EventData.create(12345, "test_without_attributes", Attributes.empty())))
+                EventData.create(12345, "test_without_attributes", Attributes.empty()),
+                threadLocalCache))
         .isEqualTo(
             Span.Event.newBuilder()
                 .setTimeUnixNano(12345)
@@ -160,7 +206,8 @@ class SpanAdapterTest {
                     12345,
                     "test_with_attributes",
                     Attributes.of(stringKey("key_string"), "string"),
-                    5)))
+                    5),
+                threadLocalCache))
         .isEqualTo(
             Span.Event.newBuilder()
                 .setTimeUnixNano(12345)
@@ -176,7 +223,7 @@ class SpanAdapterTest {
 
   @Test
   void toProtoSpanLink_WithoutAttributes() {
-    assertThat(SpanAdapter.toProtoSpanLink(LinkData.create(SPAN_CONTEXT)))
+    assertThat(SpanAdapter.toProtoSpanLink(LinkData.create(SPAN_CONTEXT), threadLocalCache))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
@@ -188,7 +235,8 @@ class SpanAdapterTest {
   void toProtoSpanLink_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanLink(
-                LinkData.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5)))
+                LinkData.create(SPAN_CONTEXT, Attributes.of(stringKey("key_string"), "string"), 5),
+                threadLocalCache))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))

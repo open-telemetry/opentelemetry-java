@@ -30,8 +30,8 @@ public final class ComponentRegistry<V> {
 
   /**
    * Returns the registered value associated with this name and {@code null} version if any,
-   * otherwise creates a new instance and associates it with the given name and {@code null}
-   * version.
+   * otherwise creates a new instance and associates it with the given name and {@code null} version
+   * and schemaUrl.
    *
    * @param instrumentationName the name of the instrumentation library.
    * @return the registered value associated with this name and {@code null} version.
@@ -42,15 +42,33 @@ public final class ComponentRegistry<V> {
 
   /**
    * Returns the registered value associated with this name and version if any, otherwise creates a
-   * new instance and associates it with the given name and version.
+   * new instance and associates it with the given name and version. The schemaUrl will be set to
+   * null.
    *
    * @param instrumentationName the name of the instrumentation library.
    * @param instrumentationVersion the version of the instrumentation library.
    * @return the registered value associated with this name and version.
    */
   public final V get(String instrumentationName, @Nullable String instrumentationVersion) {
+    return get(instrumentationName, instrumentationVersion, null);
+  }
+
+  /**
+   * Returns the registered value associated with this name and version if any, otherwise creates a
+   * new instance and associates it with the given name and version.
+   *
+   * @param instrumentationName the name of the instrumentation library.
+   * @param instrumentationVersion the version of the instrumentation library.
+   * @param schemaUrl the URL of the OpenTelemetry schema used by the instrumentation library.
+   * @return the registered value associated with this name and version.
+   * @since 1.4.0
+   */
+  public final V get(
+      String instrumentationName,
+      @Nullable String instrumentationVersion,
+      @Nullable String schemaUrl) {
     InstrumentationLibraryInfo instrumentationLibraryInfo =
-        InstrumentationLibraryInfo.create(instrumentationName, instrumentationVersion);
+        InstrumentationLibraryInfo.create(instrumentationName, instrumentationVersion, schemaUrl);
 
     // Optimistic lookup, before creating the new component.
     V component = registry.get(instrumentationLibraryInfo);

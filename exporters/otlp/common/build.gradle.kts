@@ -1,12 +1,13 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("ru.vyarus.animalsniffer")
+    id("otel.jmh-conventions")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Protocol Exporter"
-extra["moduleName"] = "io.opentelemetry.exporter.otlp.internal"
+otelJava.moduleName.set("io.opentelemetry.exporter.otlp.internal")
 
 dependencies {
     api(project(":api:all"))
@@ -20,4 +21,7 @@ dependencies {
 
     testImplementation("io.grpc:grpc-testing")
     testRuntimeOnly("io.grpc:grpc-netty-shaded")
+
+    jmhImplementation(project(":sdk:testing"))
+    jmhImplementation(project(":sdk-extensions:resources"))
 }

@@ -20,7 +20,7 @@ public final class ProcessResource {
   private static final Resource INSTANCE = buildResource();
 
   /**
-   * Returns a factory of a {@link Resource} which provides information about the current running
+   * Returns a factory for a {@link Resource} which provides information about the current running
    * process.
    */
   public static Resource get() {
@@ -42,21 +42,9 @@ public final class ProcessResource {
   private static Resource doBuildResource() {
     AttributesBuilder attributes = Attributes.builder();
 
-    // TODO(anuraaga): Use reflection to get more stable values on Java 9+
     RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-    long pid = -1;
-    // While this is not strictly defined, almost all commonly used JVMs format this as
-    // pid@hostname.
-    String runtimeName = ManagementFactory.getRuntimeMXBean().getName();
-    int atIndex = runtimeName.indexOf('@');
-    if (atIndex >= 0) {
-      String pidString = runtimeName.substring(0, atIndex);
-      try {
-        pid = Long.parseLong(pidString);
-      } catch (NumberFormatException ignored) {
-        // Ignore parse failure.
-      }
-    }
+
+    long pid = ProcessPid.getPid();
 
     if (pid >= 0) {
       attributes.put(ResourceAttributes.PROCESS_PID, pid);
@@ -90,7 +78,7 @@ public final class ProcessResource {
       attributes.put(ResourceAttributes.PROCESS_COMMAND_LINE, commandLine.toString());
     }
 
-    return Resource.create(attributes.build());
+    return Resource.create(attributes.build(), ResourceAttributes.SCHEMA_URL);
   }
 
   private ProcessResource() {}

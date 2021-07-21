@@ -21,6 +21,10 @@ public interface IdGenerator {
    * randomness but may change in the future.
    */
   static IdGenerator random() {
+    // note: check borrowed from OkHttp's check for Android.
+    if ("Dalvik".equals(System.getProperty("java.vm.name"))) {
+      return AndroidFriendlyRandomIdGenerator.INSTANCE;
+    }
     return RandomIdGenerator.INSTANCE;
   }
 

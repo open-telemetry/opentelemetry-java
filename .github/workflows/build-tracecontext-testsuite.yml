@@ -1,0 +1,30 @@
+name: Build tracecontext testsuite
+
+on:
+  push:
+    paths:
+      - 'integration-tests/tracecontext/docker/**'
+      - '.github/workflows/build-tracecontext-testsuite.yaml'
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.3.4
+
+      - name: Login to GitHub Package Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2.6.1
+        with:
+          context: integration-tests/tracecontext/docker
+          push: true
+          tags: ghcr.io/open-telemetry/java-test-containers:w3c-tracecontext-testsuite

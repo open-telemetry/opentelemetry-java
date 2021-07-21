@@ -6,13 +6,13 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,26 +39,32 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
   private final ComponentRegistry<SdkMeter> registry;
   private final MeterProviderSharedState sharedState;
 
-  SdkMeterProvider(Clock clock, Resource resource) {
-    this.sharedState = MeterProviderSharedState.create(clock, resource);
+  SdkMeterProvider(Clock clock, Resource resource, ViewRegistry viewRegistry) {
+    this.sharedState = MeterProviderSharedState.create(clock, resource, viewRegistry);
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
   }
 
   @Override
-  public SdkMeter get(String instrumentationName) {
-    return get(instrumentationName, null);
+  public Meter get(String instrumentationName) {
+    return meterBuilder(instrumentationName).build();
   }
 
   @Override
-  public SdkMeter get(String instrumentationName, @Nullable String instrumentationVersion) {
-    // Per the spec, both null and empty are "invalid" and a "default" should be used.
+  public Meter get(String instrumentationName, String instrumentationVersion) {
+    return meterBuilder(instrumentationName)
+        .setInstrumentationVersion(instrumentationVersion)
+        .build();
+  }
+
+  @Override
+  public MeterBuilder meterBuilder(@Nullable String instrumentationName) {
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("Meter requested without instrumentation name.");
       instrumentationName = DEFAULT_METER_NAME;
     }
-    return registry.get(instrumentationName, instrumentationVersion);
+    return new SdkMeterBuilder(registry, instrumentationName);
   }
 
   @Override
@@ -78,31 +84,5 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
    */
   public static SdkMeterProviderBuilder builder() {
     return new SdkMeterProviderBuilder();
-  }
-
-  /**
-   * Register a view with the given {@link InstrumentSelector}.
-   *
-   * <p>Example on how to register a view:
-   *
-   * <pre>{@code
-   * // get a handle to the MeterSdkProvider
-   * MeterSdkProvider meterProvider = OpenTelemetrySdk.getMeterProvider();
-   *
-   * // create a selector to select which instruments to customize:
-   * InstrumentSelector instrumentSelector = InstrumentSelector.builder()
-   *   .setInstrumentType(InstrumentType.COUNTER)
-   *   .buildInstrument();
-   *
-   * // create a specification of how you want the metrics aggregated:
-   * AggregatorFactory aggregatorFactory = AggregatorFactory.minMaxSumCount();
-   *
-   * //register the view with the MeterSdkProvider
-   * meterProvider.registerView(instrumentSelector, View.builder()
-   *   .setAggregatorFactory(aggregatorFactory).build());
-   * }</pre>
-   */
-  public void registerView(InstrumentSelector selector, View view) {
-    sharedState.getViewRegistry().registerView(selector, view);
   }
 }
