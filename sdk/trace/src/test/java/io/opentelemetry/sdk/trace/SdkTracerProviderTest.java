@@ -139,19 +139,44 @@ class SdkTracerProviderTest {
   @Test
   void getSameInstanceForSameName_WithoutVersion() {
     assertThat(tracerFactory.get("test")).isSameAs(tracerFactory.get("test"));
-    assertThat(tracerFactory.get("test")).isSameAs(tracerFactory.get("test", null));
+    assertThat(tracerFactory.get("test"))
+        .isSameAs(tracerFactory.get("test", null))
+        .isSameAs(tracerFactory.tracerBuilder("test").build());
   }
 
   @Test
   void getSameInstanceForSameName_WithVersion() {
-    assertThat(tracerFactory.get("test", "version")).isSameAs(tracerFactory.get("test", "version"));
+    assertThat(tracerFactory.get("test", "version"))
+        .isSameAs(tracerFactory.get("test", "version"))
+        .isSameAs(tracerFactory.tracerBuilder("test").setInstrumentationVersion("version").build());
+  }
+
+  @Test
+  void getSameInstanceForSameName_WithVersionAndSchema() {
+    assertThat(
+            tracerFactory
+                .tracerBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
+                .build())
+        .isSameAs(
+            tracerFactory
+                .tracerBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
+                .build());
   }
 
   @Test
   void propagatesInstrumentationLibraryInfoToTracer() {
     InstrumentationLibraryInfo expected =
-        InstrumentationLibraryInfo.create("theName", "theVersion");
-    Tracer tracer = tracerFactory.get(expected.getName(), expected.getVersion());
+        InstrumentationLibraryInfo.create("theName", "theVersion", "http://url");
+    Tracer tracer =
+        tracerFactory
+            .tracerBuilder(expected.getName())
+            .setInstrumentationVersion(expected.getVersion())
+            .setSchemaUrl(expected.getSchemaUrl())
+            .build();
     assertThat(((SdkTracer) tracer).getInstrumentationLibraryInfo()).isEqualTo(expected);
   }
 

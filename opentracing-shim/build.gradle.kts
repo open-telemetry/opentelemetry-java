@@ -1,10 +1,10 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 }
 
 description = "OpenTelemetry OpenTracing Bridge"
-extra["moduleName"] = "io.opentelemetry.opentracingshim"
+otelJava.moduleName.set("io.opentelemetry.opentracingshim")
 
 dependencies {
     api(project(":api:all"))

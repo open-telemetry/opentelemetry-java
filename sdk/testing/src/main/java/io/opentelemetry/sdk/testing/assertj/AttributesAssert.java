@@ -38,6 +38,11 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
     return this;
   }
 
+  /** Asserts the attributes have the given key and value. */
+  public AttributesAssert containsEntry(AttributeKey<Long> key, int value) {
+    return containsEntry(key, (long) value);
+  }
+
   /** Asserts the attributes have the given key and string value. */
   public AttributesAssert containsEntry(String key, String value) {
     return containsEntry(AttributeKey.stringKey(key), value);
@@ -140,6 +145,25 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
   public final AttributesAssert containsOnly(Map.Entry<? extends AttributeKey<?>, ?>... entries) {
     isNotNull();
     assertThat(actual.asMap()).containsOnly(entries);
+    return this;
+  }
+
+  /** Asserts the attributes have no entries. */
+  public AttributesAssert isEmpty() {
+    return isEqualTo(Attributes.empty());
+  }
+
+  /** Asserts the number of attributes in the collection. */
+  public AttributesAssert hasSize(int numberOfEntries) {
+    int size = actual.size();
+    if (size != numberOfEntries) {
+      failWithActualExpectedAndMessage(
+          size,
+          numberOfEntries,
+          "Expected attributes to have <%s> entries but actually has <%s>",
+          numberOfEntries,
+          size);
+    }
     return this;
   }
 }

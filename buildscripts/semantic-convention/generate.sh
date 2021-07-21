@@ -4,8 +4,10 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="${SCRIPT_DIR}/../../"
 
 # freeze the spec & generator tools versions to make SemanticAttributes generation reproducible
-SPEC_VERSION=v1.3.0
-GENERATOR_VERSION=0.3.1
+SEMCONV_VERSION=1.5.0
+SPEC_VERSION=v$SEMCONV_VERSION
+SCHEMA_URL=https://opentelemetry.io/schemas/$SEMCONV_VERSION
+GENERATOR_VERSION=0.4.1
 
 cd ${SCRIPT_DIR}
 
@@ -28,6 +30,7 @@ docker run --rm \
   --template /templates/SemanticAttributes.java.j2 \
   --output /output/SemanticAttributes.java \
   -Dclass=SemanticAttributes \
+  -DschemaUrl=$SCHEMA_URL \
   -Dpkg=io.opentelemetry.semconv.trace.attributes
 
 docker run --rm \
@@ -39,6 +42,7 @@ docker run --rm \
   --template /templates/SemanticAttributes.java.j2 \
   --output /output/ResourceAttributes.java \
   -Dclass=ResourceAttributes \
+  -DschemaUrl=$SCHEMA_URL \
   -Dpkg=io.opentelemetry.semconv.resource.attributes
 
 cd "$ROOT_DIR"

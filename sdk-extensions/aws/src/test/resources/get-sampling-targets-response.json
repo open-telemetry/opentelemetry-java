@@ -1,0 +1,23 @@
+{
+  "SamplingTargetDocuments": [
+    {
+      "RuleName": "base-scorekeep",
+      "FixedRate": 0.1,
+      "ReservoirQuota": 2,
+      "ReservoirQuotaTTL": 1530923107.0,
+      "Interval": 10
+    },
+    {
+      "RuleName": "polling-scorekeep",
+      "FixedRate": 0.003
+    }
+  ],
+  "LastRuleModification": 1530920505.0,
+  "UnprocessedStatistics": [
+    {
+      "RuleName": "cats-rule",
+      "ErrorCode": "400",
+      "Message": "Unknown rule"
+    }
+  ]
+}

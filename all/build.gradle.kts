@@ -1,9 +1,9 @@
 plugins {
-    java
+    id("otel.java-conventions")
 }
 
 description = "OpenTelemetry All"
-extra["moduleName"] = "io.opentelemetry.all"
+otelJava.moduleName.set("io.opentelemetry.all")
 
 tasks {
     // We don't compile much here, just some API boundary tests. This project is mostly for
@@ -14,8 +14,11 @@ tasks {
         options.release.set(11)
     }
 
-    named("testJava8") {
-        enabled = false
+    val testJavaVersion: String? by project
+    if (testJavaVersion == "8") {
+        test {
+            enabled = false
+        }
     }
 }
 
@@ -82,10 +85,10 @@ tasks.named<JacocoReport>("jacocoTestReport") {
     reports {
         // xml is usually used to integrate code coverage with
         // other tools like SonarQube, Coveralls or Codecov
-        xml.isEnabled = true
+        xml.required.set(true)
 
         // HTML reports can be used to see code coverage
         // without any external tools
-        html.isEnabled = true
+        html.required.set(true)
     }
 }

@@ -21,6 +21,20 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface SpanData {
 
+  /**
+   * Returns the name of this {@code Span}.
+   *
+   * @return the name of this {@code Span}.
+   */
+  String getName();
+
+  /**
+   * Returns the kind of this {@code Span}.
+   *
+   * @return the kind of this {@code Span}.
+   */
+  SpanKind getKind();
+
   /** Returns the {@link SpanContext} of the Span. */
   SpanContext getSpanContext();
 
@@ -59,33 +73,11 @@ public interface SpanData {
   }
 
   /**
-   * Returns the resource of this {@code Span}.
+   * Returns the {@code Status}.
    *
-   * @return the resource of this {@code Span}.
+   * @return the {@code Status}.
    */
-  Resource getResource();
-
-  /**
-   * Returns the instrumentation library specified when creating the tracer which produced this
-   * {@code Span}.
-   *
-   * @return an instance of {@link InstrumentationLibraryInfo}
-   */
-  InstrumentationLibraryInfo getInstrumentationLibraryInfo();
-
-  /**
-   * Returns the name of this {@code Span}.
-   *
-   * @return the name of this {@code Span}.
-   */
-  String getName();
-
-  /**
-   * Returns the kind of this {@code Span}.
-   *
-   * @return the kind of this {@code Span}.
-   */
-  SpanKind getKind();
+  StatusData getStatus();
 
   /**
    * Returns the start epoch timestamp in nanos of this {@code Span}.
@@ -114,13 +106,6 @@ public interface SpanData {
    * @return links recorded for this {@code Span}.
    */
   List<LinkData> getLinks();
-
-  /**
-   * Returns the {@code Status}.
-   *
-   * @return the {@code Status}.
-   */
-  StatusData getStatus();
 
   /**
    * Returns the end epoch timestamp in nanos of this {@code Span}.
@@ -163,4 +148,19 @@ public interface SpanData {
    * @return The total number of attributes on this span.
    */
   int getTotalAttributeCount();
+
+  /**
+   * Returns the instrumentation library specified when creating the tracer which produced this
+   * {@code Span}.
+   *
+   * @return an instance of {@link InstrumentationLibraryInfo}
+   */
+  InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+
+  /**
+   * Returns the resource of this {@code Span}.
+   *
+   * @return the resource of this {@code Span}.
+   */
+  Resource getResource();
 }

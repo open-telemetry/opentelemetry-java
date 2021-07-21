@@ -1,15 +1,15 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("me.champeau.gradle.jmh")
-    id("ru.vyarus.animalsniffer")
+    id("otel.jmh-conventions")
+    id("otel.animalsniffer-conventions")
 }
 
 // SDK modules that are still being developed.
 
 description = "OpenTelemetry SDK Tracing Incubator"
-extra["moduleName"] = "io.opentelemetry.sdk.extension.trace.incubator"
+otelJava.moduleName.set("io.opentelemetry.sdk.extension.trace.incubator")
 
 dependencies {
     api(project(":api:all"))

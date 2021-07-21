@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.Span;
 
 /** Builder for {@link SpanLimits}. */
 public final class SpanLimitsBuilder {
+
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 128;
   private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
   private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 128;

@@ -46,4 +46,16 @@ public interface TracerProvider {
    * @return a tracer instance.
    */
   Tracer get(String instrumentationName, String instrumentationVersion);
+
+  /**
+   * Creates a TracerBuilder for a named {@link Tracer} instance.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @return a TracerBuilder instance.
+   * @since 1.4.0
+   */
+  default TracerBuilder tracerBuilder(String instrumentationName) {
+    return DefaultTracerBuilder.getInstance();
+  }
 }

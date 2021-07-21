@@ -16,7 +16,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -75,18 +74,6 @@ class SdkSpanBuilderTest {
 
     Mockito.when(mockedSpanProcessor.isStartRequired()).thenReturn(true);
     Mockito.when(mockedSpanProcessor.isEndRequired()).thenReturn(true);
-  }
-
-  @Test
-  void setSpanKind_null() {
-    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).setSpanKind(null))
-        .isInstanceOf(NullPointerException.class);
-  }
-
-  @Test
-  void setParent_null() {
-    assertThatThrownBy(() -> sdkTracer.spanBuilder(SPAN_NAME).setParent(null))
-        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -902,14 +889,6 @@ class SdkSpanBuilderTest {
   }
 
   @Test
-  void startTimestamp_null() {
-    assertThatThrownBy(
-            () -> sdkTracer.spanBuilder(SPAN_NAME).setStartTimestamp(-1, TimeUnit.NANOSECONDS))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Negative startTimestamp");
-  }
-
-  @Test
   void parent_clockIsSame() {
     Span parent = sdkTracer.spanBuilder(SPAN_NAME).startSpan();
     try (Scope scope = parent.makeCurrent()) {
@@ -974,11 +953,12 @@ class SdkSpanBuilderTest {
                 + "spanId=0000000000000000, "
                 + "traceFlags=00, "
                 + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false, valid=false}, "
-                + "resource=Resource\\{attributes=\\{service.name=\"unknown_service:java\", "
+                + "resource=Resource\\{schemaUrl=null, "
+                + "attributes=\\{service.name=\"unknown_service:java\", "
                 + "telemetry.sdk.language=\"java\", telemetry.sdk.name=\"opentelemetry\", "
                 + "telemetry.sdk.version=\"\\d+.\\d+.\\d+(-SNAPSHOT)?\"}}, "
                 + "instrumentationLibraryInfo=InstrumentationLibraryInfo\\{"
-                + "name=SpanBuilderSdkTest, version=null}, "
+                + "name=SpanBuilderSdkTest, version=null, schemaUrl=null}, "
                 + "name=span_name, "
                 + "kind=INTERNAL, "
                 + "startEpochNanos=[0-9]+, "
@@ -991,5 +971,48 @@ class SdkSpanBuilderTest {
                 + "totalRecordedLinks=0, "
                 + "status=ImmutableStatusData\\{statusCode=ERROR, description=error}, "
                 + "hasEnded=true}");
+  }
+
+  @Test
+  void doNotCrash() {
+    assertThatCode(
+            () -> {
+              SpanBuilder spanBuilder = sdkTracer.spanBuilder(null);
+              spanBuilder.setSpanKind(null);
+              spanBuilder.setParent(null);
+              spanBuilder.setNoParent();
+              spanBuilder.addLink(null);
+              spanBuilder.addLink(null, Attributes.empty());
+              spanBuilder.addLink(SpanContext.getInvalid(), null);
+              spanBuilder.setAttribute((String) null, "foo");
+              spanBuilder.setAttribute("foo", null);
+              spanBuilder.setAttribute(null, 0L);
+              spanBuilder.setAttribute(null, 0.0);
+              spanBuilder.setAttribute(null, false);
+              spanBuilder.setAttribute((AttributeKey<String>) null, "foo");
+              spanBuilder.setAttribute(stringKey(null), "foo");
+              spanBuilder.setAttribute(stringKey(""), "foo");
+              spanBuilder.setAttribute(stringKey("foo"), null);
+              spanBuilder.setStartTimestamp(-1, TimeUnit.MILLISECONDS);
+              spanBuilder.setStartTimestamp(1, null);
+              spanBuilder.setParent(Context.root().with(Span.wrap(null)));
+              spanBuilder.setParent(Context.root());
+              spanBuilder.setNoParent();
+              spanBuilder.addLink(Span.getInvalid().getSpanContext());
+              spanBuilder.addLink(Span.getInvalid().getSpanContext(), Attributes.empty());
+              spanBuilder.setAttribute("key", "value");
+              spanBuilder.setAttribute("key", 12345L);
+              spanBuilder.setAttribute("key", .12345);
+              spanBuilder.setAttribute("key", true);
+              spanBuilder.setAttribute(stringKey("key"), "value");
+              spanBuilder.setAllAttributes(Attributes.of(stringKey("key"), "value"));
+              spanBuilder.setAllAttributes(Attributes.empty());
+              spanBuilder.setAllAttributes(null);
+              spanBuilder.setStartTimestamp(12345L, TimeUnit.NANOSECONDS);
+              spanBuilder.setStartTimestamp(Instant.EPOCH);
+              spanBuilder.setStartTimestamp(null);
+              assertThat(spanBuilder.startSpan().getSpanContext().isValid()).isTrue();
+            })
+        .doesNotThrowAnyException();
   }
 }

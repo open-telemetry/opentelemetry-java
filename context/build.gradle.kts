@@ -1,14 +1,14 @@
 plugins {
-    id("java-library")
-    id("maven-publish")
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("me.champeau.gradle.jmh")
+    id("otel.jmh-conventions")
     id("org.unbroken-dome.test-sets")
-    id("ru.vyarus.animalsniffer")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Context (Incubator)"
-extra["moduleName"] = "io.opentelemetry.context"
+otelJava.moduleName.set("io.opentelemetry.context")
 
 testSets {
     create("grpcInOtelTest")

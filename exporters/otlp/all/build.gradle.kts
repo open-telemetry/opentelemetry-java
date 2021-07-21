@@ -1,13 +1,13 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("me.champeau.gradle.jmh")
-    id("ru.vyarus.animalsniffer")
+    id("otel.jmh-conventions")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Protocol Exporters"
-extra["moduleName"] = "io.opentelemetry.exporter.otlp"
+otelJava.moduleName.set("io.opentelemetry.exporter.otlp")
 base.archivesBaseName = "opentelemetry-exporter-otlp"
 
 dependencies {

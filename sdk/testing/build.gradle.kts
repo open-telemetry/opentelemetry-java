@@ -1,10 +1,10 @@
 plugins {
-    id("java-library")
-    id("maven-publish")
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 }
 
 description = "OpenTelemetry SDK Testing utilities"
-extra["moduleName"] = "io.opentelemetry.sdk.testing"
+otelJava.moduleName.set("io.opentelemetry.sdk.testing")
 
 dependencies {
     api(project(":api:all"))
@@ -15,6 +15,8 @@ dependencies {
     compileOnly("org.junit.jupiter:junit-jupiter-api")
 
     annotationProcessor("com.google.auto.value:auto-value")
+
+    implementation(project(":semconv"))
 
     testImplementation("junit:junit")
 }

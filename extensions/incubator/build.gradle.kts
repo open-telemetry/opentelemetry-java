@@ -1,12 +1,13 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("ru.vyarus.animalsniffer")
+    id("otel.jmh-conventions")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry API Incubator"
-extra["moduleName"] = "io.opentelemetry.extension.incubator"
+otelJava.moduleName.set("io.opentelemetry.extension.incubator")
 
 dependencies {
     api(project(":api:all"))

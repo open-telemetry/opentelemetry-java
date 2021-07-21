@@ -12,28 +12,25 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.protobuf.ByteString;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.common.v1.StringKeyValue;
-import io.opentelemetry.proto.metrics.v1.DoubleDataPoint;
-import io.opentelemetry.proto.metrics.v1.DoubleGauge;
-import io.opentelemetry.proto.metrics.v1.DoubleHistogram;
-import io.opentelemetry.proto.metrics.v1.DoubleHistogramDataPoint;
-import io.opentelemetry.proto.metrics.v1.DoubleSum;
-import io.opentelemetry.proto.metrics.v1.DoubleSummary;
-import io.opentelemetry.proto.metrics.v1.DoubleSummaryDataPoint;
-import io.opentelemetry.proto.metrics.v1.DoubleSummaryDataPoint.ValueAtQuantile;
+import io.opentelemetry.proto.metrics.v1.Exemplar;
+import io.opentelemetry.proto.metrics.v1.Gauge;
+import io.opentelemetry.proto.metrics.v1.Histogram;
+import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
-import io.opentelemetry.proto.metrics.v1.IntDataPoint;
-import io.opentelemetry.proto.metrics.v1.IntGauge;
-import io.opentelemetry.proto.metrics.v1.IntSum;
 import io.opentelemetry.proto.metrics.v1.Metric;
+import io.opentelemetry.proto.metrics.v1.NumberDataPoint;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.proto.metrics.v1.Sum;
+import io.opentelemetry.proto.metrics.v1.Summary;
+import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
@@ -41,25 +38,25 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.LongExemplar;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
+// Fill deprecated APIs before removing them after users get a chance to migrate.
+@SuppressWarnings("deprecation")
 class MetricAdapterTest {
-  @Test
-  void toProtoLabels() {
-    assertThat(MetricAdapter.toProtoLabels(Labels.empty())).isEmpty();
-    assertThat(MetricAdapter.toProtoLabels(Labels.of("k", "v")))
-        .containsExactly(StringKeyValue.newBuilder().setKey("k").setValue("v").build());
-    assertThat(MetricAdapter.toProtoLabels(Labels.of("k1", "v1", "k2", "v2")))
-        .containsExactly(
-            StringKeyValue.newBuilder().setKey("k1").setValue("v1").build(),
-            StringKeyValue.newBuilder().setKey("k2").setValue("v2").build());
+
+  private static final Attributes KV_ATTR = Attributes.of(stringKey("k"), "v");
+
+  private static AnyValue stringValue(String v) {
+    return AnyValue.newBuilder().setStringValue(v).build();
   }
 
   @Test
@@ -67,32 +64,75 @@ class MetricAdapterTest {
     assertThat(MetricAdapter.toIntDataPoints(Collections.emptyList())).isEmpty();
     assertThat(
             MetricAdapter.toIntDataPoints(
-                singletonList(LongPointData.create(123, 456, Labels.of("k", "v"), 5))))
+                singletonList(
+                    LongPointData.create(
+                        123,
+                        456,
+                        KV_ATTR,
+                        5,
+                        Arrays.asList(
+                            LongExemplar.create(
+                                Attributes.of(stringKey("test"), "value"),
+                                2,
+                                /*spanId=*/ "0000000000000002",
+                                /*traceId=*/ "00000000000000000000000000000001",
+                                1))))))
         .containsExactly(
-            IntDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
-                .setValue(5)
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
+                .addLabels(
+                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                        .setKey("k")
+                        .setValue("v")
+                        .build())
+                .setAsInt(5)
+                .addExemplars(
+                    Exemplar.newBuilder()
+                        .setTimeUnixNano(2)
+                        .addFilteredAttributes(
+                            KeyValue.newBuilder()
+                                .setKey("test")
+                                .setValue(stringValue("value"))
+                                .build())
+                        .addFilteredLabels(
+                            io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                                .setKey("test")
+                                .setValue("value")
+                                .build())
+                        .setSpanId(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 2}))
+                        .setTraceId(
+                            ByteString.copyFrom(
+                                new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}))
+                        .setAsInt(1)
+                        .build())
                 .build());
     assertThat(
             MetricAdapter.toIntDataPoints(
                 ImmutableList.of(
-                    LongPointData.create(123, 456, Labels.empty(), 5),
-                    LongPointData.create(321, 654, Labels.of("k", "v"), 7))))
+                    LongPointData.create(123, 456, Attributes.empty(), 5),
+                    LongPointData.create(321, 654, KV_ATTR, 7))))
         .containsExactly(
-            IntDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .setValue(5)
+                .setAsInt(5)
                 .build(),
-            IntDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(321)
                 .setTimeUnixNano(654)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
-                .setValue(7)
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
+                .addLabels(
+                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                        .setKey("k")
+                        .setValue("v")
+                        .build())
+                .setAsInt(7)
                 .build());
   }
 
@@ -101,32 +141,44 @@ class MetricAdapterTest {
     assertThat(MetricAdapter.toDoubleDataPoints(Collections.emptyList())).isEmpty();
     assertThat(
             MetricAdapter.toDoubleDataPoints(
-                singletonList(DoublePointData.create(123, 456, Labels.of("k", "v"), 5.1))))
+                singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))
         .containsExactly(
-            DoubleDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
-                .setValue(5.1)
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
+                .addLabels(
+                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                        .setKey("k")
+                        .setValue("v")
+                        .build())
+                .setAsDouble(5.1)
                 .build());
     assertThat(
             MetricAdapter.toDoubleDataPoints(
                 ImmutableList.of(
-                    DoublePointData.create(123, 456, Labels.empty(), 5.1),
-                    DoublePointData.create(321, 654, Labels.of("k", "v"), 7.1))))
+                    DoublePointData.create(123, 456, Attributes.empty(), 5.1),
+                    DoublePointData.create(321, 654, KV_ATTR, 7.1))))
         .containsExactly(
-            DoubleDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .setValue(5.1)
+                .setAsDouble(5.1)
                 .build(),
-            DoubleDataPoint.newBuilder()
+            NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(321)
                 .setTimeUnixNano(654)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
-                .setValue(7.1)
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
+                .addLabels(
+                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                        .setKey("k")
+                        .setValue("v")
+                        .build())
+                .setAsDouble(7.1)
                 .build());
   }
 
@@ -138,88 +190,141 @@ class MetricAdapterTest {
                     DoubleSummaryPointData.create(
                         123,
                         456,
-                        Labels.of("k", "v"),
+                        KV_ATTR,
                         5,
                         14.2,
                         singletonList(ValueAtPercentile.create(0.0, 1.1))))))
         .containsExactly(
-            DoubleSummaryDataPoint.newBuilder()
+            SummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
+                .addLabels(
+                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                        .setKey("k")
+                        .setValue("v")
+                        .build())
                 .setCount(5)
                 .setSum(14.2)
                 .addQuantileValues(
-                    ValueAtQuantile.newBuilder().setQuantile(0.0).setValue(1.1).build())
+                    SummaryDataPoint.ValueAtQuantile.newBuilder()
+                        .setQuantile(0.0)
+                        .setValue(1.1)
+                        .build())
                 .build());
     assertThat(
             MetricAdapter.toSummaryDataPoints(
                 ImmutableList.of(
                     DoubleSummaryPointData.create(
-                        123, 456, Labels.empty(), 7, 15.3, Collections.emptyList()),
+                        123, 456, Attributes.empty(), 7, 15.3, Collections.emptyList()),
                     DoubleSummaryPointData.create(
                         321,
                         654,
-                        Labels.of("k", "v"),
+                        KV_ATTR,
                         9,
                         18.3,
                         ImmutableList.of(
                             ValueAtPercentile.create(0.0, 1.1),
                             ValueAtPercentile.create(100.0, 20.3))))))
         .containsExactly(
-            DoubleSummaryDataPoint.newBuilder()
+            SummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
                 .setCount(7)
                 .setSum(15.3)
                 .build(),
-            DoubleSummaryDataPoint.newBuilder()
+            SummaryDataPoint.newBuilder()
                 .setStartTimeUnixNano(321)
                 .setTimeUnixNano(654)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
+                .addLabels(
+                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                        .setKey("k")
+                        .setValue("v")
+                        .build())
                 .setCount(9)
                 .setSum(18.3)
                 .addQuantileValues(
-                    ValueAtQuantile.newBuilder().setQuantile(0.0).setValue(1.1).build())
+                    SummaryDataPoint.ValueAtQuantile.newBuilder()
+                        .setQuantile(0.0)
+                        .setValue(1.1)
+                        .build())
                 .addQuantileValues(
-                    ValueAtQuantile.newBuilder().setQuantile(1.0).setValue(20.3).build())
+                    SummaryDataPoint.ValueAtQuantile.newBuilder()
+                        .setQuantile(1.0)
+                        .setValue(20.3)
+                        .build())
                 .build());
   }
 
   @Test
   void toHistogramDataPoints() {
     assertThat(
-            MetricAdapter.toDoubleHistogramDataPoints(
+            MetricAdapter.toHistogramDataPoints(
                 ImmutableList.of(
+                    DoubleHistogramPointData.create(
+                        123, 456, KV_ATTR, 14.2, ImmutableList.of(1.0), ImmutableList.of(1L, 5L)),
                     DoubleHistogramPointData.create(
                         123,
                         456,
-                        Labels.of("k", "v"),
-                        14.2,
-                        ImmutableList.of(1.0),
-                        ImmutableList.of(1L, 5L)),
-                    DoubleHistogramPointData.create(
-                        123, 456, Labels.empty(), 15.3, ImmutableList.of(), ImmutableList.of(7L)))))
+                        Attributes.empty(),
+                        15.3,
+                        ImmutableList.of(),
+                        ImmutableList.of(7L),
+                        ImmutableList.of(
+                            DoubleExemplar.create(
+                                Attributes.of(stringKey("test"), "value"),
+                                2,
+                                /*spanId=*/ "0000000000000002",
+                                /*traceId=*/ "00000000000000000000000000000001",
+                                1.5))))))
         .containsExactly(
-            DoubleHistogramDataPoint.newBuilder()
+            HistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
-                .addAllLabels(
-                    singletonList(StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
+                .addAllAttributes(
+                    singletonList(
+                        KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
+                .addLabels(
+                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                        .setKey("k")
+                        .setValue("v")
+                        .build())
                 .setCount(6)
                 .setSum(14.2)
                 .addBucketCounts(1)
                 .addBucketCounts(5)
                 .addExplicitBounds(1.0)
                 .build(),
-            DoubleHistogramDataPoint.newBuilder()
+            HistogramDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
                 .setTimeUnixNano(456)
                 .setCount(7)
                 .setSum(15.3)
                 .addBucketCounts(7)
+                .addExemplars(
+                    Exemplar.newBuilder()
+                        .setTimeUnixNano(2)
+                        .addFilteredAttributes(
+                            KeyValue.newBuilder()
+                                .setKey("test")
+                                .setValue(stringValue("value"))
+                                .build())
+                        .addFilteredLabels(
+                            io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                                .setKey("test")
+                                .setValue("value")
+                                .build())
+                        .setSpanId(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 2}))
+                        .setTraceId(
+                            ByteString.copyFrom(
+                                new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}))
+                        .setAsDouble(1.5)
+                        .build())
                 .build());
   }
 
@@ -236,27 +341,32 @@ class MetricAdapterTest {
                     LongSumData.create(
                         /* isMonotonic= */ true,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(LongPointData.create(123, 456, Labels.of("k", "v"), 5))))))
+                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setIntSum(
-                    IntSum.newBuilder()
+                .setSum(
+                    Sum.newBuilder()
                         .setIsMonotonic(true)
                         .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
                         .addDataPoints(
-                            IntDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5)
+                                .addLabels(
+                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                                        .setKey("k")
+                                        .setValue("v")
+                                        .build())
+                                .setAsInt(5)
                                 .build())
                         .build())
                 .build());
@@ -271,28 +381,32 @@ class MetricAdapterTest {
                     DoubleSumData.create(
                         /* isMonotonic= */ true,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(
-                            DoublePointData.create(123, 456, Labels.of("k", "v"), 5.1))))))
+                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setDoubleSum(
-                    DoubleSum.newBuilder()
+                .setSum(
+                    Sum.newBuilder()
                         .setIsMonotonic(true)
                         .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
                         .addDataPoints(
-                            DoubleDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5.1)
+                                .addLabels(
+                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                                        .setKey("k")
+                                        .setValue("v")
+                                        .build())
+                                .setAsDouble(5.1)
                                 .build())
                         .build())
                 .build());
@@ -311,27 +425,32 @@ class MetricAdapterTest {
                     LongSumData.create(
                         /* isMonotonic= */ false,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(LongPointData.create(123, 456, Labels.of("k", "v"), 5))))))
+                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setIntSum(
-                    IntSum.newBuilder()
+                .setSum(
+                    Sum.newBuilder()
                         .setIsMonotonic(false)
                         .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
                         .addDataPoints(
-                            IntDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5)
+                                .addLabels(
+                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                                        .setKey("k")
+                                        .setValue("v")
+                                        .build())
+                                .setAsInt(5)
                                 .build())
                         .build())
                 .build());
@@ -346,28 +465,32 @@ class MetricAdapterTest {
                     DoubleSumData.create(
                         /* isMonotonic= */ false,
                         AggregationTemporality.CUMULATIVE,
-                        singletonList(
-                            DoublePointData.create(123, 456, Labels.of("k", "v"), 5.1))))))
+                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setDoubleSum(
-                    DoubleSum.newBuilder()
+                .setSum(
+                    Sum.newBuilder()
                         .setIsMonotonic(false)
                         .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
                         .addDataPoints(
-                            DoubleDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5.1)
+                                .addLabels(
+                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                                        .setKey("k")
+                                        .setValue("v")
+                                        .build())
+                                .setAsDouble(5.1)
                                 .build())
                         .build())
                 .build());
@@ -384,25 +507,30 @@ class MetricAdapterTest {
                     "description",
                     "1",
                     LongGaugeData.create(
-                        singletonList(LongPointData.create(123, 456, Labels.of("k", "v"), 5))))))
+                        singletonList(LongPointData.create(123, 456, KV_ATTR, 5))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setIntGauge(
-                    IntGauge.newBuilder()
+                .setGauge(
+                    Gauge.newBuilder()
                         .addDataPoints(
-                            IntDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5)
+                                .addLabels(
+                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                                        .setKey("k")
+                                        .setValue("v")
+                                        .build())
+                                .setAsInt(5)
                                 .build())
                         .build())
                 .build());
@@ -415,26 +543,30 @@ class MetricAdapterTest {
                     "description",
                     "1",
                     DoubleGaugeData.create(
-                        singletonList(
-                            DoublePointData.create(123, 456, Labels.of("k", "v"), 5.1))))))
+                        singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))))
         .isEqualTo(
             Metric.newBuilder()
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setDoubleGauge(
-                    DoubleGauge.newBuilder()
+                .setGauge(
+                    Gauge.newBuilder()
                         .addDataPoints(
-                            DoubleDataPoint.newBuilder()
+                            NumberDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
-                                .setValue(5.1)
+                                .addLabels(
+                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                                        .setKey("k")
+                                        .setValue("v")
+                                        .build())
+                                .setAsDouble(5.1)
                                 .build())
                         .build())
                 .build());
@@ -455,7 +587,7 @@ class MetricAdapterTest {
                             DoubleSummaryPointData.create(
                                 123,
                                 456,
-                                Labels.of("k", "v"),
+                                KV_ATTR,
                                 5,
                                 33d,
                                 ImmutableList.of(
@@ -466,27 +598,32 @@ class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setDoubleSummary(
-                    DoubleSummary.newBuilder()
+                .setSummary(
+                    Summary.newBuilder()
                         .addDataPoints(
-                            DoubleSummaryDataPoint.newBuilder()
+                            SummaryDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
+                                .addLabels(
+                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                                        .setKey("k")
+                                        .setValue("v")
+                                        .build())
                                 .setCount(5)
                                 .setSum(33d)
                                 .addQuantileValues(
-                                    ValueAtQuantile.newBuilder()
+                                    SummaryDataPoint.ValueAtQuantile.newBuilder()
                                         .setQuantile(0)
                                         .setValue(1.1)
                                         .build())
                                 .addQuantileValues(
-                                    ValueAtQuantile.newBuilder()
+                                    SummaryDataPoint.ValueAtQuantile.newBuilder()
                                         .setQuantile(1.0)
                                         .setValue(20.3)
                                         .build())
@@ -511,7 +648,7 @@ class MetricAdapterTest {
                             DoubleHistogramPointData.create(
                                 123,
                                 456,
-                                Labels.of("k", "v"),
+                                KV_ATTR,
                                 4.0,
                                 ImmutableList.of(),
                                 ImmutableList.of(33L)))))))
@@ -520,19 +657,24 @@ class MetricAdapterTest {
                 .setName("name")
                 .setDescription("description")
                 .setUnit("1")
-                .setDoubleHistogram(
-                    DoubleHistogram.newBuilder()
+                .setHistogram(
+                    Histogram.newBuilder()
                         .setAggregationTemporality(AGGREGATION_TEMPORALITY_DELTA)
                         .addDataPoints(
-                            DoubleHistogramDataPoint.newBuilder()
+                            HistogramDataPoint.newBuilder()
                                 .setStartTimeUnixNano(123)
                                 .setTimeUnixNano(456)
-                                .addAllLabels(
+                                .addAllAttributes(
                                     singletonList(
-                                        StringKeyValue.newBuilder()
+                                        KeyValue.newBuilder()
                                             .setKey("k")
-                                            .setValue("v")
+                                            .setValue(stringValue("v"))
                                             .build()))
+                                .addLabels(
+                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                                        .setKey("k")
+                                        .setValue("v")
+                                        .build())
                                 .setCount(33)
                                 .setSum(4.0)
                                 .addBucketCounts(33)
@@ -543,20 +685,18 @@ class MetricAdapterTest {
 
   @Test
   void toProtoResourceMetrics() {
-    Resource resource = Resource.create(Attributes.of(stringKey("ka"), "va"));
+    Resource resource =
+        Resource.create(Attributes.of(stringKey("ka"), "va"), "http://resource.url");
     io.opentelemetry.proto.resource.v1.Resource resourceProto =
         io.opentelemetry.proto.resource.v1.Resource.newBuilder()
             .addAllAttributes(
                 singletonList(
-                    KeyValue.newBuilder()
-                        .setKey("ka")
-                        .setValue(AnyValue.newBuilder().setStringValue("va").build())
-                        .build()))
+                    KeyValue.newBuilder().setKey("ka").setValue(stringValue("va")).build()))
             .build();
     io.opentelemetry.proto.resource.v1.Resource emptyResourceProto =
         io.opentelemetry.proto.resource.v1.Resource.newBuilder().build();
     InstrumentationLibraryInfo instrumentationLibraryInfo =
-        InstrumentationLibraryInfo.create("name", "version");
+        InstrumentationLibraryInfo.create("name", "version", "http://url");
     InstrumentationLibrary instrumentationLibraryProto =
         InstrumentationLibrary.newBuilder().setName("name").setVersion("version").build();
     InstrumentationLibrary emptyInstrumentationLibraryProto =
@@ -566,18 +706,26 @@ class MetricAdapterTest {
             .setName("name")
             .setDescription("description")
             .setUnit("1")
-            .setDoubleSum(
-                DoubleSum.newBuilder()
+            .setSum(
+                Sum.newBuilder()
                     .setIsMonotonic(true)
                     .setAggregationTemporality(AGGREGATION_TEMPORALITY_CUMULATIVE)
                     .addDataPoints(
-                        DoubleDataPoint.newBuilder()
+                        NumberDataPoint.newBuilder()
                             .setStartTimeUnixNano(123)
                             .setTimeUnixNano(456)
-                            .addAllLabels(
+                            .addAllAttributes(
                                 singletonList(
-                                    StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
-                            .setValue(5.0)
+                                    KeyValue.newBuilder()
+                                        .setKey("k")
+                                        .setValue(stringValue("v"))
+                                        .build()))
+                            .addLabels(
+                                io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                                    .setKey("k")
+                                    .setValue("v")
+                                    .build())
+                            .setAsDouble(5.0)
                             .build())
                     .build())
             .build();
@@ -595,7 +743,7 @@ class MetricAdapterTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, Labels.of("k", "v"), 5.0)))),
+                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     MetricData.createDoubleSum(
                         resource,
                         instrumentationLibraryInfo,
@@ -606,7 +754,7 @@ class MetricAdapterTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, Labels.of("k", "v"), 5.0)))),
+                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     MetricData.createDoubleSum(
                         Resource.empty(),
                         instrumentationLibraryInfo,
@@ -617,7 +765,7 @@ class MetricAdapterTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, Labels.of("k", "v"), 5.0)))),
+                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
                     MetricData.createDoubleSum(
                         Resource.empty(),
                         InstrumentationLibraryInfo.empty(),
@@ -628,15 +776,17 @@ class MetricAdapterTest {
                             /* isMonotonic= */ true,
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
-                                DoublePointData.create(123, 456, Labels.of("k", "v"), 5.0)))))))
+                                DoublePointData.create(123, 456, KV_ATTR, 5.0)))))))
         .containsExactlyInAnyOrder(
             ResourceMetrics.newBuilder()
                 .setResource(resourceProto)
+                .setSchemaUrl("http://resource.url")
                 .addAllInstrumentationLibraryMetrics(
                     singletonList(
                         InstrumentationLibraryMetrics.newBuilder()
                             .setInstrumentationLibrary(instrumentationLibraryProto)
                             .addAllMetrics(ImmutableList.of(metricDoubleSum, metricDoubleSum))
+                            .setSchemaUrl("http://url")
                             .build()))
                 .build(),
             ResourceMetrics.newBuilder()
@@ -644,11 +794,12 @@ class MetricAdapterTest {
                 .addAllInstrumentationLibraryMetrics(
                     ImmutableList.of(
                         InstrumentationLibraryMetrics.newBuilder()
-                            .setInstrumentationLibrary(emptyInstrumentationLibraryProto)
+                            .setInstrumentationLibrary(instrumentationLibraryProto)
                             .addAllMetrics(singletonList(metricDoubleSum))
+                            .setSchemaUrl("http://url")
                             .build(),
                         InstrumentationLibraryMetrics.newBuilder()
-                            .setInstrumentationLibrary(instrumentationLibraryProto)
+                            .setInstrumentationLibrary(emptyInstrumentationLibraryProto)
                             .addAllMetrics(singletonList(metricDoubleSum))
                             .build()))
                 .build());

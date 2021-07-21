@@ -1,12 +1,12 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
 
-    id("ru.vyarus.animalsniffer")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry SDK Resource Providers"
-extra["moduleName"] = "io.opentelemetry.sdk.extension.resources"
+otelJava.moduleName.set("io.opentelemetry.sdk.extension.resources")
 
 val mrJarVersions = listOf(11)
 

@@ -62,7 +62,7 @@ abstract class MinMaxSumCountAccumulation {
     return DoubleSummaryPointData.create(
         startEpochNanos,
         epochNanos,
-        labels,
+        MetricDataUtils.toAttributes(labels),
         getCount(),
         getSum(),
         Arrays.asList(

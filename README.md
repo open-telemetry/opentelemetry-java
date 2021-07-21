@@ -1,5 +1,5 @@
 # OpenTelemetry for Java
-![Continuous Build](https://github.com/open-telemetry/opentelemetry-java/workflows/Continuous%20Build/badge.svg)
+[![Continuous Build][ci-image]][ci-url]
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
 
@@ -83,7 +83,7 @@ dependency versions in sync.
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.2.0</version>
+        <version>1.4.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -102,7 +102,7 @@ dependency versions in sync.
 
 ```groovy
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.2.0")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.4.1")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
@@ -127,7 +127,7 @@ We strongly recommend using our published BOM to keep all dependency versions in
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.3.0-SNAPSHOT</version>
+        <version>1.4.1-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -150,7 +150,7 @@ repositories {
 }
 
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.3.0-SNAPSHOT")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.4.1-SNAPSHOT")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
@@ -170,19 +170,19 @@ This is a **current** feature status list:
 
 | Component                   | Version |
 | --------------------------- | ------- |
-| Trace API                   | v<!--VERSION_STABLE-->1.2.0<!--/VERSION_STABLE-->  |
-| Trace SDK                   | v<!--VERSION_STABLE-->1.2.0<!--/VERSION_STABLE-->  |
-| Context                     | v<!--VERSION_STABLE-->1.2.0<!--/VERSION_STABLE-->  |
-| Baggage                     | v<!--VERSION_STABLE-->1.2.0<!--/VERSION_STABLE-->  |
-| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.2.0<!--/VERSION_STABLE-->  |
-| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.2.0<!--/VERSION_STABLE-->  |
-| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.2.0<!--/VERSION_STABLE-->  |
-| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.2.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Metrics API                 | v<!--VERSION_UNSTABLE-->1.2.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.2.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.2.0-alpha<!--/VERSION_UNSTABLE-->  |
-| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->1.2.0-alpha<!--/VERSION_UNSTABLE-->  |
-| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->1.2.0-alpha<!--/VERSION_UNSTABLE-->  |
+| Trace API                   | v<!--VERSION_STABLE-->1.4.1<!--/VERSION_STABLE-->  |
+| Trace SDK                   | v<!--VERSION_STABLE-->1.4.1<!--/VERSION_STABLE-->  |
+| Context                     | v<!--VERSION_STABLE-->1.4.1<!--/VERSION_STABLE-->  |
+| Baggage                     | v<!--VERSION_STABLE-->1.4.1<!--/VERSION_STABLE-->  |
+| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.4.1<!--/VERSION_STABLE-->  |
+| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.4.1<!--/VERSION_STABLE-->  |
+| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.4.1<!--/VERSION_STABLE-->  |
+| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.4.1-alpha<!--/VERSION_UNSTABLE-->  |
+| Metrics API                 | v<!--VERSION_UNSTABLE-->1.4.1-alpha<!--/VERSION_UNSTABLE-->  |
+| Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.4.1-alpha<!--/VERSION_UNSTABLE-->  |
+| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.4.1-alpha<!--/VERSION_UNSTABLE-->  |
+| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->1.4.1-alpha<!--/VERSION_UNSTABLE-->  |
+| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->1.4.1-alpha<!--/VERSION_UNSTABLE-->  |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
 for details on upcoming releases. The dates and features described in issues
@@ -200,6 +200,7 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 - [Giovanni Liva](https://github.com/thisthat), Dynatrace
 - [Christian Neumüller](https://github.com/Oberon00), Dynatrace
 - [Carlos Alberto](https://github.com/carlosalberto), LightStep
+- [Jakub Wach](https://github.com/kubawach), Splunk
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
 
@@ -215,6 +216,8 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 
 [![contributors](https://contributors-img.web.app/image?repo=open-telemetry/opentelemetry-java)](https://github.com/open-telemetry/opentelemetry-java/graphs/contributors)
 
+[ci-image]: https://github.com/open-telemetry/opentelemetry-java/workflows/Continuous%20Build/badge.svg
+[ci-url]: https://github.com/open-telemetry/opentelemetry-java/actions?query=workflow%3Aci+branch%3Amain
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/main/
 [maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api/badge.svg

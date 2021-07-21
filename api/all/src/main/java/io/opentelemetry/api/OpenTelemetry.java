@@ -6,6 +6,7 @@
 package io.opentelemetry.api;
 
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 
@@ -61,6 +62,18 @@ public interface OpenTelemetry {
    */
   default Tracer getTracer(String instrumentationName, String instrumentationVersion) {
     return getTracerProvider().get(instrumentationName, instrumentationVersion);
+  }
+
+  /**
+   * Creates a {@link TracerBuilder} for a named {@link Tracer} instance.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @return a TracerBuilder instance.
+   * @since 1.4.0
+   */
+  default TracerBuilder tracerBuilder(String instrumentationName) {
+    return getTracerProvider().tracerBuilder(instrumentationName);
   }
 
   /** Returns the {@link ContextPropagators} for this {@link OpenTelemetry}. */

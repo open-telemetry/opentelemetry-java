@@ -7,6 +7,7 @@ package io.opentelemetry.extension.trace.propagation;
 
 import static io.opentelemetry.extension.trace.propagation.B3Propagator.COMBINED_HEADER;
 
+import io.opentelemetry.api.internal.TemporaryBuffers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
@@ -44,13 +45,13 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
       return;
     }
 
-    char[] chars = new char[COMBINED_HEADER_SIZE];
+    char[] chars = TemporaryBuffers.chars(COMBINED_HEADER_SIZE);
     String traceId = spanContext.getTraceId();
     traceId.getChars(0, traceId.length(), chars, 0);
     chars[SPAN_ID_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
 
     String spanId = spanContext.getSpanId();
-    System.arraycopy(spanId.toCharArray(), 0, chars, SPAN_ID_OFFSET, SpanId.getLength());
+    spanId.getChars(0, SpanId.getLength(), chars, SPAN_ID_OFFSET);
 
     chars[SAMPLED_FLAG_OFFSET - 1] = B3Propagator.COMBINED_HEADER_DELIMITER_CHAR;
     if (Boolean.TRUE.equals(context.get(B3Propagator.DEBUG_CONTEXT_KEY))) {
@@ -59,7 +60,7 @@ final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
       chars[SAMPLED_FLAG_OFFSET] =
           spanContext.isSampled() ? B3Propagator.IS_SAMPLED : B3Propagator.NOT_SAMPLED;
     }
-    setter.set(carrier, COMBINED_HEADER, new String(chars));
+    setter.set(carrier, COMBINED_HEADER, new String(chars, 0, COMBINED_HEADER_SIZE));
   }
 
   @Override

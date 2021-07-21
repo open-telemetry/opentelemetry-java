@@ -1,0 +1,18 @@
+{
+  "RuleName": "Test",
+  "RuleARN": "arn:aws:xray:us-east-1:595986152929:sampling-rule/Test",
+  "ResourceARN": "arn:aws:*:us-east-?:*:my-service",
+  "Priority": 1,
+  "FixedRate": 0.0,
+  "ReservoirSize": 0,
+  "ServiceName": "test-service-foo-*",
+  "ServiceType": "*",
+  "Host": "*op*t?lem*r?.io*",
+  "HTTPMethod": "**GET**",
+  "URLPath": "/instrument-me?foo=bar&cat=*",
+  "Version": 1,
+  "Attributes": {
+    "animal": "cat*",
+    "speed": "?0"
+  }
+}

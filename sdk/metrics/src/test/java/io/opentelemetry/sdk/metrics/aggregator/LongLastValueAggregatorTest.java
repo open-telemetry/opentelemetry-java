@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -81,6 +82,7 @@ class LongLastValueAggregatorTest {
                 "description",
                 "unit",
                 LongGaugeData.create(
-                    Collections.singletonList(LongPointData.create(0, 100, Labels.empty(), 10)))));
+                    Collections.singletonList(
+                        LongPointData.create(0, 100, Attributes.empty(), 10)))));
   }
 }

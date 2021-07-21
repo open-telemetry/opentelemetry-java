@@ -1,2 +1,12 @@
 Comparing source compatibility of  against 
-No changes.
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.AttributesAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.AttributesAssert containsEntry(io.opentelemetry.api.common.AttributeKey, int)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.SpanDataAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasException(java.lang.Throwable)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasNoParent()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.SpanDataAssert hasParent(io.opentelemetry.sdk.trace.data.SpanData)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.TraceAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.data.SpanData getSpan(int)

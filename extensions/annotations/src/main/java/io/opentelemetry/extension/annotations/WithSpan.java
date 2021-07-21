@@ -22,8 +22,8 @@ import java.lang.annotation.Target;
  * is non-functional without the OpenTelemetry auto-instrumentation agent, or some other annotation
  * processor.
  *
- * @see <a href="https://github.com/open-telemetry/opentelemetry-auto-instr-java">OpenTelemetry
- *     Auto-Instrumentation</a>
+ * @see <a href="https://github.com/open-telemetry/opentelemetry-java-instrumentation">OpenTelemetry
+ *     OpenTelemetry Instrumentation for Java</a>
  */
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.RUNTIME)

@@ -7,12 +7,13 @@ package io.opentelemetry.exporter.prometheus;
 
 import static io.prometheus.client.Collector.doubleToGoString;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -26,8 +27,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 
 /**
  * Util methods to convert OpenTelemetry Metrics data models to Prometheus data models.
@@ -102,26 +104,40 @@ final class MetricAdapter {
     final List<Sample> samples = new ArrayList<>(estimateNumSamples(points.size(), type));
 
     for (PointData pointData : points) {
-      List<String> labelNames = Collections.emptyList();
-      List<String> labelValues = Collections.emptyList();
-      Labels labels = pointData.getLabels();
-      if (labels.size() != 0) {
-        labelNames = new ArrayList<>(labels.size());
-        labelValues = new ArrayList<>(labels.size());
-
-        labels.forEach(new Consumer(labelNames, labelValues));
-      }
+      Attributes attributes = pointData.getAttributes();
+      final List<String> labelNames = new ArrayList<>(attributes.size());
+      final List<String> labelValues = new ArrayList<>(attributes.size());
+      attributes.forEach(
+          (key, value) -> {
+            String sanitizedLabelName = sanitizer.apply(key.getKey());
+            labelNames.add(sanitizedLabelName);
+            // TODO: We want to create an error-log if there is overlap in toString of attribute
+            // values for the same key name.
+            labelValues.add(value == null ? "" : value.toString());
+          });
 
       switch (type) {
         case DOUBLE_SUM:
         case DOUBLE_GAUGE:
           DoublePointData doublePoint = (DoublePointData) pointData;
-          samples.add(new Sample(name, labelNames, labelValues, doublePoint.getValue()));
+          samples.add(
+              createSample(
+                  name,
+                  labelNames,
+                  labelValues,
+                  doublePoint.getValue(),
+                  lastExemplarOrNull(doublePoint.getExemplars())));
           break;
         case LONG_SUM:
         case LONG_GAUGE:
           LongPointData longPoint = (LongPointData) pointData;
-          samples.add(new Sample(name, labelNames, labelValues, longPoint.getValue()));
+          samples.add(
+              createSample(
+                  name,
+                  labelNames,
+                  labelValues,
+                  longPoint.getValue(),
+                  lastExemplarOrNull(longPoint.getExemplars())));
           break;
         case SUMMARY:
           addSummarySamples(
@@ -134,23 +150,6 @@ final class MetricAdapter {
       }
     }
     return samples;
-  }
-
-  private static final class Consumer implements BiConsumer<String, String> {
-    final List<String> labelNames;
-    final List<String> labelValues;
-
-    private Consumer(List<String> labelNames, List<String> labelValues) {
-      this.labelNames = labelNames;
-      this.labelValues = labelValues;
-    }
-
-    @Override
-    public void accept(String labelName, String value) {
-      String sanitizedLabelName = sanitizer.apply(labelName);
-      labelNames.add(sanitizedLabelName);
-      labelValues.add(value == null ? "" : value);
-    }
   }
 
   private static void addSummarySamples(
@@ -199,19 +198,48 @@ final class MetricAdapter {
     labelNamesWithLe.add(LABEL_NAME_LE);
 
     long cumulativeCount = 0;
-    List<Double> boundaries = doubleHistogramPointData.getBoundaries();
     List<Long> counts = doubleHistogramPointData.getCounts();
     for (int i = 0; i < counts.size(); i++) {
       List<String> labelValuesWithLe = new ArrayList<>(labelValues.size() + 1);
+      // This is the upper boundary (inclusive). I.e. all values should be < this value (LE -
+      // Less-then-or-Equal).
+      double boundary = doubleHistogramPointData.getBucketUpperBound(i);
       labelValuesWithLe.addAll(labelValues);
-      labelValuesWithLe.add(
-          doubleToGoString(i < boundaries.size() ? boundaries.get(i) : Double.POSITIVE_INFINITY));
+      labelValuesWithLe.add(doubleToGoString(boundary));
 
       cumulativeCount += counts.get(i);
       samples.add(
-          new Sample(
-              name + SAMPLE_SUFFIX_BUCKET, labelNamesWithLe, labelValuesWithLe, cumulativeCount));
+          createSample(
+              name + SAMPLE_SUFFIX_BUCKET,
+              labelNamesWithLe,
+              labelValuesWithLe,
+              cumulativeCount,
+              filterExemplars(
+                  doubleHistogramPointData.getExemplars(),
+                  doubleHistogramPointData.getBucketLowerBound(i),
+                  boundary)));
     }
+  }
+
+  @Nullable
+  private static Exemplar lastExemplarOrNull(Collection<Exemplar> exemplars) {
+    Exemplar result = null;
+    for (Exemplar e : exemplars) {
+      result = e;
+    }
+    return result;
+  }
+
+  @Nullable
+  private static Exemplar filterExemplars(Collection<Exemplar> exemplars, double min, double max) {
+    Exemplar result = null;
+    for (Exemplar e : exemplars) {
+      double value = e.getValueAsDouble();
+      if (value <= max && value > min) {
+        result = e;
+      }
+    }
+    return result;
   }
 
   private static int estimateNumSamples(int numPoints, MetricDataType type) {
@@ -238,6 +266,32 @@ final class MetricAdapter {
         return metricData.getDoubleHistogramData().getPoints();
     }
     return Collections.emptyList();
+  }
+
+  private static Sample createSample(
+      String name,
+      List<String> labelNames,
+      List<String> labelValues,
+      double value,
+      @Nullable Exemplar exemplar) {
+    if (exemplar != null) {
+      return new Sample(name, labelNames, labelValues, value, toPrometheusExemplar(exemplar));
+    }
+    return new Sample(name, labelNames, labelValues, value);
+  }
+
+  private static io.prometheus.client.exemplars.Exemplar toPrometheusExemplar(Exemplar exemplar) {
+    if (exemplar.getSpanId() != null && exemplar.getTraceId() != null) {
+      return new io.prometheus.client.exemplars.Exemplar(
+          exemplar.getValueAsDouble(),
+          // Convert to ms for prometheus, truncate nanosecond precision.
+          TimeUnit.NANOSECONDS.toMillis(exemplar.getEpochNanos()),
+          "trace_id",
+          exemplar.getTraceId(),
+          "span_id",
+          exemplar.getSpanId());
+    }
+    return new io.prometheus.client.exemplars.Exemplar(exemplar.getValueAsDouble());
   }
 
   private MetricAdapter() {}

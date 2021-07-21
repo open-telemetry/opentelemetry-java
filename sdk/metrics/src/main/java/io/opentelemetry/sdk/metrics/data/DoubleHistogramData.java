@@ -9,6 +9,15 @@ import com.google.auto.value.AutoValue;
 import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * A histogram metric point.
+ *
+ * <p>See:
+ * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#histogram
+ *
+ * <p><i>Note: This is called "DoubleHistogram" to reflect which primitives are used to record it,
+ * however "Histogram" is the equivalent OTLP type.</i>
+ */
 @Immutable
 @AutoValue
 public abstract class DoubleHistogramData implements Data<DoubleHistogramPointData> {

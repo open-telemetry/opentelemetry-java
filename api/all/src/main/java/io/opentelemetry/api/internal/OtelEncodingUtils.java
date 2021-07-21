@@ -14,7 +14,7 @@ public final class OtelEncodingUtils {
   static final int BYTE_BASE16 = 2;
   static final int LONG_BASE16 = BYTE_BASE16 * LONG_BYTES;
   private static final String ALPHABET = "0123456789abcdef";
-  private static final int ASCII_CHARACTERS = 128;
+  private static final int NUM_ASCII_CHARACTERS = 128;
   private static final char[] ENCODING = buildEncodingArray();
   private static final byte[] DECODING = buildDecodingArray();
 
@@ -28,7 +28,7 @@ public final class OtelEncodingUtils {
   }
 
   private static byte[] buildDecodingArray() {
-    byte[] decoding = new byte[ASCII_CHARACTERS];
+    byte[] decoding = new byte[NUM_ASCII_CHARACTERS];
     Arrays.fill(decoding, (byte) -1);
     for (int i = 0; i < ALPHABET.length(); i++) {
       char c = ALPHABET.charAt(i);
@@ -110,10 +110,12 @@ public final class OtelEncodingUtils {
    * @return the resulting {@code byte}
    */
   public static byte byteFromBase16(char first, char second) {
-    Utils.checkArgument(
-        first < ASCII_CHARACTERS && DECODING[first] != -1, "invalid character " + first);
-    Utils.checkArgument(
-        second < ASCII_CHARACTERS && DECODING[second] != -1, "invalid character " + second);
+    if (first >= NUM_ASCII_CHARACTERS || DECODING[first] == -1) {
+      throw new IllegalArgumentException("invalid character " + first);
+    }
+    if (second >= NUM_ASCII_CHARACTERS || DECODING[second] == -1) {
+      throw new IllegalArgumentException("invalid character " + second);
+    }
     int decoded = DECODING[first] << 4 | DECODING[second];
     return (byte) decoded;
   }

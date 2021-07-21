@@ -2,6 +2,76 @@
 
 ## Unreleased:
 
+## Version 1.4.1 - 2021-07-15
+
+- Fill labels in addition to attributes during OTLP metrics export to support versions of the
+OpenTelemetry Collector which do not support the new protocol yet.
+
+## Version 1.4.0 - 2021-07-10
+
+### API
+#### Enhancements
+- You can now assign an OpenTelemetry schema URL to a `Tracer` via the new `TracerBuilder` class that is 
+accessed via the `TracerProvider` or any of the global instances that delegate to one.
+
+#### Extensions
+- A new `@SpanAttribute` annotation has been added for adding method parameters to spans automatically. This
+has no implementation in this release, but should be supported by the auto-instrumentation agent soon.
+
+### Exporters
+#### Bugfixes
+- Calling `shutdown()` multiple times on the OTLP and Jaeger GRPC-based exporters will now work correctly and return a proper
+implementation of `CompletableResultCode` for the calls beyond the first. 
+
+### SDK
+#### Bugfixes
+- If the `jdk.unsupported` package is not available, the `BatchSpanProcessor` will now fall back to a supported, standard `Queue` implementation.
+
+#### Enhancements
+- A `Resource` can now be assigned an OpenTelemetry schema URL via the `ResourceBuilder` or the `create(Attributes, String)` 
+method on the `Resource` itself.
+- You can now obtain a default `Clock` based on system time via `Clock.getDefault`. The sdk-testing artifact also provides
+a `TestClock` for unit testing.
+
+### Semantic Conventions (alpha)
+- The `SemanticAttributes` and `ResourceAttributes` classes have been updated to match the semantic conventions
+as of specification release `1.4.0`. These classes also now expose a `SCHEMA_URL` field which points at the 
+version of the OpenTelemetry schema the files were generated from. There are no breaking changes in this update, only additions.
+
+### Metrics (alpha)
+- You can now assign an OpenTelemetry schema URL to a `Meter` via the new `MeterBuilder` class that is
+accessed via the `MeterProvider` or any global instances that delegate to one.
+- The metrics SDK now utilizes `Attributes` rather than `Labels` internally.
+- You can now register an `IntervalMetricReader` as global and `forceFlush` the global reader.
+
+---
+## Version 1.3.0 - 2021-06-09
+
+### API
+#### Enhancements
+- Parsing of the W3C Baggage header has been optimized.
+
+### SDK
+#### Behavioral Changes
+- The implementation of SpanBuilder will no longer throw exceptions when null parameters are passed in. Instead,
+it will treat these calls as no-ops.
+  
+#### Enhancements
+- Memory usage of the Tracing SDK has been greatly reduced when exporting via the OTLP or Jaeger exporters.
+- The OTLP protobuf version has been updated to v0.9.0
+
+### Extensions
+- A new experimental extension module has been added to provide a truly no-op implementation of the API. This
+is published under the `io.opentelemetry.extension.noopapi` name.
+- The `io.opentelemetry.sdk.autoconfigure` module now supports the `OTEL_SERVICE_NAME`/`otel.service.name`
+environment variable/system property for configuring the SDK's `Resource` implementation.
+
+### Metrics (alpha)
+- The autoconfiguration code for metrics now supports durations to be provided with units attached to them (eg. "`100ms`"). This includes
+the following environment variables/system properties:
+  - `OTEL_EXPORTER_OTLP_TIMEOUT`/`otel.exporter.otlp.timeout`
+  - `OTEL_IMR_EXPORT_INTERVAL`/`otel.imr.export.interval`
+
 ---
 
 ## Version 1.2.0 - 2021-05-07

@@ -17,9 +17,8 @@ subprojects {
     version = "0.1.0-SNAPSHOT"
 
     ext {
-        //these versions are defined in gradle.properties
-        openTelemetryVersion = project.properties["io.opentelemetry.version"]
-        openTelemetryAlphaVersion = project.properties["io.opentelemetry.version.alpha"]
+        openTelemetryVersion = "1.4.0"
+        openTelemetryAlphaVersion = "1.4.0-alpha"
 
         grpcVersion = '1.34.1'
         protobufVersion = '3.11.4'

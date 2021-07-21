@@ -22,7 +22,15 @@ public interface AttributesBuilder {
   /** Create the {@link Attributes} from this. */
   Attributes build();
 
-  /** Puts a {@link AttributeKey} with associated value into this. */
+  /**
+   * Puts a {@link AttributeKey} with associated value into this.
+   *
+   * <p>The type parameter is unused.
+   */
+  // The type parameter was added unintentionally and unfortunately it is an API break for
+  // implementations of this interface to remove it. It doesn't affect users of the interface in
+  // any way, and has almost no effect on implementations, so we leave it until a future major
+  // version.
   <T> AttributesBuilder put(AttributeKey<Long> key, int value);
 
   /** Puts a {@link AttributeKey} with associated value into this. */

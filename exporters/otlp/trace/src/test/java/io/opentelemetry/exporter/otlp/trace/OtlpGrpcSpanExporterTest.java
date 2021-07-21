@@ -28,6 +28,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -162,6 +163,14 @@ class OtlpGrpcSpanExporterTest {
   }
 
   @Test
+  void doubleShutdown() {
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
+    assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(exporter.shutdown().join(1, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
   void testExport_Cancelled() {
     fakeCollector.setReturnedStatus(Status.CANCELLED);
     OtlpGrpcSpanExporter exporter =
@@ -293,6 +302,8 @@ class OtlpGrpcSpanExporterTest {
         .setLinks(Collections.emptyList())
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
+        .setInstrumentationLibraryInfo(
+            InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
         .build();
   }
 

@@ -9,23 +9,28 @@ import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATI
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED;
 
-import io.opentelemetry.api.metrics.common.Labels;
-import io.opentelemetry.proto.common.v1.StringKeyValue;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.UnsafeByteOperations;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
-import io.opentelemetry.proto.metrics.v1.DoubleDataPoint;
-import io.opentelemetry.proto.metrics.v1.DoubleGauge;
-import io.opentelemetry.proto.metrics.v1.DoubleHistogram;
-import io.opentelemetry.proto.metrics.v1.DoubleHistogramDataPoint;
-import io.opentelemetry.proto.metrics.v1.DoubleSum;
-import io.opentelemetry.proto.metrics.v1.DoubleSummary;
-import io.opentelemetry.proto.metrics.v1.DoubleSummaryDataPoint;
+import io.opentelemetry.proto.metrics.v1.Exemplar;
+import io.opentelemetry.proto.metrics.v1.Gauge;
+import io.opentelemetry.proto.metrics.v1.Histogram;
+import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
-import io.opentelemetry.proto.metrics.v1.IntDataPoint;
-import io.opentelemetry.proto.metrics.v1.IntGauge;
-import io.opentelemetry.proto.metrics.v1.IntSum;
 import io.opentelemetry.proto.metrics.v1.Metric;
+import io.opentelemetry.proto.metrics.v1.NumberDataPoint;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.proto.metrics.v1.Sum;
+import io.opentelemetry.proto.metrics.v1.Summary;
+import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
@@ -33,6 +38,7 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.LongExemplar;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
@@ -41,13 +47,18 @@ import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Converter from SDK {@link MetricData} to OTLP {@link ResourceMetrics}. */
 public final class MetricAdapter {
+
+  private static final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(MetricAdapter.class.getName()));
 
   /** Converts the provided {@link MetricData} to {@link ResourceMetrics}. */
   public static List<ResourceMetrics> toProtoResourceMetrics(Collection<MetricData> metricData) {
@@ -60,20 +71,38 @@ public final class MetricAdapter {
           new ArrayList<>(entryResource.getValue().size());
       for (Map.Entry<InstrumentationLibraryInfo, List<Metric>> entryLibrary :
           entryResource.getValue().entrySet()) {
-        instrumentationLibraryMetrics.add(
-            InstrumentationLibraryMetrics.newBuilder()
-                .setInstrumentationLibrary(
-                    CommonAdapter.toProtoInstrumentationLibrary(entryLibrary.getKey()))
-                .addAllMetrics(entryLibrary.getValue())
-                .build());
+        instrumentationLibraryMetrics.add(buildInstrumentationLibraryMetrics(entryLibrary));
       }
       resourceMetrics.add(
-          ResourceMetrics.newBuilder()
-              .setResource(ResourceAdapter.toProtoResource(entryResource.getKey()))
-              .addAllInstrumentationLibraryMetrics(instrumentationLibraryMetrics)
-              .build());
+          buildResourceMetrics(entryResource.getKey(), instrumentationLibraryMetrics));
     }
     return resourceMetrics;
+  }
+
+  private static ResourceMetrics buildResourceMetrics(
+      Resource resource, List<InstrumentationLibraryMetrics> instrumentationLibraryMetrics) {
+    ResourceMetrics.Builder resourceMetricsBuilder =
+        ResourceMetrics.newBuilder()
+            .setResource(ResourceAdapter.toProtoResource(resource))
+            .addAllInstrumentationLibraryMetrics(instrumentationLibraryMetrics);
+    String schemaUrl = resource.getSchemaUrl();
+    if (schemaUrl != null) {
+      resourceMetricsBuilder.setSchemaUrl(schemaUrl);
+    }
+    return resourceMetricsBuilder.build();
+  }
+
+  private static InstrumentationLibraryMetrics buildInstrumentationLibraryMetrics(
+      Map.Entry<InstrumentationLibraryInfo, List<Metric>> entryLibrary) {
+    InstrumentationLibraryMetrics.Builder metricsBuilder =
+        InstrumentationLibraryMetrics.newBuilder()
+            .setInstrumentationLibrary(
+                CommonAdapter.toProtoInstrumentationLibrary(entryLibrary.getKey()))
+            .addAllMetrics(entryLibrary.getValue());
+    if (entryLibrary.getKey().getSchemaUrl() != null) {
+      metricsBuilder.setSchemaUrl(entryLibrary.getKey().getSchemaUrl());
+    }
+    return metricsBuilder.build();
   }
 
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<Metric>>>
@@ -112,8 +141,8 @@ public final class MetricAdapter {
     switch (metricData.getType()) {
       case LONG_SUM:
         LongSumData longSumData = metricData.getLongSumData();
-        builder.setIntSum(
-            IntSum.newBuilder()
+        builder.setSum(
+            Sum.newBuilder()
                 .setIsMonotonic(longSumData.isMonotonic())
                 .setAggregationTemporality(
                     mapToTemporality(longSumData.getAggregationTemporality()))
@@ -122,8 +151,8 @@ public final class MetricAdapter {
         break;
       case DOUBLE_SUM:
         DoubleSumData doubleSumData = metricData.getDoubleSumData();
-        builder.setDoubleSum(
-            DoubleSum.newBuilder()
+        builder.setSum(
+            Sum.newBuilder()
                 .setIsMonotonic(doubleSumData.isMonotonic())
                 .setAggregationTemporality(
                     mapToTemporality(doubleSumData.getAggregationTemporality()))
@@ -132,32 +161,32 @@ public final class MetricAdapter {
         break;
       case SUMMARY:
         DoubleSummaryData doubleSummaryData = metricData.getDoubleSummaryData();
-        builder.setDoubleSummary(
-            DoubleSummary.newBuilder()
+        builder.setSummary(
+            Summary.newBuilder()
                 .addAllDataPoints(toSummaryDataPoints(doubleSummaryData.getPoints()))
                 .build());
         break;
       case LONG_GAUGE:
         LongGaugeData longGaugeData = metricData.getLongGaugeData();
-        builder.setIntGauge(
-            IntGauge.newBuilder()
+        builder.setGauge(
+            Gauge.newBuilder()
                 .addAllDataPoints(toIntDataPoints(longGaugeData.getPoints()))
                 .build());
         break;
       case DOUBLE_GAUGE:
         DoubleGaugeData doubleGaugeData = metricData.getDoubleGaugeData();
-        builder.setDoubleGauge(
-            DoubleGauge.newBuilder()
+        builder.setGauge(
+            Gauge.newBuilder()
                 .addAllDataPoints(toDoubleDataPoints(doubleGaugeData.getPoints()))
                 .build());
         break;
       case HISTOGRAM:
         DoubleHistogramData doubleHistogramData = metricData.getDoubleHistogramData();
-        builder.setDoubleHistogram(
-            DoubleHistogram.newBuilder()
+        builder.setHistogram(
+            Histogram.newBuilder()
                 .setAggregationTemporality(
                     mapToTemporality(doubleHistogramData.getAggregationTemporality()))
-                .addAllDataPoints(toDoubleHistogramDataPoints(doubleHistogramData.getPoints()))
+                .addAllDataPoints(toHistogramDataPoints(doubleHistogramData.getPoints()))
                 .build());
         break;
     }
@@ -175,60 +204,59 @@ public final class MetricAdapter {
     return AGGREGATION_TEMPORALITY_UNSPECIFIED;
   }
 
-  static List<IntDataPoint> toIntDataPoints(Collection<LongPointData> points) {
-    List<IntDataPoint> result = new ArrayList<>(points.size());
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
+  static List<NumberDataPoint> toIntDataPoints(Collection<LongPointData> points) {
+    List<NumberDataPoint> result = new ArrayList<>(points.size());
     for (LongPointData longPoint : points) {
-      IntDataPoint.Builder builder =
-          IntDataPoint.newBuilder()
+      NumberDataPoint.Builder builder =
+          NumberDataPoint.newBuilder()
               .setStartTimeUnixNano(longPoint.getStartEpochNanos())
               .setTimeUnixNano(longPoint.getEpochNanos())
-              .setValue(longPoint.getValue());
-      Collection<StringKeyValue> labels = toProtoLabels(longPoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllLabels(labels);
-      }
+              .setAsInt(longPoint.getValue());
+      fillAttributes(longPoint.getAttributes(), builder::addAttributes, builder::addLabels);
+      longPoint.getExemplars().forEach(e -> builder.addExemplars(toExemplar(e)));
       result.add(builder.build());
     }
     return result;
   }
 
-  static Collection<DoubleDataPoint> toDoubleDataPoints(Collection<DoublePointData> points) {
-    List<DoubleDataPoint> result = new ArrayList<>(points.size());
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
+  static Collection<NumberDataPoint> toDoubleDataPoints(Collection<DoublePointData> points) {
+    List<NumberDataPoint> result = new ArrayList<>(points.size());
     for (DoublePointData doublePoint : points) {
-      DoubleDataPoint.Builder builder =
-          DoubleDataPoint.newBuilder()
+      NumberDataPoint.Builder builder =
+          NumberDataPoint.newBuilder()
               .setStartTimeUnixNano(doublePoint.getStartEpochNanos())
               .setTimeUnixNano(doublePoint.getEpochNanos())
-              .setValue(doublePoint.getValue());
-      Collection<StringKeyValue> labels = toProtoLabels(doublePoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllLabels(labels);
-      }
+              .setAsDouble(doublePoint.getValue());
+      fillAttributes(doublePoint.getAttributes(), builder::addAttributes, builder::addLabels);
+      doublePoint.getExemplars().forEach(e -> builder.addExemplars(toExemplar(e)));
       result.add(builder.build());
     }
     return result;
   }
 
-  static List<DoubleSummaryDataPoint> toSummaryDataPoints(
-      Collection<DoubleSummaryPointData> points) {
-    List<DoubleSummaryDataPoint> result = new ArrayList<>(points.size());
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
+  static List<SummaryDataPoint> toSummaryDataPoints(Collection<DoubleSummaryPointData> points) {
+    List<SummaryDataPoint> result = new ArrayList<>(points.size());
     for (DoubleSummaryPointData doubleSummaryPoint : points) {
-      DoubleSummaryDataPoint.Builder builder =
-          DoubleSummaryDataPoint.newBuilder()
+      SummaryDataPoint.Builder builder =
+          SummaryDataPoint.newBuilder()
               .setStartTimeUnixNano(doubleSummaryPoint.getStartEpochNanos())
               .setTimeUnixNano(doubleSummaryPoint.getEpochNanos())
               .setCount(doubleSummaryPoint.getCount())
               .setSum(doubleSummaryPoint.getSum());
-      List<StringKeyValue> labels = toProtoLabels(doubleSummaryPoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllLabels(labels);
-      }
+      fillAttributes(
+          doubleSummaryPoint.getAttributes(), builder::addAttributes, builder::addLabels);
       // Not calling directly addAllQuantileValues because that generates couple of unnecessary
       // allocations if empty list.
       if (!doubleSummaryPoint.getPercentileValues().isEmpty()) {
         for (ValueAtPercentile valueAtPercentile : doubleSummaryPoint.getPercentileValues()) {
           builder.addQuantileValues(
-              DoubleSummaryDataPoint.ValueAtQuantile.newBuilder()
+              SummaryDataPoint.ValueAtQuantile.newBuilder()
                   .setQuantile(valueAtPercentile.getPercentile() / 100.0)
                   .setValue(valueAtPercentile.getValue())
                   .build());
@@ -239,12 +267,14 @@ public final class MetricAdapter {
     return result;
   }
 
-  static Collection<DoubleHistogramDataPoint> toDoubleHistogramDataPoints(
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
+  static Collection<HistogramDataPoint> toHistogramDataPoints(
       Collection<DoubleHistogramPointData> points) {
-    List<DoubleHistogramDataPoint> result = new ArrayList<>(points.size());
+    List<HistogramDataPoint> result = new ArrayList<>(points.size());
     for (DoubleHistogramPointData doubleHistogramPoint : points) {
-      DoubleHistogramDataPoint.Builder builder =
-          DoubleHistogramDataPoint.newBuilder()
+      HistogramDataPoint.Builder builder =
+          HistogramDataPoint.newBuilder()
               .setStartTimeUnixNano(doubleHistogramPoint.getStartEpochNanos())
               .setTimeUnixNano(doubleHistogramPoint.getEpochNanos())
               .setCount(doubleHistogramPoint.getCount())
@@ -254,25 +284,67 @@ public final class MetricAdapter {
       if (!boundaries.isEmpty()) {
         builder.addAllExplicitBounds(boundaries);
       }
-      Collection<StringKeyValue> labels = toProtoLabels(doubleHistogramPoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllLabels(labels);
-      }
+      fillAttributes(
+          doubleHistogramPoint.getAttributes(), builder::addAttributes, builder::addLabels);
+      doubleHistogramPoint.getExemplars().forEach(e -> builder.addExemplars(toExemplar(e)));
       result.add(builder.build());
     }
     return result;
   }
 
-  @SuppressWarnings("MixedMutabilityReturnType")
-  static List<StringKeyValue> toProtoLabels(Labels labels) {
-    if (labels.isEmpty()) {
-      return Collections.emptyList();
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
+  static Exemplar toExemplar(io.opentelemetry.sdk.metrics.data.Exemplar exemplar) {
+    // TODO - Use a thread local cache for spanid/traceid -> byte conversion.
+    Exemplar.Builder builder = Exemplar.newBuilder();
+    builder.setTimeUnixNano(exemplar.getEpochNanos());
+    if (exemplar.getSpanId() != null) {
+      builder.setSpanId(convertSpanId(exemplar.getSpanId()));
     }
-    final List<StringKeyValue> result = new ArrayList<>(labels.size());
-    labels.forEach(
-        (key, value) ->
-            result.add(StringKeyValue.newBuilder().setKey(key).setValue(value).build()));
-    return result;
+    if (exemplar.getTraceId() != null) {
+      builder.setTraceId(convertTraceId(exemplar.getTraceId()));
+    }
+    fillAttributes(
+        exemplar.getFilteredAttributes(),
+        builder::addFilteredAttributes,
+        builder::addFilteredLabels);
+    if (exemplar instanceof LongExemplar) {
+      builder.setAsInt(((LongExemplar) exemplar).getValue());
+    } else if (exemplar instanceof DoubleExemplar) {
+      builder.setAsDouble(((DoubleExemplar) exemplar).getValue());
+    } else {
+      if (logger.isLoggable(Level.SEVERE)) {
+        logger.log(Level.SEVERE, "Unable to convert unknown exemplar type: " + exemplar);
+      }
+    }
+    return builder.build();
+  }
+
+  private static ByteString convertTraceId(String id) {
+    return UnsafeByteOperations.unsafeWrap(
+        OtelEncodingUtils.bytesFromBase16(id, TraceId.getLength()));
+  }
+
+  private static ByteString convertSpanId(String id) {
+    return UnsafeByteOperations.unsafeWrap(
+        OtelEncodingUtils.bytesFromBase16(id, SpanId.getLength()));
+  }
+
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
+  private static void fillAttributes(
+      Attributes attributes,
+      Consumer<KeyValue> attributeSetter,
+      Consumer<io.opentelemetry.proto.common.v1.StringKeyValue> labelSetter) {
+    attributes.forEach(
+        (key, value) -> {
+          attributeSetter.accept(CommonAdapter.toProtoAttribute(key, value));
+          labelSetter.accept(
+              io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                  .setKey(key.getKey())
+                  .setValue(value.toString())
+                  .build());
+        });
   }
 
   private MetricAdapter() {}

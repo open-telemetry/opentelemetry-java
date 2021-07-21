@@ -1,15 +1,23 @@
-plugins {
-    id("java-library")
-    id("maven-publish")
+import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 
-    id("me.champeau.gradle.jmh")
-    id("ru.vyarus.animalsniffer")
+plugins {
+    id("otel.java-conventions")
+    id("otel.publish-conventions")
+
+    id("otel.jmh-conventions")
+    id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry SDK For Tracing"
-extra["moduleName"] = "io.opentelemetry.sdk.trace"
+otelJava.moduleName.set("io.opentelemetry.sdk.trace")
 
-evaluationDependsOn(":sdk:trace-shaded-deps")
+
+sourceSets {
+    main {
+        val traceShadedDeps = project(":sdk:trace-shaded-deps")
+        output.dir(traceShadedDeps.file("build/extracted/shadow"), "builtBy" to ":sdk:trace-shaded-deps:extractShadowJar")
+    }
+}
 
 dependencies {
     api(project(":api:all"))
@@ -28,13 +36,13 @@ dependencies {
     testImplementation("com.google.guava:guava")
 
     jmh(project(":sdk:metrics"))
-    jmh(project(":sdk:trace-shaded-deps"))
     jmh(project(":sdk:testing")) {
         // JMH doesn"t handle dependencies that are duplicated between the main and jmh
         // configurations properly, but luckily here it"s simple enough to just exclude transitive
         // dependencies.
         isTransitive = false
     }
+    jmh(project(":exporters:jaeger-thrift"))
     jmh(project(":exporters:otlp:trace")) {
         // The opentelemetry-exporter-otlp-trace depends on this project itself. So don"t pull in
         // the transitive dependencies.
@@ -68,10 +76,9 @@ tasks {
         }
     }
 
-    jar {
-        inputs.files(project(":sdk:trace-shaded-deps").file("src"))
-        val shadowJar = project(":sdk:trace-shaded-deps").tasks.named<Jar>("shadowJar")
-        from(zipTree(shadowJar.get().archiveFile))
-        dependsOn(shadowJar)
+    withType<AnimalSniffer>().configureEach {
+        // We catch NoClassDefFoundError to fallback to non-jctools queues.
+        exclude("**/internal/shaded/jctools/**")
+        exclude("**/internal/JcTools*")
     }
 }

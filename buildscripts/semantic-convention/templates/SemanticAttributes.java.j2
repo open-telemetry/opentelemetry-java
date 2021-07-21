@@ -57,13 +57,18 @@ import java.util.List;
 
 // DO NOT EDIT, this is an Auto-generated file from buildscripts/semantic-convention{{template}}
 public final class {{class}} {
+  /**
+   * The URL of the OpenTelemetry schema for these keys and values.
+   */
+  public static final String SCHEMA_URL = "{{schemaUrl}}";
   {%- for attribute in attributes if attribute.is_local and not attribute.ref %}
 
   /**
-  * {% filter escape %}{{attribute.brief | to_doc_brief}}.{% endfilter %}
+  * {{attribute.brief | render_markdown(code="{{@code {0}}}", paragraph="{0}")}}
     {%- if attribute.note %}
   *
-  * Note: {% filter escape %}{{attribute.note | to_doc_brief}}.{% endfilter %}
+  * <p>Notes:
+    <ul> {{attribute.note | render_markdown(code="{{@code {0}}}", paragraph="<li>{0}</li>", list="{0}")}} </ul>
     {%- endif %}
     {%- if attribute.deprecated %}
   *

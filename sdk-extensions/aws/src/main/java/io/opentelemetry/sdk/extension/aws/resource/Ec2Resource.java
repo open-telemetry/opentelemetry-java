@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.extension.aws.internal.JdkHttpClient;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
@@ -119,7 +120,7 @@ public final class Ec2Resource {
 
     attrBuilders.put(ResourceAttributes.HOST_NAME, hostname);
 
-    return Resource.create(attrBuilders.build());
+    return Resource.create(attrBuilders.build(), ResourceAttributes.SCHEMA_URL);
   }
 
   private static String fetchToken(URL tokenUrl) {
