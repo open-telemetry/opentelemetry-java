@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.logging.otlp;
+package io.opentelemetry.exporter.otlp.internal;
 
 import com.fasterxml.jackson.core.Base64Variant;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -13,14 +13,19 @@ import com.fasterxml.jackson.core.util.JsonGeneratorDelegate;
 import io.opentelemetry.api.internal.TemporaryBuffers;
 import java.io.IOException;
 
-final class HexEncodingStringJsonGenerator extends JsonGeneratorDelegate {
+public final class HexEncodingStringJsonGenerator extends JsonGeneratorDelegate {
 
-  static final JsonFactory JSON_FACTORY = new JsonFactory();
-
-  static JsonGenerator create(SegmentedStringWriter stringWriter) {
+  /**
+   * Create a JSON generator which encodes byte arrays as case-insensitive hex-encoded strings.
+   *
+   * @param stringWriter the string write
+   * @param jsonFactory the json factory
+   * @return the generator
+   */
+  public static JsonGenerator create(SegmentedStringWriter stringWriter, JsonFactory jsonFactory) {
     final JsonGenerator delegate;
     try {
-      delegate = JSON_FACTORY.createGenerator(stringWriter);
+      delegate = jsonFactory.createGenerator(stringWriter);
     } catch (IOException e) {
       throw new IllegalStateException("Unable to create in-memory JsonGenerator, can't happen.", e);
     }

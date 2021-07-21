@@ -5,10 +5,10 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
-import static io.opentelemetry.exporter.logging.otlp.HexEncodingStringJsonGenerator.JSON_FACTORY;
-
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
+import io.opentelemetry.exporter.otlp.internal.HexEncodingStringJsonGenerator;
 import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -27,7 +27,8 @@ import org.curioswitch.common.protobuf.json.MessageMarshaller;
  */
 public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
 
-  private static final MessageMarshaller marshaller =
+  private static final JsonFactory JSON_FACTORY = new JsonFactory();
+  private static final MessageMarshaller MARSHALLER =
       MessageMarshaller.builder()
           .register(ResourceMetrics.class)
           .omittingInsignificantWhitespace(true)
@@ -48,8 +49,8 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
     List<ResourceMetrics> allResourceMetrics = MetricAdapter.toProtoResourceMetrics(metrics);
     for (ResourceMetrics resourceMetrics : allResourceMetrics) {
       SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
-      try (JsonGenerator gen = HexEncodingStringJsonGenerator.create(sw)) {
-        marshaller.writeValue(resourceMetrics, gen);
+      try (JsonGenerator gen = HexEncodingStringJsonGenerator.create(sw, JSON_FACTORY)) {
+        MARSHALLER.writeValue(resourceMetrics, gen);
       } catch (IOException e) {
         // Shouldn't happen in practice, just skip it.
         continue;

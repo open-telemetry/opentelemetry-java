@@ -15,6 +15,7 @@ dependencies {
     api(project(":sdk:all"))
     api(project(":sdk:metrics"))
 
+    api("org.curioswitch.curiostack:protobuf-jackson")
     implementation("com.google.protobuf:protobuf-java")
 
     testImplementation(project(":sdk:testing"))
