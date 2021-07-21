@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
@@ -21,7 +20,7 @@ import java.util.Objects;
  */
 public final class SdkMeterProviderBuilder {
 
-  private Clock clock = SystemClock.getInstance();
+  private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
   private final Map<InstrumentSelector, View> instrumentSelectorViews = new HashMap<>();
 

@@ -365,6 +365,7 @@ class BatchSpanProcessorTest {
     // Still processing new spans.
     CountDownLatch exportedAgain = new CountDownLatch(1);
     reset(mockSpanExporter);
+    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     when(mockSpanExporter.export(
             argThat(
                 spans -> {

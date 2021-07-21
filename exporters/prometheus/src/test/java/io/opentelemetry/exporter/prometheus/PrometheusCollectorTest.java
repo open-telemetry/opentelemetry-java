@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -70,7 +69,7 @@ class PrometheusCollectorTest {
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    LongPointData.create(123, 456, Labels.of("kp", "vp"), 5)))),
+                    LongPointData.create(123, 456, Attributes.of(stringKey("kp"), "vp"), 5)))),
         MetricData.createDoubleSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("http", "version"),
@@ -81,6 +80,6 @@ class PrometheusCollectorTest {
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    DoublePointData.create(123, 456, Labels.of("kp", "vp"), 3.5)))));
+                    DoublePointData.create(123, 456, Attributes.of(stringKey("kp"), "vp"), 3.5)))));
   }
 }

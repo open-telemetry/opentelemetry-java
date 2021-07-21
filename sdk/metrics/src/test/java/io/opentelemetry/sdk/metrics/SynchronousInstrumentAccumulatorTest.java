@@ -5,12 +5,12 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -67,9 +68,7 @@ public class SynchronousInstrumentAccumulatorTest {
     md.stream()
         .flatMap(m -> m.getLongGaugeData().getPoints().stream())
         .forEach(
-            p ->
-                assertThat(p.getLabels().asMap())
-                    .isEqualTo(labels.toBuilder().put("modifiedK", "modifiedV").build().asMap()));
+            p -> assertThat(p.getAttributes()).hasSize(1).containsEntry("modifiedK", "modifiedV"));
   }
 
   @Test

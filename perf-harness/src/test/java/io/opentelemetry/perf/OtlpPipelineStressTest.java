@@ -12,7 +12,6 @@ import eu.rekawek.toxiproxy.model.ToxicList;
 import eu.rekawek.toxiproxy.model.toxic.Timeout;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
@@ -200,12 +199,12 @@ public class OtlpPipelineStressTest {
         (name, metricData) -> {
           Stream<LongPointData> longPointStream =
               metricData.stream().flatMap(md -> md.getLongSumData().getPoints().stream());
-          Map<Labels, List<LongPointData>> pointsByLabelset =
-              longPointStream.collect(Collectors.groupingBy(PointData::getLabels));
-          pointsByLabelset.forEach(
-              (labels, longPoints) -> {
+          Map<Attributes, List<LongPointData>> pointsByAttributes =
+              longPointStream.collect(Collectors.groupingBy(PointData::getAttributes));
+          pointsByAttributes.forEach(
+              (attributes, longPoints) -> {
                 long total = longPoints.get(longPoints.size() - 1).getValue();
-                logger.info("{} : {} : {}", name, labels, total);
+                logger.info("{} : {} : {}", name, attributes, total);
               });
         });
   }

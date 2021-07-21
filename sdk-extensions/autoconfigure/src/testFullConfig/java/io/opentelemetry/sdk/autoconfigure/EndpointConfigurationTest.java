@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -16,7 +17,7 @@ import com.linecorp.armeria.server.grpc.GrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
@@ -148,7 +149,7 @@ class EndpointConfigurationTest {
                         LongPointData.create(
                             MILLISECONDS.toNanos(System.currentTimeMillis()),
                             MILLISECONDS.toNanos(System.currentTimeMillis()),
-                            Labels.of("key", "value"),
+                            Attributes.of(stringKey("key"), "value"),
                             10))))));
 
     await()

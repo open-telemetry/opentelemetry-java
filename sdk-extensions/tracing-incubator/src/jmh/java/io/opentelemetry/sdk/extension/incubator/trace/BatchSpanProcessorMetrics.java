@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.extension.incubator.trace;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
@@ -45,7 +47,7 @@ public class BatchSpanProcessorMetrics {
             .filter(metricData -> !metricData.isEmpty())
             .map(metricData -> metricData.getLongSumData().getPoints())
             .flatMap(Collection::stream)
-            .filter(point -> labelValue.equals(point.getLabels().get("dropped")))
+            .filter(point -> labelValue.equals(point.getAttributes().get(stringKey("dropped"))))
             .mapToLong(LongPointData::getValue)
             .findFirst();
     return value.isPresent() ? value.getAsLong() : 0;

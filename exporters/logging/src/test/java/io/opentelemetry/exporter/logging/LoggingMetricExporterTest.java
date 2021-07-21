@@ -9,7 +9,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
@@ -67,7 +66,7 @@ class LoggingMetricExporterTest {
                         DoubleSummaryPointData.create(
                             nowEpochNanos,
                             nowEpochNanos + 245,
-                            Labels.of("a", "b", "c", "d"),
+                            Attributes.of(stringKey("a"), "b", stringKey("c"), "d"),
                             1010,
                             50000,
                             Arrays.asList(
@@ -86,7 +85,7 @@ class LoggingMetricExporterTest {
                         LongPointData.create(
                             nowEpochNanos,
                             nowEpochNanos + 245,
-                            Labels.of("z", "y", "x", "w"),
+                            Attributes.of(stringKey("z"), "y", stringKey("x"), "w"),
                             1010)))),
             MetricData.createDoubleSum(
                 resource,
@@ -101,7 +100,7 @@ class LoggingMetricExporterTest {
                         DoublePointData.create(
                             nowEpochNanos,
                             nowEpochNanos + 245,
-                            Labels.of("1", "2", "3", "4"),
+                            Attributes.of(stringKey("1"), "2", stringKey("3"), "4"),
                             33.7767))))));
   }
 

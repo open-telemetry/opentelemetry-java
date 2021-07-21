@@ -9,6 +9,18 @@ import com.google.auto.value.AutoValue;
 import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * A summary metric point.
+ *
+ * <p>See:
+ * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#summary
+ *
+ * <p><i>Note: This is called "DoubleSummary" to reflect which primitives are used to record it,
+ * however "Summary" is the equivalent OTLP type.</i>
+ *
+ * <p>Summary is considered a legacy metric type, and shouldn't be produced (by default) from
+ * instruments.
+ */
 @Immutable
 @AutoValue
 public abstract class DoubleSummaryData implements Data<DoubleSummaryPointData> {

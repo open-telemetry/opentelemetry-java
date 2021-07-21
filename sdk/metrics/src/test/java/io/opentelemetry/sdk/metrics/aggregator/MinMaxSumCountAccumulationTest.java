@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.metrics.common.Labels;
@@ -29,9 +30,7 @@ class MinMaxSumCountAccumulationTest {
     assertThat(point).isNotNull();
     assertThat(point.getStartEpochNanos()).isEqualTo(12345);
     assertThat(point.getEpochNanos()).isEqualTo(12358);
-    assertThat(point.getLabels().size()).isEqualTo(1);
-    assertThat(point.getLabels().get("key")).isEqualTo("value");
-    assertThat(point).isInstanceOf(DoubleSummaryPointData.class);
+    assertThat(point.getAttributes()).containsEntry("key", "value").hasSize(1);
     return point;
   }
 }

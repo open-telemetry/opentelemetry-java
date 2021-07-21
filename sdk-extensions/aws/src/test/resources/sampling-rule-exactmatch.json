@@ -4,7 +4,7 @@
   "ResourceARN": "arn:aws:xray:us-east-1:595986152929:my-service",
   "Priority": 1,
   "FixedRate": 1.0,
-  "ReservoirSize": 1000,
+  "ReservoirSize": 0,
   "ServiceName": "test-service-foo-bar",
   "ServiceType": "AWS::EKS::Container",
   "Host": "opentelemetry.io",

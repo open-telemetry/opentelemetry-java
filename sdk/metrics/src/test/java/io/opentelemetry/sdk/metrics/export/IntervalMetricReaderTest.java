@@ -13,7 +13,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -45,7 +45,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class IntervalMetricReaderTest {
   private static final List<LongPointData> LONG_POINT_LIST =
-      Collections.singletonList(LongPointData.create(1000, 3000, Labels.empty(), 1234567));
+      Collections.singletonList(LongPointData.create(1000, 3000, Attributes.empty(), 1234567));
 
   private static final MetricData METRIC_DATA =
       MetricData.createLongSum(
@@ -105,6 +105,51 @@ class IntervalMetricReaderTest {
               Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
     } finally {
       intervalMetricReader.shutdown();
+    }
+  }
+
+  @Test
+  void forceFlush() throws Exception {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+    IntervalMetricReader intervalMetricReader =
+        IntervalMetricReader.builder()
+            // Will force flush.
+            .setExportIntervalMillis(Long.MAX_VALUE)
+            .setMetricExporter(waitingMetricExporter)
+            .setMetricProducers(Collections.singletonList(metricProducer))
+            .buildAndStart();
+
+    assertThat(intervalMetricReader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+    try {
+      assertThat(waitingMetricExporter.waitForNumberOfExports(1))
+          .containsExactly(Collections.singletonList(METRIC_DATA));
+    } finally {
+      intervalMetricReader.shutdown();
+    }
+  }
+
+  @Test
+  void forceFlushGlobal() throws Exception {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+    IntervalMetricReader intervalMetricReader =
+        IntervalMetricReader.builder()
+            // Will force flush.
+            .setExportIntervalMillis(Long.MAX_VALUE)
+            .setMetricExporter(waitingMetricExporter)
+            .setMetricProducers(Collections.singletonList(metricProducer))
+            .build()
+            .startAndRegisterGlobal();
+
+    assertThat(IntervalMetricReader.forceFlushGlobal().join(10, TimeUnit.SECONDS).isSuccess())
+        .isTrue();
+
+    try {
+      assertThat(waitingMetricExporter.waitForNumberOfExports(1))
+          .containsExactly(Collections.singletonList(METRIC_DATA));
+    } finally {
+      intervalMetricReader.shutdown();
+      IntervalMetricReader.resetGlobalForTest();
     }
   }
 

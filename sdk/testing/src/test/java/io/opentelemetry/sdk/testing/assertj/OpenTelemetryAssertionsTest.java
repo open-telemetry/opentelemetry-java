@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,8 +54,15 @@ class OpenTelemetryAssertionsTest {
   private static final List<EventData> EVENTS =
       Arrays.asList(
           EventData.create(10, "event", Attributes.empty()),
+          EventData.create(20, "event2", Attributes.builder().put("cookie monster", "yum").build()),
           EventData.create(
-              20, "event2", Attributes.builder().put("cookie monster", "yum").build()));
+              30,
+              SemanticAttributes.EXCEPTION_EVENT_NAME,
+              Attributes.builder()
+                  .put(SemanticAttributes.EXCEPTION_TYPE, "java.lang.IllegalArgumentException")
+                  .put(SemanticAttributes.EXCEPTION_MESSAGE, "bad argument")
+                  .put(SemanticAttributes.EXCEPTION_STACKTRACE, "some obfuscated stack")
+                  .build()));
   private static final List<LinkData> LINKS =
       Arrays.asList(
           LinkData.create(
@@ -119,6 +127,15 @@ class OpenTelemetryAssertionsTest {
         .startsAt(100, TimeUnit.NANOSECONDS)
         .startsAt(Instant.ofEpochSecond(0, 100))
         .hasAttributes(ATTRIBUTES)
+        .hasAttributes(
+            attributeEntry("bear", "mya"),
+            attributeEntry("warm", true),
+            attributeEntry("temperature", 30),
+            attributeEntry("length", 1.2),
+            attributeEntry("colors", "red", "blue"),
+            attributeEntry("conditions", false, true),
+            attributeEntry("scores", 0L, 1L),
+            attributeEntry("coins", 0.01, 0.05, 0.1))
         .hasAttributesSatisfying(
             attributes ->
                 assertThat(attributes)
@@ -162,6 +179,11 @@ class OpenTelemetryAssertionsTest {
                       attributes -> assertThat(attributes).isEqualTo(Attributes.empty()))
                   .hasAttributesSatisfying(attributes -> assertThat(attributes).isEmpty());
             })
+        .hasEventsSatisfyingExactly(
+            event -> event.hasName("event"),
+            event -> event.hasName("event2"),
+            event -> event.hasName(SemanticAttributes.EXCEPTION_EVENT_NAME))
+        .hasException(new IllegalArgumentException("bad argument"))
         .hasLinks(LINKS)
         .hasLinks(LINKS.toArray(new LinkData[0]))
         .hasLinksSatisfying(links -> assertThat(links).hasSize(LINKS.size()))
@@ -185,6 +207,7 @@ class OpenTelemetryAssertionsTest {
     assertThatThrownBy(() -> assertThat(SPAN1).isNotSampled()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasTraceState(TraceState.getDefault()))
         .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> assertThat(SPAN1).hasNoParent()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasParentSpanId("foo"))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasResource(Resource.empty()))
@@ -202,6 +225,8 @@ class OpenTelemetryAssertionsTest {
     assertThatThrownBy(() -> assertThat(SPAN1).startsAt(Instant.EPOCH))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasAttributes(Attributes.empty()))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(() -> assertThat(SPAN1).hasAttributes(attributeEntry("food", "burger")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
@@ -240,6 +265,9 @@ class OpenTelemetryAssertionsTest {
                     .hasEventsSatisfying(events -> assertThat(events.get(0)).hasName("notevent")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
+            () -> assertThat(SPAN1).hasEventsSatisfyingExactly(event -> event.hasName("notevent")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
             () ->
                 assertThat(SPAN1)
                     .hasEventsSatisfying(events -> assertThat(events.get(0)).hasTimestamp(1)))
@@ -273,6 +301,12 @@ class OpenTelemetryAssertionsTest {
                                 .hasAttributesSatisfying(
                                     attributes ->
                                         assertThat(attributes).containsEntry("dogs", "meow"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () -> assertThat(SPAN1).hasException(new IllegalStateException("bad argument")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () -> assertThat(SPAN1).hasException(new IllegalArgumentException("good argument")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasLinks()).isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(SPAN1).hasLinks(Collections.emptyList()))

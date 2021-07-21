@@ -17,8 +17,8 @@ import io.opencensus.metrics.export.Point;
 import io.opencensus.metrics.export.Summary;
 import io.opencensus.metrics.export.Summary.Snapshot;
 import io.opencensus.metrics.export.TimeSeries;
-import io.opentelemetry.api.metrics.common.Labels;
-import io.opentelemetry.api.metrics.common.LabelsBuilder;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
@@ -85,19 +85,19 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
     Set<MetricDescriptor.Type> unsupportedTypes = new HashSet<>();
     for (Metric metric : metrics) {
       for (TimeSeries timeSeries : metric.getTimeSeriesList()) {
-        LabelsBuilder labelsBuilder = Labels.builder();
+        AttributesBuilder attributesBuilder = Attributes.builder();
         for (int i = 0; i < metric.getMetricDescriptor().getLabelKeys().size(); i++) {
           if (timeSeries.getLabelValues().get(i).getValue() != null) {
-            labelsBuilder.put(
+            attributesBuilder.put(
                 metric.getMetricDescriptor().getLabelKeys().get(i).getKey(),
                 timeSeries.getLabelValues().get(i).getValue());
           }
         }
-        Labels labels = labelsBuilder.build();
+        Attributes attributes = attributesBuilder.build();
         List<PointData> points = new ArrayList<>();
         MetricDescriptor.Type type = null;
         for (Point point : timeSeries.getPoints()) {
-          type = mapAndAddPoint(unsupportedTypes, metric, labels, points, point);
+          type = mapAndAddPoint(unsupportedTypes, metric, attributes, points, point);
         }
         MetricData md = toMetricData(type, metric.getMetricDescriptor(), points);
         if (md != null) {
@@ -119,7 +119,7 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
   private static MetricDescriptor.Type mapAndAddPoint(
       Set<MetricDescriptor.Type> unsupportedTypes,
       Metric metric,
-      Labels labels,
+      Attributes attributes,
       List<PointData> points,
       Point point) {
     long timestampNanos =
@@ -129,14 +129,14 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
     switch (type) {
       case GAUGE_INT64:
       case CUMULATIVE_INT64:
-        points.add(mapLongPoint(labels, point, timestampNanos));
+        points.add(mapLongPoint(attributes, point, timestampNanos));
         break;
       case GAUGE_DOUBLE:
       case CUMULATIVE_DOUBLE:
-        points.add(mapDoublePoint(labels, point, timestampNanos));
+        points.add(mapDoublePoint(attributes, point, timestampNanos));
         break;
       case SUMMARY:
-        points.add(mapSummaryPoint(labels, point, timestampNanos));
+        points.add(mapSummaryPoint(attributes, point, timestampNanos));
         break;
       default:
         unsupportedTypes.add(type);
@@ -151,11 +151,11 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
 
   @Nonnull
   private static DoubleSummaryPointData mapSummaryPoint(
-      Labels labels, Point point, long timestampNanos) {
+      Attributes attributes, Point point, long timestampNanos) {
     return DoubleSummaryPointData.create(
         timestampNanos,
         timestampNanos,
-        labels,
+        attributes,
         point
             .getValue()
             .match(arg -> null, arg -> null, arg -> null, Summary::getCount, arg -> null),
@@ -179,22 +179,24 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
   }
 
   @Nonnull
-  private static DoublePointData mapDoublePoint(Labels labels, Point point, long timestampNanos) {
+  private static DoublePointData mapDoublePoint(
+      Attributes attributes, Point point, long timestampNanos) {
     return DoublePointData.create(
         timestampNanos,
         timestampNanos,
-        labels,
+        attributes,
         point
             .getValue()
             .match(arg -> arg, Long::doubleValue, arg -> null, arg -> null, arg -> null));
   }
 
   @Nonnull
-  private static LongPointData mapLongPoint(Labels labels, Point point, long timestampNanos) {
+  private static LongPointData mapLongPoint(
+      Attributes attributes, Point point, long timestampNanos) {
     return LongPointData.create(
         timestampNanos,
         timestampNanos,
-        labels,
+        attributes,
         point
             .getValue()
             .match(Double::longValue, arg -> arg, arg -> null, arg -> null, arg -> null));
