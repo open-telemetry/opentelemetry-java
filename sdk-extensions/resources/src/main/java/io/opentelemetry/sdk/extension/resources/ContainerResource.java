@@ -79,6 +79,7 @@ public final class ContainerResource {
     return null;
   }
 
+  @Nullable
   private static String getIdFromLine(String line) {
     // This cgroup output line should have the container id in it
     int lastSlashIdx = line.lastIndexOf("/");
