@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
@@ -34,8 +35,11 @@ public final class OpenTelemetrySdkAutoConfiguration {
   /**
    * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized system
    * properties and environment variables.
+   *
+   * @param setResultAsGlobal Whether to automatically set the configured SDK as the {@link
+   *     io.opentelemetry.api.GlobalOpenTelemetry} instance.
    */
-  public static OpenTelemetrySdk initialize() {
+  public static OpenTelemetrySdk initialize(boolean setResultAsGlobal) {
     ConfigProperties config = ConfigProperties.get();
     ContextPropagators propagators = PropagatorConfiguration.configurePropagators(config);
 
@@ -46,10 +50,26 @@ public final class OpenTelemetrySdkAutoConfiguration {
     SdkTracerProvider tracerProvider =
         TracerProviderConfiguration.configureTracerProvider(resource, config);
 
-    return OpenTelemetrySdk.builder()
-        .setTracerProvider(tracerProvider)
-        .setPropagators(propagators)
-        .buildAndRegisterGlobal();
+    OpenTelemetrySdk openTelemetrySdk =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(tracerProvider)
+            .setPropagators(propagators)
+            .build();
+    if (setResultAsGlobal) {
+      GlobalOpenTelemetry.set(openTelemetrySdk);
+    }
+    return openTelemetrySdk;
+  }
+
+  /**
+   * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized system
+   * properties and environment variables.
+   *
+   * <p>This will automatically set the resulting SDK as the {@link
+   * io.opentelemetry.api.GlobalOpenTelemetry} instance.
+   */
+  public static OpenTelemetrySdk initialize() {
+    return initialize(true);
   }
 
   private static void configureMeterProvider(Resource resource, ConfigProperties config) {
