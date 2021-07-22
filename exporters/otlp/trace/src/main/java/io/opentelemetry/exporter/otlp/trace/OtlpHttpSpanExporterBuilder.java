@@ -11,19 +11,16 @@ import static java.util.Objects.requireNonNull;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporter.RequestResponseHandler;
+import io.opentelemetry.internal.shaded.okhttp3.Dispatcher;
+import io.opentelemetry.internal.shaded.okhttp3.Headers;
+import io.opentelemetry.internal.shaded.okhttp3.OkHttpClient;
+import io.opentelemetry.internal.shaded.okhttp3.tls.HandshakeCertificates;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.cert.CertificateException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import okhttp3.Dispatcher;
-import okhttp3.OkHttpClient;
-import okhttp3.tls.HandshakeCertificates;
 
 /** Builder utility for this exporter. */
 public final class OtlpHttpSpanExporterBuilder {
@@ -36,7 +33,7 @@ public final class OtlpHttpSpanExporterBuilder {
   private Encoding encoding = DEFAULT_ENCODING;
   private boolean isCompressionEnabled = false;
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
-  @Nullable private Map<String, List<String>> headers;
+  @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
 
   /**
@@ -64,12 +61,15 @@ public final class OtlpHttpSpanExporterBuilder {
     return this;
   }
 
-  /** Sets the encoding of payloads. If unset, defaults to {@link #DEFAULT_ENCODING}. */
-  public OtlpHttpSpanExporterBuilder setEncoding(Encoding encoding) {
-    // TODO: if we we don't anticipate additional encodings, could replace this with
-    // setJsonEncoding()
-    requireNonNull(endpoint, "encoding");
-    this.encoding = encoding;
+  /** Sets the encoding of payloads to be JSON format. If unset, defaults Protobuf format. */
+  public OtlpHttpSpanExporterBuilder setJsonEncoding() {
+    this.encoding = Encoding.JSON;
+    return this;
+  }
+
+  /** Sets the encoding of payloads to be Protobuf format. If unset defaults to Protobuf format. */
+  public OtlpHttpSpanExporterBuilder setProtobufEncoding() {
+    this.encoding = Encoding.PROTOBUF;
     return this;
   }
 
@@ -78,7 +78,7 @@ public final class OtlpHttpSpanExporterBuilder {
    * only supported compression method is "gzip".
    */
   public OtlpHttpSpanExporterBuilder setCompression(String compressionMethod) {
-    requireNonNull(endpoint, "compressionMethod");
+    requireNonNull(compressionMethod, "compressionMethod");
     Preconditions.checkArgument(
         "gzip".equals(compressionMethod),
         "Unsupported compression method. Supported compression methods include: gzip.");
@@ -106,12 +106,12 @@ public final class OtlpHttpSpanExporterBuilder {
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
-  /** Add header to request. */
+  /** Add header to requests. */
   public OtlpHttpSpanExporterBuilder addHeader(String key, String value) {
-    if (headers == null) {
-      headers = new HashMap<>();
+    if (headersBuilder == null) {
+      headersBuilder = new Headers.Builder();
     }
-    headers.computeIfAbsent(key, (k) -> new ArrayList<>()).add(value);
+    headersBuilder.add(key, value);
     return this;
   }
 
@@ -133,7 +133,6 @@ public final class OtlpHttpSpanExporterBuilder {
   public OtlpHttpSpanExporter build() {
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder()
-            // TODO: which thread should handle these calls?
             .dispatcher(new Dispatcher(MoreExecutors.newDirectExecutorService()))
             .callTimeout(Duration.ofNanos(timeoutNanos));
     if (isCompressionEnabled) {
@@ -158,11 +157,13 @@ public final class OtlpHttpSpanExporterBuilder {
             ? OtlpHttpUtil.JSON_REQUEST_RESPONSE_HANDLER
             : OtlpHttpUtil.PROTOBUF_REQUEST_RESPONSE_HANDLER;
 
+    Headers headers = headersBuilder == null ? null : headersBuilder.build();
+
     return new OtlpHttpSpanExporter(
         clientBuilder.build(), endpoint, headers, requestResponseHandler);
   }
 
-  public enum Encoding {
+  enum Encoding {
     JSON,
     PROTOBUF
   }

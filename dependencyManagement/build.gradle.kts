@@ -19,7 +19,8 @@ val DEPENDENCY_BOMS = listOf(
         "com.google.protobuf:protobuf-bom:3.17.2",
         "com.fasterxml.jackson:jackson-bom:2.12.3",
         "org.junit:junit-bom:5.7.2",
-        "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3"
+        "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
+        "com.squareup.okhttp3:okhttp-bom:4.9.0"
 )
 
 val DEPENDENCY_SETS = listOf(

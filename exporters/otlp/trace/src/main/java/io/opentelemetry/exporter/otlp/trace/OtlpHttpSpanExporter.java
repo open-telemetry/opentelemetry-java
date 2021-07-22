@@ -12,6 +12,14 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
+import io.opentelemetry.internal.shaded.okhttp3.Call;
+import io.opentelemetry.internal.shaded.okhttp3.Callback;
+import io.opentelemetry.internal.shaded.okhttp3.Headers;
+import io.opentelemetry.internal.shaded.okhttp3.OkHttpClient;
+import io.opentelemetry.internal.shaded.okhttp3.Request;
+import io.opentelemetry.internal.shaded.okhttp3.RequestBody;
+import io.opentelemetry.internal.shaded.okhttp3.Response;
+import io.opentelemetry.internal.shaded.okhttp3.ResponseBody;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -19,18 +27,9 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.jetbrains.annotations.NotNull;
 
 /** Exports spans using OTLP via HTTP, using OpenTelemetry's protobuf model. */
@@ -53,16 +52,14 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
 
   private final OkHttpClient client;
   private final String endpoint;
-  private final Map<String, List<String>> headers;
+  private final Headers headers;
   private final RequestResponseHandler requestResponseHandler;
 
   OtlpHttpSpanExporter(
       OkHttpClient client,
       String endpoint,
-      Map<String, List<String>> headers,
+      Headers headers,
       RequestResponseHandler requestResponseHandler) {
-    // TODO: should this be io.opentelemetry.exporters.otlp with a label that indicates the
-    // protocol?
     Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.exporters.otlp-http");
     this.spansSeen =
         meter.longCounterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
@@ -95,8 +92,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
             .url(endpoint)
             .post(requestResponseHandler.build(exportTraceServiceRequest));
     if (headers != null) {
-      headers.forEach(
-          (key, values) -> values.forEach(value -> requestBuilder.addHeader(key, value)));
+      requestBuilder.headers(headers);
     }
 
     CompletableResultCode result = new CompletableResultCode();
@@ -181,8 +177,8 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   /** Shutdown the exporter. */
   @Override
   public CompletableResultCode shutdown() {
-    // TODO: should we update a boolean shutdown flag which prevents future exports?
     final CompletableResultCode result = CompletableResultCode.ofSuccess();
+    client.dispatcher().cancelAll();
     this.spansSeen.unbind();
     this.spansExportedSuccess.unbind();
     this.spansExportedFailure.unbind();

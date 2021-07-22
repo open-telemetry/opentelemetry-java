@@ -1,2 +1,21 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporter  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder builder()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode export(java.util.Collection)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode flush()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporter getDefault()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.common.CompletableResultCode shutdown()
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder addHeader(java.lang.String, java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporter build()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setCompression(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setEndpoint(java.lang.String)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setJsonEncoding()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setProtobufEncoding()
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setTimeout(long, java.util.concurrent.TimeUnit)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setTimeout(java.time.Duration)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setTrustedCertificates(byte[])

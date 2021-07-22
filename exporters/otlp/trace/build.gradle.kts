@@ -19,6 +19,8 @@ testSets {
 dependencies {
     api(project(":sdk:trace"))
 
+    implementation(project(path=":exporters:otlp:shaded-deps", configuration="shadow"))
+
     compileOnly("io.grpc:grpc-netty")
     compileOnly("io.grpc:grpc-netty-shaded")
 
@@ -27,10 +29,7 @@ dependencies {
     implementation("io.grpc:grpc-protobuf")
     implementation("io.grpc:grpc-stub")
     implementation("com.google.protobuf:protobuf-java")
-
-    implementation("com.squareup.okhttp3:okhttp:4.9.0")
-    implementation("com.squareup.okhttp3:okhttp-tls:4.9.0")
-    implementation("com.google.protobuf:protobuf-java-util:3.17.3")
+    implementation("com.google.protobuf:protobuf-java-util")
 
     testImplementation(project(":sdk:testing"))
 
