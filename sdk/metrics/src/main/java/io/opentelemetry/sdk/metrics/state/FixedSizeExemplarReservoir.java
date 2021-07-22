@@ -21,6 +21,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class FixedSizeExemplarReservoir implements ExemplarReservoir {
+  // TODO: Custom Random/Clock with low thread-contention.
   private final Clock clock;
   private final ResorvoirCell[] storage;
   private final LongAdder numMeasurements = new LongAdder();
@@ -33,9 +34,11 @@ public class FixedSizeExemplarReservoir implements ExemplarReservoir {
     }
   }
 
+  // TODO: we're using unweighted resorvoir sampler here.
+  // We can make this more intelligent/pluggable going forward.
   private int nextBucket() {
     // TODO - limit the thread local to ONLY spans being recorded....
-    long index = ThreadLocalRandom.current().nextLong(numMeasurements.sum()+1);
+    long index = ThreadLocalRandom.current().nextLong(numMeasurements.sum() + 1);
     if (index < storage.length) {
       return (int) index;
     }
@@ -65,7 +68,7 @@ public class FixedSizeExemplarReservoir implements ExemplarReservoir {
     List<Exemplar> results = new ArrayList<>();
     // TODO: Note exemplars COULD BE COMING IN while we iterate + reset.
     for (int i = 0; i < this.storage.length; ++i) {
-      Exemplar result = this.storage[i].getAndReset();
+      Exemplar result = this.storage[i].getAndReset(pointAttributes);
       if (result != null) {
         results.add(result);
       }
@@ -120,11 +123,13 @@ public class FixedSizeExemplarReservoir implements ExemplarReservoir {
       }
     }
 
-    public Exemplar getAndReset() {
+    public Exemplar getAndReset(Attributes pointAttributes) {
       lock.lock();
       try {
         if (hasValue) {
-          Exemplar result = DoubleExemplar.create(attributes, recordTime, spanId, traceId, value);
+          Exemplar result =
+              DoubleExemplar.create(
+                  attributes.removeAll(pointAttributes), recordTime, spanId, traceId, value);
           this.attributes = null;
           this.value = 0;
           this.spanId = null;

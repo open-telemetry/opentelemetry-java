@@ -39,9 +39,9 @@ What is not implemented:
 - [ ] Multiple Exporters
   - [X] Basline Implementation
   - [ ] Robust unit tests. 
-- [ ] Remove allocations from hot-path of sycnhronous recording
-  - [ ] Write `recordDouble` and `recordLong` through Storage -> Aggreggator
-  - [ ] Implement resorvoir sampling for Exemplars
+- [X] Remove allocations from hot-path of sycnhronous recording
+  - [X] Write `recordDouble` and `recordLong` through Storage -> Aggreggator
+  - [X] Implement resorvoir sampling for Exemplars
 - [ ] Experiement with ONLY producing DELTA synchronous + CUMULATIVE asynchronous measurements at the metric-producer level, and providing DELTA->CUMULATIVE helper for Exporters.
 
 
