@@ -43,6 +43,14 @@ final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements At
   }
 
   @Override
+  public Attributes removeAll(Attributes other) {
+    AttributesMap result = new AttributesMap(capacity);
+    result.putAll(this);
+    other.forEach(this::remove);
+    return result;
+  }
+
+  @Override
   public Map<AttributeKey<?>, Object> asMap() {
     // Because Attributes is marked Immutable, IDEs may recognize this as redundant usage. However,
     // this class is private and is actually mutable, so we need to wrap with unmodifiableMap

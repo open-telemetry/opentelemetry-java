@@ -67,6 +67,16 @@ class AttributesTest {
         .isEqualTo(Attributes.of(booleanKey("key3"), true));
   }
 
+  @Test
+  void removeAll() {
+    Attributes complete = Attributes.builder().put("x", 1).put("y", 2).put("z", 3).build();
+    Attributes removed = Attributes.builder().put("y", 2).build();
+    assertThat(complete.removeAll(removed))
+        .isEqualTo(Attributes.builder().put("x", 1).put("z", 3).build());
+    assertThat(complete.removeAll(complete)).isEqualTo(Attributes.empty());
+    assertThat(removed.removeAll(complete)).isEqualTo(Attributes.empty());
+  }
+
   @SuppressWarnings("CollectionIncompatibleType")
   @Test
   void asMap() {
