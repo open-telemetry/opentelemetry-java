@@ -45,7 +45,11 @@ public abstract class LongExemplar implements Exemplar {
 
   @Override
   public final LongExemplar filterAttributes(Attributes pointAttributes) {
-    // TODO: implement
-    return this;
+    return create(
+        getFilteredAttributes().removeAll(pointAttributes),
+        getEpochNanos(),
+        getSpanId(),
+        getTraceId(),
+        getValue());
   }
 }

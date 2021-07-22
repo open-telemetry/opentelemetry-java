@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.state.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.state.SingleExemplarReservoir;
+import io.opentelemetry.sdk.metrics.state.FixedSizeExemplarReservoir;
 
 /**
  * An interface that provides an ExemplarResorvoir implementation for collecting exemplars of a
@@ -26,6 +26,6 @@ public interface ExemplarSampler {
       (agg) -> {
         // TODO - for histograms, make bigger resorvoirs.
         // TODO - pull clock from meterprovider shared state.
-        return new SingleExemplarReservoir(Clock.getDefault());
+        return new FixedSizeExemplarReservoir(Clock.getDefault(), 2);
       };
 }
