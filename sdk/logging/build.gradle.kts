@@ -15,7 +15,6 @@ description = "OpenTelemetry SDK Logging"
 otelJava.moduleName.set("io.opentelemetry.sdk.logging")
 
 dependencies {
-    api(project(":api:logging"))
     api(project(":sdk:common"))
 
     annotationProcessor("com.google.auto.value:auto-value")

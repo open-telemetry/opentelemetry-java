@@ -5,6 +5,6 @@
 
 package io.opentelemetry.sdk.logging;
 
-import io.opentelemetry.logging.LogEmitter;
+public class LogEmitterSdk {
 
-public class LogEmitterSdk implements LogEmitter {}
+}
