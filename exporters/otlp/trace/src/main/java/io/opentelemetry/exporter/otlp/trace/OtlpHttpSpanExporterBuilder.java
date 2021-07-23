@@ -25,16 +25,36 @@ import javax.annotation.Nullable;
 /** Builder utility for this exporter. */
 public final class OtlpHttpSpanExporterBuilder {
 
-  private static final String DEFAULT_ENDPOINT = "http://localhost:55681/v1/traces";
-  private static final Encoding DEFAULT_ENCODING = Encoding.PROTOBUF;
   private static final long DEFAULT_TIMEOUT_SECS = 10;
+  private static final String DEFAULT_ENDPOINT = "http://localhost:4317/v1/traces";
+  private static final Encoding DEFAULT_ENCODING = Encoding.PROTOBUF;
 
+  private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private String endpoint = DEFAULT_ENDPOINT;
   private Encoding encoding = DEFAULT_ENCODING;
   private boolean isCompressionEnabled = false;
-  private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
+
+  /**
+   * Sets the maximum time to wait for the collector to process an exported batch of spans. If
+   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   */
+  public OtlpHttpSpanExporterBuilder setTimeout(long timeout, TimeUnit unit) {
+    requireNonNull(unit, "unit");
+    checkArgument(timeout >= 0, "timeout must be non-negative");
+    timeoutNanos = unit.toNanos(timeout);
+    return this;
+  }
+
+  /**
+   * Sets the maximum time to wait for the collector to process an exported batch of spans. If
+   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
+   */
+  public OtlpHttpSpanExporterBuilder setTimeout(Duration timeout) {
+    requireNonNull(timeout, "timeout");
+    return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+  }
 
   /**
    * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT}. The
@@ -61,7 +81,10 @@ public final class OtlpHttpSpanExporterBuilder {
     return this;
   }
 
-  /** Sets the encoding of payloads to be JSON format. If unset, defaults Protobuf format. */
+  /**
+   * Sets the encoding of payloads to be JSON format. If unset, defaults Protobuf format. NOTE: JSON
+   * format is currently experimental.
+   */
   public OtlpHttpSpanExporterBuilder setJsonEncoding() {
     this.encoding = Encoding.JSON;
     return this;
@@ -84,26 +107,6 @@ public final class OtlpHttpSpanExporterBuilder {
         "Unsupported compression method. Supported compression methods include: gzip.");
     this.isCompressionEnabled = true;
     return this;
-  }
-
-  /**
-   * Sets the maximum time to wait for the collector to process an exported batch of spans. If
-   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
-   */
-  public OtlpHttpSpanExporterBuilder setTimeout(long timeout, TimeUnit unit) {
-    requireNonNull(unit, "unit");
-    checkArgument(timeout >= 0, "timeout must be non-negative");
-    timeoutNanos = unit.toNanos(timeout);
-    return this;
-  }
-
-  /**
-   * Sets the maximum time to wait for the collector to process an exported batch of spans. If
-   * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
-   */
-  public OtlpHttpSpanExporterBuilder setTimeout(Duration timeout) {
-    requireNonNull(timeout, "timeout");
-    return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   /** Add header to requests. */
@@ -133,7 +136,6 @@ public final class OtlpHttpSpanExporterBuilder {
   public OtlpHttpSpanExporter build() {
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder()
-            .dispatcher(new Dispatcher(MoreExecutors.newDirectExecutorService()))
             .callTimeout(Duration.ofNanos(timeoutNanos));
     if (isCompressionEnabled) {
       clientBuilder.addInterceptor(OtlpHttpUtil.GZIP_INTERCEPTOR);

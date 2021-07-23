@@ -25,7 +25,6 @@ import io.opentelemetry.internal.shaded.okio.Okio;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -48,11 +47,11 @@ final class OtlpHttpUtil {
    */
   static HandshakeCertificates toHandshakeCertificates(byte[] trustedCertificatesPem)
       throws CertificateException {
-    InputStream is = new ByteArrayInputStream(trustedCertificatesPem);
+    ByteArrayInputStream is = new ByteArrayInputStream(trustedCertificatesPem);
     CertificateFactory factory = CertificateFactory.getInstance("X.509");
     HandshakeCertificates.Builder certBuilder = new HandshakeCertificates.Builder();
-    X509Certificate cert;
-    while ((cert = (X509Certificate) factory.generateCertificate(is)) != null) {
+    while (is.available() > 0) {
+      X509Certificate cert = (X509Certificate) factory.generateCertificate(is);
       certBuilder.addTrustedCertificate(cert);
     }
     return certBuilder.build();

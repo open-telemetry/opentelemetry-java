@@ -36,6 +36,9 @@ dependencies {
     testImplementation("io.grpc:grpc-testing")
     testImplementation("org.slf4j:slf4j-simple")
 
+    testImplementation("com.squareup.okhttp3:okhttp-tls")
+    testImplementation("com.squareup.okhttp3:mockwebserver")
+
     add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
     add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
     add("testGrpcNettyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
