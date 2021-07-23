@@ -14,8 +14,6 @@ Comparing source compatibility of  against
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporter build()
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setCompression(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setEndpoint(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setJsonEncoding()
-	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setProtobufEncoding()
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setTimeout(long, java.util.concurrent.TimeUnit)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setTimeout(java.time.Duration)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder setTrustedCertificates(byte[])

@@ -14,7 +14,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
-import io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporterBuilder.Encoding;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -25,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import okhttp3.mockwebserver.MockResponse;
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -73,33 +73,21 @@ class OtlpHttpSpanExporterTest {
   }
 
   @Test
-  void testExportAsJsonUncompressed() {
-    OtlpHttpSpanExporter exporter = builder().setJsonEncoding().build();
+  void testExportUncompressed() {
+    OtlpHttpSpanExporter exporter = builder().build();
     exportAndVerify(exporter);
   }
 
   @Test
-  void testExportAsJsonGzipCompressed() {
-    OtlpHttpSpanExporter exporter = builder().setJsonEncoding().setCompression("gzip").build();
+  void testExportGzipCompressed() {
+    OtlpHttpSpanExporter exporter = builder().setCompression("gzip").build();
     exportAndVerify(exporter);
   }
 
   @Test
-  void testExportAsProtobufUncompressed() {
-    OtlpHttpSpanExporter exporter = builder().setProtobufEncoding().build();
-    exportAndVerify(exporter);
-  }
-
-  @Test
-  void testExportAsProtobufGzipCompressed() {
-    OtlpHttpSpanExporter exporter = builder().setProtobufEncoding().setCompression("gzip").build();
-    exportAndVerify(exporter);
-  }
-
-  @Test
-  void testJsonServerError() {
-    otlpHttp.addMockResponse(OtlpHttpDispatcher.errorResponse(Encoding.JSON, 500, "Server error!"));
-    OtlpHttpSpanExporter exporter = builder().setJsonEncoding().build();
+  void testServerError() {
+    otlpHttp.addMockResponse(OtlpHttpDispatcher.errorResponse(500, "Server error!"));
+    OtlpHttpSpanExporter exporter = builder().build();
 
     assertThat(
             exporter
@@ -110,31 +98,13 @@ class OtlpHttpSpanExporterTest {
     LoggingEvent log =
         logs.assertContains(
             "Failed to export spans. Server responded with code 500. Error message: Server error!");
-    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
-  }
-
-  @Test
-  void testProtobufServerError() {
-    otlpHttp.addMockResponse(
-        OtlpHttpDispatcher.errorResponse(Encoding.PROTOBUF, 500, "Server error!"));
-    OtlpHttpSpanExporter exporter = builder().setProtobufEncoding().build();
-
-    assertThat(
-            exporter
-                .export(Collections.singletonList(generateFakeSpan()))
-                .join(10, TimeUnit.SECONDS)
-                .isSuccess())
-        .isFalse();
-    LoggingEvent log =
-        logs.assertContains(
-            "Failed to export spans. Server responded with code 500. Error message: Server error!");
-    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+    assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
   @Test
   void testServerErrorParseError() {
-    otlpHttp.addMockResponse(OtlpHttpDispatcher.errorResponse(Encoding.JSON, 500, "Server error!"));
-    OtlpHttpSpanExporter exporter = builder().setProtobufEncoding().build();
+    otlpHttp.addMockResponse(new MockResponse().setResponseCode(500).setBody("Server Error!"));
+    OtlpHttpSpanExporter exporter = builder().build();
 
     assertThat(
             exporter
@@ -144,8 +114,8 @@ class OtlpHttpSpanExporterTest {
         .isFalse();
     LoggingEvent log =
         logs.assertContains(
-            "Failed to export spans. Server responded with code 500. Error message: Unable to extract error message from request:");
-    assertThat(log.getLevel()).isEqualTo(Level.ERROR);
+            "Failed to export spans. Server responded with code 500. Error message: Unable to extract error message from response:");
+    assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
   private OtlpHttpSpanExporterBuilder builder() {

@@ -9,15 +9,15 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.MoreExecutors;
-import io.opentelemetry.exporter.otlp.trace.OtlpHttpSpanExporter.RequestResponseHandler;
-import io.opentelemetry.internal.shaded.okhttp3.Dispatcher;
 import io.opentelemetry.internal.shaded.okhttp3.Headers;
 import io.opentelemetry.internal.shaded.okhttp3.OkHttpClient;
 import io.opentelemetry.internal.shaded.okhttp3.tls.HandshakeCertificates;
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -27,11 +27,9 @@ public final class OtlpHttpSpanExporterBuilder {
 
   private static final long DEFAULT_TIMEOUT_SECS = 10;
   private static final String DEFAULT_ENDPOINT = "http://localhost:4317/v1/traces";
-  private static final Encoding DEFAULT_ENCODING = Encoding.PROTOBUF;
 
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private String endpoint = DEFAULT_ENDPOINT;
-  private Encoding encoding = DEFAULT_ENCODING;
   private boolean isCompressionEnabled = false;
   @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
@@ -82,21 +80,6 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Sets the encoding of payloads to be JSON format. If unset, defaults Protobuf format. NOTE: JSON
-   * format is currently experimental.
-   */
-  public OtlpHttpSpanExporterBuilder setJsonEncoding() {
-    this.encoding = Encoding.JSON;
-    return this;
-  }
-
-  /** Sets the encoding of payloads to be Protobuf format. If unset defaults to Protobuf format. */
-  public OtlpHttpSpanExporterBuilder setProtobufEncoding() {
-    this.encoding = Encoding.PROTOBUF;
-    return this;
-  }
-
-  /**
    * Sets the method used to compress payloads. If unset, compression is disabled. Currently the
    * only supported compression method is "gzip".
    */
@@ -135,16 +118,12 @@ public final class OtlpHttpSpanExporterBuilder {
    */
   public OtlpHttpSpanExporter build() {
     OkHttpClient.Builder clientBuilder =
-        new OkHttpClient.Builder()
-            .callTimeout(Duration.ofNanos(timeoutNanos));
-    if (isCompressionEnabled) {
-      clientBuilder.addInterceptor(OtlpHttpUtil.GZIP_INTERCEPTOR);
-    }
+        new OkHttpClient.Builder().callTimeout(Duration.ofNanos(timeoutNanos));
 
     if (trustedCertificatesPem != null) {
       try {
         HandshakeCertificates handshakeCertificates =
-            OtlpHttpUtil.toHandshakeCertificates(trustedCertificatesPem);
+            toHandshakeCertificates(trustedCertificatesPem);
         clientBuilder.sslSocketFactory(
             handshakeCertificates.sslSocketFactory(), handshakeCertificates.trustManager());
       } catch (CertificateException e) {
@@ -154,20 +133,28 @@ public final class OtlpHttpSpanExporterBuilder {
       }
     }
 
-    RequestResponseHandler requestResponseHandler =
-        encoding == Encoding.JSON
-            ? OtlpHttpUtil.JSON_REQUEST_RESPONSE_HANDLER
-            : OtlpHttpUtil.PROTOBUF_REQUEST_RESPONSE_HANDLER;
-
     Headers headers = headersBuilder == null ? null : headersBuilder.build();
 
-    return new OtlpHttpSpanExporter(
-        clientBuilder.build(), endpoint, headers, requestResponseHandler);
+    return new OtlpHttpSpanExporter(clientBuilder.build(), endpoint, headers, isCompressionEnabled);
   }
 
-  enum Encoding {
-    JSON,
-    PROTOBUF
+  /**
+   * Extract X.509 certificates from the bytes.
+   *
+   * @param trustedCertificatesPem bytes containing an X.509 certificate collection in PEM format.
+   * @return a HandshakeCertificates with the certificates
+   * @throws CertificateException if an error occurs extracting certificates
+   */
+  private static HandshakeCertificates toHandshakeCertificates(byte[] trustedCertificatesPem)
+      throws CertificateException {
+    ByteArrayInputStream is = new ByteArrayInputStream(trustedCertificatesPem);
+    CertificateFactory factory = CertificateFactory.getInstance("X.509");
+    HandshakeCertificates.Builder certBuilder = new HandshakeCertificates.Builder();
+    while (is.available() > 0) {
+      X509Certificate cert = (X509Certificate) factory.generateCertificate(is);
+      certBuilder.addTrustedCertificate(cert);
+    }
+    return certBuilder.build();
   }
 
   OtlpHttpSpanExporterBuilder() {}

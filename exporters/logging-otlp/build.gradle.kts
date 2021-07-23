@@ -14,6 +14,8 @@ dependencies {
 
     implementation(project(":exporters:otlp:common"))
 
+    implementation("org.curioswitch.curiostack:protobuf-jackson")
+
     testImplementation(project(":sdk:testing"))
 
     testImplementation("org.skyscreamer:jsonassert")

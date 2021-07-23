@@ -15,11 +15,15 @@ import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.internal.shaded.okhttp3.Call;
 import io.opentelemetry.internal.shaded.okhttp3.Callback;
 import io.opentelemetry.internal.shaded.okhttp3.Headers;
+import io.opentelemetry.internal.shaded.okhttp3.MediaType;
 import io.opentelemetry.internal.shaded.okhttp3.OkHttpClient;
 import io.opentelemetry.internal.shaded.okhttp3.Request;
 import io.opentelemetry.internal.shaded.okhttp3.RequestBody;
 import io.opentelemetry.internal.shaded.okhttp3.Response;
 import io.opentelemetry.internal.shaded.okhttp3.ResponseBody;
+import io.opentelemetry.internal.shaded.okio.BufferedSink;
+import io.opentelemetry.internal.shaded.okio.GzipSink;
+import io.opentelemetry.internal.shaded.okio.Okio;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -53,13 +57,10 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   private final OkHttpClient client;
   private final String endpoint;
   private final Headers headers;
-  private final RequestResponseHandler requestResponseHandler;
+  private final boolean isCompressionEnabled;
 
   OtlpHttpSpanExporter(
-      OkHttpClient client,
-      String endpoint,
-      Headers headers,
-      RequestResponseHandler requestResponseHandler) {
+      OkHttpClient client, String endpoint, Headers headers, boolean isCompressionEnabled) {
     Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.exporters.otlp-http");
     this.spansSeen =
         meter.longCounterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
@@ -70,7 +71,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     this.client = client;
     this.endpoint = endpoint;
     this.headers = headers;
-    this.requestResponseHandler = requestResponseHandler;
+    this.isCompressionEnabled = isCompressionEnabled;
   }
 
   /**
@@ -87,12 +88,38 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
             .build();
 
-    Request.Builder requestBuilder =
-        new Request.Builder()
-            .url(endpoint)
-            .post(requestResponseHandler.build(exportTraceServiceRequest));
+    Request.Builder requestBuilder = new Request.Builder().url(endpoint);
+
     if (headers != null) {
       requestBuilder.headers(headers);
+    }
+
+    RequestBody requestBody =
+        RequestBody.create(
+            exportTraceServiceRequest.toByteArray(), MediaType.parse("application/x-protobuf"));
+    if (isCompressionEnabled) {
+      requestBuilder.addHeader("Content-Encoding", "gzip");
+      requestBuilder.post(
+          new RequestBody() {
+            @Override
+            public MediaType contentType() {
+              return requestBody.contentType();
+            }
+
+            @Override
+            public long contentLength() {
+              return -1;
+            }
+
+            @Override
+            public void writeTo(BufferedSink bufferedSink) throws IOException {
+              BufferedSink gzipSink = Okio.buffer(new GzipSink(bufferedSink));
+              requestBody.writeTo(gzipSink);
+              gzipSink.close();
+            }
+          });
+    } else {
+      requestBuilder.post(requestBody);
     }
 
     CompletableResultCode result = new CompletableResultCode();
@@ -120,26 +147,34 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
                 }
 
                 spansExportedFailure.add(spans.size());
-                result.fail();
                 int code = response.code();
 
                 Status status;
                 try {
-                  status = requestResponseHandler.extractErrorStatus(response.body());
+                  ResponseBody responseBody = response.body();
+                  if (responseBody == null) {
+                    status =
+                        Status.newBuilder()
+                            .setMessage("Unable to extract error message from empty response body.")
+                            .build();
+                  } else {
+                    status = Status.parseFrom(responseBody.bytes());
+                  }
                 } catch (IOException e) {
                   status =
                       Status.newBuilder()
                           .setMessage(
-                              "Unable to extract error message from request: " + e.getMessage())
+                              "Unable to extract error message from response: " + e.getMessage())
                           .build();
                 }
 
                 logger.log(
-                    Level.SEVERE,
+                    Level.WARNING,
                     "Failed to export spans. Server responded with code "
                         + code
                         + ". Error message: "
                         + status.getMessage());
+                result.fail();
               }
             });
 
@@ -183,25 +218,5 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     this.spansExportedSuccess.unbind();
     this.spansExportedFailure.unbind();
     return result;
-  }
-
-  interface RequestResponseHandler {
-
-    /**
-     * Build a request body for the export trace service request.
-     *
-     * @param exportTraceServiceRequest the export trace service request
-     * @return the request body
-     */
-    RequestBody build(ExportTraceServiceRequest exportTraceServiceRequest);
-
-    /**
-     * Extract the status from the response body. Called when response status code is 4XX and 5XX.
-     *
-     * @param responseBody the response body
-     * @return the status
-     * @throws IOException if unable to extract a status from the response body
-     */
-    Status extractErrorStatus(ResponseBody responseBody) throws IOException;
   }
 }
