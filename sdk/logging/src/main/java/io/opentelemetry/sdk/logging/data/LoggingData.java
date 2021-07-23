@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.logging;
+package io.opentelemetry.sdk.logging.data;
 
-public class LogEmitterSdk {}
+/** */
+public abstract class LoggingData {}
