@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.trace;
+package io.opentelemetry.exporter.otlp.http.trace;
 
 import com.google.rpc.Status;
 import io.opentelemetry.api.metrics.BoundLongCounter;
@@ -12,18 +12,6 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
-import io.opentelemetry.internal.shaded.okhttp3.Call;
-import io.opentelemetry.internal.shaded.okhttp3.Callback;
-import io.opentelemetry.internal.shaded.okhttp3.Headers;
-import io.opentelemetry.internal.shaded.okhttp3.MediaType;
-import io.opentelemetry.internal.shaded.okhttp3.OkHttpClient;
-import io.opentelemetry.internal.shaded.okhttp3.Request;
-import io.opentelemetry.internal.shaded.okhttp3.RequestBody;
-import io.opentelemetry.internal.shaded.okhttp3.Response;
-import io.opentelemetry.internal.shaded.okhttp3.ResponseBody;
-import io.opentelemetry.internal.shaded.okio.BufferedSink;
-import io.opentelemetry.internal.shaded.okio.GzipSink;
-import io.opentelemetry.internal.shaded.okio.Okio;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -34,6 +22,18 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okio.BufferedSink;
+import okio.GzipSink;
+import okio.Okio;
 import org.jetbrains.annotations.NotNull;
 
 /** Exports spans using OTLP via HTTP, using OpenTelemetry's protobuf model. */
@@ -89,35 +89,15 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
             .build();
 
     Request.Builder requestBuilder = new Request.Builder().url(endpoint);
-
     if (headers != null) {
       requestBuilder.headers(headers);
     }
-
     RequestBody requestBody =
         RequestBody.create(
             exportTraceServiceRequest.toByteArray(), MediaType.parse("application/x-protobuf"));
     if (isCompressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");
-      requestBuilder.post(
-          new RequestBody() {
-            @Override
-            public MediaType contentType() {
-              return requestBody.contentType();
-            }
-
-            @Override
-            public long contentLength() {
-              return -1;
-            }
-
-            @Override
-            public void writeTo(BufferedSink bufferedSink) throws IOException {
-              BufferedSink gzipSink = Okio.buffer(new GzipSink(bufferedSink));
-              requestBody.writeTo(gzipSink);
-              gzipSink.close();
-            }
-          });
+      requestBuilder.post(gzipRequestBody(requestBody));
     } else {
       requestBuilder.post(requestBody);
     }
@@ -149,24 +129,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
                 spansExportedFailure.add(spans.size());
                 int code = response.code();
 
-                Status status;
-                try {
-                  ResponseBody responseBody = response.body();
-                  if (responseBody == null) {
-                    status =
-                        Status.newBuilder()
-                            .setMessage("Unable to extract error message from empty response body.")
-                            .build();
-                  } else {
-                    status = Status.parseFrom(responseBody.bytes());
-                  }
-                } catch (IOException e) {
-                  status =
-                      Status.newBuilder()
-                          .setMessage(
-                              "Unable to extract error message from response: " + e.getMessage())
-                          .build();
-                }
+                Status status = extractErrorStatus(response);
 
                 logger.log(
                     Level.WARNING,
@@ -179,6 +142,44 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
             });
 
     return result;
+  }
+
+  private static RequestBody gzipRequestBody(RequestBody requestBody) {
+    return new RequestBody() {
+      @Override
+      public MediaType contentType() {
+        return requestBody.contentType();
+      }
+
+      @Override
+      public long contentLength() {
+        return -1;
+      }
+
+      @Override
+      public void writeTo(BufferedSink bufferedSink) throws IOException {
+        BufferedSink gzipSink = Okio.buffer(new GzipSink(bufferedSink));
+        requestBody.writeTo(gzipSink);
+        gzipSink.close();
+      }
+    };
+  }
+
+  private static Status extractErrorStatus(Response response) {
+    try {
+      ResponseBody responseBody = response.body();
+      if (responseBody == null) {
+        return Status.newBuilder()
+            .setMessage("Unable to extract error message from empty response body.")
+            .build();
+      } else {
+        return Status.parseFrom(responseBody.bytes());
+      }
+    } catch (IOException e) {
+      return Status.newBuilder()
+          .setMessage("Unable to extract error message from response: " + e.getMessage())
+          .build();
+    }
   }
 
   /**

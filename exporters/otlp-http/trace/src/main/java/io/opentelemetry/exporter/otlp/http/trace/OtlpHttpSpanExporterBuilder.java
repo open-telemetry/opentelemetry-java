@@ -3,15 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.trace;
+package io.opentelemetry.exporter.otlp.http.trace;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.base.Preconditions;
-import io.opentelemetry.internal.shaded.okhttp3.Headers;
-import io.opentelemetry.internal.shaded.okhttp3.OkHttpClient;
-import io.opentelemetry.internal.shaded.okhttp3.tls.HandshakeCertificates;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -21,6 +18,9 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.tls.HandshakeCertificates;
 
 /** Builder utility for this exporter. */
 public final class OtlpHttpSpanExporterBuilder {
