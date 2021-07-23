@@ -13,7 +13,6 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.tls.HandshakeCertificates;
 import okhttp3.tls.HeldCertificate;
-import org.jetbrains.annotations.NotNull;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -60,9 +59,8 @@ class OtlpHttpRule implements TestRule {
     this.dispatcher.addMockResponse(mockResponse);
   }
 
-  @NotNull
   @Override
-  public Statement apply(@NotNull Statement base, @NotNull Description description) {
+  public Statement apply(Statement base, Description description) {
     return server.apply(base, description);
   }
 }

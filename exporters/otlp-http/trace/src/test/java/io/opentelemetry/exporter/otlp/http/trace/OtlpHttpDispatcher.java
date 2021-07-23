@@ -20,7 +20,6 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
 import okio.Buffer;
 import okio.GzipSource;
-import org.jetbrains.annotations.NotNull;
 
 class OtlpHttpDispatcher extends Dispatcher {
 
@@ -40,9 +39,8 @@ class OtlpHttpDispatcher extends Dispatcher {
     this.mockResponses.add(mockResponse);
   }
 
-  @NotNull
   @Override
-  public MockResponse dispatch(@NotNull RecordedRequest recordedRequest) {
+  public MockResponse dispatch(RecordedRequest recordedRequest) {
     try {
       return dispatchInternal(recordedRequest);
     } catch (RuntimeException e) {

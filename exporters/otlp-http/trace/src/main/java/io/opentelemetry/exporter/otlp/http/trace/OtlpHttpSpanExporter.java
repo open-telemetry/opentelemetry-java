@@ -34,7 +34,6 @@ import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
-import org.jetbrains.annotations.NotNull;
 
 /** Exports spans using OTLP via HTTP, using OpenTelemetry's protobuf model. */
 @ThreadSafe
@@ -109,7 +108,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
         .enqueue(
             new Callback() {
               @Override
-              public void onFailure(@NotNull Call call, @NotNull IOException e) {
+              public void onFailure(Call call, IOException e) {
                 spansExportedFailure.add(spans.size());
                 result.fail();
                 logger.log(
@@ -119,7 +118,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
               }
 
               @Override
-              public void onResponse(@NotNull Call call, @NotNull Response response) {
+              public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
                   spansExportedSuccess.add(spans.size());
                   result.succeed();
