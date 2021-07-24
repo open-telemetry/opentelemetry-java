@@ -83,6 +83,14 @@ class AttributesTest {
   }
 
   @Test
+  void removeAll_onlyRemovesExactMatch() {
+    Attributes complete = Attributes.builder().put("x", 1).put("y", 2).put("z", 3).build();
+    Attributes removed = Attributes.builder().put("y", "2").build();
+    assertThat(complete.removeAll(removed))
+        .isEqualTo(Attributes.builder().put("x", 1).put("y", 2).put("z", 3).build());
+  }
+
+  @Test
   @SuppressWarnings("unchecked")
   void removeAll_nonstandardImplementation() {
     final Attributes myHipsterImpl =
@@ -133,6 +141,9 @@ class AttributesTest {
         .isEqualTo(Attributes.builder().put("x", 1).put("z", 3).build());
     assertThat(myHipsterImpl.removeAll(myHipsterImpl)).isEqualTo(Attributes.empty());
     assertThat(removed.removeAll(myHipsterImpl)).isEqualTo(Attributes.empty());
+    // verify exact match required for removal.
+    assertThat(myHipsterImpl.removeAll(Attributes.builder().put("y", "1").build()))
+        .isEqualTo(Attributes.builder().put("x", 1).put("y", 2).put("z", 3).build());
   }
 
   @SuppressWarnings("CollectionIncompatibleType")

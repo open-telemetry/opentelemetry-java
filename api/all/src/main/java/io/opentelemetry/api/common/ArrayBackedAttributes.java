@@ -51,7 +51,11 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
           KEY_COMPARATOR_FOR_CONSTRUCTION.compare(
               (AttributeKey<?>) source.getRaw(i), (AttributeKey<?>) other.getRaw(j));
       if (keyCompare == 0) {
-        // Match, drop our value (TODO: iff values are equal)
+        // Match, drop our value, No-Match we still add it.
+        if (!source.getRaw(i + 1).equals(other.getRaw(j + 1))) {
+          result.add(source.getRaw(i));
+          result.add(source.getRaw(i + 1));
+        }
         i += 2;
         j += 2;
       } else if (keyCompare < 0) {
@@ -84,7 +88,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
     final List<Object> result = new ArrayList<>();
     source.forEach(
         (key, value) -> {
-          if (other.get(key) == null) {
+          if (!value.equals(other.get(key))) {
             result.add(key);
             result.add(value);
           }
