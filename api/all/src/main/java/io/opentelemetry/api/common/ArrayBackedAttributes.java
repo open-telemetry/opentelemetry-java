@@ -73,7 +73,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
       }
     }
     // Grab the rest of our attributes if we ended early.
-    while (i < size()) {
+    while (i < size() * 2) {
       result.add(getRaw(i));
       result.add(getRaw(i + 1));
       i += 2;
