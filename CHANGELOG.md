@@ -2,6 +2,11 @@
 
 ## Unreleased:
 
+## Version 1.4.1 - 2021-07-15
+
+- Fill labels in addition to attributes during OTLP metrics export to support versions of the
+OpenTelemetry Collector which do not support the new protocol yet.
+
 ## Version 1.4.0 - 2021-07-10
 
 ### API

@@ -5,11 +5,12 @@
 
 package io.opentelemetry.sdk.testing.assertj;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -18,6 +19,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -119,6 +121,25 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
    */
   public SpanDataAssert hasParent(SpanData parent) {
     return hasParentSpanId(parent.getSpanId());
+  }
+
+  /**
+   * Asserts the span has no parent {@link SpanData span}.
+   *
+   * <p>Equivalent to {@code span.hasParentSpanId(SpanId.getInvalid())}.
+   */
+  public SpanDataAssert hasNoParent() {
+    isNotNull();
+    String actualParentSpanId = actual.getParentSpanId();
+    if (!actualParentSpanId.equals(SpanId.getInvalid())) {
+      failWithActualExpectedAndMessage(
+          actualParentSpanId,
+          SpanId.getInvalid(),
+          "Expected span [%s] to have no parent but had parent span ID <%s>",
+          actual.getName(),
+          actualParentSpanId);
+    }
+    return this;
   }
 
   /** Asserts the span has the given {@link Resource}. */
@@ -244,6 +265,43 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
   public SpanDataAssert hasAttributesSatisfying(Consumer<Attributes> attributes) {
     isNotNull();
     assertThat(actual.getAttributes()).as("attributes").satisfies(attributes);
+    return this;
+  }
+
+  /**
+   * Asserts the span has an exception event for the given {@link Throwable}. The stack trace is not
+   * matched against.
+   */
+  public SpanDataAssert hasException(Throwable exception) {
+    EventData exceptionEvent =
+        actual.getEvents().stream()
+            .filter(event -> event.getName().equals(SemanticAttributes.EXCEPTION_EVENT_NAME))
+            .findFirst()
+            .orElse(null);
+
+    if (exceptionEvent == null) {
+      failWithMessage(
+          "Expected span [%s] to have an exception event but only had events <%s>",
+          actual.getName(), actual.getEvents());
+      // Never executed but to reduce IntelliJ warnings.
+      return this;
+    }
+
+    assertThat(exceptionEvent.getAttributes())
+        .as("exception.type")
+        .containsEntry(SemanticAttributes.EXCEPTION_TYPE, exception.getClass().getCanonicalName());
+    if (exception.getMessage() != null) {
+      assertThat(exceptionEvent.getAttributes())
+          .as("exception.message")
+          .containsEntry(SemanticAttributes.EXCEPTION_MESSAGE, exception.getMessage());
+    }
+
+    // Exceptions used in assertions always have a different stack trace, just confirm it was
+    // recorded.
+    assertThat(exceptionEvent.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE))
+        .as("exception.stacktrace")
+        .isNotNull();
+
     return this;
   }
 
