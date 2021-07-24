@@ -180,4 +180,22 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
     }
     return new LongSumDataAssert(actual.getLongSumData());
   }
+
+  /**
+   * Ensures this {@link MetricData} is a {@code DoubleSummaryData}.
+   *
+   * @return convenience API to assert against the {@code DoubleSummaryData}.
+   */
+  public DoubleSummaryDataAssert hasDoubleSummary() {
+    isNotNull();
+    if (actual.getType() != MetricDataType.SUMMARY) {
+      failWithActualExpectedAndMessage(
+          actual,
+          "type: SUMMARY",
+          "Exepcted MetricData to have type <%s> but found <%s>",
+          MetricDataType.SUMMARY,
+          actual.getType());
+    }
+    return new DoubleSummaryDataAssert(actual.getDoubleSummaryData());
+  }
 }

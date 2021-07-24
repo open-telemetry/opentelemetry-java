@@ -101,7 +101,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
     @Override
     public DoubleUpDownCounter build() {
       return buildSynchronousInstrument(
-          InstrumentType.COUNTER, InstrumentValueType.DOUBLE, DoubleUpDownCounterSdk::new);
+          InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.DOUBLE, DoubleUpDownCounterSdk::new);
     }
 
     @Override

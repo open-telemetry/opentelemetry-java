@@ -101,7 +101,7 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
     @Override
     public LongUpDownCounter build() {
       return buildSynchronousInstrument(
-          InstrumentType.COUNTER, InstrumentValueType.LONG, LongUpDownCounterSdk::new);
+          InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG, LongUpDownCounterSdk::new);
     }
 
     @Override

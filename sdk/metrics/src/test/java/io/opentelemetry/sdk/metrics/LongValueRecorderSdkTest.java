@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -240,43 +241,29 @@ class LongValueRecorderSdkTest {
 
     stressTestBuilder.build().run();
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createDoubleSummary(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testRecorder",
-                "",
-                "1",
-                DoubleSummaryData.create(
-                    Arrays.asList(
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Attributes.builder().put(keys[0], values[0]).build(),
-                            2_000,
-                            20_000,
-                            valueAtPercentiles(9, 11)),
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Attributes.builder().put(keys[1], values[1]).build(),
-                            2_000,
-                            20_000,
-                            valueAtPercentiles(9, 11)),
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Attributes.builder().put(keys[2], values[2]).build(),
-                            2_000,
-                            20_000,
-                            valueAtPercentiles(9, 11)),
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Attributes.builder().put(keys[3], values[3]).build(),
-                            2_000,
-                            20_000,
-                            valueAtPercentiles(9, 11))))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testRecorder")
+                    .hasDoubleSummary()
+                    .points()
+                    .allSatisfy(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasCount(2_000)
+                                .hasSum(20_000)
+                                .hasPercentileValues(
+                                    valueAtPercentiles(9, 11).toArray(new ValueAtPercentile[0])))
+                    .extracting(point -> point.getAttributes())
+                    .containsExactlyInAnyOrder(
+                        Attributes.of(stringKey(keys[0]), values[0]),
+                        Attributes.of(stringKey(keys[1]), values[1]),
+                        Attributes.of(stringKey(keys[2]), values[2]),
+                        Attributes.of(stringKey(keys[3]), values[3])));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {

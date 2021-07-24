@@ -10,6 +10,8 @@ import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
@@ -33,9 +35,19 @@ public final class MetricAssertions extends Assertions {
     return new DoubleHistogramAssert(metric);
   }
 
+  /** Returns an assertion for {@link DoubleSummaryData}. */
+  public static DoubleSummaryDataAssert assertThat(DoubleSummaryData metric) {
+    return new DoubleSummaryDataAssert(metric);
+  }
+
   /** Returns an assertion for {@link DoubleHistogramPointData}. */
   public static DoubleHistogramPointDataAssert assertThat(DoubleHistogramPointData point) {
     return new DoubleHistogramPointDataAssert(point);
+  }
+
+  /** Returns an assertion for {@link DoubleSummaryDataPoint}. */
+  public static DoubleSummaryPointDataAssert assertThat(DoubleSummaryPointData point) {
+    return new DoubleSummaryPointDataAssert(point);
   }
 
   /** Returns an assertion for {@link DoublePointData}. */
