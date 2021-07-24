@@ -97,7 +97,7 @@ public abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrum
       InstrumentType type,
       Consumer<ObservableLongMeasurement> updater,
       BiFunction<InstrumentDescriptor, AsynchronousInstrumentAccumulator, I> instrumentFactory) {
-    InstrumentDescriptor descriptor = makeDescriptor(type, InstrumentValueType.DOUBLE);
+    InstrumentDescriptor descriptor = makeDescriptor(type, InstrumentValueType.LONG);
     return meterSharedState
         .getInstrumentRegistry()
         .register(
