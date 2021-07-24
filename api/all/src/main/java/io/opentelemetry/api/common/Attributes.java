@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.common;
 
+import static io.opentelemetry.api.common.ArrayBackedAttributes.removeAllImpl;
 import static io.opentelemetry.api.common.ArrayBackedAttributes.sortAndFilterToAttributes;
 
 import java.util.Map;
@@ -48,6 +49,16 @@ public interface Attributes {
 
   /** Returns a read-only view of this {@link Attributes} as a {@link Map}. */
   Map<AttributeKey<?>, Object> asMap();
+
+  /**
+   * Returns a {@link Attributes} instance containing only key-value pairs that are unique to this
+   * instance compared to the input.
+   *
+   * @param other The {@link Attributes} to remove from this instance.
+   */
+  default Attributes removeAll(Attributes other) {
+    return removeAllImpl(this, other);
+  }
 
   /** Returns a {@link Attributes} instance with no attributes. */
   static Attributes empty() {

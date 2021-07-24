@@ -52,6 +52,10 @@ public abstract class ImmutableKeyValuePairs<K, V> {
     return Arrays.asList(data);
   }
 
+  protected final Object getRaw(int index) {
+    return data[index];
+  }
+
   public final int size() {
     return data.length / 2;
   }

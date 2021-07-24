@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link Attributes}s. */
@@ -65,6 +66,73 @@ class AttributesTest {
   void putAll_null() {
     assertThat(Attributes.builder().put(booleanKey("key3"), true).putAll(null).build())
         .isEqualTo(Attributes.of(booleanKey("key3"), true));
+  }
+
+  @Test
+  void removeAll() {
+    Attributes complete = Attributes.builder().put("x", 1).put("y", 2).put("z", 3).build();
+    Attributes removed = Attributes.builder().put("y", 2).build();
+    assertThat(complete.removeAll(removed))
+        .isEqualTo(Attributes.builder().put("x", 1).put("z", 3).build());
+    assertThat(complete.removeAll(complete)).isEqualTo(Attributes.empty());
+    assertThat(removed.removeAll(complete)).isEqualTo(Attributes.empty());
+
+    Attributes removedWithExtra = Attributes.builder().put("b", 2).put("y", 2).put("a", 1).build();
+    assertThat(complete.removeAll(removedWithExtra))
+        .isEqualTo(Attributes.builder().put("x", 1).put("z", 3).build());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void removeAll_nonstandardImplementation() {
+    final Attributes myHipsterImpl =
+        new Attributes() {
+
+          @Override
+          public <T> T get(AttributeKey<T> key) {
+            if (key.getKey().equals("x")) {
+              return (T) Long.valueOf(1);
+            } else if (key.getKey().equals("y")) {
+              return (T) Long.valueOf(2);
+            } else if (key.getKey().equals("z")) {
+              return (T) Long.valueOf(3);
+            }
+            return null;
+          }
+
+          @Override
+          public void forEach(BiConsumer<? super AttributeKey<?>, ? super Object> consumer) {
+            consumer.accept(AttributeKey.longKey("x"), Long.valueOf(1));
+            consumer.accept(AttributeKey.longKey("y"), Long.valueOf(2));
+            consumer.accept(AttributeKey.longKey("z"), Long.valueOf(3));
+          }
+
+          @Override
+          public int size() {
+            return 3;
+          }
+
+          @Override
+          public boolean isEmpty() {
+            return false;
+          }
+
+          @Override
+          public Map<AttributeKey<?>, Object> asMap() {
+            // Ignore this for the test.
+            return Attributes.builder().putAll(this).build().asMap();
+          }
+
+          @Override
+          public AttributesBuilder toBuilder() {
+            return Attributes.builder().putAll(this);
+          }
+        };
+    Attributes removed = Attributes.builder().put("y", 2).build();
+    assertThat(myHipsterImpl.removeAll(removed))
+        .isEqualTo(Attributes.builder().put("x", 1).put("z", 3).build());
+    assertThat(myHipsterImpl.removeAll(myHipsterImpl)).isEqualTo(Attributes.empty());
+    assertThat(removed.removeAll(myHipsterImpl)).isEqualTo(Attributes.empty());
   }
 
   @SuppressWarnings("CollectionIncompatibleType")
