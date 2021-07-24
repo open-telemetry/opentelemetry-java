@@ -45,7 +45,7 @@ public final class MetricAssertions extends Assertions {
     return new DoubleHistogramPointDataAssert(point);
   }
 
-  /** Returns an assertion for {@link DoubleSummaryDataPoint}. */
+  /** Returns an assertion for {@link DoubleSummaryPointData}. */
   public static DoubleSummaryPointDataAssert assertThat(DoubleSummaryPointData point) {
     return new DoubleSummaryPointDataAssert(point);
   }

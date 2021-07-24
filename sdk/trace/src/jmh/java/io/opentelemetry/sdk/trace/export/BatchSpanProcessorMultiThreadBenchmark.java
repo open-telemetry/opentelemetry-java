@@ -46,7 +46,8 @@ public class BatchSpanProcessorMultiThreadBenchmark {
     @Setup(Level.Iteration)
     public final void setup() {
       final SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
-      collector = sdkMeterProvider.newMetricProducer();
+      // Note: these will (likely) no longer be the same in future SDK.
+      collector = sdkMeterProvider;
       SpanExporter exporter = new DelayingSpanExporter(delayMs);
       processor = BatchSpanProcessor.builder(exporter).build();
       tracer =

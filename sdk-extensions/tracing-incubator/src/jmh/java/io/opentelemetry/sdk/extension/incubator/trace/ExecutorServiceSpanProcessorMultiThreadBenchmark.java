@@ -49,7 +49,8 @@ public class ExecutorServiceSpanProcessorMultiThreadBenchmark {
     @Setup(Level.Iteration)
     public final void setup() {
       final SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
-      collector = sdkMeterProvider.newMetricProducer();
+      // Note: these will (likely) no longer be the same in future SDK.
+      collector = sdkMeterProvider;
       SpanExporter exporter = new DelayingSpanExporter(delayMs);
       ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
       processor = ExecutorServiceSpanProcessor.builder(exporter, executor, true).build();
