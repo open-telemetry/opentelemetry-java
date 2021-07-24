@@ -8,25 +8,25 @@ package io.opentelemetry.api.metrics;
 import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** An up-down-counter instrument with pre-bound attributes. */
+/** A hisgogram instrument that records {@code long} values with preassociated attributes. */
 @ThreadSafe
-public interface BoundLongUpDownCounter {
+public interface BoundLongHistogram {
   /**
-   * Record a value with a pre-bound attributes.
+   * Record a value with a pre-bound set of attributes.
    *
-   * @param value The increment amount. May be positive, negative or zero.
+   * @param value The amount of the measurement.
    * @param context The explicit context to associate with this measurement.
    */
-  public void add(long value, Context context);
+  public void record(long value, Context context);
   /**
-   * Reecord a value with pre-bound attributes.
+   * Record a value with a pre-bound set of attributes.
    *
    * <p>Note: This may use {@code Context.current()} to pull the context associated with this
    * measurement.
    *
-   * @param value The increment amount. May be positive, negative or zero.
+   * @param value The amount of the measurement.
    */
-  public void add(long value);
+  public void record(long value);
 
   public void unbind();
 }
