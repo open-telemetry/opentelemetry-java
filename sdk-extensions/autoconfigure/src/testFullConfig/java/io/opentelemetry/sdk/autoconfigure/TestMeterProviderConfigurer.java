@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.view.AttributesProcessors;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelectionCriteria;
+import io.opentelemetry.sdk.metrics.view.MetricOutputConfiguration;
 import io.opentelemetry.sdk.metrics.view.View;
 import java.util.regex.Pattern;
 
@@ -26,11 +26,12 @@ public class TestMeterProviderConfigurer implements SdkMeterProviderConfigurer {
                     .setInstrumentPattern(Pattern.compile(".*"))
                     .build())
             // TODO: What aggregation do we want?
-            .asSum()
-            .withDeltaAggregation()
-            .addAttributesProcessor(
-                AttributesProcessors.appendAttributes(
-                    Attributes.builder().put("configured", true).build()))
+            .setOutput(
+                MetricOutputConfiguration.builder()
+                    .aggregateAsSum()
+                    .withDeltaAggregation()
+                    .appendAttributes(Attributes.builder().put("configured", true).build())
+                    .build())
             .build());
   }
 }

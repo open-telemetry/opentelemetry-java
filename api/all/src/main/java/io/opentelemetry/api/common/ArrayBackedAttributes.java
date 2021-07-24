@@ -29,30 +29,54 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
 
   @Override
   public Attributes removeAll(Attributes other) {
-    if (!(other instanceof ArrayBackedAttributes)) {
-      throw new IllegalArgumentException("removeAll only implemented for built-in attributes");
+    if (other.isEmpty()) {
+      return this;
     }
+    if (other instanceof ArrayBackedAttributes) {
+      return removeAllSorted((ArrayBackedAttributes) other);
+    }
+    final List<Object> result = new ArrayList<>();
+    for (int i = 0; i < size() * 2; i += 2) {
+      AttributeKey<?> currentKey = (AttributeKey<?>) getRaw(i);
+      if (other.get(currentKey) == null) {
+        result.add(currentKey);
+        result.add(getRaw(i + 1));
+      }
+    }
+    if (result.isEmpty()) {
+      return EMPTY;
+    }
+    return new ArrayBackedAttributes(result.toArray(), KEY_COMPARATOR_FOR_CONSTRUCTION);
+  }
+
+  /** More efficient version of removeall when we know keys are sorted. */
+  private final Attributes removeAllSorted(ArrayBackedAttributes other) {
     final List<Object> result = new ArrayList<>();
     int i = 0;
     int j = 0;
-    while (i < size() && j < other.size()) {
+    while (i < size() * 2 && j < other.size() * 2) {
       int keyCompare =
           KEY_COMPARATOR_FOR_CONSTRUCTION.compare(
-              (AttributeKey<?>) getRaw(i),
-              (AttributeKey<?>) ((ArrayBackedAttributes) other).getRaw(j));
-
+              (AttributeKey<?>) getRaw(i), (AttributeKey<?>) other.getRaw(j));
       if (keyCompare == 0) {
-        // Match, drop our value
+        // Match, drop our value (TODO: iff values are equal)
         i += 2;
         j += 2;
-      } else if (keyCompare > 0) {
+      } else if (keyCompare < 0) {
         // Our value is earlier, add it and move
         result.add(getRaw(i));
         result.add(getRaw(i + 1));
         i += 2;
       } else {
+        // The other side's key isn't in our map, ignore it.
         j += 2;
       }
+    }
+    // Grab the rest of our attributes if we ended early.
+    while (i < size()) {
+      result.add(getRaw(i));
+      result.add(getRaw(i + 1));
+      i += 2;
     }
     if (result.isEmpty()) {
       return EMPTY;

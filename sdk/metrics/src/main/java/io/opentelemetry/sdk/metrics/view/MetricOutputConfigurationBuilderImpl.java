@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.aggregator.HistogramConfig;
 import io.opentelemetry.sdk.metrics.aggregator.LastValueConfig;
@@ -13,133 +14,106 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.instrument.InstrumentDescriptor;
 
 /** Actual implementation that builds views from the API. */
-class ViewBuilderImpl implements ViewBuilder {
+class MetricOutputConfigurationBuilderImpl implements MetricOutputConfigurationBuilder {
   enum Aggregator {
-    GAUGE,
+    LAST_VALUE,
     SUM,
-    HISTOGRAM
+    EXPLICIT_BUCKET_HISTOGRAM
   }
 
-  private InstrumentSelectionCriteria selection = null;
   private AttributesProcessor currentProcessor = AttributesProcessor.NOOP;
-  private Aggregator aggregation = Aggregator.GAUGE;
+  private Aggregator aggregation = Aggregator.LAST_VALUE;
   private AggregationTemporality temporality = AggregationTemporality.CUMULATIVE;
-  private boolean isMonotonic = true;
   private double[] histogramBoundaries = HistogramConfig.DEFAULT_HISTOGRAM_BOUNDARIES;
   private String viewName = null;
   private String viewDescription = null;
 
   @Override
-  public ViewBuilder setSelection(InstrumentSelectionCriteria selection) {
-    this.selection = selection;
+  public MetricOutputConfigurationBuilder setName(String name) {
+    this.viewName = name;
     return this;
   }
 
   @Override
-  public ViewBuilder addAttributesProcessor(AttributesProcessor filter) {
-    currentProcessor = currentProcessor.then(filter);
+  public MetricOutputConfigurationBuilder setDescription(String description) {
+    this.viewDescription = description;
     return this;
   }
 
   @Override
-  public ViewBuilder asSum() {
-    return asSumWithMonotonicity(true);
-  }
-
-  @Override
-  public ViewBuilder asSumWithMonotonicity(boolean isMonotonic) {
-    aggregation = Aggregator.SUM;
-    this.isMonotonic = isMonotonic;
+  public MetricOutputConfigurationBuilder setAttributeKeyFilter(AttributeKey<?>... keys) {
+    AttributesProcessor filter = AttributesProcessors.filterKeys(/*TODO*/ null);
+    this.currentProcessor = currentProcessor.then(filter);
     return this;
   }
 
   @Override
-  public ViewBuilder asGauge() {
-    aggregation = Aggregator.GAUGE;
+  public MetricOutputConfigurationBuilder setExtraDimensions(String... keys) {
+    AttributesProcessor append = AttributesProcessors.appendBaggageByKeys(/*TODO*/ null);
+    this.currentProcessor = append.then(this.currentProcessor);
     return this;
   }
 
   @Override
-  public ViewBuilder asHistogram() {
-    aggregation = Aggregator.HISTOGRAM;
+  public MetricOutputConfigurationBuilder aggregateAsSum() {
+    this.aggregation = Aggregator.SUM;
     return this;
   }
 
   @Override
-  public ViewBuilder asHistogramWithFixedBoundaries(double[] boundaries) {
-    histogramBoundaries = boundaries;
+  public MetricOutputConfigurationBuilder aggregateAsLastValue() {
+    this.aggregation = Aggregator.LAST_VALUE;
     return this;
   }
 
   @Override
-  public ViewBuilder withDeltaAggregation() {
+  public MetricOutputConfigurationBuilder aggregateAsHistogram() {
+    this.aggregation = Aggregator.EXPLICIT_BUCKET_HISTOGRAM;
+    this.histogramBoundaries = HistogramConfig.DEFAULT_HISTOGRAM_BOUNDARIES;
+    return this;
+  }
+
+  @Override
+  public MetricOutputConfigurationBuilder withDeltaAggregation() {
     temporality = AggregationTemporality.DELTA;
     return this;
   }
 
   @Override
-  public ViewBuilder withCumulativeAggregation() {
-    temporality = AggregationTemporality.CUMULATIVE;
+  public MetricOutputConfigurationBuilder aggregateAsHistogramWithFixedBoundaries(
+      double[] boundaries) {
+    this.aggregation = Aggregator.EXPLICIT_BUCKET_HISTOGRAM;
+    this.histogramBoundaries = boundaries;
     return this;
   }
 
   @Override
-  public ViewBuilder setName(String name) {
-    viewName = name;
-    return this;
+  public MetricOutputConfiguration build() {
+    return new MetricOutputConfigurationImpl(
+        currentProcessor, aggregation, temporality, histogramBoundaries, viewName, viewDescription);
   }
 
-  @Override
-  public ViewBuilder setDescription(String description) {
-    viewDescription = description;
-    return this;
-  }
-
-  @Override
-  public View build() {
-    return new ViewImpl(
-        selection,
-        currentProcessor,
-        aggregation,
-        temporality,
-        isMonotonic,
-        histogramBoundaries,
-        viewName,
-        viewDescription);
-  }
-
-  static class ViewImpl implements View {
-    private final InstrumentSelectionCriteria selection;
+  static class MetricOutputConfigurationImpl implements MetricOutputConfiguration {
     private final AttributesProcessor currentProcessor;
     private final Aggregator aggregation;
     private final AggregationTemporality temporality;
-    private final boolean isMonotonic;
     private final double[] histogramBoundaries;
     private final String viewName;
     private final String viewDescription;
 
-    ViewImpl(
-        InstrumentSelectionCriteria selection,
+    MetricOutputConfigurationImpl(
         AttributesProcessor currentProcessor,
         Aggregator aggregation,
         AggregationTemporality temporality,
-        boolean isMonotonic,
         double[] histogramBoundaries,
         String viewName,
         String viewDescription) {
-      this.selection = selection;
       this.currentProcessor = currentProcessor;
       this.aggregation = aggregation;
       this.temporality = temporality;
-      this.isMonotonic = isMonotonic;
       this.histogramBoundaries = histogramBoundaries;
       this.viewName = viewName;
       this.viewDescription = viewDescription;
-    }
-
-    @Override
-    public InstrumentSelectionCriteria getInstrumentSelection() {
-      return selection;
     }
 
     @Override
@@ -152,15 +126,15 @@ class ViewBuilderImpl implements ViewBuilder {
       switch (aggregation) {
         case SUM:
           return sum(instrument);
-        case HISTOGRAM:
+        case EXPLICIT_BUCKET_HISTOGRAM:
           return histogram(instrument);
-        case GAUGE:
-          return gauge(instrument);
+        case LAST_VALUE:
+          return lastValueGauge(instrument);
       }
       throw new IllegalStateException("View configured without known aggregation type!");
     }
 
-    private AggregatorFactory<?> gauge(InstrumentDescriptor instrument) {
+    private AggregatorFactory<?> lastValueGauge(InstrumentDescriptor instrument) {
       return AggregatorFactory.lastValue(
           LastValueConfig.builder()
               .setName(viewName != null ? viewName : instrument.getName())
@@ -171,6 +145,16 @@ class ViewBuilderImpl implements ViewBuilder {
     }
 
     private AggregatorFactory<?> sum(InstrumentDescriptor instrument) {
+      boolean isMonotonic = false;
+      switch (instrument.getType()) {
+        case COUNTER:
+        case HISTOGRAM:
+        case OBSERVABLE_SUM:
+          isMonotonic = true;
+          break;
+        default:
+          break;
+      }
       return AggregatorFactory.doubleSum(
           SumConfig.builder()
               .setName(viewName != null ? viewName : instrument.getName())

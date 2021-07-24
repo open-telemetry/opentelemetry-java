@@ -20,12 +20,25 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * A Resorvior sampler with fixed size that stores the given number of examplars
+ *
+ * <p>This implementation uses a un-unweighted/naive algorithm for sampler where the probability of
+ * sampling decrease as the number of obvservations continue. The collectAndReset method resets the
+ * count of obsesrvations, making the probability of sampling effectively 1.0.
+ */
 public class FixedSizeExemplarReservoir implements ExemplarReservoir {
   // TODO: Custom Random/Clock with low thread-contention.
   private final Clock clock;
   private final ResorvoirCell[] storage;
   private final LongAdder numMeasurements = new LongAdder();
 
+  /**
+   * Instantiates an exemplar reserovir of fixed size.
+   *
+   * @param clock The clock to use when annotating measurements with time.
+   * @param size The number of exemplars to preserve.
+   */
   public FixedSizeExemplarReservoir(Clock clock, int size) {
     this.clock = clock;
     this.storage = new ResorvoirCell[size];

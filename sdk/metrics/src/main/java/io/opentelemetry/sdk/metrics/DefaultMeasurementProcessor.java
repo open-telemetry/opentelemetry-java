@@ -54,7 +54,7 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
       MeterSharedState meterSharedState) {
     // First check views
     for (View view : meterProviderSharedState.getViews()) {
-      if (view.getInstrumentSelection()
+      if (view.getSelection()
           .matches(instrument, meterSharedState.getInstrumentationLibraryInfo())) {
         return InstrumentStorage.createSynchronous(
             meterProviderSharedState.getStartEpochNanos(),
@@ -99,7 +99,7 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
       Consumer<T> callback) {
     // Check views.
     for (View view : meterProviderSharedState.getViews()) {
-      if (view.getInstrumentSelection()
+      if (view.getSelection()
           .matches(instrument, meterSharedState.getInstrumentationLibraryInfo())) {
         return InstrumentStorage.createAsynchronous(
             meterProviderSharedState.getStartEpochNanos(),

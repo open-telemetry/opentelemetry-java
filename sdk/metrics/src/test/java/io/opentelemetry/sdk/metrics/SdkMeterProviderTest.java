@@ -14,6 +14,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelectionCriteria;
+import io.opentelemetry.sdk.metrics.view.MetricOutputConfiguration;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -44,8 +45,11 @@ public class SdkMeterProviderTest {
                 View.builder()
                     .setSelection(
                         InstrumentSelectionCriteria.builder().setInstrumentName("testSum").build())
-                    .asSum()
-                    .withDeltaAggregation()
+                    .setOutput(
+                        MetricOutputConfiguration.builder()
+                            .aggregateAsSum()
+                            .withDeltaAggregation()
+                            .build())
                     .build())
             .build();
     MetricProducer collector1 = meterProvider.newMetricProducer();

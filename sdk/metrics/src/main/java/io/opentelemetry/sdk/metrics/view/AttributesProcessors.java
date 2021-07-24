@@ -12,7 +12,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.regex.Pattern;
 
 /** Collection of factory methods to construct {@link AttributesProcessor}s. */
-public final class AttributesProcessors {
+final class AttributesProcessors {
   private AttributesProcessors() {}
 
   /**

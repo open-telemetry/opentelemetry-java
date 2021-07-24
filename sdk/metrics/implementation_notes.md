@@ -34,7 +34,7 @@ What is not implemented:
 - [ ] Reworked View API (prototype the PR proposal)
   - [X] Prototype Impelmentation
   - [X] Updated Autoconfigure tests
-  - [ ] Minimize configuration to match current SDK proposal (e.g. don't expose AttributesProcessor)
+  - [X] Minimize configuration to match current SDK proposal (e.g. don't expose AttributesProcessor)
   - [ ] Robust unit tests + feedback to SiG
 - [ ] Multiple Exporters
   - [X] Basline Implementation

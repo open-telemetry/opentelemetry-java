@@ -75,6 +75,10 @@ class AttributesTest {
         .isEqualTo(Attributes.builder().put("x", 1).put("z", 3).build());
     assertThat(complete.removeAll(complete)).isEqualTo(Attributes.empty());
     assertThat(removed.removeAll(complete)).isEqualTo(Attributes.empty());
+
+    Attributes removedWithExtra = Attributes.builder().put("b", 2).put("y", 2).put("a", 1).build();
+    assertThat(complete.removeAll(removedWithExtra))
+        .isEqualTo(Attributes.builder().put("x", 1).put("z", 3).build());
   }
 
   @SuppressWarnings("CollectionIncompatibleType")
