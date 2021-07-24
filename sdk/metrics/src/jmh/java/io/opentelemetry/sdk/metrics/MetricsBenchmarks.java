@@ -44,7 +44,8 @@ public class MetricsBenchmarks {
     public void setup(ThreadParams threadParams) {
       Meter meter = sdk.getMeter();
       op = opBuilder.build(meter);
-      threadUniqueLabelSet = Attributes.builder().put("KEY", String.valueOf(threadParams.getThreadIndex())).build();
+      threadUniqueLabelSet =
+          Attributes.builder().put("KEY", String.valueOf(threadParams.getThreadIndex())).build();
     }
   }
 
