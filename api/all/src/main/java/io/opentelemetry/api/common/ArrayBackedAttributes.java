@@ -82,9 +82,6 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
 
   /** Default implementation to use. */
   private static Attributes removeAllSlow(Attributes source, Attributes other) {
-    if (other.isEmpty()) {
-      return source;
-    }
     final List<Object> result = new ArrayList<>();
     source.forEach(
         (key, value) -> {
