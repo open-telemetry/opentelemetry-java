@@ -70,7 +70,8 @@ public enum MetricsTestOperationBuilder {
   DoubleHistogramRecord(
       meter -> {
         return new Operation() {
-          final DoubleHistogram metric = meter.histogramBuilder("double_histogram_recorder").build();
+          final DoubleHistogram metric =
+              meter.histogramBuilder("double_histogram_recorder").build();
           final BoundDoubleHistogram boundMetric =
               meter
                   .histogramBuilder("bound_double_histogram_recorder")
