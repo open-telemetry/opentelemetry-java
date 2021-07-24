@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.AsynchronousInstrument;
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -17,7 +17,7 @@ abstract class AbstractDoubleAsynchronousInstrumentBuilder<B extends AbstractIns
     extends AbstractInstrument.Builder<B> {
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
-  @Nullable private Consumer<AsynchronousInstrument.DoubleResult> updater;
+  @Nullable private Consumer<ObservableDoubleMeasurement> updater;
 
   AbstractDoubleAsynchronousInstrumentBuilder(
       String name,
@@ -30,7 +30,7 @@ abstract class AbstractDoubleAsynchronousInstrumentBuilder<B extends AbstractIns
     this.meterSharedState = meterSharedState;
   }
 
-  public B setUpdater(Consumer<AsynchronousInstrument.DoubleResult> updater) {
+  public B setUpdater(Consumer<ObservableDoubleMeasurement> updater) {
     this.updater = updater;
     return getThis();
   }

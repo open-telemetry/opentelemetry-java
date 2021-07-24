@@ -5,10 +5,15 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import java.util.function.Consumer;
+
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
+import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.metrics.ObservableLongMeasurement;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -22,7 +27,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
   }
 
   @Override
-  public void add(long increment, Labels labels) {
+  public void add(long increment, Attributes labels, Context context) {
     AggregatorHandle<?> aggregatorHandle = acquireHandle(labels);
     try {
       if (increment < 0) {
@@ -35,12 +40,17 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
   }
 
   @Override
-  public void add(long increment) {
-    add(increment, Labels.empty());
+  public void add(long increment, Attributes attributes) {
+    add(increment, attributes, Context.current());
   }
 
   @Override
-  public BoundLongCounter bind(Labels labels) {
+  public void add(long increment) {
+    add(increment, Attributes.empty());
+  }
+
+  @Override
+  public BoundLongCounter bind(Attributes labels) {
     return new BoundInstrument(acquireHandle(labels));
   }
 
@@ -52,11 +62,16 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
     }
 
     @Override
-    public void add(long increment) {
+    public void add(long increment, Context context) {
       if (increment < 0) {
         throw new IllegalArgumentException("Counters can only increase");
       }
       aggregatorHandle.recordLong(increment);
+    }
+
+    @Override
+    public void add(long increment) {
+      add(increment, Context.current());
     }
 
     @Override
@@ -65,29 +80,46 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
     }
   }
 
-  static final class Builder extends AbstractSynchronousInstrumentBuilder<Builder>
+  static final class Builder extends AbstractInstrumentBuilder<Builder>
       implements LongCounterBuilder {
 
-    Builder(
-        String name,
+        Builder(
+          String name,
+          MeterProviderSharedState meterProviderSharedState,
+          MeterSharedState meterSharedState) {
+            this(meterProviderSharedState, meterSharedState, name, "", "1");
+      }
+  
+      Builder(
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(
-          name,
-          InstrumentType.COUNTER,
-          InstrumentValueType.LONG,
-          meterProviderSharedState,
-          meterSharedState);
-    }
+        MeterSharedState sharedState,
+        String name,
+        String description,
+        String unit
+      ) {
+        super(meterProviderSharedState, sharedState, name, description, unit);
+      }
 
     @Override
-    Builder getThis() {
+    protected Builder getThis() {
       return this;
     }
 
     @Override
     public LongCounterSdk build() {
-      return buildInstrument(LongCounterSdk::new);
+      return buildSynchronousInstrument(InstrumentType.COUNTER,
+      InstrumentValueType.LONG, LongCounterSdk::new);
+    }
+
+    @Override
+    public DoubleCounterBuilder ofDoubles() {
+      return swapBuilder(DoubleCounterSdk.Builder::new);
+    }
+
+    @Override
+    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
+      // TODO Auto-generated method stub
+      
     }
   }
 }

@@ -5,17 +5,19 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.BoundDoubleValueRecorder;
-import io.opentelemetry.api.metrics.DoubleValueRecorder;
-import io.opentelemetry.api.metrics.DoubleValueRecorderBuilder;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.BoundDoubleHistogram;
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
+import io.opentelemetry.api.metrics.LongHistogramBuilder;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
 final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
-    implements DoubleValueRecorder {
+    implements DoubleHistogram {
 
   private DoubleValueRecorderSdk(
       InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
@@ -23,7 +25,7 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
   }
 
   @Override
-  public void record(double value, Labels labels) {
+  public void record(double value, Attributes labels, Context context) {
     AggregatorHandle<?> aggregatorHandle = acquireHandle(labels);
     try {
       aggregatorHandle.recordDouble(value);
@@ -33,16 +35,21 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
   }
 
   @Override
-  public void record(double value) {
-    record(value, Labels.empty());
+  public void record(double value, Attributes labels) {
+    record(value, labels, Context.current());
   }
 
   @Override
-  public BoundDoubleValueRecorder bind(Labels labels) {
+  public void record(double value) {
+    record(value, Attributes.empty());
+  }
+
+  @Override
+  public BoundDoubleHistogram bind(Attributes labels) {
     return new BoundInstrument(acquireHandle(labels));
   }
 
-  static final class BoundInstrument implements BoundDoubleValueRecorder {
+  static final class BoundInstrument implements BoundDoubleHistogram {
     private final AggregatorHandle<?> aggregatorHandle;
 
     BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
@@ -50,8 +57,13 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
     }
 
     @Override
-    public void record(double value) {
+    public void record(double value, Context context) {
       aggregatorHandle.recordDouble(value);
+    }
+
+    @Override
+    public void record(double value) {
+      record(value, Context.current());
     }
 
     @Override
@@ -61,29 +73,41 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
   }
 
   static final class Builder
-      extends AbstractSynchronousInstrumentBuilder<DoubleValueRecorderSdk.Builder>
-      implements DoubleValueRecorderBuilder {
+      extends AbstractInstrumentBuilder<DoubleValueRecorderSdk.Builder>
+      implements DoubleHistogramBuilder {
 
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
-      super(
-          name,
-          InstrumentType.VALUE_RECORDER,
-          InstrumentValueType.DOUBLE,
-          meterProviderSharedState,
-          meterSharedState);
+          this(meterProviderSharedState, meterSharedState, name, "", "1");
     }
 
+    Builder(
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState sharedState,
+      String name,
+      String description,
+      String unit
+    ) {
+      super(meterProviderSharedState, sharedState, name, description, unit);
+    }
+
+
     @Override
-    Builder getThis() {
+    protected Builder getThis() {
       return this;
     }
 
     @Override
     public DoubleValueRecorderSdk build() {
-      return buildInstrument(DoubleValueRecorderSdk::new);
+      return buildSynchronousInstrument(InstrumentType.VALUE_RECORDER,
+      InstrumentValueType.DOUBLE, DoubleValueRecorderSdk::new);
+    }
+
+    @Override
+    public LongHistogramBuilder ofLongs() {
+      return swapBuilder(LongValueRecorderSdk.Builder::new);
     }
   }
 }

@@ -11,10 +11,12 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.function.BiFunction;
 
 abstract class AbstractSynchronousInstrumentBuilder<
-        B extends AbstractSynchronousInstrumentBuilder<?>>
-    extends AbstractInstrument.Builder<B> {
+        B extends AbstractSynchronousInstrumentBuilder<?>> {
   private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
+  private final String instrumentName;
+  private String description;
+  private String unit;
 
   AbstractSynchronousInstrumentBuilder(
       String name,

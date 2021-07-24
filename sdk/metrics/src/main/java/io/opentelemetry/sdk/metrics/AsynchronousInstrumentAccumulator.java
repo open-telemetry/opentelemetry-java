@@ -5,7 +5,9 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.AsynchronousInstrument;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
+import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -25,19 +27,16 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor,
-      @Nullable Consumer<AsynchronousInstrument.DoubleResult> metricUpdater) {
+      Consumer<ObservableDoubleMeasurement> metricUpdater) {
     Aggregator<T> aggregator =
         getAggregator(meterProviderSharedState, meterSharedState, descriptor);
     InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos());
-    // TODO: Decide what to do with null updater.
-    if (metricUpdater == null) {
-      return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
-    }
 
     LabelsProcessor labelsProcessor =
         getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
-    AsynchronousInstrument.DoubleResult result =
+        // TODO: fix
+    ObservableDoubleMeasurement result =
         (value, labels) ->
             instrumentProcessor.batch(
                 labelsProcessor.onLabelsBound(Context.current(), labels),
@@ -51,24 +50,29 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor,
-      @Nullable Consumer<AsynchronousInstrument.LongResult> metricUpdater) {
+      Consumer<ObservableLongMeasurement> metricUpdater) {
     Aggregator<T> aggregator =
         getAggregator(meterProviderSharedState, meterSharedState, descriptor);
-    InstrumentProcessor<T> instrumentProcessor =
+    final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos());
-    // TODO: Decide what to do with null updater.
-    if (metricUpdater == null) {
-      return new AsynchronousInstrumentAccumulator(instrumentProcessor, () -> {});
-    }
 
-    LabelsProcessor labelsProcessor =
+    final LabelsProcessor labelsProcessor =
         getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
-    AsynchronousInstrument.LongResult result =
-        (value, labels) ->
+    final ObservableLongMeasurement result = new ObservableLongMeasurement() {
+
+      @Override
+      public void observe(long value, Attributes attributes) {
             instrumentProcessor.batch(
                 labelsProcessor.onLabelsBound(Context.current(), labels),
                 aggregator.accumulateLong(value));
+      }
 
+      @Override
+      public void observe(long value) {
+        observe(value, Attributes.empty());        
+      }
+
+    };
     return new AsynchronousInstrumentAccumulator(
         instrumentProcessor, () -> metricUpdater.accept(result));
   }

@@ -52,13 +52,6 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
   }
 
   @Override
-  public Meter get(String instrumentationName, String instrumentationVersion) {
-    return meterBuilder(instrumentationName)
-        .setInstrumentationVersion(instrumentationVersion)
-        .build();
-  }
-
-  @Override
   public MeterBuilder meterBuilder(@Nullable String instrumentationName) {
     if (instrumentationName == null || instrumentationName.isEmpty()) {
       LOGGER.fine("Meter requested without instrumentation name.");
