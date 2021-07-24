@@ -15,17 +15,17 @@ public interface DoubleGaugeBuilder {
    * <p>Description stirngs should follw the instrument description rules:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description
    */
-  public DoubleGaugeBuilder setDescription(String description);
+  DoubleGaugeBuilder setDescription(String description);
   /**
    * Set the unit of measure for this instrument.
    *
    * <p>Unit strings should follow the instrument unit rules:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit
    */
-  public DoubleGaugeBuilder setUnit(String unit);
+  DoubleGaugeBuilder setUnit(String unit);
 
   /** Sets the gauge for recording {@code long} values. */
-  public LongGaugeBuilder ofLongs();
+  LongGaugeBuilder ofLongs();
 
   /**
    * Builds this asynchronous insturment with the given callback.
@@ -34,5 +34,5 @@ public interface DoubleGaugeBuilder {
    *
    * @param callback A state-capturing callback used to observe values on-demand.
    */
-  public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback);
+  void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback);
 }

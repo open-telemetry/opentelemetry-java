@@ -13,22 +13,22 @@ public interface DoubleHistogramBuilder {
    * <p>Description stirngs should follw the instrument description rules:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description
    */
-  public DoubleHistogramBuilder setDescription(String description);
+  DoubleHistogramBuilder setDescription(String description);
   /**
    * Set the unit of measure for this instrument.
    *
    * <p>Unit strings should follow the instrument unit rules:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit
    */
-  public DoubleHistogramBuilder setUnit(String unit);
+  DoubleHistogramBuilder setUnit(String unit);
 
   /** Sets the counter for recording {@code long} values. */
-  public LongHistogramBuilder ofLongs();
+  LongHistogramBuilder ofLongs();
 
   /**
    * Builds and returns a {@code DoubleHistogram} with the desired options.
    *
    * @return a {@code DoubleHistogram} with the desired options.
    */
-  public DoubleHistogram build();
+  DoubleHistogram build();
 }

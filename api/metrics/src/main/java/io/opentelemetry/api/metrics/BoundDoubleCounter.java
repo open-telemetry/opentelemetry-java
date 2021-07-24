@@ -19,14 +19,14 @@ public interface BoundDoubleCounter {
    *
    * @param value The increment amount. MUST be non-negative.
    */
-  public void add(double value);
+  void add(double value);
   /**
    * Record a value with prebound attributes.
    *
    * @param value The increment amount. MUST be non-negative.
    * @param context The explicit context to associate with this measurement.
    */
-  public void add(double value, Context context);
+  void add(double value, Context context);
 
-  public void unbind();
+  void unbind();
 }

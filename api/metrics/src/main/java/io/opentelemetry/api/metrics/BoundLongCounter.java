@@ -19,14 +19,14 @@ public interface BoundLongCounter {
    *
    * @param value The increment amount. MUST be non-negative.
    */
-  public void add(long value);
+  void add(long value);
   /**
    * Record a value with prebound attributes.
    *
    * @param value The increment amount. MUST be non-negative.
    * @param context The explicit context to associate with this measurement.
    */
-  public void add(long value, Context context);
+  void add(long value, Context context);
 
-  public void unbind();
+  void unbind();
 }

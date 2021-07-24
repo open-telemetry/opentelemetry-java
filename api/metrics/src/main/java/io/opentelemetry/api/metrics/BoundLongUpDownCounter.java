@@ -17,7 +17,7 @@ public interface BoundLongUpDownCounter {
    * @param value The increment amount. May be positive, negative or zero.
    * @param context The explicit context to associate with this measurement.
    */
-  public void add(long value, Context context);
+  void add(long value, Context context);
   /**
    * Reecord a value with pre-bound attributes.
    *
@@ -26,7 +26,7 @@ public interface BoundLongUpDownCounter {
    *
    * @param value The increment amount. May be positive, negative or zero.
    */
-  public void add(long value);
+  void add(long value);
 
-  public void unbind();
+  void unbind();
 }

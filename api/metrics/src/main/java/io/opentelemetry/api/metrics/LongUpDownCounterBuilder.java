@@ -15,24 +15,24 @@ public interface LongUpDownCounterBuilder {
    * <p>Description stirngs should follw the instrument description rules:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description
    */
-  public LongUpDownCounterBuilder setDescription(String description);
+  LongUpDownCounterBuilder setDescription(String description);
   /**
    * Set the unit of measure for this instrument.
    *
    * <p>Unit strings should follow the instrument unit rules:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit
    */
-  public LongUpDownCounterBuilder setUnit(String unit);
+  LongUpDownCounterBuilder setUnit(String unit);
 
   /** Sets the counter for recording {@code double} values. */
-  public DoubleUpDownCounterBuilder ofDoubles();
+  DoubleUpDownCounterBuilder ofDoubles();
 
   /**
    * Builds and returns a {@code LongCounter} with the desired options.
    *
    * @return a {@code LongCounter} with the desired options.
    */
-  public LongUpDownCounter build();
+  LongUpDownCounter build();
 
   /**
    * Builds this asynchronous insturment with the given callback.
@@ -41,5 +41,5 @@ public interface LongUpDownCounterBuilder {
    *
    * @param callback A state-capturing callback used to observe values on-demand.
    */
-  public void buildWithCallback(Consumer<ObservableLongMeasurement> callback);
+  void buildWithCallback(Consumer<ObservableLongMeasurement> callback);
 }

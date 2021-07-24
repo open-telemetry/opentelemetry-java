@@ -19,7 +19,7 @@ public interface LongCounter extends Counter {
    * @param attributes A set of attributes to associate with the count.
    * @param context The explicit context to associate with this measurement.
    */
-  public void add(long value, Attributes attributes, Context context);
+  void add(long value, Attributes attributes, Context context);
   /**
    * Record a value with a set of attributes.
    *
@@ -29,7 +29,7 @@ public interface LongCounter extends Counter {
    * @param value The increment amount. MUST be non-negative.
    * @param attributes A set of attributes to associate with the count.
    */
-  public void add(long value, Attributes attributes);
+  void add(long value, Attributes attributes);
   /**
    * Reecord a value.
    *
@@ -38,11 +38,11 @@ public interface LongCounter extends Counter {
    *
    * @param value The increment amount. MUST be non-negative.
    */
-  public void add(long value);
+  void add(long value);
 
   /**
    * Construct a bound version of this instrument where all recorded values use the given
    * attributes.
    */
-  public BoundLongCounter bind(Attributes attributes);
+  BoundLongCounter bind(Attributes attributes);
 }

@@ -17,7 +17,7 @@ public interface BoundLongHistogram {
    * @param value The amount of the measurement.
    * @param context The explicit context to associate with this measurement.
    */
-  public void record(long value, Context context);
+  void record(long value, Context context);
   /**
    * Record a value with a pre-bound set of attributes.
    *
@@ -26,7 +26,7 @@ public interface BoundLongHistogram {
    *
    * @param value The amount of the measurement.
    */
-  public void record(long value);
+  void record(long value);
 
-  public void unbind();
+  void unbind();
 }

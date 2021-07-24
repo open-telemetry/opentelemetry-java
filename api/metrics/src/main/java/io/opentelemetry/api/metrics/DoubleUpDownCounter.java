@@ -19,7 +19,7 @@ public interface DoubleUpDownCounter extends UpDownCounter {
    * @param attributes A set of attributes to associate with the count.
    * @param context The explicit context to associate with this measurement.
    */
-  public void add(double value, Attributes attributes, Context context);
+  void add(double value, Attributes attributes, Context context);
   /**
    * Record a value with a set of attributes.
    *
@@ -29,7 +29,7 @@ public interface DoubleUpDownCounter extends UpDownCounter {
    * @param value The increment amount. May be positive, negative or zero.
    * @param attributes A set of attributes to associate with the count.
    */
-  public void add(double value, Attributes attributes);
+  void add(double value, Attributes attributes);
   /**
    * Reecord a value.
    *
@@ -38,11 +38,11 @@ public interface DoubleUpDownCounter extends UpDownCounter {
    *
    * @param value The increment amount. May be positive, negative or zero.
    */
-  public void add(double value);
+  void add(double value);
 
   /**
    * Construct a bound version of this instrument where all recorded values use the given
    * attributes.
    */
-  public BoundDoubleUpDownCounter bind(Attributes attributes);
+  BoundDoubleUpDownCounter bind(Attributes attributes);
 }

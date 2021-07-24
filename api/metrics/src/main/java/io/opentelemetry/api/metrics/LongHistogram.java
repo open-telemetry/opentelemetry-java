@@ -19,7 +19,7 @@ public interface LongHistogram extends Histogram {
    * @param attributes A set of attributes to associate with the count.
    * @param context The explicit context to associate with this measurement.
    */
-  public void record(long value, Attributes attributes, Context context);
+  void record(long value, Attributes attributes, Context context);
   /**
    * Record a value with a set of attributes.
    *
@@ -29,7 +29,7 @@ public interface LongHistogram extends Histogram {
    * @param value The amount of the measurement.
    * @param attributes A set of attributes to associate with the count.
    */
-  public void record(long value, Attributes attributes);
+  void record(long value, Attributes attributes);
   /**
    * Record a value.
    *
@@ -38,11 +38,11 @@ public interface LongHistogram extends Histogram {
    *
    * @param value The amount of the measurement.
    */
-  public void record(long value);
+  void record(long value);
 
   /**
    * Construct a bound version of this instrument where all recorded values use the given
    * attributes.
    */
-  public BoundLongHistogram bind(Attributes attributes);
+  BoundLongHistogram bind(Attributes attributes);
 }

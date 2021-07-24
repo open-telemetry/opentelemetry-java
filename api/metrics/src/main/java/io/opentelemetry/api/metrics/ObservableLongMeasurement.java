@@ -15,11 +15,11 @@ public interface ObservableLongMeasurement extends ObservableMeasurement {
    * @param value The measurement amount. MUST be non-negative.
    * @param attributes A set of attributes to associate with the count.
    */
-  public void observe(long value, Attributes attributes);
+  void observe(long value, Attributes attributes);
   /**
    * Reecord a measurement.
    *
    * @param value The measurement amount. MUST be non-negative.
    */
-  public void observe(long value);
+  void observe(long value);
 }
