@@ -9,7 +9,6 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -34,27 +33,14 @@ class LongUpDownSumObserverSdkTest {
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
 
   @Test
-  void collectMetrics_NoCallback() {
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-    sdkMeterProvider
-        .get(getClass().getName())
-        .longUpDownSumObserverBuilder("testObserver")
-        .setDescription("My own LongUpDownSumObserver")
-        .setUnit("ms")
-        .build();
-    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
-  }
-
-  @Test
   void collectMetrics_NoRecords() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     sdkMeterProvider
         .get(getClass().getName())
-        .longUpDownSumObserverBuilder("testObserver")
+        .upDownCounterBuilder("testObserver")
         .setDescription("My own LongUpDownSumObserver")
         .setUnit("ms")
-        .setUpdater(result -> {})
-        .build();
+        .buildWithCallback(result -> {});
     assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
@@ -64,9 +50,9 @@ class LongUpDownSumObserverSdkTest {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     sdkMeterProvider
         .get(getClass().getName())
-        .longUpDownSumObserverBuilder("testObserver")
-        .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
-        .build();
+        .upDownCounterBuilder("testObserver")
+        .buildWithCallback(
+            result -> result.observe(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
@@ -127,9 +113,9 @@ class LongUpDownSumObserverSdkTest {
             .build();
     sdkMeterProvider
         .get(getClass().getName())
-        .longUpDownSumObserverBuilder("testObserver")
-        .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
-        .build();
+        .upDownCounterBuilder("testObserver")
+        .buildWithCallback(
+            result -> result.observe(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(

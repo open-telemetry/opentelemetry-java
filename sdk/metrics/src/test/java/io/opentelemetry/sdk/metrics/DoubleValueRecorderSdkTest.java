@@ -10,10 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundDoubleValueRecorder;
-import io.opentelemetry.api.metrics.DoubleValueRecorder;
+import io.opentelemetry.api.metrics.BoundDoubleHistogram;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
@@ -42,24 +41,23 @@ class DoubleValueRecorderSdkTest {
 
   @Test
   void record_PreventNullLabels() {
-    assertThatThrownBy(
-            () -> sdkMeter.doubleValueRecorderBuilder("testRecorder").build().record(1.0, null))
+    assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").build().record(1.0, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThatThrownBy(() -> sdkMeter.doubleValueRecorderBuilder("testRecorder").build().bind(null))
+    assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").build().bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleValueRecorder doubleRecorder =
-        sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
-    BoundDoubleValueRecorder bound = doubleRecorder.bind(Labels.of("key", "value"));
+    DoubleHistogram doubleRecorder = sdkMeter.histogramBuilder("testRecorder").build();
+    BoundDoubleHistogram bound =
+        doubleRecorder.bind(Attributes.builder().put("key", "value").build());
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
@@ -69,14 +67,14 @@ class DoubleValueRecorderSdkTest {
 
   @Test
   void collectMetrics_WithEmptyLabel() {
-    DoubleValueRecorder doubleRecorder =
+    DoubleHistogram doubleRecorder =
         sdkMeter
-            .doubleValueRecorderBuilder("testRecorder")
+            .histogramBuilder("testRecorder")
             .setDescription("description")
             .setUnit("ms")
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    doubleRecorder.record(12d, Labels.empty());
+    doubleRecorder.record(12d, Attributes.empty());
     doubleRecorder.record(12d);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
@@ -100,18 +98,17 @@ class DoubleValueRecorderSdkTest {
   @Test
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    DoubleValueRecorder doubleRecorder =
-        sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
-    BoundDoubleValueRecorder bound = doubleRecorder.bind(Labels.of("K", "V"));
+    DoubleHistogram doubleRecorder = sdkMeter.histogramBuilder("testRecorder").build();
+    BoundDoubleHistogram bound = doubleRecorder.bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
-      doubleRecorder.record(12.1d, Labels.empty());
+      doubleRecorder.record(12.1d, Attributes.empty());
       bound.record(123.3d);
-      doubleRecorder.record(-13.1d, Labels.empty());
+      doubleRecorder.record(-13.1d, Attributes.empty());
       // Advancing time here should not matter.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321.5d);
-      doubleRecorder.record(-121.5d, Labels.of("K", "V"));
+      doubleRecorder.record(-121.5d, Attributes.builder().put("K", "V").build());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .containsExactly(
               MetricData.createDoubleSummary(
@@ -140,7 +137,7 @@ class DoubleValueRecorderSdkTest {
       // Repeat to prove we don't keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222d);
-      doubleRecorder.record(17d, Labels.empty());
+      doubleRecorder.record(17d, Attributes.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .containsExactly(
               MetricData.createDoubleSummary(
@@ -172,8 +169,7 @@ class DoubleValueRecorderSdkTest {
 
   @Test
   void stressTest() {
-    final DoubleValueRecorder doubleRecorder =
-        sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
+    final DoubleHistogram doubleRecorder = sdkMeter.histogramBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -188,7 +184,10 @@ class DoubleValueRecorderSdkTest {
               new DoubleValueRecorderSdkTest.OperationUpdaterDirectCall(doubleRecorder, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterWithBinding(doubleRecorder.bind(Labels.of("K", "V")))));
+              1_000,
+              2,
+              new OperationUpdaterWithBinding(
+                  doubleRecorder.bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -215,8 +214,7 @@ class DoubleValueRecorderSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleValueRecorder doubleRecorder =
-        sdkMeter.doubleValueRecorderBuilder("testRecorder").build();
+    final DoubleHistogram doubleRecorder = sdkMeter.histogramBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -235,7 +233,8 @@ class DoubleValueRecorderSdkTest {
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new OperationUpdaterWithBinding(doubleRecorder.bind(Labels.of(keys[i], values[i])))));
+              new OperationUpdaterWithBinding(
+                  doubleRecorder.bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
@@ -280,9 +279,9 @@ class DoubleValueRecorderSdkTest {
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
-    private final BoundDoubleValueRecorder boundDoubleValueRecorder;
+    private final BoundDoubleHistogram boundDoubleValueRecorder;
 
-    private OperationUpdaterWithBinding(BoundDoubleValueRecorder boundDoubleValueRecorder) {
+    private OperationUpdaterWithBinding(BoundDoubleHistogram boundDoubleValueRecorder) {
       this.boundDoubleValueRecorder = boundDoubleValueRecorder;
     }
 
@@ -298,12 +297,12 @@ class DoubleValueRecorderSdkTest {
   }
 
   private static class OperationUpdaterDirectCall extends OperationUpdater {
-    private final DoubleValueRecorder doubleValueRecorder;
+    private final DoubleHistogram doubleValueRecorder;
     private final String key;
     private final String value;
 
     private OperationUpdaterDirectCall(
-        DoubleValueRecorder doubleValueRecorder, String key, String value) {
+        DoubleHistogram doubleValueRecorder, String key, String value) {
       this.doubleValueRecorder = doubleValueRecorder;
       this.key = key;
       this.value = value;
@@ -311,7 +310,7 @@ class DoubleValueRecorderSdkTest {
 
     @Override
     void update() {
-      doubleValueRecorder.record(9.0, Labels.of(key, value));
+      doubleValueRecorder.record(9.0, Attributes.builder().put(key, value).build());
     }
 
     @Override

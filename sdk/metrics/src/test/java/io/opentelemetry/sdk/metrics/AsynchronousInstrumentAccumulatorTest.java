@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
@@ -35,7 +35,7 @@ public class AsynchronousInstrumentAccumulatorTest {
             // note: can't convert to a lambda here because Mockito gets grumpy
             new LabelsProcessor() {
               @Override
-              public Labels onLabelsBound(Context ctx, Labels labels) {
+              public Attributes onLabelsBound(Context ctx, Attributes labels) {
                 return labels.toBuilder().build();
               }
             });
@@ -67,9 +67,9 @@ public class AsynchronousInstrumentAccumulatorTest {
                 "unit",
                 InstrumentType.VALUE_OBSERVER,
                 InstrumentValueType.DOUBLE),
-            value -> value.observe(1.0, Labels.empty()))
+            value -> value.observe(1.0, Attributes.empty()))
         .collectAll(testClock.nanoTime());
-    Mockito.verify(spyLabelProcessor).onLabelsBound(Context.current(), Labels.empty());
+    Mockito.verify(spyLabelProcessor).onLabelsBound(Context.current(), Attributes.empty());
   }
 
   @Test
@@ -83,8 +83,8 @@ public class AsynchronousInstrumentAccumulatorTest {
                 "unit",
                 InstrumentType.VALUE_OBSERVER,
                 InstrumentValueType.LONG),
-            value -> value.observe(1, Labels.empty()))
+            value -> value.observe(1, Attributes.empty()))
         .collectAll(testClock.nanoTime());
-    Mockito.verify(spyLabelProcessor).onLabelsBound(Context.current(), Labels.empty());
+    Mockito.verify(spyLabelProcessor).onLabelsBound(Context.current(), Attributes.empty());
   }
 }

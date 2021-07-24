@@ -10,13 +10,12 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
-import io.opentelemetry.api.metrics.DoubleValueRecorder;
 import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
-import io.opentelemetry.api.metrics.LongValueRecorder;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -54,22 +53,22 @@ public class SdkMeterProviderTest {
   void collectAllSyncInstruments() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
-    LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
-    longCounter.add(10, Labels.empty());
+    LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
+    longCounter.add(10, Attributes.empty());
     LongUpDownCounter longUpDownCounter =
-        sdkMeter.longUpDownCounterBuilder("testLongUpDownCounter").build();
-    longUpDownCounter.add(-10, Labels.empty());
-    LongValueRecorder longValueRecorder =
-        sdkMeter.longValueRecorderBuilder("testLongValueRecorder").build();
-    longValueRecorder.record(10, Labels.empty());
-    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testDoubleCounter").build();
-    doubleCounter.add(10.1, Labels.empty());
+        sdkMeter.upDownCounterBuilder("testLongUpDownCounter").build();
+    longUpDownCounter.add(-10, Attributes.empty());
+    LongHistogram longValueRecorder =
+        sdkMeter.histogramBuilder("testLongValueRecorder").ofLongs().build();
+    longValueRecorder.record(10, Attributes.empty());
+    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testDoubleCounter").ofDoubles().build();
+    doubleCounter.add(10.1, Attributes.empty());
     DoubleUpDownCounter doubleUpDownCounter =
-        sdkMeter.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
-    doubleUpDownCounter.add(-10.1, Labels.empty());
-    DoubleValueRecorder doubleValueRecorder =
-        sdkMeter.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
-    doubleValueRecorder.record(10.1, Labels.empty());
+        sdkMeter.upDownCounterBuilder("testDoubleUpDownCounter").ofDoubles().build();
+    doubleUpDownCounter.add(-10.1, Attributes.empty());
+    DoubleHistogram doubleValueRecorder =
+        sdkMeter.histogramBuilder("testDoubleValueRecorder").build();
+    doubleValueRecorder.record(10.1, Attributes.empty());
 
     assertThat(sdkMeterProvider.collectAllMetrics())
         .allSatisfy(
@@ -192,8 +191,8 @@ public class SdkMeterProviderTest {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
 
-    LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
-    longCounter.add(10, Labels.empty());
+    LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
+    longCounter.add(10, Attributes.empty());
     testClock.advance(Duration.ofNanos(50));
 
     assertThat(sdkMeterProvider.collectAllMetrics())
@@ -215,7 +214,7 @@ public class SdkMeterProviderTest {
                                 .hasAttributes(Attributes.empty())
                                 .hasValue(10)));
 
-    longCounter.add(10, Labels.empty());
+    longCounter.add(10, Attributes.empty());
     testClock.advance(Duration.ofNanos(50));
 
     assertThat(sdkMeterProvider.collectAllMetrics())
@@ -244,22 +243,22 @@ public class SdkMeterProviderTest {
         sdkMeterProviderBuilder, AggregatorFactory.count(AggregationTemporality.DELTA));
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
-    LongCounter longCounter = sdkMeter.longCounterBuilder("testLongCounter").build();
-    longCounter.add(10, Labels.empty());
+    LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
+    longCounter.add(10, Attributes.empty());
     LongUpDownCounter longUpDownCounter =
-        sdkMeter.longUpDownCounterBuilder("testLongUpDownCounter").build();
-    longUpDownCounter.add(-10, Labels.empty());
-    LongValueRecorder longValueRecorder =
-        sdkMeter.longValueRecorderBuilder("testLongValueRecorder").build();
-    longValueRecorder.record(10, Labels.empty());
-    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testDoubleCounter").build();
-    doubleCounter.add(10.1, Labels.empty());
+        sdkMeter.upDownCounterBuilder("testLongUpDownCounter").build();
+    longUpDownCounter.add(-10, Attributes.empty());
+    LongHistogram longValueRecorder =
+        sdkMeter.histogramBuilder("testLongValueRecorder").ofLongs().build();
+    longValueRecorder.record(10, Attributes.empty());
+    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testDoubleCounter").ofDoubles().build();
+    doubleCounter.add(10.1, Attributes.empty());
     DoubleUpDownCounter doubleUpDownCounter =
-        sdkMeter.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
-    doubleUpDownCounter.add(-10.1, Labels.empty());
-    DoubleValueRecorder doubleValueRecorder =
-        sdkMeter.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
-    doubleValueRecorder.record(10.1, Labels.empty());
+        sdkMeter.upDownCounterBuilder("testDoubleUpDownCounter").ofDoubles().build();
+    doubleUpDownCounter.add(-10.1, Attributes.empty());
+    DoubleHistogram doubleValueRecorder =
+        sdkMeter.histogramBuilder("testDoubleValueRecorder").build();
+    doubleValueRecorder.record(10.1, Attributes.empty());
 
     testClock.advance(Duration.ofNanos(50));
 
@@ -293,12 +292,12 @@ public class SdkMeterProviderTest {
 
     testClock.advance(Duration.ofNanos(50));
 
-    longCounter.add(10, Labels.empty());
-    longUpDownCounter.add(-10, Labels.empty());
-    longValueRecorder.record(10, Labels.empty());
-    doubleCounter.add(10.1, Labels.empty());
-    doubleUpDownCounter.add(-10.1, Labels.empty());
-    doubleValueRecorder.record(10.1, Labels.empty());
+    longCounter.add(10, Attributes.empty());
+    longUpDownCounter.add(-10, Attributes.empty());
+    longValueRecorder.record(10, Attributes.empty());
+    doubleCounter.add(10.1, Attributes.empty());
+    doubleUpDownCounter.add(-10.1, Attributes.empty());
+    doubleValueRecorder.record(10.1, Attributes.empty());
 
     assertThat(sdkMeterProvider.collectAllMetrics())
         .allSatisfy(
@@ -335,30 +334,27 @@ public class SdkMeterProviderTest {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
-        .longSumObserverBuilder("testLongSumObserver")
-        .setUpdater(longResult -> longResult.observe(10, Labels.empty()))
-        .build();
+        .counterBuilder("testLongSumObserver")
+        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
     sdkMeter
-        .longUpDownSumObserverBuilder("testLongUpDownSumObserver")
-        .setUpdater(longResult -> longResult.observe(-10, Labels.empty()))
-        .build();
+        .upDownCounterBuilder("testLongUpDownSumObserver")
+        .buildWithCallback(longResult -> longResult.observe(-10, Attributes.empty()));
     sdkMeter
-        .longValueObserverBuilder("testLongValueObserver")
-        .setUpdater(longResult -> longResult.observe(10, Labels.empty()))
-        .build();
+        .gaugeBuilder("testLongValueObserver")
+        .ofLongs()
+        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
 
     sdkMeter
-        .doubleSumObserverBuilder("testDoubleSumObserver")
-        .setUpdater(doubleResult -> doubleResult.observe(10.1, Labels.empty()))
-        .build();
+        .counterBuilder("testDoubleSumObserver")
+        .ofDoubles()
+        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
     sdkMeter
-        .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver")
-        .setUpdater(doubleResult -> doubleResult.observe(-10.1, Labels.empty()))
-        .build();
+        .upDownCounterBuilder("testDoubleUpDownSumObserver")
+        .ofDoubles()
+        .buildWithCallback(doubleResult -> doubleResult.observe(-10.1, Attributes.empty()));
     sdkMeter
-        .doubleValueObserverBuilder("testDoubleValueObserver")
-        .setUpdater(doubleResult -> doubleResult.observe(10.1, Labels.empty()))
-        .build();
+        .gaugeBuilder("testDoubleValueObserver")
+        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
 
     assertThat(sdkMeterProvider.collectAllMetrics())
         .allSatisfy(
@@ -459,30 +455,27 @@ public class SdkMeterProviderTest {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
-        .longSumObserverBuilder("testLongSumObserver")
-        .setUpdater(longResult -> longResult.observe(10, Labels.empty()))
-        .build();
+        .counterBuilder("testLongSumObserver")
+        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
     sdkMeter
-        .longUpDownSumObserverBuilder("testLongUpDownSumObserver")
-        .setUpdater(longResult -> longResult.observe(-10, Labels.empty()))
-        .build();
+        .upDownCounterBuilder("testLongUpDownSumObserver")
+        .buildWithCallback(longResult -> longResult.observe(-10, Attributes.empty()));
     sdkMeter
-        .longValueObserverBuilder("testLongValueObserver")
-        .setUpdater(longResult -> longResult.observe(10, Labels.empty()))
-        .build();
+        .gaugeBuilder("testLongValueObserver")
+        .ofLongs()
+        .buildWithCallback(longResult -> longResult.observe(10, Attributes.empty()));
 
     sdkMeter
-        .doubleSumObserverBuilder("testDoubleSumObserver")
-        .setUpdater(doubleResult -> doubleResult.observe(10.1, Labels.empty()))
-        .build();
+        .counterBuilder("testDoubleSumObserver")
+        .ofDoubles()
+        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
     sdkMeter
-        .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver")
-        .setUpdater(doubleResult -> doubleResult.observe(-10.1, Labels.empty()))
-        .build();
+        .upDownCounterBuilder("testDoubleUpDownSumObserver")
+        .ofDoubles()
+        .buildWithCallback(doubleResult -> doubleResult.observe(-10.1, Attributes.empty()));
     sdkMeter
-        .doubleValueObserverBuilder("testDoubleValueObserver")
-        .setUpdater(doubleResult -> doubleResult.observe(10.1, Labels.empty()))
-        .build();
+        .gaugeBuilder("testDoubleValueObserver")
+        .buildWithCallback(doubleResult -> doubleResult.observe(10.1, Attributes.empty()));
 
     testClock.advance(Duration.ofNanos(50));
 

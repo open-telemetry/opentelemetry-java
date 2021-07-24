@@ -13,7 +13,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.resources.Resource;
@@ -35,22 +34,22 @@ class LongCounterSdkTest {
 
   @Test
   void add_PreventNullLabels() {
-    assertThatThrownBy(() -> sdkMeter.longCounterBuilder("testCounter").build().add(1, null))
+    assertThatThrownBy(() -> sdkMeter.counterBuilder("testCounter").build().add(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThatThrownBy(() -> sdkMeter.longCounterBuilder("testCounter").build().bind(null))
+    assertThatThrownBy(() -> sdkMeter.counterBuilder("testCounter").build().bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
-    BoundLongCounter bound = longCounter.bind(Labels.of("foo", "bar"));
+    LongCounter longCounter = sdkMeter.counterBuilder("Counter").build();
+    BoundLongCounter bound = longCounter.bind(Attributes.builder().put("foo", "bar").build());
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
@@ -62,13 +61,9 @@ class LongCounterSdkTest {
   @SuppressWarnings("unchecked")
   void collectMetrics_WithEmptyLabels() {
     LongCounter longCounter =
-        sdkMeter
-            .longCounterBuilder("testCounter")
-            .setDescription("description")
-            .setUnit("By")
-            .build();
+        sdkMeter.counterBuilder("testCounter").setDescription("description").setUnit("By").build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    longCounter.add(12, Labels.empty());
+    longCounter.add(12, Attributes.empty());
     longCounter.add(12);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
@@ -96,17 +91,17 @@ class LongCounterSdkTest {
   @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
-    BoundLongCounter bound = longCounter.bind(Labels.of("K", "V"));
+    LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
+    BoundLongCounter bound = longCounter.bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
-      longCounter.add(12, Labels.empty());
+      longCounter.add(12, Attributes.empty());
       bound.add(123);
-      longCounter.add(21, Labels.empty());
+      longCounter.add(21, Attributes.empty());
       // Advancing time here should not matter.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(321);
-      longCounter.add(111, Labels.of("K", "V"));
+      longCounter.add(111, Attributes.builder().put("K", "V").build());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
@@ -133,7 +128,7 @@ class LongCounterSdkTest {
       // Repeat to prove we keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(222);
-      longCounter.add(11, Labels.empty());
+      longCounter.add(11, Attributes.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
@@ -163,24 +158,24 @@ class LongCounterSdkTest {
 
   @Test
   void longCounterAdd_MonotonicityCheck() {
-    LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
+    LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
 
-    assertThatThrownBy(() -> longCounter.add(-45, Labels.empty()))
+    assertThatThrownBy(() -> longCounter.add(-45, Attributes.empty()))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void boundLongCounterAdd_MonotonicityCheck() {
-    LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
+    LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
 
-    assertThatThrownBy(() -> longCounter.bind(Labels.empty()).add(-9))
+    assertThatThrownBy(() -> longCounter.bind(Attributes.empty()).add(-9))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void stressTest() {
-    final LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
+    final LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -193,7 +188,10 @@ class LongCounterSdkTest {
               2_000, 1, new OperationUpdaterDirectCall(longCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterWithBinding(longCounter.bind(Labels.of("K", "V")))));
+              2_000,
+              1,
+              new OperationUpdaterWithBinding(
+                  longCounter.bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -224,7 +222,7 @@ class LongCounterSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongCounter longCounter = sdkMeter.longCounterBuilder("testCounter").build();
+    final LongCounter longCounter = sdkMeter.counterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -240,7 +238,8 @@ class LongCounterSdkTest {
           StressTestRunner.Operation.create(
               1_000,
               2,
-              new OperationUpdaterWithBinding(longCounter.bind(Labels.of(keys[i], values[i])))));
+              new OperationUpdaterWithBinding(
+                  longCounter.bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
@@ -301,7 +300,7 @@ class LongCounterSdkTest {
 
     @Override
     void update() {
-      longCounter.add(11, Labels.of(key, value));
+      longCounter.add(11, Attributes.builder().put(key, value).build());
     }
 
     @Override

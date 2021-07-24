@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,8 @@ class MinMaxSumCountAccumulationTest {
   }
 
   private static DoubleSummaryPointData getPoint(MinMaxSumCountAccumulation accumulation) {
-    DoubleSummaryPointData point = accumulation.toPoint(12345, 12358, Labels.of("key", "value"));
+    DoubleSummaryPointData point =
+        accumulation.toPoint(12345, 12358, Attributes.builder().put("key", "value").build());
     assertThat(point).isNotNull();
     assertThat(point.getStartEpochNanos()).isEqualTo(12345);
     assertThat(point.getEpochNanos()).isEqualTo(12358);
