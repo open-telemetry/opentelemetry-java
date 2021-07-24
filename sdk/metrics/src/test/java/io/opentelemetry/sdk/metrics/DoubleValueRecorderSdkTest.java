@@ -97,6 +97,7 @@ class DoubleValueRecorderSdkTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     DoubleHistogram doubleRecorder = sdkMeter.histogramBuilder("testRecorder").build();
@@ -111,58 +112,71 @@ class DoubleValueRecorderSdkTest {
       bound.record(321.5d);
       doubleRecorder.record(-121.5d, Attributes.builder().put("K", "V").build());
       assertThat(sdkMeterProvider.collectAllMetrics())
-          .containsExactly(
-              MetricData.createDoubleSummary(
-                  RESOURCE,
-                  INSTRUMENTATION_LIBRARY_INFO,
-                  "testRecorder",
-                  "",
-                  "1",
-                  DoubleSummaryData.create(
-                      Arrays.asList(
-                          DoubleSummaryPointData.create(
-                              startTime,
-                              testClock.now(),
-                              Attributes.builder().put("K", "V").build(),
-                              3,
-                              323.3d,
-                              valueAtPercentiles(-121.5d, 321.5d)),
-                          DoubleSummaryPointData.create(
-                              startTime,
-                              testClock.now(),
-                              Attributes.empty(),
-                              2,
-                              -1.0d,
-                              valueAtPercentiles(-13.1d, 12.1d))))));
+          .satisfiesExactly(
+              metric ->
+                  assertThat(metric)
+                      .hasResource(RESOURCE)
+                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasName("testRecorder")
+                      .hasDoubleSummary()
+                      .points()
+                      .allSatisfy(
+                          point ->
+                              assertThat(point)
+                                  .hasStartEpochNanos(startTime)
+                                  .hasEpochNanos(testClock.now()))
+                      .satisfiesExactlyInAnyOrder(
+                          point ->
+                              assertThat(point)
+                                  .hasCount(3)
+                                  .hasSum(323.3d)
+                                  .hasPercentileValues(
+                                      valueAtPercentiles(-121.5d, 321.5d)
+                                          .toArray(new ValueAtPercentile[0]))
+                                  .hasAttributes(Attributes.builder().put("K", "V").build()),
+                          point ->
+                              assertThat(point)
+                                  .hasCount(2)
+                                  .hasSum(-1.0d)
+                                  .hasPercentileValues(
+                                      valueAtPercentiles(-13.1d, 12.1d)
+                                          .toArray(new ValueAtPercentile[0]))
+                                  .hasAttributes(Attributes.empty())));
 
       // Repeat to prove we don't keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222d);
       doubleRecorder.record(17d, Attributes.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
-          .containsExactly(
-              MetricData.createDoubleSummary(
-                  RESOURCE,
-                  INSTRUMENTATION_LIBRARY_INFO,
-                  "testRecorder",
-                  "",
-                  "1",
-                  DoubleSummaryData.create(
-                      Arrays.asList(
-                          DoubleSummaryPointData.create(
-                              startTime + SECOND_NANOS,
-                              testClock.now(),
-                              Attributes.builder().put("K", "V").build(),
-                              1,
-                              222.0d,
-                              valueAtPercentiles(222.0, 222.0d)),
-                          DoubleSummaryPointData.create(
-                              startTime + SECOND_NANOS,
-                              testClock.now(),
-                              Attributes.empty(),
-                              1,
-                              17.0d,
-                              valueAtPercentiles(17d, 17d))))));
+          .satisfiesExactly(
+              metric ->
+                  assertThat(metric)
+                      .hasResource(RESOURCE)
+                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasName("testRecorder")
+                      .hasDoubleSummary()
+                      .points()
+                      .allSatisfy(
+                          point ->
+                              assertThat(point)
+                                  .hasStartEpochNanos(startTime + SECOND_NANOS)
+                                  .hasEpochNanos(testClock.now()))
+                      .satisfiesExactlyInAnyOrder(
+                          point ->
+                              assertThat(point)
+                                  .hasCount(1)
+                                  .hasSum(222)
+                                  .hasPercentileValues(
+                                      valueAtPercentiles(222, 222)
+                                          .toArray(new ValueAtPercentile[0]))
+                                  .hasAttributes(Attributes.builder().put("K", "V").build()),
+                          point ->
+                              assertThat(point)
+                                  .hasCount(1)
+                                  .hasSum(17)
+                                  .hasPercentileValues(
+                                      valueAtPercentiles(17, 17).toArray(new ValueAtPercentile[0]))
+                                  .hasAttributes(Attributes.empty())));
     } finally {
       bound.unbind();
     }
