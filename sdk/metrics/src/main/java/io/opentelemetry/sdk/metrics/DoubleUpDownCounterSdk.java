@@ -5,14 +5,18 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundDoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import java.util.function.Consumer;
 
 final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
     implements DoubleUpDownCounter {
@@ -23,7 +27,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
   }
 
   @Override
-  public void add(double increment, Labels labels) {
+  public void add(double increment, Attributes labels, Context context) {
     AggregatorHandle<?> aggregatorHandle = acquireHandle(labels);
     try {
       aggregatorHandle.recordDouble(increment);
@@ -33,12 +37,17 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
   }
 
   @Override
-  public void add(double increment) {
-    add(increment, Labels.empty());
+  public void add(double increment, Attributes attributes) {
+    add(increment, attributes, Context.current());
   }
 
   @Override
-  public BoundDoubleUpDownCounter bind(Labels labels) {
+  public void add(double increment) {
+    add(increment, Attributes.empty());
+  }
+
+  @Override
+  public BoundDoubleUpDownCounter bind(Attributes labels) {
     return new BoundInstrument(acquireHandle(labels));
   }
 
@@ -50,8 +59,13 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
     }
 
     @Override
-    public void add(double increment) {
+    public void add(double increment, Context context) {
       aggregatorHandle.recordDouble(increment);
+    }
+
+    @Override
+    public void add(double increment) {
+      add(increment, Context.current());
     }
 
     @Override
@@ -60,30 +74,45 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
     }
   }
 
-  static final class Builder
-      extends AbstractSynchronousInstrumentBuilder<DoubleUpDownCounterSdk.Builder>
+  static final class Builder extends AbstractInstrumentBuilder<DoubleUpDownCounterSdk.Builder>
       implements DoubleUpDownCounterBuilder {
 
     Builder(
-        String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(
-          name,
-          InstrumentType.UP_DOWN_COUNTER,
-          InstrumentValueType.DOUBLE,
-          meterProviderSharedState,
-          meterSharedState);
+        MeterSharedState meterSharedState,
+        String name) {
+      this(meterProviderSharedState, meterSharedState, name, "", "1");
+    }
+
+    Builder(
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState sharedState,
+        String name,
+        String description,
+        String unit) {
+      super(meterProviderSharedState, sharedState, name, description, unit);
     }
 
     @Override
-    Builder getThis() {
+    protected Builder getThis() {
       return this;
     }
 
     @Override
-    public DoubleUpDownCounterSdk build() {
-      return buildInstrument(DoubleUpDownCounterSdk::new);
+    public DoubleUpDownCounter build() {
+      return buildSynchronousInstrument(
+          InstrumentType.COUNTER, InstrumentValueType.DOUBLE, DoubleUpDownCounterSdk::new);
+    }
+
+    @Override
+    public LongUpDownCounterBuilder ofLongs() {
+      return swapBuilder(LongUpDownCounterSdk.Builder::new);
+    }
+
+    @Override
+    public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+      buildDoubleAsynchronousInstrument(
+          InstrumentType.UP_DOWN_SUM_OBSERVER, callback, DoubleUpDownSumObserverSdk::new);
     }
   }
 }

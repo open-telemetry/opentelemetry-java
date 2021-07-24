@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.auto.value.AutoValue;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;

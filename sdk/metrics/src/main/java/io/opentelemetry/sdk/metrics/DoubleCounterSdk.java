@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import java.util.function.Consumer;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundDoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -18,6 +16,7 @@ import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import java.util.function.Consumer;
 
 final class DoubleCounterSdk extends AbstractSynchronousInstrument implements DoubleCounter {
 
@@ -84,19 +83,18 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
       implements DoubleCounterBuilder {
 
     Builder(
-        String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-          this(meterProviderSharedState, meterSharedState, name, "", "1");
+        MeterSharedState meterSharedState,
+        String name) {
+      this(meterProviderSharedState, meterSharedState, name, "", "1");
     }
 
     Builder(
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState sharedState,
-      String name,
-      String description,
-      String unit
-    ) {
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState sharedState,
+        String name,
+        String description,
+        String unit) {
       super(meterProviderSharedState, sharedState, name, description, unit);
     }
 
@@ -107,8 +105,8 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
 
     @Override
     public DoubleCounterSdk build() {
-      return buildSynchronousInstrument(InstrumentType.COUNTER,
-      InstrumentValueType.DOUBLE,DoubleCounterSdk::new);
+      return buildSynchronousInstrument(
+          InstrumentType.COUNTER, InstrumentValueType.DOUBLE, DoubleCounterSdk::new);
     }
 
     @Override
@@ -118,8 +116,8 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
 
     @Override
     public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
-      // TODO: Async building
-      
+      buildDoubleAsynchronousInstrument(
+          InstrumentType.SUM_OBSERVER, callback, DoubleSumObserverSdk::new);
     }
   }
 }

@@ -45,21 +45,21 @@ final class SdkMeter implements Meter {
 
   @Override
   public LongCounterBuilder counterBuilder(String name) {
-    return new LongCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
+    return new LongCounterSdk.Builder(meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
   public LongUpDownCounterBuilder upDownCounterBuilder(String name) {
-    return new LongUpDownCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
+    return new LongUpDownCounterSdk.Builder(meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    return new DoubleValueRecorderSdk.Builder(name, meterProviderSharedState, meterSharedState);
+    return new DoubleValueRecorderSdk.Builder(meterProviderSharedState, meterSharedState, name);
   }
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    return new DoubleValueObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
+    return new DoubleValueObserverSdk.Builder(meterProviderSharedState, meterSharedState, name);
   }
 }

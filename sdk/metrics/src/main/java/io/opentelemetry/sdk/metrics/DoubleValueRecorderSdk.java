@@ -72,27 +72,24 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
     }
   }
 
-  static final class Builder
-      extends AbstractInstrumentBuilder<DoubleValueRecorderSdk.Builder>
+  static final class Builder extends AbstractInstrumentBuilder<DoubleValueRecorderSdk.Builder>
       implements DoubleHistogramBuilder {
 
     Builder(
-        String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-          this(meterProviderSharedState, meterSharedState, name, "", "1");
+        MeterSharedState meterSharedState,
+        String name) {
+      this(meterProviderSharedState, meterSharedState, name, "", "1");
     }
 
     Builder(
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState sharedState,
-      String name,
-      String description,
-      String unit
-    ) {
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState sharedState,
+        String name,
+        String description,
+        String unit) {
       super(meterProviderSharedState, sharedState, name, description, unit);
     }
-
 
     @Override
     protected Builder getThis() {
@@ -101,8 +98,8 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
 
     @Override
     public DoubleValueRecorderSdk build() {
-      return buildSynchronousInstrument(InstrumentType.VALUE_RECORDER,
-      InstrumentValueType.DOUBLE, DoubleValueRecorderSdk::new);
+      return buildSynchronousInstrument(
+          InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE, DoubleValueRecorderSdk::new);
     }
 
     @Override

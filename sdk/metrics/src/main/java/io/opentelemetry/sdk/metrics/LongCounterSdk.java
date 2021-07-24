@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import java.util.function.Consumer;
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.DoubleCounterBuilder;
@@ -18,6 +16,7 @@ import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import java.util.function.Consumer;
 
 final class LongCounterSdk extends AbstractSynchronousInstrument implements LongCounter {
 
@@ -83,22 +82,21 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
   static final class Builder extends AbstractInstrumentBuilder<Builder>
       implements LongCounterBuilder {
 
-        Builder(
-          String name,
-          MeterProviderSharedState meterProviderSharedState,
-          MeterSharedState meterSharedState) {
-            this(meterProviderSharedState, meterSharedState, name, "", "1");
-      }
-  
-      Builder(
+    Builder(
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState,
+        String name) {
+      this(meterProviderSharedState, meterSharedState, name, "", "1");
+    }
+
+    Builder(
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState sharedState,
         String name,
         String description,
-        String unit
-      ) {
-        super(meterProviderSharedState, sharedState, name, description, unit);
-      }
+        String unit) {
+      super(meterProviderSharedState, sharedState, name, description, unit);
+    }
 
     @Override
     protected Builder getThis() {
@@ -107,8 +105,8 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
 
     @Override
     public LongCounterSdk build() {
-      return buildSynchronousInstrument(InstrumentType.COUNTER,
-      InstrumentValueType.LONG, LongCounterSdk::new);
+      return buildSynchronousInstrument(
+          InstrumentType.COUNTER, InstrumentValueType.LONG, LongCounterSdk::new);
     }
 
     @Override
@@ -118,8 +116,8 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
 
     @Override
     public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      // TODO Auto-generated method stub
-      
+      buildLongAsynchronousInstrument(
+          InstrumentType.SUM_OBSERVER, callback, LongSumObserverSdk::new);
     }
   }
 }

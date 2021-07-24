@@ -16,8 +16,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
-final class LongValueRecorderSdk extends AbstractSynchronousInstrument
-    implements LongHistogram {
+final class LongValueRecorderSdk extends AbstractSynchronousInstrument implements LongHistogram {
 
   private LongValueRecorderSdk(
       InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
@@ -72,24 +71,22 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument
     }
   }
 
-  static final class Builder
-      extends AbstractInstrumentBuilder<LongValueRecorderSdk.Builder>
+  static final class Builder extends AbstractInstrumentBuilder<LongValueRecorderSdk.Builder>
       implements LongHistogramBuilder {
 
     Builder(
-        String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
+        MeterSharedState meterSharedState,
+        String name) {
       this(meterProviderSharedState, meterSharedState, name, "", "1");
     }
 
     Builder(
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState sharedState,
-      String name,
-      String description,
-      String unit
-    ) {
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState sharedState,
+        String name,
+        String description,
+        String unit) {
       super(meterProviderSharedState, sharedState, name, description, unit);
     }
 
@@ -101,9 +98,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument
     @Override
     public LongValueRecorderSdk build() {
       return buildSynchronousInstrument(
-        InstrumentType.VALUE_RECORDER,
-          InstrumentValueType.LONG,
-      LongValueRecorderSdk::new);
+          InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG, LongValueRecorderSdk::new);
     }
 
     @Override

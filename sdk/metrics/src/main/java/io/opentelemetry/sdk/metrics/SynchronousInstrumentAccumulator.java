@@ -80,7 +80,7 @@ final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
   List<MetricData> collectAll(long epochNanos) {
     collectLock.lock();
     try {
-      for (Map.Entry<Labels, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {
+      for (Map.Entry<Attributes, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {
         boolean unmappedEntry = entry.getValue().tryUnmap();
         if (unmappedEntry) {
           // If able to unmap then remove the record from the current Map. This can race with the

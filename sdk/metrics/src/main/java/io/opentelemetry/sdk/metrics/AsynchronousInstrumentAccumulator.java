@@ -16,7 +16,6 @@ import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 
 final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
   private final ReentrantLock collectLock = new ReentrantLock();
@@ -30,17 +29,26 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
     Aggregator<T> aggregator =
         getAggregator(meterProviderSharedState, meterSharedState, descriptor);
-    InstrumentProcessor<T> instrumentProcessor =
+    final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos());
 
-    LabelsProcessor labelsProcessor =
+    final LabelsProcessor labelsProcessor =
         getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
-        // TODO: fix
-    ObservableDoubleMeasurement result =
-        (value, labels) ->
+
+    final ObservableDoubleMeasurement result =
+        new ObservableDoubleMeasurement() {
+          @Override
+          public void observe(double value, Attributes attributes) {
             instrumentProcessor.batch(
-                labelsProcessor.onLabelsBound(Context.current(), labels),
+                labelsProcessor.onLabelsBound(Context.current(), attributes),
                 aggregator.accumulateDouble(value));
+          }
+
+          @Override
+          public void observe(double value) {
+            observe(value, Attributes.empty());
+          }
+        };
 
     return new AsynchronousInstrumentAccumulator(
         instrumentProcessor, () -> metricUpdater.accept(result));
@@ -58,21 +66,21 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
 
     final LabelsProcessor labelsProcessor =
         getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
-    final ObservableLongMeasurement result = new ObservableLongMeasurement() {
+    final ObservableLongMeasurement result =
+        new ObservableLongMeasurement() {
 
-      @Override
-      public void observe(long value, Attributes attributes) {
+          @Override
+          public void observe(long value, Attributes attributes) {
             instrumentProcessor.batch(
-                labelsProcessor.onLabelsBound(Context.current(), labels),
+                labelsProcessor.onLabelsBound(Context.current(), attributes),
                 aggregator.accumulateLong(value));
-      }
+          }
 
-      @Override
-      public void observe(long value) {
-        observe(value, Attributes.empty());        
-      }
-
-    };
+          @Override
+          public void observe(long value) {
+            observe(value, Attributes.empty());
+          }
+        };
     return new AsynchronousInstrumentAccumulator(
         instrumentProcessor, () -> metricUpdater.accept(result));
   }

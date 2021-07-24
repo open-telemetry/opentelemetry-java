@@ -22,9 +22,7 @@ final class MetricDataUtils {
     List<LongPointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(
-                LongPointData.create(
-                    startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(LongPointData.create(startEpochNanos, epochNanos, labels, accumulation)));
     return points;
   }
 
@@ -33,9 +31,7 @@ final class MetricDataUtils {
     List<DoublePointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(
-                DoublePointData.create(
-                    startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(DoublePointData.create(startEpochNanos, epochNanos, labels, accumulation)));
     return points;
   }
 
@@ -64,12 +60,7 @@ final class MetricDataUtils {
           }
           points.add(
               DoubleHistogramPointData.create(
-                  startEpochNanos,
-                  epochNanos,
-                  labels,
-                  aggregator.getSum(),
-                  boundaries,
-                  counts));
+                  startEpochNanos, epochNanos, labels, aggregator.getSum(), boundaries, counts));
         });
     return points;
   }
