@@ -16,8 +16,8 @@ import org.junit.jupiter.api.Test;
 /** Tests for the {@link AttributesProcessors} DSL-ish library. */
 public class AttributesProcessorsTest {
   @Test
-  public void filterKeys_removesKeys() {
-    AttributesProcessor processor = AttributesProcessors.filterKeys(Pattern.compile("test"));
+  public void filterKeysByPattern_removesKeys() {
+    AttributesProcessor processor = AttributesProcessors.filterKeysByPattern(Pattern.compile("test"));
 
     assertThat(
             processor.process(
@@ -69,9 +69,9 @@ public class AttributesProcessorsTest {
   }
 
   @Test
-  public void appendBaggageByKeys_works() {
+  public void appendBaggageByKeyPattern_works() {
     AttributesProcessor processor =
-        AttributesProcessors.appendBaggageByKeys(Pattern.compile("keep"));
+        AttributesProcessors.appendBaggageByKeyPattern(Pattern.compile("keep"));
     Baggage baggage = Baggage.builder().put("baggage", "value").put("keep", "baggage").build();
     Context context = Context.root().with(baggage);
 
@@ -86,7 +86,7 @@ public class AttributesProcessorsTest {
     // Baggage should be added, then all keys filtered.
     AttributesProcessor processor =
         AttributesProcessors.appendBaggage()
-            .then(AttributesProcessors.filterKeys(Pattern.compile("baggage")));
+            .then(AttributesProcessors.filterKeysByPattern(Pattern.compile("baggage")));
     Baggage baggage = Baggage.builder().put("baggage", "value").put("keep", "baggage").build();
     Context context = Context.root().with(baggage);
 

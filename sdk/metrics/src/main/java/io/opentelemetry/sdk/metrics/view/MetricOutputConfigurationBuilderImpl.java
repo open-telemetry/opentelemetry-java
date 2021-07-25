@@ -42,14 +42,14 @@ class MetricOutputConfigurationBuilderImpl implements MetricOutputConfigurationB
 
   @Override
   public MetricOutputConfigurationBuilder setAttributeKeyFilter(AttributeKey<?>... keys) {
-    AttributesProcessor filter = AttributesProcessors.filterKeys(/*TODO*/ null);
+    AttributesProcessor filter = AttributesProcessors.filterKeys(keys);
     this.currentProcessor = currentProcessor.then(filter);
     return this;
   }
 
   @Override
   public MetricOutputConfigurationBuilder setExtraDimensions(String... keys) {
-    AttributesProcessor append = AttributesProcessors.appendBaggageByKeys(/*TODO*/ null);
+    AttributesProcessor append = AttributesProcessors.appendBaggageByKeys(keys);
     this.currentProcessor = append.then(this.currentProcessor);
     return this;
   }
