@@ -1,12 +1,15 @@
-# OpenTelemetry Metrics API
+# OpenTelemetry Metrics SDK
 
-[![Javadocs][javadoc-image]][javadoc-url]
+The code in this directory is currently the legacy impelmentation of the previous experimental metrics SDK specification.
 
-* The code in this module is the implementation of the [experimental OpenTelemetry metrics signal][metrics-spec].
-* The default implementation of the interfaces in this module is in the OpenTelemetry metrics SDK module. 
-* The interfaces in this directory can be implemented to create alternative
-  implementations of the OpenTelemetry library.
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-api-metrics.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-api-metrics
-[metrics-spec]: https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md
+The following set of known issues will be fixed aas the new SDK specification stabilizes:
+
+- The names of SDK insturments do not line up with API instruments.
+- Baggage / Context are not available to metrics / views.
+- The View API still uses the term LabelsProcessor.
+- Only one exporter is allowed.
+- Histograms are generating summaries.
+- Exemplars are not sampled
+- The set of Aggregators goes well beyond the expected "stable" list and (likely) will have some moved to extensions.
+- There is no exposed `MetricProcessor` interface.
