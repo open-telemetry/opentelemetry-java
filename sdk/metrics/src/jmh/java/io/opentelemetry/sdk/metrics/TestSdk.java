@@ -9,7 +9,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.aggregator.ExemplarSampler;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
