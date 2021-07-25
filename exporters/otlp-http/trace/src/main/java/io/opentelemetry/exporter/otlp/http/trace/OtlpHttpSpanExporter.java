@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
+import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
@@ -132,7 +133,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
 
                 logger.log(
                     Level.WARNING,
-                    "Failed to export spans. Server responded with code "
+                    "Failed to export spans. Server responded with HTTP status code "
                         + code
                         + ". Error message: "
                         + status.getMessage());
@@ -170,6 +171,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
       if (responseBody == null) {
         return Status.newBuilder()
             .setMessage("Unable to extract error message from empty response body.")
+            .setCode(Code.UNKNOWN.getNumber())
             .build();
       } else {
         return Status.parseFrom(responseBody.bytes());
@@ -177,6 +179,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     } catch (IOException e) {
       return Status.newBuilder()
           .setMessage("Unable to extract error message from response: " + e.getMessage())
+          .setCode(Code.UNKNOWN.getNumber())
           .build();
     }
   }

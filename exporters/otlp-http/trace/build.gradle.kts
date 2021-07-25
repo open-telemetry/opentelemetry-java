@@ -21,7 +21,7 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
 
-  testImplementation("com.squareup.okhttp3:mockwebserver")
+  testImplementation("com.linecorp.armeria:armeria-junit5")
 }
 
 tasks {

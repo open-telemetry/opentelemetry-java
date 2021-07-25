@@ -5,8 +5,6 @@
 
 package io.opentelemetry.exporter.logging.otlp;
 
-import static io.opentelemetry.exporter.logging.otlp.HexEncodingStringJsonGenerator.JSON_FACTORY;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
@@ -47,7 +45,9 @@ public final class OtlpJsonLoggingSpanExporter implements SpanExporter {
   public CompletableResultCode export(Collection<SpanData> spans) {
     List<ResourceSpans> allResourceSpans = SpanAdapter.toProtoResourceSpans(spans);
     for (ResourceSpans resourceSpans : allResourceSpans) {
-      SegmentedStringWriter sw = new SegmentedStringWriter(JSON_FACTORY._getBufferRecycler());
+      SegmentedStringWriter sw =
+          new SegmentedStringWriter(
+              HexEncodingStringJsonGenerator.JSON_FACTORY._getBufferRecycler());
       try (JsonGenerator gen = HexEncodingStringJsonGenerator.create(sw)) {
         marshaller.writeValue(resourceSpans, gen);
       } catch (IOException e) {

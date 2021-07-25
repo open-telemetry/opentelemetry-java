@@ -22,7 +22,7 @@ import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.tls.HandshakeCertificates;
 
-/** Builder utility for this exporter. */
+/** Builder utility for {@link OtlpHttpSpanExporter}. */
 public final class OtlpHttpSpanExporterBuilder {
 
   private static final long DEFAULT_TIMEOUT_SECS = 10;
@@ -56,8 +56,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
   /**
    * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT}. The
-   * endpoint must start with either http:// or https://, and should append the version and signal
-   * to the path (i.e. v1/traces).
+   * endpoint must start with either http:// or https://, and include the full HTTP path.
    */
   public OtlpHttpSpanExporterBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
@@ -86,7 +85,7 @@ public final class OtlpHttpSpanExporterBuilder {
   public OtlpHttpSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
     Preconditions.checkArgument(
-        "gzip".equals(compressionMethod),
+        compressionMethod.equals("gzip"),
         "Unsupported compression method. Supported compression methods include: gzip.");
     this.isCompressionEnabled = true;
     return this;

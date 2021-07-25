@@ -8,6 +8,16 @@ package io.opentelemetry.exporter.otlp.http.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+import com.google.rpc.Status;
+import com.linecorp.armeria.common.AggregatedHttpRequest;
+import com.linecorp.armeria.common.HttpMethod;
+import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.common.HttpStatus;
+import com.linecorp.armeria.common.MediaType;
+import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
@@ -15,17 +25,23 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import okhttp3.mockwebserver.MockResponse;
-import org.junit.Rule;
+import okhttp3.tls.HeldCertificate;
+import okio.Buffer;
+import okio.GzipSource;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.event.Level;
@@ -33,10 +49,46 @@ import org.slf4j.event.LoggingEvent;
 
 class OtlpHttpSpanExporterTest {
 
-  @Rule private final OtlpHttpRule otlpHttp = new OtlpHttpRule();
+  private static final MediaType APPLICATION_PROTOBUF =
+      MediaType.create("application", "x-protobuf");
+  private static final HeldCertificate HELD_CERTIFICATE;
+
+  static {
+    try {
+      HELD_CERTIFICATE =
+          new HeldCertificate.Builder()
+              .commonName("localhost")
+              .addSubjectAlternativeName(InetAddress.getByName("localhost").getCanonicalHostName())
+              .build();
+    } catch (UnknownHostException e) {
+      throw new IllegalStateException("Error building certificate.", e);
+    }
+  }
+
+  @RegisterExtension
+  static MockWebServerExtension server =
+      new MockWebServerExtension() {
+        @Override
+        protected void configureServer(ServerBuilder sb) {
+          sb.tlsSelfSigned(false);
+          sb.tls(HELD_CERTIFICATE.keyPair().getPrivate(), HELD_CERTIFICATE.certificate());
+        }
+      };
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(OtlpHttpSpanExporter.class);
+
+  private OtlpHttpSpanExporterBuilder builder;
+
+  @BeforeEach
+  void setup() {
+    builder =
+        OtlpHttpSpanExporter.builder()
+            .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/traces")
+            .addHeader("foo", "bar")
+            .setTrustedCertificates(
+                HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8));
+  }
 
   @Test
   @SuppressWarnings("PreferJavaTimeOverload")
@@ -74,71 +126,97 @@ class OtlpHttpSpanExporterTest {
 
   @Test
   void testExportUncompressed() {
-    OtlpHttpSpanExporter exporter = builder().build();
-    exportAndVerify(exporter);
+    server.enqueue(successResponse());
+    OtlpHttpSpanExporter exporter = builder.build();
+
+    ExportTraceServiceRequest payload = exportAndAssertResult(exporter, /* expectedResult= */ true);
+    AggregatedHttpRequest request = server.takeRequest().request();
+    assertRequestCommon(request);
+    assertThat(parseRequestBody(request.content().array())).isEqualTo(payload);
   }
 
   @Test
   void testExportGzipCompressed() {
-    OtlpHttpSpanExporter exporter = builder().setCompression("gzip").build();
-    exportAndVerify(exporter);
+    server.enqueue(successResponse());
+    OtlpHttpSpanExporter exporter = builder.setCompression("gzip").build();
+
+    ExportTraceServiceRequest payload = exportAndAssertResult(exporter, /* expectedResult= */ true);
+    AggregatedHttpRequest request = server.takeRequest().request();
+    assertRequestCommon(request);
+    assertThat(request.headers().get("Content-Encoding")).isEqualTo("gzip");
+    assertThat(parseRequestBody(gzipDecompress(request.content().array()))).isEqualTo(payload);
+  }
+
+  private static void assertRequestCommon(AggregatedHttpRequest request) {
+    assertThat(request.method()).isEqualTo(HttpMethod.POST);
+    assertThat(request.path()).isEqualTo("/v1/traces");
+    assertThat(request.headers().get("foo")).isEqualTo("bar");
+    assertThat(request.headers().get("Content-Type")).isEqualTo(APPLICATION_PROTOBUF.toString());
+  }
+
+  private static ExportTraceServiceRequest parseRequestBody(byte[] bytes) {
+    try {
+      return ExportTraceServiceRequest.parseFrom(bytes);
+    } catch (InvalidProtocolBufferException e) {
+      throw new IllegalStateException("Unable to parse Protobuf request body.", e);
+    }
+  }
+
+  private static byte[] gzipDecompress(byte[] bytes) {
+    try {
+      Buffer result = new Buffer();
+      GzipSource source = new GzipSource(new Buffer().write(bytes));
+      while (source.read(result, Integer.MAX_VALUE) != -1) {}
+      return result.readByteArray();
+    } catch (IOException e) {
+      throw new IllegalStateException("Unable to decompress payload.", e);
+    }
   }
 
   @Test
   void testServerError() {
-    otlpHttp.addMockResponse(OtlpHttpDispatcher.errorResponse(500, "Server error!"));
-    OtlpHttpSpanExporter exporter = builder().build();
+    server.enqueue(buildResponse(500, Status.newBuilder().setMessage("Server error!").build()));
+    OtlpHttpSpanExporter exporter = builder.build();
 
-    assertThat(
-            exporter
-                .export(Collections.singletonList(generateFakeSpan()))
-                .join(10, TimeUnit.SECONDS)
-                .isSuccess())
-        .isFalse();
+    exportAndAssertResult(exporter, /* expectedResult= */ false);
     LoggingEvent log =
         logs.assertContains(
-            "Failed to export spans. Server responded with code 500. Error message: Server error!");
+            "Failed to export spans. Server responded with HTTP status code 500. Error message: Server error!");
     assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
   @Test
   void testServerErrorParseError() {
-    otlpHttp.addMockResponse(new MockResponse().setResponseCode(500).setBody("Server Error!"));
-    OtlpHttpSpanExporter exporter = builder().build();
+    server.enqueue(HttpResponse.of(HttpStatus.valueOf(500), APPLICATION_PROTOBUF, "Server error!"));
+    OtlpHttpSpanExporter exporter = builder.build();
 
-    assertThat(
-            exporter
-                .export(Collections.singletonList(generateFakeSpan()))
-                .join(10, TimeUnit.SECONDS)
-                .isSuccess())
-        .isFalse();
+    exportAndAssertResult(exporter, /* expectedResult= */ false);
     LoggingEvent log =
         logs.assertContains(
-            "Failed to export spans. Server responded with code 500. Error message: Unable to extract error message from response:");
+            "Failed to export spans. Server responded with HTTP status code 500. Error message: Unable to extract error message from response:");
     assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
-  private OtlpHttpSpanExporterBuilder builder() {
-    return OtlpHttpSpanExporter.builder()
-        .setEndpoint(otlpHttp.endpoint())
-        .addHeader("foo", "bar")
-        .setTrustedCertificates(otlpHttp.certificatePem().getBytes(StandardCharsets.UTF_8));
-  }
-
-  private void exportAndVerify(OtlpHttpSpanExporter otlpHttpSpanExporter) {
+  private static ExportTraceServiceRequest exportAndAssertResult(
+      OtlpHttpSpanExporter otlpHttpSpanExporter, boolean expectedResult) {
     List<SpanData> spans = Collections.singletonList(generateFakeSpan());
     CompletableResultCode resultCode = otlpHttpSpanExporter.export(spans);
     resultCode.join(10, TimeUnit.SECONDS);
+    assertThat(resultCode.isSuccess()).isEqualTo(expectedResult);
+    return ExportTraceServiceRequest.newBuilder()
+        .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
+        .build();
+  }
 
-    assertThat(resultCode.isSuccess()).isTrue();
+  private static HttpResponse successResponse() {
+    ExportTraceServiceResponse exportTraceServiceResponse =
+        ExportTraceServiceResponse.newBuilder().build();
+    return buildResponse(200, exportTraceServiceResponse);
+  }
 
-    ExportTraceServiceRequest expectedRequest =
-        ExportTraceServiceRequest.newBuilder()
-            .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
-            .build();
-    List<ExportTraceServiceRequest> requests = otlpHttp.getRequests();
-    assertThat(requests.size()).isEqualTo(1);
-    assertThat(requests.get(0)).isEqualTo(expectedRequest);
+  private static <T extends Message> HttpResponse buildResponse(int statusCode, T message) {
+    return HttpResponse.of(
+        HttpStatus.valueOf(statusCode), APPLICATION_PROTOBUF, message.toByteArray());
   }
 
   private static SpanData generateFakeSpan() {
