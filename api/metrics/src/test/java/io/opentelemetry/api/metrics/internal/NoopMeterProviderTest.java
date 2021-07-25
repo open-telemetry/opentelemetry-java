@@ -13,7 +13,6 @@ public class NoopMeterProviderTest {
   void noopMeterProvider_getDoesNotThrow() {
     MeterProvider provider = MeterProvider.noop();
     provider.get("user-instrumentation");
-    provider.get("advanced-instrumetnation", "1.0");
     provider.get("schema-instrumentation", "1.0", "myschema://url");
   }
 
