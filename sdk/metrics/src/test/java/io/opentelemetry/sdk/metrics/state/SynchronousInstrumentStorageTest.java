@@ -14,6 +14,8 @@ import io.opentelemetry.sdk.metrics.CollectionHandle;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.SynchronousHandle;
 import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.view.AttributesProcessor;
 import java.util.HashMap;
 import java.util.List;
@@ -87,7 +89,7 @@ public class SynchronousInstrumentStorageTest {
   /** Stubbed version of synchronous handle for testing. */
   private static class NoopHandle extends SynchronousHandle<Object> {
     NoopHandle() {
-      super(ExemplarReservoir.EMPTY);
+      super(ExemplarReservoir.EMPTY, ExemplarFilter.ALWAYS_OFF);
     }
 
     @Override

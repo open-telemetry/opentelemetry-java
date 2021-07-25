@@ -10,12 +10,12 @@ import io.opentelemetry.api.metrics.ObservableMeasurement;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleHistogramAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.aggregator.HistogramConfig;
 import io.opentelemetry.sdk.metrics.aggregator.LastValueAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LastValueConfig;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.SumConfig;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.instrument.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.state.InstrumentStorage;
 import io.opentelemetry.sdk.metrics.state.MeterProviderSharedState;
@@ -192,7 +192,7 @@ public abstract class DefaultMeasurementProcessor implements MeasurementProcesso
   static Builder builder() {
     return new AutoValue_DefaultMeasurementProcessor.Builder()
         .setDefaultHistogramBoundaries(DEFAULT_HISTOGRAM_BOUNDARIES)
-        .setDefaultExemplarSampler(ExemplarSampler.NEVER);
+        .setDefaultExemplarSampler(ExemplarSampler.ALWAYS_OFF);
   }
 
   /** Builder for {@link DefaultMeasurementProcessor}. */

@@ -12,8 +12,10 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
-import io.opentelemetry.sdk.metrics.state.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +54,7 @@ public class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {
 
   @Override
   public SynchronousHandle<DoubleAccumulation> createStreamStorage() {
-    return new MyHandle(sampler.createReservoir(this));
+    return new MyHandle(sampler.getStorage().createReservoir(this), sampler.getFilter());
   }
 
   @Override
@@ -65,8 +67,8 @@ public class DoubleSumAggregator implements Aggregator<DoubleAccumulation> {
   static class MyHandle extends SynchronousHandle<DoubleAccumulation> {
     private final DoubleAdder count = new DoubleAdder();
 
-    MyHandle(ExemplarReservoir exemplars) {
-      super(exemplars);
+    MyHandle(ExemplarReservoir exemplars, ExemplarFilter filter) {
+      super(exemplars, filter);
     }
 
     @Override

@@ -13,6 +13,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.instrument.InstrumentType;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -32,7 +33,7 @@ class DoubleSumAggregatorTest {
               .build(),
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          ExemplarSampler.NEVER);
+          ExemplarSampler.ALWAYS_OFF);
 
   @Test
   void createStreamStorage() {
@@ -96,7 +97,7 @@ class DoubleSumAggregatorTest {
                     .build(),
                 Resource.getDefault(),
                 InstrumentationLibraryInfo.empty(),
-                ExemplarSampler.NEVER);
+                ExemplarSampler.ALWAYS_OFF);
         DoubleAccumulation merged = aggregator.merge(agg(1), agg(2));
         assertThat(merged.getValue())
             .withFailMessage(

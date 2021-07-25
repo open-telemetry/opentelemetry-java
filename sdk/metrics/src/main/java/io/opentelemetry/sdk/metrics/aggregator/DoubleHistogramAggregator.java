@@ -13,8 +13,10 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.instrument.Measurement;
-import io.opentelemetry.sdk.metrics.state.ExemplarReservoir;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +63,11 @@ public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulati
     this.boundaryList = Collections.unmodifiableList(boundaryList);
   }
 
+  /** Returns the number of buckets in this histogram. */
+  public final int getBucketCount() {
+    return boundaryList.size() + 1;
+  }
+
   // Benchmark shows that linear search performs better than binary search with ordinary
   // buckets.
   private static int findBucketIndex(double[] boundaries, double value) {
@@ -78,7 +85,8 @@ public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulati
 
   @Override
   public SynchronousHandle<HistogramAccumulation> createStreamStorage() {
-    return new MyHandle(config.getBoundaries(), sampler.createReservoir(this));
+    return new MyHandle(
+        config.getBoundaries(), sampler.getStorage().createReservoir(this), sampler.getFilter());
   }
 
   // Note:  Storage handle has high contention and need atomic increments.
@@ -94,8 +102,8 @@ public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulati
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    MyHandle(double[] boundaries, ExemplarReservoir exemplars) {
-      super(exemplars);
+    MyHandle(double[] boundaries, ExemplarReservoir exemplars, ExemplarFilter filter) {
+      super(exemplars, filter);
       this.boundaries = boundaries;
       this.counts = new long[this.boundaries.length + 1];
       this.sum = 0;

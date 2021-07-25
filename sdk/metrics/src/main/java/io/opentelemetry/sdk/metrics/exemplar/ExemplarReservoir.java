@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics.state;
+package io.opentelemetry.sdk.metrics.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -35,7 +35,7 @@ public interface ExemplarReservoir {
   public List<Exemplar> collectAndReset(Attributes pointAttributes);
 
   /** An exemplar resorvoir that stores no exemplars. */
-  public static ExemplarReservoir EMPTY =
+  public static final ExemplarReservoir EMPTY =
       new ExemplarReservoir() {
         @Override
         public void offerMeasurementLong(long value, Attributes attributes, Context context) {

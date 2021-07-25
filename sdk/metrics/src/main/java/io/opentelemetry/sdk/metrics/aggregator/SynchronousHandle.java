@@ -8,7 +8,8 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.Exemplar;
-import io.opentelemetry.sdk.metrics.state.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.state.StorageHandle;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -42,11 +43,14 @@ public abstract class SynchronousHandle<T> implements StorageHandle {
   private volatile boolean hasRecordings = false;
   // Determine if a measurement should go into exemplar pool.
   private final ExemplarReservoir exemplars;
+  // Determine if we keep exemplars.
+  private final ExemplarFilter filter;
 
-  protected SynchronousHandle(ExemplarReservoir exemplars) {
+  protected SynchronousHandle(ExemplarReservoir exemplars, ExemplarFilter filter) {
     // Start with this binding already bound.
     this.refCountMapped = new AtomicLong(2);
     this.exemplars = exemplars;
+    this.filter = filter;
   }
 
   /**
@@ -106,14 +110,18 @@ public abstract class SynchronousHandle<T> implements StorageHandle {
   @Override
   public final void recordLong(long value, Attributes attributes, Context context) {
     doRecordLong(value, attributes, context);
-    exemplars.offerMeasurementLong(value, attributes, context);
+    if (filter.shouldSampleLongMeasurement(value, attributes, context)) {
+      exemplars.offerMeasurementLong(value, attributes, context);
+    }
     hasRecordings = true;
   }
 
   @Override
   public final void recordDouble(double value, Attributes attributes, Context context) {
     doRecordDouble(value, attributes, context);
-    exemplars.offerMeasurementDouble(value, attributes, context);
+    if (filter.shouldSampleDoubleMeasurement(value, attributes, context)) {
+      exemplars.offerMeasurementDouble(value, attributes, context);
+    }
     hasRecordings = true;
   }
   /**

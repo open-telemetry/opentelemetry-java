@@ -13,7 +13,8 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
 import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.LongExemplar;
-import io.opentelemetry.sdk.metrics.state.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -141,11 +142,15 @@ public class SynchronousHandleTest {
         new AtomicReference<>(Collections.emptyList());
 
     TestSynchronousHandle() {
-      this(ExemplarReservoir.EMPTY);
+      this(ExemplarReservoir.EMPTY, ExemplarFilter.ALWAYS_OFF);
     }
 
     TestSynchronousHandle(ExemplarReservoir sampler) {
-      super(sampler);
+      this(sampler, ExemplarFilter.ALWAYS_ON);
+    }
+
+    TestSynchronousHandle(ExemplarReservoir sampler, ExemplarFilter filter) {
+      super(sampler, filter);
     }
 
     @Nullable

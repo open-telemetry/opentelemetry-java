@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.concurrent.Executors;
@@ -36,7 +37,7 @@ public class DoubleHistogramAggregatorTest {
               .build(),
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          ExemplarSampler.NEVER);
+          ExemplarSampler.ALWAYS_OFF);
 
   @Test
   void createStreamStorage() {
