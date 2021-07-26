@@ -16,12 +16,22 @@ import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManagerFactory;
 
 /** Builder utility for this exporter. */
 public final class OtlpGrpcSpanExporterBuilder {
@@ -174,13 +184,49 @@ public final class OtlpGrpcSpanExporterBuilder {
                     + "X.509 in PEM format?",
                 e);
           }
+        } else if (managedChannelBuilder
+            .getClass()
+            .getName()
+            .equals("io.grpc.okhttp.OkHttpChannelBuilder")) {
+          io.grpc.okhttp.OkHttpChannelBuilder okHttpBuilder =
+              (io.grpc.okhttp.OkHttpChannelBuilder) managedChannelBuilder;
+
+          SSLContext sslContext;
+          try {
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            ks.load(null);
+
+            ByteArrayInputStream is = new ByteArrayInputStream(trustedCertificatesPem);
+            CertificateFactory factory = CertificateFactory.getInstance("X.509");
+            int i = 0;
+            while (is.available() > 0) {
+              X509Certificate cert = (X509Certificate) factory.generateCertificate(is);
+              ks.setCertificateEntry("cert_" + i, cert);
+              i++;
+            }
+
+            TrustManagerFactory tmf =
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(ks);
+
+            sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, tmf.getTrustManagers(), null);
+          } catch (CertificateException
+              | KeyStoreException
+              | IOException
+              | NoSuchAlgorithmException
+              | KeyManagementException e) {
+            throw new IllegalStateException(
+                "Could not set trusted certificates for gRPC TLS connection, are they valid "
+                    + "X.509 in PEM format?",
+                e);
+          }
+          okHttpBuilder.sslSocketFactory(sslContext.getSocketFactory());
         } else {
           throw new IllegalStateException(
-              "TLS cerificate configuration only supported with Netty. "
-                  + "If you need to configure a certificate, switch to grpc-netty or "
-                  + "grpc-netty-shaded.");
+              "TLS cerificate configuration not supported for unrecognized ManagedChannelBuilder "
+                  + managedChannelBuilder.getClass().getName());
         }
-        // TODO(anuraaga): Support okhttp.
       }
 
       channel = managedChannelBuilder.build();
