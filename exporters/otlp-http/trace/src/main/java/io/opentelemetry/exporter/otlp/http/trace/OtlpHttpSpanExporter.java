@@ -166,19 +166,18 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   }
 
   private static Status extractErrorStatus(Response response) {
+    ResponseBody responseBody = response.body();
+    if (responseBody == null) {
+      return Status.newBuilder()
+          .setMessage("Response body missing, HTTP status message: " + response.message())
+          .setCode(Code.UNKNOWN.getNumber())
+          .build();
+    }
     try {
-      ResponseBody responseBody = response.body();
-      if (responseBody == null) {
-        return Status.newBuilder()
-            .setMessage("Unable to extract error message from empty response body.")
-            .setCode(Code.UNKNOWN.getNumber())
-            .build();
-      } else {
-        return Status.parseFrom(responseBody.bytes());
-      }
+      return Status.parseFrom(responseBody.bytes());
     } catch (IOException e) {
       return Status.newBuilder()
-          .setMessage("Unable to extract error message from response: " + e.getMessage())
+          .setMessage("Unable to parse response body, HTTP status message: " + response.message())
           .setCode(Code.UNKNOWN.getNumber())
           .build();
     }

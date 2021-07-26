@@ -4,7 +4,6 @@ plugins {
     // id("otel.publish-conventions")
 
     id("otel.animalsniffer-conventions")
-    id("com.github.johnrengelman.shadow")
 }
 
 description = "OpenTelemetry Protocol HTTP Trace Exporter"
@@ -22,13 +21,4 @@ dependencies {
   testImplementation(project(":sdk:testing"))
 
   testImplementation("com.linecorp.armeria:armeria-junit5")
-}
-
-tasks {
-  shadowJar {
-    minimize()
-
-    relocate("okhttp3", "io.opentelemetry.internal.shaded.okhttp3")
-    relocate("okio", "io.opentelemetry.internal.shaded.okio")
-  }
 }

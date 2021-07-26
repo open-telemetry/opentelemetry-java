@@ -70,7 +70,6 @@ class OtlpHttpSpanExporterTest {
       new MockWebServerExtension() {
         @Override
         protected void configureServer(ServerBuilder sb) {
-          sb.tlsSelfSigned(false);
           sb.tls(HELD_CERTIFICATE.keyPair().getPrivate(), HELD_CERTIFICATE.certificate());
         }
       };
@@ -175,7 +174,10 @@ class OtlpHttpSpanExporterTest {
 
   @Test
   void testServerError() {
-    server.enqueue(buildResponse(500, Status.newBuilder().setMessage("Server error!").build()));
+    server.enqueue(
+        buildResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            Status.newBuilder().setMessage("Server error!").build()));
     OtlpHttpSpanExporter exporter = builder.build();
 
     exportAndAssertResult(exporter, /* expectedResult= */ false);
@@ -187,13 +189,14 @@ class OtlpHttpSpanExporterTest {
 
   @Test
   void testServerErrorParseError() {
-    server.enqueue(HttpResponse.of(HttpStatus.valueOf(500), APPLICATION_PROTOBUF, "Server error!"));
+    server.enqueue(
+        HttpResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, APPLICATION_PROTOBUF, "Server error!"));
     OtlpHttpSpanExporter exporter = builder.build();
 
     exportAndAssertResult(exporter, /* expectedResult= */ false);
     LoggingEvent log =
         logs.assertContains(
-            "Failed to export spans. Server responded with HTTP status code 500. Error message: Unable to extract error message from response:");
+            "Failed to export spans. Server responded with HTTP status code 500. Error message: Unable to parse response body, HTTP status message:");
     assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
@@ -211,12 +214,11 @@ class OtlpHttpSpanExporterTest {
   private static HttpResponse successResponse() {
     ExportTraceServiceResponse exportTraceServiceResponse =
         ExportTraceServiceResponse.newBuilder().build();
-    return buildResponse(200, exportTraceServiceResponse);
+    return buildResponse(HttpStatus.OK, exportTraceServiceResponse);
   }
 
-  private static <T extends Message> HttpResponse buildResponse(int statusCode, T message) {
-    return HttpResponse.of(
-        HttpStatus.valueOf(statusCode), APPLICATION_PROTOBUF, message.toByteArray());
+  private static <T extends Message> HttpResponse buildResponse(HttpStatus httpStatus, T message) {
+    return HttpResponse.of(httpStatus, APPLICATION_PROTOBUF, message.toByteArray());
   }
 
   private static SpanData generateFakeSpan() {
