@@ -28,6 +28,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 class TracerShimTest {
 
+  static final io.opentelemetry.api.trace.Span INVALID_SPAN =
+      io.opentelemetry.api.trace.Span.getInvalid();
+  static final io.opentelemetry.api.baggage.Baggage EMPTY_BAGGAGE =
+      io.opentelemetry.api.baggage.Baggage.empty();
+
   @RegisterExtension public OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
   TracerShim tracerShim;
@@ -51,33 +56,145 @@ class TracerShimTest {
   @Test
   void activateSpan() {
     Span otSpan = tracerShim.buildSpan("one").start();
-    io.opentelemetry.api.trace.Span span = ((SpanShim) otSpan).getSpan();
+    io.opentelemetry.api.trace.Span actualSpan = ((SpanShim) otSpan).getSpan();
 
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
+    assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
+    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
 
     try (Scope scope = tracerShim.activateSpan(otSpan)) {
       assertThat(tracerShim.activeSpan()).isNotNull();
       assertThat(tracerShim.scopeManager().activeSpan()).isNotNull();
-      assertThat(((SpanShim) tracerShim.activeSpan()).getSpan()).isEqualTo(span);
-      assertThat(((SpanShim) tracerShim.scopeManager().activeSpan()).getSpan()).isEqualTo(span);
+      assertThat(((SpanShim) tracerShim.activeSpan()).getSpan()).isSameAs(actualSpan);
+      assertThat(((SpanShim) tracerShim.scopeManager().activeSpan()).getSpan())
+          .isSameAs(actualSpan);
+
+      assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(actualSpan);
+      assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
     }
 
     assertThat(tracerShim.activeSpan()).isNull();
     assertThat(tracerShim.scopeManager().activeSpan()).isNull();
+    assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
+    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
   }
 
   @Test
+  void activateSpan_withBaggage() {
+    Span otSpan = tracerShim.buildSpan("one").start();
+    otSpan.setBaggageItem("foo", "bar");
+    otSpan.setBaggageItem("hello", "world");
+
+    io.opentelemetry.api.trace.Span actualSpan = ((SpanShim) otSpan).getSpan();
+    io.opentelemetry.api.baggage.Baggage actualBaggage =
+        ((SpanContextShim) otSpan.context()).getBaggage();
+    assertThat(
+            io.opentelemetry.api.baggage.Baggage.builder()
+                .put("foo", "bar")
+                .put("hello", "world")
+                .build())
+        .isEqualTo(actualBaggage);
+
+    assertThat(tracerShim.activeSpan()).isNull();
+    assertThat(tracerShim.scopeManager().activeSpan()).isNull();
+    assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
+    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+
+    try (Scope scope = tracerShim.activateSpan(otSpan)) {
+      assertThat(tracerShim.activeSpan()).isNotNull();
+      assertThat(tracerShim.scopeManager().activeSpan()).isNotNull();
+      assertThat(((SpanShim) tracerShim.activeSpan()).getSpan()).isSameAs(actualSpan);
+      assertThat(((SpanShim) tracerShim.scopeManager().activeSpan()).getSpan())
+          .isSameAs(actualSpan);
+
+      assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(actualSpan);
+      assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(actualBaggage);
+    }
+
+    assertThat(tracerShim.activeSpan()).isNull();
+    assertThat(tracerShim.scopeManager().activeSpan()).isNull();
+    assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
+    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+  }
+
+  /* If the Span has no baggage, allow any previously active Baggage go through */
+  @Test
+  public void activateSpan_withExistingBaggage() {
+    Span otSpan = tracerShim.buildSpan("one").start();
+    io.opentelemetry.api.trace.Span actualSpan = ((SpanShim) otSpan).getSpan();
+
+    io.opentelemetry.api.baggage.Baggage otherBaggage =
+        io.opentelemetry.api.baggage.Baggage.builder()
+            .put("foo", "bar")
+            .put("hello", "world")
+            .build();
+
+    assertThat(tracerShim.activeSpan()).isNull();
+    assertThat(tracerShim.scopeManager().activeSpan()).isNull();
+    assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
+    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+
+    try (io.opentelemetry.context.Scope scope1 = otherBaggage.makeCurrent()) {
+      try (Scope scope2 = tracerShim.activateSpan(otSpan)) {
+        assertThat(tracerShim.activeSpan()).isNotNull();
+        assertThat(tracerShim.scopeManager().activeSpan()).isNotNull();
+        assertThat(((SpanShim) tracerShim.activeSpan()).getSpan()).isSameAs(actualSpan);
+        assertThat(((SpanShim) tracerShim.scopeManager().activeSpan()).getSpan())
+            .isSameAs(actualSpan);
+
+        assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(actualSpan);
+        assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(otherBaggage);
+      }
+    }
+
+    assertThat(tracerShim.activeSpan()).isNull();
+    assertThat(tracerShim.scopeManager().activeSpan()).isNull();
+    assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
+    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+  }
+
+  /*
+   * Make sure that, upon activation from the Trace Shim layer, the
+   * returned active Span shim is cached/stored in the context, so
+   * we always get the *same* instance.
+   */
+  @Test
+  void activateSpan_cacheSpanShim() {
+    Span otSpan = tracerShim.buildSpan("one").start();
+    io.opentelemetry.api.trace.Span actualSpan = ((SpanShim) otSpan).getSpan();
+
+    assertThat(tracerShim.activeSpan()).isNull();
+    assertThat(tracerShim.scopeManager().activeSpan()).isNull();
+    assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
+    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+
+    try (Scope scope = tracerShim.activateSpan(otSpan)) {
+      assertThat(tracerShim.activeSpan()).isSameAs(tracerShim.activeSpan());
+      assertThat(tracerShim.activeSpan()).isSameAs(tracerShim.scopeManager().activeSpan());
+
+      assertThat(((SpanShim) tracerShim.activeSpan()).getSpan()).isSameAs(actualSpan);
+    }
+
+    assertThat(tracerShim.activeSpan()).isNull();
+    assertThat(tracerShim.scopeManager().activeSpan()).isNull();
+    assertThat(io.opentelemetry.api.trace.Span.current()).isSameAs(INVALID_SPAN);
+    assertThat(io.opentelemetry.api.baggage.Baggage.current()).isSameAs(EMPTY_BAGGAGE);
+  }
+
+  /*
+   * Create and activate a Span without the Shim layer, in order to verify
+   * we keep on working as expected (even if not as efficiently).
+   */
+  @Test
   void activateSpan_withoutShim() {
-    // Create and activate a Span without the Shim layer, in order to verify
-    // we keep on working as expected (even if not as efficiently).
     io.opentelemetry.api.trace.Span span =
         otelTesting.getOpenTelemetry().getTracer("opentracingshim").spanBuilder("one").startSpan();
     try (io.opentelemetry.context.Scope scope = span.makeCurrent()) {
       assertThat(tracerShim.activeSpan()).isNotNull();
       assertThat(tracerShim.scopeManager().activeSpan()).isNotNull();
-      assertThat(((SpanShim) tracerShim.activeSpan()).getSpan()).isEqualTo(span);
-      assertThat(((SpanShim) tracerShim.scopeManager().activeSpan()).getSpan()).isEqualTo(span);
+      assertThat(((SpanShim) tracerShim.activeSpan()).getSpan()).isSameAs(span);
+      assertThat(((SpanShim) tracerShim.scopeManager().activeSpan()).getSpan()).isSameAs(span);
     }
 
     assertThat(tracerShim.activeSpan()).isNull();
