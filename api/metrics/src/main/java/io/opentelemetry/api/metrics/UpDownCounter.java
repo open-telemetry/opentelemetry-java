@@ -8,7 +8,7 @@ package io.opentelemetry.api.metrics;
 /**
  * An up-down-counter instrument.
  *
- * <p>This will have a specific subclass that recoords appropriate primitive values, e.g. {@link
+ * <p>This will have a specific subclass that records appropriate primitive values, e.g. {@link
  * LongUpDownCounter} will record {@code long} values.
  */
 public interface UpDownCounter extends SynchronousInstrument {}

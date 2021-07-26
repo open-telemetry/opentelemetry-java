@@ -8,7 +8,7 @@ package io.opentelemetry.api.metrics;
 /**
  * A counter instrument.
  *
- * <p>This will have a specific subclass that recoords appropriate primitive values, e.g. {@link
+ * <p>This will have a specific subclass that records appropriate primitive values, e.g. {@link
  * LongCounter} will record {@code long} values.
  */
 public interface Counter extends SynchronousInstrument {}

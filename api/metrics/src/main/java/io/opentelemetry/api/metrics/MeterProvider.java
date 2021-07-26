@@ -58,6 +58,7 @@ public interface MeterProvider {
    */
   MeterBuilder meterBuilder(String instrumentationName);
 
+  /** Returns a MeterProvider that does nothing. */
   public static MeterProvider noop() {
     return NoopMeterProvider.getInstance();
   }

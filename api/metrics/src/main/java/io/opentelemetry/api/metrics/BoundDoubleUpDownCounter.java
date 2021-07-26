@@ -12,14 +12,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface BoundDoubleUpDownCounter {
   /**
-   * Record a value with a pre-bound attributes.
-   *
-   * @param value The increment amount. May be positive, negative or zero.
-   * @param context The explicit context to associate with this measurement.
-   */
-  void add(double value, Context context);
-  /**
-   * Reecord a value with pre-bound attributes.
+   * Records a value with pre-bound attributes.
    *
    * <p>Note: This may use {@code Context.current()} to pull the context associated with this
    * measurement.
@@ -27,6 +20,14 @@ public interface BoundDoubleUpDownCounter {
    * @param value The increment amount. May be positive, negative or zero.
    */
   void add(double value);
+
+  /**
+   * Records a value with a pre-bound attributes.
+   *
+   * @param value The increment amount. May be positive, negative or zero.
+   * @param context The explicit context to associate with this measurement.
+   */
+  void add(double value, Context context);
 
   void unbind();
 }

@@ -9,7 +9,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 
-// TODO: Figure out real behavior for this.
+/** A {@link MeterProvider} that does nothing. */
 public class NoopMeterProvider implements MeterProvider {
   @Override
   public MeterBuilder meterBuilder(String instrumentationName) {

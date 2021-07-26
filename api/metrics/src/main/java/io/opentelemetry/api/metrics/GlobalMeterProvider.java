@@ -21,6 +21,7 @@ public class GlobalMeterProvider {
     // Until we run autoconfigure here, we don't need more.
     return globalMeterProvider.get();
   }
+
   /**
    * Sets the {@link MeterProvider} that should be the global instance. Future calls to {@link
    * #get()} will return the provided {@link MeterProvider} instance. This should be called once as

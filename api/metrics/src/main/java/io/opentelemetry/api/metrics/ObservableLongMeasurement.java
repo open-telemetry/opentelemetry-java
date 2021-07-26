@@ -10,16 +10,17 @@ import io.opentelemetry.api.common.Attributes;
 /** An interface for observing measurements with {@code long} values. */
 public interface ObservableLongMeasurement extends ObservableMeasurement {
   /**
-   * Record a measurement with a set of attributes.
+   * Records a measurement.
+   *
+   * @param value The measurement amount. MUST be non-negative.
+   */
+  void observe(long value);
+
+  /**
+   * Records a measurement with a set of attributes.
    *
    * @param value The measurement amount. MUST be non-negative.
    * @param attributes A set of attributes to associate with the count.
    */
   void observe(long value, Attributes attributes);
-  /**
-   * Reecord a measurement.
-   *
-   * @param value The measurement amount. MUST be non-negative.
-   */
-  void observe(long value);
 }

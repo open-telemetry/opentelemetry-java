@@ -13,13 +13,15 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface LongUpDownCounter extends UpDownCounter {
   /**
-   * Record a value with a set of attributes.
+   * Records a value.
+   *
+   * <p>Note: This may use {@code Context.current()} to pull the context associated with this
+   * measurement.
    *
    * @param value The increment amount. May be positive, negative or zero.
-   * @param attributes A set of attributes to associate with the count.
-   * @param context The explicit context to associate with this measurement.
    */
-  void add(long value, Attributes attributes, Context context);
+  void add(long value);
+
   /**
    * Record a value with a set of attributes.
    *
@@ -30,15 +32,15 @@ public interface LongUpDownCounter extends UpDownCounter {
    * @param attributes A set of attributes to associate with the count.
    */
   void add(long value, Attributes attributes);
+
   /**
-   * Reecord a value.
-   *
-   * <p>Note: This may use {@code Context.current()} to pull the context associated with this
-   * measurement.
+   * Records a value with a set of attributes.
    *
    * @param value The increment amount. May be positive, negative or zero.
+   * @param attributes A set of attributes to associate with the count.
+   * @param context The explicit context to associate with this measurement.
    */
-  void add(long value);
+  void add(long value, Attributes attributes, Context context);
 
   /**
    * Construct a bound version of this instrument where all recorded values use the given

@@ -12,12 +12,13 @@ public interface DoubleUpDownCounterBuilder {
   /**
    * Sets the description for this instrument.
    *
-   * <p>Description stirngs should follw the instrument description rules:
+   * <p>Description strings should follow the instrument description rules:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-description
    */
   DoubleUpDownCounterBuilder setDescription(String description);
+
   /**
-   * Set the unit of measure for this instrument.
+   * Sets the unit of measure for this instrument.
    *
    * <p>Unit strings should follow the instrument unit rules:
    * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md#instrument-unit

@@ -13,25 +13,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface DoubleUpDownCounter extends UpDownCounter {
   /**
-   * Record a value with a set of attributes.
-   *
-   * @param value The increment amount. May be positive, negative or zero.
-   * @param attributes A set of attributes to associate with the count.
-   * @param context The explicit context to associate with this measurement.
-   */
-  void add(double value, Attributes attributes, Context context);
-  /**
-   * Record a value with a set of attributes.
-   *
-   * <p>Note: This may use {@code Context.current()} to pull the context associated with this
-   * measurement.
-   *
-   * @param value The increment amount. May be positive, negative or zero.
-   * @param attributes A set of attributes to associate with the count.
-   */
-  void add(double value, Attributes attributes);
-  /**
-   * Reecord a value.
+   * Records a value.
    *
    * <p>Note: This may use {@code Context.current()} to pull the context associated with this
    * measurement.
@@ -41,7 +23,27 @@ public interface DoubleUpDownCounter extends UpDownCounter {
   void add(double value);
 
   /**
-   * Construct a bound version of this instrument where all recorded values use the given
+   * Records a value with a set of attributes.
+   *
+   * <p>Note: This may use {@code Context.current()} to pull the context associated with this
+   * measurement.
+   *
+   * @param value The increment amount. May be positive, negative or zero.
+   * @param attributes A set of attributes to associate with the count.
+   */
+  void add(double value, Attributes attributes);
+
+  /**
+   * Records a value with a set of attributes.
+   *
+   * @param value The increment amount. May be positive, negative or zero.
+   * @param attributes A set of attributes to associate with the count.
+   * @param context The explicit context to associate with this measurement.
+   */
+  void add(double value, Attributes attributes, Context context);
+
+  /**
+   * Constructs a bound version of this instrument where all recorded values use the given
    * attributes.
    */
   BoundDoubleUpDownCounter bind(Attributes attributes);

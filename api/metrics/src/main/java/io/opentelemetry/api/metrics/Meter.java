@@ -13,13 +13,13 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Instruments are obtained through builders provided by this interface. Each builder has a
  * default "type" associated with recordings that may be changed.
  *
- * <p>A Meter is generally assocaited with an instrumentation library, e.g. "I monitor apache
+ * <p>A Meter is generally associated with an instrumentation library, e.g. "I monitor apache
  * httpclient".
  */
 @ThreadSafe
 public interface Meter {
   /**
-   * Construct a counter instrument.
+   * Constructs a counter instrument.
    *
    * <p>This is used to build both synchronous (in-context) instruments and asynchronous (callback)
    * instruments.
@@ -31,7 +31,7 @@ public interface Meter {
   LongCounterBuilder counterBuilder(String name);
 
   /**
-   * Construct an up-down-counter instrument.
+   * Constructs an up-down-counter instrument.
    *
    * <p>This is used to build both synchronous (in-context) instruments and asynchronous (callback)
    * instruments.
@@ -43,7 +43,7 @@ public interface Meter {
   LongUpDownCounterBuilder upDownCounterBuilder(String name);
 
   /**
-   * Construct a Histogram instrument.
+   * Constructs a Histogram instrument.
    *
    * @param name the name used for the counter.
    * @return a builder for configuring a new Histogram synchronous instrument. Defaults to recording
@@ -52,7 +52,7 @@ public interface Meter {
   DoubleHistogramBuilder histogramBuilder(String name);
 
   /**
-   * Construct an asynchronous gauge.
+   * Constructs an asynchronous gauge.
    *
    * @return a builder used for configuring how to report gauge measurements on demand.
    */
