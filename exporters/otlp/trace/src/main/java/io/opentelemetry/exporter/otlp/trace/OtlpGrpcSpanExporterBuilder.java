@@ -158,9 +158,7 @@ public final class OtlpGrpcSpanExporterBuilder {
           NettyChannelBuilder nettyBuilder = (NettyChannelBuilder) managedChannelBuilder;
           try {
             nettyBuilder.sslContext(
-                GrpcSslContexts.forClient()
-                    .trustManager(new ByteArrayInputStream(trustedCertificatesPem))
-                    .build());
+                GrpcSslContexts.forClient().trustManager(trustManagerFactory()).build());
           } catch (IllegalArgumentException | SSLException e) {
             throw new IllegalStateException(
                 "Could not set trusted certificates for gRPC TLS connection, are they valid "
@@ -176,7 +174,7 @@ public final class OtlpGrpcSpanExporterBuilder {
           try {
             nettyBuilder.sslContext(
                 io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts.forClient()
-                    .trustManager(new ByteArrayInputStream(trustedCertificatesPem))
+                    .trustManager(trustManagerFactory())
                     .build());
           } catch (IllegalArgumentException | SSLException e) {
             throw new IllegalStateException(
@@ -190,32 +188,11 @@ public final class OtlpGrpcSpanExporterBuilder {
             .equals("io.grpc.okhttp.OkHttpChannelBuilder")) {
           io.grpc.okhttp.OkHttpChannelBuilder okHttpBuilder =
               (io.grpc.okhttp.OkHttpChannelBuilder) managedChannelBuilder;
-
           SSLContext sslContext;
           try {
-            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(null);
-
-            ByteArrayInputStream is = new ByteArrayInputStream(trustedCertificatesPem);
-            CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            int i = 0;
-            while (is.available() > 0) {
-              X509Certificate cert = (X509Certificate) factory.generateCertificate(is);
-              ks.setCertificateEntry("cert_" + i, cert);
-              i++;
-            }
-
-            TrustManagerFactory tmf =
-                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(ks);
-
             sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, tmf.getTrustManagers(), null);
-          } catch (CertificateException
-              | KeyStoreException
-              | IOException
-              | NoSuchAlgorithmException
-              | KeyManagementException e) {
+            sslContext.init(null, trustManagerFactory().getTrustManagers(), null);
+          } catch (NoSuchAlgorithmException | SSLException | KeyManagementException e) {
             throw new IllegalStateException(
                 "Could not set trusted certificates for gRPC TLS connection, are they valid "
                     + "X.509 in PEM format?",
@@ -224,7 +201,7 @@ public final class OtlpGrpcSpanExporterBuilder {
           okHttpBuilder.sslSocketFactory(sslContext.getSocketFactory());
         } else {
           throw new IllegalStateException(
-              "TLS cerificate configuration not supported for unrecognized ManagedChannelBuilder "
+              "TLS certificate configuration not supported for unrecognized ManagedChannelBuilder "
                   + managedChannelBuilder.getClass().getName());
         }
       }
@@ -232,6 +209,30 @@ public final class OtlpGrpcSpanExporterBuilder {
       channel = managedChannelBuilder.build();
     }
     return new OtlpGrpcSpanExporter(channel, timeoutNanos);
+  }
+
+  private TrustManagerFactory trustManagerFactory() throws SSLException {
+    requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
+    try {
+      KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+      ks.load(null);
+
+      ByteArrayInputStream is = new ByteArrayInputStream(trustedCertificatesPem);
+      CertificateFactory factory = CertificateFactory.getInstance("X.509");
+      int i = 0;
+      while (is.available() > 0) {
+        X509Certificate cert = (X509Certificate) factory.generateCertificate(is);
+        ks.setCertificateEntry("cert_" + i, cert);
+        i++;
+      }
+
+      TrustManagerFactory tmf =
+          TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+      tmf.init(ks);
+      return tmf;
+    } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException e) {
+      throw new SSLException("Could not build TrustManagerFactory from trustedCertificatesPem.", e);
+    }
   }
 
   OtlpGrpcSpanExporterBuilder() {}
