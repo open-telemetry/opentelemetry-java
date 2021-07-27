@@ -12,6 +12,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -106,6 +107,18 @@ class OpenTelemetryExtensionTest {
                         s -> s.hasException(new IllegalStateException("exception occurred")))
                     .filteredOn(s -> s.getName().endsWith("1"))
                     .hasSize(1));
+
+    otelTesting
+        .assertTraces()
+        .hasTracesSatisfyingExactly(
+            Arrays.asList(
+                trace -> trace.hasTraceId(traceId),
+                trace ->
+                    trace.hasSpansSatisfyingExactly(
+                        Arrays.asList(
+                            s -> s.hasName("testb1"),
+                            s -> s.hasName("testb2"),
+                            s -> s.hasName("testexception")))));
 
     assertThatThrownBy(
             () ->

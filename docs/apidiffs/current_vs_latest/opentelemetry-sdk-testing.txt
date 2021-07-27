@@ -10,3 +10,7 @@ Comparing source compatibility of  against
 ***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.TraceAssert  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.data.SpanData getSpan(int)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.TraceAssert hasSpansSatisfyingExactly(java.lang.Iterable)
+***  MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.testing.assertj.TracesAssert  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.testing.assertj.TracesAssert hasTracesSatisfyingExactly(java.lang.Iterable)
