@@ -187,7 +187,7 @@ public final class ConfigProperties {
    * comma-separated for each key, with an '=' separating the key and value. For instance, <code>
    * service.name=Greatest Service,host.name=localhost</code> Empty values will be removed.
    *
-   * @return an empty list if the property has not been configured.
+   * @return an empty map if the property has not been configured.
    */
   public Map<String, String> getCommaSeparatedMap(String name) {
     return getCommaSeparatedValues(name).stream()

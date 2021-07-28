@@ -14,7 +14,7 @@ testSets {
     create("testInitializeRegistersGlobal")
     create("testJaeger")
     create("testPrometheus")
-    create("testOtlpTls")
+    create("testOtlp")
     create("testResourceDisabledByProperty")
     create("testResourceDisabledByEnv")
     create("testZipkin")
@@ -54,7 +54,8 @@ dependencies {
     add("testFullConfigImplementation", project(":exporters:zipkin"))
     add("testFullConfigImplementation", project(":sdk-extensions:resources"))
 
-    add("testOtlpTlsImplementation", project(":exporters:otlp:all"))
+    add("testOtlpImplementation", project(":exporters:otlp:all"))
+    add("testOtlpImplementation", project(":exporters:otlp:metrics"))
 
     add("testJaegerImplementation", project(":exporters:jaeger"))
 
@@ -97,11 +98,7 @@ tasks {
         environment("OTEL_BSP_SCHEDULE_DELAY", "10")
     }
 
-    val testOtlpTls by existing(Test::class) {
-        environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
-        environment("OTEL_TRACES_EXPORTER", "otlp")
-        environment("OTEL_METRICS_EXPORTER", "none")
-        environment("OTEL_BSP_SCHEDULE_DELAY", "10")
+    val testOtlp by existing(Test::class) {
     }
 
     val testZipkin by existing(Test::class) {
@@ -131,6 +128,7 @@ tasks {
                 testConfigError,
                 testFullConfig,
                 testJaeger,
+                testOtlp,
                 testPrometheus,
                 testZipkin,
                 testResourceDisabledByProperty,
