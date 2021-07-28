@@ -82,7 +82,11 @@ class Parser {
                 break;
               case KEY: // none
             }
-            baggageBuilder.put(key.getValue(), value.getValue(), BaggageEntryMetadata.create(meta));
+            String parsedKey = key.getValue();
+            String parsedValue = value.getValue();
+            if (parsedKey != null && parsedValue != null) {
+              baggageBuilder.put(parsedKey, parsedValue, BaggageEntryMetadata.create(meta));
+            }
             reset(i + 1);
             break;
           }
@@ -107,14 +111,22 @@ class Parser {
       case META:
         {
           String rest = baggageHeader.substring(metaStart).trim();
-          baggageBuilder.put(key.getValue(), value.getValue(), BaggageEntryMetadata.create(rest));
+          String parsedKey = key.getValue();
+          String parsedValue = value.getValue();
+          if (parsedKey != null && parsedValue != null) {
+            baggageBuilder.put(parsedKey, parsedValue, BaggageEntryMetadata.create(rest));
+          }
           break;
         }
       case VALUE:
         {
           if (!skipToNext) {
             value.tryTerminating(baggageHeader.length(), baggageHeader);
-            baggageBuilder.put(key.getValue(), value.getValue());
+            String parsedKey = key.getValue();
+            String parsedValue = value.getValue();
+            if (parsedKey != null && parsedValue != null) {
+              baggageBuilder.put(parsedKey, parsedValue);
+            }
             break;
           }
         }

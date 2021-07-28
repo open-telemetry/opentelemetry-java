@@ -27,6 +27,7 @@ public final class StringUtils {
    * @param string a string reference to check
    * @return {@code true} if the string is null or is the empty string
    */
+  @Contract("null -> true")
   public static boolean isNullOrEmpty(@Nullable String string) {
     return string == null || string.isEmpty();
   }
