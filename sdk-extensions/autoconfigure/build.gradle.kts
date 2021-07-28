@@ -56,6 +56,7 @@ dependencies {
 
     add("testOtlpImplementation", project(":exporters:otlp:all"))
     add("testOtlpImplementation", project(":exporters:otlp:metrics"))
+    add("testOtlpImplementation", "org.bouncycastle:bcpkix-jdk15on")
 
     add("testJaegerImplementation", project(":exporters:jaeger"))
 
