@@ -11,7 +11,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** A histogram instrument that records {@code long} values. */
 @ThreadSafe
-public interface LongHistogram extends Histogram {
+public interface LongHistogram {
 
   /**
    * Records a value.

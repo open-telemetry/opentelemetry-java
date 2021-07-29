@@ -11,7 +11,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** An up-down-counter instrument that records {@code double} values. */
 @ThreadSafe
-public interface DoubleUpDownCounter extends UpDownCounter {
+public interface DoubleUpDownCounter {
   /**
    * Records a value.
    *
