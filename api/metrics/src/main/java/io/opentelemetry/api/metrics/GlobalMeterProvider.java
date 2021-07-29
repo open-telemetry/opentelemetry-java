@@ -6,20 +6,16 @@
 package io.opentelemetry.api.metrics;
 
 import io.opentelemetry.api.metrics.internal.NoopMeterProvider;
-import java.util.concurrent.atomic.AtomicReference;
 
 /** This class is a temporary solution until metrics SDK is marked stable. */
 public class GlobalMeterProvider {
-  private static final AtomicReference<MeterProvider> globalMeterProvider =
-      new AtomicReference<>(NoopMeterProvider.getInstance());
+  private static volatile MeterProvider globalMeterProvider = NoopMeterProvider.getInstance();
 
   private GlobalMeterProvider() {}
 
   /** Returns the globally registered {@link MeterProvider}. */
   public static MeterProvider get() {
-    // Note: AtomicRef.get provides memory barrier.
-    // Until we run autoconfigure here, we don't need more.
-    return globalMeterProvider.get();
+    return globalMeterProvider;
   }
 
   /**
@@ -29,7 +25,6 @@ public class GlobalMeterProvider {
    * your main class.
    */
   public static void set(MeterProvider provider) {
-    // Note: `get()` involves a memory barrier which will flush write queue.
-    globalMeterProvider.lazySet(provider == null ? NoopMeterProvider.getInstance() : provider);
+    globalMeterProvider = (provider == null) ? NoopMeterProvider.getInstance() : provider;
   }
 }
