@@ -1,8 +1,8 @@
 plugins {
-    id("otel.java-conventions")
-    id("otel.publish-conventions")
+  id("otel.java-conventions")
+  id("otel.publish-conventions")
 
-    id("otel.animalsniffer-conventions")
+  id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry SDK Resource Providers"
@@ -11,75 +11,75 @@ otelJava.moduleName.set("io.opentelemetry.sdk.extension.resources")
 val mrJarVersions = listOf(11)
 
 dependencies {
-    api(project(":sdk:common"))
-    
-    implementation(project(":semconv"))
+  api(project(":sdk:common"))
 
-    compileOnly(project(":sdk-extensions:autoconfigure"))
+  implementation(project(":semconv"))
 
-    compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
+  compileOnly(project(":sdk-extensions:autoconfigure"))
 
-    testImplementation("org.junit-pioneer:junit-pioneer")
+  compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
+
+  testImplementation("org.junit-pioneer:junit-pioneer")
 }
 
 sourceSets {
-    main {
-        output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
-    }
+  main {
+    output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
+  }
 }
 
 tasks {
-    register("generateVersionResource") {
-        val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk/extension/resources")
-        outputs.dir(propertiesDir)
+  register("generateVersionResource") {
+    val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk/extension/resources")
+    outputs.dir(propertiesDir)
 
-        doLast {
-            File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
-        }
+    doLast {
+      File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
     }
+  }
 }
 
 for (version in mrJarVersions) {
-    sourceSets {
-        create("java${version}") {
-            java {
-                setSrcDirs(listOf("src/main/java${version}"))
-            }
-        }
+  sourceSets {
+    create("java${version}") {
+      java {
+        setSrcDirs(listOf("src/main/java${version}"))
+      }
     }
+  }
 
-    tasks {
-        named<JavaCompile>("compileJava${version}Java") {
-            sourceCompatibility = "${version}"
-            targetCompatibility = "${version}"
-            options.release.set(version)
-        }
+  tasks {
+    named<JavaCompile>("compileJava${version}Java") {
+      sourceCompatibility = "${version}"
+      targetCompatibility = "${version}"
+      options.release.set(version)
     }
+  }
 
-    configurations {
-        named("java${version}Implementation") {
-            extendsFrom(configurations["implementation"])
-        }
-        named("java${version}CompileOnly") {
-            extendsFrom(configurations["compileOnly"])
-        }
+  configurations {
+    named("java${version}Implementation") {
+      extendsFrom(configurations["implementation"])
     }
+    named("java${version}CompileOnly") {
+      extendsFrom(configurations["compileOnly"])
+    }
+  }
 
-    dependencies {
-        // Common to reference classes in main sourceset from Java 9 one (e.g., to return a common interface)
-        add("java${version}Implementation", files(sourceSets.main.get().output.classesDirs))
-    }
+  dependencies {
+    // Common to reference classes in main sourceset from Java 9 one (e.g., to return a common interface)
+    add("java${version}Implementation", files(sourceSets.main.get().output.classesDirs))
+  }
 }
 
 tasks {
-    withType(Jar::class) {
-        for (version in mrJarVersions) {
-            into("META-INF/versions/${version}") {
-                from(sourceSets["java${version}"].output)
-            }
-        }
-        manifest.attributes(
-                "Multi-Release" to "true"
-        )
+  withType(Jar::class) {
+    for (version in mrJarVersions) {
+      into("META-INF/versions/${version}") {
+        from(sourceSets["java${version}"].output)
+      }
     }
+    manifest.attributes(
+      "Multi-Release" to "true"
+    )
+  }
 }
