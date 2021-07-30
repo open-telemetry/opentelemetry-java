@@ -29,9 +29,9 @@ public interface LongUpDownCounterBuilder {
   DoubleUpDownCounterBuilder ofDoubles();
 
   /**
-   * Builds and returns a {@code LongCounter} with the desired options.
+   * Builds and returns a {@code LongUpDownCounter} with the desired options.
    *
-   * @return a {@code LongCounter} with the desired options.
+   * @return a {@code LongUpDownCounter} with the desired options.
    */
   LongUpDownCounter build();
 

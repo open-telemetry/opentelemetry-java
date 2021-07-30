@@ -29,9 +29,9 @@ public interface DoubleCounterBuilder {
   LongCounterBuilder ofLongs();
 
   /**
-   * Builds and returns a {@code LongCounter} with the desired options.
+   * Builds and returns a {@code DoubleCounter} with the desired options.
    *
-   * @return a {@code LongCounter} with the desired options.
+   * @return a {@code DoubleCounter} with the desired options.
    */
   DoubleCounter build();
 

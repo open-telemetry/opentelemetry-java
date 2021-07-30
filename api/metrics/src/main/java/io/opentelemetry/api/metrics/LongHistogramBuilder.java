@@ -5,7 +5,7 @@
 
 package io.opentelemetry.api.metrics;
 
-/** Builder class for {@link DoubleHistogram}. */
+/** Builder class for {@link LongHistogram}. */
 public interface LongHistogramBuilder {
   /**
    * Sets the description for this instrument.
@@ -27,9 +27,9 @@ public interface LongHistogramBuilder {
   DoubleHistogramBuilder ofDoubles();
 
   /**
-   * Builds and returns a {@code DoubleHistogram} with the desired options.
+   * Builds and returns a {@code LongHistogram} with the desired options.
    *
-   * @return a {@code DoubleHistogram} with the desired options.
+   * @return a {@code LongHistogram} with the desired options.
    */
   LongHistogram build();
 }
