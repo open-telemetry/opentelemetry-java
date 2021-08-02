@@ -1,9 +1,9 @@
 plugins {
-    id("otel.java-conventions")
-    id("otel.publish-conventions")
+  id("otel.java-conventions")
+  id("otel.publish-conventions")
 
-    id("otel.jmh-conventions")
-    id("otel.animalsniffer-conventions")
+  id("otel.jmh-conventions")
+  id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry SDK"
@@ -11,30 +11,30 @@ otelJava.moduleName.set("io.opentelemetry.sdk")
 base.archivesBaseName = "opentelemetry-sdk"
 
 dependencies {
-    api(project(":api:all"))
-    api(project(":sdk:common"))
-    api(project(":sdk:trace"))
+  api(project(":api:all"))
+  api(project(":sdk:common"))
+  api(project(":sdk:trace"))
 
-    annotationProcessor("com.google.auto.value:auto-value")
+  annotationProcessor("com.google.auto.value:auto-value")
 
-    testAnnotationProcessor("com.google.auto.value:auto-value")
+  testAnnotationProcessor("com.google.auto.value:auto-value")
 
-    testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:testing"))
 }
 
 sourceSets {
-    main {
-        output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
-    }
+  main {
+    output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
+  }
 }
 
 tasks {
-    register("generateVersionResource") {
-        val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk")
-        outputs.dir(propertiesDir)
+  register("generateVersionResource") {
+    val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk")
+    outputs.dir(propertiesDir)
 
-        doLast {
-            File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
-        }
+    doLast {
+      File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
     }
+  }
 }
