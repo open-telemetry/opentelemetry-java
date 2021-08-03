@@ -20,6 +20,7 @@ import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
@@ -87,15 +88,32 @@ class ExportTest {
   }
 
   @Test
-  void testTlsExport() {
-    // Currently not supported.
+  void testTlsExport() throws Exception {
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.builder()
+            .setEndpoint("https://localhost:" + server.httpsPort())
+            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .build();
+    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
+  void testTlsExport_untrusted() {
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.builder()
+            .setEndpoint("https://localhost:" + server.httpsPort())
+            .build();
+    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+  }
+
+  @Test
+  void tlsBadCert() {
     assertThatThrownBy(
             () ->
                 OtlpGrpcSpanExporter.builder()
-                    .setTrustedCertificates(
-                        Files.readAllBytes(certificate.certificateFile().toPath()))
+                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8))
                     .build())
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("TLS cerificate configuration only supported with Netty.");
+        .hasMessageContaining("Could not set trusted certificates");
   }
 }
