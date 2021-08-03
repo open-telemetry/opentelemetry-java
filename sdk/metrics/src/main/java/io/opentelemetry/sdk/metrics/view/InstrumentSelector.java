@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Provides means for selecting one ore more instruments. Used for configuring aggregations for the
+ * Provides means for selecting one or more instruments. Used for configuring aggregations for the
  * specified instruments.
  */
 @AutoValue
