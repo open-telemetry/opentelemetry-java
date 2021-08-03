@@ -29,5 +29,11 @@ public interface BoundLongUpDownCounter {
    */
   void add(long value, Context context);
 
+  /**
+   * Unbinds the current bound instance from the {@link LongUpDownCounter}.
+   *
+   * <p>After this method returns the current instance is considered invalid (not being managed by
+   * the instrument).
+   */
   void unbind();
 }

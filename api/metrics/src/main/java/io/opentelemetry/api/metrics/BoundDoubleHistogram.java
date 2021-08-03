@@ -29,5 +29,11 @@ public interface BoundDoubleHistogram {
    */
   void record(double value, Context context);
 
+  /**
+   * Unbinds the current bound instance from the {@link DoubleHistogram}.
+   *
+   * <p>After this method returns the current instance is considered invalid (not being managed by
+   * the instrument).
+   */
   void unbind();
 }

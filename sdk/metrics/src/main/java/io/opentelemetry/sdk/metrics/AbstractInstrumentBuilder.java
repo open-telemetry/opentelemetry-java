@@ -46,16 +46,6 @@ public abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrum
     return getThis();
   }
 
-  @FunctionalInterface
-  protected static interface SwapBuilder<T> {
-    T newBuilder(
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState,
-        String name,
-        String description,
-        String unit);
-  }
-
   private InstrumentDescriptor makeDescriptor(InstrumentType type, InstrumentValueType valueType) {
     return InstrumentDescriptor.create(instrumentName, description, unit, type, valueType);
   }
@@ -105,5 +95,15 @@ public abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrum
                 descriptor,
                 AsynchronousInstrumentAccumulator.longAsynchronousAccumulator(
                     meterProviderSharedState, meterSharedState, descriptor, updater)));
+  }
+
+  @FunctionalInterface
+  protected static interface SwapBuilder<T> {
+    T newBuilder(
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState,
+        String name,
+        String description,
+        String unit);
   }
 }

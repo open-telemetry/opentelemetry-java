@@ -41,9 +41,9 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private static final String EXPORTER_NAME = OtlpGrpcSpanExporter.class.getSimpleName();
   private static final Attributes EXPORTER_NAME_Attributes =
       Attributes.of(EXPORTER_KEY, EXPORTER_NAME);
-  private static final Attributes EXPORT_SUCCESS_Attributes =
+  private static final Attributes EXPORT_SUCCESS_ATTRIBUTES =
       Attributes.of(EXPORTER_KEY, EXPORTER_NAME, SUCCESS_KEY, "true");
-  private static final Attributes EXPORT_FAILURE_Attributes =
+  private static final Attributes EXPORT_FAILURE_ATTRIBUTES =
       Attributes.of(EXPORTER_KEY, EXPORTER_NAME, SUCCESS_KEY, "false");
 
   private final ThrottlingLogger logger =
@@ -70,8 +70,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     this.spansSeen =
         meter.counterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_Attributes);
     LongCounter spansExportedCounter = meter.counterBuilder("spansExportedByExporter").build();
-    this.spansExportedSuccess = spansExportedCounter.bind(EXPORT_SUCCESS_Attributes);
-    this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_Attributes);
+    this.spansExportedSuccess = spansExportedCounter.bind(EXPORT_SUCCESS_ATTRIBUTES);
+    this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_ATTRIBUTES);
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
 

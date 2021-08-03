@@ -29,5 +29,11 @@ public interface BoundDoubleUpDownCounter {
    */
   void add(double value, Context context);
 
+  /**
+   * Unbinds the current bound instance from the {@link DoubleUpDownCounter}.
+   *
+   * <p>After this method returns the current instance is considered invalid (not being managed by
+   * the instrument).
+   */
   void unbind();
 }
