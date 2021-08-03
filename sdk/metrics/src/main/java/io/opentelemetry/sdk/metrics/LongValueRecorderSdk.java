@@ -11,7 +11,6 @@ import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -26,11 +25,11 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument implement
 
   @Override
   public void record(long value, Attributes attributes, Context context) {
-    AggregatorHandle<?> aggregatorHandle = acquireHandle(attributes);
+    BoundStorageHandle handle = acquireHandle(attributes);
     try {
-      aggregatorHandle.recordLong(value, attributes, context);
+      handle.recordLong(value, attributes, context);
     } finally {
-      aggregatorHandle.release();
+      handle.release();
     }
   }
 
