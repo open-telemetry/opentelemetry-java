@@ -240,10 +240,20 @@ class OtlpConfigTest {
 
   @Test
   void configureTlsInvalidCertificatePath() {
-    System.setProperty("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
+    ConfigProperties properties = ConfigProperties.createForTest(props);
 
-    assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
-        .isInstanceOf(ConfigurationException.class);
+    assertThatThrownBy(() -> SpanExporterConfiguration.configureExporter("otlp", properties))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Invalid OTLP certificate path:");
+
+    assertThatThrownBy(
+            () ->
+                MetricExporterConfiguration.configureOtlpMetrics(
+                    properties, SdkMeterProvider.builder().build()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Invalid OTLP certificate path:");
   }
 
   private static SpanData generateFakeSpan() {
