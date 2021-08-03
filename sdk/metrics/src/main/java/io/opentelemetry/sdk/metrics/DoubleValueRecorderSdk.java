@@ -11,10 +11,10 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 
 final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
     implements DoubleHistogram {
@@ -25,12 +25,12 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
   }
 
   @Override
-  public void record(double value, Attributes labels, Context context) {
-    AggregatorHandle<?> aggregatorHandle = acquireHandle(labels);
+  public void record(double value, Attributes attributes, Context context) {
+    BoundStorageHandle handle = acquireHandle(attributes);
     try {
-      aggregatorHandle.recordDouble(value);
+      handle.recordDouble(value, attributes, context);
     } finally {
-      aggregatorHandle.release();
+      handle.release();
     }
   }
 
@@ -45,20 +45,22 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
   }
 
   @Override
-  public BoundDoubleHistogram bind(Attributes labels) {
-    return new BoundInstrument(acquireHandle(labels));
+  public BoundDoubleHistogram bind(Attributes attributes) {
+    return new BoundInstrument(acquireHandle(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundDoubleHistogram {
-    private final AggregatorHandle<?> aggregatorHandle;
+    private final BoundStorageHandle aggregatorHandle;
+    private final Attributes attributes;
 
-    BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
-      this.aggregatorHandle = aggregatorHandle;
+    BoundInstrument(BoundStorageHandle handle, Attributes attributes) {
+      this.aggregatorHandle = handle;
+      this.attributes = attributes;
     }
 
     @Override
     public void record(double value, Context context) {
-      aggregatorHandle.recordDouble(value);
+      aggregatorHandle.recordDouble(value, attributes, context);
     }
 
     @Override

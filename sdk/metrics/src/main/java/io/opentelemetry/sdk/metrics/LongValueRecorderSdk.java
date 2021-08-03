@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 
 final class LongValueRecorderSdk extends AbstractSynchronousInstrument implements LongHistogram {
 
@@ -27,7 +28,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument implement
   public void record(long value, Attributes attributes, Context context) {
     AggregatorHandle<?> aggregatorHandle = acquireHandle(attributes);
     try {
-      aggregatorHandle.recordLong(value);
+      aggregatorHandle.recordLong(value, attributes, context);
     } finally {
       aggregatorHandle.release();
     }
@@ -45,19 +46,21 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument implement
 
   @Override
   public BoundLongHistogram bind(Attributes attributes) {
-    return new BoundInstrument(acquireHandle(attributes));
+    return new BoundInstrument(acquireHandle(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundLongHistogram {
-    private final AggregatorHandle<?> aggregatorHandle;
+    private final BoundStorageHandle handle;
+    private final Attributes attributes;
 
-    BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
-      this.aggregatorHandle = aggregatorHandle;
+    BoundInstrument(BoundStorageHandle handle, Attributes attributes) {
+      this.handle = handle;
+      this.attributes = attributes;
     }
 
     @Override
     public void record(long value, Context context) {
-      aggregatorHandle.recordLong(value);
+      handle.recordLong(value, attributes, context);
     }
 
     @Override
@@ -67,7 +70,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument implement
 
     @Override
     public void unbind() {
-      aggregatorHandle.release();
+      handle.release();
     }
   }
 

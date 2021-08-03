@@ -12,10 +12,10 @@ import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import java.util.function.Consumer;
 
 final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
@@ -27,12 +27,12 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
   }
 
   @Override
-  public void add(double increment, Attributes labels, Context context) {
-    AggregatorHandle<?> aggregatorHandle = acquireHandle(labels);
+  public void add(double increment, Attributes attributes, Context context) {
+    BoundStorageHandle handle = acquireHandle(attributes);
     try {
-      aggregatorHandle.recordDouble(increment);
+      handle.recordDouble(increment, attributes, context);
     } finally {
-      aggregatorHandle.release();
+      handle.release();
     }
   }
 
@@ -47,20 +47,22 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
   }
 
   @Override
-  public BoundDoubleUpDownCounter bind(Attributes labels) {
-    return new BoundInstrument(acquireHandle(labels));
+  public BoundDoubleUpDownCounter bind(Attributes attributes) {
+    return new BoundInstrument(acquireHandle(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundDoubleUpDownCounter {
-    private final AggregatorHandle<?> aggregatorHandle;
+    private final BoundStorageHandle handle;
+    private final Attributes attributes;
 
-    BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
-      this.aggregatorHandle = aggregatorHandle;
+    BoundInstrument(BoundStorageHandle handle, Attributes attributes) {
+      this.handle = handle;
+      this.attributes = attributes;
     }
 
     @Override
     public void add(double increment, Context context) {
-      aggregatorHandle.recordDouble(increment);
+      handle.recordDouble(increment, attributes, context);
     }
 
     @Override
@@ -70,7 +72,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
 
     @Override
     public void unbind() {
-      aggregatorHandle.release();
+      handle.release();
     }
   }
 

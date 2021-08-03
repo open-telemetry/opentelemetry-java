@@ -5,6 +5,9 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -23,7 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * of the bits are used for reference (usage) counting.
  */
 @ThreadSafe
-public abstract class AggregatorHandle<T> {
+public abstract class AggregatorHandle<T> implements BoundStorageHandle {
   // Atomically counts the number of references (usages) while also keeping a state of
   // mapped/unmapped into a registry map.
   private final AtomicLong refCountMapped;
@@ -50,6 +53,7 @@ public abstract class AggregatorHandle<T> {
   }
 
   /** Release this {@code Aggregator}. It decreases the reference usage. */
+  @Override
   public final void release() {
     // Every reference adds/removes 2 instead of 1 to avoid changing the mapping bit.
     refCountMapped.getAndAdd(-2L);
@@ -96,6 +100,11 @@ public abstract class AggregatorHandle<T> {
     hasRecordings = true;
   }
 
+  @Override
+  public final void recordLong(long value, Attributes attributes, Context context) {
+    recordLong(value);
+  }
+
   /**
    * Concrete Aggregator instances should implement this method in order support recordings of long
    * values.
@@ -113,6 +122,11 @@ public abstract class AggregatorHandle<T> {
   public final void recordDouble(double value) {
     doRecordDouble(value);
     hasRecordings = true;
+  }
+
+  @Override
+  public final void recordDouble(double value, Attributes attributes, Context context) {
+    recordDouble(value);
   }
 
   /**
