@@ -17,6 +17,7 @@ import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
@@ -72,9 +73,18 @@ final class MetricExporterConfiguration {
       builder.setEndpoint(endpoint);
     }
 
+    Map<String, String> headers = config.getCommaSeparatedMap("otel.exporter.otlp.metrics.headers");
+    if (headers.isEmpty()) {
+      headers = config.getCommaSeparatedMap("otel.exporter.otlp.headers");
+    }
+    headers.forEach(builder::addHeader);
+
     config.getCommaSeparatedMap("otel.exporter.otlp.headers").forEach(builder::addHeader);
 
-    Duration timeout = config.getDuration("otel.exporter.otlp.timeout");
+    Duration timeout = config.getDuration("otel.exporter.otlp.metrics.timeout");
+    if (timeout == null) {
+      timeout = config.getDuration("otel.exporter.otlp.timeout");
+    }
     if (timeout != null) {
       builder.setTimeout(timeout);
     }
