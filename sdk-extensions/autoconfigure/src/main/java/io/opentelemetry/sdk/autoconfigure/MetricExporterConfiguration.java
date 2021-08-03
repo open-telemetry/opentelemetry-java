@@ -15,6 +15,9 @@ import io.opentelemetry.sdk.metrics.export.IntervalMetricReaderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
@@ -87,6 +90,24 @@ final class MetricExporterConfiguration {
     }
     if (timeout != null) {
       builder.setTimeout(timeout);
+    }
+
+    String certificate = config.getString("otel.exporter.otlp.metrics.certificate");
+    if (certificate == null) {
+      certificate = config.getString("otel.exporter.otlp.certificate");
+    }
+    if (certificate != null) {
+      Path path = Paths.get(certificate);
+      if (!Files.exists(path)) {
+        throw new ConfigurationException("Invalid OTLP certificate path: " + path);
+      }
+      final byte[] certificateBytes;
+      try {
+        certificateBytes = Files.readAllBytes(path);
+      } catch (IOException e) {
+        throw new ConfigurationException("Error reading OTLP certificate.", e);
+      }
+      builder.setTrustedCertificates(certificateBytes);
     }
 
     OtlpGrpcMetricExporter exporter = builder.build();
