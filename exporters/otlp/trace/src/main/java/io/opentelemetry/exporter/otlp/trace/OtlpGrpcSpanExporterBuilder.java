@@ -7,31 +7,19 @@ package io.opentelemetry.exporter.otlp.trace;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static io.opentelemetry.exporter.otlp.internal.SslUtil.setTrustedCertificatesPem;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
-import io.grpc.netty.GrpcSslContexts;
-import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
-import javax.net.ssl.TrustManagerFactory;
 
 /** Builder utility for this exporter. */
 public final class OtlpGrpcSpanExporterBuilder {
@@ -149,90 +137,19 @@ public final class OtlpGrpcSpanExporterBuilder {
       }
 
       if (trustedCertificatesPem != null) {
-        // gRPC does not abstract TLS configuration so we need to check the implementation and act
-        // accordingly.
-        if (managedChannelBuilder
-            .getClass()
-            .getName()
-            .equals("io.grpc.netty.NettyChannelBuilder")) {
-          NettyChannelBuilder nettyBuilder = (NettyChannelBuilder) managedChannelBuilder;
-          try {
-            nettyBuilder.sslContext(
-                GrpcSslContexts.forClient().trustManager(trustManagerFactory()).build());
-          } catch (IllegalArgumentException | SSLException e) {
-            throw new IllegalStateException(
-                "Could not set trusted certificates for gRPC TLS connection, are they valid "
-                    + "X.509 in PEM format?",
-                e);
-          }
-        } else if (managedChannelBuilder
-            .getClass()
-            .getName()
-            .equals("io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder")) {
-          io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder nettyBuilder =
-              (io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder) managedChannelBuilder;
-          try {
-            nettyBuilder.sslContext(
-                io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts.forClient()
-                    .trustManager(trustManagerFactory())
-                    .build());
-          } catch (IllegalArgumentException | SSLException e) {
-            throw new IllegalStateException(
-                "Could not set trusted certificates for gRPC TLS connection, are they valid "
-                    + "X.509 in PEM format?",
-                e);
-          }
-        } else if (managedChannelBuilder
-            .getClass()
-            .getName()
-            .equals("io.grpc.okhttp.OkHttpChannelBuilder")) {
-          io.grpc.okhttp.OkHttpChannelBuilder okHttpBuilder =
-              (io.grpc.okhttp.OkHttpChannelBuilder) managedChannelBuilder;
-          SSLContext sslContext;
-          try {
-            sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, trustManagerFactory().getTrustManagers(), null);
-          } catch (NoSuchAlgorithmException | SSLException | KeyManagementException e) {
-            throw new IllegalStateException(
-                "Could not set trusted certificates for gRPC TLS connection, are they valid "
-                    + "X.509 in PEM format?",
-                e);
-          }
-          okHttpBuilder.sslSocketFactory(sslContext.getSocketFactory());
-        } else {
+        try {
+          setTrustedCertificatesPem(managedChannelBuilder, trustedCertificatesPem);
+        } catch (SSLException e) {
           throw new IllegalStateException(
-              "TLS certificate configuration not supported for unrecognized ManagedChannelBuilder "
-                  + managedChannelBuilder.getClass().getName());
+              "Could not set trusted certificates for gRPC TLS connection, are they valid "
+                  + "X.509 in PEM format?",
+              e);
         }
       }
 
       channel = managedChannelBuilder.build();
     }
     return new OtlpGrpcSpanExporter(channel, timeoutNanos);
-  }
-
-  private TrustManagerFactory trustManagerFactory() throws SSLException {
-    requireNonNull(trustedCertificatesPem, "trustedCertificatesPem");
-    try {
-      KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-      ks.load(null);
-
-      ByteArrayInputStream is = new ByteArrayInputStream(trustedCertificatesPem);
-      CertificateFactory factory = CertificateFactory.getInstance("X.509");
-      int i = 0;
-      while (is.available() > 0) {
-        X509Certificate cert = (X509Certificate) factory.generateCertificate(is);
-        ks.setCertificateEntry("cert_" + i, cert);
-        i++;
-      }
-
-      TrustManagerFactory tmf =
-          TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-      tmf.init(ks);
-      return tmf;
-    } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException e) {
-      throw new SSLException("Could not build TrustManagerFactory from trustedCertificatesPem.", e);
-    }
   }
 
   OtlpGrpcSpanExporterBuilder() {}

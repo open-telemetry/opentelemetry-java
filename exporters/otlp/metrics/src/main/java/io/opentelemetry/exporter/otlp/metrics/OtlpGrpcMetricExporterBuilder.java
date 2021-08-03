@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.metrics;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static io.opentelemetry.exporter.otlp.internal.SslUtil.setTrustedCertificatesPem;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
@@ -18,6 +19,7 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLException;
 
 /** Builder utility for this exporter. */
 public final class OtlpGrpcMetricExporterBuilder {
@@ -31,6 +33,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   private URI endpoint = DEFAULT_ENDPOINT;
 
   @Nullable private Metadata metadata;
+  @Nullable private byte[] trustedCertificatesPem;
 
   /**
    * Sets the managed chanel to use when communicating with the backend. Takes precedence over
@@ -89,6 +92,16 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
+   * Sets the certificate chain to use for verifying servers when TLS is enabled. The {@code byte[]}
+   * should contain an X.509 certificate collection in PEM format. If not set, TLS connections will
+   * use the system default trusted certificates.
+   */
+  public OtlpGrpcMetricExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
+    this.trustedCertificatesPem = trustedCertificatesPem;
+    return this;
+  }
+
+  /**
    * Add header to request. Optional. Applicable only if {@link
    * OtlpGrpcMetricExporterBuilder#endpoint} is set to build channel.
    *
@@ -122,6 +135,17 @@ public final class OtlpGrpcMetricExporterBuilder {
 
       if (metadata != null) {
         managedChannelBuilder.intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+      }
+
+      if (trustedCertificatesPem != null) {
+        try {
+          setTrustedCertificatesPem(managedChannelBuilder, trustedCertificatesPem);
+        } catch (SSLException e) {
+          throw new IllegalStateException(
+              "Could not set trusted certificates for gRPC TLS connection, are they valid "
+                  + "X.509 in PEM format?",
+              e);
+        }
       }
 
       channel = managedChannelBuilder.build();
