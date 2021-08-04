@@ -7,11 +7,6 @@ package io.opentelemetry.exporter.otlp.http.metric;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -41,21 +36,10 @@ import okio.Okio;
 @ThreadSafe
 public final class OtlpHttpMetricExporter implements MetricExporter {
 
-  private static final String EXPORTER_NAME = OtlpHttpMetricExporter.class.getSimpleName();
-  private static final Labels EXPORTER_NAME_LABELS = Labels.of("exporter", EXPORTER_NAME);
-  private static final Labels EXPORT_SUCCESS_LABELS =
-      Labels.of("exporter", EXPORTER_NAME, "success", "true");
-  private static final Labels EXPORT_FAILURE_LABELS =
-      Labels.of("exporter", EXPORTER_NAME, "success", "false");
-
   private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
 
   private final ThrottlingLogger logger =
       new ThrottlingLogger(Logger.getLogger(OtlpHttpMetricExporter.class.getName()));
-
-  private final BoundLongCounter metricsSeen;
-  private final BoundLongCounter metricsExportedSuccess;
-  private final BoundLongCounter metricsExportedFailure;
 
   private final OkHttpClient client;
   private final String endpoint;
@@ -67,14 +51,6 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
       String endpoint,
       @Nullable Headers headers,
       boolean isCompressionEnabled) {
-    Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.exporters.otlp-http");
-    this.metricsSeen =
-        meter.longCounterBuilder("metricsSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
-    LongCounter metricsExportedCounter =
-        meter.longCounterBuilder("metricsExportedByExporter").build();
-    this.metricsExportedSuccess = metricsExportedCounter.bind(EXPORT_SUCCESS_LABELS);
-    this.metricsExportedFailure = metricsExportedCounter.bind(EXPORT_FAILURE_LABELS);
-
     this.client = client;
     this.endpoint = endpoint;
     this.headers = headers;
@@ -89,7 +65,6 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
-    metricsSeen.add(metrics.size());
     ExportMetricsServiceRequest exportMetricsServiceRequest =
         ExportMetricsServiceRequest.newBuilder()
             .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(metrics))
@@ -116,7 +91,6 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
             new Callback() {
               @Override
               public void onFailure(Call call, IOException e) {
-                metricsExportedFailure.add(metrics.size());
                 logger.log(
                     Level.SEVERE,
                     "Failed to export metrics. The request could not be executed. Full error message: "
@@ -127,12 +101,10 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
               @Override
               public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                  metricsExportedSuccess.add(metrics.size());
                   result.succeed();
                   return;
                 }
 
-                metricsExportedFailure.add(metrics.size());
                 int code = response.code();
 
                 Status status = extractErrorStatus(response);
@@ -222,9 +194,6 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = CompletableResultCode.ofSuccess();
     client.dispatcher().cancelAll();
-    this.metricsSeen.unbind();
-    this.metricsExportedSuccess.unbind();
-    this.metricsExportedFailure.unbind();
     return result;
   }
 }
