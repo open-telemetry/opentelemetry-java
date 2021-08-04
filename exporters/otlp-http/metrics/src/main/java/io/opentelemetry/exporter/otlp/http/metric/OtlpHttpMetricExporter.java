@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.http.trace;
+package io.opentelemetry.exporter.otlp.http.metric;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -12,12 +12,12 @@ import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
-import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -37,11 +37,11 @@ import okio.BufferedSink;
 import okio.GzipSink;
 import okio.Okio;
 
-/** Exports spans using OTLP via HTTP, using OpenTelemetry's protobuf model. */
+/** Exports metrics using OTLP via HTTP, using OpenTelemetry's protobuf model. */
 @ThreadSafe
-public final class OtlpHttpSpanExporter implements SpanExporter {
+public final class OtlpHttpMetricExporter implements MetricExporter {
 
-  private static final String EXPORTER_NAME = OtlpHttpSpanExporter.class.getSimpleName();
+  private static final String EXPORTER_NAME = OtlpHttpMetricExporter.class.getSimpleName();
   private static final Labels EXPORTER_NAME_LABELS = Labels.of("exporter", EXPORTER_NAME);
   private static final Labels EXPORT_SUCCESS_LABELS =
       Labels.of("exporter", EXPORTER_NAME, "success", "true");
@@ -51,28 +51,29 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
 
   private final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OtlpHttpSpanExporter.class.getName()));
+      new ThrottlingLogger(Logger.getLogger(OtlpHttpMetricExporter.class.getName()));
 
-  private final BoundLongCounter spansSeen;
-  private final BoundLongCounter spansExportedSuccess;
-  private final BoundLongCounter spansExportedFailure;
+  private final BoundLongCounter metricsSeen;
+  private final BoundLongCounter metricsExportedSuccess;
+  private final BoundLongCounter metricsExportedFailure;
 
   private final OkHttpClient client;
   private final String endpoint;
   @Nullable private final Headers headers;
   private final boolean isCompressionEnabled;
 
-  OtlpHttpSpanExporter(
+  OtlpHttpMetricExporter(
       OkHttpClient client,
       String endpoint,
       @Nullable Headers headers,
       boolean isCompressionEnabled) {
     Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.exporters.otlp-http");
-    this.spansSeen =
-        meter.longCounterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
-    LongCounter spansExportedCounter = meter.longCounterBuilder("spansExportedByExporter").build();
-    this.spansExportedSuccess = spansExportedCounter.bind(EXPORT_SUCCESS_LABELS);
-    this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_LABELS);
+    this.metricsSeen =
+        meter.longCounterBuilder("metricsSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
+    LongCounter metricsExportedCounter =
+        meter.longCounterBuilder("metricsExportedByExporter").build();
+    this.metricsExportedSuccess = metricsExportedCounter.bind(EXPORT_SUCCESS_LABELS);
+    this.metricsExportedFailure = metricsExportedCounter.bind(EXPORT_FAILURE_LABELS);
 
     this.client = client;
     this.endpoint = endpoint;
@@ -81,17 +82,17 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   }
 
   /**
-   * Submits all the given spans in a single batch to the OpenTelemetry collector.
+   * Submits all the given metrics in a single batch to the OpenTelemetry collector.
    *
-   * @param spans the list of sampled Spans to be exported.
+   * @param metrics the list of Metrics to be exported.
    * @return the result of the operation
    */
   @Override
-  public CompletableResultCode export(Collection<SpanData> spans) {
-    spansSeen.add(spans.size());
-    ExportTraceServiceRequest exportTraceServiceRequest =
-        ExportTraceServiceRequest.newBuilder()
-            .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
+  public CompletableResultCode export(Collection<MetricData> metrics) {
+    metricsSeen.add(metrics.size());
+    ExportMetricsServiceRequest exportMetricsServiceRequest =
+        ExportMetricsServiceRequest.newBuilder()
+            .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(metrics))
             .build();
 
     Request.Builder requestBuilder = new Request.Builder().url(endpoint);
@@ -99,7 +100,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
       requestBuilder.headers(headers);
     }
     RequestBody requestBody =
-        RequestBody.create(exportTraceServiceRequest.toByteArray(), PROTOBUF_MEDIA_TYPE);
+        RequestBody.create(exportMetricsServiceRequest.toByteArray(), PROTOBUF_MEDIA_TYPE);
     if (isCompressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");
       requestBuilder.post(gzipRequestBody(requestBody));
@@ -115,30 +116,30 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
             new Callback() {
               @Override
               public void onFailure(Call call, IOException e) {
-                spansExportedFailure.add(spans.size());
+                metricsExportedFailure.add(metrics.size());
                 result.fail();
                 logger.log(
                     Level.SEVERE,
-                    "Failed to export spans. The request could not be executed. Full error message: "
+                    "Failed to export metrics. The request could not be executed. Full error message: "
                         + e.getMessage());
               }
 
               @Override
               public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                  spansExportedSuccess.add(spans.size());
+                  metricsExportedSuccess.add(metrics.size());
                   result.succeed();
                   return;
                 }
 
-                spansExportedFailure.add(spans.size());
+                metricsExportedFailure.add(metrics.size());
                 int code = response.code();
 
                 Status status = extractErrorStatus(response);
 
                 logger.log(
                     Level.WARNING,
-                    "Failed to export spans. Server responded with HTTP status code "
+                    "Failed to export metrics. Server responded with HTTP status code "
                         + code
                         + ". Error message: "
                         + status.getMessage());
@@ -189,7 +190,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   }
 
   /**
-   * The OTLP exporter does not batch spans, so this method will immediately return with success.
+   * The OTLP exporter does not batch metrics, so this method will immediately return with success.
    *
    * @return always Success
    */
@@ -203,16 +204,16 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
    *
    * @return a new builder instance for this exporter.
    */
-  public static OtlpHttpSpanExporterBuilder builder() {
-    return new OtlpHttpSpanExporterBuilder();
+  public static OtlpHttpMetricExporterBuilder builder() {
+    return new OtlpHttpMetricExporterBuilder();
   }
 
   /**
-   * Returns a new {@link OtlpHttpSpanExporter} using the default values.
+   * Returns a new {@link OtlpHttpMetricExporter} using the default values.
    *
-   * @return a new {@link OtlpHttpSpanExporter} instance.
+   * @return a new {@link OtlpHttpMetricExporter} instance.
    */
-  public static OtlpHttpSpanExporter getDefault() {
+  public static OtlpHttpMetricExporter getDefault() {
     return builder().build();
   }
 
@@ -221,9 +222,9 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = CompletableResultCode.ofSuccess();
     client.dispatcher().cancelAll();
-    this.spansSeen.unbind();
-    this.spansExportedSuccess.unbind();
-    this.spansExportedFailure.unbind();
+    this.metricsSeen.unbind();
+    this.metricsExportedSuccess.unbind();
+    this.metricsExportedFailure.unbind();
     return result;
   }
 }
