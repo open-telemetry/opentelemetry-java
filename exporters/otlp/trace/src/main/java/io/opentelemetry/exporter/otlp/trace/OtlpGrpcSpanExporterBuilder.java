@@ -7,13 +7,13 @@ package io.opentelemetry.exporter.otlp.trace;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
-import static io.opentelemetry.exporter.otlp.internal.SslUtil.setTrustedCertificatesPem;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
+import io.opentelemetry.exporter.otlp.internal.SslUtil;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -138,7 +138,7 @@ public final class OtlpGrpcSpanExporterBuilder {
 
       if (trustedCertificatesPem != null) {
         try {
-          setTrustedCertificatesPem(managedChannelBuilder, trustedCertificatesPem);
+          SslUtil.setTrustedCertificatesPem(managedChannelBuilder, trustedCertificatesPem);
         } catch (SSLException e) {
           throw new IllegalStateException(
               "Could not set trusted certificates for gRPC TLS connection, are they valid "
