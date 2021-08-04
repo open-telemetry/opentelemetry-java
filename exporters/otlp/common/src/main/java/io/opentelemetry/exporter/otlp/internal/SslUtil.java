@@ -62,10 +62,8 @@ public final class SslUtil {
       try {
         sslContext = SSLContext.getInstance("TLS");
         sslContext.init(null, tmf.getTrustManagers(), null);
-      } catch (NoSuchAlgorithmException e) {
-        throw new SSLException("Could not get SSLContext for TLS.", e);
-      } catch (KeyManagementException e) {
-        throw new SSLException("Could not initialize SSLContext.", e);
+      } catch (NoSuchAlgorithmException | KeyManagementException e) {
+        throw new SSLException("Could not build SSLContext.", e);
       }
       okHttpBuilder.sslSocketFactory(sslContext.getSocketFactory());
     } else {
