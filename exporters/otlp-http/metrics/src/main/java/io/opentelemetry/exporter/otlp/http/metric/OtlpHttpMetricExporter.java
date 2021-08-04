@@ -117,11 +117,11 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
               @Override
               public void onFailure(Call call, IOException e) {
                 metricsExportedFailure.add(metrics.size());
-                result.fail();
                 logger.log(
                     Level.SEVERE,
                     "Failed to export metrics. The request could not be executed. Full error message: "
                         + e.getMessage());
+                result.fail();
               }
 
               @Override
