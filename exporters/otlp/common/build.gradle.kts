@@ -17,6 +17,10 @@ dependencies {
 
   implementation("com.google.protobuf:protobuf-java")
 
+  compileOnly("io.grpc:grpc-netty")
+  compileOnly("io.grpc:grpc-netty-shaded")
+  compileOnly("io.grpc:grpc-okhttp")
+
   testImplementation(project(":sdk:testing"))
 
   testImplementation("io.grpc:grpc-testing")

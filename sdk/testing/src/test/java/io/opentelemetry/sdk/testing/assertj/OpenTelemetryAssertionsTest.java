@@ -157,6 +157,8 @@ class OpenTelemetryAssertionsTest {
                     .containsEntryWithLongValuesOf("scores", Arrays.asList(0L, 1L))
                     .containsEntry("coins", 0.01, 0.05, 0.1)
                     .containsEntryWithDoubleValuesOf("coins", Arrays.asList(0.01, 0.05, 0.1))
+                    .containsKey(AttributeKey.stringKey("bear"))
+                    .containsKey("bear")
                     .containsOnly(
                         attributeEntry("bear", "mya"),
                         attributeEntry("warm", true),
@@ -235,6 +237,19 @@ class OpenTelemetryAssertionsTest {
                 assertThat(SPAN1)
                     .hasAttributesSatisfying(
                         attributes -> assertThat(attributes).containsEntry("cat", "bark")))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasAttributesSatisfying(
+                        attributes ->
+                            assertThat(attributes).containsKey(AttributeKey.stringKey("cat"))))
+        .isInstanceOf(AssertionError.class);
+    assertThatThrownBy(
+            () ->
+                assertThat(SPAN1)
+                    .hasAttributesSatisfying(
+                        attributes -> assertThat(attributes).containsKey("cat")))
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(
             () ->
