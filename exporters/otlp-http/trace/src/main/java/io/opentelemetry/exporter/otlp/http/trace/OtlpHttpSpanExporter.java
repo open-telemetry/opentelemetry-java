@@ -60,13 +60,10 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   private final OkHttpClient client;
   private final String endpoint;
   @Nullable private final Headers headers;
-  private final boolean isCompressionEnabled;
+  private final boolean compressionEnabled;
 
   OtlpHttpSpanExporter(
-      OkHttpClient client,
-      String endpoint,
-      @Nullable Headers headers,
-      boolean isCompressionEnabled) {
+      OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
     Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.exporters.otlp-http");
     this.spansSeen =
         meter.longCounterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
@@ -77,7 +74,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     this.client = client;
     this.endpoint = endpoint;
     this.headers = headers;
-    this.isCompressionEnabled = isCompressionEnabled;
+    this.compressionEnabled = compressionEnabled;
   }
 
   /**
@@ -100,7 +97,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     }
     RequestBody requestBody =
         RequestBody.create(exportTraceServiceRequest.toByteArray(), PROTOBUF_MEDIA_TYPE);
-    if (isCompressionEnabled) {
+    if (compressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");
       requestBuilder.post(gzipRequestBody(requestBody));
     } else {

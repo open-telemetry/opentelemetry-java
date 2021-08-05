@@ -44,17 +44,14 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   private final OkHttpClient client;
   private final String endpoint;
   @Nullable private final Headers headers;
-  private final boolean isCompressionEnabled;
+  private final boolean compressionEnabled;
 
   OtlpHttpMetricExporter(
-      OkHttpClient client,
-      String endpoint,
-      @Nullable Headers headers,
-      boolean isCompressionEnabled) {
+      OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
     this.client = client;
     this.endpoint = endpoint;
     this.headers = headers;
-    this.isCompressionEnabled = isCompressionEnabled;
+    this.compressionEnabled = compressionEnabled;
   }
 
   /**
@@ -76,7 +73,7 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
     }
     RequestBody requestBody =
         RequestBody.create(exportMetricsServiceRequest.toByteArray(), PROTOBUF_MEDIA_TYPE);
-    if (isCompressionEnabled) {
+    if (compressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");
       requestBuilder.post(gzipRequestBody(requestBody));
     } else {

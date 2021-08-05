@@ -30,7 +30,7 @@ public final class OtlpHttpMetricExporterBuilder {
 
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private String endpoint = DEFAULT_ENDPOINT;
-  private boolean isCompressionEnabled = false;
+  private boolean compressionEnabled = false;
   @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
 
@@ -87,7 +87,7 @@ public final class OtlpHttpMetricExporterBuilder {
     Preconditions.checkArgument(
         compressionMethod.equals("gzip"),
         "Unsupported compression method. Supported compression methods include: gzip.");
-    this.isCompressionEnabled = true;
+    this.compressionEnabled = true;
     return this;
   }
 
@@ -134,8 +134,7 @@ public final class OtlpHttpMetricExporterBuilder {
 
     Headers headers = headersBuilder == null ? null : headersBuilder.build();
 
-    return new OtlpHttpMetricExporter(
-        clientBuilder.build(), endpoint, headers, isCompressionEnabled);
+    return new OtlpHttpMetricExporter(clientBuilder.build(), endpoint, headers, compressionEnabled);
   }
 
   /**

@@ -30,7 +30,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private String endpoint = DEFAULT_ENDPOINT;
-  private boolean isCompressionEnabled = false;
+  private boolean compressionEnabled = false;
   @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
 
@@ -87,7 +87,7 @@ public final class OtlpHttpSpanExporterBuilder {
     Preconditions.checkArgument(
         compressionMethod.equals("gzip"),
         "Unsupported compression method. Supported compression methods include: gzip.");
-    this.isCompressionEnabled = true;
+    this.compressionEnabled = true;
     return this;
   }
 
@@ -134,7 +134,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
     Headers headers = headersBuilder == null ? null : headersBuilder.build();
 
-    return new OtlpHttpSpanExporter(clientBuilder.build(), endpoint, headers, isCompressionEnabled);
+    return new OtlpHttpSpanExporter(clientBuilder.build(), endpoint, headers, compressionEnabled);
   }
 
   /**
