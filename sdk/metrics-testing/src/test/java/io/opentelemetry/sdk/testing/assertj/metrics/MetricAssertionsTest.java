@@ -17,11 +17,14 @@ import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
+import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.LongExemplar;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -52,6 +55,17 @@ public class MetricAssertionsTest {
           /* unit= */ "unit",
           DoubleHistogramData.create(
               AggregationTemporality.DELTA,
+              // Points
+              Collections.emptyList()));
+
+  private static final MetricData DOUBLE_SUMMARY_METRIC =
+      MetricData.createDoubleSummary(
+          RESOURCE,
+          INSTRUMENTATION_LIBRARY_INFO,
+          /* name= */ "summary",
+          /* description= */ "description",
+          /* unit= */ "unit",
+          DoubleSummaryData.create(
               // Points
               Collections.emptyList()));
 
@@ -148,6 +162,12 @@ public class MetricAssertionsTest {
   private static final LongPointData LONG_POINT_DATA_WITH_EXEMPLAR =
       LongPointData.create(1, 2, Attributes.empty(), 3, Collections.singletonList(LONG_EXEMPLAR));
 
+  private static final ValueAtPercentile PERCENTILE_VALUE = ValueAtPercentile.create(0, 1);
+
+  private static final DoubleSummaryPointData DOUBLE_SUMMARY_POINT_DATA =
+      DoubleSummaryPointData.create(
+          1, 2, Attributes.empty(), 1, 2, Collections.singletonList(PERCENTILE_VALUE));
+
   @Test
   void metric_passing() {
     assertThat(HISTOGRAM_METRIC)
@@ -194,6 +214,17 @@ public class MetricAssertionsTest {
     assertThatThrownBy(() -> assertThat(HISTOGRAM_METRIC).hasDoubleHistogram().isDelta())
         .isInstanceOf(AssertionError.class);
     assertThatThrownBy(() -> assertThat(HISTOGRAM_DELTA_METRIC).hasDoubleHistogram().isCumulative())
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void summary_passing() {
+    assertThat(DOUBLE_SUMMARY_METRIC).hasDoubleSummary();
+  }
+
+  @Test
+  void sumamry_failing() {
+    assertThatThrownBy(() -> assertThat(DOUBLE_GAUGE_METRIC).hasDoubleSummary())
         .isInstanceOf(AssertionError.class);
   }
 
@@ -333,6 +364,32 @@ public class MetricAssertionsTest {
   @Test
   void longGauge_fails() {
     assertThatThrownBy(() -> assertThat(HISTOGRAM_DELTA_METRIC).hasLongGauge())
+        .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void doubleSummaryPointData_passing() {
+    assertThat(DOUBLE_SUMMARY_POINT_DATA)
+        .hasCount(1)
+        .hasSum(2)
+        .hasEpochNanos(2)
+        .hasStartEpochNanos(1)
+        .hasAttributes(Attributes.empty())
+        .hasPercentileValues(PERCENTILE_VALUE);
+  }
+
+  @Test
+  void doubleSummaryPointData_failing() {
+    assertThatThrownBy(() -> assertThat(DOUBLE_SUMMARY_POINT_DATA).hasCount(2))
+        .isInstanceOf(AssertionError.class);
+
+    assertThatThrownBy(() -> assertThat(DOUBLE_SUMMARY_POINT_DATA).hasSum(1))
+        .isInstanceOf(AssertionError.class);
+
+    assertThatThrownBy(
+            () ->
+                assertThat(DOUBLE_SUMMARY_POINT_DATA)
+                    .hasPercentileValues(ValueAtPercentile.create(1, 1)))
         .isInstanceOf(AssertionError.class);
   }
 }

@@ -10,7 +10,6 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -29,23 +28,12 @@ class DoubleValueObserverSdkTest {
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void collectMetrics_NoCallback() {
-    sdkMeter
-        .doubleValueObserverBuilder("testObserver")
-        .setDescription("My own DoubleValueObserver")
-        .setUnit("ms")
-        .build();
-    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
-  }
-
-  @Test
   void collectMetrics_NoRecords() {
     sdkMeter
-        .doubleValueObserverBuilder("testObserver")
+        .gaugeBuilder("testObserver")
         .setDescription("My own DoubleValueObserver")
         .setUnit("ms")
-        .setUpdater(result -> {})
-        .build();
+        .buildWithCallback(result -> {});
     assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
@@ -53,11 +41,11 @@ class DoubleValueObserverSdkTest {
   @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     sdkMeter
-        .doubleValueObserverBuilder("testObserver")
+        .gaugeBuilder("testObserver")
         .setDescription("My own DoubleValueObserver")
         .setUnit("ms")
-        .setUpdater(result -> result.observe(12.1d, Labels.of("k", "v")))
-        .build();
+        .buildWithCallback(
+            result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofSeconds(1));
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(

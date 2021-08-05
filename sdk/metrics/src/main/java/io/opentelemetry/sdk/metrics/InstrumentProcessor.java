@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
@@ -25,7 +25,7 @@ final class InstrumentProcessor<T> {
   private final Aggregator<T> aggregator;
   private final long startEpochNanos;
   private long lastEpochNanos;
-  private Map<Labels, T> accumulationMap;
+  private Map<Attributes, T> accumulationMap;
 
   InstrumentProcessor(Aggregator<T> aggregator, long startEpochNanos) {
     this.aggregator = aggregator;
@@ -41,7 +41,7 @@ final class InstrumentProcessor<T> {
    * @param labelSet the {@link Labels} associated with this {@code Aggregator}.
    * @param accumulation the accumulation produced by this instrument.
    */
-  void batch(Labels labelSet, T accumulation) {
+  void batch(Attributes labelSet, T accumulation) {
     T currentAccumulation = accumulationMap.get(labelSet);
     if (currentAccumulation == null) {
       accumulationMap.put(labelSet, accumulation);

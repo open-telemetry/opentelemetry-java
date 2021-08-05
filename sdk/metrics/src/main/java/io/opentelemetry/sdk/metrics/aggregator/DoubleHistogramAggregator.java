@@ -5,8 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -63,7 +63,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
   @Override
   public final MetricData toMetricData(
-      Map<Labels, HistogramAccumulation> accumulationByLabels,
+      Map<Attributes, HistogramAccumulation> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {

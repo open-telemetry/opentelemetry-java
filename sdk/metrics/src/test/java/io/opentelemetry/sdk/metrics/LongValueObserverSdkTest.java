@@ -10,7 +10,6 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
@@ -29,23 +28,13 @@ class LongValueObserverSdkTest {
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void collectMetrics_NoCallback() {
-    sdkMeter
-        .longValueObserverBuilder("testObserver")
-        .setDescription("My own LongValueObserver")
-        .setUnit("ms")
-        .build();
-    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
-  }
-
-  @Test
   void collectMetrics_NoRecords() {
     sdkMeter
-        .longValueObserverBuilder("testObserver")
+        .gaugeBuilder("testObserver")
+        .ofLongs()
         .setDescription("My own LongValueObserver")
         .setUnit("ms")
-        .setUpdater(result -> {})
-        .build();
+        .buildWithCallback(result -> {});
     assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
   }
 
@@ -53,9 +42,10 @@ class LongValueObserverSdkTest {
   @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     sdkMeter
-        .longValueObserverBuilder("testObserver")
-        .setUpdater(result -> result.observe(12, Labels.of("k", "v")))
-        .build();
+        .gaugeBuilder("testObserver")
+        .ofLongs()
+        .buildWithCallback(
+            result -> result.observe(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofSeconds(1));
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(

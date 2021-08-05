@@ -7,11 +7,11 @@ package io.opentelemetry.exporter.otlp.http.trace;
 
 import com.google.rpc.Code;
 import com.google.rpc.Status;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -41,11 +41,12 @@ import okio.Okio;
 public final class OtlpHttpSpanExporter implements SpanExporter {
 
   private static final String EXPORTER_NAME = OtlpHttpSpanExporter.class.getSimpleName();
-  private static final Labels EXPORTER_NAME_LABELS = Labels.of("exporter", EXPORTER_NAME);
-  private static final Labels EXPORT_SUCCESS_LABELS =
-      Labels.of("exporter", EXPORTER_NAME, "success", "true");
-  private static final Labels EXPORT_FAILURE_LABELS =
-      Labels.of("exporter", EXPORTER_NAME, "success", "false");
+  private static final Attributes EXPORTER_NAME_LABELS =
+      Attributes.builder().put("exporter", EXPORTER_NAME).build();
+  private static final Attributes EXPORT_SUCCESS_LABELS =
+      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", true).build();
+  private static final Attributes EXPORT_FAILURE_LABELS =
+      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", false).build();
 
   private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
 
@@ -63,10 +64,9 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
 
   OtlpHttpSpanExporter(
       OkHttpClient client, String endpoint, Headers headers, boolean isCompressionEnabled) {
-    Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.exporters.otlp-http");
-    this.spansSeen =
-        meter.longCounterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
-    LongCounter spansExportedCounter = meter.longCounterBuilder("spansExportedByExporter").build();
+    Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http");
+    this.spansSeen = meter.counterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
+    LongCounter spansExportedCounter = meter.counterBuilder("spansExportedByExporter").build();
     this.spansExportedSuccess = spansExportedCounter.bind(EXPORT_SUCCESS_LABELS);
     this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_LABELS);
 

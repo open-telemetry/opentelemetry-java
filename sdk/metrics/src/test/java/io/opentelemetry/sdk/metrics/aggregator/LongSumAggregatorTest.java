@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.AbstractSumAggregator.MergeStrategy;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -108,7 +107,7 @@ class LongSumAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             10,
             100);
