@@ -12,10 +12,8 @@ import static java.util.Objects.requireNonNull;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
-import io.grpc.netty.GrpcSslContexts;
-import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.MetadataUtils;
-import java.io.ByteArrayInputStream;
+import io.opentelemetry.exporter.otlp.internal.SslUtil;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -139,48 +137,14 @@ public final class OtlpGrpcSpanExporterBuilder {
       }
 
       if (trustedCertificatesPem != null) {
-        // gRPC does not abstract TLS configuration so we need to check the implementation and act
-        // accordingly.
-        if (managedChannelBuilder
-            .getClass()
-            .getName()
-            .equals("io.grpc.netty.NettyChannelBuilder")) {
-          NettyChannelBuilder nettyBuilder = (NettyChannelBuilder) managedChannelBuilder;
-          try {
-            nettyBuilder.sslContext(
-                GrpcSslContexts.forClient()
-                    .trustManager(new ByteArrayInputStream(trustedCertificatesPem))
-                    .build());
-          } catch (IllegalArgumentException | SSLException e) {
-            throw new IllegalStateException(
-                "Could not set trusted certificates for gRPC TLS connection, are they valid "
-                    + "X.509 in PEM format?",
-                e);
-          }
-        } else if (managedChannelBuilder
-            .getClass()
-            .getName()
-            .equals("io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder")) {
-          io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder nettyBuilder =
-              (io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder) managedChannelBuilder;
-          try {
-            nettyBuilder.sslContext(
-                io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts.forClient()
-                    .trustManager(new ByteArrayInputStream(trustedCertificatesPem))
-                    .build());
-          } catch (IllegalArgumentException | SSLException e) {
-            throw new IllegalStateException(
-                "Could not set trusted certificates for gRPC TLS connection, are they valid "
-                    + "X.509 in PEM format?",
-                e);
-          }
-        } else {
+        try {
+          SslUtil.setTrustedCertificatesPem(managedChannelBuilder, trustedCertificatesPem);
+        } catch (SSLException e) {
           throw new IllegalStateException(
-              "TLS cerificate configuration only supported with Netty. "
-                  + "If you need to configure a certificate, switch to grpc-netty or "
-                  + "grpc-netty-shaded.");
+              "Could not set trusted certificates for gRPC TLS connection, are they valid "
+                  + "X.509 in PEM format?",
+              e);
         }
-        // TODO(anuraaga): Support okhttp.
       }
 
       channel = managedChannelBuilder.build();

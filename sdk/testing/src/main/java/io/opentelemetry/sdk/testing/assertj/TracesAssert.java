@@ -49,9 +49,20 @@ public final class TracesAssert
   @SafeVarargs
   @SuppressWarnings("varargs")
   public final TracesAssert hasTracesSatisfyingExactly(Consumer<TraceAssert>... assertions) {
-    hasSize(assertions.length);
-    zipSatisfy(
-        Arrays.asList(assertions), (trace, assertion) -> assertion.accept(new TraceAssert(trace)));
+    return hasTracesSatisfyingExactly(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts that the traces under assertion have the same number of traces as provided {@code
+   * assertions} and executes each {@link TracesAssert} in {@code assertions} in order with the
+   * corresponding trace.
+   */
+  public TracesAssert hasTracesSatisfyingExactly(
+      Iterable<? extends Consumer<TraceAssert>> assertions) {
+    List<Consumer<TraceAssert>> assertionsList =
+        StreamSupport.stream(assertions.spliterator(), false).collect(toList());
+    hasSize(assertionsList.size());
+    zipSatisfy(assertionsList, (trace, assertion) -> assertion.accept(new TraceAssert(trace)));
     return this;
   }
 

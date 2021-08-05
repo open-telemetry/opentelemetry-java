@@ -10,14 +10,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.error.ShouldContainKeys;
 
 /** Assertions for {@link Attributes}. */
 public final class AttributesAssert extends AbstractAssert<AttributesAssert, Attributes> {
+
   AttributesAssert(Attributes actual) {
     super(actual, AttributesAssert.class);
   }
@@ -25,6 +29,7 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
   /** Asserts the attributes have the given key and value. */
   public <T> AttributesAssert containsEntry(AttributeKey<T> key, T value) {
     isNotNull();
+    containsKey(key);
     T actualValue = actual.get(key);
     if (!Objects.equals(actualValue, value)) {
       failWithActualExpectedAndMessage(
@@ -36,6 +41,11 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
           actualValue);
     }
     return this;
+  }
+
+  /** Asserts the attributes have the given key and value. */
+  public AttributesAssert containsEntry(AttributeKey<Long> key, int value) {
+    return containsEntry(key, (long) value);
   }
 
   /** Asserts the attributes have the given key and string value. */
@@ -81,6 +91,7 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
   /** Asserts the attributes have the given key and string array value. */
   public AttributesAssert containsEntryWithStringValuesOf(String key, Iterable<String> value) {
     isNotNull();
+    containsKey(key);
     List<String> actualValue = actual.get(AttributeKey.stringArrayKey(key));
     assertThat(actualValue)
         .withFailMessage(
@@ -93,6 +104,7 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
   /** Asserts the attributes have the given key and boolean array value. */
   public AttributesAssert containsEntryWithBooleanValuesOf(String key, Iterable<Boolean> value) {
     isNotNull();
+    containsKey(key);
     List<Boolean> actualValue = actual.get(AttributeKey.booleanArrayKey(key));
     assertThat(actualValue)
         .withFailMessage(
@@ -105,6 +117,7 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
   /** Asserts the attributes have the given key and long array value. */
   public AttributesAssert containsEntryWithLongValuesOf(String key, Iterable<Long> value) {
     isNotNull();
+    containsKey(key);
     List<Long> actualValue = actual.get(AttributeKey.longArrayKey(key));
     assertThat(actualValue)
         .withFailMessage(
@@ -117,6 +130,7 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
   /** Asserts the attributes have the given key and double array value. */
   public AttributesAssert containsEntryWithDoubleValuesOf(String key, Iterable<Double> value) {
     isNotNull();
+    containsKey(key);
     List<Double> actualValue = actual.get(AttributeKey.doubleArrayKey(key));
     assertThat(actualValue)
         .withFailMessage(
@@ -129,6 +143,7 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
   /** Asserts the attributes have the given key with a value satisfying the given condition. */
   public <T> AttributesAssert hasEntrySatisfying(AttributeKey<T> key, Consumer<T> valueCondition) {
     isNotNull();
+    containsKey(key);
     assertThat(actual.get(key)).as("value").satisfies(valueCondition);
     return this;
   }
@@ -140,6 +155,30 @@ public final class AttributesAssert extends AbstractAssert<AttributesAssert, Att
   public final AttributesAssert containsOnly(Map.Entry<? extends AttributeKey<?>, ?>... entries) {
     isNotNull();
     assertThat(actual.asMap()).containsOnly(entries);
+    return this;
+  }
+
+  /** Asserts the attributes contain the given key. */
+  public AttributesAssert containsKey(AttributeKey<?> key) {
+    if (actual.get(key) == null) {
+      failWithMessage(
+          ShouldContainKeys.shouldContainKeys(actual, Collections.singleton(key))
+              .create(info.description(), info.representation()));
+    }
+    return this;
+  }
+
+  /** Asserts the attributes contain the given key. */
+  public AttributesAssert containsKey(String key) {
+    Optional<AttributeKey<?>> resolved =
+        actual.asMap().keySet().stream()
+            .filter(attributeKey -> attributeKey.getKey().equals(key))
+            .findFirst();
+    if (!resolved.isPresent()) {
+      failWithMessage(
+          ShouldContainKeys.shouldContainKeys(actual, Collections.singleton(key))
+              .create(info.description(), info.representation()));
+    }
     return this;
   }
 

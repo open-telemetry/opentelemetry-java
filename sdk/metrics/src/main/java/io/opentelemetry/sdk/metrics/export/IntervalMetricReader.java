@@ -18,6 +18,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
@@ -30,11 +31,39 @@ import javax.annotation.concurrent.Immutable;
 public final class IntervalMetricReader {
   private static final Logger logger = Logger.getLogger(IntervalMetricReader.class.getName());
 
+  private static final AtomicReference<IntervalMetricReader> globalIntervalMetricReader =
+      new AtomicReference<>();
+
   private final Exporter exporter;
   private final ScheduledExecutorService scheduler;
 
   private volatile ScheduledFuture<?> scheduledFuture;
   private final Object lock = new Object();
+
+  /**
+   * {@linkplain IntervalMetricReader#forceFlush() Force flushes} the globally registered {@link
+   * IntervalMetricReader} if available, or does nothing otherwise.
+   */
+  public static CompletableResultCode forceFlushGlobal() {
+    IntervalMetricReader intervalMetricReader = globalIntervalMetricReader.get();
+    if (intervalMetricReader != null) {
+      return intervalMetricReader.forceFlush();
+    }
+    return CompletableResultCode.ofSuccess();
+  }
+
+  /**
+   * Resets the globally registered {@link IntervalMetricReader} if available, or does nothing
+   * otherwise. This is only meant to be used from tests which need to reconfigure {@link
+   * IntervalMetricReader}.
+   */
+  public static void resetGlobalForTest() {
+    IntervalMetricReader intervalMetricReader = globalIntervalMetricReader.get();
+    if (intervalMetricReader != null) {
+      intervalMetricReader.shutdown();
+    }
+    globalIntervalMetricReader.set(null);
+  }
 
   /** Stops the scheduled task and calls export one more time. */
   public CompletableResultCode shutdown() {
@@ -75,6 +104,14 @@ public final class IntervalMetricReader {
     return new IntervalMetricReaderBuilder(InternalState.builder());
   }
 
+  /**
+   * Requests the {@link IntervalMetricReader} to export current metrics and returns a {@link
+   * CompletableResultCode} which is completed when the flush is finished.
+   */
+  public CompletableResultCode forceFlush() {
+    return exporter.doRun();
+  }
+
   IntervalMetricReader(InternalState internalState) {
     this(
         internalState,
@@ -87,11 +124,7 @@ public final class IntervalMetricReader {
     this.scheduler = intervalMetricReader;
   }
 
-  /**
-   * Starts this {@link IntervalMetricReader} to report to the configured exporter.
-   *
-   * @return this for fluent usage along with the builder.
-   */
+  /** Starts this {@link IntervalMetricReader} to report to the configured exporter. */
   public IntervalMetricReader start() {
     synchronized (lock) {
       if (scheduledFuture != null) {
@@ -105,6 +138,18 @@ public final class IntervalMetricReader {
               TimeUnit.MILLISECONDS);
       return this;
     }
+  }
+
+  /**
+   * Starts this {@link IntervalMetricReader} and registers it as the global {@link
+   * IntervalMetricReader}.
+   */
+  public IntervalMetricReader startAndRegisterGlobal() {
+    start();
+    if (!globalIntervalMetricReader.compareAndSet(null, this)) {
+      logger.log(Level.WARNING, "Global IntervalMetricReader already registered, ignoring.");
+    }
+    return this;
   }
 
   private static final class Exporter implements Runnable {

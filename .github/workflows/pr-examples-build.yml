@@ -15,10 +15,6 @@ jobs:
         os:
           - macos-latest
           - ubuntu-18.04
-        include:
-          - os: ubuntu-18.04
-            testAdditionalJavaVersions: true
-            coverage: true
     steps:
       - uses: actions/checkout@v2.3.4
       - id: setup-java-11

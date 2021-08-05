@@ -46,10 +46,29 @@ public final class TraceAssert
   @SafeVarargs
   @SuppressWarnings("varargs")
   public final TraceAssert hasSpansSatisfyingExactly(Consumer<SpanDataAssert>... assertions) {
-    hasSize(assertions.length);
-    zipSatisfy(
-        Arrays.asList(assertions), (span, assertion) -> assertion.accept(new SpanDataAssert(span)));
+    return hasSpansSatisfyingExactly(Arrays.asList(assertions));
+  }
+
+  /**
+   * Asserts that the trace under assertion has the same number of spans as provided {@code
+   * assertions} and executes each {@link SpanDataAssert} in {@code assertions} in order with the
+   * corresponding span.
+   */
+  public TraceAssert hasSpansSatisfyingExactly(
+      Iterable<? extends Consumer<SpanDataAssert>> assertions) {
+    List<Consumer<SpanDataAssert>> assertionsList =
+        StreamSupport.stream(assertions.spliterator(), false).collect(Collectors.toList());
+    hasSize(assertionsList.size());
+    zipSatisfy(assertionsList, (span, assertion) -> assertion.accept(new SpanDataAssert(span)));
     return this;
+  }
+
+  /**
+   * Returns the {@linkplain SpanData span} at the {@code index} within the trace. This can be
+   * useful for asserting the parent of a span.
+   */
+  public SpanData getSpan(int index) {
+    return actual.get(index);
   }
 
   @Override

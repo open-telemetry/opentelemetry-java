@@ -9,9 +9,10 @@ import com.google.auto.value.AutoValue;
 import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
+/** {@link GaugeData} recorded uses {@code double}s. */
 @Immutable
 @AutoValue
-public abstract class DoubleGaugeData implements Data<DoublePointData> {
+public abstract class DoubleGaugeData implements GaugeData<DoublePointData> {
   public static DoubleGaugeData create(Collection<DoublePointData> points) {
     return new AutoValue_DoubleGaugeData(points);
   }

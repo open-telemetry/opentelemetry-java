@@ -51,8 +51,15 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 | otel.exporter.otlp.endpoint  | OTEL_EXPORTER_OTLP_ENDPOINT | The OTLP traces and metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
 | otel.exporter.otlp.traces.endpoint  | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT | The OTLP traces endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
 | otel.exporter.otlp.metrics.endpoint  | OTEL_EXPORTER_OTLP_METRICS_ENDPOINT | The OTLP metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
-| otel.exporter.otlp.headers   | OTEL_EXPORTER_OTLP_HEADERS  | Key-value pairs separated by commas to pass as request headers.        |
-| otel.exporter.otlp.timeout   | OTEL_EXPORTER_OTLP_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each batch. Default is `10000`.  |
+| otel.exporter.otlp.certificate  | OTEL_EXPORTER_OTLP_CERTIFICATE | The path to the file containing trusted certificates to use when verifying an OTLP trace or metric server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used. |
+| otel.exporter.otlp.traces.certificate  | OTEL_EXPORTER_OTLP_TRACES_CERTIFICATE | The path to the file containing trusted certificates to use when verifying an OTLP trace server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used. |
+| otel.exporter.otlp.metrics.certificate  | OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE | The path to the file containing trusted certificates to use when verifying an OTLP metric server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used. |
+| otel.exporter.otlp.headers   | OTEL_EXPORTER_OTLP_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP trace and metrics requests.        |
+| otel.exporter.otlp.traces.headers   | OTEL_EXPORTER_OTLP_TRACES_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.        |
+| otel.exporter.otlp.metrics.headers   | OTEL_EXPORTER_OTLP_METRICS_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP metrics requests.        |
+| otel.exporter.otlp.timeout   | OTEL_EXPORTER_OTLP_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP trace and metric batch. Default is `10000`.  |
+| otel.exporter.otlp.traces.timeout   | OTEL_EXPORTER_OTLP_TRACES_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP trace batch. Default is `10000`.  |
+| otel.exporter.otlp.metrics.timeout   | OTEL_EXPORTER_OTLP_METRICS_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP metric batch. Default is `10000`.  |
 
 To configure the service name for the OTLP exporter, add the `service.name` key
 to the OpenTelemetry Resource ([see below](#opentelemetry-resource)), e.g. `OTEL_RESOURCE_ATTRIBUTES=service.name=myservice`.
@@ -125,10 +132,15 @@ is a representation of the entity producing telemetry.
 | System property          | Environment variable     | Description                                                                        |
 |--------------------------|--------------------------|------------------------------------------------------------------------------------|
 | otel.resource.attributes | OTEL_RESOURCE_ATTRIBUTES | Specify resource attributes in the following format: key1=val1,key2=val2,key3=val3 |
+| otel.service.name        | OTEL_SERVICE_NAME        | Specify logical service name. Takes precedence over `service.name` defined with `otel.resource.attributes` |
 
 You almost always want to specify the [`service.name`](https://github.com/open-telemetry/opentelemetry-specification/tree/main/specification/resource/semantic_conventions#service) for your application.
 It corresponds to how you describe the application, for example `authservice` could be an application that authenticates requests, and `cats` could be an application that returns information about [cats](https://en.wikipedia.org/wiki/Cat).
-This means you would specify resource attributes something like `OTEL_RESOURCE_ATTRIBUTES=service.name=authservice`, or `-Dotel.resource.attributes=service.name=cats,service.namespace=mammals`.
+You would specify that by setting service name property in one of the following ways:
+* directly via `OTEL_SERVICE_NAME=authservice` or `-Dotel.service.name=cats`
+* by `service.name` resource attribute like `OTEL_RESOURCE_ATTRIBUTES=service.name=authservice`, or `-Dotel.resource.attributes=service.name=cats,service.namespace=mammals`.
+
+If not specified, SDK defaults the service name to `unknown_service:java`.
 
 ## Batch span processor
 

@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.trace;
 import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.internal.SystemClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ArrayList;
@@ -21,7 +20,7 @@ public final class SdkTracerProviderBuilder {
 
   private final List<SpanProcessor> spanProcessors = new ArrayList<>();
 
-  private Clock clock = SystemClock.getInstance();
+  private Clock clock = Clock.getDefault();
   private IdGenerator idsGenerator = IdGenerator.random();
   private Resource resource = Resource.getDefault();
   private Supplier<SpanLimits> spanLimitsSupplier = SpanLimits::getDefault;

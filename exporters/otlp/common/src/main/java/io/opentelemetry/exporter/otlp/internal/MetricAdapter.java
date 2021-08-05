@@ -9,10 +9,15 @@ import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATI
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_DELTA;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED;
 
-import io.opentelemetry.api.metrics.common.Labels;
-import io.opentelemetry.proto.common.v1.AnyValue;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.UnsafeByteOperations;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
+import io.opentelemetry.proto.metrics.v1.Exemplar;
 import io.opentelemetry.proto.metrics.v1.Gauge;
 import io.opentelemetry.proto.metrics.v1.Histogram;
 import io.opentelemetry.proto.metrics.v1.HistogramDataPoint;
@@ -24,6 +29,8 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
@@ -31,6 +38,7 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.LongExemplar;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
@@ -39,13 +47,18 @@ import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Converter from SDK {@link MetricData} to OTLP {@link ResourceMetrics}. */
 public final class MetricAdapter {
+
+  private static final ThrottlingLogger logger =
+      new ThrottlingLogger(Logger.getLogger(MetricAdapter.class.getName()));
 
   /** Converts the provided {@link MetricData} to {@link ResourceMetrics}. */
   public static List<ResourceMetrics> toProtoResourceMetrics(Collection<MetricData> metricData) {
@@ -191,6 +204,8 @@ public final class MetricAdapter {
     return AGGREGATION_TEMPORALITY_UNSPECIFIED;
   }
 
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
   static List<NumberDataPoint> toIntDataPoints(Collection<LongPointData> points) {
     List<NumberDataPoint> result = new ArrayList<>(points.size());
     for (LongPointData longPoint : points) {
@@ -199,15 +214,15 @@ public final class MetricAdapter {
               .setStartTimeUnixNano(longPoint.getStartEpochNanos())
               .setTimeUnixNano(longPoint.getEpochNanos())
               .setAsInt(longPoint.getValue());
-      Collection<KeyValue> labels = toProtoLabels(longPoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllAttributes(labels);
-      }
+      fillAttributes(longPoint.getAttributes(), builder::addAttributes, builder::addLabels);
+      longPoint.getExemplars().forEach(e -> builder.addExemplars(toExemplar(e)));
       result.add(builder.build());
     }
     return result;
   }
 
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
   static Collection<NumberDataPoint> toDoubleDataPoints(Collection<DoublePointData> points) {
     List<NumberDataPoint> result = new ArrayList<>(points.size());
     for (DoublePointData doublePoint : points) {
@@ -216,15 +231,15 @@ public final class MetricAdapter {
               .setStartTimeUnixNano(doublePoint.getStartEpochNanos())
               .setTimeUnixNano(doublePoint.getEpochNanos())
               .setAsDouble(doublePoint.getValue());
-      Collection<KeyValue> labels = toProtoLabels(doublePoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllAttributes(labels);
-      }
+      fillAttributes(doublePoint.getAttributes(), builder::addAttributes, builder::addLabels);
+      doublePoint.getExemplars().forEach(e -> builder.addExemplars(toExemplar(e)));
       result.add(builder.build());
     }
     return result;
   }
 
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
   static List<SummaryDataPoint> toSummaryDataPoints(Collection<DoubleSummaryPointData> points) {
     List<SummaryDataPoint> result = new ArrayList<>(points.size());
     for (DoubleSummaryPointData doubleSummaryPoint : points) {
@@ -234,10 +249,8 @@ public final class MetricAdapter {
               .setTimeUnixNano(doubleSummaryPoint.getEpochNanos())
               .setCount(doubleSummaryPoint.getCount())
               .setSum(doubleSummaryPoint.getSum());
-      List<KeyValue> labels = toProtoLabels(doubleSummaryPoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllAttributes(labels);
-      }
+      fillAttributes(
+          doubleSummaryPoint.getAttributes(), builder::addAttributes, builder::addLabels);
       // Not calling directly addAllQuantileValues because that generates couple of unnecessary
       // allocations if empty list.
       if (!doubleSummaryPoint.getPercentileValues().isEmpty()) {
@@ -254,6 +267,8 @@ public final class MetricAdapter {
     return result;
   }
 
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
   static Collection<HistogramDataPoint> toHistogramDataPoints(
       Collection<DoubleHistogramPointData> points) {
     List<HistogramDataPoint> result = new ArrayList<>(points.size());
@@ -269,29 +284,67 @@ public final class MetricAdapter {
       if (!boundaries.isEmpty()) {
         builder.addAllExplicitBounds(boundaries);
       }
-      Collection<KeyValue> labels = toProtoLabels(doubleHistogramPoint.getLabels());
-      if (!labels.isEmpty()) {
-        builder.addAllAttributes(labels);
-      }
+      fillAttributes(
+          doubleHistogramPoint.getAttributes(), builder::addAttributes, builder::addLabels);
+      doubleHistogramPoint.getExemplars().forEach(e -> builder.addExemplars(toExemplar(e)));
       result.add(builder.build());
     }
     return result;
   }
 
-  @SuppressWarnings("MixedMutabilityReturnType")
-  static List<KeyValue> toProtoLabels(Labels labels) {
-    if (labels.isEmpty()) {
-      return Collections.emptyList();
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
+  static Exemplar toExemplar(io.opentelemetry.sdk.metrics.data.Exemplar exemplar) {
+    // TODO - Use a thread local cache for spanid/traceid -> byte conversion.
+    Exemplar.Builder builder = Exemplar.newBuilder();
+    builder.setTimeUnixNano(exemplar.getEpochNanos());
+    if (exemplar.getSpanId() != null) {
+      builder.setSpanId(convertSpanId(exemplar.getSpanId()));
     }
-    final List<KeyValue> result = new ArrayList<>(labels.size());
-    labels.forEach(
-        (key, value) ->
-            result.add(
-                KeyValue.newBuilder()
-                    .setKey(key)
-                    .setValue(AnyValue.newBuilder().setStringValue(value).build())
-                    .build()));
-    return result;
+    if (exemplar.getTraceId() != null) {
+      builder.setTraceId(convertTraceId(exemplar.getTraceId()));
+    }
+    fillAttributes(
+        exemplar.getFilteredAttributes(),
+        builder::addFilteredAttributes,
+        builder::addFilteredLabels);
+    if (exemplar instanceof LongExemplar) {
+      builder.setAsInt(((LongExemplar) exemplar).getValue());
+    } else if (exemplar instanceof DoubleExemplar) {
+      builder.setAsDouble(((DoubleExemplar) exemplar).getValue());
+    } else {
+      if (logger.isLoggable(Level.SEVERE)) {
+        logger.log(Level.SEVERE, "Unable to convert unknown exemplar type: " + exemplar);
+      }
+    }
+    return builder.build();
+  }
+
+  private static ByteString convertTraceId(String id) {
+    return UnsafeByteOperations.unsafeWrap(
+        OtelEncodingUtils.bytesFromBase16(id, TraceId.getLength()));
+  }
+
+  private static ByteString convertSpanId(String id) {
+    return UnsafeByteOperations.unsafeWrap(
+        OtelEncodingUtils.bytesFromBase16(id, SpanId.getLength()));
+  }
+
+  // Fill labels too until Collector supports attributes and users have had a chance to update.
+  @SuppressWarnings("deprecation")
+  private static void fillAttributes(
+      Attributes attributes,
+      Consumer<KeyValue> attributeSetter,
+      Consumer<io.opentelemetry.proto.common.v1.StringKeyValue> labelSetter) {
+    attributes.forEach(
+        (key, value) -> {
+          attributeSetter.accept(CommonAdapter.toProtoAttribute(key, value));
+          labelSetter.accept(
+              io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
+                  .setKey(key.getKey())
+                  .setValue(value.toString())
+                  .build());
+        });
   }
 
   private MetricAdapter() {}

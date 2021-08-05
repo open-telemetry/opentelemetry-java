@@ -5,8 +5,10 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.AbstractSumAggregator.MergeStrategy;
@@ -14,8 +16,6 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -101,6 +101,7 @@ class LongSumAggregatorTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void toMetricData() {
     AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
@@ -112,16 +113,16 @@ class LongSumAggregatorTest {
             10,
             100);
     assertThat(metricData)
-        .isEqualTo(
-            MetricData.createLongSum(
-                Resource.getDefault(),
-                InstrumentationLibraryInfo.empty(),
-                "name",
-                "description",
-                "unit",
-                LongSumData.create(
-                    /* isMonotonic= */ true,
-                    AggregationTemporality.CUMULATIVE,
-                    Collections.singletonList(LongPointData.create(0, 100, Labels.empty(), 10)))));
+        .hasLongSum()
+        .isCumulative()
+        .isMonotonic()
+        .points()
+        .satisfiesExactly(
+            point ->
+                assertThat(point)
+                    .hasStartEpochNanos(0)
+                    .hasEpochNanos(100)
+                    .hasAttributes(Attributes.empty())
+                    .hasValue(10));
   }
 }

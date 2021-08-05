@@ -12,6 +12,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -63,6 +64,11 @@ class OpenTelemetryExtensionTest {
     span = tracer.spanBuilder("testb1").startSpan();
     try (Scope ignored = span.makeCurrent()) {
       tracer.spanBuilder("testb2").startSpan().end();
+      tracer
+          .spanBuilder("testexception")
+          .startSpan()
+          .recordException(new IllegalStateException("exception occurred"))
+          .end();
     } finally {
       span.end();
     }
@@ -85,14 +91,34 @@ class OpenTelemetryExtensionTest {
             trace ->
                 trace
                     .hasTraceId(traceId)
-                    .hasSpansSatisfyingExactly(s -> s.hasName("testa1"), s -> s.hasName("testa2"))
+                    .hasSpansSatisfyingExactly(
+                        s -> s.hasName("testa1").hasNoParent(),
+                        s ->
+                            s.hasName("testa2")
+                                .hasParentSpanId(trace.getSpan(0).getSpanId())
+                                .hasParent(trace.getSpan(0)))
                     .first()
                     .hasName("testa1"),
             trace ->
                 trace
-                    .hasSpansSatisfyingExactly(s -> s.hasName("testb1"), s -> s.hasName("testb2"))
+                    .hasSpansSatisfyingExactly(
+                        s -> s.hasName("testb1"),
+                        s -> s.hasName("testb2"),
+                        s -> s.hasException(new IllegalStateException("exception occurred")))
                     .filteredOn(s -> s.getName().endsWith("1"))
                     .hasSize(1));
+
+    otelTesting
+        .assertTraces()
+        .hasTracesSatisfyingExactly(
+            Arrays.asList(
+                trace -> trace.hasTraceId(traceId),
+                trace ->
+                    trace.hasSpansSatisfyingExactly(
+                        Arrays.asList(
+                            s -> s.hasName("testb1"),
+                            s -> s.hasName("testb2"),
+                            s -> s.hasName("testexception")))));
 
     assertThatThrownBy(
             () ->
@@ -110,9 +136,7 @@ class OpenTelemetryExtensionTest {
         .filteredOn(trace -> trace.size() == 2)
         .hasTracesSatisfyingExactly(
             trace ->
-                trace.hasSpansSatisfyingExactly(s -> s.hasName("testa1"), s -> s.hasName("testa2")),
-            trace ->
                 trace.hasSpansSatisfyingExactly(
-                    s -> s.hasName("testb1"), s -> s.hasName("testb2")));
+                    s -> s.hasName("testa1"), s -> s.hasName("testa2")));
   }
 }
