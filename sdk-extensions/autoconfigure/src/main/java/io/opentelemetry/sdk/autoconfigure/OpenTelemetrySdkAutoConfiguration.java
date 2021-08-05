@@ -25,25 +25,30 @@ import java.util.Set;
  */
 public final class OpenTelemetrySdkAutoConfiguration {
 
-  private static final Resource RESOURCE = buildResource();
+  private static volatile Resource resource = Resource.empty();
 
-  /** Returns the automatically configured {@link Resource}. */
+  /**
+   * Returns the automatically configured {@link Resource} after one of {@code initialize()} methods
+   * has been called. Prior to that, this method will always return an {@linkplain Resource#empty()
+   * empty resource}.
+   */
   public static Resource getResource() {
-    return RESOURCE;
+    return resource;
   }
 
   /**
-   * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized system
-   * properties and environment variables.
+   * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized properties
+   * contained in passed {@code config}.
    *
    * @param setResultAsGlobal Whether to automatically set the configured SDK as the {@link
-   *     io.opentelemetry.api.GlobalOpenTelemetry} instance.
+   *     GlobalOpenTelemetry} instance.
+   * @param config A {@link ConfigProperties} instance that contains properties that are to be used
+   *     to auto-configure the returned {@link OpenTelemetrySdk}.
    */
-  public static OpenTelemetrySdk initialize(boolean setResultAsGlobal) {
-    ConfigProperties config = ConfigProperties.get();
+  public static OpenTelemetrySdk initialize(boolean setResultAsGlobal, ConfigProperties config) {
     ContextPropagators propagators = PropagatorConfiguration.configurePropagators(config);
 
-    Resource resource = getResource();
+    resource = buildResource(config);
 
     configureMeterProvider(resource, config);
 
@@ -59,6 +64,17 @@ public final class OpenTelemetrySdkAutoConfiguration {
       GlobalOpenTelemetry.set(openTelemetrySdk);
     }
     return openTelemetrySdk;
+  }
+
+  /**
+   * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized system
+   * properties and environment variables.
+   *
+   * @param setResultAsGlobal Whether to automatically set the configured SDK as the {@link
+   *     io.opentelemetry.api.GlobalOpenTelemetry} instance.
+   */
+  public static OpenTelemetrySdk initialize(boolean setResultAsGlobal) {
+    return initialize(setResultAsGlobal, DefaultConfigProperties.get());
   }
 
   /**
@@ -89,8 +105,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     MetricExporterConfiguration.configureExporter(exporterName, config, meterProvider);
   }
 
-  private static Resource buildResource() {
-    ConfigProperties config = ConfigProperties.get();
+  private static Resource buildResource(ConfigProperties config) {
     Resource result = Resource.getDefault();
 
     // TODO(anuraaga): We use a hyphen only once in this artifact, for

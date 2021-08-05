@@ -27,7 +27,7 @@ public final class EnvironmentResource {
    * OTEL_RESOURCE_ATTRIBUTES/OTEL_SERVICE_NAME environment variables.
    */
   public static Resource get() {
-    return create(ConfigProperties.get());
+    return create(DefaultConfigProperties.get());
   }
 
   static Resource create(ConfigProperties config) {

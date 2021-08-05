@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,9 @@ class ResourceTest {
 
   @Test
   void resource() {
+    // make sure that the SDK is autoconfigured regardless of test execution order
+    GlobalOpenTelemetry.get();
+
     Attributes attributes = OpenTelemetrySdkAutoConfiguration.getResource().getAttributes();
 
     assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNotNull();
