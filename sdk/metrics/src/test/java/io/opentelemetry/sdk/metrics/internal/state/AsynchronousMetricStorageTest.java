@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.ViewRegistry;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -21,7 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class AsynchronousInstrumentAccumulatorTest {
+public class AsynchronousMetricStorageTest {
   private final TestClock testClock = TestClock.create();
   private MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState =
@@ -58,7 +59,7 @@ public class AsynchronousInstrumentAccumulatorTest {
 
   @Test
   void doubleAsynchronousAccumulator_LabelsProcessor_used() {
-    AsynchronousInstrumentAccumulator.doubleAsynchronousAccumulator(
+    AsynchronousMetricStorage.doubleAsynchronousAccumulator(
             meterProviderSharedState,
             meterSharedState,
             InstrumentDescriptor.create(
@@ -68,13 +69,13 @@ public class AsynchronousInstrumentAccumulatorTest {
                 InstrumentType.VALUE_OBSERVER,
                 InstrumentValueType.DOUBLE),
             value -> value.observe(1.0, Attributes.empty()))
-        .collectAll(testClock.nanoTime());
+        .collectAndReset(0, testClock.now());
     Mockito.verify(spyLabelProcessor).onLabelsBound(Context.current(), Attributes.empty());
   }
 
   @Test
   void longAsynchronousAccumulator_LabelsProcessor_used() {
-    AsynchronousInstrumentAccumulator.longAsynchronousAccumulator(
+    AsynchronousMetricStorage.longAsynchronousAccumulator(
             meterProviderSharedState,
             meterSharedState,
             InstrumentDescriptor.create(
@@ -84,7 +85,7 @@ public class AsynchronousInstrumentAccumulatorTest {
                 InstrumentType.VALUE_OBSERVER,
                 InstrumentValueType.LONG),
             value -> value.observe(1, Attributes.empty()))
-        .collectAll(testClock.nanoTime());
+        .collectAndReset(0, testClock.nanoTime());
     Mockito.verify(spyLabelProcessor).onLabelsBound(Context.current(), Attributes.empty());
   }
 }

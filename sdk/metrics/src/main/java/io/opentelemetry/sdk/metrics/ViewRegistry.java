@@ -41,7 +41,7 @@ public final class ViewRegistry {
             this.configuration.put(instrumentType, new LinkedHashMap<>(patternViewLinkedHashMap)));
   }
 
-  static ViewRegistryBuilder builder() {
+  public static ViewRegistryBuilder builder() {
     return new ViewRegistryBuilder();
   }
 

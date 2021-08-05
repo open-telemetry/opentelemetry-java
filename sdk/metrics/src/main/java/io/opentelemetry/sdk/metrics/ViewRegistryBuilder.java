@@ -12,7 +12,7 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
-class ViewRegistryBuilder {
+public class ViewRegistryBuilder {
   private final EnumMap<InstrumentType, LinkedHashMap<Pattern, View>> configuration =
       new EnumMap<>(InstrumentType.class);
   private static final LinkedHashMap<Pattern, View> EMPTY_CONFIG = new LinkedHashMap<>();
@@ -23,11 +23,11 @@ class ViewRegistryBuilder {
     }
   }
 
-  ViewRegistry build() {
+  public ViewRegistry build() {
     return new ViewRegistry(configuration);
   }
 
-  ViewRegistryBuilder addView(InstrumentSelector selector, View view) {
+  public ViewRegistryBuilder addView(InstrumentSelector selector, View view) {
     LinkedHashMap<Pattern, View> parentConfiguration =
         configuration.get(selector.getInstrumentType());
     configuration.put(
