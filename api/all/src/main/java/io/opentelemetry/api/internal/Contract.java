@@ -89,7 +89,7 @@ import java.lang.annotation.Target;
  * verifying nullness. We copy the annotation to avoid an external dependency.
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface Contract {
   /**
