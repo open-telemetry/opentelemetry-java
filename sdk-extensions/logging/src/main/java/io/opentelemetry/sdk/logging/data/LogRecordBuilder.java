@@ -7,9 +7,13 @@ package io.opentelemetry.sdk.logging.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.TimeUnit;
 
 public final class LogRecordBuilder {
+  private Resource resource;
+  private InstrumentationLibraryInfo instrumentationLibraryInfo;
   private long timeUnixNano;
   private String traceId = "";
   private String spanId = "";
@@ -21,6 +25,16 @@ public final class LogRecordBuilder {
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 
   LogRecordBuilder() {}
+
+  public LogRecordBuilder setResource(Resource resource) {
+    this.resource = resource;
+    return this;
+  }
+
+  public LogRecordBuilder setInstrumentationLibraryInfo(InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    return this;
+  }
 
   public LogRecordBuilder setUnixTimeNano(long timestamp) {
     this.timeUnixNano = timestamp;
@@ -85,6 +99,8 @@ public final class LogRecordBuilder {
       timeUnixNano = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     }
     return LogRecord.create(
+        resource,
+        instrumentationLibraryInfo,
         timeUnixNano,
         traceId,
         spanId,
