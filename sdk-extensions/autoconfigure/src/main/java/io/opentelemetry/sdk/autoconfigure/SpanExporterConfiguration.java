@@ -92,7 +92,10 @@ final class SpanExporterConfiguration {
       builder.setTimeout(timeout);
     }
 
-    String certificate = config.getString("otel.exporter.otlp.certificate");
+    String certificate = config.getString("otel.exporter.otlp.traces.certificate");
+    if (certificate == null) {
+      certificate = config.getString("otel.exporter.otlp.certificate");
+    }
     if (certificate != null) {
       Path path = Paths.get(certificate);
       if (!Files.exists(path)) {
