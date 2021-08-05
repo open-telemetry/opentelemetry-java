@@ -15,23 +15,21 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 
-final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
-    implements DoubleHistogram {
+final class DoubleValueRecorderSdk extends AbstractInstrument implements DoubleHistogram {
+  private final WriteableMetricStorage storage;
 
-  private DoubleValueRecorderSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
-    super(descriptor, accumulator);
+  private DoubleValueRecorderSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+    super(descriptor);
+    this.storage = storage;
   }
 
   @Override
   public void record(double value, Attributes attributes, Context context) {
-    BoundStorageHandle handle = acquireHandle(attributes);
-    try {
-      handle.recordDouble(value, attributes, context);
-    } finally {
-      handle.release();
-    }
+    storage.recordDouble(value, attributes, context);
   }
 
   @Override
@@ -46,7 +44,7 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument
 
   @Override
   public BoundDoubleHistogram bind(Attributes attributes) {
-    return new BoundInstrument(acquireHandle(attributes), attributes);
+    return new BoundInstrument(storage.bind(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundDoubleHistogram {

@@ -12,9 +12,9 @@ import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import java.util.ArrayList;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import java.util.Collection;
-import java.util.List;
 
 /** {@link SdkMeter} is SDK implementation of {@link Meter}. */
 final class SdkMeter implements Meter {
@@ -28,19 +28,14 @@ final class SdkMeter implements Meter {
     this.meterSharedState = MeterSharedState.create(instrumentationLibraryInfo);
   }
 
+  // Only used in testing....
   InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
     return meterSharedState.getInstrumentationLibraryInfo();
   }
 
   /** Collects all the metric recordings that changed since the previous call. */
   Collection<MetricData> collectAll(long epochNanos) {
-    InstrumentRegistry instrumentRegistry = meterSharedState.getInstrumentRegistry();
-    Collection<AbstractInstrument> instruments = instrumentRegistry.getInstruments();
-    List<MetricData> result = new ArrayList<>(instruments.size());
-    for (AbstractInstrument instrument : instruments) {
-      result.addAll(instrument.collectAll(epochNanos));
-    }
-    return result;
+    return meterSharedState.collectAll(meterProviderSharedState, epochNanos);
   }
 
   @Override

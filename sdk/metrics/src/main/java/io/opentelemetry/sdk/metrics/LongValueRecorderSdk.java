@@ -15,22 +15,21 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 
-final class LongValueRecorderSdk extends AbstractSynchronousInstrument implements LongHistogram {
+final class LongValueRecorderSdk extends AbstractInstrument implements LongHistogram {
+  private final WriteableMetricStorage storage;
 
-  private LongValueRecorderSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
-    super(descriptor, accumulator);
+  private LongValueRecorderSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+    super(descriptor);
+    this.storage = storage;
   }
 
   @Override
   public void record(long value, Attributes attributes, Context context) {
-    BoundStorageHandle handle = acquireHandle(attributes);
-    try {
-      handle.recordLong(value, attributes, context);
-    } finally {
-      handle.release();
-    }
+    storage.recordLong(value, attributes, context);
   }
 
   @Override
@@ -45,7 +44,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument implement
 
   @Override
   public BoundLongHistogram bind(Attributes attributes) {
-    return new BoundInstrument(acquireHandle(attributes), attributes);
+    return new BoundInstrument(storage.bind(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundLongHistogram {

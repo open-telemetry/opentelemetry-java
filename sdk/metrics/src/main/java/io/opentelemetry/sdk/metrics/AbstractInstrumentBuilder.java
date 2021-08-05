@@ -10,6 +10,9 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -58,43 +61,25 @@ public abstract class AbstractInstrumentBuilder<BuilderT extends AbstractInstrum
   final <I extends AbstractInstrument> I buildSynchronousInstrument(
       InstrumentType type,
       InstrumentValueType valueType,
-      BiFunction<InstrumentDescriptor, SynchronousInstrumentAccumulator<?>, I> instrumentFactory) {
+      BiFunction<InstrumentDescriptor, WriteableMetricStorage, I> instrumentFactory) {
     InstrumentDescriptor descriptor = makeDescriptor(type, valueType);
-    return meterSharedState
-        .getInstrumentRegistry()
-        .register(
-            instrumentFactory.apply(
-                descriptor,
-                SynchronousInstrumentAccumulator.create(
-                    meterProviderSharedState, meterSharedState, descriptor)));
+    WriteableMetricStorage storage =
+        meterSharedState.registerSynchronousMetricStorage(descriptor, meterProviderSharedState);
+    return instrumentFactory.apply(descriptor, storage);
   }
 
-  final <I extends AbstractInstrument> I buildDoubleAsynchronousInstrument(
-      InstrumentType type,
-      Consumer<ObservableDoubleMeasurement> updater,
-      BiFunction<InstrumentDescriptor, AsynchronousInstrumentAccumulator, I> instrumentFactory) {
+  final void registerDoubleAsynchronousInstrument(
+      InstrumentType type, Consumer<ObservableDoubleMeasurement> updater) {
     InstrumentDescriptor descriptor = makeDescriptor(type, InstrumentValueType.DOUBLE);
-    return meterSharedState
-        .getInstrumentRegistry()
-        .register(
-            instrumentFactory.apply(
-                descriptor,
-                AsynchronousInstrumentAccumulator.doubleAsynchronousAccumulator(
-                    meterProviderSharedState, meterSharedState, descriptor, updater)));
+    meterSharedState.registerDoubleAsynchronousInstrument(
+        descriptor, meterProviderSharedState, updater);
   }
 
-  final <I extends AbstractInstrument> I buildLongAsynchronousInstrument(
-      InstrumentType type,
-      Consumer<ObservableLongMeasurement> updater,
-      BiFunction<InstrumentDescriptor, AsynchronousInstrumentAccumulator, I> instrumentFactory) {
+  final void registerLongAsynchronousInstrument(
+      InstrumentType type, Consumer<ObservableLongMeasurement> updater) {
     InstrumentDescriptor descriptor = makeDescriptor(type, InstrumentValueType.LONG);
-    return meterSharedState
-        .getInstrumentRegistry()
-        .register(
-            instrumentFactory.apply(
-                descriptor,
-                AsynchronousInstrumentAccumulator.longAsynchronousAccumulator(
-                    meterProviderSharedState, meterSharedState, descriptor, updater)));
+    meterSharedState.registerLongAsynchronousInstrument(
+        descriptor, meterProviderSharedState, updater);
   }
 
   @FunctionalInterface

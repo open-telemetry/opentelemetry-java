@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -11,36 +11,41 @@ import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
+public final class SynchronousMetricStorage<T> implements WriteableMetricStorage {
+  private final MetricDescriptor metricDescriptor;
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorLabels;
   private final ReentrantLock collectLock;
   private final Aggregator<T> aggregator;
   private final InstrumentProcessor<T> instrumentProcessor;
   private final LabelsProcessor labelsProcessor;
 
-  static <T> SynchronousInstrumentAccumulator<T> create(
+  public static <T> SynchronousMetricStorage<T> create(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor) {
-    Aggregator<T> aggregator =
-        getAggregator(meterProviderSharedState, meterSharedState, descriptor);
-    return new SynchronousInstrumentAccumulator<>(
+    Aggregator<T> aggregator = meterProviderSharedState.getAggregator(meterSharedState, descriptor);
+    return new SynchronousMetricStorage<>(
+        // TODO: View can change metric name/description.  Update this when wired in.
+        MetricDescriptor.create(
+            descriptor.getName(), descriptor.getDescription(), descriptor.getUnit()),
         aggregator,
         new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos()),
-        getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor));
+        meterProviderSharedState.getLabelsProcessor(meterSharedState, descriptor));
   }
 
-  SynchronousInstrumentAccumulator(
+  SynchronousMetricStorage(
+      MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
       InstrumentProcessor<T> instrumentProcessor,
       LabelsProcessor labelsProcessor) {
+    this.metricDescriptor = metricDescriptor;
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
     this.aggregator = aggregator;
@@ -48,7 +53,8 @@ final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
     this.labelsProcessor = labelsProcessor;
   }
 
-  AggregatorHandle<?> bind(Attributes labels) {
+  @Override
+  public BoundStorageHandle bind(Attributes labels) {
     Objects.requireNonNull(labels, "labels");
     labels = labelsProcessor.onLabelsBound(Context.current(), labels);
     AggregatorHandle<T> aggregatorHandle = aggregatorLabels.get(labels);
@@ -77,7 +83,7 @@ final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
   }
 
   @Override
-  List<MetricData> collectAll(long epochNanos) {
+  public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
     collectLock.lock();
     try {
       for (Map.Entry<Attributes, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {
@@ -97,5 +103,10 @@ final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
     } finally {
       collectLock.unlock();
     }
+  }
+
+  @Override
+  public MetricDescriptor getMetricDescriptor() {
+    return metricDescriptor;
   }
 }

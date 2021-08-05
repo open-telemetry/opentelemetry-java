@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
@@ -12,28 +12,28 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
-import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
-final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
+public final class AsynchronousMetricStorage implements MetricStorage {
+  private final MetricDescriptor metricDescriptor;
   private final ReentrantLock collectLock = new ReentrantLock();
   private final InstrumentProcessor<?> instrumentProcessor;
   private final Runnable metricUpdater;
 
-  static <T> AsynchronousInstrumentAccumulator doubleAsynchronousAccumulator(
+  public static <T> AsynchronousMetricStorage doubleAsynchronousAccumulator(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor,
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
-    Aggregator<T> aggregator =
-        getAggregator(meterProviderSharedState, meterSharedState, descriptor);
+    Aggregator<T> aggregator = meterProviderSharedState.getAggregator(meterSharedState, descriptor);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos());
 
     final LabelsProcessor labelsProcessor =
-        getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
+        meterProviderSharedState.getLabelsProcessor(meterSharedState, descriptor);
 
     final ObservableDoubleMeasurement result =
         new ObservableDoubleMeasurement() {
@@ -50,22 +50,25 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
           }
         };
 
-    return new AsynchronousInstrumentAccumulator(
-        instrumentProcessor, () -> metricUpdater.accept(result));
+    return new AsynchronousMetricStorage(
+        // TODO: View can change metric name/description.  Update this when wired in.
+        MetricDescriptor.create(
+            descriptor.getName(), descriptor.getDescription(), descriptor.getUnit()),
+        instrumentProcessor,
+        () -> metricUpdater.accept(result));
   }
 
-  static <T> AsynchronousInstrumentAccumulator longAsynchronousAccumulator(
+  public static <T> AsynchronousMetricStorage longAsynchronousAccumulator(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       InstrumentDescriptor descriptor,
       Consumer<ObservableLongMeasurement> metricUpdater) {
-    Aggregator<T> aggregator =
-        getAggregator(meterProviderSharedState, meterSharedState, descriptor);
+    Aggregator<T> aggregator = meterProviderSharedState.getAggregator(meterSharedState, descriptor);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos());
 
     final LabelsProcessor labelsProcessor =
-        getLabelsProcessor(meterProviderSharedState, meterSharedState, descriptor);
+        meterProviderSharedState.getLabelsProcessor(meterSharedState, descriptor);
     final ObservableLongMeasurement result =
         new ObservableLongMeasurement() {
 
@@ -81,18 +84,25 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
             observe(value, Attributes.empty());
           }
         };
-    return new AsynchronousInstrumentAccumulator(
-        instrumentProcessor, () -> metricUpdater.accept(result));
+    return new AsynchronousMetricStorage(
+        // TODO: View can change metric name/description.  Update this when wired in.
+        MetricDescriptor.create(
+            descriptor.getName(), descriptor.getDescription(), descriptor.getUnit()),
+        instrumentProcessor,
+        () -> metricUpdater.accept(result));
   }
 
-  private AsynchronousInstrumentAccumulator(
-      InstrumentProcessor<?> instrumentProcessor, Runnable metricUpdater) {
+  private AsynchronousMetricStorage(
+      MetricDescriptor metricDescriptor,
+      InstrumentProcessor<?> instrumentProcessor,
+      Runnable metricUpdater) {
+    this.metricDescriptor = metricDescriptor;
     this.instrumentProcessor = instrumentProcessor;
     this.metricUpdater = metricUpdater;
   }
 
   @Override
-  List<MetricData> collectAll(long epochNanos) {
+  public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
     collectLock.lock();
     try {
       metricUpdater.run();
@@ -100,5 +110,10 @@ final class AsynchronousInstrumentAccumulator extends AbstractAccumulator {
     } finally {
       collectLock.unlock();
     }
+  }
+
+  @Override
+  public MetricDescriptor getMetricDescriptor() {
+    return metricDescriptor;
   }
 }

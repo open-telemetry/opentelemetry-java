@@ -21,7 +21,7 @@ import javax.annotation.concurrent.Immutable;
  * SdkMeterProviderBuilder}.
  */
 @Immutable
-final class ViewRegistry {
+public final class ViewRegistry {
   static final View CUMULATIVE_SUM =
       View.builder()
           .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.CUMULATIVE))
@@ -45,7 +45,7 @@ final class ViewRegistry {
     return new ViewRegistryBuilder();
   }
 
-  View findView(InstrumentDescriptor descriptor) {
+  public View findView(InstrumentDescriptor descriptor) {
     LinkedHashMap<Pattern, View> configPerType = configuration.get(descriptor.getType());
     for (Map.Entry<Pattern, View> entry : configPerType.entrySet()) {
       if (entry.getKey().matcher(descriptor.getName()).matches()) {

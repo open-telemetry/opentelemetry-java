@@ -16,24 +16,22 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
 
-final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
-    implements DoubleUpDownCounter {
+final class DoubleUpDownCounterSdk extends AbstractInstrument implements DoubleUpDownCounter {
+  private final WriteableMetricStorage storage;
 
-  private DoubleUpDownCounterSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
-    super(descriptor, accumulator);
+  private DoubleUpDownCounterSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+    super(descriptor);
+    this.storage = storage;
   }
 
   @Override
   public void add(double increment, Attributes attributes, Context context) {
-    BoundStorageHandle handle = acquireHandle(attributes);
-    try {
-      handle.recordDouble(increment, attributes, context);
-    } finally {
-      handle.release();
-    }
+    storage.recordDouble(increment, attributes, context);
   }
 
   @Override
@@ -48,7 +46,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
 
   @Override
   public BoundDoubleUpDownCounter bind(Attributes attributes) {
-    return new BoundInstrument(acquireHandle(attributes), attributes);
+    return new BoundInstrument(storage.bind(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundDoubleUpDownCounter {
@@ -113,8 +111,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument
 
     @Override
     public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
-      buildDoubleAsynchronousInstrument(
-          InstrumentType.UP_DOWN_SUM_OBSERVER, callback, DoubleUpDownSumObserverSdk::new);
+      registerDoubleAsynchronousInstrument(InstrumentType.UP_DOWN_SUM_OBSERVER, callback);
     }
   }
 }

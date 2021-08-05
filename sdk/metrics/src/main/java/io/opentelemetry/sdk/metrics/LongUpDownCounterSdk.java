@@ -16,24 +16,22 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
 
-final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
-    implements LongUpDownCounter {
+final class LongUpDownCounterSdk extends AbstractInstrument implements LongUpDownCounter {
+  private final WriteableMetricStorage storage;
 
-  private LongUpDownCounterSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
-    super(descriptor, accumulator);
+  private LongUpDownCounterSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+    super(descriptor);
+    this.storage = storage;
   }
 
   @Override
   public void add(long increment, Attributes attributes, Context context) {
-    BoundStorageHandle aggregatorHandle = acquireHandle(attributes);
-    try {
-      aggregatorHandle.recordLong(increment, attributes, context);
-    } finally {
-      aggregatorHandle.release();
-    }
+    storage.recordLong(increment, attributes, context);
   }
 
   @Override
@@ -48,7 +46,7 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
 
   @Override
   public BoundLongUpDownCounter bind(Attributes attributes) {
-    return new BoundInstrument(acquireHandle(attributes), attributes);
+    return new BoundInstrument(storage.bind(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundLongUpDownCounter {
@@ -113,8 +111,7 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
 
     @Override
     public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      buildLongAsynchronousInstrument(
-          InstrumentType.UP_DOWN_SUM_OBSERVER, callback, LongUpDownSumObserverSdk::new);
+      registerLongAsynchronousInstrument(InstrumentType.UP_DOWN_SUM_OBSERVER, callback);
     }
   }
 }

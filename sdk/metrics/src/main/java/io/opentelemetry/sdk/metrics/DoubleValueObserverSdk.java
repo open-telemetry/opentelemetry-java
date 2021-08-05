@@ -8,16 +8,15 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
 import io.opentelemetry.api.metrics.LongGaugeBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import java.util.function.Consumer;
 
-final class DoubleValueObserverSdk extends AbstractAsynchronousInstrument {
+// TODO: Remove this class.
+final class DoubleValueObserverSdk {
 
-  DoubleValueObserverSdk(
-      InstrumentDescriptor descriptor, AsynchronousInstrumentAccumulator accumulator) {
-    super(descriptor, accumulator);
-  }
+  private DoubleValueObserverSdk() {}
 
   static final class Builder extends AbstractInstrumentBuilder<DoubleValueObserverSdk.Builder>
       implements DoubleGaugeBuilder {
@@ -50,8 +49,7 @@ final class DoubleValueObserverSdk extends AbstractAsynchronousInstrument {
 
     @Override
     public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
-      buildDoubleAsynchronousInstrument(
-          InstrumentType.VALUE_OBSERVER, callback, DoubleValueObserverSdk::new);
+      registerDoubleAsynchronousInstrument(InstrumentType.VALUE_OBSERVER, callback);
     }
   }
 }

@@ -14,7 +14,21 @@ public interface WriteableMetricStorage extends MetricStorage {
   BoundStorageHandle bind(Attributes attributes);
 
   /** Records a measurement. */
-  void recordLong(long value, Attributes attributes, Context context);
+  default void recordLong(long value, Attributes attributes, Context context) {
+    BoundStorageHandle handle = bind(attributes);
+    try {
+      handle.recordLong(value, attributes, context);
+    } finally {
+      handle.release();
+    }
+  }
   /** Records a measurement. */
-  void recordDouble(double value, Attributes attributes, Context context);
+  default void recordDouble(double value, Attributes attributes, Context context) {
+    BoundStorageHandle handle = bind(attributes);
+    try {
+      handle.recordDouble(value, attributes, context);
+    } finally {
+      handle.release();
+    }
+  }
 }
