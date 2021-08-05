@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
@@ -44,11 +43,6 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
-  }
-
-  @Override
-  public Meter get(String instrumentationName) {
-    return meterBuilder(instrumentationName).build();
   }
 
   @Override
