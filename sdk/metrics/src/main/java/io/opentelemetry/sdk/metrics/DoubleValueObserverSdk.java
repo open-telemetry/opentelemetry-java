@@ -5,44 +5,53 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.DoubleValueObserver;
-import io.opentelemetry.api.metrics.DoubleValueObserverBuilder;
+import io.opentelemetry.api.metrics.DoubleGaugeBuilder;
+import io.opentelemetry.api.metrics.LongGaugeBuilder;
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import java.util.function.Consumer;
 
-final class DoubleValueObserverSdk extends AbstractAsynchronousInstrument
-    implements DoubleValueObserver {
+final class DoubleValueObserverSdk extends AbstractAsynchronousInstrument {
 
   DoubleValueObserverSdk(
       InstrumentDescriptor descriptor, AsynchronousInstrumentAccumulator accumulator) {
     super(descriptor, accumulator);
   }
 
-  static final class Builder
-      extends AbstractDoubleAsynchronousInstrumentBuilder<DoubleValueObserverSdk.Builder>
-      implements DoubleValueObserverBuilder {
+  static final class Builder extends AbstractInstrumentBuilder<DoubleValueObserverSdk.Builder>
+      implements DoubleGaugeBuilder {
 
     Builder(
-        String name,
         MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(
-          name,
-          InstrumentType.VALUE_OBSERVER,
-          InstrumentValueType.DOUBLE,
-          meterProviderSharedState,
-          meterSharedState);
+        MeterSharedState meterSharedState,
+        String name) {
+      this(meterProviderSharedState, meterSharedState, name, "", "1");
+    }
+
+    Builder(
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState sharedState,
+        String name,
+        String description,
+        String unit) {
+      super(meterProviderSharedState, sharedState, name, description, unit);
     }
 
     @Override
-    Builder getThis() {
+    protected Builder getThis() {
       return this;
     }
 
     @Override
-    public DoubleValueObserverSdk build() {
-      return buildInstrument(DoubleValueObserverSdk::new);
+    public LongGaugeBuilder ofLongs() {
+      return swapBuilder(LongValueObserverSdk.Builder::new);
+    }
+
+    @Override
+    public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+      buildDoubleAsynchronousInstrument(
+          InstrumentType.VALUE_OBSERVER, callback, DoubleValueObserverSdk::new);
     }
   }
 }

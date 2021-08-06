@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
@@ -44,17 +44,17 @@ public class SynchronousInstrumentAccumulatorTest {
     SynchronousInstrumentAccumulator<?> accumulator =
         new SynchronousInstrumentAccumulator<>(
             aggregator, new InstrumentProcessor<>(aggregator, testClock.now()), spyLabelsProcessor);
-    accumulator.bind(Labels.empty());
-    Mockito.verify(spyLabelsProcessor).onLabelsBound(Context.current(), Labels.empty());
+    accumulator.bind(Attributes.empty());
+    Mockito.verify(spyLabelsProcessor).onLabelsBound(Context.current(), Attributes.empty());
   }
 
   @Test
   void labelsProcessor_applied() {
-    final Labels labels = Labels.of("K", "V");
+    final Attributes labels = Attributes.builder().put("K", "V").build();
     LabelsProcessor labelsProcessor =
         new LabelsProcessor() {
           @Override
-          public Labels onLabelsBound(Context ctx, Labels lbls) {
+          public Attributes onLabelsBound(Context ctx, Attributes lbls) {
             return lbls.toBuilder().put("modifiedK", "modifiedV").build();
           }
         };
@@ -76,12 +76,15 @@ public class SynchronousInstrumentAccumulatorTest {
     SynchronousInstrumentAccumulator<?> accumulator =
         new SynchronousInstrumentAccumulator<>(
             aggregator, new InstrumentProcessor<>(aggregator, testClock.now()), labelsProcessor);
-    AggregatorHandle<?> aggregatorHandle = accumulator.bind(Labels.of("K", "V"));
-    AggregatorHandle<?> duplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
+    AggregatorHandle<?> aggregatorHandle =
+        accumulator.bind(Attributes.builder().put("K", "V").build());
+    AggregatorHandle<?> duplicateAggregatorHandle =
+        accumulator.bind(Attributes.builder().put("K", "V").build());
     try {
       assertThat(duplicateAggregatorHandle).isSameAs(aggregatorHandle);
       accumulator.collectAll(testClock.now());
-      AggregatorHandle<?> anotherDuplicateAggregatorHandle = accumulator.bind(Labels.of("K", "V"));
+      AggregatorHandle<?> anotherDuplicateAggregatorHandle =
+          accumulator.bind(Attributes.builder().put("K", "V").build());
       try {
         assertThat(anotherDuplicateAggregatorHandle).isSameAs(aggregatorHandle);
       } finally {

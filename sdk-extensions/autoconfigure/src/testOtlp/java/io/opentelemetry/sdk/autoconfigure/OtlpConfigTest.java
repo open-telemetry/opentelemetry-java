@@ -108,8 +108,6 @@ class OtlpConfigTest {
                 requestHeaders.add(req.headers());
                 return delegate.serve(ctx, req);
               });
-          sb.http(0);
-          sb.https(0);
           sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
         }
       };
@@ -132,7 +130,8 @@ class OtlpConfigTest {
   @Test
   void configureExportersGeneral() {
     Map<String, String> props = new HashMap<>();
-    props.put("otel.exporter.otlp.endpoint", "http://localhost:" + server.httpPort());
+    props.put("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
+    props.put("otel.exporter.otlp.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.timeout", "5s");
     ConfigProperties properties = ConfigProperties.createForTest(props);
@@ -178,9 +177,12 @@ class OtlpConfigTest {
     // general.
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.endpoint", "http://foo.bar");
+    props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
     props.put("otel.exporter.otlp.timeout", "10s");
-    props.put("otel.exporter.otlp.traces.endpoint", "http://localhost:" + server.httpPort());
+    props.put("otel.exporter.otlp.traces.endpoint", "https://localhost:" + server.httpsPort());
+    props.put(
+        "otel.exporter.otlp.traces.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.traces.timeout", "5s");
     SpanExporter spanExporter =
@@ -208,9 +210,12 @@ class OtlpConfigTest {
     // general.
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.endpoint", "http://foo.bar");
+    props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
     props.put("otel.exporter.otlp.timeout", "10s");
-    props.put("otel.exporter.otlp.metrics.endpoint", "http://localhost:" + server.httpPort());
+    props.put("otel.exporter.otlp.metrics.endpoint", "https://localhost:" + server.httpsPort());
+    props.put(
+        "otel.exporter.otlp.metrics.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.metrics.timeout", "5s");
     MetricExporter metricExporter =
@@ -234,28 +239,21 @@ class OtlpConfigTest {
   }
 
   @Test
-  void configureTls() {
-    Map<String, String> props = new HashMap<>();
-    props.put("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
-    props.put("otel.exporter.otlp.certificate", certificate.certificateFile().getAbsolutePath());
-    SpanExporter spanExporter =
-        SpanExporterConfiguration.configureExporter("otlp", ConfigProperties.createForTest(props));
-
-    assertThat(
-            spanExporter
-                .export(Lists.newArrayList(generateFakeSpan()))
-                .join(10, TimeUnit.SECONDS)
-                .isSuccess())
-        .isTrue();
-    assertThat(otlpTraceRequests).hasSize(1);
-  }
-
-  @Test
   void configureTlsInvalidCertificatePath() {
-    System.setProperty("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
+    ConfigProperties properties = ConfigProperties.createForTest(props);
 
-    assertThatThrownBy(OpenTelemetrySdkAutoConfiguration::initialize)
-        .isInstanceOf(ConfigurationException.class);
+    assertThatThrownBy(() -> SpanExporterConfiguration.configureExporter("otlp", properties))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Invalid OTLP certificate path:");
+
+    assertThatThrownBy(
+            () ->
+                MetricExporterConfiguration.configureOtlpMetrics(
+                    properties, SdkMeterProvider.builder().build()))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Invalid OTLP certificate path:");
   }
 
   private static SpanData generateFakeSpan() {
@@ -291,7 +289,9 @@ class OtlpConfigTest {
 
   @Test
   void configuresGlobal() {
-    System.setProperty("otel.exporter.otlp.endpoint", "http://localhost:" + server.httpPort());
+    System.setProperty("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
+    System.setProperty(
+        "otel.exporter.otlp.certificate", certificate.certificateFile().getAbsolutePath());
     System.setProperty("otel.imr.export.interval", "1s");
 
     GlobalOpenTelemetry.get().getTracer("test").spanBuilder("test").startSpan().end();
