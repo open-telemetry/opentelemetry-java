@@ -55,6 +55,7 @@ jobs:
           java-version: 11
       - uses: burrunan/gradle-cache-action@v1.10
         with:
+          job-id: jdk${{ matrix.test-java-version }}
           remote-build-cache-proxy-enabled: false
           arguments: build --stacktrace ${{ matrix.coverage && 'jacocoTestReport' || '' }}
           properties: |
