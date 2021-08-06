@@ -112,11 +112,11 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
               @Override
               public void onFailure(Call call, IOException e) {
                 spansExportedFailure.add(spans.size());
-                result.fail();
                 logger.log(
                     Level.SEVERE,
                     "Failed to export spans. The request could not be executed. Full error message: "
                         + e.getMessage());
+                result.fail();
               }
 
               @Override

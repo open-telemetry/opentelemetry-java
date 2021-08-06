@@ -16,7 +16,9 @@ import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
+import com.linecorp.armeria.common.logging.LogLevel;
 import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.trace.SpanContext;
@@ -71,6 +73,11 @@ class OtlpHttpSpanExporterTest {
         @Override
         protected void configureServer(ServerBuilder sb) {
           sb.tls(HELD_CERTIFICATE.keyPair().getPrivate(), HELD_CERTIFICATE.certificate());
+          sb.decorator(
+              LoggingService.builder()
+                  .requestLogLevel(LogLevel.INFO)
+                  .successfulResponseLogLevel(LogLevel.INFO)
+                  .newDecorator());
         }
       };
 
@@ -183,7 +190,8 @@ class OtlpHttpSpanExporterTest {
     exportAndAssertResult(exporter, /* expectedResult= */ false);
     LoggingEvent log =
         logs.assertContains(
-            "Failed to export spans. Server responded with HTTP status code 500. Error message: Server error!");
+            "Failed to export spans. Server responded with HTTP status code 500. "
+                + "Error message: Server error!");
     assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
@@ -196,7 +204,8 @@ class OtlpHttpSpanExporterTest {
     exportAndAssertResult(exporter, /* expectedResult= */ false);
     LoggingEvent log =
         logs.assertContains(
-            "Failed to export spans. Server responded with HTTP status code 500. Error message: Unable to parse response body, HTTP status message:");
+            "Failed to export spans. Server responded with HTTP status code 500. "
+                + "Error message: Unable to parse response body, HTTP status message:");
     assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
