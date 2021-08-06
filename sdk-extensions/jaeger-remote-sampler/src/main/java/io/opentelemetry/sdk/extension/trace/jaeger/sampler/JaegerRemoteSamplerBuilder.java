@@ -50,6 +50,9 @@ public final class JaegerRemoteSamplerBuilder {
   /**
    * Sets the managed channel to use when communicating with the backend. Takes precedence over
    * {@link #setEndpoint(String)} if both are called.
+   *
+   * <p>Note: if you use this option, the provided channel will *not* be closed when {@code close()}
+   * is called on the resulting {@link JaegerRemoteSampler}.
    */
   public JaegerRemoteSamplerBuilder setChannel(ManagedChannel channel) {
     requireNonNull(channel, "channel");
