@@ -24,7 +24,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
 
   /**
    * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized properties
-   * contained in passed {@code config}.
+   * contained in the {@code config} parameter.
    *
    * @param setResultAsGlobal Whether to automatically set the configured SDK as the {@link
    *     GlobalOpenTelemetry} instance.
