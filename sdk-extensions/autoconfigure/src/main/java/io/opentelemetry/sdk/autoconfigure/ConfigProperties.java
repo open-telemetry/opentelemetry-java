@@ -22,12 +22,13 @@ public interface ConfigProperties {
   String getString(String name);
 
   /**
-   * Returns a boolean-valued configuration property. Uses the same rules as {@link
-   * Boolean#parseBoolean(String)} for handling the values.
+   * Returns a boolean-valued configuration property. Implementations should use the same rules as
+   * {@link Boolean#parseBoolean(String)} for handling the values.
    *
-   * @return false if the property has not been configured.
+   * @return null if the property has not been configured.
    */
-  boolean getBoolean(String name);
+  @Nullable
+  Boolean getBoolean(String name);
 
   /**
    * Returns a integer-valued configuration property.

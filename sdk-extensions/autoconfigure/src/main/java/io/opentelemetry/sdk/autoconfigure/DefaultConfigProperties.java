@@ -56,8 +56,12 @@ final class DefaultConfigProperties implements ConfigProperties {
   }
 
   @Override
-  public boolean getBoolean(String name) {
-    return Boolean.parseBoolean(config.get(name));
+  public Boolean getBoolean(String name) {
+    String value = config.get(name);
+    if (value == null || value.isEmpty()) {
+      return null;
+    }
+    return Boolean.parseBoolean(value);
   }
 
   @Override
