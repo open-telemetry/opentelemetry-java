@@ -14,7 +14,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link InstrumentRegistry}. */
+/** Unit tests for {@link MetricStorageRegistry}. */
 class MetricStorageRegistryTest {
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "1");
