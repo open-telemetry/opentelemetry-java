@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.http.trace;
+package io.opentelemetry.exporter.otlp.http.metric;
 
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
@@ -22,11 +22,11 @@ import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.tls.HandshakeCertificates;
 
-/** Builder utility for {@link OtlpHttpSpanExporter}. */
-public final class OtlpHttpSpanExporterBuilder {
+/** Builder utility for {@link OtlpHttpMetricExporter}. */
+public final class OtlpHttpMetricExporterBuilder {
 
   private static final long DEFAULT_TIMEOUT_SECS = 10;
-  private static final String DEFAULT_ENDPOINT = "http://localhost:4317/v1/traces";
+  private static final String DEFAULT_ENDPOINT = "http://localhost:4317/v1/metrics";
 
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private String endpoint = DEFAULT_ENDPOINT;
@@ -35,10 +35,10 @@ public final class OtlpHttpSpanExporterBuilder {
   @Nullable private byte[] trustedCertificatesPem;
 
   /**
-   * Sets the maximum time to wait for the collector to process an exported batch of spans. If
+   * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
    * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
    */
-  public OtlpHttpSpanExporterBuilder setTimeout(long timeout, TimeUnit unit) {
+  public OtlpHttpMetricExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
     timeoutNanos = unit.toNanos(timeout);
@@ -46,10 +46,10 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Sets the maximum time to wait for the collector to process an exported batch of spans. If
+   * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
    * unset, defaults to {@value DEFAULT_TIMEOUT_SECS}s.
    */
-  public OtlpHttpSpanExporterBuilder setTimeout(Duration timeout) {
+  public OtlpHttpMetricExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
@@ -58,7 +58,7 @@ public final class OtlpHttpSpanExporterBuilder {
    * Sets the OTLP endpoint to connect to. If unset, defaults to {@value DEFAULT_ENDPOINT}. The
    * endpoint must start with either http:// or https://, and include the full HTTP path.
    */
-  public OtlpHttpSpanExporterBuilder setEndpoint(String endpoint) {
+  public OtlpHttpMetricExporterBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
 
     URI uri;
@@ -82,7 +82,7 @@ public final class OtlpHttpSpanExporterBuilder {
    * Sets the method used to compress payloads. If unset, compression is disabled. Currently the
    * only supported compression method is "gzip".
    */
-  public OtlpHttpSpanExporterBuilder setCompression(String compressionMethod) {
+  public OtlpHttpMetricExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
     Preconditions.checkArgument(
         compressionMethod.equals("gzip"),
@@ -92,7 +92,7 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /** Add header to requests. */
-  public OtlpHttpSpanExporterBuilder addHeader(String key, String value) {
+  public OtlpHttpMetricExporterBuilder addHeader(String key, String value) {
     if (headersBuilder == null) {
       headersBuilder = new Headers.Builder();
     }
@@ -105,7 +105,7 @@ public final class OtlpHttpSpanExporterBuilder {
    * should contain an X.509 certificate collection in PEM format. If not set, TLS connections will
    * use the system default trusted certificates.
    */
-  public OtlpHttpSpanExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
+  public OtlpHttpMetricExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
     this.trustedCertificatesPem = trustedCertificatesPem;
     return this;
   }
@@ -115,7 +115,7 @@ public final class OtlpHttpSpanExporterBuilder {
    *
    * @return a new exporter's instance
    */
-  public OtlpHttpSpanExporter build() {
+  public OtlpHttpMetricExporter build() {
     OkHttpClient.Builder clientBuilder =
         new OkHttpClient.Builder().callTimeout(Duration.ofNanos(timeoutNanos));
 
@@ -134,7 +134,7 @@ public final class OtlpHttpSpanExporterBuilder {
 
     Headers headers = headersBuilder == null ? null : headersBuilder.build();
 
-    return new OtlpHttpSpanExporter(clientBuilder.build(), endpoint, headers, compressionEnabled);
+    return new OtlpHttpMetricExporter(clientBuilder.build(), endpoint, headers, compressionEnabled);
   }
 
   /**
@@ -156,5 +156,5 @@ public final class OtlpHttpSpanExporterBuilder {
     return certBuilder.build();
   }
 
-  OtlpHttpSpanExporterBuilder() {}
+  OtlpHttpMetricExporterBuilder() {}
 }
