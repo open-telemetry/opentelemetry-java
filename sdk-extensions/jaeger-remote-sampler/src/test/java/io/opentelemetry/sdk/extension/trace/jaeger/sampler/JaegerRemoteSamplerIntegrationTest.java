@@ -36,29 +36,29 @@ class JaegerRemoteSamplerIntegrationTest {
 
   @Test
   void remoteSampling_perOperation() {
-    final JaegerRemoteSampler remoteSampler =
+    try (JaegerRemoteSampler remoteSampler =
         JaegerRemoteSampler.builder()
             .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
             .setServiceName(SERVICE_NAME)
-            .build();
-
-    await()
-        .atMost(Duration.ofSeconds(10))
-        .untilAsserted(samplerIsType(remoteSampler, PerOperationSampler.class));
-    assertThat(remoteSampler.getDescription()).contains("0.33").doesNotContain("150");
+            .build()) {
+      await()
+          .atMost(Duration.ofSeconds(10))
+          .untilAsserted(samplerIsType(remoteSampler, PerOperationSampler.class));
+      assertThat(remoteSampler.getDescription()).contains("0.33").doesNotContain("150");
+    }
   }
 
   @Test
   void remoteSampling_rateLimiting() {
-    final JaegerRemoteSampler remoteSampler =
+    try (JaegerRemoteSampler remoteSampler =
         JaegerRemoteSampler.builder()
             .setEndpoint("127.0.0.1:" + jaegerContainer.getMappedPort(COLLECTOR_PORT))
             .setServiceName(SERVICE_NAME_RATE_LIMITING)
-            .build();
-
-    await()
-        .atMost(Duration.ofSeconds(10))
-        .untilAsserted(samplerIsType(remoteSampler, RateLimitingSampler.class));
-    assertThat(remoteSampler.getDescription()).contains("RateLimitingSampler{150.00}");
+            .build()) {
+      await()
+          .atMost(Duration.ofSeconds(10))
+          .untilAsserted(samplerIsType(remoteSampler, RateLimitingSampler.class));
+      assertThat(remoteSampler.getDescription()).contains("RateLimitingSampler{150.00}");
+    }
   }
 }
