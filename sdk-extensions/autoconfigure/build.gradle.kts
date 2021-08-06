@@ -17,7 +17,6 @@ testSets {
   create("testOtlp")
   create("testResourceDisabledByProperty")
   create("testResourceDisabledByEnv")
-  create("testResourceNotInitialized")
   create("testZipkin")
 }
 
@@ -132,8 +131,6 @@ tasks {
     environment("OTEL_METRICS_EXPORTER", "none")
   }
 
-  val testResourceNotInitialized by existing(Test::class)
-
   val check by existing {
     dependsOn(
       testConfigError,
@@ -144,8 +141,7 @@ tasks {
       testPrometheus,
       testZipkin,
       testResourceDisabledByProperty,
-      testResourceDisabledByEnv,
-      testResourceNotInitialized
+      testResourceDisabledByEnv
     )
   }
 }

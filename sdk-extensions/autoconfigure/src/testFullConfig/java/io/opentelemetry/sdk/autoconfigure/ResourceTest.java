@@ -16,10 +16,10 @@ class ResourceTest {
 
   @Test
   void resource() {
-    // make sure that the SDK is autoconfigured regardless of test execution order
+    // make sure that the SDK is autoconfigured first regardless of test execution order
     GlobalOpenTelemetry.get();
 
-    Attributes attributes = OpenTelemetrySdkAutoConfiguration.getResource().getAttributes();
+    Attributes attributes = OpenTelemetryResourceAutoConfiguration.getResource().getAttributes();
 
     assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNotNull();
     assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNotNull();
