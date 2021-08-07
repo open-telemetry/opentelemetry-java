@@ -26,22 +26,14 @@ class CountAggregatorTest {
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
-              "name",
-              "description",
-              "unit",
-              InstrumentType.HISTOGRAM,
-              InstrumentValueType.LONG),
+              "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
           AggregationTemporality.CUMULATIVE);
   private static final CountAggregator deltaAggregator =
       new CountAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
-              "name",
-              "description",
-              "unit",
-              InstrumentType.HISTOGRAM,
-              InstrumentValueType.LONG),
+              "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
           AggregationTemporality.DELTA);
 
   @Test

@@ -7,9 +7,9 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.ViewRegistry;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;

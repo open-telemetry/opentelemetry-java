@@ -103,7 +103,9 @@ class LongSumObserverSdkTest {
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.OBSERVABLE_SUM).build(),
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.OBSERVABLE_SUM)
+                    .build(),
                 View.builder()
                     .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
                     .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.DELTA))
