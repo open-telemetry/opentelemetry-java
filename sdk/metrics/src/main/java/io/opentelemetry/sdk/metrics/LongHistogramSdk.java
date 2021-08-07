@@ -19,10 +19,10 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 
-final class LongValueRecorderSdk extends AbstractInstrument implements LongHistogram {
+final class LongHistogramSdk extends AbstractInstrument implements LongHistogram {
   private final WriteableMetricStorage storage;
 
-  private LongValueRecorderSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private LongHistogramSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
     super(descriptor);
     this.storage = storage;
   }
@@ -72,7 +72,7 @@ final class LongValueRecorderSdk extends AbstractInstrument implements LongHisto
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<LongValueRecorderSdk.Builder>
+  static final class Builder extends AbstractInstrumentBuilder<LongHistogramSdk.Builder>
       implements LongHistogramBuilder {
 
     Builder(
@@ -97,9 +97,9 @@ final class LongValueRecorderSdk extends AbstractInstrument implements LongHisto
     }
 
     @Override
-    public LongValueRecorderSdk build() {
+    public LongHistogramSdk build() {
       return buildSynchronousInstrument(
-          InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG, LongValueRecorderSdk::new);
+          InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG, LongHistogramSdk::new);
     }
 
     @Override
