@@ -104,7 +104,7 @@ final class LongValueRecorderSdk extends AbstractInstrument implements LongHisto
 
     @Override
     public DoubleHistogramBuilder ofDoubles() {
-      return swapBuilder(DoubleValueRecorderSdk.Builder::new);
+      return swapBuilder(DoubleHistogramSdk.Builder::new);
     }
   }
 }

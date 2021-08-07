@@ -50,7 +50,7 @@ final class SdkMeter implements Meter {
 
   @Override
   public DoubleHistogramBuilder histogramBuilder(String name) {
-    return new DoubleValueRecorderSdk.Builder(meterProviderSharedState, meterSharedState, name);
+    return new DoubleHistogramSdk.Builder(meterProviderSharedState, meterSharedState, name);
   }
 
   @Override

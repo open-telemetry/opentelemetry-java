@@ -19,10 +19,10 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 
-final class DoubleValueRecorderSdk extends AbstractInstrument implements DoubleHistogram {
+final class DoubleHistogramSdk extends AbstractInstrument implements DoubleHistogram {
   private final WriteableMetricStorage storage;
 
-  private DoubleValueRecorderSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private DoubleHistogramSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
     super(descriptor);
     this.storage = storage;
   }
@@ -72,7 +72,7 @@ final class DoubleValueRecorderSdk extends AbstractInstrument implements DoubleH
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<DoubleValueRecorderSdk.Builder>
+  static final class Builder extends AbstractInstrumentBuilder<DoubleHistogramSdk.Builder>
       implements DoubleHistogramBuilder {
 
     Builder(
@@ -97,9 +97,9 @@ final class DoubleValueRecorderSdk extends AbstractInstrument implements DoubleH
     }
 
     @Override
-    public DoubleValueRecorderSdk build() {
+    public DoubleHistogramSdk build() {
       return buildSynchronousInstrument(
-          InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE, DoubleValueRecorderSdk::new);
+          InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE, DoubleHistogramSdk::new);
     }
 
     @Override
