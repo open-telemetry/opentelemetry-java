@@ -55,6 +55,6 @@ final class SdkMeter implements Meter {
 
   @Override
   public DoubleGaugeBuilder gaugeBuilder(String name) {
-    return new DoubleValueObserverSdk.Builder(meterProviderSharedState, meterSharedState, name);
+    return new DoubleGaugeBuilderSdk(meterProviderSharedState, meterSharedState, name);
   }
 }
