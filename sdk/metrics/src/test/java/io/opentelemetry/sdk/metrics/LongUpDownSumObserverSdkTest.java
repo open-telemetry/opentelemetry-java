@@ -104,7 +104,7 @@ class LongUpDownSumObserverSdkTest {
         sdkMeterProviderBuilder
             .registerView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.UP_DOWN_SUM_OBSERVER)
+                    .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_SUM)
                     .build(),
                 View.builder()
                     .setLabelsProcessorFactory(LabelsProcessorFactory.noop())

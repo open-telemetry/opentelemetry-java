@@ -117,7 +117,7 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
 
     @Override
     public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      registerLongAsynchronousInstrument(InstrumentType.SUM_OBSERVER, callback);
+      registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback);
     }
   }
 }

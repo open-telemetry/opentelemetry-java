@@ -60,12 +60,12 @@ public final class ViewRegistry {
     switch (descriptor.getType()) {
       case COUNTER:
       case UP_DOWN_COUNTER:
-      case SUM_OBSERVER:
-      case UP_DOWN_SUM_OBSERVER:
+      case OBSERVABLE_SUM:
+      case OBSERVABLE_UP_DOWN_SUM:
         return CUMULATIVE_SUM;
-      case VALUE_RECORDER:
+      case HISTOGRAM:
         return SUMMARY;
-      case VALUE_OBSERVER:
+      case OBSERVABLE_GAUGE:
         return LAST_VALUE;
     }
     throw new IllegalArgumentException("Unknown descriptor type: " + descriptor.getType());

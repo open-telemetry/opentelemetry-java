@@ -28,7 +28,7 @@ class DoubleLastValueAggregatorTest {
               "name",
               "description",
               "unit",
-              InstrumentType.VALUE_OBSERVER,
+              InstrumentType.OBSERVABLE_GAUGE,
               InstrumentValueType.DOUBLE));
 
   @Test

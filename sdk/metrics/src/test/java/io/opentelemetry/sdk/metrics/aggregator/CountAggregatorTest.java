@@ -29,7 +29,7 @@ class CountAggregatorTest {
               "name",
               "description",
               "unit",
-              InstrumentType.VALUE_RECORDER,
+              InstrumentType.HISTOGRAM,
               InstrumentValueType.LONG),
           AggregationTemporality.CUMULATIVE);
   private static final CountAggregator deltaAggregator =
@@ -40,7 +40,7 @@ class CountAggregatorTest {
               "name",
               "description",
               "unit",
-              InstrumentType.VALUE_RECORDER,
+              InstrumentType.HISTOGRAM,
               InstrumentValueType.LONG),
           AggregationTemporality.DELTA);
 

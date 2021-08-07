@@ -99,7 +99,7 @@ final class LongHistogramSdk extends AbstractInstrument implements LongHistogram
     @Override
     public LongHistogramSdk build() {
       return buildSynchronousInstrument(
-          InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG, LongHistogramSdk::new);
+          InstrumentType.HISTOGRAM, InstrumentValueType.LONG, LongHistogramSdk::new);
     }
 
     @Override

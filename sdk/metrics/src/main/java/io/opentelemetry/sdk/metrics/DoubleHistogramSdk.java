@@ -99,7 +99,7 @@ final class DoubleHistogramSdk extends AbstractInstrument implements DoubleHisto
     @Override
     public DoubleHistogramSdk build() {
       return buildSynchronousInstrument(
-          InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE, DoubleHistogramSdk::new);
+          InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE, DoubleHistogramSdk::new);
     }
 
     @Override

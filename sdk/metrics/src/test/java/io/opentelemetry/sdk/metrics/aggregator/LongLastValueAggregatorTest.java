@@ -29,7 +29,7 @@ class LongLastValueAggregatorTest {
               "name",
               "description",
               "unit",
-              InstrumentType.VALUE_OBSERVER,
+              InstrumentType.OBSERVABLE_GAUGE,
               InstrumentValueType.LONG));
 
   @Test

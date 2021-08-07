@@ -35,7 +35,7 @@ public class DoubleHistogramAggregatorTest {
               "name",
               "description",
               "unit",
-              InstrumentType.VALUE_RECORDER,
+              InstrumentType.HISTOGRAM,
               InstrumentValueType.LONG),
           boundaries,
           /* stateful= */ false);

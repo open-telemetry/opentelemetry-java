@@ -154,22 +154,22 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG)))
+                    "", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.LONG)))
         .isSameAs(ViewRegistry.SUMMARY);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.SUM_OBSERVER, InstrumentValueType.LONG)))
+                    "", "", "", InstrumentType.OBSERVABLE_SUM, InstrumentValueType.LONG)))
         .isSameAs(ViewRegistry.CUMULATIVE_SUM);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.VALUE_OBSERVER, InstrumentValueType.LONG)))
+                    "", "", "", InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.LONG)))
         .isSameAs(ViewRegistry.LAST_VALUE);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG)))
+                    "", "", "", InstrumentType.OBSERVABLE_UP_DOWN_SUM, InstrumentValueType.LONG)))
         .isSameAs(ViewRegistry.CUMULATIVE_SUM);
   }
 }

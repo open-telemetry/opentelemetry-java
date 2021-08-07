@@ -34,7 +34,7 @@ class DoubleMinMaxSumCountAggregatorTest {
               "name",
               "description",
               "unit",
-              InstrumentType.VALUE_RECORDER,
+              InstrumentType.HISTOGRAM,
               InstrumentValueType.DOUBLE));
 
   @Test

@@ -44,6 +44,6 @@ final class DoubleGaugeBuilderSdk extends AbstractInstrumentBuilder<DoubleGaugeB
 
   @Override
   public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
-    registerDoubleAsynchronousInstrument(InstrumentType.VALUE_OBSERVER, callback);
+    registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
   }
 }

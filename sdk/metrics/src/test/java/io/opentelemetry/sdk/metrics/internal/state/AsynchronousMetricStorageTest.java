@@ -44,7 +44,7 @@ public class AsynchronousMetricStorageTest {
         ViewRegistry.builder()
             .addView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.VALUE_OBSERVER)
+                    .setInstrumentType(InstrumentType.OBSERVABLE_GAUGE)
                     .build(),
                 View.builder()
                     .setAggregatorFactory(AggregatorFactory.lastValue())
@@ -66,7 +66,7 @@ public class AsynchronousMetricStorageTest {
                 "name",
                 "description",
                 "unit",
-                InstrumentType.VALUE_OBSERVER,
+                InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.DOUBLE),
             value -> value.observe(1.0, Attributes.empty()))
         .collectAndReset(0, testClock.now());
@@ -82,7 +82,7 @@ public class AsynchronousMetricStorageTest {
                 "name",
                 "description",
                 "unit",
-                InstrumentType.VALUE_OBSERVER,
+                InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.LONG),
             value -> value.observe(1, Attributes.empty()))
         .collectAndReset(0, testClock.nanoTime());

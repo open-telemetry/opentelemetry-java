@@ -44,6 +44,6 @@ final class LongGaugeBuilderSdk extends AbstractInstrumentBuilder<LongGaugeBuild
 
   @Override
   public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-    registerLongAsynchronousInstrument(InstrumentType.VALUE_OBSERVER, callback);
+    registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_GAUGE, callback);
   }
 }

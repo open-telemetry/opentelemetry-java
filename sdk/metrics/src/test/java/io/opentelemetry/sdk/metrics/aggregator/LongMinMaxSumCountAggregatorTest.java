@@ -34,7 +34,7 @@ class LongMinMaxSumCountAggregatorTest {
               "name",
               "description",
               "unit",
-              InstrumentType.VALUE_RECORDER,
+              InstrumentType.HISTOGRAM,
               InstrumentValueType.LONG));
 
   @Test
