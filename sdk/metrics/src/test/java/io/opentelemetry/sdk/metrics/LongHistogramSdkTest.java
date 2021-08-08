@@ -41,18 +41,18 @@ class LongHistogramSdkTest {
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void record_PreventNullLabels() {
+  void record_PreventNullAttributes() {
     assertThatThrownBy(
             () -> sdkMeter.histogramBuilder("testRecorder").ofLongs().build().record(1, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
-  void bound_PreventNullLabels() {
+  void bound_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").ofLongs().build().bind(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
@@ -67,7 +67,7 @@ class LongHistogramSdkTest {
   }
 
   @Test
-  void collectMetrics_WithEmptyLabel() {
+  void collectMetrics_WithEmptyAttributes() {
     LongHistogram longRecorder =
         sdkMeter
             .histogramBuilder("testRecorder")

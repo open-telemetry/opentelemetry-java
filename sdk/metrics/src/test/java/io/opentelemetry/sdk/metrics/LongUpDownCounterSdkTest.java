@@ -33,17 +33,17 @@ class LongUpDownCounterSdkTest {
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void add_PreventNullLabels() {
+  void add_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.upDownCounterBuilder("testCounter").build().add(1, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
-  void bound_PreventNullLabels() {
+  void bound_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.upDownCounterBuilder("testUpDownCounter").build().bind(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
@@ -61,7 +61,7 @@ class LongUpDownCounterSdkTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void collectMetrics_WithEmptyLabel() {
+  void collectMetrics_WithEmptyAttributes() {
     LongUpDownCounter longUpDownCounter =
         sdkMeter
             .upDownCounterBuilder("testUpDownCounter")

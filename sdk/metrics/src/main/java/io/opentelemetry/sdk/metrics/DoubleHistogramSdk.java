@@ -33,8 +33,8 @@ final class DoubleHistogramSdk extends AbstractInstrument implements DoubleHisto
   }
 
   @Override
-  public void record(double value, Attributes labels) {
-    record(value, labels, Context.current());
+  public void record(double value, Attributes attributes) {
+    record(value, attributes, Context.current());
   }
 
   @Override

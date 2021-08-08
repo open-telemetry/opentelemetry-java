@@ -56,10 +56,10 @@ public final class SynchronousMetricStorage<T> implements WriteableMetricStorage
   }
 
   @Override
-  public BoundStorageHandle bind(Attributes labels) {
-    Objects.requireNonNull(labels, "labels");
-    labels = labelsProcessor.onLabelsBound(Context.current(), labels);
-    AggregatorHandle<T> aggregatorHandle = aggregatorLabels.get(labels);
+  public BoundStorageHandle bind(Attributes attributes) {
+    Objects.requireNonNull(attributes, "attributes");
+    attributes = labelsProcessor.onLabelsBound(Context.current(), attributes);
+    AggregatorHandle<T> aggregatorHandle = aggregatorLabels.get(attributes);
     if (aggregatorHandle != null && aggregatorHandle.acquire()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
       return aggregatorHandle;
@@ -69,7 +69,7 @@ public final class SynchronousMetricStorage<T> implements WriteableMetricStorage
     aggregatorHandle = aggregator.createHandle();
     while (true) {
       AggregatorHandle<?> boundAggregatorHandle =
-          aggregatorLabels.putIfAbsent(labels, aggregatorHandle);
+          aggregatorLabels.putIfAbsent(attributes, aggregatorHandle);
       if (boundAggregatorHandle != null) {
         if (boundAggregatorHandle.acquire()) {
           // At this moment it is guaranteed that the Bound is in the map and will not be removed.
@@ -77,7 +77,7 @@ public final class SynchronousMetricStorage<T> implements WriteableMetricStorage
         }
         // Try to remove the boundAggregator. This will race with the collect method, but only one
         // will succeed.
-        aggregatorLabels.remove(labels, boundAggregatorHandle);
+        aggregatorLabels.remove(attributes, boundAggregatorHandle);
         continue;
       }
       return aggregatorHandle;

@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * An {@code InstrumentProcessor} represents an internal instance of an {@code Accumulator} for a
  * specific {code Instrument}. It records individual measurements (via the {@code Aggregator}). It
- * batches together {@code Aggregator}s for the similar sets of labels.
+ * batches together {@code Aggregator}s for the similar sets of attributes.
  *
  * <p>An entire collection cycle must be protected by a lock. A collection cycle is defined by
  * multiple calls to {@code #batch(...)} followed by one {@code #completeCollectionCycle(...)};
@@ -33,10 +33,10 @@ final class InstrumentProcessor<T> {
   }
 
   /**
-   * Batches multiple entries together that are part of the same metric. It may remove labels from
-   * the {@link Labels} and merge aggregations together.
+   * Batches multiple entries together that are part of the same metric. It may remove attributes
+   * from the {@link Attributes} and merge aggregations together.
    *
-   * @param attributes the {@link Labels} associated with this {@code Aggregator}.
+   * @param attributes the {@link Attributes} associated with this {@code Aggregator}.
    * @param accumulation the accumulation produced by this instrument.
    */
   void batch(Attributes attributes, T accumulation) {

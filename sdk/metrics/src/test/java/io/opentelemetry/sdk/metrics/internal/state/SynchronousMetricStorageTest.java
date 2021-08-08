@@ -86,7 +86,7 @@ public class SynchronousMetricStorageTest {
   }
 
   @Test
-  void sameAggregator_ForSameLabelSet() {
+  void sameAggregator_ForSameAttributes() {
     SynchronousMetricStorage<?> accumulator =
         new SynchronousMetricStorage<>(
             METRIC_DESCRIPTOR,

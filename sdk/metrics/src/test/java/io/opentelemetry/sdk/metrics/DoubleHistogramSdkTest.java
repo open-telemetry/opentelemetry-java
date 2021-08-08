@@ -41,17 +41,17 @@ class DoubleHistogramSdkTest {
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void record_PreventNullLabels() {
+  void record_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").build().record(1.0, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
-  void bound_PreventNullLabels() {
+  void bound_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").build().bind(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
@@ -67,7 +67,7 @@ class DoubleHistogramSdkTest {
   }
 
   @Test
-  void collectMetrics_WithEmptyLabel() {
+  void collectMetrics_WithEmptyAttributes() {
     DoubleHistogram doubleRecorder =
         sdkMeter
             .histogramBuilder("testRecorder")
