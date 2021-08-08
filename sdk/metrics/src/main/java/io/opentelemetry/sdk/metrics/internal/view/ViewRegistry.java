@@ -41,10 +41,17 @@ public final class ViewRegistry {
             this.configuration.put(instrumentType, new LinkedHashMap<>(patternViewLinkedHashMap)));
   }
 
+  /** Returns a builder of {@link ViewRegistry}. */
   public static ViewRegistryBuilder builder() {
     return new ViewRegistryBuilder();
   }
 
+  /**
+   * Returns the metric {@link View} for a given instrument.
+   *
+   * @param descriptor description of the instrument.
+   * @return The {@link View} for this instrument, or a default aggregation view.
+   */
   public View findView(InstrumentDescriptor descriptor) {
     LinkedHashMap<Pattern, View> configPerType = configuration.get(descriptor.getType());
     for (Map.Entry<Pattern, View> entry : configPerType.entrySet()) {

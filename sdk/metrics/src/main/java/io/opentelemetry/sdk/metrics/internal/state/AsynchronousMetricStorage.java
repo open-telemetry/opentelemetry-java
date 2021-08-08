@@ -17,12 +17,14 @@ import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+/** Stores aggregated {@link MetricData} for asynchronous instruments. */
 public final class AsynchronousMetricStorage implements MetricStorage {
   private final MetricDescriptor metricDescriptor;
   private final ReentrantLock collectLock = new ReentrantLock();
   private final InstrumentProcessor<?> instrumentProcessor;
   private final Runnable metricUpdater;
 
+  /** Constructs storage for {@code double} valued instruments. */
   public static <T> AsynchronousMetricStorage doubleAsynchronousAccumulator(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
@@ -58,6 +60,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
         () -> metricUpdater.accept(result));
   }
 
+  /** Constructs storage for {@code long} valued instruments. */
   public static <T> AsynchronousMetricStorage longAsynchronousAccumulator(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,

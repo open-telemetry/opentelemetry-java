@@ -12,6 +12,7 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
+/** Builder for {@link ViewRegistry}. */
 public class ViewRegistryBuilder {
   private final EnumMap<InstrumentType, LinkedHashMap<Pattern, View>> configuration =
       new EnumMap<>(InstrumentType.class);
@@ -23,10 +24,18 @@ public class ViewRegistryBuilder {
     }
   }
 
+  /** Returns the {@link ViewRegistry}. */
   public ViewRegistry build() {
     return new ViewRegistry(configuration);
   }
 
+  /**
+   * Adds a new view to the registry.
+   *
+   * @param selector The instruments that should have their defaults altered.
+   * @param view The {@link View} metric definition.
+   * @return this
+   */
   public ViewRegistryBuilder addView(InstrumentSelector selector, View view) {
     LinkedHashMap<Pattern, View> parentConfiguration =
         configuration.get(selector.getInstrumentType());

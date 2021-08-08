@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+/** Stores aggregated {@link MetricData} for synchronous instruments. */
 public final class SynchronousMetricStorage<T> implements WriteableMetricStorage {
   private final MetricDescriptor metricDescriptor;
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorLabels;
@@ -26,6 +27,7 @@ public final class SynchronousMetricStorage<T> implements WriteableMetricStorage
   private final InstrumentProcessor<T> instrumentProcessor;
   private final LabelsProcessor labelsProcessor;
 
+  /** Constructs metric storage for a given synchronous instrument. */
   public static <T> SynchronousMetricStorage<T> create(
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,

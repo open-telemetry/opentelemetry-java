@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
+/** State for a {@code MeterProvider}. */
 @AutoValue
 @Immutable
 public abstract class MeterProviderSharedState {
@@ -22,15 +23,23 @@ public abstract class MeterProviderSharedState {
     return new AutoValue_MeterProviderSharedState(clock, resource, viewRegistry, clock.now());
   }
 
+  /** Returns the clock used for measurements. */
   public abstract Clock getClock();
 
+  /** Returns the {@link Resource} to attach telemetry to. */
   abstract Resource getResource();
 
+  /** Returns the {@link ViewRegistry} for custom aggregation and metric definitions. */
   abstract ViewRegistry getViewRegistry();
 
+  /**
+   * Returns the timestamp when this {@code MeterProvider} was started, in nanoseconds since Unix
+   * epoch time.
+   */
   abstract long getStartEpochNanos();
 
   // TODO: Move this.
+  /** Returns the {@link Aggregator} to use for a given instrument. */
   public <T> Aggregator<T> getAggregator(
       MeterSharedState meterSharedState, InstrumentDescriptor descriptor) {
     return getViewRegistry()
@@ -40,6 +49,7 @@ public abstract class MeterProviderSharedState {
   }
 
   // TODO: Move this.
+  /** Returns the {@link LabelsProcessor} to use for a given instrument. */
   public LabelsProcessor getLabelsProcessor(
       MeterSharedState meterSharedState, InstrumentDescriptor descriptor) {
     return getViewRegistry()
