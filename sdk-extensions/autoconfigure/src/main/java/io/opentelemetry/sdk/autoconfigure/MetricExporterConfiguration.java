@@ -9,6 +9,7 @@ import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReaderBuilder;
@@ -21,10 +22,12 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
-
   static void configureExporter(
       String name, ConfigProperties config, SdkMeterProvider meterProvider) {
     switch (name) {
@@ -41,9 +44,30 @@ final class MetricExporterConfiguration {
             "opentelemetry-exporter-logging");
         configureLoggingMetrics(config, meterProvider);
         return;
+      case "none":
+        return;
       default:
+        MetricExporter spiExporter = configureSpiExporter(name, config);
+        if (spiExporter == null) {
+          throw new ConfigurationException("Unrecognized value for otel.metrics.exporter: " + name);
+        }
+        configureIntervalMetricReader(config, meterProvider, spiExporter);
         return;
     }
+  }
+
+  // Visible for testing.
+  @Nullable
+  static MetricExporter configureSpiExporter(String name, ConfigProperties config) {
+    Map<String, MetricExporter> spiExporters =
+        StreamSupport.stream(
+                ServiceLoader.load(ConfigurableMetricExporterProvider.class).spliterator(), false)
+            .collect(
+                Collectors.toMap(
+                    ConfigurableMetricExporterProvider::getName,
+                    configurableSpanExporterProvider ->
+                        configurableSpanExporterProvider.createExporter(config)));
+    return spiExporters.get(name);
   }
 
   private static void configureLoggingMetrics(
