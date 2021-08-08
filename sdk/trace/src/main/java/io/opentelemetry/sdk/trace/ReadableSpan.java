@@ -24,6 +24,14 @@ public interface ReadableSpan {
   SpanContext getSpanContext();
 
   /**
+   * Returns the parent {@link SpanContext} of the {@link Span}, or {@link SpanContext#getInvalid()}
+   * if this is a root span.
+   *
+   * @return the parent {@link SpanContext} of the {@link Span}
+   */
+  SpanContext getParentSpanContext();
+
+  /**
    * Returns the name of the {@code Span}.
    *
    * <p>The name can be changed during the lifetime of the Span by using the {@link
