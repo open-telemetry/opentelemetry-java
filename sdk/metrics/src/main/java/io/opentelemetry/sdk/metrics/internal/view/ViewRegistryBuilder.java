@@ -12,7 +12,12 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
-/** Builder for {@link ViewRegistry}. */
+/**
+ * Builder for {@link ViewRegistry}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public class ViewRegistryBuilder {
   private final EnumMap<InstrumentType, LinkedHashMap<Pattern, View>> configuration =
       new EnumMap<>(InstrumentType.class);

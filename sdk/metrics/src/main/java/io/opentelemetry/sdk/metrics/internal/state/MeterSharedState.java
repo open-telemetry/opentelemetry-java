@@ -17,7 +17,12 @@ import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.concurrent.Immutable;
 
-/** State for a {@code Meter}. */
+/**
+ * State for a {@code Meter}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @AutoValue
 @Immutable
 public abstract class MeterSharedState {

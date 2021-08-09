@@ -26,6 +26,9 @@ import java.util.concurrent.ConcurrentMap;
  *   <li>The registered storage type MUST be either always Asynchronous or always Synchronous. No
  *       mixing and matching.
  * </ul>
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 public class MetricStorageRegistry {
   private final ConcurrentMap<String, MetricStorage> registry = new ConcurrentHashMap<>();

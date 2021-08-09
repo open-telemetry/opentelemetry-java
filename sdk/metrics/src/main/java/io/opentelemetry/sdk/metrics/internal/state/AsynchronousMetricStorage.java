@@ -17,7 +17,12 @@ import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
-/** Stores aggregated {@link MetricData} for asynchronous instruments. */
+/**
+ * Stores aggregated {@link MetricData} for asynchronous instruments.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class AsynchronousMetricStorage implements MetricStorage {
   private final MetricDescriptor metricDescriptor;
   private final ReentrantLock collectLock = new ReentrantLock();

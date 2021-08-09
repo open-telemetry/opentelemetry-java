@@ -14,7 +14,12 @@ import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
 
-/** State for a {@code MeterProvider}. */
+/**
+ * State for a {@code MeterProvider}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @AutoValue
 @Immutable
 public abstract class MeterProviderSharedState {
@@ -38,7 +43,6 @@ public abstract class MeterProviderSharedState {
    */
   abstract long getStartEpochNanos();
 
-  // TODO: Move this.
   /** Returns the {@link Aggregator} to use for a given instrument. */
   public <T> Aggregator<T> getAggregator(
       MeterSharedState meterSharedState, InstrumentDescriptor descriptor) {
@@ -48,7 +52,6 @@ public abstract class MeterProviderSharedState {
         .create(getResource(), meterSharedState.getInstrumentationLibraryInfo(), descriptor);
   }
 
-  // TODO: Move this.
   /** Returns the {@link LabelsProcessor} to use for a given instrument. */
   public LabelsProcessor getLabelsProcessor(
       MeterSharedState meterSharedState, InstrumentDescriptor descriptor) {

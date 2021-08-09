@@ -18,6 +18,9 @@ import java.util.Map;
  *
  * <p>An entire collection cycle must be protected by a lock. A collection cycle is defined by
  * multiple calls to {@code #batch(...)} followed by one {@code #completeCollectionCycle(...)};
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 final class InstrumentProcessor<T> {
   private final Aggregator<T> aggregator;

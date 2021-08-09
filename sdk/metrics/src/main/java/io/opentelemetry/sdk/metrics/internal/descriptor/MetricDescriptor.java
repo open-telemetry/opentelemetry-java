@@ -13,6 +13,9 @@ import javax.annotation.concurrent.Immutable;
  * Describes a metric that will be output.
  *
  * <p>Provides equality/identity semantics for detecting duplicate metrics of incompatible.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @AutoValue
 @Immutable
