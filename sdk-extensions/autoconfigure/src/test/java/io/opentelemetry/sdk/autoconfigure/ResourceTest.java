@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.resources.Resource;
@@ -23,7 +22,7 @@ class ResourceTest {
 
   @Test
   void noResourceProviders() {
-    assertThat(OpenTelemetryResourceAutoConfiguration.getResource())
+    assertThat(OpenTelemetryResourceAutoConfiguration.configureResource())
         .isEqualTo(
             Resource.getDefault().toBuilder().setSchemaUrl(ResourceAttributes.SCHEMA_URL).build());
   }
@@ -34,22 +33,12 @@ class ResourceTest {
     when(config.getCommaSeparatedMap("otel.resource.attributes"))
         .thenReturn(singletonMap("food", "cheesecake"));
 
-    assertThat(OpenTelemetryResourceAutoConfiguration.initialize(false, config))
+    assertThat(OpenTelemetryResourceAutoConfiguration.configureResource(config))
         .isEqualTo(
             Resource.getDefault().toBuilder()
                 .put(ResourceAttributes.SERVICE_NAME, "test-service")
                 .put("food", "cheesecake")
                 .setSchemaUrl(ResourceAttributes.SCHEMA_URL)
                 .build());
-  }
-
-  @Test
-  void shouldFailOnDoubleInitialization() {
-    assertThatThrownBy(
-            () -> {
-              OpenTelemetryResourceAutoConfiguration.initialize();
-              OpenTelemetryResourceAutoConfiguration.initialize();
-            })
-        .isInstanceOf(IllegalStateException.class);
   }
 }

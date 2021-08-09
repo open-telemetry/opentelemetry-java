@@ -34,8 +34,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
   public static OpenTelemetrySdk initialize(boolean setResultAsGlobal, ConfigProperties config) {
     ContextPropagators propagators = PropagatorConfiguration.configurePropagators(config);
 
-    Resource resource =
-        OpenTelemetryResourceAutoConfiguration.initialize(setResultAsGlobal, config);
+    Resource resource = OpenTelemetryResourceAutoConfiguration.configureResource(config);
 
     configureMeterProvider(resource, config);
 

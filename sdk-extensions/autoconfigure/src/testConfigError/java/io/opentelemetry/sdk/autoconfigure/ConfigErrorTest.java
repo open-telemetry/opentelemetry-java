@@ -12,7 +12,6 @@ import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junitpioneer.jupiter.SetSystemProperty;
@@ -25,11 +24,6 @@ class ConfigErrorTest {
 
   @RegisterExtension
   LogCapturer logs = LogCapturer.create().captureForType(GlobalOpenTelemetry.class);
-
-  @BeforeEach
-  void resetResource() {
-    OpenTelemetryResourceAutoConfiguration.resetForTest();
-  }
 
   @Test
   @SetSystemProperty(key = "otel.propagators", value = "cat")

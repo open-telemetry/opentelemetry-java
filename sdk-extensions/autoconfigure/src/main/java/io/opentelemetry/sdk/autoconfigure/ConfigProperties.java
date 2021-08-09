@@ -17,6 +17,7 @@ public interface ConfigProperties {
    * Returns a string-valued configuration property.
    *
    * @return null if the property has not been configured.
+   * @throws ConfigurationException if the property is not a valid string.
    */
   @Nullable
   String getString(String name);
@@ -26,6 +27,7 @@ public interface ConfigProperties {
    * {@link Boolean#parseBoolean(String)} for handling the values.
    *
    * @return null if the property has not been configured.
+   * @throws ConfigurationException if the property is not a valid boolean.
    */
   @Nullable
   Boolean getBoolean(String name);
@@ -86,6 +88,7 @@ public interface ConfigProperties {
    * comma-separated. Empty values will be removed.
    *
    * @return an empty list if the property has not been configured.
+   * @throws ConfigurationException if the property is not a valid comma-separated list.
    */
   List<String> getCommaSeparatedValues(String name);
 
