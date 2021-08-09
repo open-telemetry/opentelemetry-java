@@ -21,16 +21,16 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * A Resorvior sampler with fixed size that stores the given number of examplars
+ * A Reservoir sampler with fixed size that stores the given number of exemplars.
  *
  * <p>This implementation uses a un-unweighted/naive algorithm for sampler where the probability of
- * sampling decrease as the number of obvservations continue. The collectAndReset method resets the
- * count of obsesrvations, making the probability of sampling effectively 1.0.
+ * sampling decrease as the number of observations continue. The collectAndReset method resets the
+ * count of observations, making the probability of sampling effectively 1.0.
  */
 public class FixedSizeExemplarReservoir implements ExemplarReservoir {
   // TODO: Custom Random/Clock with low thread-contention.
   private final Clock clock;
-  private final ResorvoirCell[] storage;
+  private final ReservoirCell[] storage;
   private final LongAdder numMeasurements = new LongAdder();
 
   /**
@@ -41,9 +41,9 @@ public class FixedSizeExemplarReservoir implements ExemplarReservoir {
    */
   public FixedSizeExemplarReservoir(Clock clock, int size) {
     this.clock = clock;
-    this.storage = new ResorvoirCell[size];
+    this.storage = new ReservoirCell[size];
     for (int i = 0; i < size; ++i) {
-      this.storage[i] = new ResorvoirCell();
+      this.storage[i] = new ReservoirCell();
     }
   }
 
@@ -58,9 +58,21 @@ public class FixedSizeExemplarReservoir implements ExemplarReservoir {
     return -1;
   }
 
+  protected int maxSize() {
+    return storage.length;
+  }
+
+  protected int bucketFor(long value, Attributes attributes, Context context) {
+    return nextBucket();
+  }
+
+  protected int bucketFor(double value, Attributes attributes, Context context) {
+    return nextBucket();
+  }
+
   @Override
   public void offerMeasurementLong(long value, Attributes attributes, Context context) {
-    int bucket = nextBucket();
+    int bucket = bucketFor(value, attributes, context);
     if (bucket != -1) {
       this.storage[bucket].offerMeasurementLong(value, attributes, context);
     }
@@ -69,7 +81,7 @@ public class FixedSizeExemplarReservoir implements ExemplarReservoir {
 
   @Override
   public void offerMeasurementDouble(double value, Attributes attributes, Context context) {
-    int bucket = nextBucket();
+    int bucket = bucketFor(value, attributes, context);
     if (bucket != -1) {
       this.storage[bucket].offerMeasurementDouble(value, attributes, context);
     }
@@ -91,7 +103,7 @@ public class FixedSizeExemplarReservoir implements ExemplarReservoir {
     return Collections.unmodifiableList(results);
   }
 
-  private class ResorvoirCell {
+  private class ReservoirCell {
     private final Lock lock = new ReentrantLock();
 
     private boolean hasValue = false;

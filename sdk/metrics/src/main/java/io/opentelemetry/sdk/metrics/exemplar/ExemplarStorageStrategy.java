@@ -23,12 +23,14 @@ public interface ExemplarStorageStrategy {
    */
   static final ExemplarStorageStrategy DEFAULT =
       (agg) -> {
-        // By default, attempt to reduce threading contention.
-        int size = Runtime.getRuntime().availableProcessors();
-        // For histograms, use bucket count.
+        // For histograms, use bucket strategy
         if (agg instanceof DoubleHistogramAggregator) {
-          size = Math.max(((DoubleHistogramAggregator) agg).getBucketCount(), size);
+          DoubleHistogramAggregator dag = ((DoubleHistogramAggregator) agg);
+          return new HistogramBucketExemplarReservoir(
+              Clock.getDefault(), dag.getBucketCount(), dag::findBucketIndex);
         }
-        return new FixedSizeExemplarReservoir(Clock.getDefault(), size);
+        // By default, attempt to reduce threading contention.
+        return new FixedSizeExemplarReservoir(
+            Clock.getDefault(), Runtime.getRuntime().availableProcessors());
       };
 }

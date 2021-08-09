@@ -9,7 +9,6 @@ import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -47,12 +46,12 @@ final class AttributesProcessors {
     };
   }
 
-    /**
+  /**
    * Creates an {@link AttributesProcessor} that filters incoming keys.
    *
    * @param keys List of all keys to preserve.
    */
-  public static AttributesProcessor filterKeys(AttributeKey<?> ...keys) {
+  public static AttributesProcessor filterKeys(AttributeKey<?>... keys) {
     final Set<AttributeKey<?>> keyCheck = new HashSet<>();
     for (AttributeKey<?> key : keys) {
       keyCheck.add(key);
@@ -79,7 +78,6 @@ final class AttributesProcessors {
       }
     };
   }
-  
 
   /**
    * Creates an {@link AttributesProcessor} the appends attributes to existing metrics.
@@ -97,18 +95,18 @@ final class AttributesProcessors {
     };
   }
 
- /**
+  /**
    * Creates an {@link AttributesProcessor} the appends any matching baggage keys.
    *
    * @param keys list of exact match keys to append.
    */
-  public static AttributesProcessor appendBaggageByKeys(final String ...keys) {
+  public static AttributesProcessor appendBaggageByKeys(final String... keys) {
     final Set<String> keyCheck = new HashSet<>();
     for (String key : keys) {
       keyCheck.add(key);
     }
     return new BaggageAttributesProcessor() {
-      
+
       @Override
       protected Attributes process(Attributes attributes, Baggage baggage) {
         AttributesBuilder result = Attributes.builder();

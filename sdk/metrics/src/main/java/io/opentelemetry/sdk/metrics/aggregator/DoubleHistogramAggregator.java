@@ -70,13 +70,18 @@ public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulati
 
   // Benchmark shows that linear search performs better than binary search with ordinary
   // buckets.
-  private static int findBucketIndex(double[] boundaries, double value) {
+  private static int findBucketIndex(double value, double[] boundaries) {
     for (int i = 0; i < boundaries.length; ++i) {
       if (value <= boundaries[i]) {
         return i;
       }
     }
     return boundaries.length;
+  }
+
+  @SuppressWarnings("")
+  public int findBucketIndex(double value) {
+    return findBucketIndex(value, this.config.getBoundaries());
   }
 
   private static double valueOf(Measurement measurement) {
@@ -132,7 +137,7 @@ public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulati
 
     @Override
     protected void doRecordDouble(double value, Attributes attributes, Context context) {
-      int bucketIndex = findBucketIndex(this.boundaries, value);
+      int bucketIndex = findBucketIndex(value, this.boundaries);
       lock.lock();
       try {
         this.sum += value;
@@ -146,7 +151,7 @@ public class DoubleHistogramAggregator implements Aggregator<HistogramAccumulati
   @Override
   public HistogramAccumulation asyncAccumulation(Measurement measurement) {
     double value = valueOf(measurement);
-    int bucketIndex = findBucketIndex(config.getBoundaries(), value);
+    int bucketIndex = findBucketIndex(value, config.getBoundaries());
     long[] counts = new long[config.getBoundaries().length + 1];
     counts[bucketIndex] = 1;
     return HistogramAccumulation.create(value, counts, Collections.emptyList());

@@ -13,6 +13,7 @@ import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This enum allows for iteration over all of the operations that we want to benchmark. To ensure
@@ -34,12 +35,12 @@ public enum MetricsTestOperationBuilder {
 
           @Override
           public void perform(Attributes attributes) {
-            metric.add(5L, attributes);
+            metric.add(ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE), attributes);
           }
 
           @Override
           public void performBound() {
-            boundMetric.add(5L);
+            boundMetric.add(ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
           }
         };
       }),
@@ -56,12 +57,12 @@ public enum MetricsTestOperationBuilder {
 
           @Override
           public void perform(Attributes attributes) {
-            metric.add(5.0d, attributes);
+            metric.add(ThreadLocalRandom.current().nextDouble(0, Double.MAX_VALUE), attributes);
           }
 
           @Override
           public void performBound() {
-            boundMetric.add(5.0d);
+            boundMetric.add(ThreadLocalRandom.current().nextDouble(0, Double.MAX_VALUE));
           }
         };
       }),
@@ -77,12 +78,12 @@ public enum MetricsTestOperationBuilder {
 
           @Override
           public void perform(Attributes attributes) {
-            metric.record(5.0d, attributes);
+            metric.record(ThreadLocalRandom.current().nextDouble(0, Double.MAX_VALUE), attributes);
           }
 
           @Override
           public void performBound() {
-            boundMetric.record(5.0d);
+            boundMetric.record(ThreadLocalRandom.current().nextDouble(0, Double.MAX_VALUE));
           }
         };
       });

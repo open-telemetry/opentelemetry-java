@@ -17,7 +17,8 @@ import org.junit.jupiter.api.Test;
 public class AttributesProcessorsTest {
   @Test
   public void filterKeysByPattern_removesKeys() {
-    AttributesProcessor processor = AttributesProcessors.filterKeysByPattern(Pattern.compile("test"));
+    AttributesProcessor processor =
+        AttributesProcessors.filterKeysByPattern(Pattern.compile("test"));
 
     assertThat(
             processor.process(
