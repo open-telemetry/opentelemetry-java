@@ -191,6 +191,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   }
 
   @Override
+  @Nullable
+  public <T> T getAttribute(AttributeKey<T> key) {
+    synchronized (lock) {
+      return attributes == null ? null : attributes.get(key);
+    }
+  }
+
+  @Override
   public boolean hasEnded() {
     synchronized (lock) {
       return hasEnded;

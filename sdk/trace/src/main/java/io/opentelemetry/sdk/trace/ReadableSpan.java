@@ -5,11 +5,13 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import javax.annotation.Nullable;
 
 /** The extend Span interface used by the SDK. */
 public interface ReadableSpan {
@@ -78,4 +80,8 @@ public interface ReadableSpan {
    * @return the kind of the span.
    */
   SpanKind getKind();
+
+  /** Returns the value for the given {@link AttributeKey}, or {@code null} if not found. */
+  @Nullable
+  <T> T getAttribute(AttributeKey<T> key);
 }
