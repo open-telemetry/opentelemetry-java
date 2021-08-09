@@ -94,10 +94,10 @@ public class SynchronousMetricStorageTest {
             new InstrumentProcessor<>(aggregator, testClock.now()),
             labelsProcessor);
     BoundStorageHandle handle = accumulator.bind(Attributes.builder().put("K", "V").build());
-    BoundStorageHandle duplicateAggregatorHandle =
+    BoundStorageHandle duplicateHandle =
         accumulator.bind(Attributes.builder().put("K", "V").build());
     try {
-      assertThat(duplicateAggregatorHandle).isSameAs(handle);
+      assertThat(duplicateHandle).isSameAs(handle);
       accumulator.collectAndReset(0, testClock.now());
       BoundStorageHandle anotherDuplicateAggregatorHandle =
           accumulator.bind(Attributes.builder().put("K", "V").build());
@@ -107,13 +107,12 @@ public class SynchronousMetricStorageTest {
         anotherDuplicateAggregatorHandle.release();
       }
     } finally {
-      duplicateAggregatorHandle.release();
+      duplicateHandle.release();
       handle.release();
     }
 
-    // TODO: Is it necessary to test this?
-    // At this point we should be able to unmap because all references are gone. Because this is an
-    // internal detail we cannot call collectAll after this anymore.
-    // assertThat(aggregatorHandle.tryUnmap()).isTrue();
+    // If we try to collect once all bound references are gone AND no recordings have occurred, we
+    // should not see any labels (or metric).
+    assertThat(accumulator.collectAndReset(0, testClock.now())).isNull();
   }
 }
