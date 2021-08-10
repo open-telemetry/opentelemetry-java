@@ -51,8 +51,10 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
 
   private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
 
-  private final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OtlpHttpSpanExporter.class.getName()));
+  private static final Logger internalLogger =
+      Logger.getLogger(OtlpHttpSpanExporter.class.getName());
+
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
   private final BoundLongCounter spansSeen;
   private final BoundLongCounter spansExportedSuccess;
