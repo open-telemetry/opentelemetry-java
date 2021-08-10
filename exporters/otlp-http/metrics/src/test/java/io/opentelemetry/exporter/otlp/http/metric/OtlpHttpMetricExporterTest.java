@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.http.trace;
+package io.opentelemetry.exporter.otlp.http.metric;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
@@ -17,23 +18,20 @@ import com.linecorp.armeria.common.HttpMethod;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
-import com.linecorp.armeria.common.logging.LogLevel;
 import com.linecorp.armeria.server.ServerBuilder;
-import com.linecorp.armeria.server.logging.LoggingService;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.LongPointData;
+import io.opentelemetry.sdk.metrics.data.LongSumData;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -51,7 +49,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.event.Level;
 import org.slf4j.event.LoggingEvent;
 
-class OtlpHttpSpanExporterTest {
+class OtlpHttpMetricExporterTest {
 
   private static final MediaType APPLICATION_PROTOBUF =
       MediaType.create("application", "x-protobuf");
@@ -75,24 +73,19 @@ class OtlpHttpSpanExporterTest {
         @Override
         protected void configureServer(ServerBuilder sb) {
           sb.tls(HELD_CERTIFICATE.keyPair().getPrivate(), HELD_CERTIFICATE.certificate());
-          sb.decorator(
-              LoggingService.builder()
-                  .requestLogLevel(LogLevel.INFO)
-                  .successfulResponseLogLevel(LogLevel.INFO)
-                  .newDecorator());
         }
       };
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OtlpHttpSpanExporter.class);
+  LogCapturer logs = LogCapturer.create().captureForType(OtlpHttpMetricExporter.class);
 
-  private OtlpHttpSpanExporterBuilder builder;
+  private OtlpHttpMetricExporterBuilder builder;
 
   @BeforeEach
   void setup() {
     builder =
-        OtlpHttpSpanExporter.builder()
-            .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/traces")
+        OtlpHttpMetricExporter.builder()
+            .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/metrics")
             .addHeader("foo", "bar")
             .setTrustedCertificates(
                 HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8));
@@ -101,33 +94,33 @@ class OtlpHttpSpanExporterTest {
   @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void invalidConfig() {
-    assertThatThrownBy(() -> OtlpHttpSpanExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
+    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("timeout must be non-negative");
-    assertThatThrownBy(() -> OtlpHttpSpanExporter.builder().setTimeout(1, null))
+    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setTimeout(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");
-    assertThatThrownBy(() -> OtlpHttpSpanExporter.builder().setTimeout(null))
+    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
 
-    assertThatThrownBy(() -> OtlpHttpSpanExporter.builder().setEndpoint(null))
+    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setEndpoint(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("endpoint");
-    assertThatThrownBy(() -> OtlpHttpSpanExporter.builder().setEndpoint("😺://localhost"))
+    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setEndpoint("😺://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Invalid endpoint, must be a URL: 😺://localhost");
-    assertThatThrownBy(() -> OtlpHttpSpanExporter.builder().setEndpoint("localhost"))
+    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setEndpoint("localhost"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Invalid endpoint, must start with http:// or https://: localhost");
-    assertThatThrownBy(() -> OtlpHttpSpanExporter.builder().setEndpoint("gopher://localhost"))
+    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setEndpoint("gopher://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
 
-    assertThatThrownBy(() -> OtlpHttpSpanExporter.builder().setCompression(null))
+    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setCompression(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("compressionMethod");
-    assertThatThrownBy(() -> OtlpHttpSpanExporter.builder().setCompression("foo"))
+    assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Unsupported compression method. Supported compression methods include: gzip.");
   }
@@ -135,9 +128,10 @@ class OtlpHttpSpanExporterTest {
   @Test
   void testExportUncompressed() {
     server.enqueue(successResponse());
-    OtlpHttpSpanExporter exporter = builder.build();
+    OtlpHttpMetricExporter exporter = builder.build();
 
-    ExportTraceServiceRequest payload = exportAndAssertResult(exporter, /* expectedResult= */ true);
+    ExportMetricsServiceRequest payload =
+        exportAndAssertResult(exporter, /* expectedResult= */ true);
     AggregatedHttpRequest request = server.takeRequest().request();
     assertRequestCommon(request);
     assertThat(parseRequestBody(request.content().array())).isEqualTo(payload);
@@ -146,9 +140,10 @@ class OtlpHttpSpanExporterTest {
   @Test
   void testExportGzipCompressed() {
     server.enqueue(successResponse());
-    OtlpHttpSpanExporter exporter = builder.setCompression("gzip").build();
+    OtlpHttpMetricExporter exporter = builder.setCompression("gzip").build();
 
-    ExportTraceServiceRequest payload = exportAndAssertResult(exporter, /* expectedResult= */ true);
+    ExportMetricsServiceRequest payload =
+        exportAndAssertResult(exporter, /* expectedResult= */ true);
     AggregatedHttpRequest request = server.takeRequest().request();
     assertRequestCommon(request);
     assertThat(request.headers().get("Content-Encoding")).isEqualTo("gzip");
@@ -157,14 +152,14 @@ class OtlpHttpSpanExporterTest {
 
   private static void assertRequestCommon(AggregatedHttpRequest request) {
     assertThat(request.method()).isEqualTo(HttpMethod.POST);
-    assertThat(request.path()).isEqualTo("/v1/traces");
+    assertThat(request.path()).isEqualTo("/v1/metrics");
     assertThat(request.headers().get("foo")).isEqualTo("bar");
     assertThat(request.headers().get("Content-Type")).isEqualTo(APPLICATION_PROTOBUF.toString());
   }
 
-  private static ExportTraceServiceRequest parseRequestBody(byte[] bytes) {
+  private static ExportMetricsServiceRequest parseRequestBody(byte[] bytes) {
     try {
-      return ExportTraceServiceRequest.parseFrom(bytes);
+      return ExportMetricsServiceRequest.parseFrom(bytes);
     } catch (InvalidProtocolBufferException e) {
       throw new IllegalStateException("Unable to parse Protobuf request body.", e);
     }
@@ -187,7 +182,7 @@ class OtlpHttpSpanExporterTest {
         buildResponse(
             HttpStatus.INTERNAL_SERVER_ERROR,
             Status.newBuilder().setMessage("Server error!").build()));
-    OtlpHttpSpanExporter exporter = builder.build();
+    OtlpHttpMetricExporter exporter = builder.build();
 
     exportAndAssertResult(exporter, /* expectedResult= */ false);
     await()
@@ -196,7 +191,7 @@ class OtlpHttpSpanExporterTest {
             () -> {
               LoggingEvent log =
                   logs.assertContains(
-                      "Failed to export spans. Server responded with HTTP status code 500. Error message: Server error!");
+                      "Failed to export metrics. Server responded with HTTP status code 500. Error message: Server error!");
               assertThat(log.getLevel()).isEqualTo(Level.WARN);
             });
   }
@@ -205,7 +200,7 @@ class OtlpHttpSpanExporterTest {
   void testServerErrorParseError() {
     server.enqueue(
         HttpResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, APPLICATION_PROTOBUF, "Server error!"));
-    OtlpHttpSpanExporter exporter = builder.build();
+    OtlpHttpMetricExporter exporter = builder.build();
 
     exportAndAssertResult(exporter, /* expectedResult= */ false);
     await()
@@ -214,54 +209,45 @@ class OtlpHttpSpanExporterTest {
             () -> {
               LoggingEvent log =
                   logs.assertContains(
-                      "Failed to export spans. Server responded with HTTP status code 500. Error message: Unable to parse response body, HTTP status message:");
+                      "Failed to export metrics. Server responded with HTTP status code 500. Error message: Unable to parse response body, HTTP status message:");
               assertThat(log.getLevel()).isEqualTo(Level.WARN);
             });
   }
 
-  private static ExportTraceServiceRequest exportAndAssertResult(
-      OtlpHttpSpanExporter otlpHttpSpanExporter, boolean expectedResult) {
-    List<SpanData> spans = Collections.singletonList(generateFakeSpan());
-    CompletableResultCode resultCode = otlpHttpSpanExporter.export(spans);
+  private static ExportMetricsServiceRequest exportAndAssertResult(
+      OtlpHttpMetricExporter otlpHttpMetricExporter, boolean expectedResult) {
+    List<MetricData> metrics = Collections.singletonList(generateFakeMetric());
+    CompletableResultCode resultCode = otlpHttpMetricExporter.export(metrics);
     resultCode.join(10, TimeUnit.SECONDS);
     assertThat(resultCode.isSuccess()).isEqualTo(expectedResult);
-    return ExportTraceServiceRequest.newBuilder()
-        .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
+    return ExportMetricsServiceRequest.newBuilder()
+        .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(metrics))
         .build();
   }
 
   private static HttpResponse successResponse() {
-    ExportTraceServiceResponse exportTraceServiceResponse =
-        ExportTraceServiceResponse.newBuilder().build();
-    return buildResponse(HttpStatus.OK, exportTraceServiceResponse);
+    ExportMetricsServiceResponse exportMetricsServiceResponse =
+        ExportMetricsServiceResponse.newBuilder().build();
+    return buildResponse(HttpStatus.OK, exportMetricsServiceResponse);
   }
 
   private static <T extends Message> HttpResponse buildResponse(HttpStatus httpStatus, T message) {
     return HttpResponse.of(httpStatus, APPLICATION_PROTOBUF, message.toByteArray());
   }
 
-  private static SpanData generateFakeSpan() {
-    long duration = TimeUnit.MILLISECONDS.toNanos(900);
+  private static MetricData generateFakeMetric() {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
-    long endNs = startNs + duration;
-    return TestSpanData.builder()
-        .setHasEnded(true)
-        .setSpanContext(
-            SpanContext.create(
-                "00000000000000000000000000abc123",
-                "0000000000def456",
-                TraceFlags.getDefault(),
-                TraceState.getDefault()))
-        .setName("GET /api/endpoint")
-        .setStartEpochNanos(startNs)
-        .setEndEpochNanos(endNs)
-        .setStatus(StatusData.ok())
-        .setKind(SpanKind.SERVER)
-        .setLinks(Collections.emptyList())
-        .setTotalRecordedLinks(0)
-        .setTotalRecordedEvents(0)
-        .setInstrumentationLibraryInfo(
-            InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
-        .build();
+    long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
+    return MetricData.createLongSum(
+        Resource.empty(),
+        InstrumentationLibraryInfo.empty(),
+        "name",
+        "description",
+        "1",
+        LongSumData.create(
+            /* isMonotonic= */ true,
+            AggregationTemporality.CUMULATIVE,
+            Collections.singletonList(
+                LongPointData.create(startNs, endNs, Attributes.of(stringKey("k"), "v"), 5))));
   }
 }

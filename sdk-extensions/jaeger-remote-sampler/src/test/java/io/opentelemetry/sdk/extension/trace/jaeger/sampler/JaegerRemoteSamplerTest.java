@@ -100,6 +100,7 @@ class JaegerRemoteSamplerTest {
             .setChannel(inProcessChannel)
             .setServiceName(SERVICE_NAME)
             .build();
+    closer.register(sampler);
 
     await()
         .atMost(Duration.ofSeconds(10))
@@ -121,6 +122,7 @@ class JaegerRemoteSamplerTest {
             .setChannel(inProcessChannel)
             .setServiceName(SERVICE_NAME)
             .build();
+    closer.register(sampler);
     assertThat(sampler.getDescription())
         .startsWith("JaegerRemoteSampler{ParentBased{root:TraceIdRatioBased{0.001000}");
 
@@ -141,6 +143,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setInitialSampler(Sampler.alwaysOn())
             .build();
+    closer.register(sampler);
     assertThat(sampler.getDescription()).startsWith("JaegerRemoteSampler{AlwaysOnSampler}");
   }
 
@@ -152,6 +155,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(1, TimeUnit.MILLISECONDS)
             .build();
+    closer.register(sampler);
 
     // wait until the sampling strategy is retrieved before exiting test method
     await()
@@ -171,6 +175,7 @@ class JaegerRemoteSamplerTest {
             .setServiceName(SERVICE_NAME)
             .setPollingInterval(Duration.ofMillis(1))
             .build();
+    closer.register(sampler);
 
     // wait until the sampling strategy is retrieved before exiting test method
     await()

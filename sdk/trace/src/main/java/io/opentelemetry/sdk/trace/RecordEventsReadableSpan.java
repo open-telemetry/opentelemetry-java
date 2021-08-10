@@ -202,6 +202,11 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     return context;
   }
 
+  @Override
+  public SpanContext getParentSpanContext() {
+    return parentSpanContext;
+  }
+
   /**
    * Returns the name of the {@code Span}.
    *
@@ -449,10 +454,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     synchronized (lock) {
       return status;
     }
-  }
-
-  SpanContext getParentSpanContext() {
-    return parentSpanContext;
   }
 
   Resource getResource() {

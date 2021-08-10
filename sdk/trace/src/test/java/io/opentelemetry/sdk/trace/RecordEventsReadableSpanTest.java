@@ -214,8 +214,24 @@ class RecordEventsReadableSpanTest {
     } finally {
       span.end();
     }
+    assertThat(span.getParentSpanContext().isValid()).isFalse();
     SpanData spanData = span.toSpanData();
     assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
+  }
+
+  @Test
+  void toSpanData_ChildSpan() {
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    try {
+      spanDoWork(span, null, null);
+    } finally {
+      span.end();
+    }
+    assertThat(span.getParentSpanContext().isValid()).isTrue();
+    assertThat(span.getParentSpanContext().getTraceId()).isEqualTo(traceId);
+    assertThat(span.getParentSpanContext().getSpanId()).isEqualTo(parentSpanId);
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
   }
 
   @Test
