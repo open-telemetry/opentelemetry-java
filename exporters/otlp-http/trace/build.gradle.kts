@@ -21,4 +21,5 @@ dependencies {
   testImplementation(project(":sdk:testing"))
 
   testImplementation("com.linecorp.armeria:armeria-junit5")
+  testRuntimeOnly("org.slf4j:slf4j-simple")
 }
