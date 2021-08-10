@@ -23,6 +23,28 @@ import java.util.ServiceLoader;
 public final class OpenTelemetrySdkAutoConfiguration {
 
   /**
+   * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized system
+   * properties and environment variables.
+   *
+   * <p>This will automatically set the resulting SDK as the {@link
+   * io.opentelemetry.api.GlobalOpenTelemetry} instance.
+   */
+  public static OpenTelemetrySdk initialize() {
+    return initialize(true);
+  }
+
+  /**
+   * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized system
+   * properties and environment variables.
+   *
+   * @param setResultAsGlobal Whether to automatically set the configured SDK as the {@link
+   *     io.opentelemetry.api.GlobalOpenTelemetry} instance.
+   */
+  public static OpenTelemetrySdk initialize(boolean setResultAsGlobal) {
+    return initialize(setResultAsGlobal, DefaultConfigProperties.get());
+  }
+
+  /**
    * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized properties
    * contained in the {@code config} parameter.
    *
@@ -50,28 +72,6 @@ public final class OpenTelemetrySdkAutoConfiguration {
       GlobalOpenTelemetry.set(openTelemetrySdk);
     }
     return openTelemetrySdk;
-  }
-
-  /**
-   * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized system
-   * properties and environment variables.
-   *
-   * @param setResultAsGlobal Whether to automatically set the configured SDK as the {@link
-   *     io.opentelemetry.api.GlobalOpenTelemetry} instance.
-   */
-  public static OpenTelemetrySdk initialize(boolean setResultAsGlobal) {
-    return initialize(setResultAsGlobal, DefaultConfigProperties.get());
-  }
-
-  /**
-   * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized system
-   * properties and environment variables.
-   *
-   * <p>This will automatically set the resulting SDK as the {@link
-   * io.opentelemetry.api.GlobalOpenTelemetry} instance.
-   */
-  public static OpenTelemetrySdk initialize() {
-    return initialize(true);
   }
 
   private static void configureMeterProvider(Resource resource, ConfigProperties config) {
