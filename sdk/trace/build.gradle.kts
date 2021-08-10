@@ -60,22 +60,7 @@ dependencies {
   jmh("org.testcontainers:testcontainers") // testContainer for OTLP collector
 }
 
-sourceSets {
-  main {
-    output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
-  }
-}
-
 tasks {
-  register("generateVersionResource") {
-    val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk/trace")
-    outputs.dir(propertiesDir)
-
-    doLast {
-      File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
-    }
-  }
-
   withType<AnimalSniffer>().configureEach {
     // We catch NoClassDefFoundError to fallback to non-jctools queues.
     exclude("**/internal/shaded/jctools/**")

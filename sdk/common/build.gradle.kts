@@ -30,15 +30,19 @@ dependencies {
   testImplementation("com.google.guava:guava-testlib")
 }
 
+val genResourceDir = "$buildDir/generated/resources/"
+
 sourceSets {
   main {
-    output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
+    output.dir(genResourceDir, "builtBy" to "generateVersionResource")
   }
 }
 
+
 tasks {
   register("generateVersionResource") {
-    val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk/common")
+    inputs.property("project.version", project.version)
+    val propertiesDir = file("$genResourceDir/io/opentelemetry/sdk")
     outputs.dir(propertiesDir)
 
     doLast {
