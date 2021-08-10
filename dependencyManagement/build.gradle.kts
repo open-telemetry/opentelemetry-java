@@ -77,7 +77,6 @@ val DEPENDENCIES = listOf(
   "com.google.code.gson:gson:2.8.7",
   "com.google.guava:guava-beta-checker:1.0",
   "com.lmax:disruptor:3.4.4",
-  "com.sparkjava:spark-core:2.9.3",
   "com.squareup.okhttp3:okhttp:4.9.1",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit4:0.19.0",
