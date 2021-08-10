@@ -31,11 +31,7 @@ class DoubleMinMaxSumCountAggregatorTest {
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
-              "name",
-              "description",
-              "unit",
-              InstrumentType.VALUE_RECORDER,
-              InstrumentValueType.DOUBLE));
+              "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE));
 
   @Test
   void createHandle() {

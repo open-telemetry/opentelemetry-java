@@ -33,18 +33,18 @@ class DoubleCounterSdkTest {
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void add_PreventNullLabels() {
+  void add_PreventNullAttributes() {
     assertThatThrownBy(
             () -> sdkMeter.counterBuilder("testCounter").ofDoubles().build().add(1.0, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
-  void bound_PreventNullLabels() {
+  void bound_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.counterBuilder("testCounter").ofDoubles().build().bind(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
@@ -60,7 +60,7 @@ class DoubleCounterSdkTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void collectMetrics_WithEmptyLabel() {
+  void collectMetrics_WithEmptyAttributes() {
     DoubleCounter doubleCounter =
         sdkMeter
             .counterBuilder("testCounter")

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -19,9 +19,12 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Central location for Views to be registered. Registration of a view is done via the {@link
  * SdkMeterProviderBuilder}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @Immutable
-final class ViewRegistry {
+public final class ViewRegistry {
   static final View CUMULATIVE_SUM =
       View.builder()
           .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.CUMULATIVE))
@@ -41,11 +44,18 @@ final class ViewRegistry {
             this.configuration.put(instrumentType, new LinkedHashMap<>(patternViewLinkedHashMap)));
   }
 
-  static ViewRegistryBuilder builder() {
+  /** Returns a builder of {@link ViewRegistry}. */
+  public static ViewRegistryBuilder builder() {
     return new ViewRegistryBuilder();
   }
 
-  View findView(InstrumentDescriptor descriptor) {
+  /**
+   * Returns the metric {@link View} for a given instrument.
+   *
+   * @param descriptor description of the instrument.
+   * @return The {@link View} for this instrument, or a default aggregation view.
+   */
+  public View findView(InstrumentDescriptor descriptor) {
     LinkedHashMap<Pattern, View> configPerType = configuration.get(descriptor.getType());
     for (Map.Entry<Pattern, View> entry : configPerType.entrySet()) {
       if (entry.getKey().matcher(descriptor.getName()).matches()) {
@@ -60,12 +70,12 @@ final class ViewRegistry {
     switch (descriptor.getType()) {
       case COUNTER:
       case UP_DOWN_COUNTER:
-      case SUM_OBSERVER:
-      case UP_DOWN_SUM_OBSERVER:
+      case OBSERVABLE_SUM:
+      case OBSERVABLE_UP_DOWN_SUM:
         return CUMULATIVE_SUM;
-      case VALUE_RECORDER:
+      case HISTOGRAM:
         return SUMMARY;
-      case VALUE_OBSERVER:
+      case OBSERVABLE_GAUGE:
         return LAST_VALUE;
     }
     throw new IllegalArgumentException("Unknown descriptor type: " + descriptor.getType());

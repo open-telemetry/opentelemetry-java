@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -12,7 +12,13 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
-class ViewRegistryBuilder {
+/**
+ * Builder for {@link ViewRegistry}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public class ViewRegistryBuilder {
   private final EnumMap<InstrumentType, LinkedHashMap<Pattern, View>> configuration =
       new EnumMap<>(InstrumentType.class);
   private static final LinkedHashMap<Pattern, View> EMPTY_CONFIG = new LinkedHashMap<>();
@@ -23,11 +29,19 @@ class ViewRegistryBuilder {
     }
   }
 
-  ViewRegistry build() {
+  /** Returns the {@link ViewRegistry}. */
+  public ViewRegistry build() {
     return new ViewRegistry(configuration);
   }
 
-  ViewRegistryBuilder addView(InstrumentSelector selector, View view) {
+  /**
+   * Adds a new view to the registry.
+   *
+   * @param selector The instruments that should have their defaults altered.
+   * @param view The {@link View} metric definition.
+   * @return this
+   */
+  public ViewRegistryBuilder addView(InstrumentSelector selector, View view) {
     LinkedHashMap<Pattern, View> parentConfiguration =
         configuration.get(selector.getInstrumentType());
     configuration.put(

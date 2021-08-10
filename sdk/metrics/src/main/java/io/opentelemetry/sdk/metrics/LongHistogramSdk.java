@@ -11,26 +11,25 @@ import io.opentelemetry.api.metrics.DoubleHistogramBuilder;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongHistogramBuilder;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 
-final class LongValueRecorderSdk extends AbstractSynchronousInstrument implements LongHistogram {
+final class LongHistogramSdk extends AbstractInstrument implements LongHistogram {
+  private final WriteableMetricStorage storage;
 
-  private LongValueRecorderSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
-    super(descriptor, accumulator);
+  private LongHistogramSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+    super(descriptor);
+    this.storage = storage;
   }
 
   @Override
   public void record(long value, Attributes attributes, Context context) {
-    AggregatorHandle<?> aggregatorHandle = acquireHandle(attributes);
-    try {
-      aggregatorHandle.recordLong(value);
-    } finally {
-      aggregatorHandle.release();
-    }
+    storage.recordLong(value, attributes, context);
   }
 
   @Override
@@ -45,19 +44,21 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument implement
 
   @Override
   public BoundLongHistogram bind(Attributes attributes) {
-    return new BoundInstrument(acquireHandle(attributes));
+    return new BoundInstrument(storage.bind(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundLongHistogram {
-    private final AggregatorHandle<?> aggregatorHandle;
+    private final BoundStorageHandle handle;
+    private final Attributes attributes;
 
-    BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
-      this.aggregatorHandle = aggregatorHandle;
+    BoundInstrument(BoundStorageHandle handle, Attributes attributes) {
+      this.handle = handle;
+      this.attributes = attributes;
     }
 
     @Override
     public void record(long value, Context context) {
-      aggregatorHandle.recordLong(value);
+      handle.recordLong(value, attributes, context);
     }
 
     @Override
@@ -67,11 +68,11 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument implement
 
     @Override
     public void unbind() {
-      aggregatorHandle.release();
+      handle.release();
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<LongValueRecorderSdk.Builder>
+  static final class Builder extends AbstractInstrumentBuilder<LongHistogramSdk.Builder>
       implements LongHistogramBuilder {
 
     Builder(
@@ -96,14 +97,14 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument implement
     }
 
     @Override
-    public LongValueRecorderSdk build() {
+    public LongHistogramSdk build() {
       return buildSynchronousInstrument(
-          InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG, LongValueRecorderSdk::new);
+          InstrumentType.HISTOGRAM, InstrumentValueType.LONG, LongHistogramSdk::new);
     }
 
     @Override
     public DoubleHistogramBuilder ofDoubles() {
-      return swapBuilder(DoubleValueRecorderSdk.Builder::new);
+      return swapBuilder(DoubleHistogramSdk.Builder::new);
     }
   }
 }

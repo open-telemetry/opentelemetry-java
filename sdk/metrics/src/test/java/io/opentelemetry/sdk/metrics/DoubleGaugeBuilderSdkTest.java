@@ -17,11 +17,11 @@ import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleValueObserverSdk}. */
-class DoubleValueObserverSdkTest {
+class DoubleGaugeBuilderSdkTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(DoubleValueObserverSdkTest.class.getName(), null);
+      InstrumentationLibraryInfo.create(DoubleGaugeBuilderSdkTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();

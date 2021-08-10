@@ -28,31 +28,31 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link LongValueRecorderSdk}. */
-class LongValueRecorderSdkTest {
+/** Unit tests for {@link LongHistogramSdk}. */
+class LongHistogramSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(LongValueRecorderSdkTest.class.getName(), null);
+      InstrumentationLibraryInfo.create(LongHistogramSdkTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void record_PreventNullLabels() {
+  void record_PreventNullAttributes() {
     assertThatThrownBy(
             () -> sdkMeter.histogramBuilder("testRecorder").ofLongs().build().record(1, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
-  void bound_PreventNullLabels() {
+  void bound_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").ofLongs().build().bind(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
@@ -67,7 +67,7 @@ class LongValueRecorderSdkTest {
   }
 
   @Test
-  void collectMetrics_WithEmptyLabel() {
+  void collectMetrics_WithEmptyAttributes() {
     LongHistogram longRecorder =
         sdkMeter
             .histogramBuilder("testRecorder")
@@ -188,7 +188,7 @@ class LongValueRecorderSdkTest {
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
-            .setInstrument((LongValueRecorderSdk) longRecorder)
+            .setInstrument((LongHistogramSdk) longRecorder)
             .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
@@ -196,12 +196,12 @@ class LongValueRecorderSdkTest {
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new LongValueRecorderSdkTest.OperationUpdaterDirectCall(longRecorder, "K", "V")));
+              new LongHistogramSdkTest.OperationUpdaterDirectCall(longRecorder, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new LongValueRecorderSdkTest.OperationUpdaterWithBinding(
+              new LongHistogramSdkTest.OperationUpdaterWithBinding(
                   longRecorder.bind(Attributes.builder().put("K", "V").build()))));
     }
 
@@ -233,7 +233,7 @@ class LongValueRecorderSdkTest {
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
-            .setInstrument((LongValueRecorderSdk) longRecorder)
+            .setInstrument((LongHistogramSdk) longRecorder)
             .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
@@ -241,14 +241,14 @@ class LongValueRecorderSdkTest {
           StressTestRunner.Operation.create(
               1_000,
               2,
-              new LongValueRecorderSdkTest.OperationUpdaterDirectCall(
+              new LongHistogramSdkTest.OperationUpdaterDirectCall(
                   longRecorder, keys[i], values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               1_000,
               2,
-              new LongValueRecorderSdkTest.OperationUpdaterWithBinding(
+              new LongHistogramSdkTest.OperationUpdaterWithBinding(
                   longRecorder.bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 

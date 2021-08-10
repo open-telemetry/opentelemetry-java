@@ -28,30 +28,30 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DoubleValueRecorderSdk}. */
-class DoubleValueRecorderSdkTest {
+/** Unit tests for {@link DoubleHistogramSdk}. */
+class DoubleHistogramSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(DoubleValueRecorderSdkTest.class.getName(), null);
+      InstrumentationLibraryInfo.create(DoubleHistogramSdkTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void record_PreventNullLabels() {
+  void record_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").build().record(1.0, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
-  void bound_PreventNullLabels() {
+  void bound_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").build().bind(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
@@ -67,7 +67,7 @@ class DoubleValueRecorderSdkTest {
   }
 
   @Test
-  void collectMetrics_WithEmptyLabel() {
+  void collectMetrics_WithEmptyAttributes() {
     DoubleHistogram doubleRecorder =
         sdkMeter
             .histogramBuilder("testRecorder")
@@ -188,7 +188,7 @@ class DoubleValueRecorderSdkTest {
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
-            .setInstrument((DoubleValueRecorderSdk) doubleRecorder)
+            .setInstrument((DoubleHistogramSdk) doubleRecorder)
             .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
@@ -196,7 +196,7 @@ class DoubleValueRecorderSdkTest {
           StressTestRunner.Operation.create(
               1_000,
               2,
-              new DoubleValueRecorderSdkTest.OperationUpdaterDirectCall(doubleRecorder, "K", "V")));
+              new DoubleHistogramSdkTest.OperationUpdaterDirectCall(doubleRecorder, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               1_000,
@@ -233,7 +233,7 @@ class DoubleValueRecorderSdkTest {
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
-            .setInstrument((DoubleValueRecorderSdk) doubleRecorder)
+            .setInstrument((DoubleHistogramSdk) doubleRecorder)
             .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
@@ -241,7 +241,7 @@ class DoubleValueRecorderSdkTest {
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new DoubleValueRecorderSdkTest.OperationUpdaterDirectCall(
+              new DoubleHistogramSdkTest.OperationUpdaterDirectCall(
                   doubleRecorder, keys[i], values[i])));
 
       stressTestBuilder.addOperation(

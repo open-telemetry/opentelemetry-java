@@ -9,8 +9,8 @@ package io.opentelemetry.sdk.metrics.common;
 public enum InstrumentType {
   COUNTER,
   UP_DOWN_COUNTER,
-  VALUE_RECORDER,
-  SUM_OBSERVER,
-  UP_DOWN_SUM_OBSERVER,
-  VALUE_OBSERVER,
+  HISTOGRAM,
+  OBSERVABLE_SUM,
+  OBSERVABLE_UP_DOWN_SUM,
+  OBSERVABLE_GAUGE,
 }

@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
@@ -13,23 +14,24 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class SynchronousInstrumentAccumulatorTest {
+public class SynchronousMetricStorageTest {
   private static final InstrumentDescriptor DESCRIPTOR =
       InstrumentDescriptor.create(
           "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
+  private static final MetricDescriptor METRIC_DESCRIPTOR =
+      MetricDescriptor.create("name", "description", "unit");
   private final TestClock testClock = TestClock.create();
   private final Aggregator<Long> aggregator =
       AggregatorFactory.lastValue()
@@ -41,9 +43,12 @@ public class SynchronousInstrumentAccumulatorTest {
   @Test
   void labelsProcessor_used() {
     LabelsProcessor spyLabelsProcessor = Mockito.spy(this.labelsProcessor);
-    SynchronousInstrumentAccumulator<?> accumulator =
-        new SynchronousInstrumentAccumulator<>(
-            aggregator, new InstrumentProcessor<>(aggregator, testClock.now()), spyLabelsProcessor);
+    SynchronousMetricStorage<?> accumulator =
+        new SynchronousMetricStorage<>(
+            METRIC_DESCRIPTOR,
+            aggregator,
+            new InstrumentProcessor<>(aggregator, testClock.now()),
+            spyLabelsProcessor);
     accumulator.bind(Attributes.empty());
     Mockito.verify(spyLabelsProcessor).onLabelsBound(Context.current(), Attributes.empty());
   }
@@ -59,44 +64,55 @@ public class SynchronousInstrumentAccumulatorTest {
           }
         };
     LabelsProcessor spyLabelsProcessor = Mockito.spy(labelsProcessor);
-    SynchronousInstrumentAccumulator<?> accumulator =
-        new SynchronousInstrumentAccumulator<>(
-            aggregator, new InstrumentProcessor<>(aggregator, testClock.now()), spyLabelsProcessor);
-    AggregatorHandle<?> aggregatorHandle = accumulator.bind(labels);
-    aggregatorHandle.recordDouble(1);
-    List<MetricData> md = accumulator.collectAll(testClock.now());
-    md.stream()
-        .flatMap(m -> m.getLongGaugeData().getPoints().stream())
-        .forEach(
-            p -> assertThat(p.getAttributes()).hasSize(1).containsEntry("modifiedK", "modifiedV"));
+    SynchronousMetricStorage<?> accumulator =
+        new SynchronousMetricStorage<>(
+            METRIC_DESCRIPTOR,
+            aggregator,
+            new InstrumentProcessor<>(aggregator, testClock.now()),
+            spyLabelsProcessor);
+    BoundStorageHandle handle = accumulator.bind(labels);
+    handle.recordDouble(1, labels, Context.root());
+    MetricData md = accumulator.collectAndReset(0, testClock.now());
+    assertThat(md)
+        .hasDoubleGauge()
+        .points()
+        .allSatisfy(
+            p ->
+                assertThat(p)
+                    .attributes()
+                    .hasSize(2)
+                    .containsEntry("modifiedK", "modifiedV")
+                    .containsEntry("K", "V"));
   }
 
   @Test
-  void sameAggregator_ForSameLabelSet() {
-    SynchronousInstrumentAccumulator<?> accumulator =
-        new SynchronousInstrumentAccumulator<>(
-            aggregator, new InstrumentProcessor<>(aggregator, testClock.now()), labelsProcessor);
-    AggregatorHandle<?> aggregatorHandle =
-        accumulator.bind(Attributes.builder().put("K", "V").build());
-    AggregatorHandle<?> duplicateAggregatorHandle =
+  void sameAggregator_ForSameAttributes() {
+    SynchronousMetricStorage<?> accumulator =
+        new SynchronousMetricStorage<>(
+            METRIC_DESCRIPTOR,
+            aggregator,
+            new InstrumentProcessor<>(aggregator, testClock.now()),
+            labelsProcessor);
+    BoundStorageHandle handle = accumulator.bind(Attributes.builder().put("K", "V").build());
+    BoundStorageHandle duplicateHandle =
         accumulator.bind(Attributes.builder().put("K", "V").build());
     try {
-      assertThat(duplicateAggregatorHandle).isSameAs(aggregatorHandle);
-      accumulator.collectAll(testClock.now());
-      AggregatorHandle<?> anotherDuplicateAggregatorHandle =
+      assertThat(duplicateHandle).isSameAs(handle);
+      accumulator.collectAndReset(0, testClock.now());
+      BoundStorageHandle anotherDuplicateAggregatorHandle =
           accumulator.bind(Attributes.builder().put("K", "V").build());
       try {
-        assertThat(anotherDuplicateAggregatorHandle).isSameAs(aggregatorHandle);
+        assertThat(anotherDuplicateAggregatorHandle).isSameAs(handle);
       } finally {
         anotherDuplicateAggregatorHandle.release();
       }
     } finally {
-      duplicateAggregatorHandle.release();
-      aggregatorHandle.release();
+      duplicateHandle.release();
+      handle.release();
     }
 
-    // At this point we should be able to unmap because all references are gone. Because this is an
-    // internal detail we cannot call collectAll after this anymore.
-    assertThat(aggregatorHandle.tryUnmap()).isTrue();
+    // If we try to collect once all bound references are gone AND no recordings have occurred, we
+    // should not see any labels (or metric).
+    assertThat(accumulator.collectAndReset(0, testClock.now())).isNull();
   }
 }

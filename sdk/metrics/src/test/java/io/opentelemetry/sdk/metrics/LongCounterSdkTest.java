@@ -33,17 +33,17 @@ class LongCounterSdkTest {
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void add_PreventNullLabels() {
+  void add_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.counterBuilder("testCounter").build().add(1, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
-  void bound_PreventNullLabels() {
+  void bound_PreventNullAttributes() {
     assertThatThrownBy(() -> sdkMeter.counterBuilder("testCounter").build().bind(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
@@ -59,7 +59,7 @@ class LongCounterSdkTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void collectMetrics_WithEmptyLabels() {
+  void collectMetrics_WithEmptyAttributes() {
     LongCounter longCounter =
         sdkMeter.counterBuilder("testCounter").setDescription("description").setUnit("By").build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
