@@ -19,7 +19,7 @@ public final class LoggingExporterExample {
   public LoggingExporterExample(OpenTelemetry openTelemetry) {
     tracer = openTelemetry.getTracer(INSTRUMENTATION_NAME);
     counter =
-        GlobalMeterProvider.getMeter(INSTRUMENTATION_NAME).longCounterBuilder("work_done").build();
+        GlobalMeterProvider.get().get(INSTRUMENTATION_NAME).counterBuilder("work_done").build();
   }
 
   public void myWonderfulUseCase() {
@@ -57,6 +57,7 @@ public final class LoggingExporterExample {
       // Flush out the metrics that have not yet been exported
       Thread.sleep(1000L);
     } catch (InterruptedException e) {
+      // ignore since we're exiting
     }
 
     System.out.println("Bye");
