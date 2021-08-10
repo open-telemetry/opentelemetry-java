@@ -22,12 +22,18 @@ class OpenTelemetrySdkAutoConfigurationTest {
   @Test
   void initializeAndGet() {
     OpenTelemetrySdk sdk = OpenTelemetrySdkAutoConfiguration.initialize();
-    assertThat(GlobalOpenTelemetry.get()).isSameAs(sdk);
+    assertThat(GlobalOpenTelemetry.get())
+        // ObfuscatedOpenTelemetry
+        .extracting("delegate")
+        .isSameAs(sdk);
   }
 
   @Test
   void initializeAndGet_noGlobal() {
-    OpenTelemetrySdkAutoConfiguration.initialize(false);
-    assertThat(GlobalOpenTelemetry.get()).isNull();
+    OpenTelemetrySdk sdk = OpenTelemetrySdkAutoConfiguration.initialize(false);
+    // TODO: calling get() will call initialize() again and autoconfigure another instance of the
+    // SDK; in that case the get() method will return OpenTelemetrySdk and not
+    // ObfuscatedOpenTelemetry
+    assertThat(GlobalOpenTelemetry.get()).isNotSameAs(sdk);
   }
 }
