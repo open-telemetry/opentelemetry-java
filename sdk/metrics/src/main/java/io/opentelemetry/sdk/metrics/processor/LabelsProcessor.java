@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.processor;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 
 /**
@@ -30,5 +30,5 @@ public interface LabelsProcessor {
    * @return labels to be used as an input to the next processor in chain or bind() operation if
    *     this is the last processor
    */
-  Labels onLabelsBound(Context ctx, Labels labels);
+  Attributes onLabelsBound(Context ctx, Attributes labels);
 }

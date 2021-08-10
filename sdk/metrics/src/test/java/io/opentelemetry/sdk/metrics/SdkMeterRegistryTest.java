@@ -10,9 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -57,14 +57,12 @@ class SdkMeterRegistryTest {
   @Test
   void getSameInstanceForSameName_WithoutVersion() {
     assertThat(meterProvider.get("test")).isSameAs(meterProvider.get("test"));
-    assertThat(meterProvider.get("test")).isSameAs(meterProvider.get("test", null));
     assertThat(meterProvider.get("test")).isSameAs(meterProvider.meterBuilder("test").build());
   }
 
   @Test
   void getSameInstanceForSameName_WithVersion() {
-    assertThat(meterProvider.get("test", "version"))
-        .isSameAs(meterProvider.get("test", "version"))
+    assertThat(meterProvider.meterBuilder("test").setInstrumentationVersion("version").build())
         .isSameAs(meterProvider.meterBuilder("test").setInstrumentationVersion("version").build());
   }
 
@@ -102,11 +100,11 @@ class SdkMeterRegistryTest {
   @SuppressWarnings("unchecked")
   void metricProducer_GetAllMetrics() {
     Meter sdkMeter1 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
-    LongCounter longCounter1 = sdkMeter1.longCounterBuilder("testLongCounter").build();
-    longCounter1.add(10, Labels.empty());
+    LongCounter longCounter1 = sdkMeter1.counterBuilder("testLongCounter").build();
+    longCounter1.add(10, Attributes.empty());
     Meter sdkMeter2 = meterProvider.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
-    LongCounter longCounter2 = sdkMeter2.longCounterBuilder("testLongCounter").build();
-    longCounter2.add(10, Labels.empty());
+    LongCounter longCounter2 = sdkMeter2.counterBuilder("testLongCounter").build();
+    longCounter2.add(10, Attributes.empty());
 
     assertThat(meterProvider.collectAllMetrics())
         .allSatisfy(
@@ -135,10 +133,6 @@ class SdkMeterRegistryTest {
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
 
-    meter = (SdkMeter) meterProvider.get(null, null);
-    assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
-
     meter = (SdkMeter) meterProvider.meterBuilder(null).build();
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
@@ -147,10 +141,6 @@ class SdkMeterRegistryTest {
   @Test
   void suppliesDefaultMeterForEmptyName() {
     SdkMeter meter = (SdkMeter) meterProvider.get("");
-    assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
-
-    meter = (SdkMeter) meterProvider.get("", "");
     assertThat(meter.getInstrumentationLibraryInfo().getName())
         .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
 

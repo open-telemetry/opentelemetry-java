@@ -52,7 +52,16 @@ public final class IntervalMetricReader {
     return CompletableResultCode.ofSuccess();
   }
 
-  static void resetGlobalForTest() {
+  /**
+   * Resets the globally registered {@link IntervalMetricReader} if available, or does nothing
+   * otherwise. This is only meant to be used from tests which need to reconfigure {@link
+   * IntervalMetricReader}.
+   */
+  public static void resetGlobalForTest() {
+    IntervalMetricReader intervalMetricReader = globalIntervalMetricReader.get();
+    if (intervalMetricReader != null) {
+      intervalMetricReader.shutdown();
+    }
     globalIntervalMetricReader.set(null);
   }
 

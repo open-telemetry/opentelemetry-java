@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import java.util.Map;
@@ -81,7 +81,7 @@ public interface Aggregator<T> {
    */
   @Nullable
   MetricData toMetricData(
-      Map<Labels, T> accumulationByLabels,
+      Map<Attributes, T> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos);

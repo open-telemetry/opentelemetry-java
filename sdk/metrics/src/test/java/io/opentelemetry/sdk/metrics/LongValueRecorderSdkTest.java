@@ -6,14 +6,14 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongValueRecorder;
-import io.opentelemetry.api.metrics.LongValueRecorder;
+import io.opentelemetry.api.metrics.BoundLongHistogram;
+import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
@@ -43,22 +43,22 @@ class LongValueRecorderSdkTest {
   @Test
   void record_PreventNullLabels() {
     assertThatThrownBy(
-            () -> sdkMeter.longValueRecorderBuilder("testRecorder").build().record(1, null))
+            () -> sdkMeter.histogramBuilder("testRecorder").ofLongs().build().record(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
 
   @Test
   void bound_PreventNullLabels() {
-    assertThatThrownBy(() -> sdkMeter.longValueRecorderBuilder("testRecorder").build().bind(null))
+    assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").ofLongs().build().bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("labels");
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    LongValueRecorder longRecorder = sdkMeter.longValueRecorderBuilder("testRecorder").build();
-    BoundLongValueRecorder bound = longRecorder.bind(Labels.of("key", "value"));
+    LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
+    BoundLongHistogram bound = longRecorder.bind(Attributes.builder().put("key", "value").build());
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
@@ -68,14 +68,15 @@ class LongValueRecorderSdkTest {
 
   @Test
   void collectMetrics_WithEmptyLabel() {
-    LongValueRecorder longRecorder =
+    LongHistogram longRecorder =
         sdkMeter
-            .longValueRecorderBuilder("testRecorder")
+            .histogramBuilder("testRecorder")
+            .ofLongs()
             .setDescription("description")
             .setUnit("By")
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    longRecorder.record(12, Labels.empty());
+    longRecorder.record(12, Attributes.empty());
     longRecorder.record(12);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .containsExactly(
@@ -97,72 +98,85 @@ class LongValueRecorderSdkTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    LongValueRecorder longRecorder = sdkMeter.longValueRecorderBuilder("testRecorder").build();
-    BoundLongValueRecorder bound = longRecorder.bind(Labels.of("K", "V"));
+    LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
+    BoundLongHistogram bound = longRecorder.bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
-      longRecorder.record(12, Labels.empty());
+      longRecorder.record(12, Attributes.empty());
       bound.record(123);
-      longRecorder.record(-14, Labels.empty());
+      longRecorder.record(-14, Attributes.empty());
       // Advancing time here should not matter.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321);
-      longRecorder.record(-121, Labels.of("K", "V"));
+      longRecorder.record(-121, Attributes.builder().put("K", "V").build());
       assertThat(sdkMeterProvider.collectAllMetrics())
-          .containsExactly(
-              MetricData.createDoubleSummary(
-                  RESOURCE,
-                  INSTRUMENTATION_LIBRARY_INFO,
-                  "testRecorder",
-                  "",
-                  "1",
-                  DoubleSummaryData.create(
-                      Arrays.asList(
-                          DoubleSummaryPointData.create(
-                              startTime,
-                              testClock.now(),
-                              Attributes.builder().put("K", "V").build(),
-                              3,
-                              323,
-                              valueAtPercentiles(-121, 321)),
-                          DoubleSummaryPointData.create(
-                              startTime,
-                              testClock.now(),
-                              Attributes.empty(),
-                              2,
-                              -2,
-                              valueAtPercentiles(-14, 12))))));
+          .satisfiesExactly(
+              metric ->
+                  assertThat(metric)
+                      .hasResource(RESOURCE)
+                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasName("testRecorder")
+                      .hasDoubleSummary()
+                      .points()
+                      .allSatisfy(
+                          point ->
+                              assertThat(point)
+                                  .hasStartEpochNanos(startTime)
+                                  .hasEpochNanos(testClock.now()))
+                      .satisfiesExactlyInAnyOrder(
+                          point ->
+                              assertThat(point)
+                                  .hasCount(3)
+                                  .hasSum(323)
+                                  .hasPercentileValues(
+                                      valueAtPercentiles(-121, 321)
+                                          .toArray(new ValueAtPercentile[0]))
+                                  .hasAttributes(Attributes.builder().put("K", "V").build()),
+                          point ->
+                              assertThat(point)
+                                  .hasCount(2)
+                                  .hasSum(-2)
+                                  .hasPercentileValues(
+                                      valueAtPercentiles(-14, 12).toArray(new ValueAtPercentile[0]))
+                                  .hasAttributes(Attributes.empty())));
 
       // Repeat to prove we don't keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222);
-      longRecorder.record(17, Labels.empty());
+      longRecorder.record(17, Attributes.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
-          .containsExactly(
-              MetricData.createDoubleSummary(
-                  RESOURCE,
-                  INSTRUMENTATION_LIBRARY_INFO,
-                  "testRecorder",
-                  "",
-                  "1",
-                  DoubleSummaryData.create(
-                      Arrays.asList(
-                          DoubleSummaryPointData.create(
-                              startTime + SECOND_NANOS,
-                              testClock.now(),
-                              Attributes.builder().put("K", "V").build(),
-                              1,
-                              222,
-                              valueAtPercentiles(222, 222)),
-                          DoubleSummaryPointData.create(
-                              startTime + SECOND_NANOS,
-                              testClock.now(),
-                              Attributes.empty(),
-                              1,
-                              17,
-                              valueAtPercentiles(17, 17))))));
+          .satisfiesExactly(
+              metric ->
+                  assertThat(metric)
+                      .hasResource(RESOURCE)
+                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasName("testRecorder")
+                      .hasDoubleSummary()
+                      .points()
+                      .allSatisfy(
+                          point ->
+                              assertThat(point)
+                                  .hasStartEpochNanos(startTime + SECOND_NANOS)
+                                  .hasEpochNanos(testClock.now()))
+                      .satisfiesExactlyInAnyOrder(
+                          point ->
+                              assertThat(point)
+                                  .hasCount(1)
+                                  .hasSum(222)
+                                  .hasPercentileValues(
+                                      valueAtPercentiles(222, 222)
+                                          .toArray(new ValueAtPercentile[0]))
+                                  .hasAttributes(Attributes.builder().put("K", "V").build()),
+                          point ->
+                              assertThat(point)
+                                  .hasCount(1)
+                                  .hasSum(17)
+                                  .hasPercentileValues(
+                                      valueAtPercentiles(17, 17).toArray(new ValueAtPercentile[0]))
+                                  .hasAttributes(Attributes.empty())));
     } finally {
       bound.unbind();
     }
@@ -170,8 +184,7 @@ class LongValueRecorderSdkTest {
 
   @Test
   void stressTest() {
-    final LongValueRecorder longRecorder =
-        sdkMeter.longValueRecorderBuilder("testRecorder").build();
+    final LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -189,7 +202,7 @@ class LongValueRecorderSdkTest {
               2_000,
               1,
               new LongValueRecorderSdkTest.OperationUpdaterWithBinding(
-                  longRecorder.bind(Labels.of("K", "V")))));
+                  longRecorder.bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -216,8 +229,7 @@ class LongValueRecorderSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongValueRecorder longRecorder =
-        sdkMeter.longValueRecorderBuilder("testRecorder").build();
+    final LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -237,54 +249,40 @@ class LongValueRecorderSdkTest {
               1_000,
               2,
               new LongValueRecorderSdkTest.OperationUpdaterWithBinding(
-                  longRecorder.bind(Labels.of(keys[i], values[i])))));
+                  longRecorder.bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createDoubleSummary(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testRecorder",
-                "",
-                "1",
-                DoubleSummaryData.create(
-                    Arrays.asList(
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Attributes.builder().put(keys[0], values[0]).build(),
-                            2_000,
-                            20_000,
-                            valueAtPercentiles(9, 11)),
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Attributes.builder().put(keys[1], values[1]).build(),
-                            2_000,
-                            20_000,
-                            valueAtPercentiles(9, 11)),
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Attributes.builder().put(keys[2], values[2]).build(),
-                            2_000,
-                            20_000,
-                            valueAtPercentiles(9, 11)),
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Attributes.builder().put(keys[3], values[3]).build(),
-                            2_000,
-                            20_000,
-                            valueAtPercentiles(9, 11))))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testRecorder")
+                    .hasDoubleSummary()
+                    .points()
+                    .allSatisfy(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasCount(2_000)
+                                .hasSum(20_000)
+                                .hasPercentileValues(
+                                    valueAtPercentiles(9, 11).toArray(new ValueAtPercentile[0])))
+                    .extracting(point -> point.getAttributes())
+                    .containsExactlyInAnyOrder(
+                        Attributes.of(stringKey(keys[0]), values[0]),
+                        Attributes.of(stringKey(keys[1]), values[1]),
+                        Attributes.of(stringKey(keys[2]), values[2]),
+                        Attributes.of(stringKey(keys[3]), values[3])));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
-    private final BoundLongValueRecorder boundLongValueRecorder;
+    private final BoundLongHistogram boundLongValueRecorder;
 
-    private OperationUpdaterWithBinding(BoundLongValueRecorder boundLongValueRecorder) {
+    private OperationUpdaterWithBinding(BoundLongHistogram boundLongValueRecorder) {
       this.boundLongValueRecorder = boundLongValueRecorder;
     }
 
@@ -301,11 +299,11 @@ class LongValueRecorderSdkTest {
 
   private static class OperationUpdaterDirectCall extends OperationUpdater {
 
-    private final LongValueRecorder longRecorder;
+    private final LongHistogram longRecorder;
     private final String key;
     private final String value;
 
-    private OperationUpdaterDirectCall(LongValueRecorder longRecorder, String key, String value) {
+    private OperationUpdaterDirectCall(LongHistogram longRecorder, String key, String value) {
       this.longRecorder = longRecorder;
       this.key = key;
       this.value = value;
@@ -313,7 +311,7 @@ class LongValueRecorderSdkTest {
 
     @Override
     void update() {
-      longRecorder.record(11, Labels.of(key, value));
+      longRecorder.record(11, Attributes.builder().put(key, value).build());
     }
 
     @Override

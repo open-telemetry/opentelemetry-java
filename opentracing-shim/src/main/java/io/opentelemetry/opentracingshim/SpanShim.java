@@ -14,6 +14,9 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
+import io.opentelemetry.context.ImplicitContextKeyed;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -34,9 +37,11 @@ import javax.annotation.Nullable;
  * Calling context() or setBaggageItem() will effectively force the creation
  * of SpanContextShim object if none existed yet.
  */
-final class SpanShim extends BaseShimObject implements Span {
+final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeyed {
   private static final String DEFAULT_EVENT_NAME = "log";
   private static final String ERROR = "error";
+  private static final ContextKey<SpanShim> SPAN_SHIM_KEY =
+      ContextKey.named("opentracing-shim-key");
 
   private final io.opentelemetry.api.trace.Span span;
 
@@ -47,6 +52,22 @@ final class SpanShim extends BaseShimObject implements Span {
 
   io.opentelemetry.api.trace.Span getSpan() {
     return span;
+  }
+
+  public static SpanShim current() {
+    return Context.current().get(SPAN_SHIM_KEY);
+  }
+
+  @Override
+  public Context storeInContext(Context context) {
+    context = context.with(SPAN_SHIM_KEY, this).with(span);
+
+    SpanContextShim spanContextShim = spanContextTable().get(this);
+    if (spanContextShim != null) {
+      context = context.with(spanContextShim.getBaggage());
+    }
+
+    return context;
   }
 
   @Override

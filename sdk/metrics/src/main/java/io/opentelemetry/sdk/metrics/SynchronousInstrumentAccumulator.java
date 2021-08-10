@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
-  private final ConcurrentHashMap<Labels, AggregatorHandle<T>> aggregatorLabels;
+  private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorLabels;
   private final ReentrantLock collectLock;
   private final Aggregator<T> aggregator;
   private final InstrumentProcessor<T> instrumentProcessor;
@@ -48,7 +48,7 @@ final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
     this.labelsProcessor = labelsProcessor;
   }
 
-  AggregatorHandle<?> bind(Labels labels) {
+  AggregatorHandle<?> bind(Attributes labels) {
     Objects.requireNonNull(labels, "labels");
     labels = labelsProcessor.onLabelsBound(Context.current(), labels);
     AggregatorHandle<T> aggregatorHandle = aggregatorLabels.get(labels);
@@ -80,7 +80,7 @@ final class SynchronousInstrumentAccumulator<T> extends AbstractAccumulator {
   List<MetricData> collectAll(long epochNanos) {
     collectLock.lock();
     try {
-      for (Map.Entry<Labels, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {
+      for (Map.Entry<Attributes, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {
         boolean unmappedEntry = entry.getValue().tryUnmap();
         if (unmappedEntry) {
           // If able to unmap then remove the record from the current Map. This can race with the

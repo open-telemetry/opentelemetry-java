@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
@@ -49,7 +49,7 @@ final class LongLastValueAggregator extends AbstractAggregator<Long> {
 
   @Override
   public MetricData toMetricData(
-      Map<Labels, Long> accumulationByLabels,
+      Map<Attributes, Long> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {

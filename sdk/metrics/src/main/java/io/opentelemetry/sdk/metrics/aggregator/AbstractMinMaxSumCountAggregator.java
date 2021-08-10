@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
@@ -35,7 +35,7 @@ abstract class AbstractMinMaxSumCountAggregator
 
   @Override
   public final MetricData toMetricData(
-      Map<Labels, MinMaxSumCountAccumulation> accumulationByLabels,
+      Map<Attributes, MinMaxSumCountAccumulation> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {

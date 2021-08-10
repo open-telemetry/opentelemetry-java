@@ -5,12 +5,12 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.context.Context;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 
 final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
-
   public ScopeManagerShim(TelemetryInfo telemetryInfo) {
     super(telemetryInfo);
   }
@@ -18,29 +18,37 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
   @Override
   @SuppressWarnings("ReturnMissingNullable")
   public Span activeSpan() {
+    SpanShim spanShim = SpanShim.current();
+    io.opentelemetry.api.trace.Span span = null;
+    if (spanShim == null) {
+      span = io.opentelemetry.api.trace.Span.current();
+    } else {
+      span = spanShim.getSpan();
+    }
+
     // As OpenTracing simply returns null when no active instance is available,
     // we need to do map an invalid OpenTelemetry span to null here.
-    io.opentelemetry.api.trace.Span span = io.opentelemetry.api.trace.Span.current();
     if (!span.getSpanContext().isValid()) {
       return null;
     }
 
-    // TODO: Properly include the bagagge/distributedContext.
+    // If there's a SpanShim for the *actual* active Span, simply return it.
+    if (spanShim != null && span == io.opentelemetry.api.trace.Span.current()) {
+      return spanShim;
+    }
+
+    // Span was activated from outside the Shim layer unfortunately.
     return new SpanShim(telemetryInfo(), span);
   }
 
   @Override
   @SuppressWarnings("MustBeClosedChecker")
   public Scope activate(Span span) {
-    io.opentelemetry.api.trace.Span actualSpan = getActualSpan(span);
-    return new ScopeShim(actualSpan.makeCurrent());
-  }
-
-  static io.opentelemetry.api.trace.Span getActualSpan(Span span) {
     if (!(span instanceof SpanShim)) {
       throw new IllegalArgumentException("span is not a valid SpanShim object");
     }
 
-    return ((SpanShim) span).getSpan();
+    SpanShim spanShim = (SpanShim) span;
+    return new ScopeShim(Context.current().with(spanShim).makeCurrent());
   }
 }

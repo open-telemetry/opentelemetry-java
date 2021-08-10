@@ -78,14 +78,24 @@ final class SpanExporterConfiguration {
       builder.setEndpoint(endpoint);
     }
 
-    config.getCommaSeparatedMap("otel.exporter.otlp.headers").forEach(builder::addHeader);
+    Map<String, String> headers = config.getCommaSeparatedMap("otel.exporter.otlp.traces.headers");
+    if (headers.isEmpty()) {
+      headers = config.getCommaSeparatedMap("otel.exporter.otlp.headers");
+    }
+    headers.forEach(builder::addHeader);
 
-    Duration timeout = config.getDuration("otel.exporter.otlp.timeout");
+    Duration timeout = config.getDuration("otel.exporter.otlp.traces.timeout");
+    if (timeout == null) {
+      timeout = config.getDuration("otel.exporter.otlp.timeout");
+    }
     if (timeout != null) {
       builder.setTimeout(timeout);
     }
 
-    String certificate = config.getString("otel.exporter.otlp.certificate");
+    String certificate = config.getString("otel.exporter.otlp.traces.certificate");
+    if (certificate == null) {
+      certificate = config.getString("otel.exporter.otlp.certificate");
+    }
     if (certificate != null) {
       Path path = Paths.get(certificate);
       if (!Files.exists(path)) {

@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -25,7 +25,7 @@ abstract class AbstractSynchronousInstrument extends AbstractInstrument {
     return accumulator.collectAll(epochNanos);
   }
 
-  AggregatorHandle<?> acquireHandle(Labels labels) {
+  AggregatorHandle<?> acquireHandle(Attributes labels) {
     return accumulator.bind(labels);
   }
 }
