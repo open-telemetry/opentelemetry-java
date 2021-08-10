@@ -41,7 +41,7 @@ sourceSets {
 
 tasks {
   register("generateVersionResource") {
-    inputs.property("project.version", project.version)
+    inputs.property("project.version", "${project.version}")
     val propertiesDir = file("$genResourceDir/io/opentelemetry/sdk")
     outputs.dir(propertiesDir)
 
