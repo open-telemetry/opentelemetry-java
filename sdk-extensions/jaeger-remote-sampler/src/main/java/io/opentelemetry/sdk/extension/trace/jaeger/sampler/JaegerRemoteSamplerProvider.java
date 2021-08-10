@@ -13,21 +13,24 @@ import java.util.concurrent.TimeUnit;
 
 public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider {
 
+  private static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
+  private static final String SERVICE_NAME_PROPERTY = "otel.service.name";
+  private static final String SAMPLER_ARG_PROPERTY = "otel.traces.sampler.arg";
+
   private static final String ENDPOINT_KEY = "endpoint";
   private static final String POLLING_INTERVAL = "pollingInterval";
   private static final String INITIAL_SAMPLING_RATE = "initialSamplingRate";
 
   @Override
   public Sampler createSampler(ConfigProperties config) {
-    String serviceName = config.getString("otel.service.name");
+    String serviceName = config.getString(SERVICE_NAME_PROPERTY);
     if (serviceName == null) {
-      Map<String, String> resourceAttributes =
-          config.getCommaSeparatedMap("otel.resource.attributes");
-      serviceName = resourceAttributes.get("otel.service.name");
+      Map<String, String> resourceAttributes = config.getCommaSeparatedMap(ATTRIBUTE_PROPERTY);
+      serviceName = resourceAttributes.get(SERVICE_NAME_PROPERTY);
     }
 
     JaegerRemoteSamplerBuilder builder = JaegerRemoteSampler.builder().setServiceName(serviceName);
-    Map<String, String> params = config.getCommaSeparatedMap("otel.traces.sampler.arg");
+    Map<String, String> params = config.getCommaSeparatedMap(SAMPLER_ARG_PROPERTY);
 
     // Optional configuration
     String endpoint = params.get(ENDPOINT_KEY);
