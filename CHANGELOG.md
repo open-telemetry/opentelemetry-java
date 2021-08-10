@@ -1,7 +1,42 @@
 # Changelog
 
-## Unreleased:
+## Version 1.5.0 (Unreleased):
 
+### API
+- The `io.opentelemetry.context.ContextStoragte` interface now allows providing a root `Context`. 
+
+### SDK
+- The `io.opentelemetry.sdk.trace.samplers.SamplingResult` class has been enhanced with new factory methods for the static result values.
+- The `io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter` now supports setting custom TLS certificates.
+- The `io.opentelemetry.sdk.trace.ReadableSpan` interface now exposes the parent SpanContext directly.
+
+#### SDK Extensions
+- The `opentelemetry-sdk-extension-resources` module now provides a new `ContainerResource` that auto-detects docker container Resource attributes.
+- The Jaeger Remote Sampler in the `opentelemetry-sdk-extension-jaeger-remote-sampler` module is now `java.io.Closeable`. 
+
+#### Testing
+- The SDK testing module (`opentelemetry-sdk-testing`) has been enhanced with additional assertions for Spans and Attributes.
+
+### Auto-configuration (alpha)
+- BREAKING CHANGE: `io.opentelemetry.sdk.autoconfigure.ConfigProperties` in the `opentelemetry-sdk-extension-autoconfigure` is now an interface
+  and `io.opentelemetry.sdk.autoconfigure.OpenTelemetrySdkAutoConfiguration.initiatize()` now accepts an optional `ConfigProperties`
+  instance to add properties to the standard auto-detected ones.
+- BREAKING CHANGE: `OpenTelemetrySdkAutoConfiguration.getResource()` has been removed in favor of using the new `OpenTelemetryResourceAutoConfiguration` class.
+- The `opentelemetry-sdk-extension-autoconfigure` module now exposes a new `OpenTelemetryResourceAutoConfiguration`
+  class specifically for acquiring autoconfigured `Resource` instances.
+- The `opentelemetry-sdk-extension-autoconfigure` module now provides an option to *not* set the GlobalOpenTelemetry instance when auto-configuring.
+- The `opentelemetry-sdk-extension-autoconfigure` module now has support for signal-specific timeout, header and TLS certificate configuration.
+
+### Semantic Conventions (alpha)
+- The `SemanticAttributes` and `ResourceAttributes` classes have been updated to match the semantic conventions
+  as of specification release `1.5.0`.
+
+### Metrics (alpha)
+- BREAKING CHANGE: The Metrics API has been completely re-written to match the newly specified API. 
+Please reach out on CNCF slack in the [#otel-java](https://cloud-native.slack.com/archives/C014L2KCTE3) channel, 
+- or in a [github discussion](https://github.com/open-telemetry/opentelemetry-java/discussions) if you need assistance with converting to the new API.
+
+---
 ## Version 1.4.1 - 2021-07-15
 
 - Fill labels in addition to attributes during OTLP metrics export to support versions of the
