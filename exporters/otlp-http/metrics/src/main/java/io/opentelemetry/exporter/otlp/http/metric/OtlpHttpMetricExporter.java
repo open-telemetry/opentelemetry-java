@@ -38,8 +38,10 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
 
   private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
 
-  private final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OtlpHttpMetricExporter.class.getName()));
+  private static final Logger internalLogger =
+      Logger.getLogger(OtlpHttpMetricExporter.class.getName());
+
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
   private final OkHttpClient client;
   private final String endpoint;
