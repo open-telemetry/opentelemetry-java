@@ -11,6 +11,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
@@ -131,6 +132,20 @@ class OpenTelemetrySdkTest {
         .hasFieldOrPropertyWithValue("clock", clock)
         .hasFieldOrPropertyWithValue("resource", resource)
         .hasFieldOrPropertyWithValue("idGenerator", idGenerator);
+  }
+
+  @Test
+  void testTracerBuilder() {
+    final OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    assertThat(openTelemetry.tracerBuilder("instr"))
+        .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
+  }
+
+  @Test
+  void testTracerBuilderViaProvider() {
+    final OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().build();
+    assertThat(openTelemetry.getTracerProvider().tracerBuilder("instr"))
+        .isNotSameAs(OpenTelemetry.noop().tracerBuilder("instr"));
   }
 
   @Test
