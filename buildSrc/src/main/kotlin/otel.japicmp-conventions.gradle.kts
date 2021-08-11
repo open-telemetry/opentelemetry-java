@@ -61,15 +61,14 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
         // the japicmp "old" version is either the user-specified one, or the latest release.
         val apiBaseVersion: String? by project
         val baselineVersion = apiBaseVersion ?: latestReleasedVersion
-        val baselineArtifact = try {
-          findArtifact(baselineVersion)
+        oldClasspath = try {
+          files(findArtifact(baselineVersion))
         } catch (e: Exception) {
           //if we can't find the baseline artifact, this is probably one that's never been published before,
           //so publish the whole API. We do that by flipping this flag, and comparing the current against itself.
           isOnlyModified = false
-          newArtifact
+          files()
         }
-        oldClasspath = files(baselineArtifact)
 
         //this is needed so that we only consider the current artifact, and not dependencies
         isIgnoreMissingClasses = true
