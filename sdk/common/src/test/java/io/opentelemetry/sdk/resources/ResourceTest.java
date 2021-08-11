@@ -207,11 +207,12 @@ class ResourceTest {
   @Test
   void testDefaultResources() {
     Resource resource = Resource.getDefault();
-    Attributes attributes = resource.getAttributes();
-    assertThat(attributes.get(ResourceAttributes.SERVICE_NAME)).isEqualTo("unknown_service:java");
-    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_NAME)).isEqualTo("opentelemetry");
-    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
-    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_VERSION)).isNotNull();
+    assertThat(resource.getAttribute(ResourceAttributes.SERVICE_NAME))
+        .isEqualTo("unknown_service:java");
+    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_NAME))
+        .isEqualTo("opentelemetry");
+    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
+    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_VERSION)).isNotNull();
   }
 
   @Test
@@ -224,7 +225,7 @@ class ResourceTest {
 
     // then no exception is thrown
     // and
-    assertThat(builder.build().getAttributes().get(ResourceAttributes.SERVICE_NAME))
+    assertThat(builder.build().getAttribute(ResourceAttributes.SERVICE_NAME))
         .isEqualTo("unknown_service:java");
   }
 
@@ -239,7 +240,7 @@ class ResourceTest {
     // then
     Resource resource = builder.build();
     assertThat(resource).isNotSameAs(Resource.getDefault());
-    assertThat(resource.getAttributes().get(stringKey("dog says what?"))).isEqualTo("woof");
+    assertThat(resource.getAttribute(stringKey("dog says what?"))).isEqualTo("woof");
   }
 
   @Test

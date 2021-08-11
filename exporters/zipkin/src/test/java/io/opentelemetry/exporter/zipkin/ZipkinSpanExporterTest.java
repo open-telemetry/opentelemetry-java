@@ -177,7 +177,7 @@ class ZipkinSpanExporterTest {
 
     Endpoint expectedEndpoint =
         Endpoint.newBuilder()
-            .serviceName(Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME))
+            .serviceName(Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME))
             .ip(exporter.getLocalAddressForTest())
             .build();
     Span expectedZipkinSpan =

@@ -109,9 +109,9 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
   private Process createProcess(Resource resource) {
     Process result = new Process(this.process);
 
-    String serviceName = resource.getAttributes().get(ResourceAttributes.SERVICE_NAME);
+    String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
     if (serviceName == null || serviceName.isEmpty()) {
-      serviceName = Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME);
+      serviceName = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
     }
     result.setServiceName(serviceName);
 

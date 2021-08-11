@@ -17,8 +17,8 @@ class ResourceDisabledByPropertyTest {
   void osAndProcessDisabled() {
     Resource resource = OpenTelemetryResourceAutoConfiguration.configureResource();
 
-    assertThat(resource.getAttributes().get(ResourceAttributes.OS_TYPE)).isNull();
-    assertThat(resource.getAttributes().get(ResourceAttributes.PROCESS_PID)).isNull();
-    assertThat(resource.getAttributes().get(ResourceAttributes.PROCESS_RUNTIME_NAME)).isNotNull();
+    assertThat(resource.getAttribute(ResourceAttributes.OS_TYPE)).isNull();
+    assertThat(resource.getAttribute(ResourceAttributes.PROCESS_PID)).isNull();
+    assertThat(resource.getAttribute(ResourceAttributes.PROCESS_RUNTIME_NAME)).isNotNull();
   }
 }
