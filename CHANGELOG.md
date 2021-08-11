@@ -3,12 +3,13 @@
 ## Version 1.5.0 (Unreleased):
 
 ### API
-- The `io.opentelemetry.context.ContextStoragte` interface now allows providing a root `Context`. 
+- The `io.opentelemetry.context.ContextStorage` interface now allows providing a root `Context`. 
 
 ### SDK
 - The `io.opentelemetry.sdk.trace.samplers.SamplingResult` class has been enhanced with new factory methods for the static result values.
 - The `io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter` now supports setting custom TLS certificates.
 - The `io.opentelemetry.sdk.trace.ReadableSpan` interface now exposes the parent SpanContext directly.
+- A new `opentelemetry-exporter-otlp-http-trace` module is now available to support OTLP over HTTP exports.
 
 #### SDK Extensions
 - The `opentelemetry-sdk-extension-resources` module now provides a new `ContainerResource` that auto-detects docker container Resource attributes.
@@ -26,6 +27,7 @@
   class specifically for acquiring autoconfigured `Resource` instances.
 - The `opentelemetry-sdk-extension-autoconfigure` module now provides an option to *not* set the GlobalOpenTelemetry instance when auto-configuring.
 - The `opentelemetry-sdk-extension-autoconfigure` module now has support for signal-specific timeout, header and TLS certificate configuration.
+- A new SPI option is available for configuring a metrics exporter. See `io.opentelemetry.sdk.autoconfigure.spi.ConfigurableMetricExporterProvider` for details.
 
 ### Semantic Conventions (alpha)
 - The `SemanticAttributes` and `ResourceAttributes` classes have been updated to match the semantic conventions
@@ -35,6 +37,7 @@
 - BREAKING CHANGE: The Metrics API has been completely re-written to match the newly specified API. 
 Please reach out on CNCF slack in the [#otel-java](https://cloud-native.slack.com/archives/C014L2KCTE3) channel, 
 - or in a [github discussion](https://github.com/open-telemetry/opentelemetry-java/discussions) if you need assistance with converting to the new API.
+- A new `opentelemetry-exporter-otlp-http-metrics` module is now available to support OTLP over HTTP exports.
 
 ---
 ## Version 1.4.1 - 2021-07-15
