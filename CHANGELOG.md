@@ -36,7 +36,7 @@
 ### Metrics (alpha)
 - BREAKING CHANGE: The Metrics API has been completely re-written to match the newly specified API. 
 Please reach out on CNCF slack in the [#otel-java](https://cloud-native.slack.com/archives/C014L2KCTE3) channel, 
-- or in a [github discussion](https://github.com/open-telemetry/opentelemetry-java/discussions) if you need assistance with converting to the new API.
+or in a [github discussion](https://github.com/open-telemetry/opentelemetry-java/discussions) if you need assistance with converting to the new API.
 - A new `opentelemetry-exporter-otlp-http-metrics` module is now available to support OTLP over HTTP exports.
 
 ---
