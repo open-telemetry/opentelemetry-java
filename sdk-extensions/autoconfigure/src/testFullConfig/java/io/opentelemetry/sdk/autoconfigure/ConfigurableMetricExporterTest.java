@@ -19,7 +19,7 @@ public class ConfigurableMetricExporterTest {
   @Test
   void configuration() {
     ConfigProperties config =
-        ConfigProperties.createForTest(ImmutableMap.of("test.option", "true"));
+        DefaultConfigProperties.createForTest(ImmutableMap.of("test.option", "true"));
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureSpiExporter("testExporter", config);
 
@@ -36,7 +36,7 @@ public class ConfigurableMetricExporterTest {
             () ->
                 MetricExporterConfiguration.configureExporter(
                     "catExporter",
-                    ConfigProperties.createForTest(Collections.emptyMap()),
+                    DefaultConfigProperties.createForTest(Collections.emptyMap()),
                     provider))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");
