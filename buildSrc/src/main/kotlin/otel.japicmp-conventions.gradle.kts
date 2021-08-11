@@ -65,7 +65,7 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
           files(findArtifact(baselineVersion))
         } catch (e: Exception) {
           //if we can't find the baseline artifact, this is probably one that's never been published before,
-          //so publish the whole API. We do that by flipping this flag, and comparing the current against itself.
+          //so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
           isOnlyModified = false
           files()
         }
