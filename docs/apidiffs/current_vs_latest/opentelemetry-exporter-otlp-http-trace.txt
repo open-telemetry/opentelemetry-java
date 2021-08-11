@@ -1,0 +1,17 @@
+Comparing source compatibility of  against 
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===  UNCHANGED METHOD: PUBLIC STATIC io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder builder()
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.sdk.common.CompletableResultCode export(java.util.Collection)
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.sdk.common.CompletableResultCode flush()
+	===  UNCHANGED METHOD: PUBLIC STATIC io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter getDefault()
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.sdk.common.CompletableResultCode shutdown()
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder addHeader(java.lang.String, java.lang.String)
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter build()
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder setCompression(java.lang.String)
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder setEndpoint(java.lang.String)
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder setTimeout(long, java.util.concurrent.TimeUnit)
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder setTimeout(java.time.Duration)
+	===  UNCHANGED METHOD: PUBLIC io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder setTrustedCertificates(byte[])
