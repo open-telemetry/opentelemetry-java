@@ -34,8 +34,8 @@ public class JaegerRemoteSamplerProviderTest {
     HashMap<String, String> samplerArgs = new HashMap<>();
     samplerArgs.put("endpoint", "localhost:9999");
     samplerArgs.put("pollingInterval", "99");
-    Double samplingRate = 0.33;
-    samplerArgs.put("initialSamplingRate", samplingRate.toString());
+    double samplingRate = 0.33;
+    samplerArgs.put("initialSamplingRate", String.valueOf(samplingRate));
     when(mockConfig.getCommaSeparatedMap(JaegerRemoteSamplerProvider.SAMPLER_ARG_PROPERTY))
         .thenReturn(samplerArgs);
 
