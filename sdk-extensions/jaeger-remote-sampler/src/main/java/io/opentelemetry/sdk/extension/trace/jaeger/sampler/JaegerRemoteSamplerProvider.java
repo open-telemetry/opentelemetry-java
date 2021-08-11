@@ -13,9 +13,10 @@ import java.util.concurrent.TimeUnit;
 
 public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider {
 
-  private static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
-  private static final String SERVICE_NAME_PROPERTY = "otel.service.name";
-  private static final String SAMPLER_ARG_PROPERTY = "otel.traces.sampler.arg";
+  // visible for testing
+  static final String ATTRIBUTE_PROPERTY = "otel.resource.attributes";
+  static final String SERVICE_NAME_PROPERTY = "otel.service.name";
+  static final String SAMPLER_ARG_PROPERTY = "otel.traces.sampler.arg";
 
   private static final String ENDPOINT_KEY = "endpoint";
   private static final String POLLING_INTERVAL = "pollingInterval";
@@ -43,7 +44,8 @@ public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider 
     }
     String initialSamplingRate = params.get(INITIAL_SAMPLING_RATE);
     if (initialSamplingRate != null) {
-      builder.setInitialSampler(Sampler.traceIdRatioBased(Double.valueOf(initialSamplingRate)));
+      builder.setInitialSampler(
+          Sampler.parentBased(Sampler.traceIdRatioBased(Double.valueOf(initialSamplingRate))));
     }
     return builder.build();
   }
