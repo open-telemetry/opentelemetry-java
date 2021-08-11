@@ -73,9 +73,20 @@ class OpenTelemetrySdkTest {
   @Test
   void testShortcutVersions() {
     assertThat(GlobalOpenTelemetry.getTracer("testTracer1"))
-        .isEqualTo(GlobalOpenTelemetry.getTracerProvider().get("testTracer1"));
+        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get("testTracer1"));
     assertThat(GlobalOpenTelemetry.getTracer("testTracer2", "testVersion"))
-        .isEqualTo(GlobalOpenTelemetry.getTracerProvider().get("testTracer2", "testVersion"));
+        .isSameAs(GlobalOpenTelemetry.getTracerProvider().get("testTracer2", "testVersion"));
+    assertThat(
+            GlobalOpenTelemetry.tracerBuilder("testTracer2")
+                .setInstrumentationVersion("testVersion")
+                .setSchemaUrl("https://example.invalid")
+                .build())
+        .isSameAs(
+            GlobalOpenTelemetry.getTracerProvider()
+                .tracerBuilder("testTracer2")
+                .setInstrumentationVersion("testVersion")
+                .setSchemaUrl("https://example.invalid")
+                .build());
   }
 
   @Test
