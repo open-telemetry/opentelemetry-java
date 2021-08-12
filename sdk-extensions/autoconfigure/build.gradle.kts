@@ -14,7 +14,7 @@ testSets {
   create("testInitializeRegistersGlobal")
   create("testJaeger")
   create("testPrometheus")
-  create("testOtlpTls")
+  create("testOtlp")
   create("testResourceDisabledByProperty")
   create("testResourceDisabledByEnv")
   create("testZipkin")
@@ -54,7 +54,9 @@ dependencies {
   add("testFullConfigImplementation", project(":exporters:zipkin"))
   add("testFullConfigImplementation", project(":sdk-extensions:resources"))
 
-  add("testOtlpTlsImplementation", project(":exporters:otlp:all"))
+  add("testOtlpImplementation", project(":exporters:otlp:all"))
+  add("testOtlpImplementation", project(":exporters:otlp:metrics"))
+  add("testOtlpImplementation", "org.bouncycastle:bcpkix-jdk15on")
 
   add("testJaegerImplementation", project(":exporters:jaeger"))
 
@@ -78,8 +80,7 @@ dependencies {
 }
 
 tasks {
-  val testConfigError by existing(Test::class) {
-  }
+  val testConfigError by existing(Test::class)
 
   val testFullConfig by existing(Test::class) {
     environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
@@ -91,18 +92,18 @@ tasks {
     environment("OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT", "2")
   }
 
+  val testInitializeRegistersGlobal by existing(Test::class) {
+    environment("OTEL_TRACES_EXPORTER", "none")
+    environment("OTEL_METRICS_EXPORTER", "none")
+  }
+
   val testJaeger by existing(Test::class) {
     environment("OTEL_TRACES_EXPORTER", "jaeger")
     environment("OTEL_METRICS_EXPORTER", "none")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
   }
 
-  val testOtlpTls by existing(Test::class) {
-    environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
-    environment("OTEL_TRACES_EXPORTER", "otlp")
-    environment("OTEL_METRICS_EXPORTER", "none")
-    environment("OTEL_BSP_SCHEDULE_DELAY", "10")
-  }
+  val testOtlp by existing(Test::class)
 
   val testZipkin by existing(Test::class) {
     environment("OTEL_TRACES_EXPORTER", "zipkin")
@@ -120,17 +121,23 @@ tasks {
     jvmArgs("-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
     // Properties win, this is ignored.
     environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.ProcessRuntimeResourceProvider")
+    environment("OTEL_TRACES_EXPORTER", "none")
+    environment("OTEL_METRICS_EXPORTER", "none")
   }
 
   val testResourceDisabledByEnv by existing(Test::class) {
     environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
+    environment("OTEL_TRACES_EXPORTER", "none")
+    environment("OTEL_METRICS_EXPORTER", "none")
   }
 
   val check by existing {
     dependsOn(
       testConfigError,
       testFullConfig,
+      testInitializeRegistersGlobal,
       testJaeger,
+      testOtlp,
       testPrometheus,
       testZipkin,
       testResourceDisabledByProperty,

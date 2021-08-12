@@ -5,20 +5,35 @@
 
 package io.opentelemetry.api.metrics;
 
+import io.opentelemetry.context.Context;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** A {@code Bound Instrument} for a {@link DoubleCounter}. */
+/** A counter instrument that records {@code double} values with pre-associated attributes. */
 @ThreadSafe
-public interface BoundDoubleCounter extends BoundSynchronousInstrument {
+public interface BoundDoubleCounter {
   /**
-   * Adds the given {@code increment} to the current value. The values cannot be negative.
+   * Records a value with pre-bound attributes.
    *
-   * <p>The value added is associated with the current {@code Context}.
+   * <p>Note: This may use {@code Context.current()} to pull the context associated with this
+   * measurement.
    *
-   * @param increment the value to add.
+   * @param value The increment amount. MUST be non-negative.
    */
-  void add(double increment);
+  void add(double value);
 
-  @Override
+  /**
+   * Records a value with pre-bound attributes.
+   *
+   * @param value The increment amount. MUST be non-negative.
+   * @param context The explicit context to associate with this measurement.
+   */
+  void add(double value, Context context);
+
+  /**
+   * Unbinds the current bound instance from the {@link DoubleCounter}.
+   *
+   * <p>After this method returns the current instance is considered invalid (not being managed by
+   * the instrument).
+   */
   void unbind();
 }

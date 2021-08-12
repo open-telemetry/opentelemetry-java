@@ -19,7 +19,8 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.protobuf:protobuf-bom:3.17.2",
   "com.fasterxml.jackson:jackson-bom:2.12.3",
   "org.junit:junit-bom:5.7.2",
-  "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3"
+  "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
+  "com.squareup.okhttp3:okhttp-bom:4.9.0"
 )
 
 val DEPENDENCY_SETS = listOf(
@@ -76,7 +77,6 @@ val DEPENDENCIES = listOf(
   "com.google.code.gson:gson:2.8.7",
   "com.google.guava:guava-beta-checker:1.0",
   "com.lmax:disruptor:3.4.4",
-  "com.sparkjava:spark-core:2.9.3",
   "com.squareup.okhttp3:okhttp:4.9.1",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit4:0.19.0",

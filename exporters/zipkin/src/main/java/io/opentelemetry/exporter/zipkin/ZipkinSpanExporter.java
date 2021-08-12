@@ -158,7 +158,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
     // use the service.name from the Resource, if it's been set.
     String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
     if (serviceNameValue == null) {
-      serviceNameValue = Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME);
+      serviceNameValue = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
     }
     return Endpoint.newBuilder().serviceName(serviceNameValue).ip(localAddress).build();
   }

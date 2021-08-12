@@ -21,6 +21,7 @@ dependencies {
 
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
+  compileOnly("io.grpc:grpc-okhttp")
 
   implementation(project(":exporters:otlp:common"))
   implementation("io.grpc:grpc-api")
@@ -35,21 +36,18 @@ dependencies {
 
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
+  add("testGrpcNettyRuntimeOnly", "io.grpc:grpc-netty")
   add("testGrpcNettyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
   add("testGrpcNettyShadedImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcNettyShadedImplementation", "com.linecorp.armeria:armeria-junit5")
+  add("testGrpcNettyShadedRuntimeOnly", "io.grpc:grpc-netty-shaded")
   add("testGrpcNettyShadedRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
   add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-junit5")
-  add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
-
-  add("testGrpcNettyRuntimeOnly", "io.grpc:grpc-netty")
-
-  add("testGrpcNettyShadedRuntimeOnly", "io.grpc:grpc-netty-shaded")
-
   add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
+  add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
   jmh(project(":sdk:testing"))
 }

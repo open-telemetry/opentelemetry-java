@@ -18,35 +18,47 @@ import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
+import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Remote sampler that gets sampling configuration from remote Jaeger server. */
-public final class JaegerRemoteSampler implements Sampler {
+public final class JaegerRemoteSampler implements Sampler, Closeable {
   private static final Logger logger = Logger.getLogger(JaegerRemoteSampler.class.getName());
 
   private static final String WORKER_THREAD_NAME =
       JaegerRemoteSampler.class.getSimpleName() + "_WorkerThread";
 
   private final String serviceName;
+  private final ManagedChannel channel;
   private final SamplingManagerBlockingStub stub;
+  private final boolean closeChannel;
+
+  private final ScheduledExecutorService pollExecutor;
+  private final ScheduledFuture<?> pollFuture;
 
   private volatile Sampler sampler;
 
-  @SuppressWarnings("FutureReturnValueIgnored")
   JaegerRemoteSampler(
-      String serviceName, ManagedChannel channel, int pollingIntervalMs, Sampler initialSampler) {
+      String serviceName,
+      ManagedChannel channel,
+      int pollingIntervalMs,
+      Sampler initialSampler,
+      boolean closeChannel) {
+    this.channel = channel;
+    this.closeChannel = closeChannel;
     this.serviceName = serviceName;
     this.stub = SamplingManagerGrpc.newBlockingStub(channel);
     this.sampler = initialSampler;
-    ScheduledExecutorService scheduledExecutorService =
-        Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
-    scheduledExecutorService.scheduleAtFixedRate(
-        this::getAndUpdateSampler, 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
+    pollExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
+    pollFuture =
+        pollExecutor.scheduleAtFixedRate(
+            this::getAndUpdateSampler, 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
   }
 
   @Override
@@ -110,5 +122,14 @@ public final class JaegerRemoteSampler implements Sampler {
 
   public static JaegerRemoteSamplerBuilder builder() {
     return new JaegerRemoteSamplerBuilder();
+  }
+
+  @Override
+  public void close() {
+    pollFuture.cancel(true);
+    pollExecutor.shutdown();
+    if (closeChannel) {
+      channel.shutdown();
+    }
   }
 }

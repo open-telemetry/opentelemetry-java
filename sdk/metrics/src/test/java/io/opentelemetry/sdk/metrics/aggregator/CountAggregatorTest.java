@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -27,22 +26,14 @@ class CountAggregatorTest {
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
-              "name",
-              "description",
-              "unit",
-              InstrumentType.VALUE_RECORDER,
-              InstrumentValueType.LONG),
+              "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
           AggregationTemporality.CUMULATIVE);
   private static final CountAggregator deltaAggregator =
       new CountAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
-              "name",
-              "description",
-              "unit",
-              InstrumentType.VALUE_RECORDER,
-              InstrumentValueType.LONG),
+              "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
           AggregationTemporality.DELTA);
 
   @Test
@@ -80,7 +71,7 @@ class CountAggregatorTest {
 
     MetricData metricData =
         cumulativeAggregator.toMetricData(
-            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             10,
             100);
@@ -111,7 +102,7 @@ class CountAggregatorTest {
 
     MetricData metricData =
         deltaAggregator.toMetricData(
-            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             10,
             100);

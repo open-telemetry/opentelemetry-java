@@ -13,7 +13,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.resources.Resource;
@@ -34,25 +33,25 @@ class LongUpDownCounterSdkTest {
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void add_PreventNullLabels() {
-    assertThatThrownBy(() -> sdkMeter.longUpDownCounterBuilder("testCounter").build().add(1, null))
+  void add_PreventNullAttributes() {
+    assertThatThrownBy(() -> sdkMeter.upDownCounterBuilder("testCounter").build().add(1, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
-  void bound_PreventNullLabels() {
-    assertThatThrownBy(
-            () -> sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build().bind(null))
+  void bound_PreventNullAttributes() {
+    assertThatThrownBy(() -> sdkMeter.upDownCounterBuilder("testUpDownCounter").build().bind(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
   void collectMetrics_NoRecords() {
     LongUpDownCounter longUpDownCounter =
-        sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
-    BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.of("foo", "bar"));
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
+    BoundLongUpDownCounter bound =
+        longUpDownCounter.bind(Attributes.builder().put("foo", "bar").build());
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
@@ -62,15 +61,15 @@ class LongUpDownCounterSdkTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void collectMetrics_WithEmptyLabel() {
+  void collectMetrics_WithEmptyAttributes() {
     LongUpDownCounter longUpDownCounter =
         sdkMeter
-            .longUpDownCounterBuilder("testUpDownCounter")
+            .upDownCounterBuilder("testUpDownCounter")
             .setDescription("description")
             .setUnit("By")
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    longUpDownCounter.add(12, Labels.empty());
+    longUpDownCounter.add(12, Attributes.empty());
     longUpDownCounter.add(12);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
@@ -99,17 +98,18 @@ class LongUpDownCounterSdkTest {
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
     LongUpDownCounter longUpDownCounter =
-        sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
-    BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.of("K", "V"));
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
+    BoundLongUpDownCounter bound =
+        longUpDownCounter.bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
-      longUpDownCounter.add(12, Labels.empty());
+      longUpDownCounter.add(12, Attributes.empty());
       bound.add(123);
-      longUpDownCounter.add(21, Labels.empty());
+      longUpDownCounter.add(21, Attributes.empty());
       // Advancing time here should not matter.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(321);
-      longUpDownCounter.add(111, Labels.of("K", "V"));
+      longUpDownCounter.add(111, Attributes.builder().put("K", "V").build());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
@@ -136,7 +136,7 @@ class LongUpDownCounterSdkTest {
       // Repeat to prove we keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(222);
-      longUpDownCounter.add(11, Labels.empty());
+      longUpDownCounter.add(11, Attributes.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
@@ -168,7 +168,7 @@ class LongUpDownCounterSdkTest {
   @SuppressWarnings("unchecked")
   void stressTest() {
     final LongUpDownCounter longUpDownCounter =
-        sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -183,7 +183,8 @@ class LongUpDownCounterSdkTest {
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new OperationUpdaterWithBinding(longUpDownCounter.bind(Labels.of("K", "V")))));
+              new OperationUpdaterWithBinding(
+                  longUpDownCounter.bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -215,7 +216,7 @@ class LongUpDownCounterSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final LongUpDownCounter longUpDownCounter =
-        sdkMeter.longUpDownCounterBuilder("testUpDownCounter").build();
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -232,7 +233,7 @@ class LongUpDownCounterSdkTest {
               1_000,
               2,
               new OperationUpdaterWithBinding(
-                  longUpDownCounter.bind(Labels.of(keys[i], values[i])))));
+                  longUpDownCounter.bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
@@ -294,7 +295,7 @@ class LongUpDownCounterSdkTest {
 
     @Override
     void update() {
-      longUpDownCounter.add(11, Labels.of(key, value));
+      longUpDownCounter.add(11, Attributes.builder().put(key, value).build());
     }
 
     @Override

@@ -13,7 +13,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundDoubleCounter;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.resources.Resource;
@@ -34,23 +33,24 @@ class DoubleCounterSdkTest {
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void add_PreventNullLabels() {
-    assertThatThrownBy(() -> sdkMeter.doubleCounterBuilder("testCounter").build().add(1.0, null))
+  void add_PreventNullAttributes() {
+    assertThatThrownBy(
+            () -> sdkMeter.counterBuilder("testCounter").ofDoubles().build().add(1.0, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
-  void bound_PreventNullLabels() {
-    assertThatThrownBy(() -> sdkMeter.doubleCounterBuilder("testCounter").build().bind(null))
+  void bound_PreventNullAttributes() {
+    assertThatThrownBy(() -> sdkMeter.counterBuilder("testCounter").ofDoubles().build().bind(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("labels");
+        .hasMessage("attributes");
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
-    BoundDoubleCounter bound = doubleCounter.bind(Labels.of("foo", "bar"));
+    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
+    BoundDoubleCounter bound = doubleCounter.bind(Attributes.builder().put("foo", "bar").build());
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
@@ -60,15 +60,16 @@ class DoubleCounterSdkTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void collectMetrics_WithEmptyLabel() {
+  void collectMetrics_WithEmptyAttributes() {
     DoubleCounter doubleCounter =
         sdkMeter
-            .doubleCounterBuilder("testCounter")
+            .counterBuilder("testCounter")
+            .ofDoubles()
             .setDescription("description")
             .setUnit("ms")
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    doubleCounter.add(12d, Labels.empty());
+    doubleCounter.add(12d, Attributes.empty());
     doubleCounter.add(12d);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
@@ -96,17 +97,17 @@ class DoubleCounterSdkTest {
   @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
-    BoundDoubleCounter bound = doubleCounter.bind(Labels.of("K", "V"));
+    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
+    BoundDoubleCounter bound = doubleCounter.bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
-      doubleCounter.add(12.1d, Labels.empty());
+      doubleCounter.add(12.1d, Attributes.empty());
       bound.add(123.3d);
-      doubleCounter.add(21.4d, Labels.empty());
+      doubleCounter.add(21.4d, Attributes.empty());
       // Advancing time here should not matter.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(321.5d);
-      doubleCounter.add(111.1d, Labels.of("K", "V"));
+      doubleCounter.add(111.1d, Attributes.builder().put("K", "V").build());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
@@ -138,7 +139,7 @@ class DoubleCounterSdkTest {
       // Repeat to prove we keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.add(222d);
-      doubleCounter.add(11d, Labels.empty());
+      doubleCounter.add(11d, Attributes.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
@@ -165,24 +166,24 @@ class DoubleCounterSdkTest {
 
   @Test
   void doubleCounterAdd_Monotonicity() {
-    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
+    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
 
-    assertThatThrownBy(() -> doubleCounter.add(-45.77d, Labels.empty()))
+    assertThatThrownBy(() -> doubleCounter.add(-45.77d, Attributes.empty()))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   void boundDoubleCounterAdd_Monotonicity() {
-    DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
+    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
 
-    assertThatThrownBy(() -> doubleCounter.bind(Labels.empty()).add(-9.3))
+    assertThatThrownBy(() -> doubleCounter.bind(Attributes.empty()).add(-9.3))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void stressTest() {
-    final DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
+    final DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -195,7 +196,10 @@ class DoubleCounterSdkTest {
               1_000, 2, new OperationUpdaterDirectCall(doubleCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterWithBinding(doubleCounter.bind(Labels.of("K", "V")))));
+              1_000,
+              2,
+              new OperationUpdaterWithBinding(
+                  doubleCounter.bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -225,7 +229,7 @@ class DoubleCounterSdkTest {
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleCounter doubleCounter = sdkMeter.doubleCounterBuilder("testCounter").build();
+    final DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
@@ -241,7 +245,8 @@ class DoubleCounterSdkTest {
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new OperationUpdaterWithBinding(doubleCounter.bind(Labels.of(keys[i], values[i])))));
+              new OperationUpdaterWithBinding(
+                  doubleCounter.bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
@@ -301,7 +306,7 @@ class DoubleCounterSdkTest {
 
     @Override
     void update() {
-      doubleCounter.add(11.0, Labels.of(key, value));
+      doubleCounter.add(11.0, Attributes.builder().put(key, value).build());
     }
 
     @Override

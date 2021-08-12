@@ -18,8 +18,8 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation("org.junit.jupiter:junit-jupiter-params")
   testImplementation("com.fasterxml.jackson.core:jackson-databind")
+  testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("com.squareup.okhttp3:okhttp")
   testImplementation("org.slf4j:slf4j-simple")
-  testImplementation("com.sparkjava:spark-core")
 }

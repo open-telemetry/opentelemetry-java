@@ -26,6 +26,7 @@ public final class JaegerRemoteSamplerBuilder {
   private String serviceName;
   private Sampler initialSampler = INITIAL_SAMPLER;
   private int pollingIntervalMillis = DEFAULT_POLLING_INTERVAL_MILLIS;
+  private boolean closeChannel = true;
 
   /**
    * Sets the service name to be used by this exporter. Required.
@@ -49,10 +50,14 @@ public final class JaegerRemoteSamplerBuilder {
   /**
    * Sets the managed channel to use when communicating with the backend. Takes precedence over
    * {@link #setEndpoint(String)} if both are called.
+   *
+   * <p>Note: if you use this option, the provided channel will *not* be closed when {@code close()}
+   * is called on the resulting {@link JaegerRemoteSampler}.
    */
   public JaegerRemoteSamplerBuilder setChannel(ManagedChannel channel) {
     requireNonNull(channel, "channel");
     this.channel = channel;
+    closeChannel = false;
     return this;
   }
 
@@ -95,7 +100,8 @@ public final class JaegerRemoteSamplerBuilder {
     if (channel == null) {
       channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
     }
-    return new JaegerRemoteSampler(serviceName, channel, pollingIntervalMillis, initialSampler);
+    return new JaegerRemoteSampler(
+        serviceName, channel, pollingIntervalMillis, initialSampler, closeChannel);
   }
 
   JaegerRemoteSamplerBuilder() {}

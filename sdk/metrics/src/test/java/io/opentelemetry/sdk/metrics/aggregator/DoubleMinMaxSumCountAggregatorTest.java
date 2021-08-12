@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -31,11 +31,7 @@ class DoubleMinMaxSumCountAggregatorTest {
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
-              "name",
-              "description",
-              "unit",
-              InstrumentType.VALUE_RECORDER,
-              InstrumentValueType.DOUBLE));
+              "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE));
 
   @Test
   void createHandle() {
@@ -82,7 +78,7 @@ class DoubleMinMaxSumCountAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             10,
             100);
