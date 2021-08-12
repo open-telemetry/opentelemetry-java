@@ -207,7 +207,6 @@ class ResourceTest {
   @Test
   void testDefaultResources() {
     Resource resource = Resource.getDefault();
-    Attributes attributes = resource.getAttributes();
     assertThat(resource.getAttribute(ResourceAttributes.SERVICE_NAME))
         .isEqualTo("unknown_service:java");
     assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_NAME))
