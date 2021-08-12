@@ -46,8 +46,10 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private static final Attributes EXPORT_FAILURE_ATTRIBUTES =
       Attributes.of(EXPORTER_KEY, EXPORTER_NAME, SUCCESS_KEY, "false");
 
-  private final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OtlpGrpcSpanExporter.class.getName()));
+  private static final Logger internalLogger =
+      Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
+
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
   private final TraceServiceFutureStub traceService;
 
