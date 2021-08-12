@@ -2,3 +2,4 @@ Comparing source compatibility of  against
 ***  MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.resources.Resource  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++  NEW METHOD: PUBLIC(+) java.lang.Object getAttribute(io.opentelemetry.api.common.AttributeKey)
+		+++  NEW ANNOTATION: javax.annotation.Nullable

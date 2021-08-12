@@ -144,6 +144,7 @@ public abstract class Resource {
    *
    * @return the value of the attribute with the given key
    */
+  @Nullable
   public <T> T getAttribute(AttributeKey<T> key) {
     return getAttributes().get(key);
   }
