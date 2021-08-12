@@ -22,23 +22,6 @@ dependencies {
   testImplementation("org.junit-pioneer:junit-pioneer")
 }
 
-sourceSets {
-  main {
-    output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
-  }
-}
-
-tasks {
-  register("generateVersionResource") {
-    val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk/extension/resources")
-    outputs.dir(propertiesDir)
-
-    doLast {
-      File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
-    }
-  }
-}
-
 for (version in mrJarVersions) {
   sourceSets {
     create("java${version}") {

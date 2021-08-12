@@ -8,7 +8,7 @@ plugins {
 
 description = "OpenTelemetry SDK"
 otelJava.moduleName.set("io.opentelemetry.sdk")
-base.archivesBaseName = "opentelemetry-sdk"
+base.archivesName.set("opentelemetry-sdk")
 
 dependencies {
   api(project(":api:all"))
@@ -20,21 +20,4 @@ dependencies {
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":sdk:testing"))
-}
-
-sourceSets {
-  main {
-    output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
-  }
-}
-
-tasks {
-  register("generateVersionResource") {
-    val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk")
-    outputs.dir(propertiesDir)
-
-    doLast {
-      File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
-    }
-  }
 }

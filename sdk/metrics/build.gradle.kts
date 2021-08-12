@@ -26,24 +26,3 @@ dependencies {
   testImplementation(project(":sdk:testing"))
   testImplementation("com.google.guava:guava")
 }
-
-sourceSets {
-  main {
-    output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
-  }
-}
-
-tasks {
-  register("generateVersionResource") {
-    val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk/metrics")
-    outputs.dir(propertiesDir)
-
-    doLast {
-      File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
-    }
-  }
-  withType(JavaCompile::class) {
-    // Ignore deprecation warnings that AutoValue creates for now.
-    options.compilerArgs.add("-Xlint:-deprecation")
-  }
-}

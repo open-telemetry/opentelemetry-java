@@ -115,7 +115,7 @@ public abstract class Resource {
     Properties properties = new Properties();
     try {
       properties.load(
-          Resource.class.getResourceAsStream("/io/opentelemetry/sdk/version.properties"));
+          Resource.class.getResourceAsStream("/io/opentelemetry/sdk/common/version.properties"));
     } catch (Exception e) {
       // we left the attribute empty
       return "unknown";
