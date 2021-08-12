@@ -7,6 +7,7 @@ package io.opentelemetry.sdk;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -71,6 +72,11 @@ public final class OpenTelemetrySdk implements OpenTelemetry {
     @Override
     public Tracer get(String instrumentationName, String instrumentationVersion) {
       return delegate.get(instrumentationName, instrumentationVersion);
+    }
+
+    @Override
+    public TracerBuilder tracerBuilder(String instrumentationName) {
+      return delegate.tracerBuilder(instrumentationName);
     }
 
     public SdkTracerProvider unobfuscate() {

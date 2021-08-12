@@ -139,6 +139,15 @@ public abstract class Resource {
    */
   public abstract Attributes getAttributes();
 
+  /**
+   * Returns the value for a given resource attribute key.
+   *
+   * @return the value of the attribute with the given key
+   */
+  public <T> T getAttribute(AttributeKey<T> key) {
+    return getAttributes().get(key);
+  }
+
   @Memoized
   @Override
   public abstract int hashCode();
