@@ -75,7 +75,7 @@ public class ContainerResourceTest {
   }
 
   private static String getContainerId(Resource resource) {
-    return resource.getAttributes().get(ResourceAttributes.CONTAINER_ID);
+    return resource.getAttribute(ResourceAttributes.CONTAINER_ID);
   }
 
   private static Path createCGroup(Path path, String line) throws IOException {
