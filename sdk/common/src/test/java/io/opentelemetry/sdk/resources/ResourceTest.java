@@ -208,17 +208,13 @@ class ResourceTest {
   void testDefaultResources() {
     Resource resource = Resource.getDefault();
     Attributes attributes = resource.getAttributes();
-    assertThat(attributes.get(ResourceAttributes.SERVICE_NAME)).isEqualTo("unknown_service:java");
-    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_NAME)).isEqualTo("opentelemetry");
-    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
-    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_VERSION))
-        .isEqualTo(System.getProperty("otel.test.project-version"));
     assertThat(resource.getAttribute(ResourceAttributes.SERVICE_NAME))
         .isEqualTo("unknown_service:java");
     assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_NAME))
         .isEqualTo("opentelemetry");
     assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
-    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_VERSION)).isNotNull();
+    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_VERSION))
+        .isEqualTo(System.getProperty("otel.test.project-version"));
   }
 
   @Test
