@@ -15,6 +15,7 @@ import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 final class TracerShim extends BaseShimObject implements Tracer {
   private static final Logger logger = Logger.getLogger(TracerShim.class.getName());
@@ -69,8 +70,8 @@ final class TracerShim extends BaseShimObject implements Tracer {
     }
   }
 
-  @SuppressWarnings("ReturnMissingNullable")
   @Override
+  @Nullable
   public <C> SpanContext extract(Format<C> format, C carrier) {
     try {
       if (format == Format.Builtin.TEXT_MAP

@@ -54,6 +54,7 @@ final class SpanShim extends BaseShimObject implements Span, ImplicitContextKeye
     return span;
   }
 
+  @Nullable
   public static SpanShim current() {
     return Context.current().get(SPAN_SHIM_KEY);
   }
