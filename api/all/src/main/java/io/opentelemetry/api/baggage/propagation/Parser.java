@@ -7,6 +7,7 @@ package io.opentelemetry.api.baggage.propagation;
 
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
+import javax.annotation.Nullable;
 
 /**
  * Implements single-pass Baggage parsing in accordance with https://w3c.github.io/baggage/ Key /
@@ -82,7 +83,11 @@ class Parser {
                 break;
               case KEY: // none
             }
-            baggageBuilder.put(key.getValue(), value.getValue(), BaggageEntryMetadata.create(meta));
+            putBaggage(
+                baggageBuilder,
+                key.getValue(),
+                value.getValue(),
+                BaggageEntryMetadata.create(meta));
             reset(i + 1);
             break;
           }
@@ -107,17 +112,29 @@ class Parser {
       case META:
         {
           String rest = baggageHeader.substring(metaStart).trim();
-          baggageBuilder.put(key.getValue(), value.getValue(), BaggageEntryMetadata.create(rest));
+          putBaggage(
+              baggageBuilder, key.getValue(), value.getValue(), BaggageEntryMetadata.create(rest));
           break;
         }
       case VALUE:
         {
           if (!skipToNext) {
             value.tryTerminating(baggageHeader.length(), baggageHeader);
-            baggageBuilder.put(key.getValue(), value.getValue());
+            putBaggage(
+                baggageBuilder, key.getValue(), value.getValue(), BaggageEntryMetadata.empty());
             break;
           }
         }
+    }
+  }
+
+  private static void putBaggage(
+      BaggageBuilder baggage,
+      @Nullable String key,
+      @Nullable String value,
+      BaggageEntryMetadata metadata) {
+    if (key != null && value != null) {
+      baggage.put(key, value, metadata);
     }
   }
 
