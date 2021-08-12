@@ -10,12 +10,13 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk.ObfuscatedTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import javax.annotation.Nullable;
 
 /** A builder for configuring an {@link OpenTelemetrySdk}. */
 public final class OpenTelemetrySdkBuilder {
 
   private ContextPropagators propagators = ContextPropagators.noop();
-  private SdkTracerProvider tracerProvider;
+  @Nullable private SdkTracerProvider tracerProvider;
 
   /**
    * Package protected to disallow direct initialization.

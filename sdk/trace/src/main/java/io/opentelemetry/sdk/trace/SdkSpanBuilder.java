@@ -146,11 +146,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
-    if (attributes == null) {
-      attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
-    }
-
-    attributes.put(key, value);
+    attributes().put(key, value);
     return this;
   }
 
@@ -206,10 +202,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     }
     Attributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
-      if (attributes == null) {
-        attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
-      }
-      samplingAttributes.forEach((key, value) -> attributes.put((AttributeKey) key, value));
+      samplingAttributes.forEach((key, value) -> attributes().put((AttributeKey) key, value));
     }
 
     // Avoid any possibility to modify the attributes by adding attributes to the Builder after the
@@ -232,6 +225,14 @@ final class SdkSpanBuilder implements SpanBuilder {
         immutableLinks,
         totalNumberOfLinksAdded,
         startEpochNanos);
+  }
+
+  private AttributesMap attributes() {
+    AttributesMap attributes = this.attributes;
+    if (attributes == null) {
+      attributes = this.attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
+    }
+    return attributes;
   }
 
   private static AnchoredClock getClock(Span parent, Clock clock) {

@@ -11,6 +11,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /** A map with a fixed capacity that drops attributes when the map gets full. */
 final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements Attributes {
@@ -38,6 +39,7 @@ final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements At
 
   @SuppressWarnings("unchecked")
   @Override
+  @Nullable
   public <T> T get(AttributeKey<T> key) {
     return (T) super.get(key);
   }
