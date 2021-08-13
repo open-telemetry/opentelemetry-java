@@ -40,7 +40,8 @@ final class SpanConverter {
     return SpanKind.INTERNAL;
   }
 
-  static Span fromOtelSpan(io.opentelemetry.api.trace.Span otSpan) {
+  @Nullable
+  static Span fromOtelSpan(@Nullable io.opentelemetry.api.trace.Span otSpan) {
     if (otSpan == null) {
       return null;
     }
