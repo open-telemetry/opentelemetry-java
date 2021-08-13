@@ -66,6 +66,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   /** Logic borrowed from brave.internal.Platform.produceLocalEndpoint */
+  @Nullable
   static InetAddress produceLocalIp() {
     try {
       Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
