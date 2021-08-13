@@ -41,188 +41,187 @@ import okio.Okio;
 @ThreadSafe
 public class OtlpHttpJsonSpanExporter implements SpanExporter {
 
-    private static final String EXPORTER_NAME = OtlpHttpJsonSpanExporter.class.getSimpleName();
-    private static final Attributes EXPORTER_NAME_LABELS =
-            Attributes.builder().put("exporter", EXPORTER_NAME).build();
-    private static final Attributes EXPORT_SUCCESS_LABELS =
-            Attributes.builder().put("exporter", EXPORTER_NAME).put("success", true).build();
-    private static final Attributes EXPORT_FAILURE_LABELS =
-            Attributes.builder().put("exporter", EXPORTER_NAME).put("success", false).build();
+  private static final String EXPORTER_NAME = OtlpHttpJsonSpanExporter.class.getSimpleName();
+  private static final Attributes EXPORTER_NAME_LABELS =
+      Attributes.builder().put("exporter", EXPORTER_NAME).build();
+  private static final Attributes EXPORT_SUCCESS_LABELS =
+      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", true).build();
+  private static final Attributes EXPORT_FAILURE_LABELS =
+      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", false).build();
 
-    private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json");
+  private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json");
 
-    private static final Logger internalLogger =
-            Logger.getLogger(OtlpHttpJsonSpanExporter.class.getName());
+  private static final Logger internalLogger =
+      Logger.getLogger(OtlpHttpJsonSpanExporter.class.getName());
 
-    private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
-    private final BoundLongCounter spansSeen;
-    private final BoundLongCounter spansExportedSuccess;
-    private final BoundLongCounter spansExportedFailure;
+  private final BoundLongCounter spansSeen;
+  private final BoundLongCounter spansExportedSuccess;
+  private final BoundLongCounter spansExportedFailure;
 
-    private final OkHttpClient client;
-    private final String endpoint;
-    @Nullable
-    private final Headers headers;
-    private final boolean compressionEnabled;
+  private final OkHttpClient client;
+  private final String endpoint;
+  @Nullable private final Headers headers;
+  private final boolean compressionEnabled;
 
-    OtlpHttpJsonSpanExporter(
-            OkHttpClient client, String endpoint, Headers headers, boolean compressionEnabled) {
-        Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http-json");
-        this.spansSeen = meter.counterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
-        LongCounter spansExportedCounter = meter.counterBuilder("spansExportedByExporter").build();
-        this.spansExportedSuccess = spansExportedCounter.bind(EXPORT_SUCCESS_LABELS);
-        this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_LABELS);
+  OtlpHttpJsonSpanExporter(
+      OkHttpClient client, String endpoint, Headers headers, boolean compressionEnabled) {
+    Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http-json");
+    this.spansSeen = meter.counterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
+    LongCounter spansExportedCounter = meter.counterBuilder("spansExportedByExporter").build();
+    this.spansExportedSuccess = spansExportedCounter.bind(EXPORT_SUCCESS_LABELS);
+    this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_LABELS);
 
-        this.client = client;
-        this.endpoint = endpoint;
-        this.headers = headers;
-        this.compressionEnabled = compressionEnabled;
+    this.client = client;
+    this.endpoint = endpoint;
+    this.headers = headers;
+    this.compressionEnabled = compressionEnabled;
+  }
+
+  /**
+   * Submits all the given spans in a single batch to the OpenTelemetry collector.
+   *
+   * @param spans the list of sampled Spans to be exported.
+   * @return the result of the operation
+   */
+  @Override
+  public CompletableResultCode export(Collection<SpanData> spans) {
+    spansSeen.add(spans.size());
+
+    JSONObject exportTraceServiceRequest = new JSONObject();
+    exportTraceServiceRequest.put("resource_spans", JsonSpanAdapter.toJsonResourceSpans(spans));
+
+    Request.Builder requestBuilder = new Request.Builder().url(endpoint);
+    if (headers != null) {
+      requestBuilder.headers(headers);
+    }
+    RequestBody requestBody =
+        RequestBody.create(exportTraceServiceRequest.toString(), JSON_MEDIA_TYPE);
+    if (compressionEnabled) {
+      requestBuilder.addHeader("Content-Encoding", "gzip");
+      requestBuilder.post(gzipRequestBody(requestBody));
+    } else {
+      requestBuilder.post(requestBody);
     }
 
-    /**
-     * Submits all the given spans in a single batch to the OpenTelemetry collector.
-     *
-     * @param spans the list of sampled Spans to be exported.
-     * @return the result of the operation
-     */
-    @Override
-    public CompletableResultCode export(Collection<SpanData> spans) {
-        spansSeen.add(spans.size());
+    CompletableResultCode result = new CompletableResultCode();
 
-        JSONObject exportTraceServiceRequest = new JSONObject();
-        exportTraceServiceRequest.put("resource_spans", JsonSpanAdapter.toJsonResourceSpans(spans));
+    client
+        .newCall(requestBuilder.build())
+        .enqueue(
+            new Callback() {
+              @Override
+              public void onFailure(Call call, IOException e) {
+                spansExportedFailure.add(spans.size());
+                logger.log(
+                    Level.SEVERE,
+                    "Failed to export spans. The request could not be executed. Full error message: "
+                        + e.getMessage());
+                result.fail();
+              }
 
-        Request.Builder requestBuilder = new Request.Builder().url(endpoint);
-        if (headers != null) {
-            requestBuilder.headers(headers);
-        }
-        RequestBody requestBody =
-                RequestBody.create(exportTraceServiceRequest.toString(), JSON_MEDIA_TYPE);
-        if (compressionEnabled) {
-            requestBuilder.addHeader("Content-Encoding", "gzip");
-            requestBuilder.post(gzipRequestBody(requestBody));
-        } else {
-            requestBuilder.post(requestBody);
-        }
+              @Override
+              public void onResponse(Call call, Response response) {
+                if (response.isSuccessful()) {
+                  spansExportedSuccess.add(spans.size());
+                  result.succeed();
+                  return;
+                }
 
-        CompletableResultCode result = new CompletableResultCode();
+                spansExportedFailure.add(spans.size());
+                int code = response.code();
 
-        client
-                .newCall(requestBuilder.build())
-                .enqueue(
-                        new Callback() {
-                            @Override
-                            public void onFailure(Call call, IOException e) {
-                                spansExportedFailure.add(spans.size());
-                                logger.log(
-                                        Level.SEVERE,
-                                        "Failed to export spans. The request could not be executed. Full error message: "
-                                                + e.getMessage());
-                                result.fail();
-                            }
+                Status status = extractErrorStatus(response);
 
-                            @Override
-                            public void onResponse(Call call, Response response) {
-                                if (response.isSuccessful()) {
-                                    spansExportedSuccess.add(spans.size());
-                                    result.succeed();
-                                    return;
-                                }
+                logger.log(
+                    Level.WARNING,
+                    "Failed to export spans. Server responded with HTTP status code "
+                        + code
+                        + ". Error message: "
+                        + status.getMessage());
+                result.fail();
+              }
+            });
 
-                                spansExportedFailure.add(spans.size());
-                                int code = response.code();
+    return result;
+  }
 
-                                Status status = extractErrorStatus(response);
+  private static RequestBody gzipRequestBody(RequestBody requestBody) {
+    return new RequestBody() {
+      @Override
+      public MediaType contentType() {
+        return requestBody.contentType();
+      }
 
-                                logger.log(
-                                        Level.WARNING,
-                                        "Failed to export spans. Server responded with HTTP status code "
-                                                + code
-                                                + ". Error message: "
-                                                + status.getMessage());
-                                result.fail();
-                            }
-                        });
+      @Override
+      public long contentLength() {
+        return -1;
+      }
 
-        return result;
+      @Override
+      public void writeTo(BufferedSink bufferedSink) throws IOException {
+        BufferedSink gzipSink = Okio.buffer(new GzipSink(bufferedSink));
+        requestBody.writeTo(gzipSink);
+        gzipSink.close();
+      }
+    };
+  }
+
+  private static Status extractErrorStatus(Response response) {
+    ResponseBody responseBody = response.body();
+    if (responseBody == null) {
+      return Status.newBuilder()
+          .setMessage("Response body missing, HTTP status message: " + response.message())
+          .setCode(Code.UNKNOWN.getNumber())
+          .build();
     }
-
-    private static RequestBody gzipRequestBody(RequestBody requestBody) {
-        return new RequestBody() {
-            @Override
-            public MediaType contentType() {
-                return requestBody.contentType();
-            }
-
-            @Override
-            public long contentLength() {
-                return -1;
-            }
-
-            @Override
-            public void writeTo(BufferedSink bufferedSink) throws IOException {
-                BufferedSink gzipSink = Okio.buffer(new GzipSink(bufferedSink));
-                requestBody.writeTo(gzipSink);
-                gzipSink.close();
-            }
-        };
+    try {
+      return Status.parseFrom(responseBody.bytes());
+    } catch (IOException e) {
+      return Status.newBuilder()
+          .setMessage("Unable to parse response body, HTTP status message: " + response.message())
+          .setCode(Code.UNKNOWN.getNumber())
+          .build();
     }
+  }
 
-    private static Status extractErrorStatus(Response response) {
-        ResponseBody responseBody = response.body();
-        if (responseBody == null) {
-            return Status.newBuilder()
-                    .setMessage("Response body missing, HTTP status message: " + response.message())
-                    .setCode(Code.UNKNOWN.getNumber())
-                    .build();
-        }
-        try {
-            return Status.parseFrom(responseBody.bytes());
-        } catch (IOException e) {
-            return Status.newBuilder()
-                    .setMessage("Unable to parse response body, HTTP status message: " + response.message())
-                    .setCode(Code.UNKNOWN.getNumber())
-                    .build();
-        }
-    }
+  /**
+   * The OTLP exporter does not batch spans, so this method will immediately return with success.
+   *
+   * @return always Success
+   */
+  @Override
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
+  }
 
-    /**
-     * The OTLP exporter does not batch spans, so this method will immediately return with success.
-     *
-     * @return always Success
-     */
-    @Override
-    public CompletableResultCode flush() {
-        return CompletableResultCode.ofSuccess();
-    }
+  /**
+   * Returns a new builder instance for this exporter.
+   *
+   * @return a new builder instance for this exporter.
+   */
+  public static OtlpHttpJsonSpanExporterBuilder builder() {
+    return new OtlpHttpJsonSpanExporterBuilder();
+  }
 
-    /**
-     * Returns a new builder instance for this exporter.
-     *
-     * @return a new builder instance for this exporter.
-     */
-    public static OtlpHttpJsonSpanExporterBuilder builder() {
-        return new OtlpHttpJsonSpanExporterBuilder();
-    }
+  /**
+   * Returns a new {@link OtlpHttpJsonSpanExporter} using the default values.
+   *
+   * @return a new {@link OtlpHttpJsonSpanExporter} instance.
+   */
+  public static OtlpHttpJsonSpanExporter getDefault() {
+    return builder().build();
+  }
 
-    /**
-     * Returns a new {@link OtlpHttpJsonSpanExporter} using the default values.
-     *
-     * @return a new {@link OtlpHttpJsonSpanExporter} instance.
-     */
-    public static OtlpHttpJsonSpanExporter getDefault() {
-        return builder().build();
-    }
-
-    /** Shutdown the exporter. */
-    @Override
-    public CompletableResultCode shutdown() {
-        final CompletableResultCode result = CompletableResultCode.ofSuccess();
-        client.dispatcher().cancelAll();
-        this.spansSeen.unbind();
-        this.spansExportedSuccess.unbind();
-        this.spansExportedFailure.unbind();
-        return result;
-    }
+  /** Shutdown the exporter. */
+  @Override
+  public CompletableResultCode shutdown() {
+    final CompletableResultCode result = CompletableResultCode.ofSuccess();
+    client.dispatcher().cancelAll();
+    this.spansSeen.unbind();
+    this.spansExportedSuccess.unbind();
+    this.spansExportedFailure.unbind();
+    return result;
+  }
 }

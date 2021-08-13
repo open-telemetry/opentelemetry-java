@@ -87,14 +87,14 @@ class OtlpHttpJsonSpanExporterTest {
         OtlpHttpJsonSpanExporter.builder()
             .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/traces")
             .addHeader("foo", "bar")
-            .setTrustedCertificates(
-                HELD_CERTIFICATE.certificatePem().getBytes(UTF_8));
+            .setTrustedCertificates(HELD_CERTIFICATE.certificatePem().getBytes(UTF_8));
   }
 
   @Test
   @SuppressWarnings("PreferJavaTimeOverload")
   void invalidConfig() {
-    assertThatThrownBy(() -> OtlpHttpJsonSpanExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
+    assertThatThrownBy(
+            () -> OtlpHttpJsonSpanExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("timeout must be non-negative");
     assertThatThrownBy(() -> OtlpHttpJsonSpanExporter.builder().setTimeout(1, null))
@@ -213,7 +213,7 @@ class OtlpHttpJsonSpanExporterTest {
   }
 
   private static JSONObject exportAndAssertResult(
-          OtlpHttpJsonSpanExporter otlpHttpJsonSpanExporter, boolean expectedResult) {
+      OtlpHttpJsonSpanExporter otlpHttpJsonSpanExporter, boolean expectedResult) {
     List<SpanData> spans = Collections.singletonList(generateFakeSpan());
     CompletableResultCode resultCode = otlpHttpJsonSpanExporter.export(spans);
     resultCode.join(10, TimeUnit.SECONDS);
