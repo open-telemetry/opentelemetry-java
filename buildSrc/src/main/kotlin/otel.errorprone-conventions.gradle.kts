@@ -64,6 +64,8 @@ tasks {
           // Allow underscore in test-type method names
           disable("MemberName")
         }
+
+        option("NullAway:CustomContractAnnotations", "io.opentelemetry.api.internal.Contract")
       }
 
       errorprone.nullaway {

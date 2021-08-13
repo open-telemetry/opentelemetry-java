@@ -1,6 +1,8 @@
 # Changelog
 
-## Version 1.5.0 (Unreleased):
+## Version 1.6.0 (Unreleased):
+
+## Version 1.5.0 2021-08-13:
 
 ### API
 - The `io.opentelemetry.context.ContextStorage` interface now allows providing a root `Context`. 
@@ -9,6 +11,7 @@
 - The `io.opentelemetry.sdk.trace.samplers.SamplingResult` class has been enhanced with new factory methods for the static result values.
 - The `io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter` now supports setting custom TLS certificates.
 - The `io.opentelemetry.sdk.trace.ReadableSpan` interface now exposes the parent SpanContext directly.
+- The `io.opentelemetry.sdk.resources.Resource` now exposes a `getAttribute(AttributeKey)` method to directly retrieve attributes.
 - A new `opentelemetry-exporter-otlp-http-trace` module is now available to support OTLP over HTTP exports.
 
 #### SDK Extensions
@@ -28,6 +31,9 @@
 - The `opentelemetry-sdk-extension-autoconfigure` module now provides an option to *not* set the GlobalOpenTelemetry instance when auto-configuring.
 - The `opentelemetry-sdk-extension-autoconfigure` module now has support for signal-specific timeout, header and TLS certificate configuration.
 - A new SPI option is available for configuring a metrics exporter. See `io.opentelemetry.sdk.autoconfigure.spi.ConfigurableMetricExporterProvider` for details.
+- A new `OTEL_TRACES_SAMPLER`/`otel.traces.sampler` option is available: `jaeger_remote`. 
+  - It can be configured using the `OTEL_TRACES_SAMPLER_ARG`/`otel.traces.sampler.arg`, which is parsed as a comma-separated map.
+    - For example `-Dotel.traces.sampler=jaeger_remote -Dotel.traces.sampler.arg=endpoint=192.168.1.5:14250,pollingInterval=5000,initialSamplingRate=0.01`
 
 ### Semantic Conventions (alpha)
 - The `SemanticAttributes` and `ResourceAttributes` classes have been updated to match the semantic conventions

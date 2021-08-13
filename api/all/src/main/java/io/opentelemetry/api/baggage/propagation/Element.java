@@ -6,6 +6,7 @@
 package io.opentelemetry.api.baggage.propagation;
 
 import java.util.BitSet;
+import javax.annotation.Nullable;
 
 /**
  * Represents single element of a W3C baggage header (key or value). Allows tracking parsing of a
@@ -36,7 +37,7 @@ class Element {
   private boolean trailingSpace;
   private int start;
   private int end;
-  private String value;
+  @Nullable private String value;
 
   static Element createKeyElement() {
     return new Element(EXCLUDED_KEY_CHARS);
@@ -56,6 +57,7 @@ class Element {
     reset(0);
   }
 
+  @Nullable
   String getValue() {
     return value;
   }

@@ -30,8 +30,10 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
 
-  private final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OtlpGrpcMetricExporter.class.getName()));
+  private static final Logger internalLogger =
+      Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
+
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
   private final MetricsServiceFutureStub metricsService;
   private final ManagedChannel managedChannel;
