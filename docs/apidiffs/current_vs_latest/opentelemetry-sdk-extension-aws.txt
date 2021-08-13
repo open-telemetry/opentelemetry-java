@@ -1,2 +1,4 @@
 Comparing source compatibility of  against 
-No changes.
+===  UNCHANGED CLASS: PUBLIC FINAL io.opentelemetry.sdk.extension.aws.trace.AwsXrayIdGenerator  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++  NEW ANNOTATION: java.lang.Deprecated

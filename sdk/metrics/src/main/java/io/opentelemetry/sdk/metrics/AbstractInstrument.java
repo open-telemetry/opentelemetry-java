@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import javax.annotation.Nullable;
 
 abstract class AbstractInstrument implements Instrument {
 
@@ -21,7 +22,7 @@ abstract class AbstractInstrument implements Instrument {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

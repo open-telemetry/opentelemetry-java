@@ -56,6 +56,7 @@ final class DefaultConfigProperties implements ConfigProperties {
   }
 
   @Override
+  @Nullable
   public Boolean getBoolean(String name) {
     String value = config.get(name);
     if (value == null || value.isEmpty()) {

@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
  * An {@code InstrumentProcessor} represents an internal instance of an {@code Accumulator} for a
@@ -59,6 +60,7 @@ final class InstrumentProcessor<T> {
    *
    * @return the metric batched or {@code null}.
    */
+  @Nullable
   MetricData completeCollectionCycle(long epochNanos) {
     if (accumulationMap.isEmpty()) {
       return null;
