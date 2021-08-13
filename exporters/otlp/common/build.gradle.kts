@@ -15,6 +15,7 @@ dependencies {
   api(project(":sdk:all"))
   api(project(":sdk:metrics"))
 
+  implementation("com.alibaba:fastjson:1.1.72.android")
   implementation("com.google.protobuf:protobuf-java")
 
   compileOnly("io.grpc:grpc-netty")
