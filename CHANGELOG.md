@@ -1,6 +1,8 @@
 # Changelog
 
-## Version 1.5.0 (Unreleased):
+## Version 1.6.0 (Unreleased):
+
+## Version 1.5.0 2021-08-13:
 
 ### API
 - The `io.opentelemetry.context.ContextStorage` interface now allows providing a root `Context`. 
