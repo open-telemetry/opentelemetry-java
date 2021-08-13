@@ -1,0 +1,191 @@
+package io.opentelemetry.exporter.otlp.http.metric;
+
+import com.alibaba.fastjson.JSONObject;
+import com.google.rpc.Code;
+import com.google.rpc.Status;
+import io.opentelemetry.exporter.otlp.internal.json.JsonMetricAdapter;
+import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Nullable;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okio.BufferedSink;
+import okio.GzipSink;
+import okio.Okio;
+
+/** Exports spans using OTLP via HTTP, using OpenTelemetry's JSON model. */
+public class OtlpHttpJsonMetricExporter implements MetricExporter {
+    private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json");
+
+    private static final Logger internalLogger =
+            Logger.getLogger(OtlpHttpJsonMetricExporter.class.getName());
+
+    private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
+
+    private final OkHttpClient client;
+    private final String endpoint;
+    @Nullable
+    private final Headers headers;
+    private final boolean compressionEnabled;
+
+    OtlpHttpJsonMetricExporter(
+            OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
+        this.client = client;
+        this.endpoint = endpoint;
+        this.headers = headers;
+        this.compressionEnabled = compressionEnabled;
+    }
+
+    /**
+     * Submits all the given metrics in a single batch to the OpenTelemetry collector.
+     *
+     * @param metrics the list of Metrics to be exported.
+     * @return the result of the operation
+     */
+    @Override
+    public CompletableResultCode export(Collection<MetricData> metrics) {
+        JSONObject exportMetricsServiceRequest = new JSONObject();
+        exportMetricsServiceRequest.put("resource_metrics", JsonMetricAdapter.toJsonResourceMetrics(metrics));
+
+        Request.Builder requestBuilder = new Request.Builder().url(endpoint);
+        if (headers != null) {
+            requestBuilder.headers(headers);
+        }
+        RequestBody requestBody =
+                RequestBody.create(exportMetricsServiceRequest.toString(), JSON_MEDIA_TYPE);
+
+        if (compressionEnabled) {
+            requestBuilder.addHeader("Content-Encoding", "gzip");
+            requestBuilder.post(gzipRequestBody(requestBody));
+        } else {
+            requestBuilder.post(requestBody);
+        }
+
+        CompletableResultCode result = new CompletableResultCode();
+
+        client
+                .newCall(requestBuilder.build())
+                .enqueue(
+                        new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                logger.log(
+                                        Level.SEVERE,
+                                        "Failed to export metrics. The request could not be executed. Full error message: "
+                                                + e.getMessage());
+                                result.fail();
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) {
+                                if (response.isSuccessful()) {
+                                    result.succeed();
+                                    return;
+                                }
+
+                                int code = response.code();
+
+                                Status status = extractErrorStatus(response);
+
+                                logger.log(
+                                        Level.WARNING,
+                                        "Failed to export metrics. Server responded with HTTP status code "
+                                                + code
+                                                + ". Error message: "
+                                                + status.getMessage());
+                                result.fail();
+                            }
+                        });
+
+        return result;
+    }
+
+    private static RequestBody gzipRequestBody(RequestBody requestBody) {
+        return new RequestBody() {
+            @Override
+            public MediaType contentType() {
+                return requestBody.contentType();
+            }
+
+            @Override
+            public long contentLength() {
+                return -1;
+            }
+
+            @Override
+            public void writeTo(BufferedSink bufferedSink) throws IOException {
+                BufferedSink gzipSink = Okio.buffer(new GzipSink(bufferedSink));
+                requestBody.writeTo(gzipSink);
+                gzipSink.close();
+            }
+        };
+    }
+
+    private static Status extractErrorStatus(Response response) {
+        ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+            return Status.newBuilder()
+                    .setMessage("Response body missing, HTTP status message: " + response.message())
+                    .setCode(Code.UNKNOWN.getNumber())
+                    .build();
+        }
+        try {
+            return Status.parseFrom(responseBody.bytes());
+        } catch (IOException e) {
+            return Status.newBuilder()
+                    .setMessage("Unable to parse response body, HTTP status message: " + response.message())
+                    .setCode(Code.UNKNOWN.getNumber())
+                    .build();
+        }
+    }
+
+    /**
+     * The OTLP exporter does not batch metrics, so this method will immediately return with success.
+     *
+     * @return always Success
+     */
+    @Override
+    public CompletableResultCode flush() {
+        return CompletableResultCode.ofSuccess();
+    }
+
+    /**
+     * Returns a new builder instance for this exporter.
+     *
+     * @return a new builder instance for this exporter.
+     */
+    public static OtlpHttpJsonMetricExporterBuilder builder() {
+        return new OtlpHttpJsonMetricExporterBuilder();
+    }
+
+
+    /**
+     * Returns a new {@link OtlpHttpJsonMetricExporter} using the default values.
+     *
+     * @return a new {@link OtlpHttpJsonMetricExporter} instance.
+     */
+    public static OtlpHttpJsonMetricExporter getDefault() {
+        return builder().build();
+    }
+
+    /** Shutdown the exporter. */
+    @Override
+    public CompletableResultCode shutdown() {
+        final CompletableResultCode result = CompletableResultCode.ofSuccess();
+        client.dispatcher().cancelAll();
+        return result;
+    }
+}

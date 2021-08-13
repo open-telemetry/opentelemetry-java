@@ -13,6 +13,7 @@ dependencies {
 
   implementation(project(":exporters:otlp:common"))
 
+  implementation("com.alibaba:fastjson:1.1.72.android")
   implementation("com.squareup.okhttp3:okhttp")
   implementation("com.squareup.okhttp3:okhttp-tls")
   implementation("com.squareup.okio:okio")
