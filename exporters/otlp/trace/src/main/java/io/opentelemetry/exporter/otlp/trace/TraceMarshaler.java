@@ -32,7 +32,7 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -524,21 +524,14 @@ final class TraceMarshaler {
 
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>>
       groupByResourceAndLibrary(Collection<SpanData> spanDataList) {
-    Map<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> result = new HashMap<>();
+    IdentityHashMap<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> result =
+        new IdentityHashMap<>();
     for (SpanData spanData : spanDataList) {
-      Resource resource = spanData.getResource();
       Map<InstrumentationLibraryInfo, List<SpanMarshaler>> libraryInfoListMap =
-          result.get(spanData.getResource());
-      if (libraryInfoListMap == null) {
-        libraryInfoListMap = new HashMap<>();
-        result.put(resource, libraryInfoListMap);
-      }
+          result.computeIfAbsent(spanData.getResource(), unused -> new IdentityHashMap<>());
       List<SpanMarshaler> spanList =
-          libraryInfoListMap.get(spanData.getInstrumentationLibraryInfo());
-      if (spanList == null) {
-        spanList = new ArrayList<>();
-        libraryInfoListMap.put(spanData.getInstrumentationLibraryInfo(), spanList);
-      }
+          libraryInfoListMap.computeIfAbsent(
+              spanData.getInstrumentationLibraryInfo(), unused -> new ArrayList<>());
       spanList.add(SpanMarshaler.create(spanData));
     }
     return result;
