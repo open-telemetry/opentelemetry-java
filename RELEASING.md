@@ -36,7 +36,7 @@ After releasing is done, you need to first update the docs.
 ```
 ./gradlew updateVersionInDocs -Prelease.version=x.y.z
 ./gradlew japicmp -PapiBaseVersion=a.b.c -PapiNewVersion=x.y.z
-./gradlew --refresh-dependencies japicmp
+./gradlew japicmp
 ```
 
 Where `x.y.z` is the version just released and `a.b.c` is the previous version.
