@@ -115,7 +115,7 @@ public abstract class Resource {
     Properties properties = new Properties();
     try {
       properties.load(
-          Resource.class.getResourceAsStream("/io/opentelemetry/sdk/version.properties"));
+          Resource.class.getResourceAsStream("/io/opentelemetry/sdk/common/version.properties"));
     } catch (Exception e) {
       // we left the attribute empty
       return "unknown";
@@ -138,6 +138,16 @@ public abstract class Resource {
    * @return a map of attributes.
    */
   public abstract Attributes getAttributes();
+
+  /**
+   * Returns the value for a given resource attribute key.
+   *
+   * @return the value of the attribute with the given key
+   */
+  @Nullable
+  public <T> T getAttribute(AttributeKey<T> key) {
+    return getAttributes().get(key);
+  }
 
   @Memoized
   @Override

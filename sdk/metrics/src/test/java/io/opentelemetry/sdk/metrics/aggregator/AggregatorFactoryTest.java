@@ -139,7 +139,7 @@ class AggregatorFactoryTest {
                     "name",
                     "description",
                     "unit",
-                    InstrumentType.VALUE_RECORDER,
+                    InstrumentType.HISTOGRAM,
                     InstrumentValueType.LONG)))
         .isInstanceOf(DoubleHistogramAggregator.class);
     assertThat(
@@ -150,7 +150,7 @@ class AggregatorFactoryTest {
                     "name",
                     "description",
                     "unit",
-                    InstrumentType.VALUE_RECORDER,
+                    InstrumentType.HISTOGRAM,
                     InstrumentValueType.DOUBLE)))
         .isInstanceOf(DoubleHistogramAggregator.class);
 
@@ -163,7 +163,7 @@ class AggregatorFactoryTest {
                         "name",
                         "description",
                         "unit",
-                        InstrumentType.VALUE_RECORDER,
+                        InstrumentType.HISTOGRAM,
                         InstrumentValueType.LONG))
                 .isStateful())
         .isFalse();
@@ -177,7 +177,7 @@ class AggregatorFactoryTest {
                         "name",
                         "description",
                         "unit",
-                        InstrumentType.VALUE_RECORDER,
+                        InstrumentType.HISTOGRAM,
                         InstrumentValueType.DOUBLE))
                 .isStateful())
         .isTrue();

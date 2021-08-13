@@ -12,27 +12,32 @@ import io.opentelemetry.api.metrics.DoubleCounterBuilder;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
 
-final class DoubleCounterSdk extends AbstractSynchronousInstrument implements DoubleCounter {
+final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter {
+  private final WriteableMetricStorage storage;
 
-  private DoubleCounterSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
-    super(descriptor, accumulator);
+  private DoubleCounterSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+    super(descriptor);
+    this.storage = storage;
   }
 
   @Override
-  public void add(double increment, Attributes labels, Context context) {
-    AggregatorHandle<?> aggregatorHandle = acquireHandle(labels);
+  public void add(double increment, Attributes attributes, Context context) {
+    BoundStorageHandle aggregatorHandle = storage.bind(attributes);
     try {
       if (increment < 0) {
         throw new IllegalArgumentException("Counters can only increase");
       }
-      aggregatorHandle.recordDouble(increment);
+
+      aggregatorHandle.recordDouble(increment, attributes, context);
     } finally {
       aggregatorHandle.release();
     }
@@ -49,15 +54,17 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
   }
 
   @Override
-  public BoundDoubleCounter bind(Attributes labels) {
-    return new BoundInstrument(acquireHandle(labels));
+  public BoundDoubleCounter bind(Attributes attributes) {
+    return new BoundInstrument(storage.bind(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundDoubleCounter {
-    private final AggregatorHandle<?> aggregatorHandle;
+    private final BoundStorageHandle handle;
+    private final Attributes attributes;
 
-    BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
-      this.aggregatorHandle = aggregatorHandle;
+    BoundInstrument(BoundStorageHandle handle, Attributes attributes) {
+      this.handle = handle;
+      this.attributes = attributes;
     }
 
     @Override
@@ -65,7 +72,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
       if (increment < 0) {
         throw new IllegalArgumentException("Counters can only increase");
       }
-      aggregatorHandle.recordDouble(increment);
+      handle.recordDouble(increment, attributes, context);
     }
 
     @Override
@@ -75,7 +82,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
 
     @Override
     public void unbind() {
-      aggregatorHandle.release();
+      handle.release();
     }
   }
 
@@ -116,8 +123,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument implements Do
 
     @Override
     public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
-      buildDoubleAsynchronousInstrument(
-          InstrumentType.SUM_OBSERVER, callback, DoubleSumObserverSdk::new);
+      registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback);
     }
   }
 }

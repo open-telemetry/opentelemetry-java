@@ -32,11 +32,7 @@ public class DoubleHistogramAggregatorTest {
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
-              "name",
-              "description",
-              "unit",
-              InstrumentType.VALUE_RECORDER,
-              InstrumentValueType.LONG),
+              "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
           boundaries,
           /* stateful= */ false);
 

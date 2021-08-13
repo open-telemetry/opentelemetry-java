@@ -1,7 +1,6 @@
 plugins {
     id("otel.java-conventions")
-    // TODO: uncomment once ready to publish
-    // id("otel.publish-conventions")
+    id("otel.publish-conventions")
 
     id("otel.animalsniffer-conventions")
 }

@@ -35,7 +35,7 @@ public class DoubleMinMaxSumCountBenchmark {
                   "name",
                   "description",
                   "1",
-                  InstrumentType.VALUE_RECORDER,
+                  InstrumentType.HISTOGRAM,
                   InstrumentValueType.DOUBLE));
   private AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle;
 

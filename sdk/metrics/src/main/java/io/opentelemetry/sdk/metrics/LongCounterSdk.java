@@ -12,30 +12,29 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
 
-final class LongCounterSdk extends AbstractSynchronousInstrument implements LongCounter {
+final class LongCounterSdk extends AbstractInstrument implements LongCounter {
+  private final WriteableMetricStorage storage;
 
-  private LongCounterSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
-    super(descriptor, accumulator);
+  private LongCounterSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+    super(descriptor);
+    this.storage = storage;
   }
 
   @Override
-  public void add(long increment, Attributes labels, Context context) {
-    AggregatorHandle<?> aggregatorHandle = acquireHandle(labels);
-    try {
-      if (increment < 0) {
-        throw new IllegalArgumentException("Counters can only increase");
-      }
-      aggregatorHandle.recordLong(increment);
-    } finally {
-      aggregatorHandle.release();
+  public void add(long increment, Attributes attributes, Context context) {
+    if (increment < 0) {
+      throw new IllegalArgumentException("Counters can only increase");
     }
+    storage.recordLong(increment, attributes, context);
   }
 
   @Override
@@ -49,15 +48,17 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
   }
 
   @Override
-  public BoundLongCounter bind(Attributes labels) {
-    return new BoundInstrument(acquireHandle(labels));
+  public BoundLongCounter bind(Attributes attributes) {
+    return new BoundInstrument(storage.bind(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundLongCounter {
-    private final AggregatorHandle<?> aggregatorHandle;
+    private final BoundStorageHandle handle;
+    private final Attributes attributes;
 
-    BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
-      this.aggregatorHandle = aggregatorHandle;
+    BoundInstrument(BoundStorageHandle handle, Attributes attributes) {
+      this.handle = handle;
+      this.attributes = attributes;
     }
 
     @Override
@@ -65,7 +66,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
       if (increment < 0) {
         throw new IllegalArgumentException("Counters can only increase");
       }
-      aggregatorHandle.recordLong(increment);
+      handle.recordLong(increment, attributes, context);
     }
 
     @Override
@@ -75,7 +76,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
 
     @Override
     public void unbind() {
-      aggregatorHandle.release();
+      handle.release();
     }
   }
 
@@ -116,8 +117,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument implements Long
 
     @Override
     public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      buildLongAsynchronousInstrument(
-          InstrumentType.SUM_OBSERVER, callback, LongSumObserverSdk::new);
+      registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_SUM, callback);
     }
   }
 }

@@ -206,5 +206,10 @@ public final class GlobalOpenTelemetry {
     public ContextPropagators getPropagators() {
       return delegate.getPropagators();
     }
+
+    @Override
+    public TracerBuilder tracerBuilder(String instrumentationName) {
+      return delegate.tracerBuilder(instrumentationName);
+    }
   }
 }

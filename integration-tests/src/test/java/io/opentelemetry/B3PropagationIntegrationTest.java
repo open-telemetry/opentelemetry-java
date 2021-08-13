@@ -7,6 +7,17 @@ package io.opentelemetry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.linecorp.armeria.client.ClientRequestContext;
+import com.linecorp.armeria.client.WebClient;
+import com.linecorp.armeria.common.HttpRequest;
+import com.linecorp.armeria.common.HttpResponse;
+import com.linecorp.armeria.server.HttpService;
+import com.linecorp.armeria.server.ServerBuilder;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.logging.LoggingService;
+import com.linecorp.armeria.testing.junit5.server.ServerExtension;
+import io.netty.util.AsciiString;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -20,67 +31,139 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
-import java.util.Random;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.testcontainers.shaded.okhttp3.Call;
-import org.testcontainers.shaded.okhttp3.OkHttpClient;
-import org.testcontainers.shaded.okhttp3.Request;
-import org.testcontainers.shaded.okhttp3.Response;
-import org.testcontainers.shaded.okhttp3.ResponseBody;
-import spark.Service;
 
 /** Integration tests for the B3 propagators, in various configurations. */
-public class B3PropagationIntegrationTest {
+class B3PropagationIntegrationTest {
 
-  private static final int server1Port = new Random().nextInt(40000) + 1024;
-  private static final int server2Port = new Random().nextInt(40000) + 1024;
   private static final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
 
-  private Service server1;
-  private Service server2;
+  static WebClient b3MultiClient;
+  static WebClient b3SingleClient;
 
-  private void setup(TextMapPropagator propagator) {
-    setupServer1(propagator);
-    setupServer2(propagator);
+  private static class FrontendService implements HttpService {
+    private final OpenTelemetry openTelemetry;
+    private final Supplier<WebClient> client;
+
+    FrontendService(OpenTelemetry openTelemetry, Supplier<WebClient> client) {
+      this.openTelemetry = openTelemetry;
+      this.client = client;
+    }
+
+    @Override
+    public HttpResponse serve(ServiceRequestContext ctx, HttpRequest req) {
+      Context incomingContext = extract(req, openTelemetry);
+      Span span =
+          openTelemetry
+              .getTracer("server1Tracer")
+              .spanBuilder("server1Span")
+              .setParent(incomingContext)
+              .startSpan();
+      try (Scope ignored = span.makeCurrent()) {
+        return HttpResponse.from(
+            client
+                .get()
+                .get("/backend")
+                .aggregate()
+                .thenApply(
+                    unused -> {
+                      span.end();
+                      return HttpResponse.of("OK");
+                    }));
+      }
+    }
+  }
+
+  private static class BackendService implements HttpService {
+    private final OpenTelemetry openTelemetry;
+
+    BackendService(OpenTelemetry openTelemetry) {
+      this.openTelemetry = openTelemetry;
+    }
+
+    @Override
+    public HttpResponse serve(ServiceRequestContext ctx, HttpRequest req) throws Exception {
+      Context incomingContext = extract(req, openTelemetry);
+
+      Span span =
+          openTelemetry
+              .getTracer("server2Tracer")
+              .spanBuilder("server2Span")
+              .setParent(incomingContext)
+              .startSpan();
+      try (Scope ignored = span.makeCurrent()) {
+        return HttpResponse.of("OK");
+      } finally {
+        span.end();
+      }
+    }
+  }
+
+  @RegisterExtension
+  static final ServerExtension server =
+      new ServerExtension() {
+        @Override
+        protected void configure(ServerBuilder sb) {
+          SdkTracerProvider tracerProvider =
+              SdkTracerProvider.builder()
+                  .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
+                  .build();
+          OpenTelemetry b3MultiOpenTelemetry =
+              OpenTelemetrySdk.builder()
+                  .setTracerProvider(tracerProvider)
+                  .setPropagators(ContextPropagators.create(B3Propagator.injectingMultiHeaders()))
+                  .build();
+          OpenTelemetry b3SingleOpenTelemetry =
+              OpenTelemetrySdk.builder()
+                  .setTracerProvider(tracerProvider)
+                  .setPropagators(ContextPropagators.create(B3Propagator.injectingSingleHeader()))
+                  .build();
+          sb.service(
+              "/multi/frontend", new FrontendService(b3MultiOpenTelemetry, () -> b3MultiClient));
+          sb.service("/multi/backend", new BackendService(b3MultiOpenTelemetry));
+          sb.service(
+              "/single/frontend", new FrontendService(b3SingleOpenTelemetry, () -> b3SingleClient));
+          sb.service("/single/backend", new BackendService(b3SingleOpenTelemetry));
+
+          sb.decorator(LoggingService.newDecorator());
+        }
+      };
+
+  @BeforeAll
+  static void setup() {
+    b3MultiClient =
+        createPropagatingClient(
+            server.httpUri().resolve("/multi"), B3Propagator.injectingMultiHeaders());
+    b3SingleClient =
+        createPropagatingClient(
+            server.httpUri().resolve("/single"), B3Propagator.injectingSingleHeader());
   }
 
   @AfterEach
   void shutdown() {
-    if (server2 != null) {
-      server2.stop();
-    }
-    if (server1 != null) {
-      server1.stop();
-    }
     spanExporter.reset();
   }
 
   @ParameterizedTest
-  @ArgumentsSource(PropagatorArgumentSupplier.class)
-  void propagation(TextMapPropagator propagator) throws IOException {
-    setup(propagator);
-    OpenTelemetrySdk clientSdk = setupClient(propagator);
-
-    OkHttpClient httpClient = createPropagatingClient(clientSdk);
+  @ArgumentsSource(WebClientArgumentSupplier.class)
+  void propagation(String testType, WebClient client) throws IOException {
+    OpenTelemetrySdk clientSdk = setupClient();
 
     Span span = clientSdk.getTracer("testTracer").spanBuilder("clientSpan").startSpan();
     try (Scope ignored = span.makeCurrent()) {
-      Call call =
-          httpClient.newCall(
-              new Request.Builder().get().url("http://localhost:" + server1Port + "/test").build());
-
-      try (Response r = call.execute()) {
-        ResponseBody body = r.body();
-        assertThat(body.string()).isEqualTo("OK");
-      }
+      assertThat(client.get("/frontend").aggregate().join().contentUtf8()).isEqualTo("OK");
     } finally {
       span.end();
     }
@@ -95,19 +178,9 @@ public class B3PropagationIntegrationTest {
   }
 
   @ParameterizedTest
-  @ArgumentsSource(PropagatorArgumentSupplier.class)
-  void noClientTracing(TextMapPropagator propagator) throws IOException {
-    setup(propagator);
-    OkHttpClient httpClient = new OkHttpClient();
-
-    Call call =
-        httpClient.newCall(
-            new Request.Builder().get().url("http://localhost:" + server1Port + "/test").build());
-
-    try (Response r = call.execute()) {
-      ResponseBody body = r.body();
-      assertThat(body.string()).isEqualTo("OK");
-    }
+  @ArgumentsSource(WebClientArgumentSupplier.class)
+  void noClientTracing(String testType, WebClient client) throws IOException {
+    assertThat(client.get("/frontend").aggregate().join().contentUtf8()).isEqualTo("OK");
 
     List<SpanData> finishedSpanItems = spanExporter.getFinishedSpanItems();
     // 2 spans, one from each of the servers
@@ -118,137 +191,52 @@ public class B3PropagationIntegrationTest {
         .allSatisfy(spanData -> assertThat(spanData.getTraceId()).isEqualTo(traceId));
   }
 
-  private static OkHttpClient createPropagatingClient(OpenTelemetrySdk sdk) {
-    return new OkHttpClient.Builder()
-        .addNetworkInterceptor(
-            chain -> {
-              Request request = chain.request();
-
-              Request.Builder requestBuilder = request.newBuilder();
-
-              sdk.getPropagators()
-                  .getTextMapPropagator()
-                  .inject(Context.current(), requestBuilder, Request.Builder::header);
-
-              request = requestBuilder.build();
-              return chain.proceed(request);
+  private static WebClient createPropagatingClient(URI uri, TextMapPropagator propagator) {
+    return WebClient.builder(uri)
+        .decorator(
+            (delegate, ctx, req) -> {
+              propagator.inject(
+                  Context.current(), ctx, ClientRequestContext::addAdditionalRequestHeader);
+              return delegate.execute(ctx, req);
             })
         .build();
   }
 
-  private static OpenTelemetrySdk setupClient(TextMapPropagator propagator) {
-    OpenTelemetrySdk clientSdk =
-        OpenTelemetrySdk.builder()
-            .setPropagators(ContextPropagators.create(propagator))
-            .setTracerProvider(
-                SdkTracerProvider.builder()
-                    .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                    .build())
-            .build();
-    return clientSdk;
+  private static OpenTelemetrySdk setupClient() {
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
+                .build())
+        .build();
   }
 
-  private void setupServer1(TextMapPropagator propagator) {
-    OpenTelemetrySdk serverSdk =
-        OpenTelemetrySdk.builder()
-            .setPropagators(ContextPropagators.create(propagator))
-            .setTracerProvider(
-                SdkTracerProvider.builder()
-                    .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                    .build())
-            .build();
-
-    OkHttpClient serverClient = createPropagatingClient(serverSdk);
-    server1 = Service.ignite().port(server1Port);
-    server1.get(
-        "/test",
-        (request, response) -> {
-          Context incomingContext = extract(request, serverSdk);
-
-          Span span =
-              serverSdk
-                  .getTracer("server1Tracer")
-                  .spanBuilder("server1Span")
-                  .setParent(incomingContext)
-                  .startSpan();
-          try (Scope ignored = span.makeCurrent()) {
-            Call call =
-                serverClient.newCall(
-                    new Request.Builder()
-                        .get()
-                        .url("http://localhost:" + server2Port + "/test2")
-                        .build());
-
-            try (Response r = call.execute()) {
-              assertThat(r.code()).isEqualTo(200);
-            }
-
-            return "OK";
-          } finally {
-            span.end();
-          }
-        });
-    server1.awaitInitialization();
-  }
-
-  private void setupServer2(TextMapPropagator propagator) {
-    OpenTelemetrySdk serverSdk =
-        OpenTelemetrySdk.builder()
-            .setPropagators(ContextPropagators.create(propagator))
-            .setTracerProvider(
-                SdkTracerProvider.builder()
-                    .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-                    .build())
-            .build();
-
-    server2 = Service.ignite().port(server2Port);
-    server2.get(
-        "/test2",
-        (request, response) -> {
-          Context incomingContext = extract(request, serverSdk);
-
-          Span span =
-              serverSdk
-                  .getTracer("server2Tracer")
-                  .spanBuilder("server2Span")
-                  .setParent(incomingContext)
-                  .startSpan();
-          try (Scope ignored = span.makeCurrent()) {
-            return "OK";
-          } finally {
-            span.end();
-          }
-        });
-    server2.awaitInitialization();
-  }
-
-  private static Context extract(spark.Request request, OpenTelemetrySdk sdk) {
+  private static Context extract(HttpRequest request, OpenTelemetry sdk) {
     return sdk.getPropagators()
         .getTextMapPropagator()
         .extract(
             Context.root(),
             request,
-            new TextMapGetter<spark.Request>() {
+            new TextMapGetter<HttpRequest>() {
               @Override
-              public Iterable<String> keys(spark.Request carrier) {
-                return carrier.headers();
+              public Iterable<String> keys(HttpRequest carrier) {
+                return () ->
+                    carrier.headers().names().stream().map(AsciiString::toString).iterator();
               }
 
               @Nullable
               @Override
-              public String get(@Nullable spark.Request carrier, String key) {
-                return carrier.headers(key);
+              public String get(@Nullable HttpRequest carrier, String key) {
+                return carrier.headers().get(key);
               }
             });
   }
 
-  public static class PropagatorArgumentSupplier implements ArgumentsProvider {
-
+  public static class WebClientArgumentSupplier implements ArgumentsProvider {
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
       return Stream.of(
-          Arguments.of(B3Propagator.injectingMultiHeaders()),
-          Arguments.of(B3Propagator.injectingSingleHeader()));
+          Arguments.of("b3multi", b3MultiClient), Arguments.of("b3single", b3SingleClient));
     }
   }
 }
