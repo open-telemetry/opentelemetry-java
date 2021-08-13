@@ -230,7 +230,8 @@ final class SdkSpanBuilder implements SpanBuilder {
   private AttributesMap attributes() {
     AttributesMap attributes = this.attributes;
     if (attributes == null) {
-      attributes = this.attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
+      this.attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
+      attributes = this.attributes;
     }
     return attributes;
   }

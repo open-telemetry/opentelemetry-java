@@ -377,6 +377,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     if (exception == null) {
       return this;
     }
+    if (additionalAttributes == null) {
+      additionalAttributes = Attributes.empty();
+    }
     long timestampNanos = clock.now();
 
     AttributesBuilder attributes = Attributes.builder();
