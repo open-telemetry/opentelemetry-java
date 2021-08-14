@@ -28,12 +28,7 @@ final class SdkTracer implements Tracer {
       spanName = FALLBACK_SPAN_NAME;
     }
     if (sharedState.hasBeenShutdown()) {
-      Tracer tracer =
-          instrumentationLibraryInfo.getVersion() != null
-              ? TracerProvider.noop()
-                  .get(
-                      instrumentationLibraryInfo.getName(), instrumentationLibraryInfo.getVersion())
-              : TracerProvider.noop().get(instrumentationLibraryInfo.getName());
+      Tracer tracer = TracerProvider.noop().get(instrumentationLibraryInfo.getName());
       return tracer.spanBuilder(spanName);
     }
     return new SdkSpanBuilder(
