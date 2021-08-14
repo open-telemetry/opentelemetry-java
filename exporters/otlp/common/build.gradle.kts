@@ -24,6 +24,7 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("io.grpc:grpc-testing")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 
