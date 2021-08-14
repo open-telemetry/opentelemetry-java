@@ -1,2 +1,5 @@
 Comparing source compatibility of  against 
-No changes.
+**** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.trace.ReadableSpan  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Object getAttribute(io.opentelemetry.api.common.AttributeKey)
+		+++  NEW ANNOTATION: javax.annotation.Nullable
