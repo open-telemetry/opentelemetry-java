@@ -69,6 +69,7 @@ val DEPENDENCY_SETS = listOf(
 
 val DEPENDENCIES = listOf(
   "com.github.stefanbirkner:system-rules:1.19.0",
+  "com.google.api.grpc:proto-google-common-protos:2.3.2",
   "com.google.code.findbugs:jsr305:3.0.2",
   "com.google.code.gson:gson:2.8.7",
   "com.google.guava:guava-beta-checker:1.0",

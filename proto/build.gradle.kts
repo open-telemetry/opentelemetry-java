@@ -14,9 +14,10 @@ otelJava.moduleName.set("io.opentelemetry.proto")
 
 dependencies {
   api("com.google.protobuf:protobuf-java")
-  api("io.grpc:grpc-api")
-  api("io.grpc:grpc-protobuf")
-  api("io.grpc:grpc-stub")
+
+  compileOnly("io.grpc:grpc-api")
+  compileOnly("io.grpc:grpc-protobuf")
+  compileOnly("io.grpc:grpc-stub")
 }
 
 val protoVersion = "0.9.0"

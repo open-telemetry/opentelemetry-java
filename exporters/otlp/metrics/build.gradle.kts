@@ -20,6 +20,7 @@ dependencies {
 
   implementation(project(":exporters:otlp:common"))
 
+  api("io.grpc:grpc-stub")
   implementation("io.grpc:grpc-api")
   implementation("io.grpc:grpc-protobuf")
   implementation("io.grpc:grpc-stub")

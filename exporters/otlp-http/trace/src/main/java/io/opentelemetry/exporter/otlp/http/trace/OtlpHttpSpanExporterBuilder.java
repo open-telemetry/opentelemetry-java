@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.otlp.http.trace;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
-import com.google.common.base.Preconditions;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -84,7 +83,7 @@ public final class OtlpHttpSpanExporterBuilder {
    */
   public OtlpHttpSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
-    Preconditions.checkArgument(
+    checkArgument(
         compressionMethod.equals("gzip"),
         "Unsupported compression method. Supported compression methods include: gzip.");
     this.compressionEnabled = true;

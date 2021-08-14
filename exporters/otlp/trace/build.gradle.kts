@@ -24,9 +24,9 @@ dependencies {
   compileOnly("io.grpc:grpc-okhttp")
 
   implementation(project(":exporters:otlp:common"))
+  api("io.grpc:grpc-stub")
   implementation("io.grpc:grpc-api")
   implementation("io.grpc:grpc-protobuf")
-  implementation("io.grpc:grpc-stub")
   implementation("com.google.protobuf:protobuf-java")
 
   testImplementation(project(":sdk:testing"))
