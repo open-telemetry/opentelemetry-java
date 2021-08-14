@@ -524,11 +524,12 @@ final class TraceMarshaler {
 
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>>
       groupByResourceAndLibrary(Collection<SpanData> spanDataList) {
+    // expectedMaxSize of 8 means initial map capacity of 16 to match HashMap
     IdentityHashMap<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> result =
-        new IdentityHashMap<>();
+        new IdentityHashMap<>(8);
     for (SpanData spanData : spanDataList) {
       Map<InstrumentationLibraryInfo, List<SpanMarshaler>> libraryInfoListMap =
-          result.computeIfAbsent(spanData.getResource(), unused -> new IdentityHashMap<>());
+          result.computeIfAbsent(spanData.getResource(), unused -> new IdentityHashMap<>(8));
       List<SpanMarshaler> spanList =
           libraryInfoListMap.computeIfAbsent(
               spanData.getInstrumentationLibraryInfo(), unused -> new ArrayList<>());
