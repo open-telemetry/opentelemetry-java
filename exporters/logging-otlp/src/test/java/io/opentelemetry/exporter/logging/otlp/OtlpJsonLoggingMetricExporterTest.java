@@ -139,7 +139,7 @@ class OtlpJsonLoggingMetricExporterTest {
             + "  }]"
             + "}",
         logs.getEvents().get(0).getMessage(),
-        /* strict= */ true);
+        /* strict= */ false);
     assertThat(logs.getEvents().get(0).getMessage()).doesNotContain("\n");
   }
 
