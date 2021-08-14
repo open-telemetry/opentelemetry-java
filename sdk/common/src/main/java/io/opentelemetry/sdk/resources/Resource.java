@@ -11,7 +11,6 @@ import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TE
 import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_VERSION;
 
 import com.google.auto.value.AutoValue;
-import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -110,17 +109,16 @@ public abstract class Resource {
     return new AutoValue_Resource(schemaUrl, attributes);
   }
 
-  @Nullable
   private static String readVersion() {
     Properties properties = new Properties();
     try {
       properties.load(
-          Resource.class.getResourceAsStream("/io/opentelemetry/sdk/version.properties"));
+          Resource.class.getResourceAsStream("/io/opentelemetry/sdk/common/version.properties"));
     } catch (Exception e) {
       // we left the attribute empty
       return "unknown";
     }
-    return properties.getProperty("sdk.version");
+    return properties.getProperty("sdk.version", "unknown");
   }
 
   /**
@@ -144,13 +142,10 @@ public abstract class Resource {
    *
    * @return the value of the attribute with the given key
    */
+  @Nullable
   public <T> T getAttribute(AttributeKey<T> key) {
     return getAttributes().get(key);
   }
-
-  @Memoized
-  @Override
-  public abstract int hashCode();
 
   /**
    * Returns a new, merged {@link Resource} by merging the current {@code Resource} with the {@code

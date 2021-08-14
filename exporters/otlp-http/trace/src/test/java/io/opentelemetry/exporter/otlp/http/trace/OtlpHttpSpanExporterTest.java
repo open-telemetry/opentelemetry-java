@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.http.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -36,7 +35,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -183,15 +181,10 @@ class OtlpHttpSpanExporterTest {
     OtlpHttpSpanExporter exporter = builder.build();
 
     exportAndAssertResult(exporter, /* expectedResult= */ false);
-    await()
-        .atMost(Duration.ofSeconds(10))
-        .untilAsserted(
-            () -> {
-              LoggingEvent log =
-                  logs.assertContains(
-                      "Failed to export spans. Server responded with HTTP status code 500. Error message: Server error!");
-              assertThat(log.getLevel()).isEqualTo(Level.WARN);
-            });
+    LoggingEvent log =
+        logs.assertContains(
+            "Failed to export spans. Server responded with HTTP status code 500. Error message: Server error!");
+    assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
   @Test
@@ -201,15 +194,10 @@ class OtlpHttpSpanExporterTest {
     OtlpHttpSpanExporter exporter = builder.build();
 
     exportAndAssertResult(exporter, /* expectedResult= */ false);
-    await()
-        .atMost(Duration.ofSeconds(10))
-        .untilAsserted(
-            () -> {
-              LoggingEvent log =
-                  logs.assertContains(
-                      "Failed to export spans. Server responded with HTTP status code 500. Error message: Unable to parse response body, HTTP status message:");
-              assertThat(log.getLevel()).isEqualTo(Level.WARN);
-            });
+    LoggingEvent log =
+        logs.assertContains(
+            "Failed to export spans. Server responded with HTTP status code 500. Error message: Unable to parse response body, HTTP status message:");
+    assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
   private static ExportTraceServiceRequest exportAndAssertResult(

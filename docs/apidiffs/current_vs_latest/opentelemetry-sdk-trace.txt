@@ -1,9 +1,5 @@
 Comparing source compatibility of  against 
 **** MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.trace.ReadableSpan  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.api.trace.SpanContext getParentSpanContext()
-***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.trace.samplers.SamplingResult  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	+++! NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.samplers.SamplingResult drop()
-	+++! NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.samplers.SamplingResult recordAndSample()
-	+++! NEW METHOD: PUBLIC(+) STATIC(+) io.opentelemetry.sdk.trace.samplers.SamplingResult recordOnly()
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Object getAttribute(io.opentelemetry.api.common.AttributeKey)
+		+++  NEW ANNOTATION: javax.annotation.Nullable

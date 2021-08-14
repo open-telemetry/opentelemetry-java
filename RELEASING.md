@@ -31,7 +31,8 @@ for a list of major changes since last release.
 
 ## Update release versions in documentations and CHANGELOG files
 
-After releasing is done, you need to first update the docs.
+After releasing is done, you need to first update the docs. This needs to happen after artifacts have propagated
+to Maven Central so should probably be done an hour or two after the release workflow finishes.
 
 ```
 ./gradlew updateVersionInDocs -Prelease.version=x.y.z

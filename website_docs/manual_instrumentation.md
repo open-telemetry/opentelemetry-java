@@ -299,42 +299,44 @@ The following is an example of counter usage:
 
 ```java
 // Gets or creates a named meter instance
-Meter meter = meterProvider.get("instrumentation-library-name", "1.0.0");
+  Meter meter = meterProvider.meterBuilder("instrumentation-library-name")
+          .setInstrumentationVersion("1.0.0")
+          .build();
 
 // Build counter e.g. LongCounter 
-LongCounter counter = meter
-        .longCounterBuilder("processed_jobs")
+  LongCounter counter = meter
+        .counterBuilder("processed_jobs")
         .setDescription("Processed jobs")
         .setUnit("1")
         .build();
 
 // It is recommended that the API user keep a reference to a Bound Counter for the entire time or 
 // call unbind when no-longer needed.
-BoundLongCounter someWorkCounter = counter.bind(Labels.of("Key", "SomeWork"));
+  BoundLongCounter someWorkCounter = counter.bind(Attributes.of(stringKey("Key"), "SomeWork"));
+
 
 // Record data
-someWorkCounter.add(123);
+  someWorkCounter.add(123);
 
 // Alternatively, the user can use the unbounded counter and explicitly
 // specify the labels set at call-time:
-counter.add(123, Labels.of("Key", "SomeWork"));
+  counter.add(123, Attributes.of(stringKey("Key"), "SomeWork"));
 ```
 
-`Observer` is an additional instrument supporting an asynchronous API and
+An `Observer` is an additional type of instrument supporting an asynchronous API and
 collecting metric data on demand, once per collection interval.
 
-The following is an example of observer usage:
+The following is an example of usage of an observer:
 
 ```java
-// Build observer e.g. LongSumObserver
-    LongSumObserver observer = meter
-        .longSumObserverBuilder("cpu_usage")
-        .setDescription("CPU Usage")
-        .setUnit("ms")
-        .setUpdater(result -> {
-        result.observe(getCpuUsage(), Labels.of("Key", "SomeWork"));
-        })
-        .build();
+// Build an "observer" instrument, e.g. Gauge
+    meter
+      .gaugeBuilder("cpu_usage")
+      .setDescription("CPU Usage")
+      .setUnit("ms")
+      .buildWithCallback(result -> {
+          result.observe(getCpuUsage(), Attributes.of(stringKey("Key"), "SomeWork"));
+      });
 ```
 
 ## Tracing SDK Configuration

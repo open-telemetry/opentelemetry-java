@@ -9,6 +9,7 @@ import io.opentelemetry.context.Context;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
+import javax.annotation.Nullable;
 
 final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
   public ScopeManagerShim(TelemetryInfo telemetryInfo) {
@@ -16,7 +17,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
   }
 
   @Override
-  @SuppressWarnings("ReturnMissingNullable")
+  @Nullable
   public Span activeSpan() {
     SpanShim spanShim = SpanShim.current();
     io.opentelemetry.api.trace.Span span = null;

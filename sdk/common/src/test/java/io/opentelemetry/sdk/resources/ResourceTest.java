@@ -212,7 +212,8 @@ class ResourceTest {
     assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_NAME))
         .isEqualTo("opentelemetry");
     assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
-    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_VERSION)).isNotNull();
+    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_VERSION))
+        .isEqualTo(System.getProperty("otel.test.project-version"));
   }
 
   @Test
