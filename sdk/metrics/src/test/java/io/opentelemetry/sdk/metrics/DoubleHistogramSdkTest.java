@@ -16,16 +16,9 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link DoubleHistogramSdk}. */
@@ -78,22 +71,29 @@ class DoubleHistogramSdkTest {
     doubleRecorder.record(12d, Attributes.empty());
     doubleRecorder.record(12d);
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createDoubleSummary(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testRecorder",
-                "description",
-                "ms",
-                DoubleSummaryData.create(
-                    Collections.singletonList(
-                        DoubleSummaryPointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Attributes.empty(),
-                            2,
-                            24d,
-                            valueAtPercentiles(12d, 12d))))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testRecorder")
+                    .hasDescription("description")
+                    .hasUnit("ms")
+                    .hasDoubleHistogram()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasCount(2)
+                                .hasSum(24)
+                                .hasBucketBoundaries(
+                                    5, 10, 25, 50, 75, 100, 250, 500, 750, 1_000, 2_500, 5_000,
+                                    7_500, 10_000)
+                                .hasBucketCounts(0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)));
   }
 
   @Test
@@ -118,7 +118,7 @@ class DoubleHistogramSdkTest {
                       .hasResource(RESOURCE)
                       .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                       .hasName("testRecorder")
-                      .hasDoubleSummary()
+                      .hasDoubleHistogram()
                       .points()
                       .allSatisfy(
                           point ->
@@ -130,20 +130,16 @@ class DoubleHistogramSdkTest {
                               assertThat(point)
                                   .hasCount(3)
                                   .hasSum(323.3d)
-                                  .hasPercentileValues(
-                                      valueAtPercentiles(-121.5d, 321.5d)
-                                          .toArray(new ValueAtPercentile[0]))
+                                  .hasBucketCounts(1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.builder().put("K", "V").build()),
                           point ->
                               assertThat(point)
                                   .hasCount(2)
                                   .hasSum(-1.0d)
-                                  .hasPercentileValues(
-                                      valueAtPercentiles(-13.1d, 12.1d)
-                                          .toArray(new ValueAtPercentile[0]))
+                                  .hasBucketCounts(1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.empty())));
 
-      // Repeat to prove we don't keep previous values.
+      // Histograms are cumulative by default.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222d);
       doubleRecorder.record(17d, Attributes.empty());
@@ -154,28 +150,25 @@ class DoubleHistogramSdkTest {
                       .hasResource(RESOURCE)
                       .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                       .hasName("testRecorder")
-                      .hasDoubleSummary()
+                      .hasDoubleHistogram()
                       .points()
                       .allSatisfy(
                           point ->
                               assertThat(point)
-                                  .hasStartEpochNanos(startTime + SECOND_NANOS)
+                                  .hasStartEpochNanos(startTime)
                                   .hasEpochNanos(testClock.now()))
                       .satisfiesExactlyInAnyOrder(
                           point ->
                               assertThat(point)
-                                  .hasCount(1)
-                                  .hasSum(222)
-                                  .hasPercentileValues(
-                                      valueAtPercentiles(222, 222)
-                                          .toArray(new ValueAtPercentile[0]))
+                                  .hasCount(4)
+                                  .hasSum(545.3)
+                                  .hasBucketCounts(1, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.builder().put("K", "V").build()),
                           point ->
                               assertThat(point)
-                                  .hasCount(1)
-                                  .hasSum(17)
-                                  .hasPercentileValues(
-                                      valueAtPercentiles(17, 17).toArray(new ValueAtPercentile[0]))
+                                  .hasCount(3)
+                                  .hasSum(16)
+                                  .hasBucketCounts(1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.empty())));
     } finally {
       bound.unbind();
@@ -207,22 +200,22 @@ class DoubleHistogramSdkTest {
 
     stressTestBuilder.build().run();
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createDoubleSummary(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testRecorder",
-                "",
-                "1",
-                DoubleSummaryData.create(
-                    Collections.singletonList(
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Attributes.of(stringKey("K"), "V"),
-                            8_000,
-                            80_000,
-                            valueAtPercentiles(9.0, 11.0))))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testRecorder")
+                    .hasDoubleHistogram()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.of(stringKey("K"), "V"))
+                                .hasCount(8_000)
+                                .hasSum(80_000)));
   }
 
   @Test
@@ -260,7 +253,7 @@ class DoubleHistogramSdkTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testRecorder")
-                    .hasDoubleSummary()
+                    .hasDoubleHistogram()
                     .points()
                     .allSatisfy(
                         point ->
@@ -269,9 +262,10 @@ class DoubleHistogramSdkTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasCount(4_000)
                                 .hasSum(40_000)
-                                .hasPercentileValues(
-                                    valueAtPercentiles(9.0, 11.0)
-                                        .toArray(new ValueAtPercentile[0])))
+                        // .hasPercentileValues(
+                        //     valueAtPercentiles(9.0, 11.0)
+                        //         .toArray(new ValueAtPercentile[0]))
+                        )
                     .extracting(point -> point.getAttributes())
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
@@ -317,9 +311,5 @@ class DoubleHistogramSdkTest {
 
     @Override
     void cleanup() {}
-  }
-
-  private static List<ValueAtPercentile> valueAtPercentiles(double min, double max) {
-    return Arrays.asList(ValueAtPercentile.create(0, min), ValueAtPercentile.create(100, max));
   }
 }
