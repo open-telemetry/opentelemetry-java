@@ -5,13 +5,12 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
-import com.google.rpc.Code;
-import com.google.rpc.Status;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.exporter.otlp.internal.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -133,14 +132,14 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
                 spansExportedFailure.add(spans.size());
                 int code = response.code();
 
-                Status status = extractErrorStatus(response);
+                String status = extractErrorStatus(response);
 
                 logger.log(
                     Level.WARNING,
                     "Failed to export spans. Server responded with HTTP status code "
                         + code
                         + ". Error message: "
-                        + status.getMessage());
+                        + status);
                 result.fail();
               }
             });
@@ -169,21 +168,15 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     };
   }
 
-  private static Status extractErrorStatus(Response response) {
+  private static String extractErrorStatus(Response response) {
     ResponseBody responseBody = response.body();
     if (responseBody == null) {
-      return Status.newBuilder()
-          .setMessage("Response body missing, HTTP status message: " + response.message())
-          .setCode(Code.UNKNOWN.getNumber())
-          .build();
+      return "Response body missing, HTTP status message: " + response.message();
     }
     try {
-      return Status.parseFrom(responseBody.bytes());
+      return GrpcStatusUtil.getStatusMessage(responseBody.bytes());
     } catch (IOException e) {
-      return Status.newBuilder()
-          .setMessage("Unable to parse response body, HTTP status message: " + response.message())
-          .setCode(Code.UNKNOWN.getNumber())
-          .build();
+      return "Unable to parse response body, HTTP status message: " + response.message();
     }
   }
 

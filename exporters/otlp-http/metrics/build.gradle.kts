@@ -19,5 +19,6 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("com.linecorp.armeria:armeria-junit5")
 }

@@ -20,9 +20,11 @@ dependencies {
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
   compileOnly("io.grpc:grpc-okhttp")
+  compileOnly("io.grpc:grpc-stub")
 
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("io.grpc:grpc-testing")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 
