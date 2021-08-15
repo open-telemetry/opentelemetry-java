@@ -43,6 +43,7 @@ public abstract class InstrumentSelector {
    */
   public abstract Pattern getInstrumentNamePattern();
 
+  /** Returns the selections criteria for {@link io.opentelemetry.api.metrics.Meter}s. */
   public abstract MeterSelector getMeterSelector();
 
   /** Builder for {@link InstrumentSelector} instances. */
@@ -51,8 +52,13 @@ public abstract class InstrumentSelector {
     /** Sets a specifier for {@link InstrumentType}. */
     public abstract Builder setInstrumentType(InstrumentType instrumentType);
 
+    /** Sets the {@link Pattern} for instrument names that will be selected. */
     abstract Builder setInstrumentNamePattern(Pattern instrumentNamePattern);
 
+    /**
+     * Sets the {@link MeterSelector} for which {@link io.opentelemetry.api.metrics.View}s will be
+     * included.
+     */
     abstract Builder setMeterSelector(MeterSelector meterSelector);
 
     /** Sets a specifier for selecting Instruments by name. */
