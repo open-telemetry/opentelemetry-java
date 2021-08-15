@@ -26,7 +26,9 @@ public abstract class InstrumentSelector {
    * @return a new {@link Builder} for {@link InstrumentSelector}.
    */
   public static Builder builder() {
-    return new AutoValue_InstrumentSelector.Builder().setInstrumentNamePattern(MATCH_ALL);
+    return new AutoValue_InstrumentSelector.Builder()
+        .setInstrumentNamePattern(MATCH_ALL)
+        .setMeterSelector(MeterSelector.builder().build());
   }
 
   /**
@@ -41,6 +43,8 @@ public abstract class InstrumentSelector {
    */
   public abstract Pattern getInstrumentNamePattern();
 
+  public abstract MeterSelector getMeterSelector();
+
   /** Builder for {@link InstrumentSelector} instances. */
   @AutoValue.Builder
   public abstract static class Builder {
@@ -48,6 +52,8 @@ public abstract class InstrumentSelector {
     public abstract Builder setInstrumentType(InstrumentType instrumentType);
 
     abstract Builder setInstrumentNamePattern(Pattern instrumentNamePattern);
+
+    abstract Builder setMeterSelector(MeterSelector meterSelector);
 
     /** Sets a specifier for selecting Instruments by name. */
     public final Builder setInstrumentNameRegex(String regex) {

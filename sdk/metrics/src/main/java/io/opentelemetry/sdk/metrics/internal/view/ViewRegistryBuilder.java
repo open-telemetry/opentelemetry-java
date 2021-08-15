@@ -5,12 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
-import java.util.EnumMap;
+import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.regex.Pattern;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Builder for {@link ViewRegistry}.
@@ -19,18 +20,20 @@ import java.util.regex.Pattern;
  * at any time.
  */
 public class ViewRegistryBuilder {
-  private final EnumMap<InstrumentType, LinkedHashMap<Pattern, View>> configuration =
-      new EnumMap<>(InstrumentType.class);
-  private static final LinkedHashMap<Pattern, View> EMPTY_CONFIG = new LinkedHashMap<>();
+  // private final LinkedHashMap<InstrumentSelector, View> reversedEntries = new LinkedHashMap<>();
+  private final List<Map.Entry<InstrumentSelector, View>> reversedEntries - new ArrayList<>();
 
-  ViewRegistryBuilder() {
-    for (InstrumentType type : InstrumentType.values()) {
-      configuration.put(type, EMPTY_CONFIG);
-    }
-  }
+  ViewRegistryBuilder() {}
 
   /** Returns the {@link ViewRegistry}. */
   public ViewRegistry build() {
+    // We add views in reverse order so normal iteration order is the priority of usage.
+    // TODO: Verify this is correct with the specification.
+    Collections.reverse(reversedEntries);
+    LinkedHashMap<InstrumentSelector, View> configuration = new LinkedHashMap<>(reversedEntries.size());
+    for (Map.Entry<InstrumentSelector, View> e: reversedEntries) {
+      configuration.put(e.getKey(), e.getValue());
+    }
     return new ViewRegistry(configuration);
   }
 
@@ -42,19 +45,7 @@ public class ViewRegistryBuilder {
    * @return this
    */
   public ViewRegistryBuilder addView(InstrumentSelector selector, View view) {
-    LinkedHashMap<Pattern, View> parentConfiguration =
-        configuration.get(selector.getInstrumentType());
-    configuration.put(
-        selector.getInstrumentType(),
-        newLinkedHashMap(selector.getInstrumentNamePattern(), view, parentConfiguration));
+    reversedEntries.add(new AbstractMap.SimpleEntry<>(selector, view));
     return this;
-  }
-
-  private static LinkedHashMap<Pattern, View> newLinkedHashMap(
-      Pattern pattern, View view, LinkedHashMap<Pattern, View> parentConfiguration) {
-    LinkedHashMap<Pattern, View> result = new LinkedHashMap<>();
-    result.put(pattern, view);
-    result.putAll(parentConfiguration);
-    return result;
   }
 }
