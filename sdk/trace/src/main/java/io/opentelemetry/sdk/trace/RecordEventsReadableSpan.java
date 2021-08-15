@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -80,7 +79,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private int totalRecordedEvents = 0;
   // The status of the span.
   @GuardedBy("lock")
-  @Nullable
   private StatusData status = StatusData.unset();
   // The end time of the span.
   @GuardedBy("lock")
@@ -141,13 +139,13 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       SpanKind kind,
-      @Nullable SpanContext parentSpanContext,
-      @Nonnull Context parentContext,
+      SpanContext parentSpanContext,
+      Context parentContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
       AnchoredClock clock,
       Resource resource,
-      AttributesMap attributes,
+      @Nullable AttributesMap attributes,
       List<LinkData> links,
       int totalRecordedLinks,
       long startEpochNanos) {
@@ -378,7 +376,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public ReadWriteSpan recordException(Throwable exception) {
-    recordException(exception, null);
+    recordException(exception, Attributes.empty());
     return this;
   }
 
@@ -386,6 +384,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   public ReadWriteSpan recordException(Throwable exception, Attributes additionalAttributes) {
     if (exception == null) {
       return this;
+    }
+    if (additionalAttributes == null) {
+      additionalAttributes = Attributes.empty();
     }
     long timestampNanos = clock.now();
 
@@ -397,10 +398,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     StringWriter writer = new StringWriter();
     exception.printStackTrace(new PrintWriter(writer));
     attributes.put(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString());
-
-    if (additionalAttributes != null) {
-      attributes.putAll(additionalAttributes);
-    }
+    attributes.putAll(additionalAttributes);
 
     addEvent(
         SemanticAttributes.EXCEPTION_EVENT_NAME,

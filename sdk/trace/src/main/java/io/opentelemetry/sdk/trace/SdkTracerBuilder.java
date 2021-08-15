@@ -8,13 +8,14 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerBuilder;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
+import javax.annotation.Nullable;
 
 class SdkTracerBuilder implements TracerBuilder {
 
   private final ComponentRegistry<SdkTracer> registry;
   private final String instrumentationName;
-  private String instrumentationVersion;
-  private String schemaUrl;
+  @Nullable private String instrumentationVersion;
+  @Nullable private String schemaUrl;
 
   SdkTracerBuilder(ComponentRegistry<SdkTracer> registry, String instrumentationName) {
     this.registry = registry;
