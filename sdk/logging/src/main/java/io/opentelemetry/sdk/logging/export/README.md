@@ -1,2 +1,0 @@
-# OpenTelemetry logging export framework
-

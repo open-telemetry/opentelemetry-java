@@ -1,2 +1,10 @@
 Comparing source compatibility of  against 
-No changes.
+---! REMOVED CLASS: PUBLIC(-) FINAL(-) io.opentelemetry.sdk.extension.resources.ContainerResource  (not serializable)
+	---  CLASS FILE FORMAT VERSION: n.a. <- 52.0
+	---! REMOVED SUPERCLASS: java.lang.Object
+	---! REMOVED METHOD: PUBLIC(-) STATIC(-) io.opentelemetry.sdk.resources.Resource get()
+---! REMOVED CLASS: PUBLIC(-) io.opentelemetry.sdk.extension.resources.ContainerResourceProvider  (not serializable)
+	---  CLASS FILE FORMAT VERSION: n.a. <- 52.0
+	---! REMOVED SUPERCLASS: java.lang.Object
+	---! REMOVED CONSTRUCTOR: PUBLIC(-) ContainerResourceProvider()
+	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.resources.Resource createResource(io.opentelemetry.sdk.autoconfigure.ConfigProperties)

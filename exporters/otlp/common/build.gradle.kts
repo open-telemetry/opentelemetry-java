@@ -14,6 +14,7 @@ dependencies {
   api(project(":proto"))
   api(project(":sdk:all"))
   api(project(":sdk:metrics"))
+  api(project(":sdk:logs"))
 
   implementation("com.google.protobuf:protobuf-java")
 
