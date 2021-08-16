@@ -1,9 +1,8 @@
-# OpenTelemetry Proto Utils
+# OpenTelemetry - OTLP Common
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
-This module contains code to helps with conversions betewen OpenTelemetry proto objects and API or 
-SDK objects (e.g. SpanId, TraceId, TraceConfig, SpanData etc.).
+This module contains common utility code used by other OpenTelemetry OTLP modules, including conversion between OpenTelemetry API or SDK objects and proto objects.
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-contrib-otproto.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-contrib-otproto
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-otlp-common.svg
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-otlp-common
