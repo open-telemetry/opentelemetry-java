@@ -7,12 +7,9 @@ package io.opentelemetry.sdk.metrics.internal.view;
 
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Builder for {@link ViewRegistry}.
@@ -21,7 +18,7 @@ import java.util.Map;
  * at any time.
  */
 public class ViewRegistryBuilder {
-  private final List<Map.Entry<InstrumentSelector, View>> reversedEntries = new ArrayList<>();
+  private final List<RegisteredView> orderedViews = new ArrayList<>();
 
   ViewRegistryBuilder() {}
 
@@ -29,13 +26,9 @@ public class ViewRegistryBuilder {
   public ViewRegistry build() {
     // We add views in reverse order so normal iteration order is the priority of usage.
     // TODO: Verify this is correct with the specification.
-    Collections.reverse(reversedEntries);
-    LinkedHashMap<InstrumentSelector, View> configuration =
-        new LinkedHashMap<>(reversedEntries.size());
-    for (Map.Entry<InstrumentSelector, View> e : reversedEntries) {
-      configuration.put(e.getKey(), e.getValue());
-    }
-    return new ViewRegistry(configuration);
+    List<RegisteredView> reversedOrder = new ArrayList<>(orderedViews);
+    Collections.reverse(reversedOrder);
+    return new ViewRegistry(Collections.unmodifiableList(reversedOrder));
   }
 
   /**
@@ -46,7 +39,7 @@ public class ViewRegistryBuilder {
    * @return this
    */
   public ViewRegistryBuilder addView(InstrumentSelector selector, View view) {
-    reversedEntries.add(new AbstractMap.SimpleEntry<>(selector, view));
+    orderedViews.add(RegisteredView.create(selector, view));
     return this;
   }
 }

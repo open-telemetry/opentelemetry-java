@@ -13,9 +13,7 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.MeterSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -43,12 +41,10 @@ public final class ViewRegistry {
   static final View LAST_VALUE =
       View.builder().setAggregatorFactory(AggregatorFactory.lastValue()).build();
 
-  private final LinkedHashMap<InstrumentSelector, View> configuration;
+  private final List<RegisteredView> reverseRegistration;
 
-  ViewRegistry(LinkedHashMap<InstrumentSelector, View> configuration) {
-    this.configuration = new LinkedHashMap<>();
-    // make a copy for safety
-    configuration.forEach((selector, view) -> this.configuration.put(selector, view));
+  ViewRegistry(List<RegisteredView> reverseRegistration) {
+    this.reverseRegistration = reverseRegistration;
   }
 
   /** Returns a builder of {@link ViewRegistry}. */
@@ -63,9 +59,9 @@ public final class ViewRegistry {
    * @return The {@link View} for this instrument, or a default aggregation view.
    */
   public View findView(InstrumentDescriptor descriptor, InstrumentationLibraryInfo meter) {
-    for (Map.Entry<InstrumentSelector, View> entry : configuration.entrySet()) {
-      if (matchesSelector(entry.getKey(), descriptor, meter)) {
-        return entry.getValue();
+    for (RegisteredView entry : reverseRegistration) {
+      if (matchesSelector(entry.getInstrumentSelector(), descriptor, meter)) {
+        return entry.getView();
       }
     }
 
@@ -79,23 +75,15 @@ public final class ViewRegistry {
       InstrumentationLibraryInfo meter) {
     return (selector.getInstrumentType() == null
             || selector.getInstrumentType() == descriptor.getType())
-        && matchesPattern(selector.getInstrumentNamePattern(), descriptor.getName())
+        && selector.getInstrumentNameFilter().test(descriptor.getName())
         && matchesMeter(selector.getMeterSelector(), meter);
   }
 
   // Matches a meter selector against a meter.
   private static boolean matchesMeter(MeterSelector selector, InstrumentationLibraryInfo meter) {
-    return matchesPattern(selector.getNamePattern(), meter.getName())
-        && matchesPattern(selector.getVersionPattern(), meter.getVersion())
-        && matchesPattern(selector.getSchemaUrlPattern(), meter.getSchemaUrl());
-  }
-
-  // Matches a pattern against  a value.  Null values are treated as empty strings.
-  private static boolean matchesPattern(Pattern pattern, @Nullable String value) {
-    if (value == null) {
-      value = "";
-    }
-    return pattern.matcher(value).matches();
+    return selector.getNameFilter().test(meter.getName())
+        && selector.getVersionFilter().test(meter.getVersion())
+        && selector.getSchemaUrlFilter().test(meter.getSchemaUrl());
   }
 
   private static View getDefaultSpecification(InstrumentDescriptor descriptor) {
