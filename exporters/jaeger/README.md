@@ -32,5 +32,5 @@ At this moment, they have to be manually synchronized, but a [discussion exists]
 
 [proto-origin]: https://github.com/jaegertracing/jaeger/tree/5b8c1f40f932897b9322bf3f110d830536ae4c71/model/proto
 [proto-discussion]: https://github.com/open-telemetry/opentelemetry-java/issues/235
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporters-jaeger.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporters-jaeger
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-jaeger.svg
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-jaeger
