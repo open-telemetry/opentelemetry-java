@@ -3,7 +3,7 @@ plugins {
   id("otel.publish-conventions")
 }
 
-description = "OpenTelemetry SDK Testing utilities"
+description = "OpenTelemetry Metrics SDK Testing utilities"
 otelJava.moduleName.set("io.opentelemetry.sdk.metrics-testing")
 
 dependencies {

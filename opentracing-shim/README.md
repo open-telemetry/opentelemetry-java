@@ -1,5 +1,7 @@
-[![Javadocs][javadoc-image]][javadoc-url]
 # OpenTelemetry - OpenTracing Shim
+
+[![Javadocs][javadoc-image]][javadoc-url]
+
 The OpenTracing shim is a bridge layer from OpenTelemetry to the OpenTracing API.
 It takes OpenTelemetry Tracer and exposes it as an implementation of an OpenTracing Tracer.
 

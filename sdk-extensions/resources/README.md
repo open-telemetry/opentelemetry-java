@@ -1,5 +1,7 @@
 # OpenTelemetry Resource Providers
 
+[![Javadocs][javadoc-image]][javadoc-url]
+
 This package includes some standard `ResourceProvider`s for filling in attributes related to
 common environments. Currently the resources provide the following semantic conventions
 
@@ -41,3 +43,6 @@ Implemented attributes:
 
 This package currently does not run on Android. It has been verified on OpenJDK and should work on
 other server JVM distributions but if you find any issues please let us know.
+
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-resources.svg
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-resources

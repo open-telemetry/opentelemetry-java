@@ -1,5 +1,6 @@
-
 # OpenTelemetry OpenCensus Shim
+
+[![Javadocs][javadoc-image]][javadoc-url]
 
 The OpenCensus shim allows applications and libraries that are instrumented
 with OpenTelemetry, but depend on other libraries instrumented with OpenCensus,
@@ -49,3 +50,6 @@ OpenTelemetryMetricsExporter exporter =
 
 * OpenCensus links added after an OpenCensus span is created will not be
 exported, as OpenTelemetry only supports links added when a span is created.
+
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-opencensus-shim.svg
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-opencensus-shim
