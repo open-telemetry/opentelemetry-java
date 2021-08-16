@@ -10,11 +10,14 @@ import io.opentelemetry.sdk.logs.data.LogRecord;
 
 public interface LogProcessor {
 
+  /**
+   * Adds a log record for processing.
+   *
+   * @param record the log record.
+   */
   void addLogRecord(LogRecord record);
 
-  /**
-   * @return result
-   */
+  /** Shuts down the processor. */
   CompletableResultCode shutdown();
 
   /**

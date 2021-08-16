@@ -18,12 +18,12 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.logs.export.LogExporter;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.ThreadSafe;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /** Exports logs using OTLP via gRPC, using OpenTelemetry's protobuf model. */
 @ThreadSafe

@@ -5,19 +5,19 @@
 
 package io.opentelemetry.exporter.oltp.logging;
 
+import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+import static io.opentelemetry.api.internal.Utils.checkArgument;
+import static java.util.Objects.requireNonNull;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-
-import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
-import static io.opentelemetry.api.internal.Utils.checkArgument;
-import static java.util.Objects.requireNonNull;
+import javax.annotation.Nullable;
 
 /** Builder utility for this exporter. */
 public class OtlpGrpcLoggingExporterBuilder {
