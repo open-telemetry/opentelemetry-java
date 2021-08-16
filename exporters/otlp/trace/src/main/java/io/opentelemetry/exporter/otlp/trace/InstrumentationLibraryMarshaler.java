@@ -17,6 +17,7 @@ final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
   static InstrumentationLibraryMarshaler create(InstrumentationLibraryInfo libraryInfo) {
     byte[] name = MarshalerUtil.toBytes(libraryInfo.getName());
     byte[] version = MarshalerUtil.toBytes(libraryInfo.getVersion());
+
     return new InstrumentationLibraryMarshaler(name, version);
   }
 

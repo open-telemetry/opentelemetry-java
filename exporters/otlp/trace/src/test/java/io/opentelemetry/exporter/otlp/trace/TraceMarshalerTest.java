@@ -27,9 +27,24 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import org.jeasy.random.EasyRandom;
+import org.jeasy.random.EasyRandomParameters;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 class TraceMarshalerTest {
+
+  private static final EasyRandom EASY_RANDOM =
+      new EasyRandom(
+          new EasyRandomParameters()
+              // EasyRandom uses a fixed seed by default for reproducibility but we'd rather have
+              // increased coverage over CI runs.
+              .seed(new Random().nextLong())
+              .stringLengthRange(0, 20)
+              .collectionSizeRange(0, 5)
+              .randomizerRegistry(SpanDataRandomizerRegistry.INSTANCE));
+
   private static final Resource RESOURCE =
       Resource.create(
           Attributes.builder()
@@ -123,6 +138,39 @@ class TraceMarshalerTest {
                 InstrumentationLibraryInfo.create("name", "version")),
             testSpanDataWithInstrumentationLibrary(InstrumentationLibraryInfo.empty()),
             testSpanDataWithInstrumentationLibrary(InstrumentationLibraryInfo.create("", ""))));
+  }
+
+  @RepeatedTest(100)
+  void randomData() throws Exception {
+    SpanData span = EASY_RANDOM.nextObject(SpanData.class);
+
+    ExportTraceServiceRequest protoRequest =
+        ExportTraceServiceRequest.newBuilder()
+            .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(Collections.singletonList(span)))
+            .build();
+    TraceMarshaler.RequestMarshaler requestMarshaler =
+        TraceMarshaler.RequestMarshaler.create(Collections.singletonList(span));
+
+    byte[] protoOutput = protoRequest.toByteArray();
+
+    byte[] customOutput = new byte[requestMarshaler.getSerializedSize()];
+    requestMarshaler.writeTo(CodedOutputStream.newInstance(customOutput));
+    if (!Arrays.equals(customOutput, protoOutput)) {
+      String reverse = "<invalid>";
+      try {
+        reverse = ExportTraceServiceRequest.parseFrom(customOutput).toString();
+      } catch (IOException e) {
+        // Leave <invalid>
+      }
+      throw new AssertionError(
+          "Serialization through TraceMarshaller does not match serialization through "
+              + "protobuf library.\nspan: "
+              + span
+              + "\nprotobuf: "
+              + protoRequest
+              + "\nparsed from marshaler output: "
+              + reverse);
+    }
   }
 
   private static SpanData testSpanDataWithInstrumentationLibrary(

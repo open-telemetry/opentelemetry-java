@@ -57,11 +57,15 @@ final class TraceMarshaler {
             entry.getValue().entrySet()) {
           instrumentationLibrarySpansMarshalers[posInstrumentation++] =
               new InstrumentationLibrarySpansMarshaler(
-                  InstrumentationLibraryMarshaler.create(entryIs.getKey()), entryIs.getValue());
+                  InstrumentationLibraryMarshaler.create(entryIs.getKey()),
+                  MarshalerUtil.toBytes(entryIs.getKey().getSchemaUrl()),
+                  entryIs.getValue());
         }
         resourceSpansMarshalers[posResource++] =
             new ResourceSpansMarshaler(
-                ResourceMarshaler.create(entry.getKey()), instrumentationLibrarySpansMarshalers);
+                ResourceMarshaler.create(entry.getKey()),
+                MarshalerUtil.toBytes(entry.getKey().getSchemaUrl()),
+                instrumentationLibrarySpansMarshalers);
       }
 
       return new RequestMarshaler(resourceSpansMarshalers);
@@ -91,13 +95,16 @@ final class TraceMarshaler {
 
   private static final class ResourceSpansMarshaler extends MarshalerWithSize {
     private final ResourceMarshaler resourceMarshaler;
+    private final byte[] schemaUrl;
     private final InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers;
 
     private ResourceSpansMarshaler(
         ResourceMarshaler resourceMarshaler,
+        byte[] schemaUrl,
         InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers) {
-      super(calculateSize(resourceMarshaler, instrumentationLibrarySpansMarshalers));
+      super(calculateSize(resourceMarshaler, schemaUrl, instrumentationLibrarySpansMarshalers));
       this.resourceMarshaler = resourceMarshaler;
+      this.schemaUrl = schemaUrl;
       this.instrumentationLibrarySpansMarshalers = instrumentationLibrarySpansMarshalers;
     }
 
@@ -108,13 +115,16 @@ final class TraceMarshaler {
           ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_FIELD_NUMBER,
           instrumentationLibrarySpansMarshalers,
           output);
+      MarshalerUtil.marshalBytes(ResourceSpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl, output);
     }
 
     private static int calculateSize(
         ResourceMarshaler resourceMarshaler,
+        byte[] schemaUrl,
         InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers) {
       int size = 0;
       size += MarshalerUtil.sizeMessage(ResourceSpans.RESOURCE_FIELD_NUMBER, resourceMarshaler);
+      size += MarshalerUtil.sizeBytes(ResourceSpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
               ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_FIELD_NUMBER,
@@ -126,12 +136,15 @@ final class TraceMarshaler {
   private static final class InstrumentationLibrarySpansMarshaler extends MarshalerWithSize {
     private final InstrumentationLibraryMarshaler instrumentationLibrary;
     private final List<SpanMarshaler> spanMarshalers;
+    private final byte[] schemaUrl;
 
     private InstrumentationLibrarySpansMarshaler(
         InstrumentationLibraryMarshaler instrumentationLibrary,
+        byte[] schemaUrl,
         List<SpanMarshaler> spanMarshalers) {
-      super(calculateSize(instrumentationLibrary, spanMarshalers));
+      super(calculateSize(instrumentationLibrary, schemaUrl, spanMarshalers));
       this.instrumentationLibrary = instrumentationLibrary;
+      this.schemaUrl = schemaUrl;
       this.spanMarshalers = spanMarshalers;
     }
 
@@ -143,16 +156,21 @@ final class TraceMarshaler {
           output);
       MarshalerUtil.marshalRepeatedMessage(
           InstrumentationLibrarySpans.SPANS_FIELD_NUMBER, spanMarshalers, output);
+      MarshalerUtil.marshalBytes(
+          InstrumentationLibrarySpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl, output);
     }
 
     private static int calculateSize(
         InstrumentationLibraryMarshaler instrumentationLibrary,
+        byte[] schemaUrl,
         List<SpanMarshaler> spanMarshalers) {
       int size = 0;
       size +=
           MarshalerUtil.sizeMessage(
               InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
               instrumentationLibrary);
+      size +=
+          MarshalerUtil.sizeBytes(InstrumentationLibrarySpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
               InstrumentationLibrarySpans.SPANS_FIELD_NUMBER, spanMarshalers);
