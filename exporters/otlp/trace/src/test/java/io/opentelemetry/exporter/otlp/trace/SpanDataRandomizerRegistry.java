@@ -163,6 +163,7 @@ public final class SpanDataRandomizerRegistry implements RandomizerRegistry {
   public Randomizer<?> getRandomizer(Field field) {
     // TODO(anuraaga): Make work for autovalue, unfortunately it only adds Nullable to constructor
     // parameters / getters but not to fields.
+    // https://github.com/open-telemetry/opentelemetry-java/issues/3498
     if (field.getAnnotation(Nullable.class) == null) {
       return null;
     }

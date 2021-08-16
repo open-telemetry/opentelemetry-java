@@ -140,7 +140,7 @@ class TraceMarshalerTest {
             testSpanDataWithInstrumentationLibrary(InstrumentationLibraryInfo.create("", ""))));
   }
 
-  @RepeatedTest(10000)
+  @RepeatedTest(100)
   void randomData() throws Exception {
     SpanData span = EASY_RANDOM.nextObject(SpanData.class);
 
