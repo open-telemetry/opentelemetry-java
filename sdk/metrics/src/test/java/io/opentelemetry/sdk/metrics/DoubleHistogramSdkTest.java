@@ -262,10 +262,7 @@ class DoubleHistogramSdkTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasCount(4_000)
                                 .hasSum(40_000)
-                        // .hasPercentileValues(
-                        //     valueAtPercentiles(9.0, 11.0)
-                        //         .toArray(new ValueAtPercentile[0]))
-                        )
+                                .hasBucketCounts(0, 2000, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
                     .extracting(point -> point.getAttributes())
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),

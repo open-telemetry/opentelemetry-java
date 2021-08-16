@@ -263,9 +263,7 @@ class LongHistogramSdkTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasCount(2_000)
                                 .hasSum(20_000)
-                        // .hasPercentileValues(
-                        //     valueAtPercentiles(9, 11).toArray(new ValueAtPercentile[0]))
-                        )
+                                .hasBucketCounts(0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
                     .extracting(point -> point.getAttributes())
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
