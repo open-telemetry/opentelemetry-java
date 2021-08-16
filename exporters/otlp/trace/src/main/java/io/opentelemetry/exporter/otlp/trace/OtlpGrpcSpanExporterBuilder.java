@@ -28,7 +28,7 @@ public final class OtlpGrpcSpanExporterBuilder {
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
-  private ManagedChannel channel;
+  @Nullable private ManagedChannel channel;
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private URI endpoint = DEFAULT_ENDPOINT;
   @Nullable private Metadata metadata;
@@ -122,6 +122,7 @@ public final class OtlpGrpcSpanExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpGrpcSpanExporter build() {
+    ManagedChannel channel = this.channel;
     if (channel == null) {
       final ManagedChannelBuilder<?> managedChannelBuilder =
           ManagedChannelBuilder.forTarget(endpoint.getAuthority());

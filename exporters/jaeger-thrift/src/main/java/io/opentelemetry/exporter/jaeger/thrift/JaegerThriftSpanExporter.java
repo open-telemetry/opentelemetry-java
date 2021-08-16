@@ -113,7 +113,10 @@ public final class JaegerThriftSpanExporter implements SpanExporter {
     if (serviceName == null || serviceName.isEmpty()) {
       serviceName = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
     }
-    result.setServiceName(serviceName);
+    // In practice should never be null unless the default Resource spec is changed.
+    if (serviceName != null) {
+      result.setServiceName(serviceName);
+    }
 
     List<Tag> tags = Adapter.toTags(resource.getAttributes());
     tags.forEach(result::addToTags);

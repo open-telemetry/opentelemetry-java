@@ -28,7 +28,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
-  private ManagedChannel channel;
+  @Nullable private ManagedChannel channel;
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private URI endpoint = DEFAULT_ENDPOINT;
 
@@ -123,6 +123,7 @@ public final class OtlpGrpcMetricExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpGrpcMetricExporter build() {
+    ManagedChannel channel = this.channel;
     if (channel == null) {
       final ManagedChannelBuilder<?> managedChannelBuilder =
           ManagedChannelBuilder.forTarget(endpoint.getAuthority());

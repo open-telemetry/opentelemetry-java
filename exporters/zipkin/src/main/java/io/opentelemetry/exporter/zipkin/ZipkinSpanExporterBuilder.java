@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.SpanBytesEncoder;
@@ -19,7 +20,7 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 /** Builder class for {@link ZipkinSpanExporter}. */
 public final class ZipkinSpanExporterBuilder {
   private BytesEncoder<Span> encoder = SpanBytesEncoder.JSON_V2;
-  private Sender sender;
+  @Nullable private Sender sender;
   private String endpoint = ZipkinSpanExporter.DEFAULT_ENDPOINT;
   private long readTimeoutMillis = TimeUnit.SECONDS.toMillis(10);
 
@@ -97,10 +98,11 @@ public final class ZipkinSpanExporterBuilder {
    * @return a {@code ZipkinSpanExporter}.
    */
   public ZipkinSpanExporter build() {
+    Sender sender = this.sender;
     if (sender == null) {
       sender =
           OkHttpSender.newBuilder().endpoint(endpoint).readTimeout((int) readTimeoutMillis).build();
     }
-    return new ZipkinSpanExporter(this.encoder, this.sender);
+    return new ZipkinSpanExporter(encoder, sender);
   }
 }

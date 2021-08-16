@@ -156,12 +156,18 @@ public final class ZipkinSpanExporter implements SpanExporter {
   private Endpoint getEndpoint(SpanData spanData) {
     Attributes resourceAttributes = spanData.getResource().getAttributes();
 
+    Endpoint.Builder endpoint = Endpoint.newBuilder().ip(localAddress);
+
     // use the service.name from the Resource, if it's been set.
     String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
     if (serviceNameValue == null) {
       serviceNameValue = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
     }
-    return Endpoint.newBuilder().serviceName(serviceNameValue).ip(localAddress).build();
+    // In practice should never be null unless the default Resource spec is changed.
+    if (serviceNameValue != null) {
+      endpoint.serviceName(serviceNameValue);
+    }
+    return endpoint.build();
   }
 
   @Nullable
@@ -265,6 +271,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   // VisibleForTesting
+  @Nullable
   InetAddress getLocalAddressForTest() {
     return localAddress;
   }
