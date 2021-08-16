@@ -8,11 +8,16 @@ package io.opentelemetry.sdk.metrics.internal.view;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-/** Re-usable string predicates. */
+/**
+ * Re-usable string predicates.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class StringPredicates {
   private StringPredicates() {}
 
-  /** A string predicaate that matches all strings. */
+  /** A string predicate that matches all strings. */
   public static final Predicate<String> ALL = value -> true;
 
   /** A string predicate that does exact string matching. */

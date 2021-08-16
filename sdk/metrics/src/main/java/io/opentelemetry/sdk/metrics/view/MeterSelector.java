@@ -53,41 +53,86 @@ public abstract class MeterSelector {
   @AutoValue.Builder
   public abstract static class Builder {
 
-    /** Sets the {@link Predicate} for matching name. */
-    abstract Builder setNameFilter(Predicate<String> filter);
+    /**
+     * Sets the {@link Predicate} for matching name.
+     *
+     * <p>Note: The last provided of {@link #setNameFilter}, {@link #setNamePattern} and {@link
+     * #setName} is used.
+     */
+    public abstract Builder setNameFilter(Predicate<String> filter);
 
-    /** Sets the {@link Pattern} for matching name. */
+    /**
+     * Sets the {@link Pattern} for matching name.
+     *
+     * <p>Note: The last provided of {@link #setNameFilter}, {@link #setNamePattern} and {@link
+     * #setName} is used.
+     */
     public final Builder setNamePattern(Pattern pattern) {
       return setNameFilter(StringPredicates.regex(pattern));
     }
 
-    /** Sets a specifier for selecting Instruments by name. */
+    /**
+     * Sets a specifier for selecting Instruments by name.
+     *
+     * <p>Note: The last provided of {@link #setNameFilter}, {@link #setNamePattern} and {@link
+     * #setName} is used.
+     */
     public final Builder setName(String name) {
       return setNameFilter(StringPredicates.exact(name));
     }
 
-    /** Sets the {@link Predicate} for matching versions. */
-    abstract Builder setVersionFilter(Predicate<String> filter);
+    /**
+     * Sets the {@link Predicate} for matching versions.
+     *
+     * <p>Note: The last provided of {@link #setVersionFilter}, {@link #setVersionPattern} and
+     * {@link #setVersion} is used.
+     */
+    public abstract Builder setVersionFilter(Predicate<String> filter);
 
-    /** Sets the {@link Pattern} for matching versions. */
+    /**
+     * Sets the {@link Pattern} for matching versions.
+     *
+     * <p>Note: The last provided of {@link #setVersionFilter}, {@link #setVersionPattern} and
+     * {@link #setVersion} is used.
+     */
     public final Builder setVersionPattern(Pattern pattern) {
       return setVersionFilter(StringPredicates.regex(pattern));
     }
 
-    /** Sets a specifier for selecting Meters by version. */
+    /**
+     * Sets a specifier for selecting Meters by version.
+     *
+     * <p>Note: The last provided of {@link #setVersionFilter}, {@link #setVersionPattern} and
+     * {@link #setVersion} is used.
+     */
     public final Builder setVersion(String version) {
       return setVersionFilter(StringPredicates.exact(version));
     }
 
-    /** Sets the {@link Predicate} for matching schema urls. */
+    /**
+     * Sets the {@link Predicate} for matching schema urls.
+     *
+     * <p>Note: The last provided of {@link #setSchemaUrlFilter}, {@link #setSchemaUrlPattern} and
+     * {@link #setSchemaUrl} is used.
+     */
     abstract Builder setSchemaUrlFilter(Predicate<String> filter);
 
-    /** Sets the {@link Pattern} for matching schema urls. */
+    /**
+     * Sets the {@link Pattern} for matching schema urls.
+     *
+     * <p>Note: The last provided of {@link #setSchemaUrlFilter}, {@link #setSchemaUrlPattern} and
+     * {@link #setSchemaUrl} is used.
+     */
     public final Builder setSchemaUrlPattern(Pattern pattern) {
       return setSchemaUrlFilter(StringPredicates.regex(pattern));
     }
 
-    /** Sets a specifier for selecting Instruments by name. */
+    /**
+     * Sets the schema url to match.
+     *
+     * <p>Note: The last provided of {@link #setSchemaUrlFilter}, {@link #setSchemaUrlPattern} and
+     * {@link #setSchemaUrl} is used.
+     */
     public final Builder setSchemaUrl(String url) {
       return setSchemaUrlFilter(StringPredicates.exact(url));
     }

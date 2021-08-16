@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.MeterSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -29,14 +30,16 @@ public final class ViewRegistry {
       View.builder()
           .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.CUMULATIVE))
           .build();
+  static final List<Double> DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES =
+      Collections.unmodifiableList(
+          Arrays.asList(
+              5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d, 5_000d, 7_500d,
+              10_000d));
   static final View DEFAULT_HISTOGRAM =
       View.builder()
           .setAggregatorFactory(
               AggregatorFactory.histogram(
-                  Arrays.asList(
-                      5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d, 5_000d,
-                      7_500d, 10_000d),
-                  AggregationTemporality.CUMULATIVE))
+                  DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES, AggregationTemporality.CUMULATIVE))
           .build();
   static final View LAST_VALUE =
       View.builder().setAggregatorFactory(AggregatorFactory.lastValue()).build();

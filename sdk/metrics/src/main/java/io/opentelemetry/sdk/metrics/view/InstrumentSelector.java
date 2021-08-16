@@ -53,7 +53,7 @@ public abstract class InstrumentSelector {
     public abstract Builder setInstrumentType(InstrumentType instrumentType);
 
     /** Sets the {@link Pattern} for instrument names that will be selected. */
-    abstract Builder setInstrumentNameFilter(Predicate<String> instrumentNameFilter);
+    public abstract Builder setInstrumentNameFilter(Predicate<String> instrumentNameFilter);
 
     /** Sets the {@link Pattern} for instrument names that will be selected. */
     public final Builder setInstrumentNamePattern(Pattern instrumentNamePattern) {
@@ -69,7 +69,7 @@ public abstract class InstrumentSelector {
      * Sets the {@link MeterSelector} for which {@link io.opentelemetry.api.metrics.View}s will be
      * included.
      */
-    abstract Builder setMeterSelector(MeterSelector meterSelector);
+    public abstract Builder setMeterSelector(MeterSelector meterSelector);
 
     /** Sets a specifier for selecting Instruments by name. */
     public final Builder setInstrumentNameRegex(String regex) {
