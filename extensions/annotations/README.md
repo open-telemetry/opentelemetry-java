@@ -1,4 +1,4 @@
-OpenTelemetry Contrib Annotations
+OpenTelemetry Extension Annotations
 ======================================================
 
 [![Javadocs][javadoc-image]][javadoc-url]
@@ -6,5 +6,5 @@ OpenTelemetry Contrib Annotations
 This module contains various annotations that can be used by clients of OpenTelemetry API.
 Please see [Javadocs][javadoc-url] for more information.
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-contrib-auto-annotations.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-contrib-auto-annotations
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-extension-annotations.svg
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-extension-annotations
