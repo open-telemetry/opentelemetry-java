@@ -34,6 +34,8 @@ dependencies {
   testImplementation("io.grpc:grpc-testing")
   testImplementation("org.slf4j:slf4j-simple")
 
+  testImplementation("org.jeasy:easy-random-randomizers")
+
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
   add("testGrpcNettyRuntimeOnly", "io.grpc:grpc-netty")

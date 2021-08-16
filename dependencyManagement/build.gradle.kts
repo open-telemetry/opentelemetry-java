@@ -61,6 +61,11 @@ val DEPENDENCY_SETS = listOf(
     listOf("jmh-core", "jmh-generator-bytecode")
   ),
   DependencySet(
+    "org.jeasy",
+    "4.3.0",
+    listOf("easy-random-core", "easy-random-randomizers")
+  ),
+  DependencySet(
     "org.mockito",
     "3.11.2",
     listOf("mockito-core", "mockito-junit-jupiter")
