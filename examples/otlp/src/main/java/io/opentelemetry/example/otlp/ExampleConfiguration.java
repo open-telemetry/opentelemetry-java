@@ -10,7 +10,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.OpenTelemetrySdkAutoConfiguration;
+import io.opentelemetry.sdk.autoconfigure.OpenTelemetryResourceAutoConfiguration;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -40,7 +40,7 @@ public final class ExampleConfiguration {
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(spanProcessor)
-            .setResource(OpenTelemetrySdkAutoConfiguration.getResource())
+            .setResource(OpenTelemetryResourceAutoConfiguration.configureResource())
             .build();
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();

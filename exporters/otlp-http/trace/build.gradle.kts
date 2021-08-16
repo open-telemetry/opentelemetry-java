@@ -1,7 +1,6 @@
 plugins {
     id("otel.java-conventions")
-    // TODO: uncomment once ready to publish
-    // id("otel.publish-conventions")
+    id("otel.publish-conventions")
 
     id("otel.animalsniffer-conventions")
 }
@@ -20,5 +19,6 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("com.linecorp.armeria:armeria-junit5")
 }

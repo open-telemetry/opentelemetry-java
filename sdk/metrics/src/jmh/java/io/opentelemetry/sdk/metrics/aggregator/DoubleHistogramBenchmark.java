@@ -37,7 +37,7 @@ public class DoubleHistogramBenchmark {
                   "name",
                   "description",
                   "1",
-                  InstrumentType.VALUE_RECORDER,
+                  InstrumentType.HISTOGRAM,
                   InstrumentValueType.DOUBLE));
   private AggregatorHandle<HistogramAccumulation> aggregatorHandle;
 

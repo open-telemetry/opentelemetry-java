@@ -31,11 +31,7 @@ class LongMinMaxSumCountAggregatorTest {
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
-              "name",
-              "description",
-              "unit",
-              InstrumentType.VALUE_RECORDER,
-              InstrumentValueType.LONG));
+              "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.LONG));
 
   @Test
   void createHandle() {

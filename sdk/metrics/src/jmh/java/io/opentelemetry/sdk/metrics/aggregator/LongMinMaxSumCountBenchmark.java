@@ -32,11 +32,7 @@ public class LongMinMaxSumCountBenchmark {
               Resource.getDefault(),
               InstrumentationLibraryInfo.empty(),
               InstrumentDescriptor.create(
-                  "name",
-                  "description",
-                  "1",
-                  InstrumentType.VALUE_RECORDER,
-                  InstrumentValueType.LONG));
+                  "name", "description", "1", InstrumentType.HISTOGRAM, InstrumentValueType.LONG));
   private AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle;
 
   @Setup(Level.Trial)

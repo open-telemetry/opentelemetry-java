@@ -10,11 +10,13 @@ public final class ConfigurationException extends RuntimeException {
 
   private static final long serialVersionUID = 4717640118051490483L;
 
-  ConfigurationException(String message) {
+  /** Create a new configuration exception with specified {@code message} and without a cause. */
+  public ConfigurationException(String message) {
     super(message);
   }
 
-  ConfigurationException(String message, Throwable cause) {
+  /** Create a new configuration exception with specified {@code message} and {@code cause}. */
+  public ConfigurationException(String message, Throwable cause) {
     super(message, cause);
   }
 }

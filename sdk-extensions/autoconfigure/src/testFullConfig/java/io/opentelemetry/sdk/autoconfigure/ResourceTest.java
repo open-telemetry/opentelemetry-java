@@ -15,7 +15,8 @@ class ResourceTest {
 
   @Test
   void resource() {
-    Attributes attributes = OpenTelemetrySdkAutoConfiguration.getResource().getAttributes();
+    Attributes attributes =
+        OpenTelemetryResourceAutoConfiguration.configureResource().getAttributes();
 
     assertThat(attributes.get(ResourceAttributes.OS_TYPE)).isNotNull();
     assertThat(attributes.get(ResourceAttributes.OS_DESCRIPTION)).isNotNull();

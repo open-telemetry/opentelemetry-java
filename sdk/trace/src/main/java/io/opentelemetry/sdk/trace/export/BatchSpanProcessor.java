@@ -250,8 +250,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
         }
       }
       exportCurrentBatch();
-      flushRequested.get().succeed();
-      flushRequested.set(null);
+      CompletableResultCode flushResult = flushRequested.get();
+      if (flushResult != null) {
+        flushResult.succeed();
+        flushRequested.set(null);
+      }
     }
 
     private void updateNextExportTime() {

@@ -35,7 +35,7 @@ public enum TestSdk {
               .registerView(
                   InstrumentSelector.builder()
                       .setInstrumentNameRegex(".*histogram_recorder")
-                      .setInstrumentType(InstrumentType.VALUE_RECORDER)
+                      .setInstrumentType(InstrumentType.HISTOGRAM)
                       .build(),
                   // Histogram buckets the same as the metrics prototype/prometheus.
                   View.builder()

@@ -5,8 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.http.metric;
 
-import com.google.rpc.Code;
-import com.google.rpc.Status;
+import io.opentelemetry.exporter.otlp.internal.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -38,8 +37,10 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
 
   private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
 
-  private final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OtlpHttpMetricExporter.class.getName()));
+  private static final Logger internalLogger =
+      Logger.getLogger(OtlpHttpMetricExporter.class.getName());
+
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
   private final OkHttpClient client;
   private final String endpoint;
@@ -104,14 +105,14 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
 
                 int code = response.code();
 
-                Status status = extractErrorStatus(response);
+                String status = extractErrorStatus(response);
 
                 logger.log(
                     Level.WARNING,
                     "Failed to export metrics. Server responded with HTTP status code "
                         + code
                         + ". Error message: "
-                        + status.getMessage());
+                        + status);
                 result.fail();
               }
             });
@@ -140,21 +141,15 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
     };
   }
 
-  private static Status extractErrorStatus(Response response) {
+  private static String extractErrorStatus(Response response) {
     ResponseBody responseBody = response.body();
     if (responseBody == null) {
-      return Status.newBuilder()
-          .setMessage("Response body missing, HTTP status message: " + response.message())
-          .setCode(Code.UNKNOWN.getNumber())
-          .build();
+      return "Response body missing, HTTP status message: " + response.message();
     }
     try {
-      return Status.parseFrom(responseBody.bytes());
+      return GrpcStatusUtil.getStatusMessage(responseBody.bytes());
     } catch (IOException e) {
-      return Status.newBuilder()
-          .setMessage("Unable to parse response body, HTTP status message: " + response.message())
-          .setCode(Code.UNKNOWN.getNumber())
-          .build();
+      return "Unable to parse response body, HTTP status message: " + response.message();
     }
   }
 

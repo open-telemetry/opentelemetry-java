@@ -30,23 +30,6 @@ dependencies {
   testImplementation("com.google.guava:guava-testlib")
 }
 
-sourceSets {
-  main {
-    output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
-  }
-}
-
-tasks {
-  register("generateVersionResource") {
-    val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk/common")
-    outputs.dir(propertiesDir)
-
-    doLast {
-      File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
-    }
-  }
-}
-
 for (version in mrJarVersions) {
   sourceSets {
     create("java${version}") {
@@ -86,5 +69,10 @@ tasks {
     manifest.attributes(
       "Multi-Release" to "true"
     )
+  }
+
+  test {
+    // For checking version number included in Resource.
+    systemProperty("otel.test.project-version", project.version.toString())
   }
 }

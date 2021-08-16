@@ -1,12 +1,15 @@
 package io.opentelemetry.example.metrics;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -24,17 +27,19 @@ public final class LongCounterExample {
       openTelemetry.getTracer("io.opentelemetry.example.metrics", "0.13.1");
 
   private static final Meter sampleMeter =
-      GlobalMeterProvider.getMeter("io.opentelemetry.example.metrics", "0.13.1");
+      GlobalMeterProvider.get().get("io.opentelemetry.example.metrics");
   private static final LongCounter directoryCounter =
       sampleMeter
-          .longCounterBuilder("directories_search_count")
+          .counterBuilder("directories_search_count")
           .setDescription("Counts directories accessed while searching for files.")
           .setUnit("unit")
           .build();
   private static final File homeDirectory = FileSystemView.getFileSystemView().getHomeDirectory();
+
+  private static final AttributeKey<String> ROOT_DIRECTORY_KEY = stringKey("root directory");
   // we can use BoundCounters to not specify labels each time
   private static final BoundLongCounter homeDirectoryCounter =
-      directoryCounter.bind(Labels.of("root directory", homeDirectory.getName()));
+      directoryCounter.bind(Attributes.of(ROOT_DIRECTORY_KEY, homeDirectory.getName()));
 
   public static void main(String[] args) {
     Span span = tracer.spanBuilder("workflow").setSpanKind(SpanKind.INTERNAL).startSpan();

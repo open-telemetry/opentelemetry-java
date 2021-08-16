@@ -13,6 +13,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 final class SpanContextShim extends BaseShimObject implements SpanContext {
 
@@ -74,7 +75,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
     return items;
   }
 
-  @SuppressWarnings("ReturnMissingNullable")
+  @Nullable
   String getBaggageItem(String key) {
     return baggage.getEntryValue(key);
   }

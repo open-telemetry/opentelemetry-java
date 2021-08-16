@@ -6,8 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import java.util.List;
+import javax.annotation.Nullable;
 
 abstract class AbstractInstrument implements Instrument {
 
@@ -22,13 +21,8 @@ abstract class AbstractInstrument implements Instrument {
     return descriptor;
   }
 
-  /**
-   * Collects records from all the entries (labelSet, Bound) that changed since the previous call.
-   */
-  abstract List<MetricData> collectAll(long epochNanos);
-
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

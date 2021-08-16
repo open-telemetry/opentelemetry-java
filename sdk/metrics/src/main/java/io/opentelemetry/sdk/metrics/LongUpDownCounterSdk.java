@@ -12,28 +12,26 @@ import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
+import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
 
-final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
-    implements LongUpDownCounter {
+final class LongUpDownCounterSdk extends AbstractInstrument implements LongUpDownCounter {
+  private final WriteableMetricStorage storage;
 
-  private LongUpDownCounterSdk(
-      InstrumentDescriptor descriptor, SynchronousInstrumentAccumulator<?> accumulator) {
-    super(descriptor, accumulator);
+  private LongUpDownCounterSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+    super(descriptor);
+    this.storage = storage;
   }
 
   @Override
-  public void add(long increment, Attributes labels, Context context) {
-    AggregatorHandle<?> aggregatorHandle = acquireHandle(labels);
-    try {
-      aggregatorHandle.recordLong(increment);
-    } finally {
-      aggregatorHandle.release();
-    }
+  public void add(long increment, Attributes attributes, Context context) {
+    storage.recordLong(increment, attributes, context);
   }
 
   @Override
@@ -47,20 +45,22 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
   }
 
   @Override
-  public BoundLongUpDownCounter bind(Attributes labels) {
-    return new BoundInstrument(acquireHandle(labels));
+  public BoundLongUpDownCounter bind(Attributes attributes) {
+    return new BoundInstrument(storage.bind(attributes), attributes);
   }
 
   static final class BoundInstrument implements BoundLongUpDownCounter {
-    private final AggregatorHandle<?> aggregatorHandle;
+    private final BoundStorageHandle handle;
+    private final Attributes attributes;
 
-    BoundInstrument(AggregatorHandle<?> aggregatorHandle) {
-      this.aggregatorHandle = aggregatorHandle;
+    BoundInstrument(BoundStorageHandle handle, Attributes attributes) {
+      this.handle = handle;
+      this.attributes = attributes;
     }
 
     @Override
     public void add(long increment, Context context) {
-      aggregatorHandle.recordLong(increment);
+      handle.recordLong(increment, attributes, context);
     }
 
     @Override
@@ -70,7 +70,7 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
 
     @Override
     public void unbind() {
-      aggregatorHandle.release();
+      handle.release();
     }
   }
 
@@ -111,8 +111,7 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument
 
     @Override
     public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      buildLongAsynchronousInstrument(
-          InstrumentType.UP_DOWN_SUM_OBSERVER, callback, LongUpDownSumObserverSdk::new);
+      registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM, callback);
     }
   }
 }

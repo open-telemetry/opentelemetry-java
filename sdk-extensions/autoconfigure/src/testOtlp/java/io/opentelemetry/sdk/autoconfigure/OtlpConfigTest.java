@@ -134,7 +134,7 @@ class OtlpConfigTest {
     props.put("otel.exporter.otlp.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.timeout", "15s");
-    ConfigProperties properties = ConfigProperties.createForTest(props);
+    ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     SpanExporter spanExporter = SpanExporterConfiguration.configureExporter("otlp", properties);
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
@@ -144,7 +144,7 @@ class OtlpConfigTest {
     assertThat(
             spanExporter
                 .export(Lists.newArrayList(generateFakeSpan()))
-                .join(10, TimeUnit.SECONDS)
+                .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
     assertThat(otlpTraceRequests).hasSize(1);
@@ -159,7 +159,7 @@ class OtlpConfigTest {
     assertThat(
             metricExporter
                 .export(Lists.newArrayList(generateFakeMetric()))
-                .join(10, TimeUnit.SECONDS)
+                .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
     assertThat(otlpMetricsRequests).hasSize(1);
@@ -186,7 +186,8 @@ class OtlpConfigTest {
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.traces.timeout", "15s");
     SpanExporter spanExporter =
-        SpanExporterConfiguration.configureExporter("otlp", ConfigProperties.createForTest(props));
+        SpanExporterConfiguration.configureExporter(
+            "otlp", DefaultConfigProperties.createForTest(props));
 
     assertThat(spanExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
@@ -220,13 +221,13 @@ class OtlpConfigTest {
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
-            ConfigProperties.createForTest(props), SdkMeterProvider.builder().build());
+            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder().build());
 
     assertThat(metricExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             metricExporter
                 .export(Lists.newArrayList(generateFakeMetric()))
-                .join(10, TimeUnit.SECONDS)
+                .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
     assertThat(otlpMetricsRequests).hasSize(1);
@@ -242,7 +243,7 @@ class OtlpConfigTest {
   void configureTlsInvalidCertificatePath() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
-    ConfigProperties properties = ConfigProperties.createForTest(props);
+    ConfigProperties properties = DefaultConfigProperties.createForTest(props);
 
     assertThatThrownBy(() -> SpanExporterConfiguration.configureExporter("otlp", properties))
         .isInstanceOf(ConfigurationException.class)

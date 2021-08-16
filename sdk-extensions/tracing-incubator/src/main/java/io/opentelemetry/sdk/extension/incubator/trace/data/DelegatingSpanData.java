@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * A {@link SpanData} which delegates all methods to another {@link SpanData}. Extend this class to
@@ -134,7 +135,7 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public final boolean equals(Object o) {
+  public final boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     }

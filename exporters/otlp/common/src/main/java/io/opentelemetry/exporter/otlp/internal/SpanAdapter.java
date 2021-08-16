@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -101,11 +102,13 @@ public final class SpanAdapter {
 
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>>
       groupByResourceAndLibrary(Collection<SpanData> spanDataList) {
-    Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> result = new HashMap<>();
+    // expectedMaxSize of 8 means initial map capacity of 16 to match HashMap
+    IdentityHashMap<Resource, Map<InstrumentationLibraryInfo, List<Span>>> result =
+        new IdentityHashMap<>(8);
     ThreadLocalCache threadLocalCache = getThreadLocalCache();
     for (SpanData spanData : spanDataList) {
       Map<InstrumentationLibraryInfo, List<Span>> libraryInfoListMap =
-          result.computeIfAbsent(spanData.getResource(), unused -> new HashMap<>());
+          result.computeIfAbsent(spanData.getResource(), unused -> new IdentityHashMap<>(8));
       List<Span> spanList =
           libraryInfoListMap.computeIfAbsent(
               spanData.getInstrumentationLibraryInfo(), unused -> new ArrayList<>());

@@ -279,7 +279,7 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
-  void setStatus() {
+  void toSpanData_Status() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.CONSUMER);
     try {
       testClock.advance(Duration.ofSeconds(1));
@@ -295,10 +295,30 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
-  void getSpanKind() {
+  void toSpanData_Kind() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.SERVER);
     try {
       assertThat(span.toSpanData().getKind()).isEqualTo(SpanKind.SERVER);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getKind() {
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.SERVER);
+    try {
+      assertThat(span.getKind()).isEqualTo(SpanKind.SERVER);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getAttribute() {
+    RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
+    try {
+      assertThat(span.getAttribute(longKey("MyLongAttributeKey"))).isEqualTo(123L);
     } finally {
       span.end();
     }

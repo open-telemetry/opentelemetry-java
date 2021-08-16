@@ -12,7 +12,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
@@ -95,26 +94,29 @@ class BatchSpanProcessorTest {
 
   @Test
   void invalidConfig() {
-    SpanExporter exporter = mock(SpanExporter.class);
     assertThatThrownBy(
-            () -> BatchSpanProcessor.builder(exporter).setScheduleDelay(-1, TimeUnit.MILLISECONDS))
+            () ->
+                BatchSpanProcessor.builder(mockSpanExporter)
+                    .setScheduleDelay(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("delay must be non-negative");
-    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setScheduleDelay(1, null))
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).setScheduleDelay(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");
-    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setScheduleDelay(null))
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).setScheduleDelay(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("delay");
     assertThatThrownBy(
             () ->
-                BatchSpanProcessor.builder(exporter).setExporterTimeout(-1, TimeUnit.MILLISECONDS))
+                BatchSpanProcessor.builder(mockSpanExporter)
+                    .setExporterTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("timeout must be non-negative");
-    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setExporterTimeout(1, null))
+    assertThatThrownBy(
+            () -> BatchSpanProcessor.builder(mockSpanExporter).setExporterTimeout(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");
-    assertThatThrownBy(() -> BatchSpanProcessor.builder(exporter).setExporterTimeout(null))
+    assertThatThrownBy(() -> BatchSpanProcessor.builder(mockSpanExporter).setExporterTimeout(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("timeout");
   }
@@ -308,7 +310,6 @@ class BatchSpanProcessorTest {
 
   @Test
   void exporterThrowsException() {
-    SpanExporter mockSpanExporter = mock(SpanExporter.class);
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1, CompletableResultCode.ofSuccess());
     doThrow(new IllegalArgumentException("No export for you."))
@@ -467,8 +468,6 @@ class BatchSpanProcessorTest {
 
   @Test
   void shutdownPropagatesSuccess() {
-    SpanExporter mockSpanExporter = mock(SpanExporter.class);
-    when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
     BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     CompletableResultCode result = processor.shutdown();
     result.join(1, TimeUnit.SECONDS);
@@ -477,7 +476,6 @@ class BatchSpanProcessorTest {
 
   @Test
   void shutdownPropagatesFailure() {
-    SpanExporter mockSpanExporter = mock(SpanExporter.class);
     when(mockSpanExporter.shutdown()).thenReturn(CompletableResultCode.ofFailure());
     BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
     CompletableResultCode result = processor.shutdown();

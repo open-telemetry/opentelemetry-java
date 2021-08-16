@@ -1,11 +1,14 @@
 package io.opentelemetry.example.metrics;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -21,19 +24,22 @@ import javax.swing.filechooser.FileSystemView;
  * extensions.
  */
 public final class DoubleCounterExample {
+
   private static final OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
   private static final Tracer tracer =
       openTelemetry.getTracer("io.opentelemetry.example.metrics", "0.13.1");
   private static final Meter sampleMeter =
-      GlobalMeterProvider.get().get("io.opentelemetry.example.metrics", "0.13.1");
+      GlobalMeterProvider.get().get("io.opentelemetry.example.metrics");
   private static final File directoryToCountIn =
       FileSystemView.getFileSystemView().getHomeDirectory();
   private static final DoubleCounter diskSpaceCounter =
       sampleMeter
-          .doubleCounterBuilder("calculated_used_space")
+          .counterBuilder("calculated_used_space")
           .setDescription("Counts disk space used by file extension.")
           .setUnit("MB")
+          .ofDoubles()
           .build();
+  private static final AttributeKey<String> FILE_EXTENSION_KEY = stringKey("file_extension");
 
   public static void main(String[] args) {
     Span span = tracer.spanBuilder("calculate space").setSpanKind(SpanKind.INTERNAL).startSpan();
@@ -60,7 +66,7 @@ public final class DoubleCounterExample {
             // we can add values to the counter for specific labels
             // the label key is "file_extension", its value is the name of the extension
             diskSpaceCounter.add(
-                (double) file.length() / 1_000_000, Labels.of("file_extension", extension));
+                (double) file.length() / 1_000_000, Attributes.of(FILE_EXTENSION_KEY, extension));
           }
         }
       }
