@@ -1,10 +1,10 @@
-OpenTelemetry Contrib Trace Propagators
+OpenTelemetry Extension Trace Propagators
 ======================================================
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-contrib-trace-propagators.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-contrib-trace-propagators
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-extension-trace-propagators.svg
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-extension-trace-propagators
 
 This repository provides several 
 [trace propagators](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/context/api-propagators.md),
