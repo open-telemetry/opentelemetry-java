@@ -56,6 +56,6 @@ As with the OpenTelemetry SDK itself, this exporter is compatible with Java 8+ a
 
 The code in this module is based on the [OpenCensus Zipkin exporter][oc-origin] code.
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporters-zipkin.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporters-zipkin
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-zipkin.svg
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-zipkin
 [oc-origin]: https://github.com/census-instrumentation/opencensus-java/
