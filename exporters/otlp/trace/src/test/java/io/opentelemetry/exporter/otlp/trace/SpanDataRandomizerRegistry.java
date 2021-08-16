@@ -276,6 +276,10 @@ public final class SpanDataRandomizerRegistry implements RandomizerRegistry {
   private final class SpanContextRandomizer implements Randomizer<SpanContext> {
     @Override
     public SpanContext getRandomValue() {
+      boolean isInvalid = booleanRandomizer.getRandomValue();
+      if (isInvalid) {
+        return SpanContext.getInvalid();
+      }
       String traceId = randomHex(TraceId.getLength());
       String spanId = randomHex(SpanId.getLength());
       TraceFlags traceFlags = TraceFlags.fromByte(byteRandomizer.getRandomValue());
