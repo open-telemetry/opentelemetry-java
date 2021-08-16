@@ -1,5 +1,7 @@
 # OpenTelemetry SDK Extension zPages
 
+[![Javadocs][javadoc-image]][javadoc-url]
+
 This module contains code for the OpenTelemetry Java zPages, which are a collection of dynamic HTML
 web pages embedded in your app that display stats and trace data. Learn more in [this blog post](https://medium.com/opentelemetry/zpages-in-opentelemetry-2b080a81eb47).
 
@@ -69,3 +71,6 @@ the tests yourself with the following commands:
 ./gradlew -PjmhIncludeSingleClass=TracezSpanBucketsBenchmark clean :opentelemetry-sdk-extension-zpages:jmh
 ./gradlew -PjmhIncludeSingleClass=TracezDataAggregatorBenchmark clean :opentelemetry-sdk-extension-zpages:jmh
 ```
+
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-zpages.svg
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-zpages
