@@ -91,9 +91,9 @@ public final class ViewRegistry {
   }
 
   // Matches a pattern against  a value.  Null values are treated as empty strings.
-  private static boolean matchesPattern(Pattern pattern, String value) {
+  private static boolean matchesPattern(Pattern pattern, @Nullable String value) {
     if (value == null) {
-      return pattern.matcher("").matches();
+      value = "";
     }
     return pattern.matcher(value).matches();
   }
