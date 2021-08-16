@@ -14,6 +14,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /** Builder utility for this exporter. */
 public final class JaegerGrpcSpanExporterBuilder {
@@ -23,7 +24,7 @@ public final class JaegerGrpcSpanExporterBuilder {
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
   private URI endpoint = DEFAULT_ENDPOINT;
-  private ManagedChannel channel;
+  @Nullable private ManagedChannel channel;
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
 
   /**
@@ -88,6 +89,7 @@ public final class JaegerGrpcSpanExporterBuilder {
    * @return a new exporter's instance.
    */
   public JaegerGrpcSpanExporter build() {
+    ManagedChannel channel = this.channel;
     if (channel == null) {
       ManagedChannelBuilder<?> managedChannelBuilder =
           ManagedChannelBuilder.forTarget(endpoint.getAuthority());

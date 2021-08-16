@@ -155,7 +155,10 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     if (serviceName == null || serviceName.isEmpty()) {
       serviceName = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
     }
-    builder.setServiceName(serviceName);
+    // In practice should never be null unless the default Resource spec is changed.
+    if (serviceName != null) {
+      builder.setServiceName(serviceName);
+    }
 
     builder.addAllTags(Adapter.toKeyValues(resource.getAttributes()));
 
