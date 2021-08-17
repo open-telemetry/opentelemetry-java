@@ -47,7 +47,7 @@ public abstract class MeterProviderSharedState {
   public <T> Aggregator<T> getAggregator(
       MeterSharedState meterSharedState, InstrumentDescriptor descriptor) {
     return getViewRegistry()
-        .findView(descriptor)
+        .findView(descriptor, meterSharedState.getInstrumentationLibraryInfo())
         .getAggregatorFactory()
         .create(getResource(), meterSharedState.getInstrumentationLibraryInfo(), descriptor);
   }
@@ -56,7 +56,7 @@ public abstract class MeterProviderSharedState {
   public LabelsProcessor getLabelsProcessor(
       MeterSharedState meterSharedState, InstrumentDescriptor descriptor) {
     return getViewRegistry()
-        .findView(descriptor)
+        .findView(descriptor, meterSharedState.getInstrumentationLibraryInfo())
         .getLabelsProcessorFactory()
         .create(getResource(), meterSharedState.getInstrumentationLibraryInfo(), descriptor);
   }

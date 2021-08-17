@@ -5,15 +5,16 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.view.MeterSelector;
 import io.opentelemetry.sdk.metrics.view.View;
-import java.util.EnumMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -29,19 +30,24 @@ public final class ViewRegistry {
       View.builder()
           .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.CUMULATIVE))
           .build();
-  static final View SUMMARY =
-      View.builder().setAggregatorFactory(AggregatorFactory.minMaxSumCount()).build();
+  static final List<Double> DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES =
+      Collections.unmodifiableList(
+          Arrays.asList(
+              5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d, 5_000d, 7_500d,
+              10_000d));
+  static final View DEFAULT_HISTOGRAM =
+      View.builder()
+          .setAggregatorFactory(
+              AggregatorFactory.histogram(
+                  DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES, AggregationTemporality.CUMULATIVE))
+          .build();
   static final View LAST_VALUE =
       View.builder().setAggregatorFactory(AggregatorFactory.lastValue()).build();
 
-  private final EnumMap<InstrumentType, LinkedHashMap<Pattern, View>> configuration;
+  private final List<RegisteredView> reverseRegistration;
 
-  ViewRegistry(EnumMap<InstrumentType, LinkedHashMap<Pattern, View>> configuration) {
-    this.configuration = new EnumMap<>(InstrumentType.class);
-    // make a copy for safety
-    configuration.forEach(
-        (instrumentType, patternViewLinkedHashMap) ->
-            this.configuration.put(instrumentType, new LinkedHashMap<>(patternViewLinkedHashMap)));
+  ViewRegistry(List<RegisteredView> reverseRegistration) {
+    this.reverseRegistration = reverseRegistration;
   }
 
   /** Returns a builder of {@link ViewRegistry}. */
@@ -55,15 +61,32 @@ public final class ViewRegistry {
    * @param descriptor description of the instrument.
    * @return The {@link View} for this instrument, or a default aggregation view.
    */
-  public View findView(InstrumentDescriptor descriptor) {
-    LinkedHashMap<Pattern, View> configPerType = configuration.get(descriptor.getType());
-    for (Map.Entry<Pattern, View> entry : configPerType.entrySet()) {
-      if (entry.getKey().matcher(descriptor.getName()).matches()) {
-        return entry.getValue();
+  public View findView(InstrumentDescriptor descriptor, InstrumentationLibraryInfo meter) {
+    for (RegisteredView entry : reverseRegistration) {
+      if (matchesSelector(entry.getInstrumentSelector(), descriptor, meter)) {
+        return entry.getView();
       }
     }
 
     return getDefaultSpecification(descriptor);
+  }
+
+  // Matches an instrument selector against an instrument + meter.
+  private static boolean matchesSelector(
+      InstrumentSelector selector,
+      InstrumentDescriptor descriptor,
+      InstrumentationLibraryInfo meter) {
+    return (selector.getInstrumentType() == null
+            || selector.getInstrumentType() == descriptor.getType())
+        && selector.getInstrumentNameFilter().test(descriptor.getName())
+        && matchesMeter(selector.getMeterSelector(), meter);
+  }
+
+  // Matches a meter selector against a meter.
+  private static boolean matchesMeter(MeterSelector selector, InstrumentationLibraryInfo meter) {
+    return selector.getNameFilter().test(meter.getName())
+        && selector.getVersionFilter().test(meter.getVersion())
+        && selector.getSchemaUrlFilter().test(meter.getSchemaUrl());
   }
 
   private static View getDefaultSpecification(InstrumentDescriptor descriptor) {
@@ -74,7 +97,7 @@ public final class ViewRegistry {
       case OBSERVABLE_UP_DOWN_SUM:
         return CUMULATIVE_SUM;
       case HISTOGRAM:
-        return SUMMARY;
+        return DEFAULT_HISTOGRAM;
       case OBSERVABLE_GAUGE:
         return LAST_VALUE;
     }

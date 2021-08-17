@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -16,6 +17,10 @@ import io.opentelemetry.sdk.metrics.view.View;
 import org.junit.jupiter.api.Test;
 
 class ViewRegistryTest {
+
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.create("name", "version", "schema_url");
+
   @Test
   void selection_onType() {
     AggregatorFactory factory = AggregatorFactory.lastValue();
@@ -33,13 +38,15 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
+                    "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isEqualTo(view);
     // this one hasn't been configured, so it gets the default still.
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG)))
+                    "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isSameAs(ViewRegistry.CUMULATIVE_SUM);
   }
 
@@ -60,13 +67,15 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
+                    "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isSameAs(view);
     // this one hasn't been configured, so it gets the default still.
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
+                    "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isSameAs(ViewRegistry.CUMULATIVE_SUM);
   }
 
@@ -96,12 +105,14 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
+                    "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isEqualTo(view2);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
+                    "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isEqualTo(view1);
   }
 
@@ -123,18 +134,21 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
+                    "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isEqualTo(view);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "overrides", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
+                    "overrides", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isEqualTo(view);
     // this one hasn't been configured, so it gets the default still..
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "default", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG)))
+                    "default", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isSameAs(ViewRegistry.CUMULATIVE_SUM);
   }
 
@@ -144,32 +158,38 @@ class ViewRegistryTest {
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG)))
+                    "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isSameAs(ViewRegistry.CUMULATIVE_SUM);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG)))
+                    "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isSameAs(ViewRegistry.CUMULATIVE_SUM);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.LONG)))
-        .isSameAs(ViewRegistry.SUMMARY);
+                    "", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
+        .isSameAs(ViewRegistry.DEFAULT_HISTOGRAM);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.OBSERVABLE_SUM, InstrumentValueType.LONG)))
+                    "", "", "", InstrumentType.OBSERVABLE_SUM, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isSameAs(ViewRegistry.CUMULATIVE_SUM);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.LONG)))
+                    "", "", "", InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isSameAs(ViewRegistry.LAST_VALUE);
     assertThat(
             viewRegistry.findView(
                 InstrumentDescriptor.create(
-                    "", "", "", InstrumentType.OBSERVABLE_UP_DOWN_SUM, InstrumentValueType.LONG)))
+                    "", "", "", InstrumentType.OBSERVABLE_UP_DOWN_SUM, InstrumentValueType.LONG),
+                INSTRUMENTATION_LIBRARY_INFO))
         .isSameAs(ViewRegistry.CUMULATIVE_SUM);
   }
 }

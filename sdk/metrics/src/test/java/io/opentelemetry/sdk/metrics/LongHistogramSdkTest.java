@@ -16,16 +16,9 @@ import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
-import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongHistogramSdk}. */
@@ -79,22 +72,29 @@ class LongHistogramSdkTest {
     longRecorder.record(12, Attributes.empty());
     longRecorder.record(12);
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createDoubleSummary(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testRecorder",
-                "description",
-                "By",
-                DoubleSummaryData.create(
-                    Collections.singletonList(
-                        DoubleSummaryPointData.create(
-                            testClock.now() - SECOND_NANOS,
-                            testClock.now(),
-                            Attributes.empty(),
-                            2,
-                            24,
-                            valueAtPercentiles(12, 12))))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testRecorder")
+                    .hasDescription("description")
+                    .hasUnit("By")
+                    .hasDoubleHistogram()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.empty())
+                                .hasCount(2)
+                                .hasSum(24)
+                                .hasBucketBoundaries(
+                                    5, 10, 25, 50, 75, 100, 250, 500, 750, 1_000, 2_500, 5_000,
+                                    7_500, 10_000)
+                                .hasBucketCounts(0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)));
   }
 
   @Test
@@ -119,7 +119,7 @@ class LongHistogramSdkTest {
                       .hasResource(RESOURCE)
                       .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                       .hasName("testRecorder")
-                      .hasDoubleSummary()
+                      .hasDoubleHistogram()
                       .points()
                       .allSatisfy(
                           point ->
@@ -131,19 +131,16 @@ class LongHistogramSdkTest {
                               assertThat(point)
                                   .hasCount(3)
                                   .hasSum(323)
-                                  .hasPercentileValues(
-                                      valueAtPercentiles(-121, 321)
-                                          .toArray(new ValueAtPercentile[0]))
+                                  .hasBucketCounts(1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.builder().put("K", "V").build()),
                           point ->
                               assertThat(point)
                                   .hasCount(2)
                                   .hasSum(-2)
-                                  .hasPercentileValues(
-                                      valueAtPercentiles(-14, 12).toArray(new ValueAtPercentile[0]))
+                                  .hasBucketCounts(1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.empty())));
 
-      // Repeat to prove we don't keep previous values.
+      // Histograms are cumulative by default.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222);
       longRecorder.record(17, Attributes.empty());
@@ -154,28 +151,25 @@ class LongHistogramSdkTest {
                       .hasResource(RESOURCE)
                       .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                       .hasName("testRecorder")
-                      .hasDoubleSummary()
+                      .hasDoubleHistogram()
                       .points()
                       .allSatisfy(
                           point ->
                               assertThat(point)
-                                  .hasStartEpochNanos(startTime + SECOND_NANOS)
+                                  .hasStartEpochNanos(startTime)
                                   .hasEpochNanos(testClock.now()))
                       .satisfiesExactlyInAnyOrder(
                           point ->
                               assertThat(point)
-                                  .hasCount(1)
-                                  .hasSum(222)
-                                  .hasPercentileValues(
-                                      valueAtPercentiles(222, 222)
-                                          .toArray(new ValueAtPercentile[0]))
+                                  .hasCount(4)
+                                  .hasSum(545)
+                                  .hasBucketCounts(1, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.builder().put("K", "V").build()),
                           point ->
                               assertThat(point)
-                                  .hasCount(1)
-                                  .hasSum(17)
-                                  .hasPercentileValues(
-                                      valueAtPercentiles(17, 17).toArray(new ValueAtPercentile[0]))
+                                  .hasCount(3)
+                                  .hasSum(15)
+                                  .hasBucketCounts(1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                   .hasAttributes(Attributes.empty())));
     } finally {
       bound.unbind();
@@ -207,22 +201,22 @@ class LongHistogramSdkTest {
 
     stressTestBuilder.build().run();
     assertThat(sdkMeterProvider.collectAllMetrics())
-        .containsExactly(
-            MetricData.createDoubleSummary(
-                RESOURCE,
-                INSTRUMENTATION_LIBRARY_INFO,
-                "testRecorder",
-                "",
-                "1",
-                DoubleSummaryData.create(
-                    Collections.singletonList(
-                        DoubleSummaryPointData.create(
-                            testClock.now(),
-                            testClock.now(),
-                            Attributes.builder().put("K", "V").build(),
-                            16_000,
-                            160_000,
-                            valueAtPercentiles(9, 11))))));
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasResource(RESOURCE)
+                    .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                    .hasName("testRecorder")
+                    .hasDoubleHistogram()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasStartEpochNanos(testClock.now())
+                                .hasEpochNanos(testClock.now())
+                                .hasAttributes(Attributes.of(stringKey("K"), "V"))
+                                .hasCount(16_000)
+                                .hasSum(160_000)));
   }
 
   @Test
@@ -260,7 +254,7 @@ class LongHistogramSdkTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testRecorder")
-                    .hasDoubleSummary()
+                    .hasDoubleHistogram()
                     .points()
                     .allSatisfy(
                         point ->
@@ -269,8 +263,7 @@ class LongHistogramSdkTest {
                                 .hasEpochNanos(testClock.now())
                                 .hasCount(2_000)
                                 .hasSum(20_000)
-                                .hasPercentileValues(
-                                    valueAtPercentiles(9, 11).toArray(new ValueAtPercentile[0])))
+                                .hasBucketCounts(0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
                     .extracting(point -> point.getAttributes())
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
@@ -316,9 +309,5 @@ class LongHistogramSdkTest {
 
     @Override
     void cleanup() {}
-  }
-
-  private static List<ValueAtPercentile> valueAtPercentiles(double min, double max) {
-    return Arrays.asList(ValueAtPercentile.create(0, min), ValueAtPercentile.create(100, max));
   }
 }

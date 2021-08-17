@@ -5,12 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
-import java.util.EnumMap;
-import java.util.LinkedHashMap;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Builder for {@link ViewRegistry}.
@@ -19,19 +18,17 @@ import java.util.regex.Pattern;
  * at any time.
  */
 public class ViewRegistryBuilder {
-  private final EnumMap<InstrumentType, LinkedHashMap<Pattern, View>> configuration =
-      new EnumMap<>(InstrumentType.class);
-  private static final LinkedHashMap<Pattern, View> EMPTY_CONFIG = new LinkedHashMap<>();
+  private final List<RegisteredView> orderedViews = new ArrayList<>();
 
-  ViewRegistryBuilder() {
-    for (InstrumentType type : InstrumentType.values()) {
-      configuration.put(type, EMPTY_CONFIG);
-    }
-  }
+  ViewRegistryBuilder() {}
 
   /** Returns the {@link ViewRegistry}. */
   public ViewRegistry build() {
-    return new ViewRegistry(configuration);
+    // We add views in reverse order so normal iteration order is the priority of usage.
+    // TODO: Verify this is correct with the specification.
+    List<RegisteredView> reversedOrder = new ArrayList<>(orderedViews);
+    Collections.reverse(reversedOrder);
+    return new ViewRegistry(Collections.unmodifiableList(reversedOrder));
   }
 
   /**
@@ -42,19 +39,7 @@ public class ViewRegistryBuilder {
    * @return this
    */
   public ViewRegistryBuilder addView(InstrumentSelector selector, View view) {
-    LinkedHashMap<Pattern, View> parentConfiguration =
-        configuration.get(selector.getInstrumentType());
-    configuration.put(
-        selector.getInstrumentType(),
-        newLinkedHashMap(selector.getInstrumentNamePattern(), view, parentConfiguration));
+    orderedViews.add(RegisteredView.create(selector, view));
     return this;
-  }
-
-  private static LinkedHashMap<Pattern, View> newLinkedHashMap(
-      Pattern pattern, View view, LinkedHashMap<Pattern, View> parentConfiguration) {
-    LinkedHashMap<Pattern, View> result = new LinkedHashMap<>();
-    result.put(pattern, view);
-    result.putAll(parentConfiguration);
-    return result;
   }
 }
