@@ -133,18 +133,18 @@ class OtlpConfigTest {
     props.put("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
     props.put("otel.exporter.otlp.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
-    props.put("otel.exporter.otlp.timeout", "5s");
+    props.put("otel.exporter.otlp.timeout", "15s");
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     SpanExporter spanExporter = SpanExporterConfiguration.configureExporter("otlp", properties);
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
             properties, SdkMeterProvider.builder().build());
 
-    assertThat(spanExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(5));
+    assertThat(spanExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             spanExporter
                 .export(Lists.newArrayList(generateFakeSpan()))
-                .join(10, TimeUnit.SECONDS)
+                .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
     assertThat(otlpTraceRequests).hasSize(1);
@@ -155,11 +155,11 @@ class OtlpConfigTest {
                         ":path", "/opentelemetry.proto.collector.trace.v1.TraceService/Export")
                     && headers.contains("header-key", "header-value"));
 
-    assertThat(metricExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(5));
+    assertThat(metricExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             metricExporter
                 .export(Lists.newArrayList(generateFakeMetric()))
-                .join(10, TimeUnit.SECONDS)
+                .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
     assertThat(otlpMetricsRequests).hasSize(1);
@@ -184,12 +184,12 @@ class OtlpConfigTest {
     props.put(
         "otel.exporter.otlp.traces.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
-    props.put("otel.exporter.otlp.traces.timeout", "5s");
+    props.put("otel.exporter.otlp.traces.timeout", "15s");
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
             "otlp", DefaultConfigProperties.createForTest(props));
 
-    assertThat(spanExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(5));
+    assertThat(spanExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             spanExporter
                 .export(Lists.newArrayList(generateFakeSpan()))
@@ -218,16 +218,16 @@ class OtlpConfigTest {
     props.put(
         "otel.exporter.otlp.metrics.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
-    props.put("otel.exporter.otlp.metrics.timeout", "5s");
+    props.put("otel.exporter.otlp.metrics.timeout", "15s");
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
             DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder().build());
 
-    assertThat(metricExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(5));
+    assertThat(metricExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             metricExporter
                 .export(Lists.newArrayList(generateFakeMetric()))
-                .join(10, TimeUnit.SECONDS)
+                .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
     assertThat(otlpMetricsRequests).hasSize(1);
