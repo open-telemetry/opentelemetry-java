@@ -1,15 +1,18 @@
 package io.opentelemetry.exporter.otlp.internal;
 
+import com.google.protobuf.UnsafeByteOperations;
+import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
+import io.opentelemetry.proto.logs.v1.ResourceLogs;
+import io.opentelemetry.proto.logs.v1.SeverityNumber;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
-import io.opentelemetry.proto.logs.v1.ResourceLogs;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logging.data.LogRecord;
-import io.opentelemetry.sdk.resources.Resource;
 
 public class LogAdapter {
 
@@ -65,11 +68,28 @@ public class LogAdapter {
   static io.opentelemetry.proto.logs.v1.LogRecord toProtoLogRecord(LogRecord logRecord) {
     io.opentelemetry.proto.logs.v1.LogRecord.Builder builder =
         io.opentelemetry.proto.logs.v1.LogRecord.newBuilder()
-          .setName(logRecord.getName());
+          .setName(logRecord.getName())
+          .setBody(getLogRecordBodyAnyValue(logRecord))
+          .setSeverityText(logRecord.getSeverityText())
+          .setSeverityNumber(SeverityNumber.forNumber(logRecord.getSeverity().getSeverityNumber()))
+          .setTimeUnixNano(logRecord.getTimeUnixNano())
+          .setTraceId(UnsafeByteOperations.unsafeWrap(logRecord.getTraceId().getBytes()))
+          .setSpanId(UnsafeByteOperations.unsafeWrap(logRecord.getSpanId().getBytes()));
 
-    // TODO implement this, here get the needed data to create the proper LogRecord model
-    return builder.build();
+    logRecord
+        .getAttributes()
+        .forEach((key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
+
+    io.opentelemetry.proto.logs.v1.LogRecord protoLogRecord = builder.build();
+    builder.clear();
+    return protoLogRecord;
   }
+
+  static AnyValue getLogRecordBodyAnyValue(LogRecord logRecord) {
+    return AnyValue.newBuilder().setStringValue(logRecord.getBody().getStringValue()).build();
+  }
+
+  private LogAdapter() {}
 
 }
 
