@@ -52,17 +52,46 @@ public abstract class InstrumentSelector {
     /** Sets a specifier for {@link InstrumentType}. */
     public abstract Builder setInstrumentType(InstrumentType instrumentType);
 
-    /** Sets the {@link Pattern} for instrument names that will be selected. */
+    /**
+     * Sets the {@link Pattern} for instrument names that will be selected.
+     *
+     * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
+     * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
+     * used.
+     */
     public abstract Builder setInstrumentNameFilter(Predicate<String> instrumentNameFilter);
 
-    /** Sets the {@link Pattern} for instrument names that will be selected. */
+    /**
+     * Sets the {@link Pattern} for instrument names that will be selected.
+     *
+     * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
+     * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
+     * used.
+     */
     public final Builder setInstrumentNamePattern(Pattern instrumentNamePattern) {
       return setInstrumentNameFilter(StringPredicates.regex(instrumentNamePattern));
     }
 
-    /** Sets the exact instrument name that will be selected. */
+    /**
+     * Sets the exact instrument name that will be selected.
+     *
+     * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
+     * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
+     * used.
+     */
     public final Builder setInstrumentName(String instrumentName) {
       return setInstrumentNameFilter(StringPredicates.exact(instrumentName));
+    }
+
+    /**
+     * Sets a specifier for selecting Instruments by name.
+     *
+     * <p>Note: The last provided of {@link #setInstrumentNameFilter}, {@link
+     * #setInstrumentNamePattern} {@link #setInstrumentNameRegex} and {@link #setInstrumentName} is
+     * used.
+     */
+    public final Builder setInstrumentNameRegex(String regex) {
+      return setInstrumentNamePattern(Pattern.compile(Objects.requireNonNull(regex, "regex")));
     }
 
     /**
@@ -70,11 +99,6 @@ public abstract class InstrumentSelector {
      * included.
      */
     public abstract Builder setMeterSelector(MeterSelector meterSelector);
-
-    /** Sets a specifier for selecting Instruments by name. */
-    public final Builder setInstrumentNameRegex(String regex) {
-      return setInstrumentNamePattern(Pattern.compile(Objects.requireNonNull(regex, "regex")));
-    }
 
     /** Returns an InstrumentSelector instance with the content of this builder. */
     public abstract InstrumentSelector build();
