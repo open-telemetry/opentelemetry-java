@@ -22,7 +22,7 @@ public final class StringPredicates {
 
   /** A string predicate that does exact string matching. */
   public static Predicate<String> exact(String match) {
-    return input -> (input != null) && match.equals(input);
+    return input -> match.equals(input);
   }
 
   /** A string predicate that matches against a regular expression. */

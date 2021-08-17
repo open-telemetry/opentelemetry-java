@@ -66,7 +66,7 @@ public abstract class InstrumentSelector {
     }
 
     /**
-     * Sets the {@link MeterSelector} for which {@link io.opentelemetry.api.metrics.View}s will be
+     * Sets the {@link MeterSelector} for which {@link io.opentelemetry.api.metrics.Meter}s will be
      * included.
      */
     public abstract Builder setMeterSelector(MeterSelector meterSelector);
