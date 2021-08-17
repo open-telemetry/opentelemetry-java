@@ -26,6 +26,14 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
     super(data, keyComparator);
   }
 
+  /**
+   * Only use this constructor if you can guarantee that the data has been de-duped and sorted.
+   * @param data the raw data
+   */
+  ArrayBackedAttributes(Object[] data) {
+    super(data, KEY_COMPARATOR_FOR_CONSTRUCTION);
+  }
+
   @Override
   public AttributesBuilder toBuilder() {
     return new ArrayBackedAttributesBuilder(new ArrayList<>(data()));

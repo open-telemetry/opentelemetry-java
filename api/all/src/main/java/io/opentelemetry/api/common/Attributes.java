@@ -56,7 +56,7 @@ public interface Attributes {
 
   /** Returns a {@link Attributes} instance with a single key-value pair. */
   static <T> Attributes of(AttributeKey<T> key, T value) {
-    return sortAndFilterToAttributes(key, value);
+    return new ArrayBackedAttributes(new Object[] {key, value});
   }
 
   /**
