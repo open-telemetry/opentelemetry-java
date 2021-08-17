@@ -27,7 +27,9 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
   }
 
   /**
-   * Only use this constructor if you can guarantee that the data has been de-duped and sorted.
+   * Only use this constructor if you can guarantee that the data has been de-duped, sorted by key
+   * and contains no null values or null/empty keys.
+   *
    * @param data the raw data
    */
   ArrayBackedAttributes(Object[] data) {

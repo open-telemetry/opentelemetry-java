@@ -56,6 +56,9 @@ public interface Attributes {
 
   /** Returns a {@link Attributes} instance with a single key-value pair. */
   static <T> Attributes of(AttributeKey<T> key, T value) {
+    if (key == null || key.getKey().isEmpty() || value == null) {
+      return empty();
+    }
     return new ArrayBackedAttributes(new Object[] {key, value});
   }
 
@@ -64,7 +67,16 @@ public interface Attributes {
    * preserved. Duplicate keys will be removed.
    */
   static <T, U> Attributes of(AttributeKey<T> key1, T value1, AttributeKey<U> key2, U value2) {
-    return sortAndFilterToAttributes(key1, value1, key2, value2);
+    if (key1 == null || key1.getKey().isEmpty() || value1 == null) {
+      return of(key2, value2);
+    }
+    if (key2 == null || key2.getKey().isEmpty() || value2 == null) {
+      return of(key1, value1);
+    }
+    if (key1.getKey().compareTo(key2.getKey()) < 0) {
+      return new ArrayBackedAttributes(new Object[] {key2, value2, key1, value1});
+    }
+    return new ArrayBackedAttributes(new Object[] {key1, value1, key2, value2});
   }
 
   /**

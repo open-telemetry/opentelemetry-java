@@ -233,8 +233,12 @@ class AttributesTest {
   @Test
   void emptyAndNullKey() {
     Attributes noAttributes = Attributes.of(stringKey(""), "empty", null, "null");
+    assertThat(noAttributes).isSameAs(Attributes.empty());
+    noAttributes = Attributes.of(null, "empty", stringKey(""), "null");
+    assertThat(noAttributes).isSameAs(Attributes.empty());
 
-    assertThat(noAttributes.size()).isEqualTo(0);
+    assertThat(Attributes.of(stringKey("one"), "one", stringKey(""), "null"))
+        .isEqualTo(Attributes.of(stringKey("one"), "one"));
   }
 
   @Test
