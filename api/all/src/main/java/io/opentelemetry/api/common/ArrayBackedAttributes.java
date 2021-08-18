@@ -33,7 +33,7 @@ final class ArrayBackedAttributes extends ImmutableKeyValuePairs<AttributeKey<?>
    * @param data the raw data
    */
   ArrayBackedAttributes(Object[] data) {
-    super(data, KEY_COMPARATOR_FOR_CONSTRUCTION);
+    super(data);
   }
 
   @Override

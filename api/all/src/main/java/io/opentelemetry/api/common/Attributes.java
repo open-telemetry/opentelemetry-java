@@ -73,7 +73,11 @@ public interface Attributes {
     if (key2 == null || key2.getKey().isEmpty() || value2 == null) {
       return of(key1, value1);
     }
-    if (key1.getKey().compareTo(key2.getKey()) < 0) {
+    if (key1.getKey().equals(key2.getKey())) {
+      // last one in wins
+      return of(key2, value2);
+    }
+    if (key1.getKey().compareTo(key2.getKey()) > 0) {
       return new ArrayBackedAttributes(new Object[] {key2, value2, key1, value1});
     }
     return new ArrayBackedAttributes(new Object[] {key1, value1, key2, value2});
