@@ -1,0 +1,1 @@
+Empty folder required for wire proto compiler.

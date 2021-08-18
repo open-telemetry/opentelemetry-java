@@ -5,24 +5,15 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
-import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CLIENT;
-import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CONSUMER;
-import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
-import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
-import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
-import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
-import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
-
 import com.google.protobuf.CodedOutputStream;
-import com.google.protobuf.UnknownFieldSet;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
-import io.opentelemetry.proto.trace.v1.ResourceSpans;
-import io.opentelemetry.proto.trace.v1.Span;
-import io.opentelemetry.proto.trace.v1.Status;
+import io.opentelemetry.proto.collector.trace.v1.internal.ExportTraceServiceRequest;
+import io.opentelemetry.proto.trace.v1.internal.InstrumentationLibrarySpans;
+import io.opentelemetry.proto.trace.v1.internal.ResourceSpans;
+import io.opentelemetry.proto.trace.v1.internal.Span;
+import io.opentelemetry.proto.trace.v1.internal.Status;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -76,14 +67,6 @@ final class TraceMarshaler {
           MarshalerUtil.sizeRepeatedMessage(
               ExportTraceServiceRequest.RESOURCE_SPANS_FIELD_NUMBER, resourceSpansMarshalers));
       this.resourceSpansMarshalers = resourceSpansMarshalers;
-    }
-
-    ExportTraceServiceRequest toRequest() throws IOException {
-      byte[] buf = new byte[getSerializedSize()];
-      writeTo(CodedOutputStream.newInstance(buf));
-      return ExportTraceServiceRequest.newBuilder()
-          .setUnknownFields(UnknownFieldSet.newBuilder().mergeFrom(buf).build())
-          .build();
     }
 
     @Override
@@ -212,7 +195,7 @@ final class TraceMarshaler {
           spanData.getSpanContext().getSpanIdBytes(),
           parentSpanId,
           MarshalerUtil.toBytes(spanData.getName()),
-          toProtoSpanKind(spanData.getKind()).getNumber(),
+          toProtoSpanKind(spanData.getKind()),
           spanData.getStartEpochNanos(),
           spanData.getEndEpochNanos(),
           attributeMarshalers,
@@ -478,26 +461,26 @@ final class TraceMarshaler {
   }
 
   private static final class SpanStatusMarshaler extends MarshalerWithSize {
-    private final Status.StatusCode protoStatusCode;
-    private final Status.DeprecatedStatusCode deprecatedStatusCode;
+    private final int protoStatusCode;
+    private final int deprecatedStatusCode;
     private final byte[] description;
 
     static SpanStatusMarshaler create(StatusData status) {
-      Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
-      Status.DeprecatedStatusCode deprecatedStatusCode = DEPRECATED_STATUS_CODE_OK;
+      int protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET_VALUE;
+      int deprecatedStatusCode = Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE;
       if (status.getStatusCode() == StatusCode.OK) {
-        protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
+        protoStatusCode = Status.StatusCode.STATUS_CODE_OK_VALUE;
       } else if (status.getStatusCode() == StatusCode.ERROR) {
-        protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
-        deprecatedStatusCode = DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
+        protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR_VALUE;
+        deprecatedStatusCode = Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR_VALUE;
       }
       byte[] description = MarshalerUtil.toBytes(status.getDescription());
       return new SpanStatusMarshaler(protoStatusCode, deprecatedStatusCode, description);
     }
 
     private SpanStatusMarshaler(
-        Status.StatusCode protoStatusCode,
-        Status.DeprecatedStatusCode deprecatedStatusCode,
+        int protoStatusCode,
+        int deprecatedStatusCode,
         byte[] description) {
       super(computeSize(protoStatusCode, deprecatedStatusCode, description));
       this.protoStatusCode = protoStatusCode;
@@ -508,33 +491,33 @@ final class TraceMarshaler {
     @Override
     public void writeTo(CodedOutputStream output) throws IOException {
       // TODO: Make this a MarshalerUtil helper.
-      if (deprecatedStatusCode != DEPRECATED_STATUS_CODE_OK) {
-        output.writeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode.getNumber());
+      if (deprecatedStatusCode != Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE) {
+        output.writeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
       }
       MarshalerUtil.marshalBytes(Status.MESSAGE_FIELD_NUMBER, description, output);
       // TODO: Make this a MarshalerUtil helper.
-      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET) {
-        output.writeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode.getNumber());
+      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET_VALUE) {
+        output.writeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode);
       }
     }
 
     private static int computeSize(
-        Status.StatusCode protoStatusCode,
-        Status.DeprecatedStatusCode deprecatedStatusCode,
+        int protoStatusCode,
+        int deprecatedStatusCode,
         byte[] description) {
       int size = 0;
       // TODO: Make this a MarshalerUtil helper.
-      if (deprecatedStatusCode != DEPRECATED_STATUS_CODE_OK) {
+      if (deprecatedStatusCode != Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE) {
         size +=
             CodedOutputStream.computeEnumSize(
-                Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode.getNumber());
+                Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
       }
       size += MarshalerUtil.sizeBytes(Status.MESSAGE_FIELD_NUMBER, description);
       // TODO: Make this a MarshalerUtil helper.
-      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET) {
+      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET_VALUE) {
         size +=
             CodedOutputStream.computeEnumSize(
-                Status.CODE_FIELD_NUMBER, protoStatusCode.getNumber());
+                Status.CODE_FIELD_NUMBER, protoStatusCode);
       }
       return size;
     }
@@ -556,20 +539,20 @@ final class TraceMarshaler {
     return result;
   }
 
-  private static Span.SpanKind toProtoSpanKind(SpanKind kind) {
+  private static int toProtoSpanKind(SpanKind kind) {
     switch (kind) {
       case INTERNAL:
-        return SPAN_KIND_INTERNAL;
+        return Span.SpanKind.SPAN_KIND_INTERNAL_VALUE;
       case SERVER:
-        return SPAN_KIND_SERVER;
+        return Span.SpanKind.SPAN_KIND_SERVER_VALUE;
       case CLIENT:
-        return SPAN_KIND_CLIENT;
+        return Span.SpanKind.SPAN_KIND_CLIENT_VALUE;
       case PRODUCER:
-        return SPAN_KIND_PRODUCER;
+        return Span.SpanKind.SPAN_KIND_PRODUCER_VALUE;
       case CONSUMER:
-        return SPAN_KIND_CONSUMER;
+        return Span.SpanKind.SPAN_KIND_CONSUMER_VALUE;
     }
-    return Span.SpanKind.UNRECOGNIZED;
+    return -1;
   }
 
   private TraceMarshaler() {}

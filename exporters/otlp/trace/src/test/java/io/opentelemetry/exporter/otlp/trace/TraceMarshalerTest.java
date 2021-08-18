@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.trace;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.protobuf.CodedOutputStream;
+import com.google.protobuf.UnknownFieldSet;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -198,7 +199,7 @@ class TraceMarshalerTest {
     assertThat(requestMarshaler.getSerializedSize()).isEqualTo(protoSize);
 
     ExportTraceServiceRequest protoCustomRequest =
-        TraceMarshaler.RequestMarshaler.create(spanDataList).toRequest();
+        toRequest(TraceMarshaler.RequestMarshaler.create(spanDataList));
     assertThat(protoCustomRequest.getSerializedSize()).isEqualTo(protoRequest.getSerializedSize());
 
     byte[] protoOutput = new byte[protoRequest.getSerializedSize()];
@@ -211,6 +212,15 @@ class TraceMarshalerTest {
     byte[] protoCustomOutput = new byte[protoRequest.getSerializedSize()];
     protoCustomRequest.writeTo(CodedOutputStream.newInstance(protoCustomOutput));
     assertThat(protoCustomOutput).isEqualTo(protoOutput);
+  }
+
+  private static ExportTraceServiceRequest toRequest(TraceMarshaler.RequestMarshaler request)
+      throws IOException {
+    byte[] buf = new byte[request.getSerializedSize()];
+    request.writeTo(CodedOutputStream.newInstance(buf));
+    return ExportTraceServiceRequest.newBuilder()
+        .setUnknownFields(UnknownFieldSet.newBuilder().mergeFrom(buf).build())
+        .build();
   }
 
   private static SpanData testSpanData() {

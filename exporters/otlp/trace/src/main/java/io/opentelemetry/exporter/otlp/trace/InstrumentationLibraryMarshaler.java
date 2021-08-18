@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import com.google.protobuf.CodedOutputStream;
-import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
+import io.opentelemetry.proto.common.v1.internal.InstrumentationLibrary;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import java.io.IOException;
 

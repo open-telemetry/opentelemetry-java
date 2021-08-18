@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import com.google.protobuf.CodedOutputStream;
+import com.google.protobuf.UnknownFieldSet;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.io.IOException;
@@ -70,9 +71,18 @@ public class RequestMarshalBenchmarks {
   @Threads(1)
   public byte[] marshalProtoCustom(RequestMarshalState state) throws IOException {
     ExportTraceServiceRequest protoRequest =
-        TraceMarshaler.RequestMarshaler.create(state.spanDataList).toRequest();
+        toRequest(TraceMarshaler.RequestMarshaler.create(state.spanDataList));
     byte[] protoOutput = new byte[protoRequest.getSerializedSize()];
     protoRequest.writeTo(CodedOutputStream.newInstance(protoOutput));
     return protoOutput;
+  }
+
+  private static ExportTraceServiceRequest toRequest(TraceMarshaler.RequestMarshaler request)
+      throws IOException {
+    byte[] buf = new byte[request.getSerializedSize()];
+    request.writeTo(CodedOutputStream.newInstance(buf));
+    return ExportTraceServiceRequest.newBuilder()
+        .setUnknownFields(UnknownFieldSet.newBuilder().mergeFrom(buf).build())
+        .build();
   }
 }

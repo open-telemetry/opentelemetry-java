@@ -6,7 +6,7 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import com.google.protobuf.CodedOutputStream;
-import io.opentelemetry.proto.resource.v1.Resource;
+import io.opentelemetry.proto.resource.v1.internal.Resource;
 import java.io.IOException;
 
 final class ResourceMarshaler extends MarshalerWithSize {
