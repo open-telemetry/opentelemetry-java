@@ -17,11 +17,6 @@ import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
-import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
-import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc.TraceServiceFutureStub;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -51,7 +46,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
-  private final TraceServiceFutureStub traceService;
+  private final MarshalerTraceServiceGrpc.TraceServiceFutureStub traceService;
 
   private final ManagedChannel managedChannel;
   private final long timeoutNanos;
@@ -77,7 +72,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
 
-    this.traceService = TraceServiceGrpc.newFutureStub(channel);
+    this.traceService = MarshalerTraceServiceGrpc.newFutureStub(channel);
   }
 
   /**
@@ -89,14 +84,11 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     spansSeen.add(spans.size());
-    ExportTraceServiceRequest exportTraceServiceRequest =
-        ExportTraceServiceRequest.newBuilder()
-            .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
-            .build();
+    TraceMarshaler.RequestMarshaler request = TraceMarshaler.RequestMarshaler.create(spans);
 
     final CompletableResultCode result = new CompletableResultCode();
 
-    TraceServiceFutureStub exporter;
+    MarshalerTraceServiceGrpc.TraceServiceFutureStub exporter;
     if (timeoutNanos > 0) {
       exporter = traceService.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
     } else {
@@ -104,7 +96,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     }
 
     Futures.addCallback(
-        exporter.export(exportTraceServiceRequest),
+        exporter.export(request),
         new FutureCallback<ExportTraceServiceResponse>() {
           @Override
           public void onSuccess(@Nullable ExportTraceServiceResponse response) {
