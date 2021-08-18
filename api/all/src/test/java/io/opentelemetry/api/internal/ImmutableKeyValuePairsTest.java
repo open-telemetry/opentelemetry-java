@@ -8,6 +8,7 @@ package io.opentelemetry.api.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import java.util.Comparator;
 import org.junit.jupiter.api.Test;
 
 class ImmutableKeyValuePairsTest {
@@ -53,7 +54,7 @@ class ImmutableKeyValuePairsTest {
 
   static class TestPairs extends ImmutableKeyValuePairs<String, Object> {
     TestPairs(Object[] data) {
-      super(data);
+      super(data, Comparator.naturalOrder());
     }
   }
 }
