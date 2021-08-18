@@ -1,61 +1,33 @@
-/*
- * Copyright The OpenTelemetry Authors
- * SPDX-License-Identifier: Apache-2.0
- */
-
 package io.opentelemetry.sdk.logs.data;
 
-import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
-/**
- * A LogRecord is an implementation of the <a
- * href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/logs/data-model.md">
- * OpenTelemetry logging model</a>.
- */
-@AutoValue
-public abstract class LogRecord {
+@Immutable
+public interface LogRecord {
 
-  public static LogRecordBuilder builder() {
-    return new LogRecordBuilder();
-  }
+  long getTimeUnixNano();
 
-  static LogRecord create(
-      long timeUnixNano,
-      String traceId,
-      String spanId,
-      int flags,
-      Severity severity,
-      String severityText,
-      String name,
-      AnyValue body,
-      Attributes attributes) {
-    return new AutoValue_LogRecord(
-        timeUnixNano, traceId, spanId, flags, severity, severityText, name, body, attributes);
-  }
+  String getTraceId();
 
-  public abstract long getTimeUnixNano();
+  String getSpanId();
 
-  public abstract String getTraceId();
+  int getFlags();
 
-  public abstract String getSpanId();
-
-  public abstract int getFlags();
-
-  public abstract Severity getSeverity();
+  Severity getSeverity();
 
   @Nullable
-  public abstract String getSeverityText();
+  String getSeverityText();
 
   @Nullable
-  public abstract String getName();
+  String getName();
 
-  public abstract AnyValue getBody();
+  AnyValue getBody();
 
-  public abstract Attributes getAttributes();
+  Attributes getAttributes();
 
-  public enum Severity {
+  static enum Severity {
     UNDEFINED_SEVERITY_NUMBER(0),
     TRACE(1),
     TRACE2(2),

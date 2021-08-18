@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogRecord;
+import io.opentelemetry.sdk.logs.data.LogRecordBuilder;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logs.util.TestLogExporter;
 import io.opentelemetry.sdk.logs.util.TestLogProcessor;
@@ -26,7 +27,7 @@ import org.junit.jupiter.api.Test;
 class LogSinkSdkProviderTest {
 
   private static LogRecord createLog(LogRecord.Severity severity, String message) {
-    return LogRecord.builder()
+    return new LogRecordBuilder()
         .setUnixTimeMillis(System.currentTimeMillis())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
