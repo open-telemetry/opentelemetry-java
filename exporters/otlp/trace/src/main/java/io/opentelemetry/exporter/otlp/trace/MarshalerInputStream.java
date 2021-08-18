@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import javax.annotation.Nullable;
 
-// Adapated from gRPC ProtoInputStream but using our Marshaller
+// Adapted from gRPC ProtoInputStream but using our Marshaller
 // https://github.com/grpc/grpc-java/blob/2c2ebaebd5a93acec92fbd2708faac582db99371/protobuf-lite/src/main/java/io/grpc/protobuf/lite/ProtoInputStream.java
 final class MarshalerInputStream extends InputStream implements Drainable, KnownLength {
   @Nullable private Marshaler message;
