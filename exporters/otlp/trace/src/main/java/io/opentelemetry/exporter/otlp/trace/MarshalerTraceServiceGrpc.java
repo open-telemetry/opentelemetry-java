@@ -70,15 +70,7 @@ final class MarshalerTraceServiceGrpc {
       return new MarshalerTraceServiceGrpc.TraceServiceFutureStub(channel, callOptions);
     }
 
-    /**
-     *
-     *
-     * <pre>
-     * For performance reasons, it is recommended to keep this RPC
-     * alive for the entire life of the application.
-     * </pre>
-     */
-    public com.google.common.util.concurrent.ListenableFuture<ExportTraceServiceResponse> export(
+    com.google.common.util.concurrent.ListenableFuture<ExportTraceServiceResponse> export(
         TraceMarshaler.RequestMarshaler request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getExportMethod(), getCallOptions()), request);
@@ -99,7 +91,6 @@ final class MarshalerTraceServiceGrpc {
                       .<TraceMarshaler.RequestMarshaler, ExportTraceServiceResponse>newBuilder()
                       .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
                       .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Export"))
-                      .setSampledToLocalTracing(true)
                       .setRequestMarshaller(REQUEST_MARSHALLER)
                       .setResponseMarshaller(RESPONSE_MARSHALER)
                       .build();
