@@ -23,21 +23,23 @@ dependencies {
 
   api(project(":sdk:trace"))
 
-  compileOnly("io.grpc:grpc-netty")
-  compileOnly("io.grpc:grpc-netty-shaded")
-  compileOnly("io.grpc:grpc-okhttp")
+  implementation(project(":api:metrics"))
 
   implementation(project(":exporters:otlp:common")) {
     exclude(mapOf("module" to "proto"))
   }
+
+  compileOnly("io.grpc:grpc-netty")
+  compileOnly("io.grpc:grpc-netty-shaded")
+  compileOnly("io.grpc:grpc-okhttp")
+
   api("io.grpc:grpc-stub")
   implementation("io.grpc:grpc-api")
-  implementation("io.grpc:grpc-protobuf")
-  implementation("com.google.protobuf:protobuf-java")
 
   testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("io.grpc:grpc-protobuf")
   testImplementation("io.grpc:grpc-testing")
   testImplementation("org.slf4j:slf4j-simple")
 

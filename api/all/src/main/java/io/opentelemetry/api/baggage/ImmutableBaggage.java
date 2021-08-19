@@ -8,6 +8,7 @@ package io.opentelemetry.api.baggage;
 import io.opentelemetry.api.internal.ImmutableKeyValuePairs;
 import io.opentelemetry.api.internal.StringUtils;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -19,7 +20,7 @@ final class ImmutableBaggage extends ImmutableKeyValuePairs<String, BaggageEntry
   private static final Baggage EMPTY = new ImmutableBaggage.Builder().build();
 
   private ImmutableBaggage(Object[] data) {
-    super(data);
+    super(data, Comparator.naturalOrder());
   }
 
   static Baggage empty() {

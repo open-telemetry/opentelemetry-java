@@ -22,6 +22,9 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
 
   @Override
   public Attributes build() {
+    if (data.size() == 2) {
+      return new ArrayBackedAttributes(data.toArray());
+    }
     return ArrayBackedAttributes.sortAndFilterToAttributes(data.toArray());
   }
 
