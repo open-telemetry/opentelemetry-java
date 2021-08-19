@@ -16,12 +16,12 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DoubleValueObserverSdk}. */
-class DoubleGaugeBuilderSdkTest {
+/** Unit tests for {@link LongValueObserverSdk}. */
+class SdkLongGaugeBuilderTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(DoubleGaugeBuilderSdkTest.class.getName(), null);
+      InstrumentationLibraryInfo.create(SdkLongGaugeBuilderTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
@@ -31,7 +31,8 @@ class DoubleGaugeBuilderSdkTest {
   void collectMetrics_NoRecords() {
     sdkMeter
         .gaugeBuilder("testObserver")
-        .setDescription("My own DoubleValueObserver")
+        .ofLongs()
+        .setDescription("My own LongValueObserver")
         .setUnit("ms")
         .buildWithCallback(result -> {});
     assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
@@ -42,10 +43,9 @@ class DoubleGaugeBuilderSdkTest {
   void collectMetrics_WithOneRecord() {
     sdkMeter
         .gaugeBuilder("testObserver")
-        .setDescription("My own DoubleValueObserver")
-        .setUnit("ms")
+        .ofLongs()
         .buildWithCallback(
-            result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
+            result -> result.observe(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofSeconds(1));
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
@@ -54,9 +54,7 @@ class DoubleGaugeBuilderSdkTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
-                    .hasDescription("My own DoubleValueObserver")
-                    .hasUnit("ms")
-                    .hasDoubleGauge()
+                    .hasLongGauge()
                     .points()
                     .satisfiesExactlyInAnyOrder(
                         point ->
@@ -64,7 +62,7 @@ class DoubleGaugeBuilderSdkTest {
                                 .hasStartEpochNanos(0)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.builder().put("k", "v").build())
-                                .hasValue(12.1d)));
+                                .hasValue(12)));
     testClock.advance(Duration.ofSeconds(1));
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
@@ -73,9 +71,7 @@ class DoubleGaugeBuilderSdkTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
-                    .hasDescription("My own DoubleValueObserver")
-                    .hasUnit("ms")
-                    .hasDoubleGauge()
+                    .hasLongGauge()
                     .points()
                     .satisfiesExactlyInAnyOrder(
                         point ->
@@ -83,6 +79,6 @@ class DoubleGaugeBuilderSdkTest {
                                 .hasStartEpochNanos(0)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.builder().put("k", "v").build())
-                                .hasValue(12.1d)));
+                                .hasValue(12)));
   }
 }

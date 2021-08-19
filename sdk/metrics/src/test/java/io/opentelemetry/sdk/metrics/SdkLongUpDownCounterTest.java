@@ -10,8 +10,8 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundDoubleCounter;
-import io.opentelemetry.api.metrics.DoubleCounter;
+import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
+import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
@@ -20,13 +20,13 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DoubleCounterSdk}. */
-class DoubleCounterSdkTest {
+/** Unit tests for {@link SdkLongUpDownCounter}. */
+class SdkLongUpDownCounterTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(DoubleCounterSdkTest.class.getName(), null);
+      InstrumentationLibraryInfo.create(SdkLongUpDownCounterTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
@@ -34,23 +34,24 @@ class DoubleCounterSdkTest {
 
   @Test
   void add_PreventNullAttributes() {
-    assertThatThrownBy(
-            () -> sdkMeter.counterBuilder("testCounter").ofDoubles().build().add(1.0, null))
+    assertThatThrownBy(() -> sdkMeter.upDownCounterBuilder("testCounter").build().add(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
 
   @Test
   void bound_PreventNullAttributes() {
-    assertThatThrownBy(() -> sdkMeter.counterBuilder("testCounter").ofDoubles().build().bind(null))
+    assertThatThrownBy(() -> sdkMeter.upDownCounterBuilder("testUpDownCounter").build().bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-    BoundDoubleCounter bound = doubleCounter.bind(Attributes.builder().put("foo", "bar").build());
+    LongUpDownCounter longUpDownCounter =
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
+    BoundLongUpDownCounter bound =
+        longUpDownCounter.bind(Attributes.builder().put("foo", "bar").build());
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
@@ -61,27 +62,26 @@ class DoubleCounterSdkTest {
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_WithEmptyAttributes() {
-    DoubleCounter doubleCounter =
+    LongUpDownCounter longUpDownCounter =
         sdkMeter
-            .counterBuilder("testCounter")
-            .ofDoubles()
+            .upDownCounterBuilder("testUpDownCounter")
             .setDescription("description")
-            .setUnit("ms")
+            .setUnit("By")
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    doubleCounter.add(12d, Attributes.empty());
-    doubleCounter.add(12d);
+    longUpDownCounter.add(12, Attributes.empty());
+    longUpDownCounter.add(12);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
-                    .hasName("testCounter")
+                    .hasName("testUpDownCounter")
                     .hasDescription("description")
-                    .hasUnit("ms")
-                    .hasDoubleSum()
-                    .isMonotonic()
+                    .hasUnit("By")
+                    .hasLongSum()
+                    .isNotMonotonic()
                     .isCumulative()
                     .points()
                     .satisfiesExactly(
@@ -97,28 +97,28 @@ class DoubleCounterSdkTest {
   @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-    BoundDoubleCounter bound = doubleCounter.bind(Attributes.builder().put("K", "V").build());
+    LongUpDownCounter longUpDownCounter =
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
+    BoundLongUpDownCounter bound =
+        longUpDownCounter.bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
-      doubleCounter.add(12.1d, Attributes.empty());
-      bound.add(123.3d);
-      doubleCounter.add(21.4d, Attributes.empty());
+      longUpDownCounter.add(12, Attributes.empty());
+      bound.add(123);
+      longUpDownCounter.add(21, Attributes.empty());
       // Advancing time here should not matter.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
-      bound.add(321.5d);
-      doubleCounter.add(111.1d, Attributes.builder().put("K", "V").build());
+      bound.add(321);
+      longUpDownCounter.add(111, Attributes.builder().put("K", "V").build());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
                       .hasResource(RESOURCE)
                       .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
-                      .hasName("testCounter")
-                      .hasDescription("")
-                      .hasUnit("1")
-                      .hasDoubleSum()
-                      .isMonotonic()
+                      .hasName("testUpDownCounter")
+                      .hasLongSum()
+                      .isNotMonotonic()
                       .isCumulative()
                       .points()
                       .allSatisfy(
@@ -127,24 +127,25 @@ class DoubleCounterSdkTest {
                                   .hasStartEpochNanos(startTime)
                                   .hasEpochNanos(testClock.now()))
                       .satisfiesExactlyInAnyOrder(
-                          point ->
-                              assertThat(point).hasAttributes(Attributes.empty()).hasValue(33.5),
+                          point -> assertThat(point).hasAttributes(Attributes.empty()).hasValue(33),
                           point ->
                               assertThat(point)
-                                  .hasValue(555.9)
-                                  .attributes()
-                                  .hasSize(1)
-                                  .containsEntry("K", "V")));
+                                  .hasAttributes(Attributes.of(stringKey("K"), "V"))
+                                  .hasValue(555)));
 
       // Repeat to prove we keep previous values.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
-      bound.add(222d);
-      doubleCounter.add(11d, Attributes.empty());
+      bound.add(222);
+      longUpDownCounter.add(11, Attributes.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
-                      .hasDoubleSum()
+                      .hasResource(RESOURCE)
+                      .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
+                      .hasName("testUpDownCounter")
+                      .hasLongSum()
+                      .isNotMonotonic()
                       .isCumulative()
                       .points()
                       .allSatisfy(
@@ -153,53 +154,37 @@ class DoubleCounterSdkTest {
                                   .hasStartEpochNanos(startTime)
                                   .hasEpochNanos(testClock.now()))
                       .satisfiesExactlyInAnyOrder(
-                          point ->
-                              assertThat(point).hasAttributes(Attributes.empty()).hasValue(44.5),
+                          point -> assertThat(point).hasAttributes(Attributes.empty()).hasValue(44),
                           point ->
                               assertThat(point)
                                   .hasAttributes(Attributes.of(stringKey("K"), "V"))
-                                  .hasValue(777.9)));
+                                  .hasValue(777)));
     } finally {
       bound.unbind();
     }
   }
 
   @Test
-  void doubleCounterAdd_Monotonicity() {
-    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-
-    assertThatThrownBy(() -> doubleCounter.add(-45.77d, Attributes.empty()))
-        .isInstanceOf(IllegalArgumentException.class);
-  }
-
-  @Test
-  void boundDoubleCounterAdd_Monotonicity() {
-    DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
-
-    assertThatThrownBy(() -> doubleCounter.bind(Attributes.empty()).add(-9.3))
-        .isInstanceOf(IllegalArgumentException.class);
-  }
-
-  @Test
   @SuppressWarnings("unchecked")
   void stressTest() {
-    final DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
+    final LongUpDownCounter longUpDownCounter =
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
-            .setInstrument((DoubleCounterSdk) doubleCounter)
+            .setInstrument((SdkLongUpDownCounter) longUpDownCounter)
             .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterDirectCall(doubleCounter, "K", "V")));
+              2_000, 1, new OperationUpdaterDirectCall(longUpDownCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000,
-              2,
+              2_000,
+              1,
               new OperationUpdaterWithBinding(
-                  doubleCounter.bind(Attributes.builder().put("K", "V").build()))));
+                  longUpDownCounter.bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -209,44 +194,46 @@ class DoubleCounterSdkTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
-                    .hasName("testCounter")
-                    .hasDoubleSum()
+                    .hasName("testUpDownCounter")
+                    .hasLongSum()
                     .isCumulative()
-                    .isMonotonic()
+                    .isNotMonotonic()
                     .points()
                     .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
-                                .hasValue(80_000)
+                                .hasValue(160_000)
                                 .attributes()
                                 .hasSize(1)
                                 .containsEntry("K", "V")));
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleCounter doubleCounter = sdkMeter.counterBuilder("testCounter").ofDoubles().build();
+    final LongUpDownCounter longUpDownCounter =
+        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
-            .setInstrument((DoubleCounterSdk) doubleCounter)
+            .setInstrument((SdkLongUpDownCounter) longUpDownCounter)
             .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterDirectCall(doubleCounter, keys[i], values[i])));
+              1_000, 2, new OperationUpdaterDirectCall(longUpDownCounter, keys[i], values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000,
-              1,
+              1_000,
+              2,
               new OperationUpdaterWithBinding(
-                  doubleCounter.bind(Attributes.builder().put(keys[i], values[i]).build()))));
+                  longUpDownCounter.bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
@@ -256,16 +243,17 @@ class DoubleCounterSdkTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
-                    .hasDoubleSum()
+                    .hasName("testUpDownCounter")
+                    .hasLongSum()
                     .isCumulative()
-                    .isMonotonic()
+                    .isNotMonotonic()
                     .points()
                     .allSatisfy(
                         point ->
                             assertThat(point)
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
-                                .hasValue(40_000))
+                                .hasValue(20_000))
                     .extracting(point -> point.getAttributes())
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
@@ -275,38 +263,39 @@ class DoubleCounterSdkTest {
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
-    private final BoundDoubleCounter boundDoubleCounter;
+    private final BoundLongUpDownCounter boundLongUpDownCounter;
 
-    private OperationUpdaterWithBinding(BoundDoubleCounter boundDoubleCounter) {
-      this.boundDoubleCounter = boundDoubleCounter;
+    private OperationUpdaterWithBinding(BoundLongUpDownCounter boundLongUpDownCounter) {
+      this.boundLongUpDownCounter = boundLongUpDownCounter;
     }
 
     @Override
     void update() {
-      boundDoubleCounter.add(9.0);
+      boundLongUpDownCounter.add(9);
     }
 
     @Override
     void cleanup() {
-      boundDoubleCounter.unbind();
+      boundLongUpDownCounter.unbind();
     }
   }
 
   private static class OperationUpdaterDirectCall extends OperationUpdater {
 
-    private final DoubleCounter doubleCounter;
+    private final LongUpDownCounter longUpDownCounter;
     private final String key;
     private final String value;
 
-    private OperationUpdaterDirectCall(DoubleCounter doubleCounter, String key, String value) {
-      this.doubleCounter = doubleCounter;
+    private OperationUpdaterDirectCall(
+        LongUpDownCounter longUpDownCounter, String key, String value) {
+      this.longUpDownCounter = longUpDownCounter;
       this.key = key;
       this.value = value;
     }
 
     @Override
     void update() {
-      doubleCounter.add(11.0, Attributes.builder().put(key, value).build());
+      longUpDownCounter.add(11, Attributes.builder().put(key, value).build());
     }
 
     @Override
