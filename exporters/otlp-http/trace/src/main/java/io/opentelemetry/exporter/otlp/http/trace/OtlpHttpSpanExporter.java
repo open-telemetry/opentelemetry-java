@@ -48,8 +48,6 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   private static final Attributes EXPORT_FAILURE_LABELS =
       Attributes.builder().put("exporter", EXPORTER_NAME).put("success", false).build();
 
-  private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
-
   private static final Logger internalLogger =
       Logger.getLogger(OtlpHttpSpanExporter.class.getName());
 
@@ -96,8 +94,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     if (headers != null) {
       requestBuilder.headers(headers);
     }
-    RequestBody requestBody =
-        RequestBody.create(exportTraceServiceRequest.toByteArray(), PROTOBUF_MEDIA_TYPE);
+    RequestBody requestBody = new ProtoRequestBody(exportTraceServiceRequest);
     if (compressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");
       requestBuilder.post(gzipRequestBody(requestBody));
