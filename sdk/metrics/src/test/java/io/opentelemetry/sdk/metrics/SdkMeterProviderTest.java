@@ -427,7 +427,7 @@ public class SdkMeterProviderTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void ViewSdk_AllowRenames() {
+  void viewSdk_AllowRenames() {
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
             .registerView(

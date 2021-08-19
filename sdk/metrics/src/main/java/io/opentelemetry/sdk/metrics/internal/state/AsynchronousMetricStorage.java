@@ -32,6 +32,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   private final InstrumentProcessor<?> instrumentProcessor;
   private final Runnable metricUpdater;
 
+  /** Constructs storage for {@code double} valued instruments. */
   public static <T> AsynchronousMetricStorage doubleAsynchronousAccumulator(
       View view,
       InstrumentDescriptor instrument,
