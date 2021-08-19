@@ -7,12 +7,15 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
+import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,19 +35,25 @@ public final class SynchronousMetricStorage<T> implements WriteableMetricStorage
   private final InstrumentProcessor<T> instrumentProcessor;
   private final LabelsProcessor labelsProcessor;
 
-  /** Constructs metric storage for a given synchronous instrument. */
+  /** Constructs metric storage for a given synchronous instrument and view. */
   public static <T> SynchronousMetricStorage<T> create(
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      InstrumentDescriptor descriptor) {
-    Aggregator<T> aggregator = meterProviderSharedState.getAggregator(meterSharedState, descriptor);
+      View view,
+      InstrumentDescriptor instrumentDescriptor,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      long startEpochNanos) {
+    final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
+    final Aggregator<T> aggregator =
+        view.getAggregatorFactory()
+            .create(resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor);
+    final LabelsProcessor labelsProcessor =
+        view.getLabelsProcessorFactory()
+            .create(resource, instrumentationLibraryInfo, instrumentDescriptor);
     return new SynchronousMetricStorage<>(
-        // TODO: View can change metric name/description.  Update this when wired in.
-        MetricDescriptor.create(
-            descriptor.getName(), descriptor.getDescription(), descriptor.getUnit()),
+        metricDescriptor,
         aggregator,
-        new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos()),
-        meterProviderSharedState.getLabelsProcessor(meterSharedState, descriptor));
+        new InstrumentProcessor<>(aggregator, startEpochNanos),
+        labelsProcessor);
   }
 
   SynchronousMetricStorage(

@@ -7,9 +7,9 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,7 +29,7 @@ final class DoubleLastValueAggregator extends AbstractAggregator<Double> {
   DoubleLastValueAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor) {
+      MetricDescriptor descriptor) {
     super(resource, instrumentationLibraryInfo, descriptor, /* stateful= */ true);
   }
 
@@ -58,9 +58,9 @@ final class DoubleLastValueAggregator extends AbstractAggregator<Double> {
     return MetricData.createDoubleGauge(
         getResource(),
         getInstrumentationLibraryInfo(),
-        getInstrumentDescriptor().getName(),
-        getInstrumentDescriptor().getDescription(),
-        getInstrumentDescriptor().getUnit(),
+        getMetricDescriptor().getName(),
+        getMetricDescriptor().getDescription(),
+        getMetricDescriptor().getUnit(),
         DoubleGaugeData.create(
             MetricDataUtils.toDoublePointList(accumulationByLabels, 0, epochNanos)));
   }

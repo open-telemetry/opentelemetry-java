@@ -9,12 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -25,12 +23,7 @@ class LongLastValueAggregatorTest {
       new LongLastValueAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          InstrumentDescriptor.create(
-              "name",
-              "description",
-              "unit",
-              InstrumentType.OBSERVABLE_GAUGE,
-              InstrumentValueType.LONG));
+          MetricDescriptor.create("name", "description", "unit"));
 
   @Test
   void createHandle() {

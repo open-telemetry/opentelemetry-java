@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 
 final class MinMaxSumCountAggregatorFactory implements AggregatorFactory {
@@ -19,14 +20,17 @@ final class MinMaxSumCountAggregatorFactory implements AggregatorFactory {
   public <T> Aggregator<T> create(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor) {
-    switch (descriptor.getValueType()) {
+      InstrumentDescriptor instrumentDescriptor,
+      MetricDescriptor metricDescriptor) {
+    switch (instrumentDescriptor.getValueType()) {
       case LONG:
         return (Aggregator<T>)
-            new LongMinMaxSumCountAggregator(resource, instrumentationLibraryInfo, descriptor);
+            new LongMinMaxSumCountAggregator(
+                resource, instrumentationLibraryInfo, metricDescriptor);
       case DOUBLE:
         return (Aggregator<T>)
-            new DoubleMinMaxSumCountAggregator(resource, instrumentationLibraryInfo, descriptor);
+            new DoubleMinMaxSumCountAggregator(
+                resource, instrumentationLibraryInfo, metricDescriptor);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

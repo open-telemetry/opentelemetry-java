@@ -9,11 +9,14 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
+import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
@@ -31,17 +34,22 @@ public final class AsynchronousMetricStorage implements MetricStorage {
 
   /** Constructs storage for {@code double} valued instruments. */
   public static <T> AsynchronousMetricStorage doubleAsynchronousAccumulator(
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      InstrumentDescriptor descriptor,
+      View view,
+      InstrumentDescriptor instrument,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      long startEpochNanos,
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
-    Aggregator<T> aggregator = meterProviderSharedState.getAggregator(meterSharedState, descriptor);
+    final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
+    // TODO: Send metric descriptor to aggregator.
+    Aggregator<T> aggregator =
+        view.getAggregatorFactory()
+            .create(resource, instrumentationLibraryInfo, instrument, metricDescriptor);
     final InstrumentProcessor<T> instrumentProcessor =
-        new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos());
-
+        new InstrumentProcessor<>(aggregator, startEpochNanos);
     final LabelsProcessor labelsProcessor =
-        meterProviderSharedState.getLabelsProcessor(meterSharedState, descriptor);
-
+        view.getLabelsProcessorFactory().create(resource, instrumentationLibraryInfo, instrument);
+    // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
     final ObservableDoubleMeasurement result =
         new ObservableDoubleMeasurement() {
           @Override
@@ -56,27 +64,28 @@ public final class AsynchronousMetricStorage implements MetricStorage {
             observe(value, Attributes.empty());
           }
         };
-
     return new AsynchronousMetricStorage(
-        // TODO: View can change metric name/description.  Update this when wired in.
-        MetricDescriptor.create(
-            descriptor.getName(), descriptor.getDescription(), descriptor.getUnit()),
-        instrumentProcessor,
-        () -> metricUpdater.accept(result));
+        metricDescriptor, instrumentProcessor, () -> metricUpdater.accept(result));
   }
 
   /** Constructs storage for {@code long} valued instruments. */
   public static <T> AsynchronousMetricStorage longAsynchronousAccumulator(
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      InstrumentDescriptor descriptor,
+      View view,
+      InstrumentDescriptor instrument,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      long startEpochNanos,
       Consumer<ObservableLongMeasurement> metricUpdater) {
-    Aggregator<T> aggregator = meterProviderSharedState.getAggregator(meterSharedState, descriptor);
+    final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
+    // TODO: Send metric descriptor to aggregator.
+    Aggregator<T> aggregator =
+        view.getAggregatorFactory()
+            .create(resource, instrumentationLibraryInfo, instrument, metricDescriptor);
     final InstrumentProcessor<T> instrumentProcessor =
-        new InstrumentProcessor<>(aggregator, meterProviderSharedState.getStartEpochNanos());
-
+        new InstrumentProcessor<>(aggregator, startEpochNanos);
     final LabelsProcessor labelsProcessor =
-        meterProviderSharedState.getLabelsProcessor(meterSharedState, descriptor);
+        view.getLabelsProcessorFactory().create(resource, instrumentationLibraryInfo, instrument);
+    // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
     final ObservableLongMeasurement result =
         new ObservableLongMeasurement() {
 
@@ -93,11 +102,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
           }
         };
     return new AsynchronousMetricStorage(
-        // TODO: View can change metric name/description.  Update this when wired in.
-        MetricDescriptor.create(
-            descriptor.getName(), descriptor.getDescription(), descriptor.getUnit()),
-        instrumentProcessor,
-        () -> metricUpdater.accept(result));
+        metricDescriptor, instrumentProcessor, () -> metricUpdater.accept(result));
   }
 
   private AsynchronousMetricStorage(

@@ -10,11 +10,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +28,7 @@ class LongMinMaxSumCountAggregatorTest {
       new LongMinMaxSumCountAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          InstrumentDescriptor.create(
-              "name", "description", "unit", InstrumentType.HISTOGRAM, InstrumentValueType.LONG));
+          MetricDescriptor.create("name", "description", "unit"));
 
   @Test
   void createHandle() {

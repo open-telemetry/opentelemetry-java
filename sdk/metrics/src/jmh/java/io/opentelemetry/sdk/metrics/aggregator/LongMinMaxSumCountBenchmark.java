@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -32,7 +33,8 @@ public class LongMinMaxSumCountBenchmark {
               Resource.getDefault(),
               InstrumentationLibraryInfo.empty(),
               InstrumentDescriptor.create(
-                  "name", "description", "1", InstrumentType.HISTOGRAM, InstrumentValueType.LONG));
+                  "name", "description", "1", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
+              MetricDescriptor.create("name", "description", "1"));
   private AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle;
 
   @Setup(Level.Trial)
