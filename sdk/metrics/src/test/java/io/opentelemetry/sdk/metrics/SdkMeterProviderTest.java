@@ -427,6 +427,39 @@ public class SdkMeterProviderTest {
 
   @Test
   @SuppressWarnings("unchecked")
+  void ViewSdk_AllowRenames() {
+    SdkMeterProvider provider =
+        sdkMeterProviderBuilder
+            .registerView(
+                InstrumentSelector.builder()
+                    // TODO: Make instrument type optional.
+                    .setInstrumentType(InstrumentType.OBSERVABLE_GAUGE)
+                    .setInstrumentName("test")
+                    .build(),
+                View.builder()
+                    .setName("not_test")
+                    .setDescription("not_desc")
+                    .setAggregatorFactory(AggregatorFactory.lastValue())
+                    .build())
+            .build();
+    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
+    meter
+        .gaugeBuilder("test")
+        .setDescription("desc")
+        .setUnit("unit")
+        .buildWithCallback(o -> o.observe(1));
+    assertThat(provider.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("not_test")
+                    .hasDescription("not_desc")
+                    .hasUnit("unit")
+                    .hasDoubleGauge());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments_CumulativeCount() {
     registerViewForAllTypes(
         sdkMeterProviderBuilder, AggregatorFactory.count(AggregationTemporality.CUMULATIVE));
