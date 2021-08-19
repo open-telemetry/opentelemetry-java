@@ -28,6 +28,7 @@ public class AsynchronousMetricStorageTest {
   private final MeterSharedState meterSharedState =
       MeterSharedState.create(InstrumentationLibraryInfo.empty());
   private LabelsProcessor spyLabelProcessor;
+  private View view;
 
   @BeforeEach
   void setup() {
@@ -40,17 +41,19 @@ public class AsynchronousMetricStorageTest {
                 return labels.toBuilder().build();
               }
             });
+    view =
+        View.builder()
+            .setAggregatorFactory(AggregatorFactory.lastValue())
+            .setLabelsProcessorFactory(
+                (resource, instrumentationLibraryInfo, descriptor) -> spyLabelProcessor)
+            .build();
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
             .addView(
                 InstrumentSelector.builder()
                     .setInstrumentType(InstrumentType.OBSERVABLE_GAUGE)
                     .build(),
-                View.builder()
-                    .setAggregatorFactory(AggregatorFactory.lastValue())
-                    .setLabelsProcessorFactory(
-                        (resource, instrumentationLibraryInfo, descriptor) -> spyLabelProcessor)
-                    .build())
+                view)
             .build();
 
     meterProviderSharedState =
@@ -60,14 +63,16 @@ public class AsynchronousMetricStorageTest {
   @Test
   void doubleAsynchronousAccumulator_LabelsProcessor_used() {
     AsynchronousMetricStorage.doubleAsynchronousAccumulator(
-            meterProviderSharedState,
-            meterSharedState,
+            view,
             InstrumentDescriptor.create(
                 "name",
                 "description",
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.DOUBLE),
+            meterProviderSharedState.getResource(),
+            meterSharedState.getInstrumentationLibraryInfo(),
+            meterProviderSharedState.getStartEpochNanos(),
             value -> value.observe(1.0, Attributes.empty()))
         .collectAndReset(0, testClock.now());
     Mockito.verify(spyLabelProcessor).onLabelsBound(Context.current(), Attributes.empty());
@@ -76,14 +81,16 @@ public class AsynchronousMetricStorageTest {
   @Test
   void longAsynchronousAccumulator_LabelsProcessor_used() {
     AsynchronousMetricStorage.longAsynchronousAccumulator(
-            meterProviderSharedState,
-            meterSharedState,
+            view,
             InstrumentDescriptor.create(
                 "name",
                 "description",
                 "unit",
                 InstrumentType.OBSERVABLE_GAUGE,
                 InstrumentValueType.LONG),
+            meterProviderSharedState.getResource(),
+            meterSharedState.getInstrumentationLibraryInfo(),
+            meterProviderSharedState.getStartEpochNanos(),
             value -> value.observe(1, Attributes.empty()))
         .collectAndReset(0, testClock.nanoTime());
     Mockito.verify(spyLabelProcessor).onLabelsBound(Context.current(), Attributes.empty());
