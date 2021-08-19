@@ -170,6 +170,7 @@ spotless {
   java {
     googleJavaFormat("1.9")
     licenseHeaderFile(rootProject.file("buildscripts/spotless.license.java"), "(package|import|class|// Includes work from:)")
+    targetExclude("build/**")
   }
 }
 
