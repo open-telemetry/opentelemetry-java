@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.otlp.trace;
 
 import com.google.protobuf.CodedOutputStream;
 import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
-import io.opentelemetry.proto.resource.v1.Resource;
+import io.opentelemetry.proto.resource.v1.internal.Resource;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 

@@ -3,8 +3,10 @@ plugins {
   id("otel.publish-conventions")
 
   id("otel.jmh-conventions")
-  id("org.unbroken-dome.test-sets")
   id("otel.animalsniffer-conventions")
+
+  id("com.squareup.wire")
+  id("org.unbroken-dome.test-sets")
 }
 
 description = "OpenTelemetry Protocol Trace Exporter"
@@ -17,10 +19,17 @@ testSets {
 }
 
 dependencies {
+  protoSource(project(":proto"))
+
   api(project(":sdk:trace"))
 
   implementation(project(":api:metrics"))
-  implementation(project(":exporters:otlp:common"))
+
+  implementation(project(":exporters:otlp:common")) {
+    exclude(mapOf("module" to "proto"))
+  }
+
+  implementation("com.google.protobuf:protobuf-java")
 
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
@@ -29,6 +38,7 @@ dependencies {
   api("io.grpc:grpc-stub")
   implementation("io.grpc:grpc-api")
 
+  testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 
   testImplementation("io.grpc:grpc-protobuf")
@@ -52,11 +62,20 @@ dependencies {
   add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
+  jmh(project(":proto"))
   jmh(project(":sdk:testing"))
 }
 
 tasks {
   named("check") {
     dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp")
+  }
+}
+
+wire {
+  root("opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest")
+
+  custom {
+    customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
   }
 }
