@@ -21,13 +21,13 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link DoubleUpDownSumObserverSdk}. */
-class DoubleUpDownSumObserverSdkTest {
+/** Unit tests for {@link DoubleSumObserverSdk}. */
+class SdkDoubleSumObserverTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(DoubleUpDownSumObserverSdkTest.class.getName(), null);
+      InstrumentationLibraryInfo.create(SdkDoubleSumObserverTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
@@ -37,9 +37,9 @@ class DoubleUpDownSumObserverSdkTest {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     sdkMeterProvider
         .get(getClass().getName())
-        .upDownCounterBuilder("testObserver")
+        .counterBuilder("testObserver")
         .ofDoubles()
-        .setDescription("My own DoubleUpDownSumObserver")
+        .setDescription("My own DoubleSumObserver")
         .setUnit("ms")
         .buildWithCallback(result -> {});
     assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
@@ -51,8 +51,10 @@ class DoubleUpDownSumObserverSdkTest {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     sdkMeterProvider
         .get(getClass().getName())
-        .upDownCounterBuilder("testObserver")
+        .counterBuilder("testObserver")
         .ofDoubles()
+        .setDescription("My own DoubleSumObserver")
+        .setUnit("ms")
         .buildWithCallback(
             result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
@@ -63,9 +65,11 @@ class DoubleUpDownSumObserverSdkTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
+                    .hasDescription("My own DoubleSumObserver")
+                    .hasUnit("ms")
                     .hasDoubleSum()
                     .isCumulative()
-                    .isNotMonotonic()
+                    .isMonotonic()
                     .points()
                     .satisfiesExactlyInAnyOrder(
                         point ->
@@ -86,7 +90,7 @@ class DoubleUpDownSumObserverSdkTest {
                     .hasName("testObserver")
                     .hasDoubleSum()
                     .isCumulative()
-                    .isNotMonotonic()
+                    .isMonotonic()
                     .points()
                     .satisfiesExactlyInAnyOrder(
                         point ->
@@ -106,7 +110,7 @@ class DoubleUpDownSumObserverSdkTest {
         sdkMeterProviderBuilder
             .registerView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_SUM)
+                    .setInstrumentType(InstrumentType.OBSERVABLE_SUM)
                     .build(),
                 View.builder()
                     .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
@@ -115,8 +119,10 @@ class DoubleUpDownSumObserverSdkTest {
             .build();
     sdkMeterProvider
         .get(getClass().getName())
-        .upDownCounterBuilder("testObserver")
+        .counterBuilder("testObserver")
         .ofDoubles()
+        .setDescription("My own DoubleSumObserver")
+        .setUnit("ms")
         .buildWithCallback(
             result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
@@ -127,9 +133,11 @@ class DoubleUpDownSumObserverSdkTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
+                    .hasDescription("My own DoubleSumObserver")
+                    .hasUnit("ms")
                     .hasDoubleSum()
                     .isDelta()
-                    .isNotMonotonic()
+                    .isMonotonic()
                     .points()
                     .satisfiesExactlyInAnyOrder(
                         point ->
@@ -148,9 +156,11 @@ class DoubleUpDownSumObserverSdkTest {
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
+                    .hasDescription("My own DoubleSumObserver")
+                    .hasUnit("ms")
                     .hasDoubleSum()
                     .isDelta()
-                    .isNotMonotonic()
+                    .isMonotonic()
                     .points()
                     .satisfiesExactlyInAnyOrder(
                         point ->

@@ -21,10 +21,10 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
 
-final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter {
+final class SdkDoubleCounter extends AbstractInstrument implements DoubleCounter {
   private final WriteableMetricStorage storage;
 
-  private DoubleCounterSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private SdkDoubleCounter(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
     super(descriptor);
     this.storage = storage;
   }
@@ -86,7 +86,7 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<DoubleCounterSdk.Builder>
+  static final class Builder extends AbstractInstrumentBuilder<SdkDoubleCounter.Builder>
       implements DoubleCounterBuilder {
 
     Builder(
@@ -111,14 +111,14 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
     }
 
     @Override
-    public DoubleCounterSdk build() {
+    public SdkDoubleCounter build() {
       return buildSynchronousInstrument(
-          InstrumentType.COUNTER, InstrumentValueType.DOUBLE, DoubleCounterSdk::new);
+          InstrumentType.COUNTER, InstrumentValueType.DOUBLE, SdkDoubleCounter::new);
     }
 
     @Override
     public LongCounterBuilder ofLongs() {
-      return swapBuilder(LongCounterSdk.Builder::new);
+      return swapBuilder(SdkLongCounter.Builder::new);
     }
 
     @Override

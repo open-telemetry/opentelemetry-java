@@ -21,13 +21,13 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link LongSumObserverSdk}. */
-class LongSumObserverSdkTest {
+/** Unit tests for {@link LongUpDownSumObserverSdk}. */
+class SdkLongUpDownSumObserverTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(LongSumObserverSdkTest.class.getName(), null);
+      InstrumentationLibraryInfo.create(SdkLongUpDownSumObserverTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
@@ -37,8 +37,8 @@ class LongSumObserverSdkTest {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     sdkMeterProvider
         .get(getClass().getName())
-        .counterBuilder("testObserver")
-        .setDescription("My own LongSumObserver")
+        .upDownCounterBuilder("testObserver")
+        .setDescription("My own LongUpDownSumObserver")
         .setUnit("ms")
         .buildWithCallback(result -> {});
     assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
@@ -50,7 +50,7 @@ class LongSumObserverSdkTest {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     sdkMeterProvider
         .get(getClass().getName())
-        .counterBuilder("testObserver")
+        .upDownCounterBuilder("testObserver")
         .buildWithCallback(
             result -> result.observe(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
@@ -62,7 +62,7 @@ class LongSumObserverSdkTest {
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
                     .hasLongSum()
-                    .isMonotonic()
+                    .isNotMonotonic()
                     .isCumulative()
                     .points()
                     .satisfiesExactly(
@@ -83,7 +83,7 @@ class LongSumObserverSdkTest {
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
                     .hasLongSum()
-                    .isMonotonic()
+                    .isNotMonotonic()
                     .isCumulative()
                     .points()
                     .satisfiesExactly(
@@ -104,7 +104,7 @@ class LongSumObserverSdkTest {
         sdkMeterProviderBuilder
             .registerView(
                 InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.OBSERVABLE_SUM)
+                    .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_SUM)
                     .build(),
                 View.builder()
                     .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
@@ -113,7 +113,7 @@ class LongSumObserverSdkTest {
             .build();
     sdkMeterProvider
         .get(getClass().getName())
-        .counterBuilder("testObserver")
+        .upDownCounterBuilder("testObserver")
         .buildWithCallback(
             result -> result.observe(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
@@ -125,7 +125,7 @@ class LongSumObserverSdkTest {
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
                     .hasLongSum()
-                    .isMonotonic()
+                    .isNotMonotonic()
                     .isDelta()
                     .points()
                     .satisfiesExactly(
@@ -146,7 +146,7 @@ class LongSumObserverSdkTest {
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
                     .hasName("testObserver")
                     .hasLongSum()
-                    .isMonotonic()
+                    .isNotMonotonic()
                     .isDelta()
                     .points()
                     .satisfiesExactly(
