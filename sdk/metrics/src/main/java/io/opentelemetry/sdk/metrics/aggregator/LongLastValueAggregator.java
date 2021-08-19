@@ -7,9 +7,9 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,7 +27,7 @@ final class LongLastValueAggregator extends AbstractAggregator<Long> {
   LongLastValueAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor) {
+      MetricDescriptor descriptor) {
     super(resource, instrumentationLibraryInfo, descriptor, /* stateful= */ false);
   }
 
@@ -56,9 +56,9 @@ final class LongLastValueAggregator extends AbstractAggregator<Long> {
     return MetricData.createLongGauge(
         getResource(),
         getInstrumentationLibraryInfo(),
-        getInstrumentDescriptor().getName(),
-        getInstrumentDescriptor().getDescription(),
-        getInstrumentDescriptor().getUnit(),
+        getMetricDescriptor().getName(),
+        getMetricDescriptor().getDescription(),
+        getMetricDescriptor().getUnit(),
         LongGaugeData.create(MetricDataUtils.toLongPointList(accumulationByLabels, 0, epochNanos)));
   }
 

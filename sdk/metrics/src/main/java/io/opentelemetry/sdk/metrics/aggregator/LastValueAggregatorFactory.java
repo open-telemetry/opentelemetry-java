@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 
 final class LastValueAggregatorFactory implements AggregatorFactory {
@@ -19,14 +20,15 @@ final class LastValueAggregatorFactory implements AggregatorFactory {
   public <T> Aggregator<T> create(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor) {
+      InstrumentDescriptor descriptor,
+      MetricDescriptor metricDescriptor) {
     switch (descriptor.getValueType()) {
       case LONG:
         return (Aggregator<T>)
-            new LongLastValueAggregator(resource, instrumentationLibraryInfo, descriptor);
+            new LongLastValueAggregator(resource, instrumentationLibraryInfo, metricDescriptor);
       case DOUBLE:
         return (Aggregator<T>)
-            new DoubleLastValueAggregator(resource, instrumentationLibraryInfo, descriptor);
+            new DoubleLastValueAggregator(resource, instrumentationLibraryInfo, metricDescriptor);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 
 final class CountAggregatorFactory implements AggregatorFactory {
@@ -22,8 +23,9 @@ final class CountAggregatorFactory implements AggregatorFactory {
   public <T> Aggregator<T> create(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor) {
+      InstrumentDescriptor unused,
+      MetricDescriptor metricDescriptor) {
     return (Aggregator<T>)
-        new CountAggregator(resource, instrumentationLibraryInfo, descriptor, temporality);
+        new CountAggregator(resource, instrumentationLibraryInfo, metricDescriptor, temporality);
   }
 }

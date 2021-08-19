@@ -38,15 +38,17 @@ public final class SynchronousMetricStorage<T> implements WriteableMetricStorage
   /** Constructs metric storage for a given synchronous instrument and view. */
   public static <T> SynchronousMetricStorage<T> create(
       View view,
-      InstrumentDescriptor descriptor,
+      InstrumentDescriptor instrumentDescriptor,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       long startEpochNanos) {
-    final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, descriptor);
+    final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
     final Aggregator<T> aggregator =
-        view.getAggregatorFactory().create(resource, instrumentationLibraryInfo, descriptor);
+        view.getAggregatorFactory()
+            .create(resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor);
     final LabelsProcessor labelsProcessor =
-        view.getLabelsProcessorFactory().create(resource, instrumentationLibraryInfo, descriptor);
+        view.getLabelsProcessorFactory()
+            .create(resource, instrumentationLibraryInfo, instrumentDescriptor);
     return new SynchronousMetricStorage<>(
         metricDescriptor,
         aggregator,

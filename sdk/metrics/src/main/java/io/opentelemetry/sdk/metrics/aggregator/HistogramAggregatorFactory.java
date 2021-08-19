@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 
@@ -45,14 +46,15 @@ final class HistogramAggregatorFactory implements AggregatorFactory {
   public <T> Aggregator<T> create(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor) {
+      InstrumentDescriptor instrumentDescriptor,
+      MetricDescriptor metricDescriptor) {
     final boolean stateful = this.temporality == AggregationTemporality.CUMULATIVE;
-    switch (descriptor.getValueType()) {
+    switch (instrumentDescriptor.getValueType()) {
       case LONG:
       case DOUBLE:
         return (Aggregator<T>)
             new DoubleHistogramAggregator(
-                resource, instrumentationLibraryInfo, descriptor, this.boundaries, stateful);
+                resource, instrumentationLibraryInfo, metricDescriptor, this.boundaries, stateful);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }
