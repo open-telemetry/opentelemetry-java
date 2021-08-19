@@ -8,17 +8,38 @@ package io.opentelemetry.exporter.otlp.trace;
 import com.google.common.io.ByteStreams;
 import com.google.protobuf.CodedOutputStream;
 import io.grpc.Drainable;
+import io.grpc.HasByteBuffer;
 import io.grpc.KnownLength;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 // Adapted from gRPC ProtoInputStream but using our Marshaller
 // https://github.com/grpc/grpc-java/blob/2c2ebaebd5a93acec92fbd2708faac582db99371/protobuf-lite/src/main/java/io/grpc/protobuf/lite/ProtoInputStream.java
 final class MarshalerInputStream extends InputStream implements Drainable, KnownLength {
+  private static final Logger logger = Logger.getLogger(MarshalerInputStream.class.getName());
+
   private static final int DEFAULT_BUFFER_SIZE = 4096;
+
+  // Visible for testing
+  static final boolean WRITE_TO_BYTEBUFFER;
+
+  static {
+    boolean writeToByteBuffer = false;
+    try {
+      logger.log(Level.CONFIG, HasByteBuffer.class.getSimpleName() + " available.");
+      writeToByteBuffer = true;
+    } catch (LinkageError e) {
+      // HasByteBuffer added as ExperimentalApi in gRPC 1.39. It's simple enough for us to fallback
+      // in case it's not available, due to gRPC being too old or too new.
+    }
+    WRITE_TO_BYTEBUFFER = writeToByteBuffer;
+  }
 
   @Nullable private Marshaler message;
   @Nullable private ByteArrayInputStream partial;
@@ -32,8 +53,7 @@ final class MarshalerInputStream extends InputStream implements Drainable, Known
     int written;
     if (message != null) {
       written = message.getSerializedSize();
-      int bufferSize = computePreferredBufferSize(message.getSerializedSize());
-      CodedOutputStream cos = CodedOutputStream.newInstance(target, bufferSize);
+      CodedOutputStream cos = newCodedOutputStream(target, message.getSerializedSize());
       message.writeTo(cos);
       cos.flush();
       message = null;
@@ -102,6 +122,19 @@ final class MarshalerInputStream extends InputStream implements Drainable, Known
       return partial.available();
     }
     return 0;
+  }
+
+  private static CodedOutputStream newCodedOutputStream(OutputStream stream, int dataLength) {
+    if (WRITE_TO_BYTEBUFFER && stream instanceof HasByteBuffer) {
+      HasByteBuffer holder = (HasByteBuffer) stream;
+      if (holder.byteBufferSupported()) {
+        ByteBuffer buffer = holder.getByteBuffer();
+        if (buffer != null) {
+          return CodedOutputStream.newInstance(buffer);
+        }
+      }
+    }
+    return CodedOutputStream.newInstance(stream, computePreferredBufferSize(dataLength));
   }
 
   private static int computePreferredBufferSize(int dataLength) {

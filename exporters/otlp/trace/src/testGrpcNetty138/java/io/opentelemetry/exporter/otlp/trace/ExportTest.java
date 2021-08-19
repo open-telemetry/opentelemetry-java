@@ -6,11 +6,9 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.grpc.GrpcService;
-import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.trace.SpanKind;
@@ -20,8 +18,6 @@ import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +25,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+// gRPC 1.38.0 use a less optimized codepath which is verified here..
 class ExportTest {
 
   private static final List<SpanData> SPANS =
@@ -41,10 +38,6 @@ class ExportTest {
               .setStatus(StatusData.ok())
               .setHasEnded(true)
               .build());
-
-  @RegisterExtension
-  @Order(1)
-  public static SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
 
   @RegisterExtension
   @Order(2)
@@ -66,8 +59,6 @@ class ExportTest {
                       })
                   .build());
           sb.http(0);
-          sb.https(0);
-          sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
         }
       };
 
@@ -76,45 +67,6 @@ class ExportTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.builder().setEndpoint("http://localhost:" + server.httpPort()).build();
     assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-    assertThat(MarshalerInputStream.WRITE_TO_BYTEBUFFER).isTrue();
-  }
-
-  @Test
-  void authorityWithAuth() {
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.builder()
-            .setEndpoint("http://foo:bar@localhost:" + server.httpPort())
-            .build();
-    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-  }
-
-  @Test
-  void testTlsExport() throws Exception {
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.builder()
-            .setEndpoint("https://localhost:" + server.httpsPort())
-            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
-            .build();
-    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
-  }
-
-  @Test
-  void testTlsExport_untrusted() {
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.builder()
-            .setEndpoint("https://localhost:" + server.httpsPort())
-            .build();
-    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
-  }
-
-  @Test
-  void tlsBadCert() {
-    assertThatThrownBy(
-            () ->
-                OtlpGrpcSpanExporter.builder()
-                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8))
-                    .build())
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Could not set trusted certificates");
+    assertThat(MarshalerInputStream.WRITE_TO_BYTEBUFFER).isFalse();
   }
 }

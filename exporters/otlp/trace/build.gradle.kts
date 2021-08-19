@@ -14,6 +14,7 @@ testSets {
   create("testGrpcNetty")
   create("testGrpcNettyShaded")
   create("testGrpcOkhttp")
+  create("testGrpcNetty138")
 }
 
 dependencies {
@@ -42,6 +43,12 @@ dependencies {
   add("testGrpcNettyRuntimeOnly", "io.grpc:grpc-netty")
   add("testGrpcNettyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
+  add("testGrpcNetty138Implementation", enforcedPlatform("io.grpc:grpc-bom:1.38.0"))
+  add("testGrpcNetty138Implementation", "com.linecorp.armeria:armeria-grpc")
+  add("testGrpcNetty138Implementation", "com.linecorp.armeria:armeria-junit5")
+  add("testGrpcNetty138RuntimeOnly", "io.grpc:grpc-netty")
+  add("testGrpcNetty138RuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
+
   add("testGrpcNettyShadedImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcNettyShadedImplementation", "com.linecorp.armeria:armeria-junit5")
   add("testGrpcNettyShadedRuntimeOnly", "io.grpc:grpc-netty-shaded")
@@ -53,10 +60,11 @@ dependencies {
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
   jmh(project(":sdk:testing"))
+  jmh("io.grpc:grpc-netty")
 }
 
 tasks {
   named("check") {
-    dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp")
+    dependsOn("testGrpcNetty", "testGrpcNetty138", "testGrpcNettyShaded", "testGrpcOkhttp")
   }
 }
