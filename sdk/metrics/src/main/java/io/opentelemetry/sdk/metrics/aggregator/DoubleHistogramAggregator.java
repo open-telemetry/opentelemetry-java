@@ -8,10 +8,10 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,10 +29,10 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   DoubleHistogramAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor instrumentDescriptor,
+      MetricDescriptor metricDescriptor,
       double[] boundaries,
       boolean stateful) {
-    super(resource, instrumentationLibraryInfo, instrumentDescriptor, stateful);
+    super(resource, instrumentationLibraryInfo, metricDescriptor, stateful);
     this.boundaries = boundaries;
 
     List<Double> boundaryList = new ArrayList<>(this.boundaries.length);
@@ -70,9 +70,9 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
     return MetricData.createDoubleHistogram(
         getResource(),
         getInstrumentationLibraryInfo(),
-        getInstrumentDescriptor().getName(),
-        getInstrumentDescriptor().getDescription(),
-        getInstrumentDescriptor().getUnit(),
+        getMetricDescriptor().getName(),
+        getMetricDescriptor().getDescription(),
+        getMetricDescriptor().getUnit(),
         DoubleHistogramData.create(
             isStateful() ? AggregationTemporality.CUMULATIVE : AggregationTemporality.DELTA,
             MetricDataUtils.toDoubleHistogramPointList(

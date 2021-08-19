@@ -7,9 +7,9 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 
@@ -19,8 +19,8 @@ abstract class AbstractMinMaxSumCountAggregator
   AbstractMinMaxSumCountAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor instrumentDescriptor) {
-    super(resource, instrumentationLibraryInfo, instrumentDescriptor, /* stateful= */ false);
+      MetricDescriptor metricDescriptor) {
+    super(resource, instrumentationLibraryInfo, metricDescriptor, /* stateful= */ false);
   }
 
   @Override
@@ -42,9 +42,9 @@ abstract class AbstractMinMaxSumCountAggregator
     return MetricData.createDoubleSummary(
         getResource(),
         getInstrumentationLibraryInfo(),
-        getInstrumentDescriptor().getName(),
-        getInstrumentDescriptor().getDescription(),
-        getInstrumentDescriptor().getUnit(),
+        getMetricDescriptor().getName(),
+        getMetricDescriptor().getDescription(),
+        getMetricDescriptor().getUnit(),
         DoubleSummaryData.create(
             MetricDataUtils.toDoubleSummaryPointList(
                 accumulationByLabels, lastCollectionEpoch, epochNanos)));

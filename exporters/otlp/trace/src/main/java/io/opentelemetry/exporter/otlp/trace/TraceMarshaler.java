@@ -23,11 +23,17 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
 final class TraceMarshaler {
+
+  // In practice, there is often only one thread that calls this code in the BatchSpanProcessor so
+  // reusing buffers for the thread is almost free. Even with multiple threads, it should still be
+  // worth it and is common practice in serialization libraries such as Jackson.
+  private static final ThreadLocal<ThreadLocalCache> THREAD_LOCAL_CACHE = new ThreadLocal<>();
 
   static final class RequestMarshaler extends MarshalerWithSize {
     private final ResourceSpansMarshaler[] resourceSpansMarshalers;
@@ -178,21 +184,35 @@ final class TraceMarshaler {
     private final SpanStatusMarshaler spanStatusMarshaler;
 
     // Because SpanMarshaler is always part of a repeated field, it cannot return "null".
-    private static SpanMarshaler create(SpanData spanData) {
+    private static SpanMarshaler create(SpanData spanData, ThreadLocalCache threadLocalCache) {
       AttributeMarshaler[] attributeMarshalers =
           AttributeMarshaler.createRepeated(spanData.getAttributes());
       SpanEventMarshaler[] spanEventMarshalers = SpanEventMarshaler.create(spanData.getEvents());
-      SpanLinkMarshaler[] spanLinkMarshalers = SpanLinkMarshaler.create(spanData.getLinks());
+      SpanLinkMarshaler[] spanLinkMarshalers =
+          SpanLinkMarshaler.create(spanData.getLinks(), threadLocalCache);
+      Map<String, byte[]> idBytesCache = threadLocalCache.idBytesCache;
+
+      byte[] traceId =
+          idBytesCache.computeIfAbsent(
+              spanData.getSpanContext().getTraceId(),
+              unused -> spanData.getSpanContext().getTraceIdBytes());
+      byte[] spanId =
+          idBytesCache.computeIfAbsent(
+              spanData.getSpanContext().getSpanId(),
+              unused -> spanData.getSpanContext().getSpanIdBytes());
 
       byte[] parentSpanId = MarshalerUtil.EMPTY_BYTES;
       SpanContext parentSpanContext = spanData.getParentSpanContext();
       if (parentSpanContext.isValid()) {
-        parentSpanId = parentSpanContext.getSpanIdBytes();
+        parentSpanId =
+            idBytesCache.computeIfAbsent(
+                spanData.getParentSpanContext().getSpanId(),
+                unused -> spanData.getParentSpanContext().getSpanIdBytes());
       }
 
       return new SpanMarshaler(
-          spanData.getSpanContext().getTraceIdBytes(),
-          spanData.getSpanContext().getSpanIdBytes(),
+          traceId,
+          spanId,
           parentSpanId,
           MarshalerUtil.toBytes(spanData.getName()),
           toProtoSpanKind(spanData.getKind()),
@@ -400,18 +420,24 @@ final class TraceMarshaler {
     private final AttributeMarshaler[] attributeMarshalers;
     private final int droppedAttributesCount;
 
-    private static SpanLinkMarshaler[] create(List<LinkData> links) {
+    private static SpanLinkMarshaler[] create(
+        List<LinkData> links, ThreadLocalCache threadLocalCache) {
       if (links.isEmpty()) {
         return EMPTY;
       }
+      Map<String, byte[]> idBytesCache = threadLocalCache.idBytesCache;
 
       SpanLinkMarshaler[] result = new SpanLinkMarshaler[links.size()];
       int pos = 0;
       for (LinkData link : links) {
         result[pos++] =
             new SpanLinkMarshaler(
-                link.getSpanContext().getTraceIdBytes(),
-                link.getSpanContext().getSpanIdBytes(),
+                idBytesCache.computeIfAbsent(
+                    link.getSpanContext().getTraceId(),
+                    unused -> link.getSpanContext().getTraceIdBytes()),
+                idBytesCache.computeIfAbsent(
+                    link.getSpanContext().getSpanId(),
+                    unused -> link.getSpanContext().getSpanIdBytes()),
                 AttributeMarshaler.createRepeated(link.getAttributes()),
                 link.getTotalAttributeCount() - link.getAttributes().size());
       }
@@ -522,14 +548,16 @@ final class TraceMarshaler {
     // expectedMaxSize of 8 means initial map capacity of 16 to match HashMap
     IdentityHashMap<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> result =
         new IdentityHashMap<>(8);
+    ThreadLocalCache threadLocalCache = getThreadLocalCache();
     for (SpanData spanData : spanDataList) {
       Map<InstrumentationLibraryInfo, List<SpanMarshaler>> libraryInfoListMap =
           result.computeIfAbsent(spanData.getResource(), unused -> new IdentityHashMap<>(8));
       List<SpanMarshaler> spanList =
           libraryInfoListMap.computeIfAbsent(
               spanData.getInstrumentationLibraryInfo(), unused -> new ArrayList<>());
-      spanList.add(SpanMarshaler.create(spanData));
+      spanList.add(SpanMarshaler.create(spanData, threadLocalCache));
     }
+    threadLocalCache.idBytesCache.clear();
     return result;
   }
 
@@ -547,6 +575,19 @@ final class TraceMarshaler {
         return Span.SpanKind.SPAN_KIND_CONSUMER_VALUE;
     }
     return -1;
+  }
+
+  private static ThreadLocalCache getThreadLocalCache() {
+    ThreadLocalCache result = THREAD_LOCAL_CACHE.get();
+    if (result == null) {
+      result = new ThreadLocalCache();
+      THREAD_LOCAL_CACHE.set(result);
+    }
+    return result;
+  }
+
+  private static final class ThreadLocalCache {
+    final Map<String, byte[]> idBytesCache = new HashMap<>();
   }
 
   private TraceMarshaler() {}

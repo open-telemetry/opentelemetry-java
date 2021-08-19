@@ -18,6 +18,7 @@ import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
+import com.linecorp.armeria.testing.junit5.server.mock.RecordedRequest;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
@@ -70,6 +71,8 @@ class OtlpHttpSpanExporterTest {
       new MockWebServerExtension() {
         @Override
         protected void configureServer(ServerBuilder sb) {
+          sb.http(0);
+          sb.https(0);
           sb.tls(HELD_CERTIFICATE.keyPair().getPrivate(), HELD_CERTIFICATE.certificate());
         }
       };
@@ -83,10 +86,8 @@ class OtlpHttpSpanExporterTest {
   void setup() {
     builder =
         OtlpHttpSpanExporter.builder()
-            .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/traces")
-            .addHeader("foo", "bar")
-            .setTrustedCertificates(
-                HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8));
+            .setEndpoint("http://localhost:" + server.httpPort() + "/v1/traces")
+            .addHeader("foo", "bar");
   }
 
   @Test
@@ -129,9 +130,33 @@ class OtlpHttpSpanExporterTest {
     OtlpHttpSpanExporter exporter = builder.build();
 
     ExportTraceServiceRequest payload = exportAndAssertResult(exporter, /* expectedResult= */ true);
-    AggregatedHttpRequest request = server.takeRequest().request();
+    RecordedRequest recorded = server.takeRequest();
+    AggregatedHttpRequest request = recorded.request();
     assertRequestCommon(request);
     assertThat(parseRequestBody(request.content().array())).isEqualTo(payload);
+
+    // OkHttp does not support HTTP/2 upgrade on plaintext.
+    assertThat(recorded.context().sessionProtocol().isMultiplex()).isFalse();
+  }
+
+  @Test
+  void testExportTls() {
+    server.enqueue(successResponse());
+    OtlpHttpSpanExporter exporter =
+        builder
+            .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/traces")
+            .setTrustedCertificates(
+                HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8))
+            .build();
+
+    ExportTraceServiceRequest payload = exportAndAssertResult(exporter, /* expectedResult= */ true);
+    RecordedRequest recorded = server.takeRequest();
+    AggregatedHttpRequest request = recorded.request();
+    assertRequestCommon(request);
+    assertThat(parseRequestBody(request.content().array())).isEqualTo(payload);
+
+    // OkHttp does support HTTP/2 upgrade on TLS.
+    assertThat(recorded.context().sessionProtocol().isMultiplex()).isTrue();
   }
 
   @Test

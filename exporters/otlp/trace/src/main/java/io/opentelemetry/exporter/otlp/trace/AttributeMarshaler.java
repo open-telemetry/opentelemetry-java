@@ -27,7 +27,6 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
     }
 
     AttributeMarshaler[] attributeMarshalers = new AttributeMarshaler[attributes.size()];
-    // TODO: Revisit how to avoid the atomic integer creation.
     attributes.forEach(
         new BiConsumer<AttributeKey<?>, Object>() {
           int index = 0;

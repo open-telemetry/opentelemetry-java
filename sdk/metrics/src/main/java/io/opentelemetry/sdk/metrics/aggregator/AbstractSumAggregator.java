@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 
 abstract class AbstractSumAggregator<T> extends AbstractAggregator<T> {
@@ -20,11 +21,12 @@ abstract class AbstractSumAggregator<T> extends AbstractAggregator<T> {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
+      MetricDescriptor metricDescriptor,
       AggregationTemporality temporality) {
     super(
         resource,
         instrumentationLibraryInfo,
-        instrumentDescriptor,
+        metricDescriptor,
         resolveStateful(instrumentDescriptor.getType(), temporality));
     InstrumentType type = instrumentDescriptor.getType();
     this.isMonotonic = type == InstrumentType.COUNTER || type == InstrumentType.OBSERVABLE_SUM;

@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.view.View;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -55,8 +56,19 @@ public abstract class MeterSharedState {
   /** Registers new synchronous storage associated with a given instrument. */
   public final WriteableMetricStorage registerSynchronousMetricStorage(
       InstrumentDescriptor instrument, MeterProviderSharedState meterProviderSharedState) {
+    // TODO - we  need to iterate over all possible views here and register each we find.
+    View view =
+        meterProviderSharedState
+            .getViewRegistry()
+            .findView(instrument, getInstrumentationLibraryInfo());
     return getMetricStorageRegistry()
-        .register(SynchronousMetricStorage.create(meterProviderSharedState, this, instrument));
+        .register(
+            SynchronousMetricStorage.create(
+                view,
+                instrument,
+                meterProviderSharedState.getResource(),
+                getInstrumentationLibraryInfo(),
+                meterProviderSharedState.getStartEpochNanos()));
   }
 
   /** Registers new asynchronous storage associated with a given {@code long} instrument. */
@@ -64,10 +76,20 @@ public abstract class MeterSharedState {
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       Consumer<ObservableLongMeasurement> metricUpdater) {
+    // TODO - we  need to iterate over all possible views here and register each we find.
+    View view =
+        meterProviderSharedState
+            .getViewRegistry()
+            .findView(instrument, getInstrumentationLibraryInfo());
     return getMetricStorageRegistry()
         .register(
             AsynchronousMetricStorage.longAsynchronousAccumulator(
-                meterProviderSharedState, this, instrument, metricUpdater));
+                view,
+                instrument,
+                meterProviderSharedState.getResource(),
+                getInstrumentationLibraryInfo(),
+                meterProviderSharedState.getStartEpochNanos(),
+                metricUpdater));
   }
 
   /** Registers new asynchronous storage associated with a given {@code double} instrument. */
@@ -75,10 +97,19 @@ public abstract class MeterSharedState {
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
-
+    // TODO - we  need to iterate over all possible views here and register each we find.
+    View view =
+        meterProviderSharedState
+            .getViewRegistry()
+            .findView(instrument, getInstrumentationLibraryInfo());
     return getMetricStorageRegistry()
         .register(
             AsynchronousMetricStorage.doubleAsynchronousAccumulator(
-                meterProviderSharedState, this, instrument, metricUpdater));
+                view,
+                instrument,
+                meterProviderSharedState.getResource(),
+                getInstrumentationLibraryInfo(),
+                meterProviderSharedState.getStartEpochNanos(),
+                metricUpdater));
   }
 }

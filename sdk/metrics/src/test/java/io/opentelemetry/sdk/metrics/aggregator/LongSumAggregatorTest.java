@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,12 @@ class LongSumAggregatorTest {
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
-              "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.LONG),
+              "instrument_name",
+              "instrument_description",
+              "instrument_unit",
+              InstrumentType.COUNTER,
+              InstrumentValueType.LONG),
+          MetricDescriptor.create("name", "description", "unit"),
           AggregationTemporality.CUMULATIVE);
 
   @Test
@@ -86,6 +92,7 @@ class LongSumAggregatorTest {
                 InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
+                MetricDescriptor.create("name", "description", "unit"),
                 temporality);
         MergeStrategy expectedMergeStrategy =
             AbstractSumAggregator.resolveMergeStrategy(instrumentType, temporality);
@@ -112,6 +119,9 @@ class LongSumAggregatorTest {
             10,
             100);
     assertThat(metricData)
+        .hasName("name")
+        .hasDescription("description")
+        .hasUnit("unit")
         .hasLongSum()
         .isCumulative()
         .isMonotonic()

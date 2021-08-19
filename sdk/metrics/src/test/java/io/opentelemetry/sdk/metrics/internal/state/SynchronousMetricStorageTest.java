@@ -35,7 +35,11 @@ public class SynchronousMetricStorageTest {
   private final TestClock testClock = TestClock.create();
   private final Aggregator<Long> aggregator =
       AggregatorFactory.lastValue()
-          .create(Resource.empty(), InstrumentationLibraryInfo.create("test", "1.0"), DESCRIPTOR);
+          .create(
+              Resource.empty(),
+              InstrumentationLibraryInfo.create("test", "1.0"),
+              DESCRIPTOR,
+              METRIC_DESCRIPTOR);
   private final LabelsProcessor labelsProcessor =
       LabelsProcessorFactory.noop()
           .create(Resource.empty(), InstrumentationLibraryInfo.create("test", "1.0"), DESCRIPTOR);

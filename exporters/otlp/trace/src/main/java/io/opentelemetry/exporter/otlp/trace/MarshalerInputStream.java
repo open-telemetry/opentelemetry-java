@@ -18,6 +18,8 @@ import javax.annotation.Nullable;
 // Adapted from gRPC ProtoInputStream but using our Marshaller
 // https://github.com/grpc/grpc-java/blob/2c2ebaebd5a93acec92fbd2708faac582db99371/protobuf-lite/src/main/java/io/grpc/protobuf/lite/ProtoInputStream.java
 final class MarshalerInputStream extends InputStream implements Drainable, KnownLength {
+  private static final int DEFAULT_BUFFER_SIZE = 4096;
+
   @Nullable private Marshaler message;
   @Nullable private ByteArrayInputStream partial;
 
@@ -30,7 +32,8 @@ final class MarshalerInputStream extends InputStream implements Drainable, Known
     int written;
     if (message != null) {
       written = message.getSerializedSize();
-      CodedOutputStream cos = CodedOutputStream.newInstance(target);
+      int bufferSize = computePreferredBufferSize(message.getSerializedSize());
+      CodedOutputStream cos = CodedOutputStream.newInstance(target, bufferSize);
       message.writeTo(cos);
       cos.flush();
       message = null;
@@ -99,5 +102,12 @@ final class MarshalerInputStream extends InputStream implements Drainable, Known
       return partial.available();
     }
     return 0;
+  }
+
+  private static int computePreferredBufferSize(int dataLength) {
+    if (dataLength > DEFAULT_BUFFER_SIZE) {
+      return DEFAULT_BUFFER_SIZE;
+    }
+    return dataLength;
   }
 }

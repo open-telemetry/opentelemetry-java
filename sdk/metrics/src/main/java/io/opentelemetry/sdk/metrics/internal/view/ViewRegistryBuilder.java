@@ -24,11 +24,7 @@ public class ViewRegistryBuilder {
 
   /** Returns the {@link ViewRegistry}. */
   public ViewRegistry build() {
-    // We add views in reverse order so normal iteration order is the priority of usage.
-    // TODO: Verify this is correct with the specification.
-    List<RegisteredView> reversedOrder = new ArrayList<>(orderedViews);
-    Collections.reverse(reversedOrder);
-    return new ViewRegistry(Collections.unmodifiableList(reversedOrder));
+    return new ViewRegistry(Collections.unmodifiableList(orderedViews));
   }
 
   /**

@@ -6,11 +6,11 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
+import io.opentelemetry.api.metrics.BoundDoubleUpDownCounter;
+import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.DoubleUpDownCounterBuilder;
-import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
-import io.opentelemetry.api.metrics.ObservableLongMeasurement;
+import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -21,35 +21,35 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 import java.util.function.Consumer;
 
-final class LongUpDownCounterSdk extends AbstractInstrument implements LongUpDownCounter {
+final class SdkDoubleUpDownCounter extends AbstractInstrument implements DoubleUpDownCounter {
   private final WriteableMetricStorage storage;
 
-  private LongUpDownCounterSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private SdkDoubleUpDownCounter(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
     super(descriptor);
     this.storage = storage;
   }
 
   @Override
-  public void add(long increment, Attributes attributes, Context context) {
-    storage.recordLong(increment, attributes, context);
+  public void add(double increment, Attributes attributes, Context context) {
+    storage.recordDouble(increment, attributes, context);
   }
 
   @Override
-  public void add(long increment, Attributes attributes) {
+  public void add(double increment, Attributes attributes) {
     add(increment, attributes, Context.current());
   }
 
   @Override
-  public void add(long increment) {
+  public void add(double increment) {
     add(increment, Attributes.empty());
   }
 
   @Override
-  public BoundLongUpDownCounter bind(Attributes attributes) {
+  public BoundDoubleUpDownCounter bind(Attributes attributes) {
     return new BoundInstrument(storage.bind(attributes), attributes);
   }
 
-  static final class BoundInstrument implements BoundLongUpDownCounter {
+  static final class BoundInstrument implements BoundDoubleUpDownCounter {
     private final BoundStorageHandle handle;
     private final Attributes attributes;
 
@@ -59,12 +59,12 @@ final class LongUpDownCounterSdk extends AbstractInstrument implements LongUpDow
     }
 
     @Override
-    public void add(long increment, Context context) {
-      handle.recordLong(increment, attributes, context);
+    public void add(double increment, Context context) {
+      handle.recordDouble(increment, attributes, context);
     }
 
     @Override
-    public void add(long increment) {
+    public void add(double increment) {
       add(increment, Context.current());
     }
 
@@ -74,8 +74,8 @@ final class LongUpDownCounterSdk extends AbstractInstrument implements LongUpDow
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<LongUpDownCounterSdk.Builder>
-      implements LongUpDownCounterBuilder {
+  static final class Builder extends AbstractInstrumentBuilder<SdkDoubleUpDownCounter.Builder>
+      implements DoubleUpDownCounterBuilder {
 
     Builder(
         MeterProviderSharedState meterProviderSharedState,
@@ -99,19 +99,19 @@ final class LongUpDownCounterSdk extends AbstractInstrument implements LongUpDow
     }
 
     @Override
-    public LongUpDownCounter build() {
+    public DoubleUpDownCounter build() {
       return buildSynchronousInstrument(
-          InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG, LongUpDownCounterSdk::new);
+          InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.DOUBLE, SdkDoubleUpDownCounter::new);
     }
 
     @Override
-    public DoubleUpDownCounterBuilder ofDoubles() {
-      return swapBuilder(DoubleUpDownCounterSdk.Builder::new);
+    public LongUpDownCounterBuilder ofLongs() {
+      return swapBuilder(SdkLongUpDownCounter.Builder::new);
     }
 
     @Override
-    public void buildWithCallback(Consumer<ObservableLongMeasurement> callback) {
-      registerLongAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM, callback);
+    public void buildWithCallback(Consumer<ObservableDoubleMeasurement> callback) {
+      registerDoubleAsynchronousInstrument(InstrumentType.OBSERVABLE_UP_DOWN_SUM, callback);
     }
   }
 }
