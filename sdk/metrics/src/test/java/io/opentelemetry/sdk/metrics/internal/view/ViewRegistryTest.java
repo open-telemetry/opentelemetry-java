@@ -80,7 +80,7 @@ class ViewRegistryTest {
   }
 
   @Test
-  void selection_LastAddedViewWins() {
+  void selection_FirstAddedViewWins() {
     AggregatorFactory factory1 = AggregatorFactory.lastValue();
     View view1 = View.builder().setAggregatorFactory(factory1).build();
     AggregatorFactory factory2 = AggregatorFactory.minMaxSumCount();
@@ -91,15 +91,15 @@ class ViewRegistryTest {
             .addView(
                 InstrumentSelector.builder()
                     .setInstrumentType(InstrumentType.COUNTER)
-                    .setInstrumentNameRegex(".*")
-                    .build(),
-                view1)
-            .addView(
-                InstrumentSelector.builder()
-                    .setInstrumentType(InstrumentType.COUNTER)
                     .setInstrumentNameRegex("overridden")
                     .build(),
                 view2)
+            .addView(
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.COUNTER)
+                    .setInstrumentNameRegex(".*")
+                    .build(),
+                view1)
             .build();
 
     assertThat(
