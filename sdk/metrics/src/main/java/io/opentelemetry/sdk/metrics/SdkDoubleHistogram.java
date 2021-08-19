@@ -19,10 +19,10 @@ import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.WriteableMetricStorage;
 
-final class DoubleHistogramSdk extends AbstractInstrument implements DoubleHistogram {
+final class SdkDoubleHistogram extends AbstractInstrument implements DoubleHistogram {
   private final WriteableMetricStorage storage;
 
-  private DoubleHistogramSdk(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
+  private SdkDoubleHistogram(InstrumentDescriptor descriptor, WriteableMetricStorage storage) {
     super(descriptor);
     this.storage = storage;
   }
@@ -72,7 +72,7 @@ final class DoubleHistogramSdk extends AbstractInstrument implements DoubleHisto
     }
   }
 
-  static final class Builder extends AbstractInstrumentBuilder<DoubleHistogramSdk.Builder>
+  static final class Builder extends AbstractInstrumentBuilder<SdkDoubleHistogram.Builder>
       implements DoubleHistogramBuilder {
 
     Builder(
@@ -97,14 +97,14 @@ final class DoubleHistogramSdk extends AbstractInstrument implements DoubleHisto
     }
 
     @Override
-    public DoubleHistogramSdk build() {
+    public SdkDoubleHistogram build() {
       return buildSynchronousInstrument(
-          InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE, DoubleHistogramSdk::new);
+          InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE, SdkDoubleHistogram::new);
     }
 
     @Override
     public LongHistogramBuilder ofLongs() {
-      return swapBuilder(LongHistogramSdk.Builder::new);
+      return swapBuilder(SdkLongHistogram.Builder::new);
     }
   }
 }

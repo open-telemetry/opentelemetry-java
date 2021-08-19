@@ -1,8 +1,9 @@
 plugins {
-    id("otel.java-conventions")
-    id("otel.publish-conventions")
+  id("otel.java-conventions")
+  id("otel.jmh-conventions")
+  id("otel.publish-conventions")
 
-    id("otel.animalsniffer-conventions")
+  id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Protocol HTTP Trace Exporter"
@@ -21,4 +22,6 @@ dependencies {
 
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("com.linecorp.armeria:armeria-junit5")
+
+  jmh(project(":sdk:testing"))
 }

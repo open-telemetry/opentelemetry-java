@@ -7,11 +7,12 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongUpDownCounter;
-import io.opentelemetry.api.metrics.LongUpDownCounter;
+import io.opentelemetry.api.metrics.BoundLongHistogram;
+import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
@@ -20,38 +21,37 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link LongUpDownCounterSdk}. */
-class LongUpDownCounterSdkTest {
+/** Unit tests for {@link SdkLongHistogram}. */
+class SdkLongHistogramTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(LongUpDownCounterSdkTest.class.getName(), null);
+      InstrumentationLibraryInfo.create(SdkLongHistogramTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 
   @Test
-  void add_PreventNullAttributes() {
-    assertThatThrownBy(() -> sdkMeter.upDownCounterBuilder("testCounter").build().add(1, null))
+  void record_PreventNullAttributes() {
+    assertThatThrownBy(
+            () -> sdkMeter.histogramBuilder("testRecorder").ofLongs().build().record(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
 
   @Test
   void bound_PreventNullAttributes() {
-    assertThatThrownBy(() -> sdkMeter.upDownCounterBuilder("testUpDownCounter").build().bind(null))
+    assertThatThrownBy(() -> sdkMeter.histogramBuilder("testRecorder").ofLongs().build().bind(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("attributes");
   }
 
   @Test
   void collectMetrics_NoRecords() {
-    LongUpDownCounter longUpDownCounter =
-        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
-    BoundLongUpDownCounter bound =
-        longUpDownCounter.bind(Attributes.builder().put("foo", "bar").build());
+    LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
+    BoundLongHistogram bound = longRecorder.bind(Attributes.builder().put("key", "value").build());
     try {
       assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
     } finally {
@@ -60,28 +60,27 @@ class LongUpDownCounterSdkTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void collectMetrics_WithEmptyAttributes() {
-    LongUpDownCounter longUpDownCounter =
+    LongHistogram longRecorder =
         sdkMeter
-            .upDownCounterBuilder("testUpDownCounter")
+            .histogramBuilder("testRecorder")
+            .ofLongs()
             .setDescription("description")
             .setUnit("By")
             .build();
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    longUpDownCounter.add(12, Attributes.empty());
-    longUpDownCounter.add(12);
+    longRecorder.record(12, Attributes.empty());
+    longRecorder.record(12);
     assertThat(sdkMeterProvider.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
-                    .hasName("testUpDownCounter")
+                    .hasName("testRecorder")
                     .hasDescription("description")
                     .hasUnit("By")
-                    .hasLongSum()
-                    .isNotMonotonic()
+                    .hasDoubleHistogram()
                     .isCumulative()
                     .points()
                     .satisfiesExactly(
@@ -90,36 +89,37 @@ class LongUpDownCounterSdkTest {
                                 .hasStartEpochNanos(testClock.now() - SECOND_NANOS)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
-                                .hasValue(24)));
+                                .hasCount(2)
+                                .hasSum(24)
+                                .hasBucketBoundaries(
+                                    5, 10, 25, 50, 75, 100, 250, 500, 750, 1_000, 2_500, 5_000,
+                                    7_500, 10_000)
+                                .hasBucketCounts(0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)));
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_WithMultipleCollects() {
     long startTime = testClock.now();
-    LongUpDownCounter longUpDownCounter =
-        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
-    BoundLongUpDownCounter bound =
-        longUpDownCounter.bind(Attributes.builder().put("K", "V").build());
+    LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
+    BoundLongHistogram bound = longRecorder.bind(Attributes.builder().put("K", "V").build());
     try {
       // Do some records using bounds and direct calls and bindings.
-      longUpDownCounter.add(12, Attributes.empty());
-      bound.add(123);
-      longUpDownCounter.add(21, Attributes.empty());
+      longRecorder.record(12, Attributes.empty());
+      bound.record(123);
+      longRecorder.record(-14, Attributes.empty());
       // Advancing time here should not matter.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
-      bound.add(321);
-      longUpDownCounter.add(111, Attributes.builder().put("K", "V").build());
+      bound.record(321);
+      longRecorder.record(-121, Attributes.builder().put("K", "V").build());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
                       .hasResource(RESOURCE)
                       .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
-                      .hasName("testUpDownCounter")
-                      .hasLongSum()
-                      .isNotMonotonic()
-                      .isCumulative()
+                      .hasName("testRecorder")
+                      .hasDoubleHistogram()
                       .points()
                       .allSatisfy(
                           point ->
@@ -127,26 +127,31 @@ class LongUpDownCounterSdkTest {
                                   .hasStartEpochNanos(startTime)
                                   .hasEpochNanos(testClock.now()))
                       .satisfiesExactlyInAnyOrder(
-                          point -> assertThat(point).hasAttributes(Attributes.empty()).hasValue(33),
                           point ->
                               assertThat(point)
-                                  .hasAttributes(Attributes.of(stringKey("K"), "V"))
-                                  .hasValue(555)));
+                                  .hasCount(3)
+                                  .hasSum(323)
+                                  .hasBucketCounts(1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0)
+                                  .hasAttributes(Attributes.builder().put("K", "V").build()),
+                          point ->
+                              assertThat(point)
+                                  .hasCount(2)
+                                  .hasSum(-2)
+                                  .hasBucketCounts(1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                  .hasAttributes(Attributes.empty())));
 
-      // Repeat to prove we keep previous values.
+      // Histograms are cumulative by default.
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
-      bound.add(222);
-      longUpDownCounter.add(11, Attributes.empty());
+      bound.record(222);
+      longRecorder.record(17, Attributes.empty());
       assertThat(sdkMeterProvider.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
                       .hasResource(RESOURCE)
                       .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
-                      .hasName("testUpDownCounter")
-                      .hasLongSum()
-                      .isNotMonotonic()
-                      .isCumulative()
+                      .hasName("testRecorder")
+                      .hasDoubleHistogram()
                       .points()
                       .allSatisfy(
                           point ->
@@ -154,37 +159,44 @@ class LongUpDownCounterSdkTest {
                                   .hasStartEpochNanos(startTime)
                                   .hasEpochNanos(testClock.now()))
                       .satisfiesExactlyInAnyOrder(
-                          point -> assertThat(point).hasAttributes(Attributes.empty()).hasValue(44),
                           point ->
                               assertThat(point)
-                                  .hasAttributes(Attributes.of(stringKey("K"), "V"))
-                                  .hasValue(777)));
+                                  .hasCount(4)
+                                  .hasSum(545)
+                                  .hasBucketCounts(1, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0)
+                                  .hasAttributes(Attributes.builder().put("K", "V").build()),
+                          point ->
+                              assertThat(point)
+                                  .hasCount(3)
+                                  .hasSum(15)
+                                  .hasBucketCounts(1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                  .hasAttributes(Attributes.empty())));
     } finally {
       bound.unbind();
     }
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void stressTest() {
-    final LongUpDownCounter longUpDownCounter =
-        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
+    final LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
-            .setInstrument((LongUpDownCounterSdk) longUpDownCounter)
+            .setInstrument((SdkLongHistogram) longRecorder)
             .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterDirectCall(longUpDownCounter, "K", "V")));
+              2_000,
+              1,
+              new SdkLongHistogramTest.OperationUpdaterDirectCall(longRecorder, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new OperationUpdaterWithBinding(
-                  longUpDownCounter.bind(Attributes.builder().put("K", "V").build()))));
+              new SdkLongHistogramTest.OperationUpdaterWithBinding(
+                  longRecorder.bind(Attributes.builder().put("K", "V").build()))));
     }
 
     stressTestBuilder.build().run();
@@ -194,46 +206,44 @@ class LongUpDownCounterSdkTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
-                    .hasName("testUpDownCounter")
-                    .hasLongSum()
-                    .isCumulative()
-                    .isNotMonotonic()
+                    .hasName("testRecorder")
+                    .hasDoubleHistogram()
                     .points()
-                    .satisfiesExactlyInAnyOrder(
+                    .satisfiesExactly(
                         point ->
                             assertThat(point)
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
-                                .hasValue(160_000)
-                                .attributes()
-                                .hasSize(1)
-                                .containsEntry("K", "V")));
+                                .hasAttributes(Attributes.of(stringKey("K"), "V"))
+                                .hasCount(16_000)
+                                .hasSum(160_000)));
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongUpDownCounter longUpDownCounter =
-        sdkMeter.upDownCounterBuilder("testUpDownCounter").build();
+    final LongHistogram longRecorder = sdkMeter.histogramBuilder("testRecorder").ofLongs().build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder()
-            .setInstrument((LongUpDownCounterSdk) longUpDownCounter)
+            .setInstrument((SdkLongHistogram) longRecorder)
             .setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterDirectCall(longUpDownCounter, keys[i], values[i])));
+              1_000,
+              2,
+              new SdkLongHistogramTest.OperationUpdaterDirectCall(
+                  longRecorder, keys[i], values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               1_000,
               2,
-              new OperationUpdaterWithBinding(
-                  longUpDownCounter.bind(Attributes.builder().put(keys[i], values[i]).build()))));
+              new SdkLongHistogramTest.OperationUpdaterWithBinding(
+                  longRecorder.bind(Attributes.builder().put(keys[i], values[i]).build()))));
     }
 
     stressTestBuilder.build().run();
@@ -243,17 +253,17 @@ class LongUpDownCounterSdkTest {
                 assertThat(metric)
                     .hasResource(RESOURCE)
                     .hasInstrumentationLibrary(INSTRUMENTATION_LIBRARY_INFO)
-                    .hasName("testUpDownCounter")
-                    .hasLongSum()
-                    .isCumulative()
-                    .isNotMonotonic()
+                    .hasName("testRecorder")
+                    .hasDoubleHistogram()
                     .points()
                     .allSatisfy(
                         point ->
                             assertThat(point)
                                 .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
-                                .hasValue(20_000))
+                                .hasCount(2_000)
+                                .hasSum(20_000)
+                                .hasBucketCounts(0, 1000, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
                     .extracting(point -> point.getAttributes())
                     .containsExactlyInAnyOrder(
                         Attributes.of(stringKey(keys[0]), values[0]),
@@ -263,39 +273,38 @@ class LongUpDownCounterSdkTest {
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
-    private final BoundLongUpDownCounter boundLongUpDownCounter;
+    private final BoundLongHistogram boundLongValueRecorder;
 
-    private OperationUpdaterWithBinding(BoundLongUpDownCounter boundLongUpDownCounter) {
-      this.boundLongUpDownCounter = boundLongUpDownCounter;
+    private OperationUpdaterWithBinding(BoundLongHistogram boundLongValueRecorder) {
+      this.boundLongValueRecorder = boundLongValueRecorder;
     }
 
     @Override
     void update() {
-      boundLongUpDownCounter.add(9);
+      boundLongValueRecorder.record(9);
     }
 
     @Override
     void cleanup() {
-      boundLongUpDownCounter.unbind();
+      boundLongValueRecorder.unbind();
     }
   }
 
   private static class OperationUpdaterDirectCall extends OperationUpdater {
 
-    private final LongUpDownCounter longUpDownCounter;
+    private final LongHistogram longRecorder;
     private final String key;
     private final String value;
 
-    private OperationUpdaterDirectCall(
-        LongUpDownCounter longUpDownCounter, String key, String value) {
-      this.longUpDownCounter = longUpDownCounter;
+    private OperationUpdaterDirectCall(LongHistogram longRecorder, String key, String value) {
+      this.longRecorder = longRecorder;
       this.key = key;
       this.value = value;
     }
 
     @Override
     void update() {
-      longUpDownCounter.add(11, Attributes.builder().put(key, value).build());
+      longRecorder.record(11, Attributes.builder().put(key, value).build());
     }
 
     @Override
