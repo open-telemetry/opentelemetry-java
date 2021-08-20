@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
-import com.google.protobuf.CodedOutputStream;
 import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import io.opentelemetry.proto.resource.v1.internal.Resource;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
@@ -31,8 +31,8 @@ final class ResourceMarshaler extends MarshalerWithSize {
 
   private ResourceMarshaler(AttributeMarshaler[] attributeMarshalers) {
     super(calculateSize(attributeMarshalers));
-    serializedResource = new byte[getSerializedSize()];
-    CodedOutputStream output = CodedOutputStream.newInstance(serializedResource);
+    ByteArrayOutputStream bos = new ByteArrayOutputStream(getSerializedSize());
+    CodedOutputStream output = CodedOutputStream.newInstance(bos);
     try {
       MarshalerUtil.marshalRepeatedMessage(
           Resource.ATTRIBUTES_FIELD_NUMBER, attributeMarshalers, output);
@@ -41,6 +41,7 @@ final class ResourceMarshaler extends MarshalerWithSize {
       // Presized so can't happen (we would have already thrown OutOfMemoryError)
       throw new UncheckedIOException(e);
     }
+    serializedResource = bos.toByteArray();
   }
 
   @Override

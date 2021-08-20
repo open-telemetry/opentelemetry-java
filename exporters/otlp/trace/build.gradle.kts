@@ -29,8 +29,6 @@ dependencies {
     exclude(mapOf("module" to "proto"))
   }
 
-  implementation("com.google.protobuf:protobuf-java")
-
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
   compileOnly("io.grpc:grpc-okhttp")
@@ -41,6 +39,7 @@ dependencies {
   testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("io.grpc:grpc-protobuf")
   testImplementation("io.grpc:grpc-testing")
   testImplementation("org.slf4j:slf4j-simple")
@@ -64,6 +63,7 @@ dependencies {
 
   jmh(project(":proto"))
   jmh(project(":sdk:testing"))
+  jmh("io.grpc:grpc-netty")
 }
 
 tasks {

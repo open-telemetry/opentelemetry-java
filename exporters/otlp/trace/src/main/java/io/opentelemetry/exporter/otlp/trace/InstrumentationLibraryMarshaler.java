@@ -5,10 +5,10 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
-import com.google.protobuf.CodedOutputStream;
 import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import io.opentelemetry.proto.common.v1.internal.InstrumentationLibrary;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
@@ -35,15 +35,17 @@ final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
 
   private InstrumentationLibraryMarshaler(byte[] name, byte[] version) {
     super(computeSize(name, version));
-    serializedInfo = new byte[getSerializedSize()];
-    CodedOutputStream output = CodedOutputStream.newInstance(serializedInfo);
+    ByteArrayOutputStream bos = new ByteArrayOutputStream(getSerializedSize());
+    CodedOutputStream output = CodedOutputStream.newInstance(bos);
     try {
       MarshalerUtil.marshalBytes(InstrumentationLibrary.NAME_FIELD_NUMBER, name, output);
       MarshalerUtil.marshalBytes(InstrumentationLibrary.VERSION_FIELD_NUMBER, version, output);
+      output.flush();
     } catch (IOException e) {
       // Presized so can't happen (we would have already thrown OutOfMemoryError)
       throw new UncheckedIOException(e);
     }
+    serializedInfo = bos.toByteArray();
   }
 
   @Override

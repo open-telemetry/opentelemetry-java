@@ -7,8 +7,6 @@ package io.opentelemetry.exporter.otlp.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.protobuf.CodedOutputStream;
-import com.google.protobuf.UnknownFieldSet;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -24,6 +22,7 @@ import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -154,12 +153,16 @@ class TraceMarshalerTest {
 
     byte[] protoOutput = protoRequest.toByteArray();
 
-    byte[] customOutput = new byte[requestMarshaler.getSerializedSize()];
-    requestMarshaler.writeTo(CodedOutputStream.newInstance(customOutput));
-    if (!Arrays.equals(customOutput, protoOutput)) {
+    ByteArrayOutputStream customOutput =
+        new ByteArrayOutputStream(requestMarshaler.getSerializedSize());
+    CodedOutputStream cos = CodedOutputStream.newInstance(customOutput);
+    requestMarshaler.writeTo(cos);
+    cos.flush();
+    byte[] customOutputBytes = customOutput.toByteArray();
+    if (!Arrays.equals(customOutputBytes, protoOutput)) {
       String reverse = "<invalid>";
       try {
-        reverse = ExportTraceServiceRequest.parseFrom(customOutput).toString();
+        reverse = ExportTraceServiceRequest.parseFrom(customOutputBytes).toString();
       } catch (IOException e) {
         // Leave <invalid>
       }
@@ -198,29 +201,15 @@ class TraceMarshalerTest {
     int protoSize = protoRequest.getSerializedSize();
     assertThat(requestMarshaler.getSerializedSize()).isEqualTo(protoSize);
 
-    ExportTraceServiceRequest protoCustomRequest =
-        toRequest(TraceMarshaler.RequestMarshaler.create(spanDataList));
-    assertThat(protoCustomRequest.getSerializedSize()).isEqualTo(protoRequest.getSerializedSize());
+    ByteArrayOutputStream protoOutput = new ByteArrayOutputStream(protoRequest.getSerializedSize());
+    protoRequest.writeTo(protoOutput);
 
-    byte[] protoOutput = new byte[protoRequest.getSerializedSize()];
-    protoRequest.writeTo(CodedOutputStream.newInstance(protoOutput));
-
-    byte[] customOutput = new byte[requestMarshaler.getSerializedSize()];
-    requestMarshaler.writeTo(CodedOutputStream.newInstance(customOutput));
-    assertThat(customOutput).isEqualTo(protoOutput);
-
-    byte[] protoCustomOutput = new byte[protoRequest.getSerializedSize()];
-    protoCustomRequest.writeTo(CodedOutputStream.newInstance(protoCustomOutput));
-    assertThat(protoCustomOutput).isEqualTo(protoOutput);
-  }
-
-  private static ExportTraceServiceRequest toRequest(TraceMarshaler.RequestMarshaler request)
-      throws IOException {
-    byte[] buf = new byte[request.getSerializedSize()];
-    request.writeTo(CodedOutputStream.newInstance(buf));
-    return ExportTraceServiceRequest.newBuilder()
-        .setUnknownFields(UnknownFieldSet.newBuilder().mergeFrom(buf).build())
-        .build();
+    ByteArrayOutputStream customOutput =
+        new ByteArrayOutputStream(requestMarshaler.getSerializedSize());
+    CodedOutputStream cos = CodedOutputStream.newInstance(customOutput);
+    requestMarshaler.writeTo(cos);
+    cos.flush();
+    assertThat(customOutput.toByteArray()).isEqualTo(protoOutput.toByteArray());
   }
 
   private static SpanData testSpanData() {
