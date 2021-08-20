@@ -19,6 +19,7 @@ dependencies {
   api(project(":sdk:metrics"))
 
   implementation(project(":exporters:otlp:common"))
+  implementation(project(":proto"))
 
   api("io.grpc:grpc-stub")
   implementation("io.grpc:grpc-api")
