@@ -13,6 +13,7 @@ dependencies {
   api(project(":sdk:trace"))
 
   implementation(project(":exporters:otlp:common"))
+  implementation(project(":proto"))
 
   implementation("com.squareup.okhttp3:okhttp")
   implementation("com.squareup.okhttp3:okhttp-tls")
