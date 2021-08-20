@@ -10,6 +10,8 @@ import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_TRACES
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
@@ -38,7 +40,7 @@ final class SpanExporterConfiguration {
 
     switch (name) {
       case "otlp":
-        return configureOtlpSpans(config);
+        return configureOtlp(config);
       case "jaeger":
         return configureJaeger(config);
       case "zipkin":
@@ -61,22 +63,44 @@ final class SpanExporterConfiguration {
   }
 
   // Visible for testing
-  static OtlpGrpcSpanExporter configureOtlpSpans(ConfigProperties config) {
-    ClasspathUtil.checkClassExists(
-        "io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter",
-        "OTLP Trace Exporter",
-        "opentelemetry-exporter-otlp");
-    OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder();
+  static SpanExporter configureOtlp(ConfigProperties config) {
+    String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_TRACES, config);
 
-    OtlpConfigUtil.configureOtlpExporterBuilder(
-        DATA_TYPE_TRACES,
-        config,
-        builder::setEndpoint,
-        builder::addHeader,
-        builder::setTimeout,
-        builder::setTrustedCertificates);
+    if (protocol.equals("http/protobuf")) {
+      ClasspathUtil.checkClassExists(
+          "io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter",
+          "OTLP HTTP Trace Exporter",
+          "opentelemetry-exporter-otlp-http-trace");
+      OtlpHttpSpanExporterBuilder builder = OtlpHttpSpanExporter.builder();
 
-    return builder.build();
+      OtlpConfigUtil.configureOtlpExporterBuilder(
+          DATA_TYPE_TRACES,
+          config,
+          builder::setEndpoint,
+          builder::addHeader,
+          builder::setTimeout,
+          builder::setTrustedCertificates);
+
+      return builder.build();
+    } else if (protocol.equals("grpc")) {
+      ClasspathUtil.checkClassExists(
+          "io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter",
+          "OTLP gRPC Trace Exporter",
+          "opentelemetry-exporter-otlp");
+      OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder();
+
+      OtlpConfigUtil.configureOtlpExporterBuilder(
+          DATA_TYPE_TRACES,
+          config,
+          builder::setEndpoint,
+          builder::addHeader,
+          builder::setTimeout,
+          builder::setTrustedCertificates);
+
+      return builder.build();
+    } else {
+      throw new ConfigurationException("Unsupported OTLP traces protocol: " + protocol);
+    }
   }
 
   private static SpanExporter configureJaeger(ConfigProperties config) {
