@@ -39,7 +39,7 @@ The following configuration properties are common to all exporters:
 
 | System property | Environment variable | Purpose                                                                                                                                                 |
 |-----------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| otel.traces.exporter   | OTEL_TRACES_EXPORTER        | The exporter to be used for tracing. Default is `otlp`. `none` means no autoconfigured exporter. |
+| otel.traces.exporter   | OTEL_TRACES_EXPORTER        | List of exporters to be used for tracing, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
 | otel.metrics.exporter   | OTEL_METRICS_EXPORTER        | The exporter to be used for metrics. Default is `otlp`. `none` means no autoconfigured exporter. |
 
 ### OTLP exporter (both span and metric exporters)

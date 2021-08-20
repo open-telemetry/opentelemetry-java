@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_TRACES;
+import static java.util.stream.Collectors.toMap;
 
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
@@ -17,25 +18,58 @@ import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
 
 final class SpanExporterConfiguration {
 
-  @Nullable
-  static SpanExporter configureExporter(String name, ConfigProperties config) {
+  private static final String EXPORTER_NONE = "none";
+
+  // Visible for testing
+  static Map<String, SpanExporter> configureSpanExporters(ConfigProperties config) {
+    List<String> exporterNamesList = config.getCommaSeparatedValues("otel.traces.exporter");
+    Set<String> exporterNames = new HashSet<>(exporterNamesList);
+    if (exporterNamesList.size() != exporterNames.size()) {
+      throw new ConfigurationException("otel.traces.exporter contains duplicates");
+    }
+    if (exporterNames.contains(EXPORTER_NONE) && exporterNames.size() > 1) {
+      throw new ConfigurationException(
+          "otel.traces.exporter contains " + EXPORTER_NONE + " along with other exporters");
+    }
+
+    if (exporterNames.isEmpty()) {
+      exporterNames = Collections.singleton("otlp");
+    }
+
+    if (exporterNames.contains(EXPORTER_NONE)) {
+      return Collections.emptyMap();
+    }
+
     Map<String, SpanExporter> spiExporters =
         StreamSupport.stream(
                 ServiceLoader.load(ConfigurableSpanExporterProvider.class).spliterator(), false)
             .collect(
-                Collectors.toMap(
+                toMap(
                     ConfigurableSpanExporterProvider::getName,
                     configurableSpanExporterProvider ->
                         configurableSpanExporterProvider.createExporter(config)));
 
+    return exporterNames.stream()
+        .collect(
+            toMap(
+                Function.identity(),
+                exporterName -> configureExporter(exporterName, config, spiExporters)));
+  }
+
+  // Visible for testing
+  static SpanExporter configureExporter(
+      String name, ConfigProperties config, Map<String, SpanExporter> spiExporters) {
     switch (name) {
       case "otlp":
         return configureOtlpSpans(config);
@@ -49,8 +83,6 @@ final class SpanExporterConfiguration {
             "Logging Trace Exporter",
             "opentelemetry-exporter-logging");
         return new LoggingSpanExporter();
-      case "none":
-        return null;
       default:
         SpanExporter spiExporter = spiExporters.get(name);
         if (spiExporter == null) {
