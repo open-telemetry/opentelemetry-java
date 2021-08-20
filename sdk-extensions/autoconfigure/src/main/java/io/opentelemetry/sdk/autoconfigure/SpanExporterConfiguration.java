@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_TRACES;
+
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
@@ -14,10 +16,6 @@ import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -70,45 +68,13 @@ final class SpanExporterConfiguration {
         "opentelemetry-exporter-otlp");
     OtlpGrpcSpanExporterBuilder builder = OtlpGrpcSpanExporter.builder();
 
-    String endpoint = config.getString("otel.exporter.otlp.traces.endpoint");
-    if (endpoint == null) {
-      endpoint = config.getString("otel.exporter.otlp.endpoint");
-    }
-    if (endpoint != null) {
-      builder.setEndpoint(endpoint);
-    }
-
-    Map<String, String> headers = config.getCommaSeparatedMap("otel.exporter.otlp.traces.headers");
-    if (headers.isEmpty()) {
-      headers = config.getCommaSeparatedMap("otel.exporter.otlp.headers");
-    }
-    headers.forEach(builder::addHeader);
-
-    Duration timeout = config.getDuration("otel.exporter.otlp.traces.timeout");
-    if (timeout == null) {
-      timeout = config.getDuration("otel.exporter.otlp.timeout");
-    }
-    if (timeout != null) {
-      builder.setTimeout(timeout);
-    }
-
-    String certificate = config.getString("otel.exporter.otlp.traces.certificate");
-    if (certificate == null) {
-      certificate = config.getString("otel.exporter.otlp.certificate");
-    }
-    if (certificate != null) {
-      Path path = Paths.get(certificate);
-      if (!Files.exists(path)) {
-        throw new ConfigurationException("Invalid OTLP certificate path: " + path);
-      }
-      final byte[] certificateBytes;
-      try {
-        certificateBytes = Files.readAllBytes(path);
-      } catch (IOException e) {
-        throw new ConfigurationException("Error reading OTLP certificate.", e);
-      }
-      builder.setTrustedCertificates(certificateBytes);
-    }
+    OtlpConfigUtil.configureOtlpExporterBuilder(
+        DATA_TYPE_TRACES,
+        config,
+        builder::setEndpoint,
+        builder::addHeader,
+        builder::setTimeout,
+        builder::setTrustedCertificates);
 
     return builder.build();
   }
