@@ -13,6 +13,7 @@ dependencies {
   compileOnly(project(":sdk:metrics"))
 
   implementation(project(":exporters:otlp:common"))
+  implementation(project(":proto"))
 
   implementation("org.curioswitch.curiostack:protobuf-jackson")
 

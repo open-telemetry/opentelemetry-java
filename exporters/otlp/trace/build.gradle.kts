@@ -25,9 +25,7 @@ dependencies {
 
   implementation(project(":api:metrics"))
 
-  implementation(project(":exporters:otlp:common")) {
-    exclude(mapOf("module" to "proto"))
-  }
+  implementation(project(":exporters:otlp:common"))
 
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
