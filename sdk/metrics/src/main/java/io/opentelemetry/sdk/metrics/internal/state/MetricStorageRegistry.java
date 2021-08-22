@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentMap;
  * at any time.
  */
 public class MetricStorageRegistry {
+  // TODO: Maybe we store metrics *and* instrument interfaces separately here...
   private final ConcurrentMap<String, MetricStorage> registry = new ConcurrentHashMap<>();
 
   /**

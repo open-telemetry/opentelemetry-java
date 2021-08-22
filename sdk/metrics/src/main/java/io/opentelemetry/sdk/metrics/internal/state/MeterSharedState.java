@@ -92,21 +92,22 @@ public abstract class MeterSharedState {
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       Consumer<ObservableLongMeasurement> metricUpdater) {
-    // TODO - we  need to iterate over all possible views here and register each we find.
-    View view =
+    // TODO - we should avoid registering independent storage that calls observables over and over.
+    List<View> views =
         meterProviderSharedState
             .getViewRegistry()
-            .findView(instrument, getInstrumentationLibraryInfo());
-
-    getMetricStorageRegistry()
-        .register(
-            AsynchronousMetricStorage.longAsynchronousAccumulator(
-                view,
-                instrument,
-                meterProviderSharedState.getResource(),
-                getInstrumentationLibraryInfo(),
-                meterProviderSharedState.getStartEpochNanos(),
-                metricUpdater));
+            .findViews(instrument, getInstrumentationLibraryInfo());
+    for (View view : views) {
+      getMetricStorageRegistry()
+          .register(
+              AsynchronousMetricStorage.longAsynchronousAccumulator(
+                  view,
+                  instrument,
+                  meterProviderSharedState.getResource(),
+                  getInstrumentationLibraryInfo(),
+                  meterProviderSharedState.getStartEpochNanos(),
+                  metricUpdater));
+    }
   }
 
   /** Registers new asynchronous storage associated with a given {@code double} instrument. */
@@ -114,19 +115,21 @@ public abstract class MeterSharedState {
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
-    // TODO - we  need to iterate over all possible views here and register each we find.
-    View view =
+    // TODO - we should avoid registering independent storage that calls observables over and over.
+    List<View> views =
         meterProviderSharedState
             .getViewRegistry()
-            .findView(instrument, getInstrumentationLibraryInfo());
-    getMetricStorageRegistry()
-        .register(
-            AsynchronousMetricStorage.doubleAsynchronousAccumulator(
-                view,
-                instrument,
-                meterProviderSharedState.getResource(),
-                getInstrumentationLibraryInfo(),
-                meterProviderSharedState.getStartEpochNanos(),
-                metricUpdater));
+            .findViews(instrument, getInstrumentationLibraryInfo());
+    for (View view : views) {
+      getMetricStorageRegistry()
+          .register(
+              AsynchronousMetricStorage.doubleAsynchronousAccumulator(
+                  view,
+                  instrument,
+                  meterProviderSharedState.getResource(),
+                  getInstrumentationLibraryInfo(),
+                  meterProviderSharedState.getStartEpochNanos(),
+                  metricUpdater));
+    }
   }
 }
