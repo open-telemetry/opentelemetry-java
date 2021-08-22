@@ -85,7 +85,7 @@ public class LogAdapter {
     return protoLogRecord;
   }
 
-  static AnyValue getLogRecordBodyAnyValue(LogRecord logRecord) {
+  private static AnyValue getLogRecordBodyAnyValue(LogRecord logRecord) {
     return AnyValue.newBuilder().setStringValue(logRecord.getBody().getStringValue()).build();
   }
 
