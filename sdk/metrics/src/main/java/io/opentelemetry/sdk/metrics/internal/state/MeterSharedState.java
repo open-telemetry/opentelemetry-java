@@ -57,22 +57,38 @@ public abstract class MeterSharedState {
   public final WriteableMetricStorage registerSynchronousMetricStorage(
       InstrumentDescriptor instrument, MeterProviderSharedState meterProviderSharedState) {
     // TODO - we  need to iterate over all possible views here and register each we find.
-    View view =
+    List<View> views =
         meterProviderSharedState
             .getViewRegistry()
-            .findView(instrument, getInstrumentationLibraryInfo());
-    return getMetricStorageRegistry()
-        .register(
-            SynchronousMetricStorage.create(
-                view,
-                instrument,
-                meterProviderSharedState.getResource(),
-                getInstrumentationLibraryInfo(),
-                meterProviderSharedState.getStartEpochNanos()));
+            .findViews(instrument, getInstrumentationLibraryInfo());
+
+    if (views.size() == 1) {
+      return getMetricStorageRegistry()
+          .register(
+              SynchronousMetricStorage.create(
+                  views.get(0),
+                  instrument,
+                  meterProviderSharedState.getResource(),
+                  getInstrumentationLibraryInfo(),
+                  meterProviderSharedState.getStartEpochNanos()));
+    }
+    List<WriteableMetricStorage> storage = new ArrayList<>();
+    for (View view : views) {
+      storage.add(
+          getMetricStorageRegistry()
+              .register(
+                  SynchronousMetricStorage.create(
+                      view,
+                      instrument,
+                      meterProviderSharedState.getResource(),
+                      getInstrumentationLibraryInfo(),
+                      meterProviderSharedState.getStartEpochNanos())));
+    }
+    return new MultiWritableMetricStorage(storage);
   }
 
   /** Registers new asynchronous storage associated with a given {@code long} instrument. */
-  public final MetricStorage registerLongAsynchronousInstrument(
+  public final void registerLongAsynchronousInstrument(
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       Consumer<ObservableLongMeasurement> metricUpdater) {
@@ -81,7 +97,8 @@ public abstract class MeterSharedState {
         meterProviderSharedState
             .getViewRegistry()
             .findView(instrument, getInstrumentationLibraryInfo());
-    return getMetricStorageRegistry()
+
+    getMetricStorageRegistry()
         .register(
             AsynchronousMetricStorage.longAsynchronousAccumulator(
                 view,
@@ -93,7 +110,7 @@ public abstract class MeterSharedState {
   }
 
   /** Registers new asynchronous storage associated with a given {@code double} instrument. */
-  public final MetricStorage registerDoubleAsynchronousInstrument(
+  public final void registerDoubleAsynchronousInstrument(
       InstrumentDescriptor instrument,
       MeterProviderSharedState meterProviderSharedState,
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
@@ -102,7 +119,7 @@ public abstract class MeterSharedState {
         meterProviderSharedState
             .getViewRegistry()
             .findView(instrument, getInstrumentationLibraryInfo());
-    return getMetricStorageRegistry()
+    getMetricStorageRegistry()
         .register(
             AsynchronousMetricStorage.doubleAsynchronousAccumulator(
                 view,

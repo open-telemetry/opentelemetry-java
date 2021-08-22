@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.MeterSelector;
 import io.opentelemetry.sdk.metrics.view.View;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -69,6 +70,26 @@ public final class ViewRegistry {
     }
 
     return getDefaultSpecification(descriptor);
+  }
+
+  /**
+   * Returns the metric {@link View} for a given instrument.
+   *
+   * @param descriptor description of the instrument.
+   * @return The list of {@link View}s for this instrument in registered order, or a default
+   *     aggregation view.
+   */
+  public List<View> findViews(InstrumentDescriptor descriptor, InstrumentationLibraryInfo meter) {
+    List<View> result = new ArrayList<>();
+    for (RegisteredView entry : reverseRegistration) {
+      if (matchesSelector(entry.getInstrumentSelector(), descriptor, meter)) {
+        result.add(entry.getView());
+      }
+    }
+    if (result.isEmpty()) {
+      return Collections.singletonList(getDefaultSpecification(descriptor));
+    }
+    return Collections.unmodifiableList(result);
   }
 
   // Matches an instrument selector against an instrument + meter.

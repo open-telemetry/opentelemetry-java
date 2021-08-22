@@ -12,8 +12,6 @@ import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -24,7 +22,7 @@ public final class SdkMeterProviderBuilder {
 
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
-  private final Map<InstrumentSelector, View> instrumentSelectorViews = new HashMap<>();
+  private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
 
   SdkMeterProviderBuilder() {}
 
@@ -79,7 +77,7 @@ public final class SdkMeterProviderBuilder {
   public SdkMeterProviderBuilder registerView(InstrumentSelector selector, View view) {
     Objects.requireNonNull(selector, "selector");
     Objects.requireNonNull(view, "view");
-    instrumentSelectorViews.put(selector, view);
+    viewRegistryBuilder.addView(selector, view);
     return this;
   }
 
@@ -107,9 +105,6 @@ public final class SdkMeterProviderBuilder {
    * @see GlobalMeterProvider
    */
   public SdkMeterProvider build() {
-    ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
-    instrumentSelectorViews.forEach(viewRegistryBuilder::addView);
-    ViewRegistry viewRegistry = viewRegistryBuilder.build();
-    return new SdkMeterProvider(clock, resource, viewRegistry);
+    return new SdkMeterProvider(clock, resource, viewRegistryBuilder.build());
   }
 }

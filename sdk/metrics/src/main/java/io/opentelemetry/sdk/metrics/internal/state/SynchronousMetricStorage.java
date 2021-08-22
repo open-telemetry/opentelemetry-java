@@ -27,7 +27,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class SynchronousMetricStorage<T> implements WriteableMetricStorage {
+public final class SynchronousMetricStorage<T> implements MetricStorage, WriteableMetricStorage {
   private final MetricDescriptor metricDescriptor;
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorLabels;
   private final ReentrantLock collectLock;
