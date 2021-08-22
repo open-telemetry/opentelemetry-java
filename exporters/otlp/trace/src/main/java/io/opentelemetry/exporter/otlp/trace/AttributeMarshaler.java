@@ -9,9 +9,9 @@ import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.WireFormat;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.proto.common.v1.AnyValue;
-import io.opentelemetry.proto.common.v1.ArrayValue;
-import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.common.v1.internal.AnyValue;
+import io.opentelemetry.proto.common.v1.internal.ArrayValue;
+import io.opentelemetry.proto.common.v1.internal.KeyValue;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -27,7 +27,6 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
     }
 
     AttributeMarshaler[] attributeMarshalers = new AttributeMarshaler[attributes.size()];
-    // TODO: Revisit how to avoid the atomic integer creation.
     attributes.forEach(
         new BiConsumer<AttributeKey<?>, Object>() {
           int index = 0;

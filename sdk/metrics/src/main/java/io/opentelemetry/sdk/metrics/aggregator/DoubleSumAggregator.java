@@ -5,12 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
@@ -19,9 +20,11 @@ final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
   DoubleSumAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
+      InstrumentDescriptor instrumentDescriptor,
+      MetricDescriptor metricDescriptor,
       AggregationTemporality temporality) {
-    super(resource, instrumentationLibraryInfo, descriptor, temporality);
+    super(
+        resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor, temporality);
   }
 
   @Override
@@ -46,16 +49,16 @@ final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
 
   @Override
   public MetricData toMetricData(
-      Map<Labels, Double> accumulationByLabels,
+      Map<Attributes, Double> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
     return MetricData.createDoubleSum(
         getResource(),
         getInstrumentationLibraryInfo(),
-        getInstrumentDescriptor().getName(),
-        getInstrumentDescriptor().getDescription(),
-        getInstrumentDescriptor().getUnit(),
+        getMetricDescriptor().getName(),
+        getMetricDescriptor().getDescription(),
+        getMetricDescriptor().getUnit(),
         DoubleSumData.create(
             isMonotonic(),
             temporality(),

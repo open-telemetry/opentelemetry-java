@@ -5,12 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
@@ -20,9 +21,11 @@ final class LongSumAggregator extends AbstractSumAggregator<Long> {
   LongSumAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor,
+      InstrumentDescriptor instrumentDescriptor,
+      MetricDescriptor metricDescriptor,
       AggregationTemporality temporality) {
-    super(resource, instrumentationLibraryInfo, descriptor, temporality);
+    super(
+        resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor, temporality);
   }
 
   @Override
@@ -47,11 +50,11 @@ final class LongSumAggregator extends AbstractSumAggregator<Long> {
 
   @Override
   public MetricData toMetricData(
-      Map<Labels, Long> accumulationByLabels,
+      Map<Attributes, Long> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    InstrumentDescriptor descriptor = getInstrumentDescriptor();
+    MetricDescriptor descriptor = getMetricDescriptor();
     return MetricData.createLongSum(
         getResource(),
         getInstrumentationLibraryInfo(),

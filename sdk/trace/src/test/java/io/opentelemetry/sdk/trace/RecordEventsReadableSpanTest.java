@@ -214,8 +214,24 @@ class RecordEventsReadableSpanTest {
     } finally {
       span.end();
     }
+    assertThat(span.getParentSpanContext().isValid()).isFalse();
     SpanData spanData = span.toSpanData();
     assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
+  }
+
+  @Test
+  void toSpanData_ChildSpan() {
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.INTERNAL);
+    try {
+      spanDoWork(span, null, null);
+    } finally {
+      span.end();
+    }
+    assertThat(span.getParentSpanContext().isValid()).isTrue();
+    assertThat(span.getParentSpanContext().getTraceId()).isEqualTo(traceId);
+    assertThat(span.getParentSpanContext().getSpanId()).isEqualTo(parentSpanId);
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
   }
 
   @Test
@@ -263,7 +279,7 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
-  void setStatus() {
+  void toSpanData_Status() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.CONSUMER);
     try {
       testClock.advance(Duration.ofSeconds(1));
@@ -279,10 +295,30 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
-  void getSpanKind() {
+  void toSpanData_Kind() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.SERVER);
     try {
       assertThat(span.toSpanData().getKind()).isEqualTo(SpanKind.SERVER);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getKind() {
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.SERVER);
+    try {
+      assertThat(span.getKind()).isEqualTo(SpanKind.SERVER);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getAttribute() {
+    RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
+    try {
+      assertThat(span.getAttribute(longKey("MyLongAttributeKey"))).isEqualTo(123L);
     } finally {
       span.end();
     }

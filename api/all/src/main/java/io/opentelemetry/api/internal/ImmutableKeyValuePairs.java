@@ -31,11 +31,12 @@ public abstract class ImmutableKeyValuePairs<K, V> {
   private final Object[] data;
 
   /**
-   * Sorts and dedupes the key/value pairs in {@code data}. {@code null} values will be removed.
-   * Keys must be {@link Comparable}.
+   * Stores the raw object data directly. Does not do any de-duping or sorting. If you use this
+   * constructor, you *must* guarantee that the data has been de-duped and sorted by key before it
+   * is passed here.
    */
   protected ImmutableKeyValuePairs(Object[] data) {
-    this(data, Comparator.naturalOrder());
+    this.data = data;
   }
 
   /**
@@ -43,7 +44,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
    * Keys will be compared with the given {@link Comparator}.
    */
   protected ImmutableKeyValuePairs(Object[] data, Comparator<?> keyComparator) {
-    this.data = sortAndFilter(data, keyComparator);
+    this(sortAndFilter(data, keyComparator));
   }
 
   // TODO: Improve this to avoid one allocation, for the moment only some Builders and the asMap
@@ -224,7 +225,7 @@ public abstract class ImmutableKeyValuePairs<K, V> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

@@ -5,13 +5,12 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
-import com.google.rpc.Code;
-import com.google.rpc.Status;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.api.metrics.common.Labels;
+import io.opentelemetry.exporter.otlp.internal.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -22,6 +21,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -41,16 +41,17 @@ import okio.Okio;
 public final class OtlpHttpSpanExporter implements SpanExporter {
 
   private static final String EXPORTER_NAME = OtlpHttpSpanExporter.class.getSimpleName();
-  private static final Labels EXPORTER_NAME_LABELS = Labels.of("exporter", EXPORTER_NAME);
-  private static final Labels EXPORT_SUCCESS_LABELS =
-      Labels.of("exporter", EXPORTER_NAME, "success", "true");
-  private static final Labels EXPORT_FAILURE_LABELS =
-      Labels.of("exporter", EXPORTER_NAME, "success", "false");
+  private static final Attributes EXPORTER_NAME_LABELS =
+      Attributes.builder().put("exporter", EXPORTER_NAME).build();
+  private static final Attributes EXPORT_SUCCESS_LABELS =
+      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", true).build();
+  private static final Attributes EXPORT_FAILURE_LABELS =
+      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", false).build();
 
-  private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
+  private static final Logger internalLogger =
+      Logger.getLogger(OtlpHttpSpanExporter.class.getName());
 
-  private final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OtlpHttpSpanExporter.class.getName()));
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
   private final BoundLongCounter spansSeen;
   private final BoundLongCounter spansExportedSuccess;
@@ -58,22 +59,21 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
 
   private final OkHttpClient client;
   private final String endpoint;
-  private final Headers headers;
-  private final boolean isCompressionEnabled;
+  @Nullable private final Headers headers;
+  private final boolean compressionEnabled;
 
   OtlpHttpSpanExporter(
-      OkHttpClient client, String endpoint, Headers headers, boolean isCompressionEnabled) {
-    Meter meter = GlobalMeterProvider.getMeter("io.opentelemetry.exporters.otlp-http");
-    this.spansSeen =
-        meter.longCounterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
-    LongCounter spansExportedCounter = meter.longCounterBuilder("spansExportedByExporter").build();
+      OkHttpClient client, String endpoint, Headers headers, boolean compressionEnabled) {
+    Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http");
+    this.spansSeen = meter.counterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
+    LongCounter spansExportedCounter = meter.counterBuilder("spansExportedByExporter").build();
     this.spansExportedSuccess = spansExportedCounter.bind(EXPORT_SUCCESS_LABELS);
     this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_LABELS);
 
     this.client = client;
     this.endpoint = endpoint;
     this.headers = headers;
-    this.isCompressionEnabled = isCompressionEnabled;
+    this.compressionEnabled = compressionEnabled;
   }
 
   /**
@@ -94,9 +94,8 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     if (headers != null) {
       requestBuilder.headers(headers);
     }
-    RequestBody requestBody =
-        RequestBody.create(exportTraceServiceRequest.toByteArray(), PROTOBUF_MEDIA_TYPE);
-    if (isCompressionEnabled) {
+    RequestBody requestBody = new ProtoRequestBody(exportTraceServiceRequest);
+    if (compressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");
       requestBuilder.post(gzipRequestBody(requestBody));
     } else {
@@ -112,11 +111,11 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
               @Override
               public void onFailure(Call call, IOException e) {
                 spansExportedFailure.add(spans.size());
-                result.fail();
                 logger.log(
                     Level.SEVERE,
                     "Failed to export spans. The request could not be executed. Full error message: "
                         + e.getMessage());
+                result.fail();
               }
 
               @Override
@@ -130,14 +129,14 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
                 spansExportedFailure.add(spans.size());
                 int code = response.code();
 
-                Status status = extractErrorStatus(response);
+                String status = extractErrorStatus(response);
 
                 logger.log(
                     Level.WARNING,
                     "Failed to export spans. Server responded with HTTP status code "
                         + code
                         + ". Error message: "
-                        + status.getMessage());
+                        + status);
                 result.fail();
               }
             });
@@ -166,21 +165,15 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     };
   }
 
-  private static Status extractErrorStatus(Response response) {
+  private static String extractErrorStatus(Response response) {
     ResponseBody responseBody = response.body();
     if (responseBody == null) {
-      return Status.newBuilder()
-          .setMessage("Response body missing, HTTP status message: " + response.message())
-          .setCode(Code.UNKNOWN.getNumber())
-          .build();
+      return "Response body missing, HTTP status message: " + response.message();
     }
     try {
-      return Status.parseFrom(responseBody.bytes());
+      return GrpcStatusUtil.getStatusMessage(responseBody.bytes());
     } catch (IOException e) {
-      return Status.newBuilder()
-          .setMessage("Unable to parse response body, HTTP status message: " + response.message())
-          .setCode(Code.UNKNOWN.getNumber())
-          .build();
+      return "Unable to parse response body, HTTP status message: " + response.message();
     }
   }
 

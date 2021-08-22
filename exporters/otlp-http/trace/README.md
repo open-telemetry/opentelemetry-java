@@ -4,5 +4,5 @@
 
 This is the OpenTelemetry exporter, sending span data to OpenTelemetry collector via HTTP without gRPC.
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporters-otlp.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporters-otlp
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-otlp-http-trace.svg
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-otlp-http-trace

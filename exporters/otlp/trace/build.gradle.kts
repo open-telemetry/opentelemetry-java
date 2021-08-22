@@ -3,8 +3,10 @@ plugins {
   id("otel.publish-conventions")
 
   id("otel.jmh-conventions")
-  id("org.unbroken-dome.test-sets")
   id("otel.animalsniffer-conventions")
+
+  id("com.squareup.wire")
+  id("org.unbroken-dome.test-sets")
 }
 
 description = "OpenTelemetry Protocol Trace Exporter"
@@ -17,22 +19,31 @@ testSets {
 }
 
 dependencies {
+  protoSource(project(":proto"))
+
   api(project(":sdk:trace"))
+
+  implementation(project(":api:metrics"))
+
+  implementation(project(":exporters:otlp:common"))
+
+  implementation("com.google.protobuf:protobuf-java")
 
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
   compileOnly("io.grpc:grpc-okhttp")
 
-  implementation(project(":exporters:otlp:common"))
+  api("io.grpc:grpc-stub")
   implementation("io.grpc:grpc-api")
-  implementation("io.grpc:grpc-protobuf")
-  implementation("io.grpc:grpc-stub")
-  implementation("com.google.protobuf:protobuf-java")
 
+  testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("io.grpc:grpc-protobuf")
   testImplementation("io.grpc:grpc-testing")
   testImplementation("org.slf4j:slf4j-simple")
+
+  testImplementation("org.jeasy:easy-random-randomizers")
 
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
@@ -49,11 +60,20 @@ dependencies {
   add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
+  jmh(project(":proto"))
   jmh(project(":sdk:testing"))
 }
 
 tasks {
   named("check") {
     dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp")
+  }
+}
+
+wire {
+  root("opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest")
+
+  custom {
+    customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
   }
 }

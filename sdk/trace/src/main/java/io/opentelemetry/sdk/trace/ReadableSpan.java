@@ -5,11 +5,13 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import javax.annotation.Nullable;
 
 /** The extend Span interface used by the SDK. */
 public interface ReadableSpan {
@@ -24,10 +26,20 @@ public interface ReadableSpan {
   SpanContext getSpanContext();
 
   /**
+   * Returns the parent {@link SpanContext} of the {@link Span}, or {@link SpanContext#getInvalid()}
+   * if this is a root span.
+   *
+   * @return the parent {@link SpanContext} of the {@link Span}
+   */
+  SpanContext getParentSpanContext();
+
+  /**
    * Returns the name of the {@code Span}.
    *
    * <p>The name can be changed during the lifetime of the Span by using the {@link
    * Span#updateName(String)} so this value cannot be cached.
+   *
+   * <p>Note: the implementation of this method performs locking to ensure thread-safe behavior.
    *
    * @return the name of the {@code Span}.
    */
@@ -52,6 +64,8 @@ public interface ReadableSpan {
   /**
    * Returns whether this Span has already been ended.
    *
+   * <p>Note: the implementation of this method performs locking to ensure thread-safe behavior.
+   *
    * @return {@code true} if the span has already been ended, {@code false} if not.
    */
   boolean hasEnded();
@@ -59,6 +73,8 @@ public interface ReadableSpan {
   /**
    * Returns the latency of the {@code Span} in nanos. If still active then returns now() - start
    * time.
+   *
+   * <p>Note: the implementation of this method performs locking to ensure thread-safe behavior.
    *
    * @return the latency of the {@code Span} in nanos.
    */
@@ -70,4 +86,17 @@ public interface ReadableSpan {
    * @return the kind of the span.
    */
   SpanKind getKind();
+
+  /**
+   * Returns the value for the given {@link AttributeKey}, or {@code null} if not found.
+   *
+   * <p>The attribute values can be changed during the lifetime of the Span by using {@link
+   * Span#setAttribute}} so this value cannot be cached.
+   *
+   * <p>Note: the implementation of this method performs locking to ensure thread-safe behavior.
+   *
+   * @return the value for the given {@link AttributeKey}, or {@code null} if not found.
+   */
+  @Nullable
+  <T> T getAttribute(AttributeKey<T> key);
 }

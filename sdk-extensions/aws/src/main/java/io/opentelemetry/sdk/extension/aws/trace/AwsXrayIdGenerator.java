@@ -19,7 +19,11 @@ import java.util.concurrent.TimeUnit;
  * @see <a
  *     href="https://docs.aws.amazon.com/xray/latest/devguide/xray-api-sendingdata.html#xray-api-traceids">Generating
  *     Trace IDs</a>
+ * @deprecated Use the AwsXrayIdGenerator provided in the <a
+ *     href="https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/aws-xray">
+ *     io.opentelemetry.contrib:opentelemetry-aws-xray</a> artifact instead of this one.
  */
+@Deprecated
 public final class AwsXrayIdGenerator implements IdGenerator {
 
   private static final AwsXrayIdGenerator INSTANCE = new AwsXrayIdGenerator();

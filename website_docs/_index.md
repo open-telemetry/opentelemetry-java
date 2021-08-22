@@ -1,9 +1,14 @@
 ---
-title: "Java"
+title: Java
 weight: 18
-description: >
+description: >-
   <img width="35" src="https://raw.github.com/open-telemetry/opentelemetry.io/main/iconography/32x32/Java_SDK.svg"></img>
   A language-specific implementation of OpenTelemetry in Java.
+cascade:
+  github_repo: &repo https://github.com/open-telemetry/opentelemetry-java
+  github_subdir: website_docs
+  path_base_for_github_subdir: content/en/docs/java/
+  github_project_repo: *repo
 ---
 
 OpenTelemetry Java consists of the following repositories:
@@ -54,7 +59,7 @@ versions of the various components in sync.
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.3.0</version>
+        <version>1.5.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -73,7 +78,7 @@ versions of the various components in sync.
 
 ```groovy
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.3.0")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.5.0")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```

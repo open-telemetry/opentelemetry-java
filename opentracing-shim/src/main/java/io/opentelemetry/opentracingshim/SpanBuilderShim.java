@@ -23,14 +23,15 @@ import io.opentracing.tag.Tags;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   private final String spanName;
 
   // The parent will be either a Span or a SpanContext.
   // Inherited baggage is supported only for the main parent.
-  private SpanShim parentSpan;
-  private SpanContextShim parentSpanContext;
+  @Nullable private SpanShim parentSpan;
+  @Nullable private SpanContextShim parentSpanContext;
   private boolean ignoreActiveSpan;
 
   private final List<io.opentelemetry.api.trace.SpanContext> parentLinks = new ArrayList<>();
@@ -39,7 +40,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   private final List<AttributeKey> spanBuilderAttributeKeys = new ArrayList<>();
 
   private final List<Object> spanBuilderAttributeValues = new ArrayList<>();
-  private SpanKind spanKind;
+  @Nullable private SpanKind spanKind;
   private boolean error;
   private long startTimestampMicros;
 
@@ -72,7 +73,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder addReference(String referenceType, SpanContext referencedContext) {
+  public SpanBuilder addReference(@Nullable String referenceType, SpanContext referencedContext) {
     if (referencedContext == null) {
       return this;
     }

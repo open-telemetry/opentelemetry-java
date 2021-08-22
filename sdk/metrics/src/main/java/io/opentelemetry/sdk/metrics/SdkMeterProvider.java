@@ -6,13 +6,14 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,18 +45,6 @@ public final class SdkMeterProvider implements MeterProvider, MetricProducer {
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
-  }
-
-  @Override
-  public Meter get(String instrumentationName) {
-    return meterBuilder(instrumentationName).build();
-  }
-
-  @Override
-  public Meter get(String instrumentationName, String instrumentationVersion) {
-    return meterBuilder(instrumentationName)
-        .setInstrumentationVersion(instrumentationVersion)
-        .build();
   }
 
   @Override

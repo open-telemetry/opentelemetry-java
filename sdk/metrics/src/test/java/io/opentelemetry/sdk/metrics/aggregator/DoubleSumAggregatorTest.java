@@ -9,7 +9,6 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.AbstractSumAggregator.MergeStrategy;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -17,6 +16,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,12 @@ class DoubleSumAggregatorTest {
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
-              "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE),
+              "instrument_name",
+              "instrument_description",
+              "instrument_unit",
+              InstrumentType.COUNTER,
+              InstrumentValueType.DOUBLE),
+          MetricDescriptor.create("name", "description", "unit"),
           AggregationTemporality.CUMULATIVE);
 
   @Test
@@ -85,6 +90,7 @@ class DoubleSumAggregatorTest {
                 InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
+                MetricDescriptor.create("name", "description", "unit"),
                 temporality);
         MergeStrategy expectedMergeStrategy =
             AbstractSumAggregator.resolveMergeStrategy(instrumentType, temporality);
@@ -106,11 +112,14 @@ class DoubleSumAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             10,
             100);
     assertThat(metricData)
+        .hasName("name")
+        .hasDescription("description")
+        .hasUnit("unit")
         .hasDoubleSum()
         .isCumulative()
         .isMonotonic()

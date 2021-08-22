@@ -151,11 +151,14 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   private Collector.PostSpansRequest buildRequest(Resource resource, List<SpanData> spans) {
     Model.Process.Builder builder = this.processBuilder.clone();
 
-    String serviceName = resource.getAttributes().get(ResourceAttributes.SERVICE_NAME);
+    String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
     if (serviceName == null || serviceName.isEmpty()) {
-      serviceName = Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME);
+      serviceName = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
     }
-    builder.setServiceName(serviceName);
+    // In practice should never be null unless the default Resource spec is changed.
+    if (serviceName != null) {
+      builder.setServiceName(serviceName);
+    }
 
     builder.addAllTags(Adapter.toKeyValues(resource.getAttributes()));
 

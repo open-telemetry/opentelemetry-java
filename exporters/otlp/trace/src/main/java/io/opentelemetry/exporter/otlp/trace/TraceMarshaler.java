@@ -5,24 +5,15 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
-import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CLIENT;
-import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_CONSUMER;
-import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_INTERNAL;
-import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_PRODUCER;
-import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
-import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
-import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
-
 import com.google.protobuf.CodedOutputStream;
-import com.google.protobuf.UnknownFieldSet;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
-import io.opentelemetry.proto.trace.v1.ResourceSpans;
-import io.opentelemetry.proto.trace.v1.Span;
-import io.opentelemetry.proto.trace.v1.Status;
+import io.opentelemetry.proto.collector.trace.v1.internal.ExportTraceServiceRequest;
+import io.opentelemetry.proto.trace.v1.internal.InstrumentationLibrarySpans;
+import io.opentelemetry.proto.trace.v1.internal.ResourceSpans;
+import io.opentelemetry.proto.trace.v1.internal.Span;
+import io.opentelemetry.proto.trace.v1.internal.Status;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -33,10 +24,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
 final class TraceMarshaler {
+
+  // In practice, there is often only one thread that calls this code in the BatchSpanProcessor so
+  // reusing buffers for the thread is almost free. Even with multiple threads, it should still be
+  // worth it and is common practice in serialization libraries such as Jackson.
+  private static final ThreadLocal<ThreadLocalCache> THREAD_LOCAL_CACHE = new ThreadLocal<>();
 
   static final class RequestMarshaler extends MarshalerWithSize {
     private final ResourceSpansMarshaler[] resourceSpansMarshalers;
@@ -57,11 +54,15 @@ final class TraceMarshaler {
             entry.getValue().entrySet()) {
           instrumentationLibrarySpansMarshalers[posInstrumentation++] =
               new InstrumentationLibrarySpansMarshaler(
-                  InstrumentationLibraryMarshaler.create(entryIs.getKey()), entryIs.getValue());
+                  InstrumentationLibraryMarshaler.create(entryIs.getKey()),
+                  MarshalerUtil.toBytes(entryIs.getKey().getSchemaUrl()),
+                  entryIs.getValue());
         }
         resourceSpansMarshalers[posResource++] =
             new ResourceSpansMarshaler(
-                ResourceMarshaler.create(entry.getKey()), instrumentationLibrarySpansMarshalers);
+                ResourceMarshaler.create(entry.getKey()),
+                MarshalerUtil.toBytes(entry.getKey().getSchemaUrl()),
+                instrumentationLibrarySpansMarshalers);
       }
 
       return new RequestMarshaler(resourceSpansMarshalers);
@@ -74,14 +75,6 @@ final class TraceMarshaler {
       this.resourceSpansMarshalers = resourceSpansMarshalers;
     }
 
-    ExportTraceServiceRequest toRequest() throws IOException {
-      byte[] buf = new byte[getSerializedSize()];
-      writeTo(CodedOutputStream.newInstance(buf));
-      return ExportTraceServiceRequest.newBuilder()
-          .setUnknownFields(UnknownFieldSet.newBuilder().mergeFrom(buf).build())
-          .build();
-    }
-
     @Override
     public void writeTo(CodedOutputStream output) throws IOException {
       MarshalerUtil.marshalRepeatedMessage(
@@ -91,13 +84,16 @@ final class TraceMarshaler {
 
   private static final class ResourceSpansMarshaler extends MarshalerWithSize {
     private final ResourceMarshaler resourceMarshaler;
+    private final byte[] schemaUrl;
     private final InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers;
 
     private ResourceSpansMarshaler(
         ResourceMarshaler resourceMarshaler,
+        byte[] schemaUrl,
         InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers) {
-      super(calculateSize(resourceMarshaler, instrumentationLibrarySpansMarshalers));
+      super(calculateSize(resourceMarshaler, schemaUrl, instrumentationLibrarySpansMarshalers));
       this.resourceMarshaler = resourceMarshaler;
+      this.schemaUrl = schemaUrl;
       this.instrumentationLibrarySpansMarshalers = instrumentationLibrarySpansMarshalers;
     }
 
@@ -108,13 +104,16 @@ final class TraceMarshaler {
           ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_FIELD_NUMBER,
           instrumentationLibrarySpansMarshalers,
           output);
+      MarshalerUtil.marshalBytes(ResourceSpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl, output);
     }
 
     private static int calculateSize(
         ResourceMarshaler resourceMarshaler,
+        byte[] schemaUrl,
         InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers) {
       int size = 0;
       size += MarshalerUtil.sizeMessage(ResourceSpans.RESOURCE_FIELD_NUMBER, resourceMarshaler);
+      size += MarshalerUtil.sizeBytes(ResourceSpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
               ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_FIELD_NUMBER,
@@ -126,12 +125,15 @@ final class TraceMarshaler {
   private static final class InstrumentationLibrarySpansMarshaler extends MarshalerWithSize {
     private final InstrumentationLibraryMarshaler instrumentationLibrary;
     private final List<SpanMarshaler> spanMarshalers;
+    private final byte[] schemaUrl;
 
     private InstrumentationLibrarySpansMarshaler(
         InstrumentationLibraryMarshaler instrumentationLibrary,
+        byte[] schemaUrl,
         List<SpanMarshaler> spanMarshalers) {
-      super(calculateSize(instrumentationLibrary, spanMarshalers));
+      super(calculateSize(instrumentationLibrary, schemaUrl, spanMarshalers));
       this.instrumentationLibrary = instrumentationLibrary;
+      this.schemaUrl = schemaUrl;
       this.spanMarshalers = spanMarshalers;
     }
 
@@ -143,16 +145,21 @@ final class TraceMarshaler {
           output);
       MarshalerUtil.marshalRepeatedMessage(
           InstrumentationLibrarySpans.SPANS_FIELD_NUMBER, spanMarshalers, output);
+      MarshalerUtil.marshalBytes(
+          InstrumentationLibrarySpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl, output);
     }
 
     private static int calculateSize(
         InstrumentationLibraryMarshaler instrumentationLibrary,
+        byte[] schemaUrl,
         List<SpanMarshaler> spanMarshalers) {
       int size = 0;
       size +=
           MarshalerUtil.sizeMessage(
               InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
               instrumentationLibrary);
+      size +=
+          MarshalerUtil.sizeBytes(InstrumentationLibrarySpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
               InstrumentationLibrarySpans.SPANS_FIELD_NUMBER, spanMarshalers);
@@ -177,24 +184,38 @@ final class TraceMarshaler {
     private final SpanStatusMarshaler spanStatusMarshaler;
 
     // Because SpanMarshaler is always part of a repeated field, it cannot return "null".
-    private static SpanMarshaler create(SpanData spanData) {
+    private static SpanMarshaler create(SpanData spanData, ThreadLocalCache threadLocalCache) {
       AttributeMarshaler[] attributeMarshalers =
           AttributeMarshaler.createRepeated(spanData.getAttributes());
       SpanEventMarshaler[] spanEventMarshalers = SpanEventMarshaler.create(spanData.getEvents());
-      SpanLinkMarshaler[] spanLinkMarshalers = SpanLinkMarshaler.create(spanData.getLinks());
+      SpanLinkMarshaler[] spanLinkMarshalers =
+          SpanLinkMarshaler.create(spanData.getLinks(), threadLocalCache);
+      Map<String, byte[]> idBytesCache = threadLocalCache.idBytesCache;
+
+      byte[] traceId =
+          idBytesCache.computeIfAbsent(
+              spanData.getSpanContext().getTraceId(),
+              unused -> spanData.getSpanContext().getTraceIdBytes());
+      byte[] spanId =
+          idBytesCache.computeIfAbsent(
+              spanData.getSpanContext().getSpanId(),
+              unused -> spanData.getSpanContext().getSpanIdBytes());
 
       byte[] parentSpanId = MarshalerUtil.EMPTY_BYTES;
       SpanContext parentSpanContext = spanData.getParentSpanContext();
       if (parentSpanContext.isValid()) {
-        parentSpanId = parentSpanContext.getSpanIdBytes();
+        parentSpanId =
+            idBytesCache.computeIfAbsent(
+                spanData.getParentSpanContext().getSpanId(),
+                unused -> spanData.getParentSpanContext().getSpanIdBytes());
       }
 
       return new SpanMarshaler(
-          spanData.getSpanContext().getTraceIdBytes(),
-          spanData.getSpanContext().getSpanIdBytes(),
+          traceId,
+          spanId,
           parentSpanId,
           MarshalerUtil.toBytes(spanData.getName()),
-          toProtoSpanKind(spanData.getKind()).getNumber(),
+          toProtoSpanKind(spanData.getKind()),
           spanData.getStartEpochNanos(),
           spanData.getEndEpochNanos(),
           attributeMarshalers,
@@ -399,18 +420,24 @@ final class TraceMarshaler {
     private final AttributeMarshaler[] attributeMarshalers;
     private final int droppedAttributesCount;
 
-    private static SpanLinkMarshaler[] create(List<LinkData> links) {
+    private static SpanLinkMarshaler[] create(
+        List<LinkData> links, ThreadLocalCache threadLocalCache) {
       if (links.isEmpty()) {
         return EMPTY;
       }
+      Map<String, byte[]> idBytesCache = threadLocalCache.idBytesCache;
 
       SpanLinkMarshaler[] result = new SpanLinkMarshaler[links.size()];
       int pos = 0;
       for (LinkData link : links) {
         result[pos++] =
             new SpanLinkMarshaler(
-                link.getSpanContext().getTraceIdBytes(),
-                link.getSpanContext().getSpanIdBytes(),
+                idBytesCache.computeIfAbsent(
+                    link.getSpanContext().getTraceId(),
+                    unused -> link.getSpanContext().getTraceIdBytes()),
+                idBytesCache.computeIfAbsent(
+                    link.getSpanContext().getSpanId(),
+                    unused -> link.getSpanContext().getSpanIdBytes()),
                 AttributeMarshaler.createRepeated(link.getAttributes()),
                 link.getTotalAttributeCount() - link.getAttributes().size());
       }
@@ -460,27 +487,25 @@ final class TraceMarshaler {
   }
 
   private static final class SpanStatusMarshaler extends MarshalerWithSize {
-    private final Status.StatusCode protoStatusCode;
-    private final Status.DeprecatedStatusCode deprecatedStatusCode;
+    private final int protoStatusCode;
+    private final int deprecatedStatusCode;
     private final byte[] description;
 
     static SpanStatusMarshaler create(StatusData status) {
-      Status.StatusCode protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET;
-      Status.DeprecatedStatusCode deprecatedStatusCode = DEPRECATED_STATUS_CODE_OK;
+      int protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET_VALUE;
+      int deprecatedStatusCode = Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE;
       if (status.getStatusCode() == StatusCode.OK) {
-        protoStatusCode = Status.StatusCode.STATUS_CODE_OK;
+        protoStatusCode = Status.StatusCode.STATUS_CODE_OK_VALUE;
       } else if (status.getStatusCode() == StatusCode.ERROR) {
-        protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR;
-        deprecatedStatusCode = DEPRECATED_STATUS_CODE_UNKNOWN_ERROR;
+        protoStatusCode = Status.StatusCode.STATUS_CODE_ERROR_VALUE;
+        deprecatedStatusCode =
+            Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_UNKNOWN_ERROR_VALUE;
       }
       byte[] description = MarshalerUtil.toBytes(status.getDescription());
       return new SpanStatusMarshaler(protoStatusCode, deprecatedStatusCode, description);
     }
 
-    private SpanStatusMarshaler(
-        Status.StatusCode protoStatusCode,
-        Status.DeprecatedStatusCode deprecatedStatusCode,
-        byte[] description) {
+    private SpanStatusMarshaler(int protoStatusCode, int deprecatedStatusCode, byte[] description) {
       super(computeSize(protoStatusCode, deprecatedStatusCode, description));
       this.protoStatusCode = protoStatusCode;
       this.deprecatedStatusCode = deprecatedStatusCode;
@@ -490,33 +515,29 @@ final class TraceMarshaler {
     @Override
     public void writeTo(CodedOutputStream output) throws IOException {
       // TODO: Make this a MarshalerUtil helper.
-      if (deprecatedStatusCode != DEPRECATED_STATUS_CODE_OK) {
-        output.writeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode.getNumber());
+      if (deprecatedStatusCode != Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE) {
+        output.writeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
       }
       MarshalerUtil.marshalBytes(Status.MESSAGE_FIELD_NUMBER, description, output);
       // TODO: Make this a MarshalerUtil helper.
-      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET) {
-        output.writeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode.getNumber());
+      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET_VALUE) {
+        output.writeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode);
       }
     }
 
     private static int computeSize(
-        Status.StatusCode protoStatusCode,
-        Status.DeprecatedStatusCode deprecatedStatusCode,
-        byte[] description) {
+        int protoStatusCode, int deprecatedStatusCode, byte[] description) {
       int size = 0;
       // TODO: Make this a MarshalerUtil helper.
-      if (deprecatedStatusCode != DEPRECATED_STATUS_CODE_OK) {
+      if (deprecatedStatusCode != Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE) {
         size +=
             CodedOutputStream.computeEnumSize(
-                Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode.getNumber());
+                Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
       }
       size += MarshalerUtil.sizeBytes(Status.MESSAGE_FIELD_NUMBER, description);
       // TODO: Make this a MarshalerUtil helper.
-      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET) {
-        size +=
-            CodedOutputStream.computeEnumSize(
-                Status.CODE_FIELD_NUMBER, protoStatusCode.getNumber());
+      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET_VALUE) {
+        size += CodedOutputStream.computeEnumSize(Status.CODE_FIELD_NUMBER, protoStatusCode);
       }
       return size;
     }
@@ -524,40 +545,49 @@ final class TraceMarshaler {
 
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>>
       groupByResourceAndLibrary(Collection<SpanData> spanDataList) {
-    Map<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> result = new HashMap<>();
+    // expectedMaxSize of 8 means initial map capacity of 16 to match HashMap
+    IdentityHashMap<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> result =
+        new IdentityHashMap<>(8);
+    ThreadLocalCache threadLocalCache = getThreadLocalCache();
     for (SpanData spanData : spanDataList) {
-      Resource resource = spanData.getResource();
       Map<InstrumentationLibraryInfo, List<SpanMarshaler>> libraryInfoListMap =
-          result.get(spanData.getResource());
-      if (libraryInfoListMap == null) {
-        libraryInfoListMap = new HashMap<>();
-        result.put(resource, libraryInfoListMap);
-      }
+          result.computeIfAbsent(spanData.getResource(), unused -> new IdentityHashMap<>(8));
       List<SpanMarshaler> spanList =
-          libraryInfoListMap.get(spanData.getInstrumentationLibraryInfo());
-      if (spanList == null) {
-        spanList = new ArrayList<>();
-        libraryInfoListMap.put(spanData.getInstrumentationLibraryInfo(), spanList);
-      }
-      spanList.add(SpanMarshaler.create(spanData));
+          libraryInfoListMap.computeIfAbsent(
+              spanData.getInstrumentationLibraryInfo(), unused -> new ArrayList<>());
+      spanList.add(SpanMarshaler.create(spanData, threadLocalCache));
+    }
+    threadLocalCache.idBytesCache.clear();
+    return result;
+  }
+
+  private static int toProtoSpanKind(SpanKind kind) {
+    switch (kind) {
+      case INTERNAL:
+        return Span.SpanKind.SPAN_KIND_INTERNAL_VALUE;
+      case SERVER:
+        return Span.SpanKind.SPAN_KIND_SERVER_VALUE;
+      case CLIENT:
+        return Span.SpanKind.SPAN_KIND_CLIENT_VALUE;
+      case PRODUCER:
+        return Span.SpanKind.SPAN_KIND_PRODUCER_VALUE;
+      case CONSUMER:
+        return Span.SpanKind.SPAN_KIND_CONSUMER_VALUE;
+    }
+    return -1;
+  }
+
+  private static ThreadLocalCache getThreadLocalCache() {
+    ThreadLocalCache result = THREAD_LOCAL_CACHE.get();
+    if (result == null) {
+      result = new ThreadLocalCache();
+      THREAD_LOCAL_CACHE.set(result);
     }
     return result;
   }
 
-  private static Span.SpanKind toProtoSpanKind(SpanKind kind) {
-    switch (kind) {
-      case INTERNAL:
-        return SPAN_KIND_INTERNAL;
-      case SERVER:
-        return SPAN_KIND_SERVER;
-      case CLIENT:
-        return SPAN_KIND_CLIENT;
-      case PRODUCER:
-        return SPAN_KIND_PRODUCER;
-      case CONSUMER:
-        return SPAN_KIND_CONSUMER;
-    }
-    return Span.SpanKind.UNRECOGNIZED;
+  private static final class ThreadLocalCache {
+    final Map<String, byte[]> idBytesCache = new HashMap<>();
   }
 
   private TraceMarshaler() {}

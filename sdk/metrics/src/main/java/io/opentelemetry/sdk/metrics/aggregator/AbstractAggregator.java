@@ -6,23 +6,23 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 
 public abstract class AbstractAggregator<T> implements Aggregator<T> {
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
-  private final InstrumentDescriptor instrumentDescriptor;
+  private final MetricDescriptor metricDescriptor;
   private final boolean stateful;
 
   protected AbstractAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor instrumentDescriptor,
+      MetricDescriptor metricDescriptor,
       boolean stateful) {
     this.resource = resource;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    this.instrumentDescriptor = instrumentDescriptor;
+    this.metricDescriptor = metricDescriptor;
     this.stateful = stateful;
   }
 
@@ -39,7 +39,7 @@ public abstract class AbstractAggregator<T> implements Aggregator<T> {
     return instrumentationLibraryInfo;
   }
 
-  protected final InstrumentDescriptor getInstrumentDescriptor() {
-    return instrumentDescriptor;
+  protected final MetricDescriptor getMetricDescriptor() {
+    return metricDescriptor;
   }
 }

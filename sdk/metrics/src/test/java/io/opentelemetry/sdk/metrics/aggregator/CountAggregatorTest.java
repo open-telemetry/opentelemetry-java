@@ -9,40 +9,30 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link CountAggregator}. */
 class CountAggregatorTest {
+  private static final MetricDescriptor SIMPLE_METRIC_DESCRIPTOR =
+      MetricDescriptor.create("name", "description", "unit");
+
   private static final CountAggregator cumulativeAggregator =
       new CountAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          InstrumentDescriptor.create(
-              "name",
-              "description",
-              "unit",
-              InstrumentType.VALUE_RECORDER,
-              InstrumentValueType.LONG),
+          SIMPLE_METRIC_DESCRIPTOR,
           AggregationTemporality.CUMULATIVE);
   private static final CountAggregator deltaAggregator =
       new CountAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          InstrumentDescriptor.create(
-              "name",
-              "description",
-              "unit",
-              InstrumentType.VALUE_RECORDER,
-              InstrumentValueType.LONG),
+          SIMPLE_METRIC_DESCRIPTOR,
           AggregationTemporality.DELTA);
 
   @Test
@@ -80,7 +70,7 @@ class CountAggregatorTest {
 
     MetricData metricData =
         cumulativeAggregator.toMetricData(
-            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             10,
             100);
@@ -111,7 +101,7 @@ class CountAggregatorTest {
 
     MetricData metricData =
         deltaAggregator.toMetricData(
-            Collections.singletonMap(Labels.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
             0,
             10,
             100);

@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -116,11 +117,14 @@ public interface AggregatorFactory {
    *     measurements.
    * @param instrumentationLibraryInfo the InstrumentationLibraryInfo associated with the {@code
    *     Instrument} that will record measurements.
-   * @param descriptor the descriptor of the {@code Instrument} that will record measurements.
+   * @param instrumentDescriptor the descriptor of the {@code Instrument} that will record
+   *     measurements.
+   * @param metricDescriptor the descriptor of the {@code MetricData} that should be generated.
    * @return a new {@link Aggregator}.
    */
   <T> Aggregator<T> create(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor descriptor);
+      InstrumentDescriptor instrumentDescriptor,
+      MetricDescriptor metricDescriptor);
 }
