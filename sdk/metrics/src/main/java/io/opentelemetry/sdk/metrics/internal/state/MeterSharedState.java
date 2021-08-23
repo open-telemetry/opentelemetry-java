@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -27,6 +29,9 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class MeterSharedState {
+
+  private static final Logger logger = Logger.getLogger(MeterSharedState.class.getName());
+
   public static MeterSharedState create(InstrumentationLibraryInfo instrumentationLibraryInfo) {
     return new AutoValue_MeterSharedState(instrumentationLibraryInfo, new MetricStorageRegistry());
   }
@@ -56,34 +61,30 @@ public abstract class MeterSharedState {
   /** Registers new synchronous storage associated with a given instrument. */
   public final WriteableMetricStorage registerSynchronousMetricStorage(
       InstrumentDescriptor instrument, MeterProviderSharedState meterProviderSharedState) {
-    // TODO - we  need to iterate over all possible views here and register each we find.
     List<View> views =
         meterProviderSharedState
             .getViewRegistry()
             .findViews(instrument, getInstrumentationLibraryInfo());
-
-    if (views.size() == 1) {
-      return getMetricStorageRegistry()
-          .register(
-              SynchronousMetricStorage.create(
-                  views.get(0),
-                  instrument,
-                  meterProviderSharedState.getResource(),
-                  getInstrumentationLibraryInfo(),
-                  meterProviderSharedState.getStartEpochNanos()));
-    }
-    List<WriteableMetricStorage> storage = new ArrayList<>();
+    List<WriteableMetricStorage> storage = new ArrayList<>(views.size());
     for (View view : views) {
-      storage.add(
-          getMetricStorageRegistry()
-              .register(
-                  SynchronousMetricStorage.create(
-                      view,
-                      instrument,
-                      meterProviderSharedState.getResource(),
-                      getInstrumentationLibraryInfo(),
-                      meterProviderSharedState.getStartEpochNanos())));
+      try {
+        storage.add(
+            getMetricStorageRegistry()
+                .register(
+                    SynchronousMetricStorage.create(
+                        view,
+                        instrument,
+                        meterProviderSharedState.getResource(),
+                        getInstrumentationLibraryInfo(),
+                        meterProviderSharedState.getStartEpochNanos())));
+      } catch (DuplicateMetricStorageException e) {
+        logger.log(Level.WARNING, e, () -> "Failed to register metric.");
+      }
     }
+    if (storage.size() == 1) {
+      return storage.get(0);
+    }
+    // If the size is 0, we return an, effectively, no-op writer.
     return new MultiWritableMetricStorage(storage);
   }
 
@@ -98,15 +99,19 @@ public abstract class MeterSharedState {
             .getViewRegistry()
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
-      getMetricStorageRegistry()
-          .register(
-              AsynchronousMetricStorage.longAsynchronousAccumulator(
-                  view,
-                  instrument,
-                  meterProviderSharedState.getResource(),
-                  getInstrumentationLibraryInfo(),
-                  meterProviderSharedState.getStartEpochNanos(),
-                  metricUpdater));
+      try {
+        getMetricStorageRegistry()
+            .register(
+                AsynchronousMetricStorage.longAsynchronousAccumulator(
+                    view,
+                    instrument,
+                    meterProviderSharedState.getResource(),
+                    getInstrumentationLibraryInfo(),
+                    meterProviderSharedState.getStartEpochNanos(),
+                    metricUpdater));
+      } catch (DuplicateMetricStorageException e) {
+        logger.log(Level.WARNING, e, () -> "Failed to register metric.");
+      }
     }
   }
 
@@ -121,15 +126,19 @@ public abstract class MeterSharedState {
             .getViewRegistry()
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
-      getMetricStorageRegistry()
-          .register(
-              AsynchronousMetricStorage.doubleAsynchronousAccumulator(
-                  view,
-                  instrument,
-                  meterProviderSharedState.getResource(),
-                  getInstrumentationLibraryInfo(),
-                  meterProviderSharedState.getStartEpochNanos(),
-                  metricUpdater));
+      try {
+        getMetricStorageRegistry()
+            .register(
+                AsynchronousMetricStorage.doubleAsynchronousAccumulator(
+                    view,
+                    instrument,
+                    meterProviderSharedState.getResource(),
+                    getInstrumentationLibraryInfo(),
+                    meterProviderSharedState.getStartEpochNanos(),
+                    metricUpdater));
+      } catch (DuplicateMetricStorageException e) {
+        logger.log(Level.WARNING, e, () -> "Failed to register metric.");
+      }
     }
   }
 }
