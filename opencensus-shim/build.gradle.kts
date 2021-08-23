@@ -4,6 +4,7 @@ plugins {
 }
 
 description = "OpenTelemetry OpenCensus Shim"
+
 otelJava.moduleName.set("io.opentelemetry.opencensusshim")
 
 dependencies {

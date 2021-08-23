@@ -6,6 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry Protocol JSON Logging Exporters"
+
 otelJava.moduleName.set("io.opentelemetry.exporter.logging.otlp")
 
 dependencies {

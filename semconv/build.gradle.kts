@@ -6,8 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry Semantic Conventions"
+
 otelJava.moduleName.set("io.opentelemetry.semconv")
 
-dependencies {
-  api(project(":api:all"))
-}
+dependencies { api(project(":api:all")) }

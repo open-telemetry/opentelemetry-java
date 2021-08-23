@@ -10,6 +10,7 @@ plugins {
 }
 
 description = "OpenTelemetry Proto"
+
 otelJava.moduleName.set("io.opentelemetry.proto")
 
 dependencies {
@@ -45,17 +46,7 @@ tasks {
     into("$buildDir/protos")
   }
 
-  afterEvaluate {
-    named("generateProto") {
-      dependsOn(unzipProtoArchive)
-    }
-  }
+  afterEvaluate { named("generateProto") { dependsOn(unzipProtoArchive) } }
 }
 
-sourceSets {
-  main {
-    proto {
-      srcDir("$buildDir/protos/opentelemetry-proto-${protoVersion}")
-    }
-  }
-}
+sourceSets { main { proto { srcDir("$buildDir/protos/opentelemetry-proto-${protoVersion}") } } }

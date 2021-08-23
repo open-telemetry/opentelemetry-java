@@ -7,6 +7,7 @@ plugins {
 }
 
 description = "OpenTelemetry API Incubator"
+
 otelJava.moduleName.set("io.opentelemetry.extension.incubator")
 
 dependencies {

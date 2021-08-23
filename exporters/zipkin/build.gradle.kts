@@ -6,6 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry - Zipkin Exporter"
+
 otelJava.moduleName.set("io.opentelemetry.exporter.zipkin")
 
 dependencies {

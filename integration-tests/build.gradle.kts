@@ -1,8 +1,7 @@
-plugins {
-  id("otel.java-conventions")
-}
+plugins { id("otel.java-conventions") }
 
 description = "OpenTelemetry Integration Tests"
+
 otelJava.moduleName.set("io.opentelemetry.integration.tests")
 
 dependencies {

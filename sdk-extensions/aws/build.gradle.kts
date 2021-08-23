@@ -6,6 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry SDK AWS Instrumentation Support"
+
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.trace.aws")
 
 dependencies {

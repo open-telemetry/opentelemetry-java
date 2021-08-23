@@ -10,6 +10,7 @@ plugins {
 }
 
 description = "OpenTelemetry Protocol Trace Exporter"
+
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.trace")
 
 testSets {
@@ -64,16 +65,10 @@ dependencies {
   jmh("io.grpc:grpc-netty")
 }
 
-tasks {
-  named("check") {
-    dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp")
-  }
-}
+tasks { named("check") { dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp") } }
 
 wire {
   root("opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest")
 
-  custom {
-    customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
-  }
+  custom { customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler" }
 }

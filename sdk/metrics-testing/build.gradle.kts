@@ -4,6 +4,7 @@ plugins {
 }
 
 description = "OpenTelemetry Metrics SDK Testing utilities"
+
 otelJava.moduleName.set("io.opentelemetry.sdk.metrics-testing")
 
 dependencies {

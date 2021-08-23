@@ -8,6 +8,7 @@ plugins {
 }
 
 description = "OpenTelemetry Context (Incubator)"
+
 otelJava.moduleName.set("io.opentelemetry.context")
 
 testSets {
@@ -47,8 +48,14 @@ tasks {
   }
 
   named("check") {
-    dependsOn("grpcInOtelTest", "otelInGrpcTest", "braveInOtelTest", "otelInBraveTest",
-      "otelAsBraveTest", "storageWrappersTest", "strictContextEnabledTest")
+    dependsOn(
+      "grpcInOtelTest",
+      "otelInGrpcTest",
+      "braveInOtelTest",
+      "otelInBraveTest",
+      "otelAsBraveTest",
+      "storageWrappersTest",
+      "strictContextEnabledTest"
+    )
   }
 }
-

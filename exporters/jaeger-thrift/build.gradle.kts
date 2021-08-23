@@ -6,6 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry - Jaeger Thrift Exporter"
+
 otelJava.moduleName.set("io.opentelemetry.exporter.jaeger.thrift")
 
 dependencies {

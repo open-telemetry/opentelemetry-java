@@ -6,6 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry API Extensions for AWS"
+
 otelJava.moduleName.set("io.opentelemetry.extension.aws")
 
 dependencies {

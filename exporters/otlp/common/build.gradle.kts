@@ -7,6 +7,7 @@ plugins {
 }
 
 description = "OpenTelemetry Protocol Exporter"
+
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.internal")
 
 dependencies {

@@ -6,6 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry - zPages"
+
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.zpages")
 
 dependencies {

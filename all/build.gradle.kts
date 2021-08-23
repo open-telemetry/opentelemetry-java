@@ -1,8 +1,7 @@
-plugins {
-  id("otel.java-conventions")
-}
+plugins { id("otel.java-conventions") }
 
 description = "OpenTelemetry All"
+
 otelJava.moduleName.set("io.opentelemetry.all")
 
 tasks {
@@ -10,15 +9,11 @@ tasks {
   // aggregating jacoco reports and it doesn't work if this isn't at least as high as the
   // highest supported Java version in any of our projects. Most of our projects target
   // Java 8, except for jfr-events.
-  withType(JavaCompile::class) {
-    options.release.set(11)
-  }
+  withType(JavaCompile::class) { options.release.set(11) }
 
   val testJavaVersion: String? by project
   if (testJavaVersion == "8") {
-    test {
-      enabled = false
-    }
+    test { enabled = false }
   }
 }
 
@@ -27,9 +22,7 @@ dependencies {
     // Generate aggregate coverage report for published modules that enable jacoco.
     subproject.plugins.withId("jacoco") {
       subproject.plugins.withId("maven-publish") {
-        implementation(project(subproject.path)) {
-          isTransitive = false
-        }
+        implementation(project(subproject.path)) { isTransitive = false }
       }
     }
   }
@@ -66,21 +59,25 @@ tasks.named<JacocoReport>("jacocoTestReport") {
   enabled = true
 
   configurations.runtimeClasspath.get().forEach {
-    additionalClassDirs(zipTree(it).filter {
-      // Exclude mrjar (jacoco complains), shaded, and generated code
-      !it.absolutePath.contains("META-INF/versions/") &&
-        !it.absolutePath.contains("/internal/shaded/") &&
-        !it.absolutePath.contains("io/opentelemetry/proto/") &&
-        !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/proto/") &&
-        !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/") &&
-        !it.absolutePath.contains("io/opentelemetry/semconv/trace/attributes/") &&
-        !it.absolutePath.contains("AutoValue_") &&
-        // TODO(anuraaga): Remove exclusion after enabling coverage for jfr-events
-        !it.absolutePath.contains("io/opentelemetry/sdk/extension/jfr")
-    })
+    additionalClassDirs(
+      zipTree(it).filter {
+        // Exclude mrjar (jacoco complains), shaded, and generated code
+        !it.absolutePath.contains("META-INF/versions/") &&
+          !it.absolutePath.contains("/internal/shaded/") &&
+          !it.absolutePath.contains("io/opentelemetry/proto/") &&
+          !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/proto/") &&
+          !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/") &&
+          !it.absolutePath.contains("io/opentelemetry/semconv/trace/attributes/") &&
+          !it.absolutePath.contains("AutoValue_") &&
+          // TODO(anuraaga): Remove exclusion after enabling coverage for jfr-events
+          !it.absolutePath.contains("io/opentelemetry/sdk/extension/jfr")
+      }
+    )
   }
   additionalSourceDirs(sourcesPath.incoming.artifactView { lenient(true) }.files)
-  executionData(coverageDataPath.incoming.artifactView { lenient(true) }.files.filter { it.exists() })
+  executionData(
+    coverageDataPath.incoming.artifactView { lenient(true) }.files.filter { it.exists() }
+  )
 
   reports {
     // xml is usually used to integrate code coverage with

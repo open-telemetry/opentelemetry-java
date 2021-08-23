@@ -9,6 +9,7 @@ plugins {
 // SDK modules that are still being developed.
 
 description = "OpenTelemetry SDK Tracing Incubator"
+
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.trace.incubator")
 
 dependencies {
@@ -36,9 +37,7 @@ dependencies {
     isTransitive = false
   }
   // explicitly adding the opentelemetry-exporter-otlp dependencies
-  jmh(project(":exporters:otlp:common")) {
-    isTransitive = false
-  }
+  jmh(project(":exporters:otlp:common")) { isTransitive = false }
   jmh(project(":proto"))
 
   jmh("com.google.guava:guava")

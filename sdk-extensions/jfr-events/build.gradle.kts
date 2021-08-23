@@ -4,6 +4,7 @@ plugins {
 }
 
 description = "OpenTelemetry SDK Extension JFR"
+
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.jfr")
 
 dependencies {
@@ -12,9 +13,7 @@ dependencies {
 }
 
 tasks {
-  withType(JavaCompile::class) {
-    options.release.set(11)
-  }
+  withType(JavaCompile::class) { options.release.set(11) }
 
   test {
     val testJavaVersion: String? by project
@@ -23,8 +22,6 @@ tasks {
     }
 
     // Disabled due to https://bugs.openjdk.java.net/browse/JDK-8245283
-    configure<JacocoTaskExtension> {
-      enabled = false
-    }
+    configure<JacocoTaskExtension> { enabled = false }
   }
 }

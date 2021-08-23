@@ -6,6 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry SDK Auto-configuration"
+
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure")
 
 testSets {
@@ -118,15 +119,23 @@ tasks {
   }
 
   val testResourceDisabledByProperty by existing(Test::class) {
-    jvmArgs("-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
+    jvmArgs(
+      "-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider"
+    )
     // Properties win, this is ignored.
-    environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.ProcessRuntimeResourceProvider")
+    environment(
+      "OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS",
+      "io.opentelemetry.sdk.extension.resources.ProcessRuntimeResourceProvider"
+    )
     environment("OTEL_TRACES_EXPORTER", "none")
     environment("OTEL_METRICS_EXPORTER", "none")
   }
 
   val testResourceDisabledByEnv by existing(Test::class) {
-    environment("OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS", "io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider")
+    environment(
+      "OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS",
+      "io.opentelemetry.sdk.extension.resources.OsResourceProvider,io.opentelemetry.sdk.extension.resources.ProcessResourceProvider"
+    )
     environment("OTEL_TRACES_EXPORTER", "none")
     environment("OTEL_METRICS_EXPORTER", "none")
   }

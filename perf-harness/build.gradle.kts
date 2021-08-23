@@ -1,8 +1,7 @@
-plugins {
-  id("otel.java-conventions")
-}
+plugins { id("otel.java-conventions") }
 
 description = "Performance Testing Harness"
+
 otelJava.moduleName.set("io.opentelemetry.perf-harness")
 
 dependencies {

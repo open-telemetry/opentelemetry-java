@@ -12,9 +12,7 @@ pluginManagement {
   }
 }
 
-plugins {
-  id("com.gradle.enterprise")
-}
+plugins { id("com.gradle.enterprise") }
 
 dependencyResolutionManagement {
   repositories {
@@ -24,56 +22,105 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "opentelemetry-java"
+
 include(":all")
+
 include(":api:all")
+
 include(":api:metrics")
+
 include(":semconv")
+
 include(":bom")
+
 include(":bom-alpha")
+
 include(":context")
+
 include(":dependencyManagement")
+
 include(":extensions:annotations")
+
 include(":extensions:incubator")
+
 include(":extensions:aws")
+
 include(":extensions:kotlin")
+
 include(":extensions:noop-api")
+
 include(":extensions:trace-propagators")
+
 include(":exporters:jaeger")
+
 include(":exporters:jaeger-thrift")
+
 include(":exporters:logging")
+
 include(":exporters:logging-otlp")
+
 include(":exporters:otlp:all")
+
 include(":exporters:otlp:common")
+
 include(":exporters:otlp:metrics")
+
 include(":exporters:otlp:trace")
+
 include(":exporters:otlp-http:metrics")
+
 include(":exporters:otlp-http:trace")
+
 include(":exporters:prometheus")
+
 include(":exporters:zipkin")
+
 include(":integration-tests")
+
 include(":integration-tests:tracecontext")
+
 include(":opencensus-shim")
+
 include(":opentracing-shim")
+
 include(":perf-harness")
+
 include(":proto")
+
 include(":sdk:all")
+
 include(":sdk:common")
+
 include(":sdk:metrics")
+
 include(":sdk:metrics-testing")
+
 include(":sdk:testing")
+
 include(":sdk:trace")
+
 include(":sdk:trace-shaded-deps")
+
 include(":sdk-extensions:async-processor")
+
 include(":sdk-extensions:autoconfigure")
+
 include(":sdk-extensions:aws")
+
 include(":sdk-extensions:logging")
+
 include(":sdk-extensions:resources")
+
 include(":sdk-extensions:tracing-incubator")
+
 include(":sdk-extensions:jaeger-remote-sampler")
+
 include(":sdk-extensions:jfr-events")
+
 include(":sdk-extensions:zpages")
 
 val isCI = System.getenv("CI") != null
+
 gradleEnterprise {
   buildScan {
     termsOfServiceUrl = "https://gradle.com/terms-of-service"

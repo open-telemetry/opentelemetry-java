@@ -7,7 +7,9 @@ plugins {
 }
 
 description = "OpenTelemetry API"
+
 otelJava.moduleName.set("io.opentelemetry.api")
+
 base.archivesBaseName = "opentelemetry-api"
 
 dependencies {

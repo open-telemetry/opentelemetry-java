@@ -6,6 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry - Logging Exporter"
+
 otelJava.moduleName.set("io.opentelemetry.exporter.logging")
 
 dependencies {

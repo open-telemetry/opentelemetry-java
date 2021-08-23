@@ -5,6 +5,7 @@ plugins {
 }
 
 description = "OpenTelemetry W3C Context Propagation Integration Tests"
+
 otelJava.moduleName.set("io.opentelemetry.tracecontext.integration.tests")
 
 dependencies {
@@ -21,14 +22,14 @@ tasks {
   val shadowJar by existing(Jar::class) {
     archiveFileName.set("tracecontext-tests.jar")
 
-    manifest {
-      attributes("Main-Class" to "io.opentelemetry.Application")
-    }
+    manifest { attributes("Main-Class" to "io.opentelemetry.Application") }
   }
 
   withType(Test::class) {
     dependsOn(shadowJar)
 
-    jvmArgs("-Dio.opentelemetry.testArchive=${shadowJar.get().archiveFile.get().asFile.absolutePath}")
+    jvmArgs(
+      "-Dio.opentelemetry.testArchive=${shadowJar.get().archiveFile.get().asFile.absolutePath}"
+    )
   }
 }

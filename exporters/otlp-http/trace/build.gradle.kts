@@ -7,6 +7,7 @@ plugins {
 }
 
 description = "OpenTelemetry Protocol HTTP Trace Exporter"
+
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.http.trace")
 
 dependencies {

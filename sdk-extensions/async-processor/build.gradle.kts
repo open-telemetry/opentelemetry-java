@@ -6,6 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry SDK Extension: Async SpanProcessor"
+
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.trace.export")
 
 dependencies {

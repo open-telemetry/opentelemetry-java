@@ -3,8 +3,6 @@ subprojects {
   group = "io.opentelemetry.exporters"
   val proj = this
   plugins.withId("java") {
-    configure<BasePluginConvention> {
-      archivesBaseName = "opentelemetry-exporter-${proj.name}"
-    }
+    configure<BasePluginConvention> { archivesBaseName = "opentelemetry-exporter-${proj.name}" }
   }
 }

@@ -7,12 +7,13 @@ plugins {
 }
 
 description = "OpenTelemetry Protocol Metrics Exporter"
+
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.metrics")
 
 testSets {
-    create("testGrpcNetty")
-    create("testGrpcNettyShaded")
-    create("testGrpcOkhttp")
+  create("testGrpcNetty")
+  create("testGrpcNettyShaded")
+  create("testGrpcOkhttp")
 }
 
 dependencies {
@@ -48,8 +49,4 @@ dependencies {
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 }
 
-tasks {
-  named("check") {
-    dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp")
-  }
-}
+tasks { named("check") { dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp") } }

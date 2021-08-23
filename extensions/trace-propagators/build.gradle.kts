@@ -7,6 +7,7 @@ plugins {
 }
 
 description = "OpenTelemetry Extension : Trace Propagators"
+
 otelJava.moduleName.set("io.opentelemetry.extension.trace.propagation")
 
 dependencies {

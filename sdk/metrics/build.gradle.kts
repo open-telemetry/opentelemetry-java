@@ -12,6 +12,7 @@ plugins {
 }
 
 description = "OpenTelemetry SDK Metrics"
+
 otelJava.moduleName.set("io.opentelemetry.sdk.metrics")
 
 dependencies {

@@ -6,6 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry - Jaeger Remote sampler"
+
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.trace.jaeger")
 
 dependencies {

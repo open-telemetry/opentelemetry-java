@@ -7,6 +7,7 @@ plugins {
 }
 
 description = "OpenTelemetry SDK Common"
+
 otelJava.moduleName.set("io.opentelemetry.sdk.common")
 
 val mrJarVersions = listOf(9)
@@ -31,13 +32,7 @@ dependencies {
 }
 
 for (version in mrJarVersions) {
-  sourceSets {
-    create("java${version}") {
-      java {
-        setSrcDirs(listOf("src/main/java${version}"))
-      }
-    }
-  }
+  sourceSets { create("java${version}") { java { setSrcDirs(listOf("src/main/java${version}")) } } }
 
   tasks {
     named<JavaCompile>("compileJava${version}Java") {
@@ -48,13 +43,12 @@ for (version in mrJarVersions) {
   }
 
   configurations {
-    named("java${version}Implementation") {
-      extendsFrom(configurations["implementation"])
-    }
+    named("java${version}Implementation") { extendsFrom(configurations["implementation"]) }
   }
 
   dependencies {
-    // Common to reference classes in main sourceset from Java 9 one (e.g., to return a common interface)
+    // Common to reference classes in main sourceset from Java 9 one (e.g., to return a common
+    // interface)
     add("java${version}Implementation", files(sourceSets.main.get().output.classesDirs))
   }
 }
@@ -62,13 +56,9 @@ for (version in mrJarVersions) {
 tasks {
   withType(Jar::class) {
     for (version in mrJarVersions) {
-      into("META-INF/versions/${version}") {
-        from(sourceSets["java${version}"].output)
-      }
+      into("META-INF/versions/${version}") { from(sourceSets["java${version}"].output) }
     }
-    manifest.attributes(
-      "Multi-Release" to "true"
-    )
+    manifest.attributes("Multi-Release" to "true")
   }
 
   test {

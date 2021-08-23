@@ -11,11 +11,10 @@ plugins {
 }
 
 description = "OpenTelemetry Kotlin Extensions"
+
 otelJava.moduleName.set("io.opentelemetry.extension.kotlin")
 
-testSets {
-  create("testStrictContext")
-}
+testSets { create("testStrictContext") }
 
 dependencies {
   implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
@@ -31,16 +30,10 @@ dependencies {
 }
 
 tasks {
-  withType(KotlinCompile::class) {
-    kotlinOptions {
-      jvmTarget = "1.8"
-    }
-  }
+  withType(KotlinCompile::class) { kotlinOptions { jvmTarget = "1.8" } }
 
   // We don't have any public Java classes
-  named("javadoc") {
-    enabled = false
-  }
+  named("javadoc") { enabled = false }
 
   named<Test>("testStrictContext") {
     jvmArgs("-Dio.opentelemetry.context.enableStrictContext=true")

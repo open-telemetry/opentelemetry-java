@@ -1,5 +1,5 @@
-import nebula.plugin.release.git.opinion.Strategies
 import java.time.Duration
+import nebula.plugin.release.git.opinion.Strategies
 
 plugins {
   id("com.diffplug.spotless")
@@ -9,28 +9,25 @@ plugins {
 }
 
 if (!JavaVersion.current().isJava11Compatible()) {
-  throw GradleException("JDK 11 or higher is required to build. " +
-    "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
-    "have it, please check that the JAVA_HOME environment variable is pointing at the " +
-    "JDK 11 installation.")
+  throw GradleException(
+    "JDK 11 or higher is required to build. " +
+      "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
+      "have it, please check that the JAVA_HOME environment variable is pointing at the " +
+      "JDK 11 installation."
+  )
 }
 
 // Nebula plugin will not configure if .git doesn't exist, let's allow building on it by stubbing it
 // out. This supports building from the zip archive downloaded from GitHub.
 var releaseTask: TaskProvider<Task>
-if (file(".git").exists()) {
-  release {
-    defaultVersionStrategy = Strategies.getSNAPSHOT()
-  }
 
-  nebulaRelease {
-    addReleaseBranchPattern("""v\d+\.\d+\.x""")
-  }
+if (file(".git").exists()) {
+  release { defaultVersionStrategy = Strategies.getSNAPSHOT() }
+
+  nebulaRelease { addReleaseBranchPattern("""v\d+\.\d+\.x""") }
 
   releaseTask = tasks.named("release")
-  releaseTask.configure {
-    mustRunAfter("snapshotSetup", "finalSetup")
-  }
+  releaseTask.configure { mustRunAfter("snapshotSetup", "finalSetup") }
 } else {
   releaseTask = tasks.register("release")
 }
@@ -56,6 +53,10 @@ nexusPublishing {
   }
 }
 
-subprojects {
-  group = "io.opentelemetry"
+allprojects {
+  apply(plugin = "com.diffplug.spotless")
+
+  spotless { kotlinGradle { ktfmt().googleStyle() } }
 }
+
+subprojects { group = "io.opentelemetry" }
