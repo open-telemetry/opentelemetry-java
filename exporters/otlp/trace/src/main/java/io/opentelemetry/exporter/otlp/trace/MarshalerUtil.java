@@ -5,8 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
-import com.google.protobuf.CodedOutputStream;
-import com.google.protobuf.WireFormat;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;

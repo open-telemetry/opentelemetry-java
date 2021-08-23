@@ -89,7 +89,7 @@ public final class {{class}} {
   public static final class {{class_name}} {
     {%- for member in attribute.attr_type.members %}
       /** {% filter escape %}{{member.brief | to_doc_brief}}.{% endfilter %} */
-      public static final {{ type }} {{ member.member_id | to_const_name }} = {{ print_value(type, member.value) }};
+      public static final {{ type }} {{ member.member_id | to_const_name | regex_replace(" ", "_") | regex_replace("^([0-9])","_$1") }} = {{ print_value(type, member.value) }};
     {%- endfor %}
       private {{ class_name }}() {}
   }

@@ -3,13 +3,30 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// Includes work from:
+/*
+ * Copyright 2014 The gRPC Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentelemetry.exporter.otlp.trace;
 
 import com.google.common.io.ByteStreams;
-import com.google.protobuf.CodedOutputStream;
 import io.grpc.Drainable;
 import io.grpc.KnownLength;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,7 +35,6 @@ import javax.annotation.Nullable;
 // Adapted from gRPC ProtoInputStream but using our Marshaller
 // https://github.com/grpc/grpc-java/blob/2c2ebaebd5a93acec92fbd2708faac582db99371/protobuf-lite/src/main/java/io/grpc/protobuf/lite/ProtoInputStream.java
 final class MarshalerInputStream extends InputStream implements Drainable, KnownLength {
-  private static final int DEFAULT_BUFFER_SIZE = 4096;
 
   @Nullable private Marshaler message;
   @Nullable private ByteArrayInputStream partial;
@@ -32,8 +48,9 @@ final class MarshalerInputStream extends InputStream implements Drainable, Known
     int written;
     if (message != null) {
       written = message.getSerializedSize();
-      int bufferSize = computePreferredBufferSize(message.getSerializedSize());
-      CodedOutputStream cos = CodedOutputStream.newInstance(target, bufferSize);
+      CodedOutputStream cos =
+          CodedOutputStream.newInstance(
+              target, CodedOutputStream.computePreferredBufferSize(message.getSerializedSize()));
       message.writeTo(cos);
       cos.flush();
       message = null;
@@ -67,18 +84,12 @@ final class MarshalerInputStream extends InputStream implements Drainable, Known
         partial = null;
         return -1;
       }
-      if (len >= size) {
-        // This is the only case that is zero-copy.
-        CodedOutputStream stream = CodedOutputStream.newInstance(b, off, size);
-        message.writeTo(stream);
-        stream.flush();
-        stream.checkNoSpaceLeft();
 
-        message = null;
-        partial = null;
-        return size;
-      }
-
+      // NB: Because this class is Drainable and KnownLength, we do not expect the read methods to
+      // be called in practice. Therefore, we have not copied the branch from upstream that would
+      // serialize straight into the provided array without toByteArray (which requires an entire
+      // CodedOutputStream implementation). If this method were to be called, it is two extra copies
+      // because we also wrap in a ByteArrayOutputStream
       partial = new ByteArrayInputStream(toByteArray(message));
       message = null;
     }
@@ -89,9 +100,13 @@ final class MarshalerInputStream extends InputStream implements Drainable, Known
   }
 
   private static byte[] toByteArray(Marshaler message) throws IOException {
-    byte[] output = new byte[message.getSerializedSize()];
-    message.writeTo(CodedOutputStream.newInstance(output));
-    return output;
+    ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getSerializedSize());
+    CodedOutputStream cos =
+        CodedOutputStream.newInstance(
+            bos, CodedOutputStream.computePreferredBufferSize(message.getSerializedSize()));
+    message.writeTo(cos);
+    cos.flush();
+    return bos.toByteArray();
   }
 
   @Override
@@ -102,12 +117,5 @@ final class MarshalerInputStream extends InputStream implements Drainable, Known
       return partial.available();
     }
     return 0;
-  }
-
-  private static int computePreferredBufferSize(int dataLength) {
-    if (dataLength > DEFAULT_BUFFER_SIZE) {
-      return DEFAULT_BUFFER_SIZE;
-    }
-    return dataLength;
   }
 }
