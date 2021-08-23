@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.trace;
+package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
@@ -27,58 +27,61 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-final class TraceMarshaler {
+/** {@link Marshaler} to convert SDK {@link SpanData} to OTLP ExportTraceServiceRequest. */
+public final class TraceRequestMarshaler extends MarshalerWithSize implements Marshaler {
 
   // In practice, there is often only one thread that calls this code in the BatchSpanProcessor so
   // reusing buffers for the thread is almost free. Even with multiple threads, it should still be
   // worth it and is common practice in serialization libraries such as Jackson.
   private static final ThreadLocal<ThreadLocalCache> THREAD_LOCAL_CACHE = new ThreadLocal<>();
 
-  static final class RequestMarshaler extends MarshalerWithSize {
-    private final ResourceSpansMarshaler[] resourceSpansMarshalers;
+  private final ResourceSpansMarshaler[] resourceSpansMarshalers;
 
-    static RequestMarshaler create(Collection<SpanData> spanDataList) {
-      Map<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> resourceAndLibraryMap =
-          TraceMarshaler.groupByResourceAndLibrary(spanDataList);
+  /**
+   * Returns a {@link TraceRequestMarshaler} that can be used to convert the provided {@link
+   * SpanData} into a serialized OTLP ExportTraceServiceRequest.
+   */
+  public static TraceRequestMarshaler create(Collection<SpanData> spanDataList) {
+    Map<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> resourceAndLibraryMap =
+        groupByResourceAndLibrary(spanDataList);
 
-      final ResourceSpansMarshaler[] resourceSpansMarshalers =
-          new ResourceSpansMarshaler[resourceAndLibraryMap.size()];
-      int posResource = 0;
-      for (Map.Entry<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> entry :
-          resourceAndLibraryMap.entrySet()) {
-        final InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers =
-            new InstrumentationLibrarySpansMarshaler[entry.getValue().size()];
-        int posInstrumentation = 0;
-        for (Map.Entry<InstrumentationLibraryInfo, List<SpanMarshaler>> entryIs :
-            entry.getValue().entrySet()) {
-          instrumentationLibrarySpansMarshalers[posInstrumentation++] =
-              new InstrumentationLibrarySpansMarshaler(
-                  InstrumentationLibraryMarshaler.create(entryIs.getKey()),
-                  MarshalerUtil.toBytes(entryIs.getKey().getSchemaUrl()),
-                  entryIs.getValue());
-        }
-        resourceSpansMarshalers[posResource++] =
-            new ResourceSpansMarshaler(
-                ResourceMarshaler.create(entry.getKey()),
-                MarshalerUtil.toBytes(entry.getKey().getSchemaUrl()),
-                instrumentationLibrarySpansMarshalers);
+    final ResourceSpansMarshaler[] resourceSpansMarshalers =
+        new ResourceSpansMarshaler[resourceAndLibraryMap.size()];
+    int posResource = 0;
+    for (Map.Entry<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> entry :
+        resourceAndLibraryMap.entrySet()) {
+      final InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers =
+          new InstrumentationLibrarySpansMarshaler[entry.getValue().size()];
+      int posInstrumentation = 0;
+      for (Map.Entry<InstrumentationLibraryInfo, List<SpanMarshaler>> entryIs :
+          entry.getValue().entrySet()) {
+        instrumentationLibrarySpansMarshalers[posInstrumentation++] =
+            new InstrumentationLibrarySpansMarshaler(
+                InstrumentationLibraryMarshaler.create(entryIs.getKey()),
+                MarshalerUtil.toBytes(entryIs.getKey().getSchemaUrl()),
+                entryIs.getValue());
       }
-
-      return new RequestMarshaler(resourceSpansMarshalers);
+      resourceSpansMarshalers[posResource++] =
+          new ResourceSpansMarshaler(
+              ResourceMarshaler.create(entry.getKey()),
+              MarshalerUtil.toBytes(entry.getKey().getSchemaUrl()),
+              instrumentationLibrarySpansMarshalers);
     }
 
-    private RequestMarshaler(ResourceSpansMarshaler[] resourceSpansMarshalers) {
-      super(
-          MarshalerUtil.sizeRepeatedMessage(
-              ExportTraceServiceRequest.RESOURCE_SPANS_FIELD_NUMBER, resourceSpansMarshalers));
-      this.resourceSpansMarshalers = resourceSpansMarshalers;
-    }
+    return new TraceRequestMarshaler(resourceSpansMarshalers);
+  }
 
-    @Override
-    public void writeTo(CodedOutputStream output) throws IOException {
-      MarshalerUtil.marshalRepeatedMessage(
-          ExportTraceServiceRequest.RESOURCE_SPANS_FIELD_NUMBER, resourceSpansMarshalers, output);
-    }
+  private TraceRequestMarshaler(ResourceSpansMarshaler[] resourceSpansMarshalers) {
+    super(
+        MarshalerUtil.sizeRepeatedMessage(
+            ExportTraceServiceRequest.RESOURCE_SPANS_FIELD_NUMBER, resourceSpansMarshalers));
+    this.resourceSpansMarshalers = resourceSpansMarshalers;
+  }
+
+  @Override
+  public void writeTo(CodedOutputStream output) throws IOException {
+    MarshalerUtil.marshalRepeatedMessage(
+        ExportTraceServiceRequest.RESOURCE_SPANS_FIELD_NUMBER, resourceSpansMarshalers, output);
   }
 
   private static final class ResourceSpansMarshaler extends MarshalerWithSize {
@@ -183,7 +186,7 @@ final class TraceMarshaler {
     private final SpanStatusMarshaler spanStatusMarshaler;
 
     // Because SpanMarshaler is always part of a repeated field, it cannot return "null".
-    private static SpanMarshaler create(SpanData spanData, ThreadLocalCache threadLocalCache) {
+    static SpanMarshaler create(SpanData spanData, ThreadLocalCache threadLocalCache) {
       AttributeMarshaler[] attributeMarshalers =
           AttributeMarshaler.createRepeated(spanData.getAttributes());
       SpanEventMarshaler[] spanEventMarshalers = SpanEventMarshaler.create(spanData.getEvents());
@@ -353,7 +356,7 @@ final class TraceMarshaler {
     private final AttributeMarshaler[] attributeMarshalers;
     private final int droppedAttributesCount;
 
-    private static SpanEventMarshaler[] create(List<EventData> events) {
+    static SpanEventMarshaler[] create(List<EventData> events) {
       if (events.isEmpty()) {
         return EMPTY;
       }
@@ -419,8 +422,7 @@ final class TraceMarshaler {
     private final AttributeMarshaler[] attributeMarshalers;
     private final int droppedAttributesCount;
 
-    private static SpanLinkMarshaler[] create(
-        List<LinkData> links, ThreadLocalCache threadLocalCache) {
+    static SpanLinkMarshaler[] create(List<LinkData> links, ThreadLocalCache threadLocalCache) {
       if (links.isEmpty()) {
         return EMPTY;
       }
@@ -588,6 +590,4 @@ final class TraceMarshaler {
   private static final class ThreadLocalCache {
     final Map<String, byte[]> idBytesCache = new HashMap<>();
   }
-
-  private TraceMarshaler() {}
 }

@@ -34,7 +34,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package io.opentelemetry.exporter.otlp.trace;
+package io.opentelemetry.exporter.otlp.internal;
 
 import static java.lang.Character.MAX_SURROGATE;
 import static java.lang.Character.MIN_SUPPLEMENTARY_CODE_POINT;

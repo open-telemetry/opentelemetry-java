@@ -11,8 +11,7 @@ import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.exporter.otlp.internal.GrpcStatusUtil;
-import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.exporter.otlp.internal.TraceRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -85,16 +84,14 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     spansSeen.add(spans.size());
-    ExportTraceServiceRequest exportTraceServiceRequest =
-        ExportTraceServiceRequest.newBuilder()
-            .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
-            .build();
+
+    TraceRequestMarshaler exportRequest = TraceRequestMarshaler.create(spans);
 
     Request.Builder requestBuilder = new Request.Builder().url(endpoint);
     if (headers != null) {
       requestBuilder.headers(headers);
     }
-    RequestBody requestBody = new ProtoRequestBody(exportTraceServiceRequest);
+    RequestBody requestBody = new ProtoRequestBody(exportRequest);
     if (compressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");
       requestBuilder.post(gzipRequestBody(requestBody));

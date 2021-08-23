@@ -34,12 +34,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package io.opentelemetry.exporter.otlp.trace;
+package io.opentelemetry.exporter.otlp.internal;
 
-import static io.opentelemetry.exporter.otlp.trace.WireFormat.FIXED32_SIZE;
-import static io.opentelemetry.exporter.otlp.trace.WireFormat.FIXED64_SIZE;
-import static io.opentelemetry.exporter.otlp.trace.WireFormat.MAX_VARINT32_SIZE;
-import static io.opentelemetry.exporter.otlp.trace.WireFormat.MAX_VARINT_SIZE;
+import static io.opentelemetry.exporter.otlp.internal.WireFormat.FIXED32_SIZE;
+import static io.opentelemetry.exporter.otlp.internal.WireFormat.FIXED64_SIZE;
+import static io.opentelemetry.exporter.otlp.internal.WireFormat.MAX_VARINT32_SIZE;
+import static io.opentelemetry.exporter.otlp.internal.WireFormat.MAX_VARINT_SIZE;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -58,7 +58,7 @@ import java.util.logging.Logger;
 //
 // Unneeded lines of code are deleted as is, without any modifications otherwise.
 @SuppressWarnings({"UngroupedOverloads", "InlineMeSuggester"})
-abstract class CodedOutputStream {
+public abstract class CodedOutputStream {
   private static final Logger logger = Logger.getLogger(CodedOutputStream.class.getName());
 
   /** The buffer size used in {@link #newInstance(OutputStream)}. */
@@ -70,7 +70,7 @@ abstract class CodedOutputStream {
    *
    * @return the buffer size to efficiently write dataLength bytes to this CodedOutputStream.
    */
-  static int computePreferredBufferSize(int dataLength) {
+  public static int computePreferredBufferSize(int dataLength) {
     if (dataLength > DEFAULT_BUFFER_SIZE) {
       return DEFAULT_BUFFER_SIZE;
     }
@@ -84,7 +84,7 @@ abstract class CodedOutputStream {
    * the provided byte arrays. Doing so may result in corrupted data, which would be difficult to
    * debug.
    */
-  static CodedOutputStream newInstance(final OutputStream output) {
+  public static CodedOutputStream newInstance(final OutputStream output) {
     return newInstance(output, DEFAULT_BUFFER_SIZE);
   }
 
@@ -96,7 +96,7 @@ abstract class CodedOutputStream {
    * the provided byte arrays. Doing so may result in corrupted data, which would be difficult to
    * debug.
    */
-  static CodedOutputStream newInstance(final OutputStream output, final int bufferSize) {
+  public static CodedOutputStream newInstance(final OutputStream output, final int bufferSize) {
     return new OutputStreamEncoder(output, bufferSize);
   }
 
@@ -616,7 +616,7 @@ abstract class CodedOutputStream {
    * Flushes the stream and forces any buffered bytes to be written. This does not flush the
    * underlying OutputStream.
    */
-  abstract void flush() throws IOException;
+  public abstract void flush() throws IOException;
 
   /**
    * If writing to a flat array, return the space left in the array. Otherwise, throws {@code
@@ -1082,7 +1082,7 @@ abstract class CodedOutputStream {
     }
 
     @Override
-    void flush() throws IOException {
+    public void flush() throws IOException {
       if (position > 0) {
         // Flush the buffer.
         doFlush();

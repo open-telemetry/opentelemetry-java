@@ -5,7 +5,6 @@ plugins {
   id("otel.jmh-conventions")
   id("otel.animalsniffer-conventions")
 
-  id("com.squareup.wire")
   id("org.unbroken-dome.test-sets")
 }
 
@@ -19,8 +18,6 @@ testSets {
 }
 
 dependencies {
-  protoSource(project(":proto"))
-
   api(project(":sdk:trace"))
 
   implementation(project(":api:metrics"))
@@ -41,8 +38,6 @@ dependencies {
   testImplementation("io.grpc:grpc-protobuf")
   testImplementation("io.grpc:grpc-testing")
   testImplementation("org.slf4j:slf4j-simple")
-
-  testImplementation("org.jeasy:easy-random-randomizers")
 
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
@@ -67,13 +62,5 @@ dependencies {
 tasks {
   named("check") {
     dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp")
-  }
-}
-
-wire {
-  root("opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest")
-
-  custom {
-    customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
   }
 }

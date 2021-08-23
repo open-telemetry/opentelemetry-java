@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.trace;
+package io.opentelemetry.exporter.otlp.internal;
 
 import java.io.IOException;
 
-interface Marshaler {
+public interface Marshaler {
   void writeTo(CodedOutputStream output) throws IOException;
 
   int getSerializedSize();

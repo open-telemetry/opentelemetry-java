@@ -17,6 +17,7 @@ import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.exporter.otlp.internal.TraceRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -84,7 +85,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     spansSeen.add(spans.size());
-    TraceMarshaler.RequestMarshaler request = TraceMarshaler.RequestMarshaler.create(spans);
+    TraceRequestMarshaler request = TraceRequestMarshaler.create(spans);
 
     final CompletableResultCode result = new CompletableResultCode();
 

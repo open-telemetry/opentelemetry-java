@@ -1,6 +1,5 @@
 plugins {
   id("otel.java-conventions")
-  id("otel.jmh-conventions")
   id("otel.publish-conventions")
 
   id("otel.animalsniffer-conventions")
@@ -13,16 +12,14 @@ dependencies {
   api(project(":sdk:trace"))
 
   implementation(project(":exporters:otlp:common"))
-  implementation(project(":proto"))
 
   implementation("com.squareup.okhttp3:okhttp")
   implementation("com.squareup.okhttp3:okhttp-tls")
   implementation("com.squareup.okio:okio")
 
+  testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("com.linecorp.armeria:armeria-junit5")
-
-  jmh(project(":sdk:testing"))
 }

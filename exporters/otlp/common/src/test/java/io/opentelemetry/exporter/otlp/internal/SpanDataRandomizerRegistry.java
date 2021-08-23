@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.trace;
+package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.AttributeType;
@@ -41,7 +41,7 @@ import org.jeasy.random.randomizers.number.LongRandomizer;
 import org.jeasy.random.randomizers.range.IntegerRangeRandomizer;
 import org.jeasy.random.randomizers.text.StringRandomizer;
 
-public final class SpanDataRandomizerRegistry implements RandomizerRegistry {
+final class SpanDataRandomizerRegistry implements RandomizerRegistry {
 
   private static final String HEX_ALPHABET = "0123456789abcdef";
 
