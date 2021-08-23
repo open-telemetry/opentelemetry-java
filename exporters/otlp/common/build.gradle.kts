@@ -23,8 +23,6 @@ dependencies {
   // contains internal code.
   compileOnly(project(":proto"))
 
-  implementation("com.google.protobuf:protobuf-java")
-
   // Similar to above note about :proto, we include a helper shared by the gRPC exporters but do not
   // want to impose the gRPC dependency on all of our consumers.
   compileOnly("io.grpc:grpc-netty")
