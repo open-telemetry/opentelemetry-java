@@ -44,7 +44,10 @@ dependencies {
 }
 
 wire {
-  root("opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest")
+  root(
+    "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest",
+    "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest",
+  )
 
   custom {
     customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
