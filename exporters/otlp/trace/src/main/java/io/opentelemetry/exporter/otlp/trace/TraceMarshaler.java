@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
-import com.google.protobuf.CodedOutputStream;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
