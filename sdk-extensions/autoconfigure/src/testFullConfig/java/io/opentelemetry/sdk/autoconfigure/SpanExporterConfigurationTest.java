@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -15,6 +17,17 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class SpanExporterConfigurationTest {
+
+  @Test
+  void configureOtlpSpansUnsupportedProtocol() {
+    assertThatThrownBy(
+            () ->
+                SpanExporterConfiguration.configureOtlp(
+                    DefaultConfigProperties.createForTest(
+                        ImmutableMap.of("otel.experimental.exporter.otlp.protocol", "foo"))))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining("Unsupported OTLP traces protocol: foo");
+  }
 
   // Timeout difficult to test using real exports so just check implementation detail here.
   @Test

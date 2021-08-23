@@ -18,11 +18,23 @@ class NotOnClasspathTest {
       DefaultConfigProperties.createForTest(Collections.emptyMap());
 
   @Test
-  void otlpSpans() {
+  void otlpGrpcSpans() {
     assertThatThrownBy(() -> SpanExporterConfiguration.configureExporter("otlp", EMPTY))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
-            "OTLP Trace Exporter enabled but opentelemetry-exporter-otlp not found on "
+            "OTLP gRPC Trace Exporter enabled but opentelemetry-exporter-otlp not found on "
+                + "classpath");
+  }
+
+  @Test
+  void otlpHttpSpans() {
+    ConfigProperties config =
+        DefaultConfigProperties.createForTest(
+            Collections.singletonMap("otel.experimental.exporter.otlp.protocol", "http/protobuf"));
+    assertThatThrownBy(() -> SpanExporterConfiguration.configureExporter("otlp", config))
+        .isInstanceOf(ConfigurationException.class)
+        .hasMessageContaining(
+            "OTLP HTTP Trace Exporter enabled but opentelemetry-exporter-otlp-http-trace not found on "
                 + "classpath");
   }
 
@@ -65,11 +77,23 @@ class NotOnClasspathTest {
   }
 
   @Test
-  void otlpMetrics() {
+  void otlpGrpcMetrics() {
     assertThatCode(
             () ->
                 MetricExporterConfiguration.configureExporter(
                     "otlp", EMPTY, SdkMeterProvider.builder().build()))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void otlpHttpMetrics() {
+    ConfigProperties config =
+        DefaultConfigProperties.createForTest(
+            Collections.singletonMap("otel.experimental.exporter.otlp.protocol", "http/protobuf"));
+    assertThatCode(
+            () ->
+                MetricExporterConfiguration.configureExporter(
+                    "otlp", config, SdkMeterProvider.builder().build()))
         .doesNotThrowAnyException();
   }
 
