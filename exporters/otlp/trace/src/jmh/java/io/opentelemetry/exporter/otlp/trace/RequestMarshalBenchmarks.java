@@ -5,10 +5,9 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
-import com.google.protobuf.CodedOutputStream;
-import com.google.protobuf.UnknownFieldSet;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -29,60 +28,47 @@ public class RequestMarshalBenchmarks {
 
   @Benchmark
   @Threads(1)
-  public byte[] createProtoMarshal(RequestMarshalState state) {
+  public ByteArrayOutputStream createProtoMarshal(RequestMarshalState state) {
     ExportTraceServiceRequest protoRequest =
         ExportTraceServiceRequest.newBuilder()
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(state.spanDataList))
             .build();
-    return new byte[protoRequest.getSerializedSize()];
+    return new ByteArrayOutputStream(protoRequest.getSerializedSize());
   }
 
   @Benchmark
   @Threads(1)
-  public byte[] marshalProto(RequestMarshalState state) throws IOException {
+  public ByteArrayOutputStream marshalProto(RequestMarshalState state) throws IOException {
     ExportTraceServiceRequest protoRequest =
         ExportTraceServiceRequest.newBuilder()
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(state.spanDataList))
             .build();
-    byte[] protoOutput = new byte[protoRequest.getSerializedSize()];
-    protoRequest.writeTo(CodedOutputStream.newInstance(protoOutput));
+    ByteArrayOutputStream protoOutput = new ByteArrayOutputStream(protoRequest.getSerializedSize());
+    protoRequest.writeTo(protoOutput);
     return protoOutput;
   }
 
   @Benchmark
   @Threads(1)
-  public byte[] createCustomMarshal(RequestMarshalState state) {
+  public ByteArrayOutputStream createCustomMarshal(RequestMarshalState state) {
     TraceMarshaler.RequestMarshaler requestMarshaler =
         TraceMarshaler.RequestMarshaler.create(state.spanDataList);
-    return new byte[requestMarshaler.getSerializedSize()];
+    return new ByteArrayOutputStream(requestMarshaler.getSerializedSize());
   }
 
   @Benchmark
   @Threads(1)
-  public byte[] marshalCustom(RequestMarshalState state) throws IOException {
+  public ByteArrayOutputStream marshalCustom(RequestMarshalState state) throws IOException {
     TraceMarshaler.RequestMarshaler requestMarshaler =
         TraceMarshaler.RequestMarshaler.create(state.spanDataList);
-    byte[] customOutput = new byte[requestMarshaler.getSerializedSize()];
-    requestMarshaler.writeTo(CodedOutputStream.newInstance(customOutput));
+    ByteArrayOutputStream customOutput =
+        new ByteArrayOutputStream(requestMarshaler.getSerializedSize());
+    CodedOutputStream cos =
+        CodedOutputStream.newInstance(
+            customOutput,
+            CodedOutputStream.computePreferredBufferSize(requestMarshaler.getSerializedSize()));
+    requestMarshaler.writeTo(cos);
+    cos.flush();
     return customOutput;
-  }
-
-  @Benchmark
-  @Threads(1)
-  public byte[] marshalProtoCustom(RequestMarshalState state) throws IOException {
-    ExportTraceServiceRequest protoRequest =
-        toRequest(TraceMarshaler.RequestMarshaler.create(state.spanDataList));
-    byte[] protoOutput = new byte[protoRequest.getSerializedSize()];
-    protoRequest.writeTo(CodedOutputStream.newInstance(protoOutput));
-    return protoOutput;
-  }
-
-  private static ExportTraceServiceRequest toRequest(TraceMarshaler.RequestMarshaler request)
-      throws IOException {
-    byte[] buf = new byte[request.getSerializedSize()];
-    request.writeTo(CodedOutputStream.newInstance(buf));
-    return ExportTraceServiceRequest.newBuilder()
-        .setUnknownFields(UnknownFieldSet.newBuilder().mergeFrom(buf).build())
-        .build();
   }
 }

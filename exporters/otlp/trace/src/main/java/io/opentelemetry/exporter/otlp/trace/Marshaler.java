@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
-import com.google.protobuf.CodedOutputStream;
 import java.io.IOException;
 
 interface Marshaler {

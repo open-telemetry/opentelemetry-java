@@ -121,7 +121,6 @@
             <property name="ignoreFinal" value="false"/>
             <property name="allowedAbbreviationLength" value="1"/>
         </module>
-        <module name="OverloadMethodsDeclarationOrder"/>
         <!-- <!-\- Many unit tests define all variables at the start of the method. -\-> -->
         <!-- <module name="VariableDeclarationUsageDistance"/> -->
         <module name="CustomImportOrder">
