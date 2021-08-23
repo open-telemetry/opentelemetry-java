@@ -8,8 +8,8 @@ package io.opentelemetry.sdk.autoconfigure;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_METRICS;
 
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
-import io.opentelemetry.exporter.otlp.http.metric.OtlpHttpMetricExporter;
-import io.opentelemetry.exporter.otlp.http.metric.OtlpHttpMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
@@ -87,7 +87,7 @@ final class MetricExporterConfiguration {
     if (protocol.equals("http/protobuf")) {
       try {
         ClasspathUtil.checkClassExists(
-            "io.opentelemetry.exporter.otlp.http.metric.OtlpHttpMetricExporter",
+            "io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter",
             "OTLP HTTP Metrics Exporter",
             "opentelemetry-exporter-otlp-http-metrics");
       } catch (ConfigurationException e) {
