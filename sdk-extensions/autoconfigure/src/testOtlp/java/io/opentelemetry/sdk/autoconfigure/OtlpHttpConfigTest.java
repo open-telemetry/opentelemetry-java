@@ -155,7 +155,8 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.timeout", "15s");
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
-    SpanExporter spanExporter = SpanExporterConfiguration.configureExporter("otlp", properties);
+    SpanExporter spanExporter =
+        SpanExporterConfiguration.configureExporter("otlp", properties, Collections.emptyMap());
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
             properties, SdkMeterProvider.builder().build());
@@ -212,7 +213,7 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.traces.timeout", "15s");
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
-            "otlp", DefaultConfigProperties.createForTest(props));
+            "otlp", DefaultConfigProperties.createForTest(props), Collections.emptyMap());
 
     assertThat(spanExporter)
         .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
@@ -276,7 +277,10 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
 
-    assertThatThrownBy(() -> SpanExporterConfiguration.configureExporter("otlp", properties))
+    assertThatThrownBy(
+            () ->
+                SpanExporterConfiguration.configureExporter(
+                    "otlp", properties, Collections.emptyMap()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
 

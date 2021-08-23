@@ -36,7 +36,8 @@ class SpanExporterConfigurationTest {
         SpanExporterConfiguration.configureExporter(
             "otlp",
             DefaultConfigProperties.createForTest(
-                Collections.singletonMap("otel.exporter.otlp.timeout", "10")));
+                Collections.singletonMap("otel.exporter.otlp.timeout", "10")),
+            Collections.emptyMap());
     try {
       assertThat(exporter)
           .isInstanceOfSatisfying(
@@ -57,7 +58,8 @@ class SpanExporterConfigurationTest {
         SpanExporterConfiguration.configureExporter(
             "jaeger",
             DefaultConfigProperties.createForTest(
-                Collections.singletonMap("otel.exporter.jaeger.timeout", "10")));
+                Collections.singletonMap("otel.exporter.jaeger.timeout", "10")),
+            Collections.emptyMap());
     try {
       assertThat(exporter)
           .isInstanceOfSatisfying(
@@ -78,7 +80,8 @@ class SpanExporterConfigurationTest {
         SpanExporterConfiguration.configureExporter(
             "zipkin",
             DefaultConfigProperties.createForTest(
-                Collections.singletonMap("otel.exporter.zipkin.timeout", "5s")));
+                Collections.singletonMap("otel.exporter.zipkin.timeout", "5s")),
+            Collections.emptyMap());
     try {
       assertThat(exporter).isNotNull();
     } finally {

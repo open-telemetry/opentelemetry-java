@@ -19,6 +19,9 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
@@ -44,32 +47,38 @@ final class TracerProviderConfiguration {
       configurer.configure(tracerProviderBuilder);
     }
 
-    String exporterName = config.getString("otel.traces.exporter");
-    if (exporterName == null) {
-      exporterName = "otlp";
-    }
-    SpanExporter exporter = SpanExporterConfiguration.configureExporter(exporterName, config);
-    if (exporter != null) {
-      tracerProviderBuilder.addSpanProcessor(
-          configureSpanProcessor(config, exporter, exporterName));
-    }
+    Map<String, SpanExporter> exportersByName =
+        SpanExporterConfiguration.configureSpanExporters(config);
+
+    configureSpanProcessors(config, exportersByName)
+        .forEach(tracerProviderBuilder::addSpanProcessor);
 
     SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
     Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
     return tracerProvider;
   }
 
-  // VisibleForTesting
-  static SpanProcessor configureSpanProcessor(
-      ConfigProperties config, SpanExporter exporter, String exporterName) {
-    if (exporterName.equals("logging")) {
-      return SimpleSpanProcessor.create(exporter);
+  static List<SpanProcessor> configureSpanProcessors(
+      ConfigProperties config, Map<String, SpanExporter> exportersByName) {
+    Map<String, SpanExporter> exportersByNameCopy = new HashMap<>(exportersByName);
+    List<SpanProcessor> spanProcessors = new ArrayList<>();
+
+    if (exportersByNameCopy.containsKey("logging")) {
+      spanProcessors.add(SimpleSpanProcessor.create(exportersByName.get("logging")));
+      exportersByNameCopy.remove("logging");
     }
-    return configureSpanProcessor(config, exporter);
+
+    if (!exportersByNameCopy.isEmpty()) {
+      SpanExporter compositeSpanExporter = SpanExporter.composite(exportersByNameCopy.values());
+      spanProcessors.add(configureBatchSpanProcessor(config, compositeSpanExporter));
+    }
+
+    return spanProcessors;
   }
 
   // VisibleForTesting
-  static BatchSpanProcessor configureSpanProcessor(ConfigProperties config, SpanExporter exporter) {
+  static BatchSpanProcessor configureBatchSpanProcessor(
+      ConfigProperties config, SpanExporter exporter) {
     BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(exporter);
 
     Duration scheduleDelay = config.getDuration("otel.bsp.schedule.delay");
