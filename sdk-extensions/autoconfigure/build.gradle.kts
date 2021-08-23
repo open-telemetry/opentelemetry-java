@@ -31,6 +31,8 @@ dependencies {
   compileOnly(project(":exporters:logging"))
   compileOnly(project(":exporters:otlp:all"))
   compileOnly(project(":exporters:otlp:metrics"))
+  compileOnly(project(":exporters:otlp-http:trace"))
+  compileOnly(project(":exporters:otlp-http:metrics"))
   compileOnly(project(":exporters:prometheus"))
   compileOnly("io.prometheus:simpleclient_httpserver")
   compileOnly(project(":exporters:zipkin"))
@@ -57,6 +59,10 @@ dependencies {
 
   add("testOtlpImplementation", project(":exporters:otlp:all"))
   add("testOtlpImplementation", project(":exporters:otlp:metrics"))
+  add("testOtlpImplementation", project(":exporters:otlp-http:trace"))
+  add("testOtlpImplementation", project(":exporters:otlp-http:metrics"))
+  add("testOtlpImplementation", "com.squareup.okhttp3:okhttp")
+  add("testOtlpImplementation", "com.squareup.okhttp3:okhttp-tls")
   add("testOtlpImplementation", "org.bouncycastle:bcpkix-jdk15on")
 
   add("testJaegerImplementation", project(":exporters:jaeger"))
