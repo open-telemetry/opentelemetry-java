@@ -31,7 +31,8 @@ public final class LogRecordBuilder {
     return this;
   }
 
-  public LogRecordBuilder setInstrumentationLibraryInfo(InstrumentationLibraryInfo instrumentationLibraryInfo) {
+  public LogRecordBuilder setInstrumentationLibraryInfo(
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     return this;
   }

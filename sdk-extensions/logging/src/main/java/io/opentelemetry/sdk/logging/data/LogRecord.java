@@ -36,7 +36,17 @@ public abstract class LogRecord {
       AnyValue body,
       Attributes attributes) {
     return new AutoValue_LogRecord(
-        resource, instrumentationLibraryInfo, timeUnixNano, traceId, spanId, flags, severity, severityText, name, body, attributes);
+        resource,
+        instrumentationLibraryInfo,
+        timeUnixNano,
+        traceId,
+        spanId,
+        flags,
+        severity,
+        severityText,
+        name,
+        body,
+        attributes);
   }
 
   public abstract Resource getResource();

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.ir.backend.js.compile
+
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")

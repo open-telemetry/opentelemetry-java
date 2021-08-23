@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.otlp.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,11 +27,11 @@ public class LogAdapterTest {
 
   @Test
   void toProtoResourceLogs() {
-//    LogRecord logRecord = LogAdapter.toProtoLogRecord(
-//
-//    )
+    //    LogRecord logRecord = LogAdapter.toProtoLogRecord(
+    //
+    //    )
   }
-//
+  //
   @Test
   void toProtoLogRecord() {
     io.opentelemetry.proto.logs.v1.LogRecord logRecord =
@@ -54,5 +59,4 @@ public class LogAdapterTest {
                 .build());
     assertThat(logRecord.getTimeUnixNano()).isEqualTo(12345);
   }
-
 }

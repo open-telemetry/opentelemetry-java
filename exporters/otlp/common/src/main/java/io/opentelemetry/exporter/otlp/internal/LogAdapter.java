@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.otlp.internal;
 
 import com.google.protobuf.UnsafeByteOperations;
@@ -15,11 +20,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/** Converter from SDK {@link LogRecord} to OTLP {@link ResourceLogs}. */
 public class LogAdapter {
 
+  /** Returns a new List of {@link LogRecord}. */
   public static List<ResourceLogs> toProtoResourceLogs(Collection<LogRecord> logRecordList) {
-    Map<Resource, Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>> resourceAndLibraryMap =
-        groupByResourceAndLibrary(logRecordList);
+    Map<Resource, Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>>
+        resourceAndLibraryMap = groupByResourceAndLibrary(logRecordList);
     List<ResourceLogs> resourceLogs = new ArrayList<>(resourceAndLibraryMap.size());
     resourceAndLibraryMap.forEach(
         (resource, libraryInfoListMap) -> {
@@ -42,22 +49,24 @@ public class LogAdapter {
       InstrumentationLibraryInfo library, List<io.opentelemetry.proto.logs.v1.LogRecord> logs) {
     InstrumentationLibraryLogs.Builder logsBuilder =
         InstrumentationLibraryLogs.newBuilder()
-          .setInstrumentationLibrary(CommonAdapter.toProtoInstrumentationLibrary(library))
-          .addAllLogs(logs);
+            .setInstrumentationLibrary(CommonAdapter.toProtoInstrumentationLibrary(library))
+            .addAllLogs(logs);
     if (library.getSchemaUrl() != null) {
       logsBuilder.setSchemaUrl(library.getSchemaUrl());
     }
     return logsBuilder.build();
   }
 
-  private static Map<Resource, Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>>
+  private static Map<
+          Resource, Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>>
       groupByResourceAndLibrary(Collection<LogRecord> logRecordList) {
-    Map<Resource, Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>> result =
-        new HashMap<>();
+    Map<Resource, Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>>
+        result = new HashMap<>();
     for (LogRecord logRecord : logRecordList) {
 
-      Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>> libraryInfoListMap =
-        result.computeIfAbsent(logRecord.getResource(), unused -> new HashMap<>());
+      Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>
+          libraryInfoListMap =
+              result.computeIfAbsent(logRecord.getResource(), unused -> new HashMap<>());
       List<io.opentelemetry.proto.logs.v1.LogRecord> logList =
           libraryInfoListMap.computeIfAbsent(
               logRecord.getInstrumentationLibraryInfo(), unused -> new ArrayList<>());
@@ -66,20 +75,24 @@ public class LogAdapter {
     return result;
   }
 
+  /** returns a new {@link io.opentelemetry.proto.logs.v1.LogRecord} from a {@link LogRecord}. */
   static io.opentelemetry.proto.logs.v1.LogRecord toProtoLogRecord(LogRecord logRecord) {
     io.opentelemetry.proto.logs.v1.LogRecord.Builder builder =
         io.opentelemetry.proto.logs.v1.LogRecord.newBuilder()
-          .setName(logRecord.getName())
-          .setBody(getLogRecordBodyAnyValue(logRecord))
-          .setSeverityText(logRecord.getSeverityText())
-          .setSeverityNumber(SeverityNumber.forNumber(logRecord.getSeverity().getSeverityNumber()))
-          .setTimeUnixNano(logRecord.getTimeUnixNano())
-          .setTraceId(UnsafeByteOperations.unsafeWrap(
-              OtelEncodingUtils.bytesFromBase16(logRecord.getTraceId(), logRecord.getTraceId().length()))
-          )
-          .setSpanId(UnsafeByteOperations.unsafeWrap(
-              OtelEncodingUtils.bytesFromBase16(logRecord.getSpanId(), logRecord.getSpanId().length()))
-          );
+            .setName(logRecord.getName())
+            .setBody(getLogRecordBodyAnyValue(logRecord))
+            .setSeverityText(logRecord.getSeverityText())
+            .setSeverityNumber(
+                SeverityNumber.forNumber(logRecord.getSeverity().getSeverityNumber()))
+            .setTimeUnixNano(logRecord.getTimeUnixNano())
+            .setTraceId(
+                UnsafeByteOperations.unsafeWrap(
+                    OtelEncodingUtils.bytesFromBase16(
+                        logRecord.getTraceId(), logRecord.getTraceId().length())))
+            .setSpanId(
+                UnsafeByteOperations.unsafeWrap(
+                    OtelEncodingUtils.bytesFromBase16(
+                        logRecord.getSpanId(), logRecord.getSpanId().length())));
 
     logRecord
         .getAttributes()
@@ -95,11 +108,4 @@ public class LogAdapter {
   }
 
   private LogAdapter() {}
-
 }
-
-
-
-
-
-
