@@ -1,6 +1,7 @@
 package io.opentelemetry.exporter.otlp.internal;
 
 import com.google.protobuf.UnsafeByteOperations;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
@@ -73,8 +74,12 @@ public class LogAdapter {
           .setSeverityText(logRecord.getSeverityText())
           .setSeverityNumber(SeverityNumber.forNumber(logRecord.getSeverity().getSeverityNumber()))
           .setTimeUnixNano(logRecord.getTimeUnixNano())
-          .setTraceId(UnsafeByteOperations.unsafeWrap(logRecord.getTraceId().getBytes()))
-          .setSpanId(UnsafeByteOperations.unsafeWrap(logRecord.getSpanId().getBytes()));
+          .setTraceId(UnsafeByteOperations.unsafeWrap(
+              OtelEncodingUtils.bytesFromBase16(logRecord.getTraceId(), logRecord.getTraceId().length()))
+          )
+          .setSpanId(UnsafeByteOperations.unsafeWrap(
+              OtelEncodingUtils.bytesFromBase16(logRecord.getSpanId(), logRecord.getSpanId().length()))
+          );
 
     logRecord
         .getAttributes()
