@@ -42,11 +42,12 @@ public class ConfigurableSpanExporterTest {
   @Test
   void configureSpanExporters_duplicates() {
     ConfigProperties config =
-        DefaultConfigProperties.createForTest(ImmutableMap.of("otel.traces.exporter", "otlp,otlp"));
+        DefaultConfigProperties.createForTest(
+            ImmutableMap.of("otel.traces.exporter", "otlp,otlp,logging"));
 
     assertThatThrownBy(() -> SpanExporterConfiguration.configureSpanExporters(config))
         .isInstanceOf(ConfigurationException.class)
-        .hasMessageContaining("otel.traces.exporter contains duplicates");
+        .hasMessageContaining("otel.traces.exporter contains duplicates: [otlp]");
   }
 
   @Test

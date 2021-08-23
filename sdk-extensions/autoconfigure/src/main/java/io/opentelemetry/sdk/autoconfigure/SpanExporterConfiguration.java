@@ -6,6 +6,9 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_TRACES;
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
@@ -36,19 +39,26 @@ final class SpanExporterConfiguration {
     List<String> exporterNamesList = config.getCommaSeparatedValues("otel.traces.exporter");
     Set<String> exporterNames = new HashSet<>(exporterNamesList);
     if (exporterNamesList.size() != exporterNames.size()) {
-      throw new ConfigurationException("otel.traces.exporter contains duplicates");
+      String duplicates =
+          exporterNamesList.stream()
+              .collect(groupingBy(Function.identity(), counting()))
+              .entrySet()
+              .stream()
+              .filter(entry -> entry.getValue() > 1)
+              .map(Map.Entry::getKey)
+              .collect(joining(",", "[", "]"));
+      throw new ConfigurationException("otel.traces.exporter contains duplicates: " + duplicates);
     }
-    if (exporterNames.contains(EXPORTER_NONE) && exporterNames.size() > 1) {
-      throw new ConfigurationException(
-          "otel.traces.exporter contains " + EXPORTER_NONE + " along with other exporters");
+    if (exporterNames.contains(EXPORTER_NONE)) {
+      if (exporterNames.size() > 1) {
+        throw new ConfigurationException(
+            "otel.traces.exporter contains " + EXPORTER_NONE + " along with other exporters");
+      }
+      return Collections.emptyMap();
     }
 
     if (exporterNames.isEmpty()) {
       exporterNames = Collections.singleton("otlp");
-    }
-
-    if (exporterNames.contains(EXPORTER_NONE)) {
-      return Collections.emptyMap();
     }
 
     Map<String, SpanExporter> spiExporters =
