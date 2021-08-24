@@ -16,7 +16,7 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.5.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.6.0";
 
   /** Name of the cloud provider. */
   public static final AttributeKey<String> CLOUD_PROVIDER = stringKey("cloud.provider");
@@ -27,6 +27,7 @@ public final class ResourceAttributes {
   /**
    * The geographical region the resource is running. Refer to your provider's docs to see the
    * available regions, for example <a
+   * href="https://www.alibabacloud.com/help/doc-detail/40654.htm">Alibaba Cloud regions</a>, <a
    * href="https://aws.amazon.com/about-aws/global-infrastructure/regions_az/">AWS regions</a>, <a
    * href="https://azure.microsoft.com/en-us/global-infrastructure/geographies/">Azure regions</a>,
    * or <a href="https://cloud.google.com/about/locations">Google Cloud regions</a>.
@@ -40,7 +41,7 @@ public final class ResourceAttributes {
    * <p>Notes:
    *
    * <ul>
-   *   <li>Availability zones are called &quot;zones&quot; on Google Cloud.
+   *   <li>Availability zones are called &quot;zones&quot; on Alibaba Cloud and Google Cloud.
    * </ul>
    */
   public static final AttributeKey<String> CLOUD_AVAILABILITY_ZONE =
@@ -548,6 +549,8 @@ public final class ResourceAttributes {
 
   // Enum definitions
   public static final class CloudProviderValues {
+    /** Alibaba Cloud. */
+    public static final String ALIBABA_CLOUD = "alibaba_cloud";
     /** Amazon Web Services. */
     public static final String AWS = "aws";
     /** Microsoft Azure. */
@@ -559,6 +562,10 @@ public final class ResourceAttributes {
   }
 
   public static final class CloudPlatformValues {
+    /** Alibaba Cloud Elastic Compute Service. */
+    public static final String ALIBABA_CLOUD_ECS = "alibaba_cloud_ecs";
+    /** Alibaba Cloud Function Compute. */
+    public static final String ALIBABA_CLOUD_FC = "alibaba_cloud_fc";
     /** AWS Elastic Compute Cloud. */
     public static final String AWS_EC2 = "aws_ec2";
     /** AWS Elastic Container Service. */

@@ -79,9 +79,9 @@ class TracerProviderConfigurationTest {
   }
 
   @Test
-  void configureSpanProcessor_empty() {
+  void configureBatchSpanProcessor_empty() {
     BatchSpanProcessor processor =
-        TracerProviderConfiguration.configureSpanProcessor(EMPTY, mockSpanExporter);
+        TracerProviderConfiguration.configureBatchSpanProcessor(EMPTY, mockSpanExporter);
 
     try {
       assertThat(processor)
@@ -107,7 +107,7 @@ class TracerProviderConfigurationTest {
   }
 
   @Test
-  void configureSpanProcessor_configured() {
+  void configureBatchSpanProcessor_configured() {
     Map<String, String> properties = new HashMap<>();
     properties.put("otel.bsp.schedule.delay", "100000");
     properties.put("otel.bsp.max.queue.size", "2");
@@ -115,7 +115,7 @@ class TracerProviderConfigurationTest {
     properties.put("otel.bsp.export.timeout", "4");
 
     BatchSpanProcessor processor =
-        TracerProviderConfiguration.configureSpanProcessor(
+        TracerProviderConfiguration.configureBatchSpanProcessor(
             DefaultConfigProperties.createForTest(properties), mockSpanExporter);
 
     try {

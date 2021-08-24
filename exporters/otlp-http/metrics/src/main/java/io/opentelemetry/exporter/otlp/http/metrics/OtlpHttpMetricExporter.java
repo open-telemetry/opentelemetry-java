@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.http.metric;
+package io.opentelemetry.exporter.otlp.http.metrics;
 
 import io.opentelemetry.exporter.otlp.internal.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.MetricAdapter;

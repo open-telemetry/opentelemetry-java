@@ -53,11 +53,11 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-class OtlpConfigTest {
+class OtlpGrpcConfigTest {
 
-  private static final BlockingQueue<ExportTraceServiceRequest> otlpTraceRequests =
+  private static final BlockingQueue<ExportTraceServiceRequest> traceRequests =
       new LinkedBlockingDeque<>();
-  private static final BlockingQueue<ExportMetricsServiceRequest> otlpMetricsRequests =
+  private static final BlockingQueue<ExportMetricsServiceRequest> metricRequests =
       new LinkedBlockingDeque<>();
   private static final BlockingQueue<RequestHeaders> requestHeaders = new LinkedBlockingDeque<>();
 
@@ -81,7 +81,7 @@ class OtlpConfigTest {
                         public void export(
                             ExportTraceServiceRequest request,
                             StreamObserver<ExportTraceServiceResponse> responseObserver) {
-                          otlpTraceRequests.add(request);
+                          traceRequests.add(request);
                           responseObserver.onNext(ExportTraceServiceResponse.getDefaultInstance());
                           responseObserver.onCompleted();
                         }
@@ -94,7 +94,7 @@ class OtlpConfigTest {
                             ExportMetricsServiceRequest request,
                             StreamObserver<ExportMetricsServiceResponse> responseObserver) {
                           if (request.getResourceMetricsCount() > 0) {
-                            otlpMetricsRequests.add(request);
+                            metricRequests.add(request);
                           }
                           responseObserver.onNext(
                               ExportMetricsServiceResponse.getDefaultInstance());
@@ -114,8 +114,8 @@ class OtlpConfigTest {
 
   @BeforeEach
   void setUp() {
-    otlpTraceRequests.clear();
-    otlpMetricsRequests.clear();
+    traceRequests.clear();
+    metricRequests.clear();
     requestHeaders.clear();
     GlobalOpenTelemetry.resetForTest();
     IntervalMetricReader.resetGlobalForTest();
@@ -135,7 +135,8 @@ class OtlpConfigTest {
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.timeout", "15s");
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
-    SpanExporter spanExporter = SpanExporterConfiguration.configureExporter("otlp", properties);
+    SpanExporter spanExporter =
+        SpanExporterConfiguration.configureExporter("otlp", properties, Collections.emptyMap());
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
             properties, SdkMeterProvider.builder().build());
@@ -147,7 +148,7 @@ class OtlpConfigTest {
                 .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
-    assertThat(otlpTraceRequests).hasSize(1);
+    assertThat(traceRequests).hasSize(1);
     assertThat(requestHeaders)
         .anyMatch(
             headers ->
@@ -162,7 +163,7 @@ class OtlpConfigTest {
                 .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
-    assertThat(otlpMetricsRequests).hasSize(1);
+    assertThat(metricRequests).hasSize(1);
     assertThat(requestHeaders)
         .anyMatch(
             headers ->
@@ -187,7 +188,7 @@ class OtlpConfigTest {
     props.put("otel.exporter.otlp.traces.timeout", "15s");
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
-            "otlp", DefaultConfigProperties.createForTest(props));
+            "otlp", DefaultConfigProperties.createForTest(props), Collections.emptyMap());
 
     assertThat(spanExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
@@ -196,7 +197,7 @@ class OtlpConfigTest {
                 .join(10, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
-    assertThat(otlpTraceRequests).hasSize(1);
+    assertThat(traceRequests).hasSize(1);
     assertThat(requestHeaders)
         .anyMatch(
             headers ->
@@ -230,7 +231,7 @@ class OtlpConfigTest {
                 .join(15, TimeUnit.SECONDS)
                 .isSuccess())
         .isTrue();
-    assertThat(otlpMetricsRequests).hasSize(1);
+    assertThat(metricRequests).hasSize(1);
     assertThat(requestHeaders)
         .anyMatch(
             headers ->
@@ -245,7 +246,10 @@ class OtlpConfigTest {
     props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
 
-    assertThatThrownBy(() -> SpanExporterConfiguration.configureExporter("otlp", properties))
+    assertThatThrownBy(
+            () ->
+                SpanExporterConfiguration.configureExporter(
+                    "otlp", properties, Collections.emptyMap()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
 
@@ -290,6 +294,8 @@ class OtlpConfigTest {
 
   @Test
   void configuresGlobal() {
+    // Protocol defaults to grpc but other tests may set system property to change it
+    System.setProperty("otel.experimental.exporter.otlp.protocol", "grpc");
     System.setProperty("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
     System.setProperty(
         "otel.exporter.otlp.certificate", certificate.certificateFile().getAbsolutePath());
@@ -300,12 +306,12 @@ class OtlpConfigTest {
     await()
         .untilAsserted(
             () -> {
-              assertThat(otlpTraceRequests).hasSize(1);
+              assertThat(traceRequests).hasSize(1);
 
               // Not well defined how many metric exports would have happened by now, check that
               // any did. Metrics are recorded by OtlpGrpcSpanExporter, BatchSpanProcessor, and
               // potentially others.
-              assertThat(otlpMetricsRequests).isNotEmpty();
+              assertThat(metricRequests).isNotEmpty();
             });
   }
 }
