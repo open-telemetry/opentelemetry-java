@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.api.internal.OtelEncodingUtils;
@@ -8,13 +13,13 @@ import io.opentelemetry.proto.metrics.v1.internal.AggregationTemporality;
 import io.opentelemetry.proto.metrics.v1.internal.Gauge;
 import io.opentelemetry.proto.metrics.v1.internal.Histogram;
 import io.opentelemetry.proto.metrics.v1.internal.HistogramDataPoint;
+import io.opentelemetry.proto.metrics.v1.internal.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.internal.Metric;
 import io.opentelemetry.proto.metrics.v1.internal.NumberDataPoint;
 import io.opentelemetry.proto.metrics.v1.internal.ResourceMetrics;
 import io.opentelemetry.proto.metrics.v1.internal.Sum;
 import io.opentelemetry.proto.metrics.v1.internal.Summary;
 import io.opentelemetry.proto.metrics.v1.internal.SummaryDataPoint;
-import io.opentelemetry.proto.metrics.v1.internal.InstrumentationLibraryMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
@@ -36,11 +41,20 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-/** {@link Marshaler} to convert SDK {@link MetricData} to OTLP ExportMetricServiceRequest. */
+/**
+ * {@link Marshaler} to convert SDK {@link MetricData} to OTLP ExportMetricsServiceRequest.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class MetricRequestMarshaler extends MarshalerWithSize implements Marshaler {
 
   private final ResourceMetricsMarshaler[] resourceMetricsMarshalers;
 
+  /**
+   * Returns a {@link MetricRequestMarshaler} that can be used to convert the provided {@link
+   * MetricData} into a serialized OTLP ExportMetricsServiceRequest.
+   */
   public static MetricRequestMarshaler create(Collection<MetricData> metricDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Marshaler>>> resourceAndLibraryMap =
         groupByResourceAndLibrary(metricDataList);
@@ -189,7 +203,7 @@ public final class MetricRequestMarshaler extends MarshalerWithSize implements M
     }
   }
 
-  private static final class MetricMarshaler extends MarshalerWithSize {
+  static final class MetricMarshaler extends MarshalerWithSize {
     private final byte[] name;
     private final byte[] description;
     private final byte[] unit;
@@ -341,7 +355,7 @@ public final class MetricRequestMarshaler extends MarshalerWithSize implements M
     }
   }
 
-  private static class HistogramDataPointMarshaler extends MarshalerWithSize {
+  static class HistogramDataPointMarshaler extends MarshalerWithSize {
     private final long startTimeUnixNano;
     private final long timeUnixNano;
     private final long count;
@@ -361,7 +375,7 @@ public final class MetricRequestMarshaler extends MarshalerWithSize implements M
       return marshalers;
     }
 
-    private static HistogramDataPointMarshaler create(DoubleHistogramPointData point) {
+    static HistogramDataPointMarshaler create(DoubleHistogramPointData point) {
       AttributeMarshaler[] attributeMarshalers =
           AttributeMarshaler.createRepeated(point.getAttributes());
       ExemplarMarshaler[] exemplarMarshalers =
@@ -526,7 +540,7 @@ public final class MetricRequestMarshaler extends MarshalerWithSize implements M
     }
   }
 
-  private static class SummaryDataPointMarshaler extends MarshalerWithSize {
+  static class SummaryDataPointMarshaler extends MarshalerWithSize {
     private final long startTimeUnixNano;
     private final long timeUnixNano;
     private final long count;
@@ -543,7 +557,7 @@ public final class MetricRequestMarshaler extends MarshalerWithSize implements M
       return marshalers;
     }
 
-    private static SummaryDataPointMarshaler create(DoubleSummaryPointData point) {
+    static SummaryDataPointMarshaler create(DoubleSummaryPointData point) {
       ValueAtQuantileMarshaler[] quantileMarshalers =
           ValueAtQuantileMarshaler.createRepeated(point.getPercentileValues());
       AttributeMarshaler[] attributeMarshalers =

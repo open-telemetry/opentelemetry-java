@@ -14,7 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+import com.google.protobuf.Parser;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
@@ -44,12 +47,12 @@ import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -57,8 +60,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 // Fill deprecated APIs before removing them after users get a chance to migrate.
-@SuppressWarnings("deprecation")
-class MetricMarshalerTest {
+class MetricRequestMarshalerTest {
 
   private static final Attributes KV_ATTR = Attributes.of(stringKey("k"), "v");
 
@@ -67,17 +69,17 @@ class MetricMarshalerTest {
   }
 
   @Test
-  void toInt64DataPoints() {
-    assertThat(toIntDataPoints(Collections.emptyList())).isEmpty();
+  void longDataPoints() {
+    assertThat(toNumberDataPoints(Collections.emptyList())).isEmpty();
     assertThat(
-            toIntDataPoints(
+            toNumberDataPoints(
                 singletonList(
                     LongPointData.create(
                         123,
                         456,
                         KV_ATTR,
                         5,
-                        Arrays.asList(
+                        singletonList(
                             LongExemplar.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
@@ -108,7 +110,7 @@ class MetricMarshalerTest {
                         .build())
                 .build());
     assertThat(
-            toIntDataPoints(
+            toNumberDataPoints(
                 ImmutableList.of(
                     LongPointData.create(123, 456, Attributes.empty(), 5),
                     LongPointData.create(321, 654, KV_ATTR, 7))))
@@ -129,11 +131,9 @@ class MetricMarshalerTest {
   }
 
   @Test
-  void toDoubleDataPoints() {
-    assertThat(MetricAdapter.toDoubleDataPoints(Collections.emptyList())).isEmpty();
-    assertThat(
-            MetricAdapter.toDoubleDataPoints(
-                singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))
+  void doubleDataPoints() {
+    assertThat(toNumberDataPoints(Collections.emptyList())).isEmpty();
+    assertThat(toNumberDataPoints(singletonList(DoublePointData.create(123, 456, KV_ATTR, 5.1))))
         .containsExactly(
             NumberDataPoint.newBuilder()
                 .setStartTimeUnixNano(123)
@@ -144,7 +144,7 @@ class MetricMarshalerTest {
                 .setAsDouble(5.1)
                 .build());
     assertThat(
-            MetricAdapter.toDoubleDataPoints(
+            toNumberDataPoints(
                 ImmutableList.of(
                     DoublePointData.create(123, 456, Attributes.empty(), 5.1),
                     DoublePointData.create(321, 654, KV_ATTR, 7.1))))
@@ -165,9 +165,9 @@ class MetricMarshalerTest {
   }
 
   @Test
-  void toSummaryDataPoints() {
+  void summaryDataPoints() {
     assertThat(
-            MetricAdapter.toSummaryDataPoints(
+            toSummaryDataPoints(
                 singletonList(
                     DoubleSummaryPointData.create(
                         123,
@@ -192,7 +192,7 @@ class MetricMarshalerTest {
                         .build())
                 .build());
     assertThat(
-            MetricAdapter.toSummaryDataPoints(
+            toSummaryDataPoints(
                 ImmutableList.of(
                     DoubleSummaryPointData.create(
                         123, 456, Attributes.empty(), 7, 15.3, Collections.emptyList()),
@@ -234,9 +234,9 @@ class MetricMarshalerTest {
   }
 
   @Test
-  void toHistogramDataPoints() {
+  void histogramDataPoints() {
     assertThat(
-            MetricAdapter.toHistogramDataPoints(
+            toHistogramDataPoints(
                 ImmutableList.of(
                     DoubleHistogramPointData.create(
                         123, 456, KV_ATTR, 14.2, ImmutableList.of(1.0), ImmutableList.of(1L, 5L)),
@@ -293,7 +293,7 @@ class MetricMarshalerTest {
   @Test
   void toProtoMetric_monotonic() {
     assertThat(
-            MetricAdapter.toProtoMetric(
+            toProtoMetric(
                 MetricData.createLongSum(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
@@ -328,7 +328,7 @@ class MetricMarshalerTest {
                         .build())
                 .build());
     assertThat(
-            MetricAdapter.toProtoMetric(
+            toProtoMetric(
                 MetricData.createDoubleSum(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
@@ -367,7 +367,7 @@ class MetricMarshalerTest {
   @Test
   void toProtoMetric_nonMonotonic() {
     assertThat(
-            MetricAdapter.toProtoMetric(
+            toProtoMetric(
                 MetricData.createLongSum(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
@@ -402,7 +402,7 @@ class MetricMarshalerTest {
                         .build())
                 .build());
     assertThat(
-            MetricAdapter.toProtoMetric(
+            toProtoMetric(
                 MetricData.createDoubleSum(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
@@ -441,7 +441,7 @@ class MetricMarshalerTest {
   @Test
   void toProtoMetric_gauges() {
     assertThat(
-            MetricAdapter.toProtoMetric(
+            toProtoMetric(
                 MetricData.createLongGauge(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
@@ -472,7 +472,7 @@ class MetricMarshalerTest {
                         .build())
                 .build());
     assertThat(
-            MetricAdapter.toProtoMetric(
+            toProtoMetric(
                 MetricData.createDoubleGauge(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
@@ -507,7 +507,7 @@ class MetricMarshalerTest {
   @Test
   void toProtoMetric_summary() {
     assertThat(
-            MetricAdapter.toProtoMetric(
+            toProtoMetric(
                 MetricData.createDoubleSummary(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
@@ -562,7 +562,7 @@ class MetricMarshalerTest {
   @Test
   void toProtoMetric_histogram() {
     assertThat(
-            MetricAdapter.toProtoMetric(
+            toProtoMetric(
                 MetricData.createDoubleHistogram(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
@@ -606,7 +606,7 @@ class MetricMarshalerTest {
   }
 
   @Test
-  void toProtoResourceMetrics() {
+  void protoResourceMetrics() {
     Resource resource =
         Resource.create(Attributes.of(stringKey("ka"), "va"), "http://resource.url");
     io.opentelemetry.proto.resource.v1.Resource resourceProto =
@@ -648,7 +648,7 @@ class MetricMarshalerTest {
             .build();
 
     assertThat(
-            MetricAdapter.toProtoResourceMetrics(
+            toProtoResourceMetrics(
                 ImmutableList.of(
                     MetricData.createDoubleSum(
                         resource,
@@ -694,47 +694,94 @@ class MetricMarshalerTest {
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
                                 DoublePointData.create(123, 456, KV_ATTR, 5.0)))))))
-        .containsExactlyInAnyOrder(
-            ResourceMetrics.newBuilder()
-                .setResource(resourceProto)
-                .setSchemaUrl("http://resource.url")
-                .addAllInstrumentationLibraryMetrics(
-                    singletonList(
-                        InstrumentationLibraryMetrics.newBuilder()
-                            .setInstrumentationLibrary(instrumentationLibraryProto)
-                            .addAllMetrics(ImmutableList.of(metricDoubleSum, metricDoubleSum))
-                            .setSchemaUrl("http://url")
-                            .build()))
-                .build(),
-            ResourceMetrics.newBuilder()
-                .setResource(emptyResourceProto)
-                .addAllInstrumentationLibraryMetrics(
-                    ImmutableList.of(
-                        InstrumentationLibraryMetrics.newBuilder()
-                            .setInstrumentationLibrary(instrumentationLibraryProto)
-                            .addAllMetrics(singletonList(metricDoubleSum))
-                            .setSchemaUrl("http://url")
-                            .build(),
-                        InstrumentationLibraryMetrics.newBuilder()
-                            .setInstrumentationLibrary(emptyInstrumentationLibraryProto)
-                            .addAllMetrics(singletonList(metricDoubleSum))
-                            .build()))
-                .build());
+        .satisfiesExactlyInAnyOrder(
+            resourceMetrics -> {
+              assertThat(resourceMetrics.getResource()).isEqualTo(resourceProto);
+              assertThat(resourceMetrics.getSchemaUrl()).isEqualTo("http://resource.url");
+              assertThat(resourceMetrics.getInstrumentationLibraryMetricsList())
+                  .containsExactlyInAnyOrder(
+                      InstrumentationLibraryMetrics.newBuilder()
+                          .setInstrumentationLibrary(instrumentationLibraryProto)
+                          .addAllMetrics(ImmutableList.of(metricDoubleSum, metricDoubleSum))
+                          .setSchemaUrl("http://url")
+                          .build());
+            },
+            resourceMetrics -> {
+              assertThat(resourceMetrics.getResource()).isEqualTo(emptyResourceProto);
+              assertThat(resourceMetrics.getInstrumentationLibraryMetricsList())
+                  .containsExactlyInAnyOrder(
+                      InstrumentationLibraryMetrics.newBuilder()
+                          .setInstrumentationLibrary(emptyInstrumentationLibraryProto)
+                          .addAllMetrics(singletonList(metricDoubleSum))
+                          .build(),
+                      InstrumentationLibraryMetrics.newBuilder()
+                          .setInstrumentationLibrary(instrumentationLibraryProto)
+                          .addAllMetrics(singletonList(metricDoubleSum))
+                          .setSchemaUrl("http://url")
+                          .build());
+            });
   }
 
-  private static List<NumberDataPoint> toIntDataPoints(Collection<LongPointData> points) {
+  private static List<NumberDataPoint> toNumberDataPoints(Collection<? extends PointData> points) {
     return points.stream()
         .map(
-            point -> {
-              byte[] serialized =
-                  toByteArray(MetricRequestMarshaler.NumberDataPointMarshaler.create(point));
-              try {
-                return NumberDataPoint.parseFrom(serialized);
-              } catch (InvalidProtocolBufferException e) {
-                throw new UncheckedIOException(e);
-              }
-            })
+            point ->
+                parse(
+                    NumberDataPoint.parser(),
+                    toByteArray(MetricRequestMarshaler.NumberDataPointMarshaler.create(point))))
         .collect(Collectors.toList());
+  }
+
+  private static List<SummaryDataPoint> toSummaryDataPoints(
+      Collection<DoubleSummaryPointData> points) {
+    return points.stream()
+        .map(
+            point ->
+                parse(
+                    SummaryDataPoint.parser(),
+                    toByteArray(MetricRequestMarshaler.SummaryDataPointMarshaler.create(point))))
+        .collect(Collectors.toList());
+  }
+
+  private static List<HistogramDataPoint> toHistogramDataPoints(
+      Collection<DoubleHistogramPointData> points) {
+    return points.stream()
+        .map(
+            point ->
+                parse(
+                    HistogramDataPoint.parser(),
+                    toByteArray(MetricRequestMarshaler.HistogramDataPointMarshaler.create(point))))
+        .collect(Collectors.toList());
+  }
+
+  private static Metric toProtoMetric(MetricData metricData) {
+    return parse(
+        Metric.parser(), toByteArray(MetricRequestMarshaler.MetricMarshaler.create(metricData)));
+  }
+
+  private static List<ResourceMetrics> toProtoResourceMetrics(
+      Collection<MetricData> metricDataList) {
+    ExportMetricsServiceRequest exportRequest =
+        parse(
+            ExportMetricsServiceRequest.parser(),
+            toByteArray(MetricRequestMarshaler.create(metricDataList)));
+    return exportRequest.getResourceMetricsList();
+  }
+
+  private static <T extends Message> T parse(Parser<T> parser, byte[] serialized) {
+    final T result;
+    try {
+      result = parser.parseFrom(serialized);
+    } catch (InvalidProtocolBufferException e) {
+      throw new UncheckedIOException(e);
+    }
+    // Our marshaler should produce the exact same length of serialized output (for example, field
+    // default values are not outputted), so we check that here. The output itself may have slightly
+    // different ordering, mostly due to the way we don't output oneof values in field order all the
+    // tieme. If the lengths are equal and the resulting protos are equal, the marshaling is
+    // guaranteed to be valid.
+    assertThat(result.getSerializedSize()).isEqualTo(serialized.length);
+    return result;
   }
 
   private static byte[] toByteArray(Marshaler marshaler) {
