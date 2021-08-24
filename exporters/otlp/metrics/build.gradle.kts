@@ -10,9 +10,9 @@ description = "OpenTelemetry Protocol Metrics Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.metrics")
 
 testSets {
-    create("testGrpcNetty")
-    create("testGrpcNettyShaded")
-    create("testGrpcOkhttp")
+  create("testGrpcNetty")
+  create("testGrpcNettyShaded")
+  create("testGrpcOkhttp")
 }
 
 dependencies {

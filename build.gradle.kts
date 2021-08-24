@@ -9,10 +9,12 @@ plugins {
 }
 
 if (!JavaVersion.current().isJava11Compatible()) {
-  throw GradleException("JDK 11 or higher is required to build. " +
-    "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
-    "have it, please check that the JAVA_HOME environment variable is pointing at the " +
-    "JDK 11 installation.")
+  throw GradleException(
+    "JDK 11 or higher is required to build. " +
+      "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
+      "have it, please check that the JAVA_HOME environment variable is pointing at the " +
+      "JDK 11 installation."
+  )
 }
 
 // Nebula plugin will not configure if .git doesn't exist, let's allow building on it by stubbing it
@@ -53,6 +55,16 @@ nexusPublishing {
     // the timeout for waiting for the repository to close to a comfortable 50 minutes.
     maxRetries.set(300)
     delayBetween.set(Duration.ofSeconds(10))
+  }
+}
+
+allprojects {
+  apply(plugin = "com.diffplug.spotless")
+
+  spotless {
+    kotlinGradle {
+      ktlint("0.42.1").userData(mapOf("indent_size" to "2", "continuation_indent_size" to "2"))
+    }
   }
 }
 

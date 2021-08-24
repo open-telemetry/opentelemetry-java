@@ -1,8 +1,8 @@
 plugins {
-    id("otel.java-conventions")
-    id("otel.publish-conventions")
+  id("otel.java-conventions")
+  id("otel.publish-conventions")
 
-    id("otel.animalsniffer-conventions")
+  id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Protocol HTTP Metrics Exporter"
