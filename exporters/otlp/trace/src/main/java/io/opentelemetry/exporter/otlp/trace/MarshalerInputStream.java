@@ -25,6 +25,8 @@ package io.opentelemetry.exporter.otlp.trace;
 import com.google.common.io.ByteStreams;
 import io.grpc.Drainable;
 import io.grpc.KnownLength;
+import io.opentelemetry.exporter.otlp.internal.CodedOutputStream;
+import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

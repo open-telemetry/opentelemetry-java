@@ -5,7 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
-import com.google.protobuf.Message;
+import io.opentelemetry.exporter.otlp.internal.CodedOutputStream;
+import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import java.io.IOException;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -16,12 +17,12 @@ final class ProtoRequestBody extends RequestBody {
 
   private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
 
-  private final Message proto;
-  private final long contentLength;
+  private final Marshaler marshaler;
+  private final int contentLength;
 
-  ProtoRequestBody(Message proto) {
-    this.proto = proto;
-    contentLength = proto.getSerializedSize();
+  ProtoRequestBody(Marshaler marshaler) {
+    this.marshaler = marshaler;
+    contentLength = marshaler.getSerializedSize();
   }
 
   @Override
@@ -36,6 +37,9 @@ final class ProtoRequestBody extends RequestBody {
 
   @Override
   public void writeTo(@NotNull BufferedSink bufferedSink) throws IOException {
-    proto.writeTo(bufferedSink.outputStream());
+    CodedOutputStream cos =
+        CodedOutputStream.newInstance(bufferedSink.outputStream(), contentLength);
+    marshaler.writeTo(cos);
+    cos.flush();
   }
 }

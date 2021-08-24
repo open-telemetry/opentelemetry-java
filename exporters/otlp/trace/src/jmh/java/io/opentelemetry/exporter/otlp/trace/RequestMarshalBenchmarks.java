@@ -5,7 +5,9 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
+import io.opentelemetry.exporter.otlp.internal.CodedOutputStream;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
+import io.opentelemetry.exporter.otlp.internal.TraceRequestMarshaler;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,16 +53,14 @@ public class RequestMarshalBenchmarks {
   @Benchmark
   @Threads(1)
   public ByteArrayOutputStream createCustomMarshal(RequestMarshalState state) {
-    TraceMarshaler.RequestMarshaler requestMarshaler =
-        TraceMarshaler.RequestMarshaler.create(state.spanDataList);
+    TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
     return new ByteArrayOutputStream(requestMarshaler.getSerializedSize());
   }
 
   @Benchmark
   @Threads(1)
   public ByteArrayOutputStream marshalCustom(RequestMarshalState state) throws IOException {
-    TraceMarshaler.RequestMarshaler requestMarshaler =
-        TraceMarshaler.RequestMarshaler.create(state.spanDataList);
+    TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
     ByteArrayOutputStream customOutput =
         new ByteArrayOutputStream(requestMarshaler.getSerializedSize());
     CodedOutputStream cos =

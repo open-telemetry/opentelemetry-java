@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.trace;
+package io.opentelemetry.exporter.otlp.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,7 +13,6 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -33,7 +32,7 @@ import org.jeasy.random.EasyRandomParameters;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
-class TraceMarshalerTest {
+class TraceRequestMarshalerTest {
 
   private static final EasyRandom EASY_RANDOM =
       new EasyRandom(
@@ -148,8 +147,8 @@ class TraceMarshalerTest {
         ExportTraceServiceRequest.newBuilder()
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(Collections.singletonList(span)))
             .build();
-    TraceMarshaler.RequestMarshaler requestMarshaler =
-        TraceMarshaler.RequestMarshaler.create(Collections.singletonList(span));
+    TraceRequestMarshaler requestMarshaler =
+        TraceRequestMarshaler.create(Collections.singletonList(span));
 
     byte[] protoOutput = protoRequest.toByteArray();
 
@@ -196,8 +195,7 @@ class TraceMarshalerTest {
         ExportTraceServiceRequest.newBuilder()
             .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spanDataList))
             .build();
-    TraceMarshaler.RequestMarshaler requestMarshaler =
-        TraceMarshaler.RequestMarshaler.create(spanDataList);
+    TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(spanDataList);
     int protoSize = protoRequest.getSerializedSize();
     assertThat(requestMarshaler.getSerializedSize()).isEqualTo(protoSize);
 

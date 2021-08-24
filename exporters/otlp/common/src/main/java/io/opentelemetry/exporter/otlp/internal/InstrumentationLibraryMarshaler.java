@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.trace;
+package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.context.internal.shaded.WeakConcurrentMap;
 import io.opentelemetry.proto.common.v1.internal.InstrumentationLibrary;
