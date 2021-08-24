@@ -60,7 +60,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 // Fill deprecated APIs before removing them after users get a chance to migrate.
-class MetricRequestMarshalerTest {
+class MetricsRequestMarshalerTest {
 
   private static final Attributes KV_ATTR = Attributes.of(stringKey("k"), "v");
 
@@ -728,7 +728,7 @@ class MetricRequestMarshalerTest {
             point ->
                 parse(
                     NumberDataPoint.parser(),
-                    toByteArray(MetricRequestMarshaler.NumberDataPointMarshaler.create(point))))
+                    toByteArray(MetricsRequestMarshaler.NumberDataPointMarshaler.create(point))))
         .collect(Collectors.toList());
   }
 
@@ -739,7 +739,7 @@ class MetricRequestMarshalerTest {
             point ->
                 parse(
                     SummaryDataPoint.parser(),
-                    toByteArray(MetricRequestMarshaler.SummaryDataPointMarshaler.create(point))))
+                    toByteArray(MetricsRequestMarshaler.SummaryDataPointMarshaler.create(point))))
         .collect(Collectors.toList());
   }
 
@@ -750,13 +750,13 @@ class MetricRequestMarshalerTest {
             point ->
                 parse(
                     HistogramDataPoint.parser(),
-                    toByteArray(MetricRequestMarshaler.HistogramDataPointMarshaler.create(point))))
+                    toByteArray(MetricsRequestMarshaler.HistogramDataPointMarshaler.create(point))))
         .collect(Collectors.toList());
   }
 
   private static Metric toProtoMetric(MetricData metricData) {
     return parse(
-        Metric.parser(), toByteArray(MetricRequestMarshaler.MetricMarshaler.create(metricData)));
+        Metric.parser(), toByteArray(MetricsRequestMarshaler.MetricMarshaler.create(metricData)));
   }
 
   private static List<ResourceMetrics> toProtoResourceMetrics(
@@ -764,7 +764,7 @@ class MetricRequestMarshalerTest {
     ExportMetricsServiceRequest exportRequest =
         parse(
             ExportMetricsServiceRequest.parser(),
-            toByteArray(MetricRequestMarshaler.create(metricDataList)));
+            toByteArray(MetricsRequestMarshaler.create(metricDataList)));
     return exportRequest.getResourceMetricsList();
   }
 

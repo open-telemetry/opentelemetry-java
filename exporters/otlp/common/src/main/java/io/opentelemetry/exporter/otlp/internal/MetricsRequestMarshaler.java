@@ -47,15 +47,15 @@ import java.util.Map;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class MetricRequestMarshaler extends MarshalerWithSize implements Marshaler {
+public final class MetricsRequestMarshaler extends MarshalerWithSize implements Marshaler {
 
   private final ResourceMetricsMarshaler[] resourceMetricsMarshalers;
 
   /**
-   * Returns a {@link MetricRequestMarshaler} that can be used to convert the provided {@link
+   * Returns a {@link MetricsRequestMarshaler} that can be used to convert the provided {@link
    * MetricData} into a serialized OTLP ExportMetricsServiceRequest.
    */
-  public static MetricRequestMarshaler create(Collection<MetricData> metricDataList) {
+  public static MetricsRequestMarshaler create(Collection<MetricData> metricDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Marshaler>>> resourceAndLibraryMap =
         groupByResourceAndLibrary(metricDataList);
 
@@ -82,10 +82,10 @@ public final class MetricRequestMarshaler extends MarshalerWithSize implements M
               instrumentationLibrarySpansMarshalers);
     }
 
-    return new MetricRequestMarshaler(resourceMetricsMarshalers);
+    return new MetricsRequestMarshaler(resourceMetricsMarshalers);
   }
 
-  private MetricRequestMarshaler(ResourceMetricsMarshaler[] resourceMetricsMarshalers) {
+  private MetricsRequestMarshaler(ResourceMetricsMarshaler[] resourceMetricsMarshalers) {
     super(calculateSize(resourceMetricsMarshalers));
     this.resourceMetricsMarshalers = resourceMetricsMarshalers;
   }
