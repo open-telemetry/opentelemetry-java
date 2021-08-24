@@ -91,11 +91,6 @@ class MetricMarshalerTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setAsInt(5)
                 .addExemplars(
                     Exemplar.newBuilder()
@@ -104,11 +99,6 @@ class MetricMarshalerTest {
                             KeyValue.newBuilder()
                                 .setKey("test")
                                 .setValue(stringValue("value"))
-                                .build())
-                        .addFilteredLabels(
-                            io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                .setKey("test")
-                                .setValue("value")
                                 .build())
                         .setSpanId(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 2}))
                         .setTraceId(
@@ -134,11 +124,6 @@ class MetricMarshalerTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setAsInt(7)
                 .build());
   }
@@ -156,11 +141,6 @@ class MetricMarshalerTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setAsDouble(5.1)
                 .build());
     assertThat(
@@ -180,11 +160,6 @@ class MetricMarshalerTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setAsDouble(7.1)
                 .build());
   }
@@ -208,11 +183,6 @@ class MetricMarshalerTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setCount(5)
                 .setSum(14.2)
                 .addQuantileValues(
@@ -248,11 +218,6 @@ class MetricMarshalerTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setCount(9)
                 .setSum(18.3)
                 .addQuantileValues(
@@ -296,11 +261,6 @@ class MetricMarshalerTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setCount(6)
                 .setSum(14.2)
                 .addBucketCounts(1)
@@ -320,11 +280,6 @@ class MetricMarshalerTest {
                             KeyValue.newBuilder()
                                 .setKey("test")
                                 .setValue(stringValue("value"))
-                                .build())
-                        .addFilteredLabels(
-                            io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                .setKey("test")
-                                .setValue("value")
                                 .build())
                         .setSpanId(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 2}))
                         .setTraceId(
@@ -368,11 +323,6 @@ class MetricMarshalerTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsInt(5)
                                 .build())
                         .build())
@@ -408,11 +358,6 @@ class MetricMarshalerTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsDouble(5.1)
                                 .build())
                         .build())
@@ -452,11 +397,6 @@ class MetricMarshalerTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsInt(5)
                                 .build())
                         .build())
@@ -492,11 +432,6 @@ class MetricMarshalerTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsDouble(5.1)
                                 .build())
                         .build())
@@ -532,11 +467,6 @@ class MetricMarshalerTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsInt(5)
                                 .build())
                         .build())
@@ -568,11 +498,6 @@ class MetricMarshalerTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsDouble(5.1)
                                 .build())
                         .build())
@@ -617,11 +542,6 @@ class MetricMarshalerTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setCount(5)
                                 .setSum(33d)
                                 .addQuantileValues(
@@ -677,11 +597,6 @@ class MetricMarshalerTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setCount(33)
                                 .setSum(4.0)
                                 .addBucketCounts(33)
@@ -727,11 +642,6 @@ class MetricMarshalerTest {
                                         .setKey("k")
                                         .setValue(stringValue("v"))
                                         .build()))
-                            .addLabels(
-                                io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                    .setKey("k")
-                                    .setValue("v")
-                                    .build())
                             .setAsDouble(5.0)
                             .build())
                     .build())

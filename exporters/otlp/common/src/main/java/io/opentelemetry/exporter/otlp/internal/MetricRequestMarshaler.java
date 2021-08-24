@@ -1,5 +1,8 @@
 package io.opentelemetry.exporter.otlp.internal;
 
+import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.collector.metrics.v1.internal.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.metrics.v1.internal.AggregationTemporality;
 import io.opentelemetry.proto.metrics.v1.internal.Gauge;
@@ -785,13 +788,17 @@ public final class MetricRequestMarshaler extends MarshalerWithSize implements M
             io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_DOUBLE_FIELD_NUMBER;
       }
 
+      byte[] spanId = MarshalerUtil.EMPTY_BYTES;
+      if (exemplar.getSpanId() != null) {
+        spanId = OtelEncodingUtils.bytesFromBase16(exemplar.getSpanId(), SpanId.getLength());
+      }
+      byte[] traceId = MarshalerUtil.EMPTY_BYTES;
+      if (exemplar.getTraceId() != null) {
+        traceId = OtelEncodingUtils.bytesFromBase16(exemplar.getTraceId(), TraceId.getLength());
+      }
+
       return new ExemplarMarshaler(
-          exemplar.getEpochNanos(),
-          value,
-          valueFieldNumber,
-          MarshalerUtil.toBytes(exemplar.getSpanId()),
-          MarshalerUtil.toBytes(exemplar.getTraceId()),
-          attributeMarshalers);
+          exemplar.getEpochNanos(), value, valueFieldNumber, spanId, traceId, attributeMarshalers);
     }
 
     private ExemplarMarshaler(
