@@ -49,8 +49,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-// Fill deprecated APIs before removing them after users get a chance to migrate.
-@SuppressWarnings("deprecation")
 class MetricAdapterTest {
 
   private static final Attributes KV_ATTR = Attributes.of(stringKey("k"), "v");
@@ -84,11 +82,6 @@ class MetricAdapterTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setAsInt(5)
                 .addExemplars(
                     Exemplar.newBuilder()
@@ -97,11 +90,6 @@ class MetricAdapterTest {
                             KeyValue.newBuilder()
                                 .setKey("test")
                                 .setValue(stringValue("value"))
-                                .build())
-                        .addFilteredLabels(
-                            io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                .setKey("test")
-                                .setValue("value")
                                 .build())
                         .setSpanId(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 2}))
                         .setTraceId(
@@ -127,11 +115,6 @@ class MetricAdapterTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setAsInt(7)
                 .build());
   }
@@ -149,11 +132,6 @@ class MetricAdapterTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setAsDouble(5.1)
                 .build());
     assertThat(
@@ -173,11 +151,6 @@ class MetricAdapterTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setAsDouble(7.1)
                 .build());
   }
@@ -201,11 +174,6 @@ class MetricAdapterTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setCount(5)
                 .setSum(14.2)
                 .addQuantileValues(
@@ -241,11 +209,6 @@ class MetricAdapterTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setCount(9)
                 .setSum(18.3)
                 .addQuantileValues(
@@ -289,11 +252,6 @@ class MetricAdapterTest {
                 .addAllAttributes(
                     singletonList(
                         KeyValue.newBuilder().setKey("k").setValue(stringValue("v")).build()))
-                .addLabels(
-                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                        .setKey("k")
-                        .setValue("v")
-                        .build())
                 .setCount(6)
                 .setSum(14.2)
                 .addBucketCounts(1)
@@ -313,11 +271,6 @@ class MetricAdapterTest {
                             KeyValue.newBuilder()
                                 .setKey("test")
                                 .setValue(stringValue("value"))
-                                .build())
-                        .addFilteredLabels(
-                            io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                .setKey("test")
-                                .setValue("value")
                                 .build())
                         .setSpanId(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 2}))
                         .setTraceId(
@@ -361,11 +314,6 @@ class MetricAdapterTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsInt(5)
                                 .build())
                         .build())
@@ -401,11 +349,6 @@ class MetricAdapterTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsDouble(5.1)
                                 .build())
                         .build())
@@ -445,11 +388,6 @@ class MetricAdapterTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsInt(5)
                                 .build())
                         .build())
@@ -485,11 +423,6 @@ class MetricAdapterTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsDouble(5.1)
                                 .build())
                         .build())
@@ -525,11 +458,6 @@ class MetricAdapterTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsInt(5)
                                 .build())
                         .build())
@@ -561,11 +489,6 @@ class MetricAdapterTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setAsDouble(5.1)
                                 .build())
                         .build())
@@ -610,11 +533,6 @@ class MetricAdapterTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setCount(5)
                                 .setSum(33d)
                                 .addQuantileValues(
@@ -670,11 +588,6 @@ class MetricAdapterTest {
                                             .setKey("k")
                                             .setValue(stringValue("v"))
                                             .build()))
-                                .addLabels(
-                                    io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                        .setKey("k")
-                                        .setValue("v")
-                                        .build())
                                 .setCount(33)
                                 .setSum(4.0)
                                 .addBucketCounts(33)
@@ -720,11 +633,6 @@ class MetricAdapterTest {
                                         .setKey("k")
                                         .setValue(stringValue("v"))
                                         .build()))
-                            .addLabels(
-                                io.opentelemetry.proto.common.v1.StringKeyValue.newBuilder()
-                                    .setKey("k")
-                                    .setValue("v")
-                                    .build())
                             .setAsDouble(5.0)
                             .build())
                     .build())
