@@ -27,7 +27,12 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** {@link Marshaler} to convert SDK {@link SpanData} to OTLP ExportTraceServiceRequest. */
+/**
+ * {@link Marshaler} to convert SDK {@link SpanData} to OTLP ExportTraceServiceRequest.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class TraceRequestMarshaler extends MarshalerWithSize implements Marshaler {
 
   // In practice, there is often only one thread that calls this code in the BatchSpanProcessor so
