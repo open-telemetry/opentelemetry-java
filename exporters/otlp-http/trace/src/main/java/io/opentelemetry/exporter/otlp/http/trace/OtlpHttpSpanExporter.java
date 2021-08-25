@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.exporter.otlp.internal.GrpcStatusUtil;
+import io.opentelemetry.exporter.otlp.internal.ProtoRequestBody;
 import io.opentelemetry.exporter.otlp.internal.TraceRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;

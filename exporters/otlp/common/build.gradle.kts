@@ -23,8 +23,9 @@ dependencies {
   // contains internal code.
   compileOnly(project(":proto"))
 
-  // Similar to above note about :proto, we include a helper shared by the gRPC exporters but do not
-  // want to impose the gRPC dependency on all of our consumers.
+  // Similar to above note about :proto, we include helpers shared by gRPC or okhttp exporters but
+  // do not want to impose these dependency on all of our consumers.
+  compileOnly("com.squareup.okhttp3:okhttp")
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
   compileOnly("io.grpc:grpc-okhttp")
