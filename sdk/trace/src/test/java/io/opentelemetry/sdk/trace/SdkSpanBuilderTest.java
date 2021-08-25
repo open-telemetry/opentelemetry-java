@@ -153,6 +153,24 @@ class SdkSpanBuilderTest {
   }
 
   @Test
+  void linkAttributeLength() {
+    SpanLimits spanLimits = SpanLimits.builder().setMaxAttributeLength(25).build();
+    TracerProvider tracerProvider = SdkTracerProvider.builder().setSpanLimits(spanLimits).build();
+    SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
+    TestUtils.validateAttributeLengthLimits(
+        spanLimits,
+        attributes -> spanBuilder.addLink(sampledSpanContext, attributes),
+        () -> {
+          RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+          try {
+            return span.toSpanData().getLinks().get(0).getAttributes();
+          } finally {
+            span.end();
+          }
+        });
+  }
+
+  @Test
   void addLink_NoEffectAfterStartSpan() {
     SpanBuilder spanBuilder = sdkTracer.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(sampledSpanContext);

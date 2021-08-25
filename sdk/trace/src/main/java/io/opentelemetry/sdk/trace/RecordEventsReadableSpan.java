@@ -26,7 +26,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -266,7 +265,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         return this;
       }
       if (attributes == null) {
-        attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
+        attributes =
+            new AttributesMap(
+                spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeLength());
       }
 
       attributes.put(key, value);
@@ -305,7 +306,10 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         EventData.create(
             clock.now(),
             name,
-            applyAttributesLimit(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
+            AttributeUtil.applyAttributesLimit(
+                attributes,
+                spanLimits.getMaxNumberOfAttributesPerEvent(),
+                spanLimits.getMaxAttributeLength()),
             totalAttributeCount));
     return this;
   }
@@ -323,27 +327,12 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         EventData.create(
             unit.toNanos(timestamp),
             name,
-            applyAttributesLimit(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
+            AttributeUtil.applyAttributesLimit(
+                attributes,
+                spanLimits.getMaxNumberOfAttributesPerEvent(),
+                spanLimits.getMaxAttributeLength()),
             totalAttributeCount));
     return this;
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  static Attributes applyAttributesLimit(final Attributes attributes, final int limit) {
-    if (attributes.isEmpty() || attributes.size() <= limit) {
-      return attributes;
-    }
-
-    AttributesBuilder result = Attributes.builder();
-    int i = 0;
-    for (Map.Entry<AttributeKey<?>, Object> entry : attributes.asMap().entrySet()) {
-      if (i >= limit) {
-        break;
-      }
-      result.put((AttributeKey) entry.getKey(), entry.getValue());
-      i++;
-    }
-    return result.build();
   }
 
   private void addTimedEvent(EventData timedEvent) {

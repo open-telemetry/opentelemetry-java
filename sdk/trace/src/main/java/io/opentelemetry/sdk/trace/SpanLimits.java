@@ -17,9 +17,9 @@ import javax.annotation.concurrent.Immutable;
  * io.opentelemetry.sdk.trace.SdkTracerProviderBuilder#setSpanLimits(java.util.function.Supplier)}
  * which supplies dynamic configs when queried.
  */
-@AutoValue
-@Immutable
 public abstract class SpanLimits {
+
+  static final int DEFAULT_SPAN_MAX_ATTRIBUTE_LENGTH = Integer.MAX_VALUE;
 
   private static final SpanLimits DEFAULT = new SpanLimitsBuilder().build();
 
@@ -38,49 +38,61 @@ public abstract class SpanLimits {
       int maxNumEvents,
       int maxNumLinks,
       int maxNumAttributesPerEvent,
-      int maxNumAttributesPerLink) {
-    return new AutoValue_SpanLimits(
+      int maxNumAttributesPerLink,
+      int maxAttributeLength) {
+    return new AutoValue_SpanLimits_SpanLimitsValue(
         maxNumAttributes,
         maxNumEvents,
         maxNumLinks,
         maxNumAttributesPerEvent,
-        maxNumAttributesPerLink);
+        maxNumAttributesPerLink,
+        maxAttributeLength);
   }
 
   /**
-   * Returns the global default max number of attributes per {@link Span}.
+   * Returns the max number of attributes per {@link Span}.
    *
-   * @return the global default max number of attributes per {@link Span}.
+   * @return the max number of attributes per {@link Span}.
    */
   public abstract int getMaxNumberOfAttributes();
 
   /**
-   * Returns the global default max number of events per {@link Span}.
+   * Returns the max number of events per {@link Span}.
    *
-   * @return the global default max number of events per {@code Span}.
+   * @return the max number of events per {@code Span}.
    */
   public abstract int getMaxNumberOfEvents();
 
   /**
-   * Returns the global default max number of links per {@link Span}.
+   * Returns the max number of links per {@link Span}.
    *
-   * @return the global default max number of links per {@code Span}.
+   * @return the max number of links per {@code Span}.
    */
   public abstract int getMaxNumberOfLinks();
 
   /**
-   * Returns the global default max number of attributes per event.
+   * Returns the max number of attributes per event.
    *
-   * @return the global default max number of attributes per event.
+   * @return the max number of attributes per event.
    */
   public abstract int getMaxNumberOfAttributesPerEvent();
 
   /**
-   * Returns the global default max number of attributes per link.
+   * Returns the max number of attributes per link.
    *
-   * @return the global default max number of attributes per link.
+   * @return the max number of attributes per link.
    */
   public abstract int getMaxNumberOfAttributesPerLink();
+
+  /**
+   * Returns the max number of characters for attribute strings. For string array attributes,
+   * applies to each entry individually.
+   *
+   * @return the max number of characters for attribute strings.
+   */
+  public int getMaxAttributeLength() {
+    return DEFAULT_SPAN_MAX_ATTRIBUTE_LENGTH;
+  }
 
   /**
    * Returns a {@link SpanLimitsBuilder} initialized to the same property values as the current
@@ -95,6 +107,19 @@ public abstract class SpanLimits {
         .setMaxNumberOfEvents(getMaxNumberOfEvents())
         .setMaxNumberOfLinks(getMaxNumberOfLinks())
         .setMaxNumberOfAttributesPerEvent(getMaxNumberOfAttributesPerEvent())
-        .setMaxNumberOfAttributesPerLink(getMaxNumberOfAttributesPerLink());
+        .setMaxNumberOfAttributesPerLink(getMaxNumberOfAttributesPerLink())
+        .setMaxAttributeLength(getMaxAttributeLength());
+  }
+
+  @AutoValue
+  @Immutable
+  abstract static class SpanLimitsValue extends SpanLimits {
+
+    /**
+     * Override {@link SpanLimits#getMaxAttributeLength()} to be abstract so autovalue can implement
+     * it.
+     */
+    @Override
+    public abstract int getMaxAttributeLength();
   }
 }

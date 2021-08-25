@@ -22,15 +22,16 @@ public final class SpanLimitsBuilder {
   private int maxNumLinks = DEFAULT_SPAN_MAX_NUM_LINKS;
   private int maxNumAttributesPerEvent = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT;
   private int maxNumAttributesPerLink = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK;
+  private int maxAttributeLength = SpanLimits.DEFAULT_SPAN_MAX_ATTRIBUTE_LENGTH;
 
   SpanLimitsBuilder() {}
 
   /**
-   * Sets the global default max number of attributes per {@link Span}.
+   * Sets the max number of attributes per {@link Span}.
    *
-   * @param maxNumberOfAttributes the global default max number of attributes per {@link Span}. It
-   *     must be positive otherwise {@link #build()} will throw an exception.
+   * @param maxNumberOfAttributes the max number of attributes per {@link Span}. Must be positive.
    * @return this.
+   * @throws IllegalArgumentException if {@code maxNumberOfAttributes} is not positive.
    */
   public SpanLimitsBuilder setMaxNumberOfAttributes(int maxNumberOfAttributes) {
     Utils.checkArgument(maxNumberOfAttributes > 0, "maxNumberOfAttributes must be greater than 0");
@@ -39,11 +40,11 @@ public final class SpanLimitsBuilder {
   }
 
   /**
-   * Sets the global default max number of events per {@link Span}.
+   * Sets the max number of events per {@link Span}.
    *
-   * @param maxNumberOfEvents the global default max number of events per {@link Span}. It must be
-   *     positive otherwise {@link #build()} will throw an exception.
+   * @param maxNumberOfEvents the max number of events per {@link Span}. Must be positive.
    * @return this.
+   * @throws IllegalArgumentException if {@code maxNumberOfEvents} is not positive.
    */
   public SpanLimitsBuilder setMaxNumberOfEvents(int maxNumberOfEvents) {
     Utils.checkArgument(maxNumberOfEvents > 0, "maxNumberOfEvents must be greater than 0");
@@ -52,11 +53,11 @@ public final class SpanLimitsBuilder {
   }
 
   /**
-   * Sets the global default max number of links per {@link Span}.
+   * Sets the max number of links per {@link Span}.
    *
-   * @param maxNumberOfLinks the global default max number of links per {@link Span}. It must be
-   *     positive otherwise {@link #build()} will throw an exception.
+   * @param maxNumberOfLinks the max number of links per {@link Span}. Must be positive.
    * @return this.
+   * @throws IllegalArgumentException if {@code maxNumberOfLinks} is not positive.
    */
   public SpanLimitsBuilder setMaxNumberOfLinks(int maxNumberOfLinks) {
     Utils.checkArgument(maxNumberOfLinks > 0, "maxNumberOfLinks must be greater than 0");
@@ -65,11 +66,11 @@ public final class SpanLimitsBuilder {
   }
 
   /**
-   * Sets the global default max number of attributes per event.
+   * Sets the max number of attributes per event.
    *
-   * @param maxNumberOfAttributesPerEvent the global default max number of attributes per event. It
-   *     must be positive otherwise {@link #build()} will throw an exception.
+   * @param maxNumberOfAttributesPerEvent the max number of attributes per event. Must be positive.
    * @return this.
+   * @throws IllegalArgumentException if {@code maxNumberOfAttributesPerEvent} is not positive.
    */
   public SpanLimitsBuilder setMaxNumberOfAttributesPerEvent(int maxNumberOfAttributesPerEvent) {
     Utils.checkArgument(
@@ -79,16 +80,30 @@ public final class SpanLimitsBuilder {
   }
 
   /**
-   * Sets the global default max number of attributes per link.
+   * Sets the max number of attributes per link.
    *
-   * @param maxNumberOfAttributesPerLink the global default max number of attributes per link. It
-   *     must be positive otherwise {@link #build()} will throw an exception.
+   * @param maxNumberOfAttributesPerLink the max number of attributes per link. Must be positive.
    * @return this.
+   * @throws IllegalArgumentException if {@code maxNumberOfAttributesPerLink} is not positive.
    */
   public SpanLimitsBuilder setMaxNumberOfAttributesPerLink(int maxNumberOfAttributesPerLink) {
     Utils.checkArgument(
         maxNumberOfAttributesPerLink > 0, "maxNumberOfAttributesPerLink must be greater than 0");
     this.maxNumAttributesPerLink = maxNumberOfAttributesPerLink;
+    return this;
+  }
+
+  /**
+   * Sets the max number of characters for attribute strings. For string array attributes, applies
+   * to each entry individually.
+   *
+   * @param maxAttributeLength the max characters for attribute strings. Must not be negative.
+   * @return this.
+   * @throws IllegalArgumentException if {@code maxAttributeLength} is negative.
+   */
+  public SpanLimitsBuilder setMaxAttributeLength(int maxAttributeLength) {
+    Utils.checkArgument(maxAttributeLength > -1, "maxAttributeLength must be non-negative");
+    this.maxAttributeLength = maxAttributeLength;
     return this;
   }
 
@@ -99,6 +114,7 @@ public final class SpanLimitsBuilder {
         maxNumEvents,
         maxNumLinks,
         maxNumAttributesPerEvent,
-        maxNumAttributesPerLink);
+        maxNumAttributesPerLink,
+        maxAttributeLength);
   }
 }

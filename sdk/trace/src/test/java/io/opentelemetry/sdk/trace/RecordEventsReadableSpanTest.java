@@ -687,6 +687,32 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
+  void attributeLength() {
+    SpanLimits spanLimits = SpanLimits.builder().setMaxAttributeLength(25).build();
+    RecordEventsReadableSpan span = createTestSpan(spanLimits);
+    try {
+      TestUtils.validateAttributeLengthLimits(
+          spanLimits, span::setAllAttributes, () -> span.toSpanData().getAttributes());
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void eventAttributeLength() {
+    SpanLimits spanLimits = SpanLimits.builder().setMaxAttributeLength(25).build();
+    RecordEventsReadableSpan span = createTestSpan(spanLimits);
+    try {
+      TestUtils.validateAttributeLengthLimits(
+          spanLimits,
+          attributes -> span.addEvent("foo", attributes),
+          () -> span.toSpanData().getEvents().get(0).getAttributes());
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
   void droppingAttributes() {
     final int maxNumberOfAttributes = 8;
     SpanLimits spanLimits =
@@ -914,8 +940,10 @@ class RecordEventsReadableSpanTest {
 
   private RecordEventsReadableSpan createTestSpanWithAttributes(
       Map<AttributeKey, Object> attributes) {
+    SpanLimits spanLimits = SpanLimits.getDefault();
     AttributesMap attributesMap =
-        new AttributesMap(SpanLimits.getDefault().getMaxNumberOfAttributes());
+        new AttributesMap(
+            spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeLength());
     attributes.forEach(attributesMap::put);
     return createTestSpan(
         SpanKind.INTERNAL,
@@ -1031,7 +1059,7 @@ class RecordEventsReadableSpanTest {
     TestClock clock = TestClock.create();
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
-    final AttributesMap attributesWithCapacity = new AttributesMap(32);
+    final AttributesMap attributesWithCapacity = new AttributesMap(32, Integer.MAX_VALUE);
     attributes.forEach((key, value) -> attributesWithCapacity.put((AttributeKey) key, value));
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
