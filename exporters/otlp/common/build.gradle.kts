@@ -39,12 +39,16 @@ dependencies {
   testImplementation("io.grpc:grpc-testing")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 
+  jmhImplementation(project(":proto"))
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation(project(":sdk-extensions:resources"))
 }
 
 wire {
-  root("opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest")
+  root(
+    "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest",
+    "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest",
+  )
 
   custom {
     customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"

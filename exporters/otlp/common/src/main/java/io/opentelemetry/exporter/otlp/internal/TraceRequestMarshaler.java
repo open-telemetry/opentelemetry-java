@@ -20,10 +20,8 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -551,20 +549,18 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
 
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>>
       groupByResourceAndLibrary(Collection<SpanData> spanDataList) {
-    // expectedMaxSize of 8 means initial map capacity of 16 to match HashMap
-    IdentityHashMap<Resource, Map<InstrumentationLibraryInfo, List<SpanMarshaler>>> result =
-        new IdentityHashMap<>(8);
     ThreadLocalCache threadLocalCache = getThreadLocalCache();
-    for (SpanData spanData : spanDataList) {
-      Map<InstrumentationLibraryInfo, List<SpanMarshaler>> libraryInfoListMap =
-          result.computeIfAbsent(spanData.getResource(), unused -> new IdentityHashMap<>(8));
-      List<SpanMarshaler> spanList =
-          libraryInfoListMap.computeIfAbsent(
-              spanData.getInstrumentationLibraryInfo(), unused -> new ArrayList<>());
-      spanList.add(SpanMarshaler.create(spanData, threadLocalCache));
+    try {
+      return MarshalerUtil.groupByResourceAndLibrary(
+          spanDataList,
+          // TODO(anuraaga): Replace with an internal SdkData type of interface that exposes these
+          // two.
+          SpanData::getResource,
+          SpanData::getInstrumentationLibraryInfo,
+          data -> SpanMarshaler.create(data, threadLocalCache));
+    } finally {
+      threadLocalCache.idBytesCache.clear();
     }
-    threadLocalCache.idBytesCache.clear();
-    return result;
   }
 
   private static int toProtoSpanKind(SpanKind kind) {
