@@ -10,11 +10,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
-import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
-import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
-import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc.MetricsServiceFutureStub;
+import io.opentelemetry.exporter.otlp.internal.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -35,7 +31,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
-  private final MetricsServiceFutureStub metricsService;
+  private final MarshalerMetricsServiceGrpc.MetricsServiceFutureStub metricsService;
   private final ManagedChannel managedChannel;
   private final long timeoutNanos;
 
@@ -49,7 +45,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   OtlpGrpcMetricExporter(ManagedChannel channel, long timeoutNanos) {
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
-    metricsService = MetricsServiceGrpc.newFutureStub(channel);
+    metricsService = MarshalerMetricsServiceGrpc.newFutureStub(channel);
   }
 
   /**
@@ -60,13 +56,10 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
-    ExportMetricsServiceRequest exportMetricsServiceRequest =
-        ExportMetricsServiceRequest.newBuilder()
-            .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(metrics))
-            .build();
+    MetricsRequestMarshaler request = MetricsRequestMarshaler.create(metrics);
 
     final CompletableResultCode result = new CompletableResultCode();
-    MetricsServiceFutureStub exporter;
+    MarshalerMetricsServiceGrpc.MetricsServiceFutureStub exporter;
     if (timeoutNanos > 0) {
       exporter = metricsService.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
     } else {
@@ -74,7 +67,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     }
 
     Futures.addCallback(
-        exporter.export(exportMetricsServiceRequest),
+        exporter.export(request),
         new FutureCallback<ExportMetricsServiceResponse>() {
           @Override
           public void onSuccess(@Nullable ExportMetricsServiceResponse response) {
