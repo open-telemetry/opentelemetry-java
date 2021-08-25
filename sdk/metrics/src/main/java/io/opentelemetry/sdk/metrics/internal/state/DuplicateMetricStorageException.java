@@ -16,5 +16,4 @@ class DuplicateMetricStorageException extends IllegalArgumentException {
     // TODO: Better error messages including async vs. sync instruments.
     super(message + " Found: " + existing + ", Want: " + next);
   }
-
 }
