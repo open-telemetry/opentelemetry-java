@@ -94,10 +94,10 @@ public final class SpanLimitsBuilder {
   }
 
   /**
-   * Sets the max number of characters for attribute strings. For string array attributes, applies
-   * to each entry individually.
+   * Sets the max number of characters for string attribute values. For string array attributes
+   * values, applies to each entry individually.
    *
-   * @param maxAttributeLength the max characters for attribute strings. Must not be negative.
+   * @param maxAttributeLength the max characters for string attribute values. Must not be negative.
    * @return this.
    * @throws IllegalArgumentException if {@code maxAttributeLength} is negative.
    */
