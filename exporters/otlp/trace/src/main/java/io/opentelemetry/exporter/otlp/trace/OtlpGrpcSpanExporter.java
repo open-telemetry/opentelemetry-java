@@ -8,7 +8,6 @@ package io.opentelemetry.exporter.otlp.trace;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
@@ -179,14 +178,29 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = new CompletableResultCode();
-    managedChannel.notifyWhenStateChanged(ConnectivityState.SHUTDOWN, result::succeed);
-    if (managedChannel.isShutdown()) {
+    if (managedChannel.isTerminated()) {
       return result.succeed();
     }
-    managedChannel.shutdown();
     this.spansSeen.unbind();
     this.spansExportedSuccess.unbind();
     this.spansExportedFailure.unbind();
+    managedChannel.shutdown();
+    // Remove thread creation if gRPC adds an asynchronous shutdown API.
+    // https://github.com/grpc/grpc-java/issues/8432
+    Thread thread =
+        new Thread(
+            () -> {
+              try {
+                managedChannel.awaitTermination(10, TimeUnit.SECONDS);
+              } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.log(Level.WARNING, "Failed to shutdown the gRPC channel", e);
+                result.fail();
+              }
+              result.succeed();
+            });
+    thread.setName("grpc-cleanup");
+    thread.start();
     return result;
   }
 
