@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 
 /** There are multiple metrics defined with the same name/identity. */
 class DuplicateMetricStorageException extends IllegalArgumentException {
+  private static final long serialVersionUID = 1547329629200005982L;
 
   DuplicateMetricStorageException(
       MetricDescriptor existing, MetricDescriptor next, String message) {
@@ -16,5 +17,4 @@ class DuplicateMetricStorageException extends IllegalArgumentException {
     super(message + " Found: " + existing + ", Want: " + next);
   }
 
-  private static final long serialVersionUID = 1547329629200005982L;
 }
