@@ -5,7 +5,7 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
 
 /** Builder of metric {@link View}s. */
