@@ -8,13 +8,13 @@
 If you are looking for an all-in-one, easy-to-install auto-instrumentation javaagent, please visit our sibling project,
 [opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation).
 
-If you are looking for examples on how to use the OpenTelemetry APIs to write your own manual instrumentation, or 
-how to set up the OpenTelemetry Java SDK, please visit our [quickstart guide](QUICKSTART.md). We also have 
+If you are looking for examples on how to use the OpenTelemetry APIs to write your own manual instrumentation, or
+how to set up the OpenTelemetry Java SDK, please visit our [quickstart guide](QUICKSTART.md). We also have
 fully-functioning example projects in our [examples sub-module](examples), which can be a good way to get
 your feet wet in a local environment.
 
 If you are looking to get involved with the project, please read our [contributing guide](CONTRIBUTING.md). We welcome
-contributions! 
+contributions!
 
 If you are looking for a general overview of the OpenTelemetry project, please visit the [official website](https://opentelemetry.io).
 
@@ -23,9 +23,9 @@ If you are looking for a general overview of the OpenTelemetry project, please v
 We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#java-sdk).
 
 We use [GitHub Discussions](https://github.com/open-telemetry/opentelemetry-java/discussions)
-for support or general questions. Feel free to drop us a line. 
+for support or general questions. Feel free to drop us a line.
 
-We are also present in the `#otel-java` channel in the [CNCF slack](https://slack.cncf.io/). 
+We are also present in the `#otel-java` channel in the [CNCF slack](https://slack.cncf.io/).
 Please join us for more informal discussions.
 
 ## Overview
@@ -59,7 +59,7 @@ Both API and SDK extensions consist of various additional components which are e
 to keep them from growing too large.
 
 We still aim to provide the same level of quality and guarantee for them as for the core components.
-Please don't hesitate to use them if you find them useful. 
+Please don't hesitate to use them if you find them useful.
 
 ## Project setup and contribute
 
@@ -146,7 +146,7 @@ We strongly recommend using our published BOM to keep all dependency versions in
 
 ```groovy
 repositories {
-	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 dependencies {
@@ -161,7 +161,7 @@ of the APIs.
 
 ## Releases
 
-See the [VERSIONING.md](VERSIONING.md) document for our policies for releases and compatibility 
+See the [VERSIONING.md](VERSIONING.md) document for our policies for releases and compatibility
 guarantees.
 
 Check out information about the [latest release](https://github.com/open-telemetry/opentelemetry-java/releases).
