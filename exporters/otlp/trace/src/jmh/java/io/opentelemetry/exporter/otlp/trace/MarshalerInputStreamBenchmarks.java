@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.opentelemetry.exporter.otlp.internal.TraceRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;

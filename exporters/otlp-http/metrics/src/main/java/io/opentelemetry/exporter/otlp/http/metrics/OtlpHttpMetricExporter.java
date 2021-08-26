@@ -5,8 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.http.metrics;
 
-import io.opentelemetry.exporter.otlp.internal.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;

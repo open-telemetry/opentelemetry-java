@@ -13,7 +13,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.exporter.otlp.internal.SslUtil;
+import io.opentelemetry.exporter.otlp.internal.grpc.SslUtil;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
