@@ -34,7 +34,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import javax.annotation.Nullable;
 
-/** Adapter from {@link Marshaler} to gRPC types. */
+/**
+ * Adapter from {@link Marshaler} to gRPC types.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 // Adapted from gRPC ProtoInputStream but using our Marshaller
 // https://github.com/grpc/grpc-java/blob/2c2ebaebd5a93acec92fbd2708faac582db99371/protobuf-lite/src/main/java/io/grpc/protobuf/lite/ProtoInputStream.java
 public final class MarshalerInputStream extends InputStream implements Drainable, KnownLength {

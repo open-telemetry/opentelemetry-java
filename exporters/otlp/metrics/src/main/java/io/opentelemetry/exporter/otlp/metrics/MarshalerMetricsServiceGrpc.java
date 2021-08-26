@@ -49,15 +49,7 @@ final class MarshalerMetricsServiceGrpc {
       getExportMethod;
 
   static MetricsServiceFutureStub newFutureStub(io.grpc.Channel channel) {
-    io.grpc.stub.AbstractStub.StubFactory<MetricsServiceFutureStub> factory =
-        new io.grpc.stub.AbstractStub.StubFactory<MetricsServiceFutureStub>() {
-          @Override
-          public MetricsServiceFutureStub newStub(
-              io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
-            return new MetricsServiceFutureStub(channel, callOptions);
-          }
-        };
-    return MetricsServiceFutureStub.newStub(factory, channel);
+    return MetricsServiceFutureStub.newStub(MetricsServiceFutureStub::new, channel);
   }
 
   static final class MetricsServiceFutureStub

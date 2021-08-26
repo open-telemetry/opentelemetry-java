@@ -23,6 +23,12 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
+/**
+ * Utilities for setting up SSL with gRPC channels.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class SslUtil {
 
   /**
