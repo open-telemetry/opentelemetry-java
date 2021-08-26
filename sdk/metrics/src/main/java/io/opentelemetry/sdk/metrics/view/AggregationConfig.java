@@ -9,9 +9,9 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import java.util.function.Function;
 
-public abstract class AggregatorConfig {
+public abstract class AggregationConfig {
   // Don't allow out-of-package instantiation.
-  AggregatorConfig() {}
+  AggregationConfig() {}
 
   /**
    * Returns the appropriate aggregator factory for a given instrument.
@@ -20,9 +20,9 @@ public abstract class AggregatorConfig {
    */
   public abstract AggregatorFactory config(InstrumentDescriptor instrument);
 
-  static AggregatorConfig make(
+  static AggregationConfig make(
       String name, Function<InstrumentDescriptor, AggregatorFactory> factory) {
-    return new AggregatorConfig() {
+    return new AggregationConfig() {
 
       @Override
       public AggregatorFactory config(InstrumentDescriptor instrument) {

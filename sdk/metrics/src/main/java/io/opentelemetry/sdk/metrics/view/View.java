@@ -28,7 +28,7 @@ public abstract class View {
   public abstract String getDescription();
 
   /** The aggregation used for this view. */
-  public abstract AggregatorConfig getAggregation();
+  public abstract AggregationConfig getAggregation();
 
   public abstract LabelsProcessorFactory getLabelsProcessorFactory();
 
@@ -39,7 +39,7 @@ public abstract class View {
   static View create(
       String name,
       String description,
-      AggregatorConfig aggregation,
+      AggregationConfig aggregation,
       LabelsProcessorFactory labelsProcessorFactory) {
     return new AutoValue_View(name, description, aggregation, labelsProcessorFactory);
   }

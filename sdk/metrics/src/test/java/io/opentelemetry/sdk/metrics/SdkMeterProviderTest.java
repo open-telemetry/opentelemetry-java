@@ -20,8 +20,8 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
+import io.opentelemetry.sdk.metrics.view.AggregationConfig;
 import io.opentelemetry.sdk.metrics.view.AggregationExtension;
-import io.opentelemetry.sdk.metrics.view.AggregatorConfig;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
@@ -644,7 +644,7 @@ public class SdkMeterProviderTest {
   }
 
   private static void registerViewForAllTypes(
-      SdkMeterProviderBuilder meterProviderBuilder, AggregatorConfig factory) {
+      SdkMeterProviderBuilder meterProviderBuilder, AggregationConfig factory) {
     for (InstrumentType instrumentType : InstrumentType.values()) {
       meterProviderBuilder.registerView(
           InstrumentSelector.builder().setInstrumentType(instrumentType).build(),

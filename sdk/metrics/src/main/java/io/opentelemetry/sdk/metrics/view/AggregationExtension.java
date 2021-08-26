@@ -13,8 +13,8 @@ public class AggregationExtension {
   private AggregationExtension() {}
 
   /** Records a count of all measurements seen, reported as a monotonic Sum. */
-  public static AggregatorConfig count(AggregationTemporality temporality) {
-    return AggregatorConfig.make("count", i -> AggregatorFactory.count(temporality));
+  public static AggregationConfig count(AggregationTemporality temporality) {
+    return AggregationConfig.make("count", i -> AggregatorFactory.count(temporality));
   }
 
   /**
@@ -23,7 +23,7 @@ public class AggregationExtension {
    *
    * <p>Reports as a Summary metric.
    */
-  public static AggregatorConfig minMaxSumCount() {
-    return AggregatorConfig.make("minMaxSumCount", i -> AggregatorFactory.minMaxSumCount());
+  public static AggregationConfig minMaxSumCount() {
+    return AggregationConfig.make("minMaxSumCount", i -> AggregatorFactory.minMaxSumCount());
   }
 }

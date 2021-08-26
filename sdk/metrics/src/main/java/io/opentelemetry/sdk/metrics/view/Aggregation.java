@@ -16,13 +16,13 @@ public class Aggregation {
   private Aggregation() {}
 
   /** The None Aggregation will ignore/drop all Instrument Measurements. */
-  public static AggregatorConfig none() {
-    return AggregatorConfig.make("none", i -> null);
+  public static AggregationConfig none() {
+    return AggregationConfig.make("none", i -> null);
   }
 
   /** The default aggregation for an instrument will be chosen. */
-  public static AggregatorConfig defaultAggregation() {
-    return AggregatorConfig.make(
+  public static AggregationConfig defaultAggregation() {
+    return AggregationConfig.make(
         "default",
         i -> {
           switch (i.getType()) {
@@ -43,34 +43,34 @@ public class Aggregation {
   }
 
   /** Instrument measurements will be combined into a metric Sum. */
-  public static AggregatorConfig sum(AggregationTemporality temporality) {
-    return AggregatorConfig.make("sum", i -> AggregatorFactory.sum(temporality));
+  public static AggregationConfig sum(AggregationTemporality temporality) {
+    return AggregationConfig.make("sum", i -> AggregatorFactory.sum(temporality));
   }
 
-  public static AggregatorConfig sum() {
+  public static AggregationConfig sum() {
     return sum(AggregationTemporality.CUMULATIVE);
   }
 
   // TODO - allow "is_monotonic" as configuration of sums?
 
   /** Remembers the last seen measurement and reports as a Gauge. */
-  public static AggregatorConfig lastValue() {
-    return AggregatorConfig.make("lastValue", i -> AggregatorFactory.lastValue());
+  public static AggregationConfig lastValue() {
+    return AggregationConfig.make("lastValue", i -> AggregatorFactory.lastValue());
   }
 
   /** Aggregates measurements using the best available Histogram. */
-  public static AggregatorConfig histogram() {
+  public static AggregationConfig histogram() {
     return explictBucketHistogram();
   }
 
-  public static AggregatorConfig explictBucketHistogram() {
+  public static AggregationConfig explictBucketHistogram() {
     return explictBucketHistogram(
         AggregationTemporality.CUMULATIVE, DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
   }
 
-  public static AggregatorConfig explictBucketHistogram(
+  public static AggregationConfig explictBucketHistogram(
       AggregationTemporality temporality, List<Double> bucketBoundaries) {
-    return AggregatorConfig.make(
+    return AggregationConfig.make(
         "explicitBucketHistogram", i -> AggregatorFactory.histogram(bucketBoundaries, temporality));
   }
 
