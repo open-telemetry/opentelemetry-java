@@ -5,9 +5,9 @@
 
 package io.opentelemetry.exporter.otlp.http.metrics;
 
-import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
+import io.opentelemetry.exporter.otlp.internal.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.ProtoRequestBody;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -35,8 +35,6 @@ import okio.Okio;
 @ThreadSafe
 public final class OtlpHttpMetricExporter implements MetricExporter {
 
-  private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
-
   private static final Logger internalLogger =
       Logger.getLogger(OtlpHttpMetricExporter.class.getName());
 
@@ -63,17 +61,13 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
-    ExportMetricsServiceRequest exportMetricsServiceRequest =
-        ExportMetricsServiceRequest.newBuilder()
-            .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(metrics))
-            .build();
+    MetricsRequestMarshaler exportRequest = MetricsRequestMarshaler.create(metrics);
 
     Request.Builder requestBuilder = new Request.Builder().url(endpoint);
     if (headers != null) {
       requestBuilder.headers(headers);
     }
-    RequestBody requestBody =
-        RequestBody.create(exportMetricsServiceRequest.toByteArray(), PROTOBUF_MEDIA_TYPE);
+    RequestBody requestBody = new ProtoRequestBody(exportRequest);
     if (compressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");
       requestBuilder.post(gzipRequestBody(requestBody));

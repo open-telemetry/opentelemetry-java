@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.exporter.otlp.internal.ProtoRequestBody;
 import io.opentelemetry.exporter.otlp.internal.TraceRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
