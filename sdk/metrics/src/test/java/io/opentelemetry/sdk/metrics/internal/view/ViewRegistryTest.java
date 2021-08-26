@@ -39,6 +39,8 @@ class ViewRegistryTest {
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isEqualTo(view);
     // this one hasn't been configured, so it gets the default still.
     assertThat(
@@ -46,6 +48,8 @@ class ViewRegistryTest {
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
   }
 
@@ -67,6 +71,8 @@ class ViewRegistryTest {
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isSameAs(view);
     // this one hasn't been configured, so it gets the default still.
     assertThat(
@@ -74,6 +80,8 @@ class ViewRegistryTest {
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
   }
 
@@ -103,12 +111,16 @@ class ViewRegistryTest {
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(2)
+        .element(0)
         .isEqualTo(view2);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isEqualTo(view1);
   }
 
@@ -131,12 +143,16 @@ class ViewRegistryTest {
                 InstrumentDescriptor.create(
                     "overridden", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isEqualTo(view);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "overrides", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isEqualTo(view);
     // this one hasn't been configured, so it gets the default still..
     assertThat(
@@ -144,6 +160,8 @@ class ViewRegistryTest {
                 InstrumentDescriptor.create(
                     "default", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
   }
 
@@ -155,36 +173,48 @@ class ViewRegistryTest {
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.HISTOGRAM, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.OBSERVABLE_SUM, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.OBSERVABLE_GAUGE, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
     assertThat(
             viewRegistry.findViews(
                 InstrumentDescriptor.create(
                     "", "", "", InstrumentType.OBSERVABLE_UP_DOWN_SUM, InstrumentValueType.LONG),
                 INSTRUMENTATION_LIBRARY_INFO))
+        .hasSize(1)
+        .element(0)
         .isSameAs(ViewRegistry.DEFAULT_VIEW);
   }
 }
