@@ -199,6 +199,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
               }
               result.succeed();
             });
+    thread.setDaemon(true);
     thread.setName("grpc-cleanup");
     thread.start();
     return result;
