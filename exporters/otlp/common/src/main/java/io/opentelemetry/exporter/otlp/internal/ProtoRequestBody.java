@@ -10,7 +10,12 @@ import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
 
-/** A {@link RequestBody} for reading from a {@link Marshaler}. */
+/**
+ * A {@link RequestBody} for reading from a {@link Marshaler}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class ProtoRequestBody extends RequestBody {
 
   private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
