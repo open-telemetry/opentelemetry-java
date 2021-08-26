@@ -50,6 +50,14 @@ public abstract class SpanLimits {
   }
 
   /**
+   * Create an instance.
+   *
+   * @deprecated Will be made package private in 2.0.0.
+   */
+  @Deprecated
+  protected SpanLimits() {}
+
+  /**
    * Returns the max number of attributes per {@link Span}.
    *
    * @return the max number of attributes per {@link Span}.

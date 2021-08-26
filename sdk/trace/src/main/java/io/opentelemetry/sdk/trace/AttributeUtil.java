@@ -5,13 +5,13 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static java.util.stream.Collectors.toList;
-
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 final class AttributeUtil {
 
@@ -32,7 +32,7 @@ final class AttributeUtil {
         return attributes;
       }
       boolean allValidLength =
-          attributes.asMap().values().stream().allMatch(value -> isValidLength(value, lengthLimit));
+          allMatch(attributes.asMap().values(), value -> isValidLength(value, lengthLimit));
       if (allValidLength) {
         return attributes;
       }
@@ -53,9 +53,18 @@ final class AttributeUtil {
 
   private static boolean isValidLength(Object value, int lengthLimit) {
     if (value instanceof List) {
-      return ((List<?>) value).stream().allMatch(entry -> isValidLength(entry, lengthLimit));
+      return allMatch((List<?>) value, entry -> isValidLength(entry, lengthLimit));
     } else if (value instanceof String) {
       return ((String) value).length() < lengthLimit;
+    }
+    return true;
+  }
+
+  private static <T> boolean allMatch(Iterable<T> iterable, Predicate<T> predicate) {
+    for (T value : iterable) {
+      if (!predicate.test(value)) {
+        return false;
+      }
     }
     return true;
   }
@@ -69,8 +78,12 @@ final class AttributeUtil {
       return value;
     }
     if (value instanceof List) {
-      return ((List<?>) value)
-          .stream().map(s -> applyAttributeLengthLimit(s, lengthLimit)).collect(toList());
+      List<?> values = (List<?>) value;
+      List<Object> response = new ArrayList<>(values.size());
+      for (Object entry : values) {
+        response.add(applyAttributeLengthLimit(entry, lengthLimit));
+      }
+      return response;
     }
     if (value instanceof String) {
       String str = (String) value;
