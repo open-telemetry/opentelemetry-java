@@ -128,9 +128,7 @@ public class MetricsRequestMarshalerBenchmark {
   public ByteArrayOutputStream marshaler() throws IOException {
     MetricsRequestMarshaler marshaler = MetricsRequestMarshaler.create(METRICS);
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    CodedOutputStream cos =
-        CodedOutputStream.newInstance(
-            bos, CodedOutputStream.computePreferredBufferSize(marshaler.getSerializedSize()));
+    CodedOutputStream cos = CodedOutputStream.newInstance(bos);
     marshaler.writeTo(cos);
     cos.flush();
     return bos;

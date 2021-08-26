@@ -61,27 +61,27 @@ import java.util.logging.Logger;
 // - No support for ByteString or ByteBuffer
 // - No support for message set extensions
 // - No support for Unsafe
+// - Allow resetting and use a ThreadLocal instance
 //
-// Unneeded lines of code are deleted as is, without any modifications otherwise.
 @SuppressWarnings({"UngroupedOverloads", "InlineMeSuggester"})
 public abstract class CodedOutputStream {
   private static final Logger logger = Logger.getLogger(CodedOutputStream.class.getName());
 
   /** The buffer size used in {@link #newInstance(OutputStream)}. */
-  static final int DEFAULT_BUFFER_SIZE = 4096;
+  private static final int DEFAULT_BUFFER_SIZE;
 
-  /**
-   * Returns the buffer size to efficiently write dataLength bytes to this CodedOutputStream. Used
-   * by AbstractMessageLite.
-   *
-   * @return the buffer size to efficiently write dataLength bytes to this CodedOutputStream.
-   */
-  public static int computePreferredBufferSize(int dataLength) {
-    if (dataLength > DEFAULT_BUFFER_SIZE) {
-      return DEFAULT_BUFFER_SIZE;
+  static {
+    int bufferSize = 50 * 1024;
+    try {
+      bufferSize = Integer.parseInt(System.getProperty("otel.experimental.otlp.buffer-size"));
+    } catch (Throwable t) {
+      // Ignore.
     }
-    return dataLength;
+    DEFAULT_BUFFER_SIZE = bufferSize;
   }
+
+  private static final ThreadLocal<OutputStreamEncoder> THREAD_LOCAL_CODED_OUTPUT_STREAM =
+      new ThreadLocal<>();
 
   /**
    * Create a new {@code CodedOutputStream} wrapping the given {@code OutputStream}.
@@ -91,19 +91,14 @@ public abstract class CodedOutputStream {
    * debug.
    */
   public static CodedOutputStream newInstance(final OutputStream output) {
-    return newInstance(output, DEFAULT_BUFFER_SIZE);
-  }
-
-  /**
-   * Create a new {@code CodedOutputStream} wrapping the given {@code OutputStream} with a given
-   * buffer size.
-   *
-   * <p>NOTE: The provided {@link OutputStream} <strong>MUST NOT</strong> retain access or modify
-   * the provided byte arrays. Doing so may result in corrupted data, which would be difficult to
-   * debug.
-   */
-  public static CodedOutputStream newInstance(final OutputStream output, final int bufferSize) {
-    return new OutputStreamEncoder(output, bufferSize);
+    OutputStreamEncoder cos = THREAD_LOCAL_CODED_OUTPUT_STREAM.get();
+    if (cos == null) {
+      cos = new OutputStreamEncoder(output);
+      THREAD_LOCAL_CODED_OUTPUT_STREAM.set(cos);
+    } else {
+      cos.reset(output);
+    }
+    return cos;
   }
 
   // Disallow construction outside of this class.
@@ -776,14 +771,7 @@ public abstract class CodedOutputStream {
     int totalBytesWritten;
 
     AbstractBufferedEncoder(int bufferSize) {
-      if (bufferSize < 0) {
-        throw new IllegalArgumentException("bufferSize must be >= 0");
-      }
-      // As an optimization, we require that the buffer be able to store at least 2
-      // varints so that we can buffer any integer write (tag + value). This reduces the
-      // number of range checks for a single write to 1 (i.e. if there is not enough space
-      // to buffer the tag+value, flush and then buffer it).
-      this.buffer = new byte[Math.max(bufferSize, MAX_VARINT_SIZE * 2)];
+      this.buffer = new byte[bufferSize];
       this.limit = buffer.length;
     }
 
@@ -899,14 +887,17 @@ public abstract class CodedOutputStream {
    * buffering to optimize writes to the {@link OutputStream}.
    */
   private static final class OutputStreamEncoder extends AbstractBufferedEncoder {
-    private final OutputStream out;
+    private OutputStream out;
 
-    OutputStreamEncoder(OutputStream out, int bufferSize) {
-      super(bufferSize);
-      if (out == null) {
-        throw new NullPointerException("out");
-      }
+    OutputStreamEncoder(OutputStream out) {
+      super(DEFAULT_BUFFER_SIZE);
       this.out = out;
+    }
+
+    void reset(OutputStream out) {
+      this.out = out;
+      position = 0;
+      totalBytesWritten = 0;
     }
 
     @Override

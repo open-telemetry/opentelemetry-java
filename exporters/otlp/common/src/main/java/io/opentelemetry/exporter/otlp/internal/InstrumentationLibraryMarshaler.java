@@ -36,9 +36,7 @@ final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
   private InstrumentationLibraryMarshaler(byte[] name, byte[] version) {
     super(computeSize(name, version));
     ByteArrayOutputStream bos = new ByteArrayOutputStream(getSerializedSize());
-    CodedOutputStream output =
-        CodedOutputStream.newInstance(
-            bos, CodedOutputStream.computePreferredBufferSize(getSerializedSize()));
+    CodedOutputStream output = CodedOutputStream.newInstance(bos);
     try {
       MarshalerUtil.marshalBytes(InstrumentationLibrary.NAME_FIELD_NUMBER, name, output);
       MarshalerUtil.marshalBytes(InstrumentationLibrary.VERSION_FIELD_NUMBER, version, output);

@@ -22,7 +22,7 @@ import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
 @BenchmarkMode({Mode.AverageTime})
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 10, time = 1)
 @Fork(1)
@@ -63,10 +63,7 @@ public class RequestMarshalBenchmarks {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
     ByteArrayOutputStream customOutput =
         new ByteArrayOutputStream(requestMarshaler.getSerializedSize());
-    CodedOutputStream cos =
-        CodedOutputStream.newInstance(
-            customOutput,
-            CodedOutputStream.computePreferredBufferSize(requestMarshaler.getSerializedSize()));
+    CodedOutputStream cos = CodedOutputStream.newInstance(customOutput);
     requestMarshaler.writeTo(cos);
     cos.flush();
     return customOutput;
