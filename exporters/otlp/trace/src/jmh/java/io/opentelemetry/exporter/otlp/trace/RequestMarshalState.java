@@ -50,7 +50,7 @@ public class RequestMarshalState {
   private static final SpanContext SPAN_CONTEXT =
       SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault());
 
-  @Param({"16"})
+  @Param({"16", "512"})
   int numSpans;
 
   List<SpanData> spanDataList;

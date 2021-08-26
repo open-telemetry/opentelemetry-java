@@ -14,7 +14,7 @@ import io.opentelemetry.context.Context;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public interface WriteableMetricStorage extends MetricStorage {
+public interface WriteableMetricStorage {
   /** Bind an efficient storage handle for a set of attributes. */
   BoundStorageHandle bind(Attributes attributes);
 

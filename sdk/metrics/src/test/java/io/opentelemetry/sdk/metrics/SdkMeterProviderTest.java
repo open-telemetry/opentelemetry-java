@@ -460,6 +460,100 @@ public class SdkMeterProviderTest {
 
   @Test
   @SuppressWarnings("unchecked")
+  void viewSdk_AllowMulitpleViewsPerSynchronousInstrument() {
+    InstrumentSelector selector =
+        InstrumentSelector.builder()
+            // TODO: Make instrument type optional.
+            .setInstrumentType(InstrumentType.HISTOGRAM)
+            .setInstrumentName("test")
+            .build();
+    SdkMeterProvider provider =
+        sdkMeterProviderBuilder
+            .registerView(
+                selector,
+                View.builder()
+                    .setName("not_test")
+                    .setDescription("not_desc")
+                    .setAggregatorFactory(AggregatorFactory.lastValue())
+                    .build())
+            .registerView(
+                selector,
+                View.builder()
+                    .setName("not_test_2")
+                    .setDescription("not_desc_2")
+                    .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.CUMULATIVE))
+                    .build())
+            .build();
+    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
+    DoubleHistogram histogram =
+        meter.histogramBuilder("test").setDescription("desc").setUnit("unit").build();
+    histogram.record(1.0);
+    assertThat(provider.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metric ->
+                assertThat(metric)
+                    .hasName("not_test")
+                    .hasDescription("not_desc")
+                    .hasUnit("unit")
+                    .hasDoubleGauge(),
+            metric ->
+                assertThat(metric)
+                    .hasName("not_test_2")
+                    .hasDescription("not_desc_2")
+                    .hasUnit("unit")
+                    .hasDoubleSum());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void viewSdk_AllowMulitpleViewsPerAsynchronousInstrument() {
+    InstrumentSelector selector =
+        InstrumentSelector.builder()
+            // TODO: Make instrument type optional.
+            .setInstrumentType(InstrumentType.OBSERVABLE_GAUGE)
+            .setInstrumentName("test")
+            .build();
+    SdkMeterProvider provider =
+        sdkMeterProviderBuilder
+            .registerView(
+                selector,
+                View.builder()
+                    .setName("not_test")
+                    .setDescription("not_desc")
+                    .setAggregatorFactory(AggregatorFactory.lastValue())
+                    .build())
+            .registerView(
+                selector,
+                View.builder()
+                    .setName("not_test_2")
+                    .setDescription("not_desc_2")
+                    .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.CUMULATIVE))
+                    .build())
+            .build();
+    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
+    meter
+        .gaugeBuilder("test")
+        .setDescription("desc")
+        .setUnit("unit")
+        .buildWithCallback(obs -> obs.observe(1.0));
+    assertThat(provider.collectAllMetrics())
+        .satisfiesExactlyInAnyOrder(
+            metric ->
+                assertThat(metric)
+                    .hasName("not_test")
+                    .hasDescription("not_desc")
+                    .hasUnit("unit")
+                    .hasDoubleGauge(),
+            metric ->
+                assertThat(metric)
+                    .hasName("not_test_2")
+                    .hasDescription("not_desc_2")
+                    .hasUnit("unit")
+                    .hasDoubleSum());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments_CumulativeCount() {
     registerViewForAllTypes(
         sdkMeterProviderBuilder, AggregatorFactory.count(AggregationTemporality.CUMULATIVE));

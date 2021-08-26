@@ -57,9 +57,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
     int written;
     if (message != null) {
       written = message.getSerializedSize();
-      CodedOutputStream cos =
-          CodedOutputStream.newInstance(
-              target, CodedOutputStream.computePreferredBufferSize(message.getSerializedSize()));
+      CodedOutputStream cos = CodedOutputStream.newInstance(target);
       message.writeTo(cos);
       cos.flush();
       message = null;
@@ -110,9 +108,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
 
   private static byte[] toByteArray(Marshaler message) throws IOException {
     ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getSerializedSize());
-    CodedOutputStream cos =
-        CodedOutputStream.newInstance(
-            bos, CodedOutputStream.computePreferredBufferSize(message.getSerializedSize()));
+    CodedOutputStream cos = CodedOutputStream.newInstance(bos);
     message.writeTo(cos);
     cos.flush();
     return bos.toByteArray();
