@@ -1,2 +1,22 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) java.lang.String getStatusMessage(byte[])
+		+++  NEW EXCEPTION: java.io.IOException
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.io.InputStream
+	+++  NEW CONSTRUCTOR: PUBLIC(+) MarshalerInputStream(io.opentelemetry.exporter.otlp.internal.Marshaler)
+	+++  NEW METHOD: PUBLIC(+) int available()
+	+++  NEW METHOD: PUBLIC(+) int drainTo(java.io.OutputStream)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) int read()
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) int read(byte[], int, int)
+		+++  NEW EXCEPTION: java.io.IOException
++++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.exporter.otlp.internal.grpc.SslUtil  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) void setTrustedCertificatesPem(io.grpc.ManagedChannelBuilder, byte[])
+		+++  NEW EXCEPTION: javax.net.ssl.SSLException

@@ -3,12 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal;
+package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import com.google.protobuf.CodedInputStream;
 import java.io.IOException;
 
-/** Utilities for working with gRPC status without requiring dependencies on gRPC. */
+/**
+ * Utilities for working with gRPC status without requiring dependencies on gRPC.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class GrpcStatusUtil {
 
   /** Parses the message out of a serialized gRPC Status. */

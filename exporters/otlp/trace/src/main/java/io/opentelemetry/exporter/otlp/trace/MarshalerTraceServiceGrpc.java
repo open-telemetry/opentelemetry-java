@@ -9,6 +9,7 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 
 import io.grpc.MethodDescriptor;
 import io.opentelemetry.exporter.otlp.internal.TraceRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
 import java.io.InputStream;
 
 // Adapted from the protoc generated code for TraceServiceGrpc.
