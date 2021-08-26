@@ -68,7 +68,7 @@ class MetricStorageRegistryTest {
         .hasMessageContaining("Metric with same name and different instrument already created.");
   }
 
-  private static final class TestMetricStorage implements WriteableMetricStorage {
+  private static final class TestMetricStorage implements MetricStorage, WriteableMetricStorage {
     private final MetricDescriptor descriptor;
 
     TestMetricStorage(MetricDescriptor descriptor) {
@@ -91,7 +91,8 @@ class MetricStorageRegistryTest {
     }
   }
 
-  private static final class OtherTestMetricStorage implements WriteableMetricStorage {
+  private static final class OtherTestMetricStorage
+      implements MetricStorage, WriteableMetricStorage {
     private final MetricDescriptor descriptor;
 
     OtherTestMetricStorage(MetricDescriptor descriptor) {

@@ -41,8 +41,7 @@ public final class ProtoRequestBody extends RequestBody {
 
   @Override
   public void writeTo(BufferedSink bufferedSink) throws IOException {
-    CodedOutputStream cos =
-        CodedOutputStream.newInstance(bufferedSink.outputStream(), contentLength);
+    CodedOutputStream cos = CodedOutputStream.newInstance(bufferedSink.outputStream());
     marshaler.writeTo(cos);
     cos.flush();
   }
