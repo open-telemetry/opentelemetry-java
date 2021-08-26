@@ -9,6 +9,10 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import java.util.function.Function;
 
+
+/**
+ * Configuration for how to perform aggregation of measurements.
+ */
 public abstract class AggregationConfig {
   // Don't allow out-of-package instantiation.
   AggregationConfig() {}
