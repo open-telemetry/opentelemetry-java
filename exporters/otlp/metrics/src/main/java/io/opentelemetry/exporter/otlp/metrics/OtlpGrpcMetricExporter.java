@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.opentelemetry.exporter.otlp.internal.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -143,12 +144,9 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode shutdown() {
-    try {
-      managedChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      logger.log(Level.WARNING, "Failed to shutdown the gRPC channel", e);
-      return CompletableResultCode.ofFailure();
+    if (managedChannel.isTerminated()) {
+      return CompletableResultCode.ofSuccess();
     }
-    return CompletableResultCode.ofSuccess();
+    return ManagedChannelUtil.shutdownChannel(managedChannel);
   }
 }
