@@ -15,6 +15,10 @@ testSets {
   create("testGrpcNetty")
   create("testGrpcNettyShaded")
   create("testGrpcOkhttp")
+
+  // Mainly to conveniently profile through IDEA. Don't add to check task, it's for
+  // manual invocation.
+  create("testSpanPipeline")
 }
 
 dependencies {
@@ -54,9 +58,14 @@ dependencies {
   add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
-  jmh(project(":proto"))
-  jmh(project(":sdk:testing"))
-  jmh("io.grpc:grpc-netty")
+  jmhImplementation(project(":proto"))
+  jmhImplementation(project(":sdk:testing"))
+  jmhRuntimeOnly("io.grpc:grpc-netty")
+  jmhImplementation("io.grpc:grpc-testing")
+
+  add("testSpanPipeline", project(":proto"))
+  add("testSpanPipeline", "io.grpc:grpc-protobuf")
+  add("testSpanPipeline", "io.grpc:grpc-testing")
 }
 
 tasks {
