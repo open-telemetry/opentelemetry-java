@@ -43,7 +43,8 @@ public final class AsynchronousMetricStorage implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     // TODO: Send metric descriptor to aggregator.
     Aggregator<T> aggregator =
-        view.getAggregatorFactory()
+        view.getAggregation()
+            .config(instrument)
             .create(resource, instrumentationLibraryInfo, instrument, metricDescriptor);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
@@ -79,7 +80,8 @@ public final class AsynchronousMetricStorage implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     // TODO: Send metric descriptor to aggregator.
     Aggregator<T> aggregator =
-        view.getAggregatorFactory()
+        view.getAggregation()
+            .config(instrument)
             .create(resource, instrumentationLibraryInfo, instrument, metricDescriptor);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);

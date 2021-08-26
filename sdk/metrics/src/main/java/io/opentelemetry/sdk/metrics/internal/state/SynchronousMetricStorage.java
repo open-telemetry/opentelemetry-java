@@ -44,7 +44,8 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
       long startEpochNanos) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
     final Aggregator<T> aggregator =
-        view.getAggregatorFactory()
+        view.getAggregation()
+            .config(instrumentDescriptor)
             .create(resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor);
     final LabelsProcessor labelsProcessor =
         view.getLabelsProcessorFactory()

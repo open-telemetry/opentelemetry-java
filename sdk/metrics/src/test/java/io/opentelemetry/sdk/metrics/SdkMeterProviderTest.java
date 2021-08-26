@@ -17,9 +17,11 @@ import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
+import io.opentelemetry.sdk.metrics.view.AggregationExtension;
+import io.opentelemetry.sdk.metrics.view.AggregatorConfig;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
@@ -163,9 +165,7 @@ public class SdkMeterProviderTest {
   void collectAllSyncInstruments_OverwriteTemporality() {
     sdkMeterProviderBuilder.registerView(
         InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
-        View.builder()
-            .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.DELTA))
-            .build());
+        View.builder().setAggregation(Aggregation.sum(AggregationTemporality.DELTA)).build());
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
 
@@ -218,7 +218,7 @@ public class SdkMeterProviderTest {
   @SuppressWarnings("unchecked")
   void collectAllSyncInstruments_DeltaCount() {
     registerViewForAllTypes(
-        sdkMeterProviderBuilder, AggregatorFactory.count(AggregationTemporality.DELTA));
+        sdkMeterProviderBuilder, AggregationExtension.count(AggregationTemporality.DELTA));
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
@@ -439,7 +439,7 @@ public class SdkMeterProviderTest {
                 View.builder()
                     .setName("not_test")
                     .setDescription("not_desc")
-                    .setAggregatorFactory(AggregatorFactory.lastValue())
+                    .setAggregation(Aggregation.lastValue())
                     .build())
             .build();
     Meter meter = provider.get(SdkMeterProviderTest.class.getName());
@@ -474,14 +474,14 @@ public class SdkMeterProviderTest {
                 View.builder()
                     .setName("not_test")
                     .setDescription("not_desc")
-                    .setAggregatorFactory(AggregatorFactory.lastValue())
+                    .setAggregation(Aggregation.lastValue())
                     .build())
             .registerView(
                 selector,
                 View.builder()
                     .setName("not_test_2")
                     .setDescription("not_desc_2")
-                    .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.CUMULATIVE))
+                    .setAggregation(Aggregation.sum(AggregationTemporality.CUMULATIVE))
                     .build())
             .build();
     Meter meter = provider.get(SdkMeterProviderTest.class.getName());
@@ -520,14 +520,14 @@ public class SdkMeterProviderTest {
                 View.builder()
                     .setName("not_test")
                     .setDescription("not_desc")
-                    .setAggregatorFactory(AggregatorFactory.lastValue())
+                    .setAggregation(Aggregation.lastValue())
                     .build())
             .registerView(
                 selector,
                 View.builder()
                     .setName("not_test_2")
                     .setDescription("not_desc_2")
-                    .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.CUMULATIVE))
+                    .setAggregation(Aggregation.sum(AggregationTemporality.CUMULATIVE))
                     .build())
             .build();
     Meter meter = provider.get(SdkMeterProviderTest.class.getName());
@@ -556,7 +556,7 @@ public class SdkMeterProviderTest {
   @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments_CumulativeCount() {
     registerViewForAllTypes(
-        sdkMeterProviderBuilder, AggregatorFactory.count(AggregationTemporality.CUMULATIVE));
+        sdkMeterProviderBuilder, AggregationExtension.count(AggregationTemporality.CUMULATIVE));
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
@@ -644,11 +644,11 @@ public class SdkMeterProviderTest {
   }
 
   private static void registerViewForAllTypes(
-      SdkMeterProviderBuilder meterProviderBuilder, AggregatorFactory factory) {
+      SdkMeterProviderBuilder meterProviderBuilder, AggregatorConfig factory) {
     for (InstrumentType instrumentType : InstrumentType.values()) {
       meterProviderBuilder.registerView(
           InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
-          View.builder().setAggregatorFactory(factory).build());
+          View.builder().setAggregation(factory).build());
     }
   }
 }
