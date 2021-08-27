@@ -43,7 +43,7 @@ public class AsynchronousMetricStorageTest {
             });
     view =
         View.builder()
-            .setAggregation(Aggregation.lastValue())
+            .setAggregation(Aggregation.LAST_VALUE)
             .setLabelsProcessorFactory(
                 (resource, instrumentationLibraryInfo, descriptor) -> spyLabelProcessor)
             .build();

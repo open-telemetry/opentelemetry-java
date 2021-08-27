@@ -15,7 +15,7 @@ import java.util.function.Function;
  *
  * <p>This class provides aggregation not included in the OpenTelemetry metrics SDK specification.
  */
-public class AggregationExtension {
+public final class AggregationExtension {
   private AggregationExtension() {}
 
   /**
