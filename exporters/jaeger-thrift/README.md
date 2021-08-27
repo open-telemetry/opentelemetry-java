@@ -2,7 +2,7 @@
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
-This is the OpenTelemetry exporter, sending span data to Jaeger via Thrift over HTTP. 
+This is the OpenTelemetry exporter, sending span data to Jaeger via Thrift over HTTP.
 
 ## Configuration
 

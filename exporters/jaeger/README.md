@@ -2,7 +2,7 @@
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
-This is the OpenTelemetry exporter, sending span data to Jaeger via gRPC. 
+This is the OpenTelemetry exporter, sending span data to Jaeger via gRPC.
 
 ## Configuration
 
@@ -27,7 +27,7 @@ As with the OpenTelemetry SDK itself, this exporter is compatible with Java 8+ a
 
 ## Proto files
 
-The proto files in this repository were copied over from the [Jaeger main repository][proto-origin]. 
+The proto files in this repository were copied over from the [Jaeger main repository][proto-origin].
 At this moment, they have to be manually synchronized, but a [discussion exists][proto-discussion] on how to properly consume them in a more appropriate manner.
 
 [proto-origin]: https://github.com/jaegertracing/jaeger/tree/5b8c1f40f932897b9322bf3f110d830536ae4c71/model/proto

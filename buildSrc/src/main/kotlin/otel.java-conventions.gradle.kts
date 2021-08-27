@@ -8,10 +8,9 @@ plugins {
   eclipse
   idea
 
-  id("com.diffplug.spotless")
-
   id("otel.errorprone-conventions")
   id("otel.jacoco-conventions")
+  id("otel.spotless-conventions")
 }
 
 val otelJava = extensions.create<OtelJavaExtension>("otelJava")
@@ -163,14 +162,6 @@ configurations.configureEach {
   resolutionStrategy {
     failOnVersionConflict()
     preferProjectModules()
-  }
-}
-
-spotless {
-  java {
-    googleJavaFormat("1.9")
-    licenseHeaderFile(rootProject.file("buildscripts/spotless.license.java"), "(package|import|class|// Includes work from:)")
-    targetExclude("build/**")
   }
 }
 
