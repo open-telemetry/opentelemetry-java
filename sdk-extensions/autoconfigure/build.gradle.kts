@@ -13,8 +13,8 @@ testSets {
   create("testFullConfig")
   create("testInitializeRegistersGlobal")
   create("testJaeger")
-  create("testPrometheus")
   create("testOtlp")
+  create("testPrometheus")
   create("testResourceDisabledByProperty")
   create("testResourceDisabledByEnv")
   create("testZipkin")
@@ -89,6 +89,7 @@ tasks {
   val testConfigError by existing(Test::class)
 
   val testFullConfig by existing(Test::class) {
+    environment("OTEL_METRICS_EXPORTER", "otlp")
     environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
     environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
@@ -100,20 +101,19 @@ tasks {
 
   val testInitializeRegistersGlobal by existing(Test::class) {
     environment("OTEL_TRACES_EXPORTER", "none")
-    environment("OTEL_METRICS_EXPORTER", "none")
   }
 
   val testJaeger by existing(Test::class) {
     environment("OTEL_TRACES_EXPORTER", "jaeger")
-    environment("OTEL_METRICS_EXPORTER", "none")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
   }
 
-  val testOtlp by existing(Test::class)
+  val testOtlp by existing(Test::class) {
+    environment("OTEL_METRICS_EXPORTER", "otlp")
+  }
 
   val testZipkin by existing(Test::class) {
     environment("OTEL_TRACES_EXPORTER", "zipkin")
-    environment("OTEL_METRICS_EXPORTER", "none")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
   }
 
@@ -137,7 +137,7 @@ tasks {
     environment("OTEL_METRICS_EXPORTER", "none")
   }
 
-  val check by existing {
+  check {
     dependsOn(
       testConfigError,
       testFullConfig,

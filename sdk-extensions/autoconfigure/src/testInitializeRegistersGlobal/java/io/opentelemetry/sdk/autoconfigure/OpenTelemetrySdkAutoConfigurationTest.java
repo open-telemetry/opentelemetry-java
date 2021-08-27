@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.autoconfigure;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.metrics.GlobalMeterProvider;
+import io.opentelemetry.api.metrics.internal.NoopMeterProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,5 +37,11 @@ class OpenTelemetrySdkAutoConfigurationTest {
     // SDK; in that case the get() method will return OpenTelemetrySdk and not
     // ObfuscatedOpenTelemetry
     assertThat(GlobalOpenTelemetry.get()).isNotSameAs(sdk);
+  }
+
+  @Test
+  void noMetricsSdk() {
+    // OTEL_METRICS_EXPORTER=none so the metrics SDK should be completely disabled.
+    assertThat(GlobalMeterProvider.get()).isSameAs(NoopMeterProvider.getInstance());
   }
 }
