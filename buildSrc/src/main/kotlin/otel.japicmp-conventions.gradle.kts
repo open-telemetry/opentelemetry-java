@@ -72,8 +72,7 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
 
         //this is needed so that we only consider the current artifact, and not dependencies
         isIgnoreMissingClasses = true
-        // double wildcards don't seem to work here (*.internal.*)
-        packageExcludes = listOf("*.internal", "io.opentelemetry.internal.shaded.jctools.*")
+        packageExcludes = listOf("*.internal", "*.internal.*", "io.opentelemetry.internal.shaded.jctools.*")
         val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
         txtOutputFile = apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_${baselineVersion}/${base.archivesName.get()}.txt") }
           ?: file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${base.archivesName.get()}.txt")
