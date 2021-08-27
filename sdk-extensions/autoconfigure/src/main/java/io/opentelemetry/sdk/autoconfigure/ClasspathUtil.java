@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+
 final class ClasspathUtil {
 
   @SuppressWarnings("UnusedException")
