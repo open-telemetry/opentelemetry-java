@@ -5,16 +5,26 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import java.util.function.Function;
 
-/** Unspecified extensions for configuring aggregation on Views. */
+/**
+ * Extensions for configuring aggregation on Views.
+ *
+ * <p>This class provides aggregation not included in the OpenTelemetry metrics SDK specification.
+ */
 public class AggregationExtension {
   private AggregationExtension() {}
 
-  /** Records a count of all measurements seen, reported as a monotonic Sum. */
-  public static AggregationConfig count(AggregationTemporality temporality) {
-    return AggregationConfig.make("count", i -> AggregatorFactory.count(temporality));
+  /**
+   * Records a count of all measurements seen, reported as a monotonic Sum.
+   *
+   * @param temporality either DELTA or CUMULATIVE reporting.
+   */
+  public static Aggregation count(AggregationTemporality temporality) {
+    return Aggregation.make("count", i -> AggregatorFactory.count(temporality));
   }
 
   /**
@@ -23,7 +33,18 @@ public class AggregationExtension {
    *
    * <p>Reports as a Summary metric.
    */
-  public static AggregationConfig minMaxSumCount() {
-    return AggregationConfig.make("minMaxSumCount", i -> AggregatorFactory.minMaxSumCount());
+  public static Aggregation minMaxSumCount() {
+    return Aggregation.make("minMaxSumCount", i -> AggregatorFactory.minMaxSumCount());
+  }
+
+  /**
+   * Constructs a custom aggregation of measurements into metrics.
+   *
+   * @param name The name of the aggregation.
+   * @param factory Constructor of AggregatorFactory per-instrument.
+   */
+  public static Aggregation custom(
+      String name, Function<InstrumentDescriptor, AggregatorFactory> factory) {
+    return Aggregation.make(name, factory);
   }
 }

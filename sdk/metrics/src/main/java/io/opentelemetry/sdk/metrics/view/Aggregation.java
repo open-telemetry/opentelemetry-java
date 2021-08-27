@@ -5,24 +5,38 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
-/** Factories for configuring aggregation on Views. */
-public class Aggregation {
+/**
+ * Configures how measurements are combined into metrics for {@link View}s.
+ *
+ * <p>Aggregation provides a set of built-in aggregations via static methods. Custom aggregation is
+ * not considered stable at this time, but is available on {@link AggregationExtension}.
+ */
+public abstract class Aggregation {
   private Aggregation() {}
 
+  /**
+   * Returns the appropriate aggregator factory for a given instrument.
+   *
+   * @return The AggregatorFactory or {@code null} if none.
+   */
+  public abstract AggregatorFactory config(InstrumentDescriptor instrument);
+
   /** The None Aggregation will ignore/drop all Instrument Measurements. */
-  public static AggregationConfig none() {
-    return AggregationConfig.make("none", i -> null);
+  public static Aggregation none() {
+    return Aggregation.make("none", i -> null);
   }
 
   /** The default aggregation for an instrument will be chosen. */
-  public static AggregationConfig defaultAggregation() {
-    return AggregationConfig.make(
+  public static Aggregation defaultAggregation() {
+    return Aggregation.make(
         "default",
         i -> {
           switch (i.getType()) {
@@ -43,34 +57,43 @@ public class Aggregation {
   }
 
   /** Instrument measurements will be combined into a metric Sum. */
-  public static AggregationConfig sum(AggregationTemporality temporality) {
-    return AggregationConfig.make("sum", i -> AggregatorFactory.sum(temporality));
+  public static Aggregation sum(AggregationTemporality temporality) {
+    return Aggregation.make("sum", i -> AggregatorFactory.sum(temporality));
   }
 
-  public static AggregationConfig sum() {
+  /** Instrument meaasurements will be combined into a metric Sum. */
+  public static Aggregation sum() {
     return sum(AggregationTemporality.CUMULATIVE);
   }
 
-  // TODO - allow "is_monotonic" as configuration of sums?
-
   /** Remembers the last seen measurement and reports as a Gauge. */
-  public static AggregationConfig lastValue() {
-    return AggregationConfig.make("lastValue", i -> AggregatorFactory.lastValue());
+  public static Aggregation lastValue() {
+    return Aggregation.make("lastValue", i -> AggregatorFactory.lastValue());
   }
 
   /** Aggregates measurements using the best available Histogram. */
-  public static AggregationConfig histogram() {
+  public static Aggregation histogram() {
     return explictBucketHistogram();
   }
 
-  public static AggregationConfig explictBucketHistogram() {
+  /**
+   * Aggregates measurments into an explicit bucket histogram using the default bucket boundaries.
+   */
+  public static Aggregation explictBucketHistogram() {
     return explictBucketHistogram(
         AggregationTemporality.CUMULATIVE, DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
   }
 
-  public static AggregationConfig explictBucketHistogram(
+  /**
+   * Aggregates measurments into an explicit bucket histogram.
+   *
+   * @param temporality Whether to report DELTA or CUMULATIVE metrics.
+   * @param bucketBoundaries A list of (inlcusive) upper bounds for the histogram. Should be in
+   *     order from lowest to highest.
+   */
+  public static Aggregation explictBucketHistogram(
       AggregationTemporality temporality, List<Double> bucketBoundaries) {
-    return AggregationConfig.make(
+    return Aggregation.make(
         "explicitBucketHistogram", i -> AggregatorFactory.histogram(bucketBoundaries, temporality));
   }
 
@@ -79,4 +102,19 @@ public class Aggregation {
           Arrays.asList(
               5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d, 5_000d, 7_500d,
               10_000d));
+
+  static Aggregation make(String name, Function<InstrumentDescriptor, AggregatorFactory> factory) {
+    return new Aggregation() {
+
+      @Override
+      public AggregatorFactory config(InstrumentDescriptor instrument) {
+        return factory.apply(instrument);
+      }
+
+      @Override
+      public String toString() {
+        return name;
+      }
+    };
+  }
 }

@@ -8,9 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
-import io.opentelemetry.sdk.metrics.view.AggregationExtension;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 
@@ -25,10 +23,7 @@ public class TestMeterProviderConfigurer implements SdkMeterProviderConfigurer {
     for (InstrumentType instrumentType : InstrumentType.values()) {
       meterProviderBuilder.registerView(
           InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
-          View.builder()
-              .setAggregation(AggregationExtension.count(AggregationTemporality.DELTA))
-              .setLabelsProcessorFactory(labelsProcessorFactory)
-              .build());
+          View.builder().setLabelsProcessorFactory(labelsProcessorFactory).build());
     }
   }
 }
