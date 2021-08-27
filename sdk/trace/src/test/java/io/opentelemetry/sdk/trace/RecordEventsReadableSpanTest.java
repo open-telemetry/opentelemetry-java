@@ -995,7 +995,7 @@ class RecordEventsReadableSpanTest {
     SpanLimits spanLimits = SpanLimits.getDefault();
     AttributesMap attributesMap =
         new AttributesMap(
-            spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeLength());
+            spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
     attributes.forEach(attributesMap::put);
     return createTestSpan(
         SpanKind.INTERNAL,

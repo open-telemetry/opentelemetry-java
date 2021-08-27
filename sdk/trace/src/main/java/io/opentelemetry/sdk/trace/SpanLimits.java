@@ -98,7 +98,7 @@ public abstract class SpanLimits {
    *
    * @return the max number of characters for attribute strings.
    */
-  public int getMaxAttributeLength() {
+  public int getMaxAttributeValueLength() {
     return DEFAULT_SPAN_MAX_ATTRIBUTE_LENGTH;
   }
 
@@ -116,7 +116,7 @@ public abstract class SpanLimits {
         .setMaxNumberOfLinks(getMaxNumberOfLinks())
         .setMaxNumberOfAttributesPerEvent(getMaxNumberOfAttributesPerEvent())
         .setMaxNumberOfAttributesPerLink(getMaxNumberOfAttributesPerLink())
-        .setMaxAttributeLength(getMaxAttributeLength());
+        .setMaxAttributeLength(getMaxAttributeValueLength());
   }
 
   @AutoValue
@@ -124,10 +124,10 @@ public abstract class SpanLimits {
   abstract static class SpanLimitsValue extends SpanLimits {
 
     /**
-     * Override {@link SpanLimits#getMaxAttributeLength()} to be abstract so autovalue can implement
-     * it.
+     * Override {@link SpanLimits#getMaxAttributeValueLength()} to be abstract so autovalue can
+     * implement it.
      */
     @Override
-    public abstract int getMaxAttributeLength();
+    public abstract int getMaxAttributeValueLength();
   }
 }

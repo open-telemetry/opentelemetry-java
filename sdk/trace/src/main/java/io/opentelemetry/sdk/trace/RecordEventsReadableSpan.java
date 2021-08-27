@@ -267,7 +267,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       if (attributes == null) {
         attributes =
             new AttributesMap(
-                spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeLength());
+                spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
       }
 
       attributes.put(key, value);
@@ -309,7 +309,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             AttributeUtil.applyAttributesLimit(
                 attributes,
                 spanLimits.getMaxNumberOfAttributesPerEvent(),
-                spanLimits.getMaxAttributeLength()),
+                spanLimits.getMaxAttributeValueLength()),
             totalAttributeCount));
     return this;
   }
@@ -330,7 +330,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             AttributeUtil.applyAttributesLimit(
                 attributes,
                 spanLimits.getMaxNumberOfAttributesPerEvent(),
-                spanLimits.getMaxAttributeLength()),
+                spanLimits.getMaxAttributeValueLength()),
             totalAttributeCount));
     return this;
   }

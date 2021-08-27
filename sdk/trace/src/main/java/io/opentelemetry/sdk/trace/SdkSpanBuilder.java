@@ -104,7 +104,7 @@ final class SdkSpanBuilder implements SpanBuilder {
             AttributeUtil.applyAttributesLimit(
                 attributes,
                 spanLimits.getMaxNumberOfAttributesPerLink(),
-                spanLimits.getMaxAttributeLength()),
+                spanLimits.getMaxAttributeValueLength()),
             totalAttributeCount));
     return this;
   }
@@ -234,7 +234,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     if (attributes == null) {
       this.attributes =
           new AttributesMap(
-              spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeLength());
+              spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
       attributes = this.attributes;
     }
     return attributes;
