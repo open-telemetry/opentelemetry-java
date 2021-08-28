@@ -31,21 +31,8 @@ public abstract class Aggregation {
           Arrays.asList(
               5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d, 5_000d, 7_500d,
               10_000d));
-
-  private Aggregation() {}
-
-  /**
-   * Returns the appropriate aggregator factory for a given instrument.
-   *
-   * @return The AggregatorFactory or {@code null} if none.
-   */
-  public abstract AggregatorFactory config(InstrumentDescriptor instrument);
-
-  /** The None Aggregation will ignore/drop all Instrument Measurements. */
-  public static final Aggregation NONE = Aggregation.make("none", unused -> null);
-
-  /** The default aggregation for an instrument will be chosen. */
-  public static final Aggregation DEFAULT =
+  private static final Aggregation NONE = Aggregation.make("none", unused -> null);
+  private static final Aggregation DEFAULT =
       Aggregation.make(
           "default",
           i -> {
@@ -64,6 +51,31 @@ public abstract class Aggregation {
             logger.log(Level.WARNING, "Unable to find default aggregation for instrument: " + i);
             return null;
           });
+  private static final Aggregation SUM = sum(AggregationTemporality.CUMULATIVE);
+  private static final Aggregation LAST_VALUE =
+      Aggregation.make("lastValue", unused -> AggregatorFactory.lastValue());
+  private static final Aggregation EXPLICIT_BUCKET_HISTOGRAM =
+      explictBucketHistogram(
+          AggregationTemporality.CUMULATIVE, DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
+
+  private Aggregation() {}
+
+  /**
+   * Returns the appropriate aggregator factory for a given instrument.
+   *
+   * @return The AggregatorFactory or {@code null} if none.
+   */
+  public abstract AggregatorFactory config(InstrumentDescriptor instrument);
+
+  /** The None Aggregation will ignore/drop all Instrument Measurements. */
+  public static Aggregation none() {
+    return NONE;
+  }
+
+  /** The default aggregation for an instrument will be chosen. */
+  public static Aggregation defaulAggregation() {
+    return DEFAULT;
+  }
 
   /** Instrument measurements will be combined into a metric Sum. */
   public static Aggregation sum(AggregationTemporality temporality) {
@@ -71,18 +83,21 @@ public abstract class Aggregation {
   }
 
   /** Instrument meaasurements will be combined into a metric Sum. */
-  public static final Aggregation SUM = sum(AggregationTemporality.CUMULATIVE);
+  public static Aggregation sum() {
+    return SUM;
+  }
 
   /** Remembers the last seen measurement and reports as a Gauge. */
-  public static final Aggregation LAST_VALUE =
-      Aggregation.make("lastValue", unused -> AggregatorFactory.lastValue());
+  public static Aggregation lastValue() {
+    return LAST_VALUE;
+  }
 
   /**
    * Aggregates measurments into an explicit bucket histogram using the default bucket boundaries.
    */
-  public static final Aggregation EXPLICIT_BUCKET_HISTOGRAM =
-      explictBucketHistogram(
-          AggregationTemporality.CUMULATIVE, DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
+  public static Aggregation explictBucketHistogram() {
+    return EXPLICIT_BUCKET_HISTOGRAM;
+  }
 
   /**
    * Aggregates measurments into an explicit bucket histogram.
@@ -99,7 +114,9 @@ public abstract class Aggregation {
   }
 
   /** Aggregates measurements using the best available Histogram. */
-  public static final Aggregation HISTOGRAM = EXPLICIT_BUCKET_HISTOGRAM;
+  public static final Aggregation histogram() {
+    return EXPLICIT_BUCKET_HISTOGRAM;
+  }
 
   static Aggregation make(String name, Function<InstrumentDescriptor, AggregatorFactory> factory) {
     return new Aggregation() {

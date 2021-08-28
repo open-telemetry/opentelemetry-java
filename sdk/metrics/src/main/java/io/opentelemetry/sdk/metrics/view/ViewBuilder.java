@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
 public final class ViewBuilder {
   private String name = null;
   private String description = null;
-  private Aggregation aggregation = Aggregation.DEFAULT;
+  private Aggregation aggregation = Aggregation.defaulAggregation();
   private LabelsProcessorFactory labelsProcessorFactory = LabelsProcessorFactory.noop();
 
   ViewBuilder() {}

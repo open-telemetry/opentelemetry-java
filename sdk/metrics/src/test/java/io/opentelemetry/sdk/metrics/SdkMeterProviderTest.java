@@ -438,7 +438,7 @@ public class SdkMeterProviderTest {
                 View.builder()
                     .setName("not_test")
                     .setDescription("not_desc")
-                    .setAggregation(Aggregation.LAST_VALUE)
+                    .setAggregation(Aggregation.lastValue())
                     .build())
             .build();
     Meter meter = provider.get(SdkMeterProviderTest.class.getName());
@@ -473,7 +473,7 @@ public class SdkMeterProviderTest {
                 View.builder()
                     .setName("not_test")
                     .setDescription("not_desc")
-                    .setAggregation(Aggregation.LAST_VALUE)
+                    .setAggregation(Aggregation.lastValue())
                     .build())
             .registerView(
                 selector,
@@ -519,7 +519,7 @@ public class SdkMeterProviderTest {
                 View.builder()
                     .setName("not_test")
                     .setDescription("not_desc")
-                    .setAggregation(Aggregation.LAST_VALUE)
+                    .setAggregation(Aggregation.lastValue())
                     .build())
             .registerView(
                 selector,

@@ -87,8 +87,8 @@ class ViewRegistryTest {
 
   @Test
   void selection_FirstAddedViewWins() {
-    View view1 = View.builder().setAggregation(Aggregation.LAST_VALUE).build();
-    View view2 = View.builder().setAggregation(Aggregation.HISTOGRAM).build();
+    View view1 = View.builder().setAggregation(Aggregation.lastValue()).build();
+    View view2 = View.builder().setAggregation(Aggregation.histogram()).build();
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
@@ -126,7 +126,7 @@ class ViewRegistryTest {
 
   @Test
   void selection_regex() {
-    View view = View.builder().setAggregation(Aggregation.LAST_VALUE).build();
+    View view = View.builder().setAggregation(Aggregation.lastValue()).build();
 
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
