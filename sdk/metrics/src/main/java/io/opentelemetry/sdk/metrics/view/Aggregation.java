@@ -19,8 +19,7 @@ import java.util.logging.Logger;
 /**
  * Configures how measurements are combined into metrics for {@link View}s.
  *
- * <p>Aggregation provides a set of built-in aggregations via static methods. Custom aggregation is
- * not considered stable at this time, but is available on {@link AggregationExtension}.
+ * <p>Aggregation provides a set of built-in aggregations via static methods.
  */
 public abstract class Aggregation {
   private static final ThrottlingLogger logger =
@@ -97,6 +96,15 @@ public abstract class Aggregation {
    */
   public static Aggregation explictBucketHistogram() {
     return EXPLICIT_BUCKET_HISTOGRAM;
+  }
+
+  /**
+   * Aggregates measurments into an explicit bucket histogram using the default bucket boundaries.
+   *
+   * @param temporality Whether to report DELTA or CUMULATIVE metrics.
+   */
+  public static Aggregation explictBucketHistogram(AggregationTemporality temporality) {
+    return explictBucketHistogram(temporality, DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
   }
 
   /**
