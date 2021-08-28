@@ -19,8 +19,8 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.SimpleAttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import org.junit.jupiter.api.Test;
@@ -40,34 +40,32 @@ public class SynchronousMetricStorageTest {
               InstrumentationLibraryInfo.create("test", "1.0"),
               DESCRIPTOR,
               METRIC_DESCRIPTOR);
-  private final LabelsProcessor labelsProcessor =
-      LabelsProcessorFactory.noop()
-          .create(Resource.empty(), InstrumentationLibraryInfo.create("test", "1.0"), DESCRIPTOR);
+  private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
 
   @Test
-  void labelsProcessor_used() {
-    LabelsProcessor spyLabelsProcessor = Mockito.spy(this.labelsProcessor);
+  void attributesProcessor_used() {
+    AttributesProcessor spyAttributesProcessor = Mockito.spy(this.attributesProcessor);
     SynchronousMetricStorage<?> accumulator =
         new SynchronousMetricStorage<>(
             METRIC_DESCRIPTOR,
             aggregator,
             new InstrumentProcessor<>(aggregator, testClock.now()),
-            spyLabelsProcessor);
+            spyAttributesProcessor);
     accumulator.bind(Attributes.empty());
-    Mockito.verify(spyLabelsProcessor).onLabelsBound(Context.current(), Attributes.empty());
+    Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 
   @Test
-  void labelsProcessor_applied() {
+  void attributesProcessor_applied() {
     final Attributes labels = Attributes.builder().put("K", "V").build();
-    LabelsProcessor labelsProcessor =
-        new LabelsProcessor() {
+    AttributesProcessor labelsProcessor =
+        new SimpleAttributesProcessor() {
           @Override
-          public Attributes onLabelsBound(Context ctx, Attributes lbls) {
+          public Attributes process(Attributes lbls) {
             return lbls.toBuilder().put("modifiedK", "modifiedV").build();
           }
         };
-    LabelsProcessor spyLabelsProcessor = Mockito.spy(labelsProcessor);
+    AttributesProcessor spyLabelsProcessor = Mockito.spy(labelsProcessor);
     SynchronousMetricStorage<?> accumulator =
         new SynchronousMetricStorage<>(
             METRIC_DESCRIPTOR,
@@ -96,7 +94,7 @@ public class SynchronousMetricStorageTest {
             METRIC_DESCRIPTOR,
             aggregator,
             new InstrumentProcessor<>(aggregator, testClock.now()),
-            labelsProcessor);
+            attributesProcessor);
     BoundStorageHandle handle = accumulator.bind(Attributes.builder().put("K", "V").build());
     BoundStorageHandle duplicateHandle =
         accumulator.bind(Attributes.builder().put("K", "V").build());
