@@ -14,7 +14,7 @@ public abstract class SimpleAttributesProcessor implements AttributesProcessor {
   /**
    * Manipulates a set of attributes, returning the desired set.
    *
-   * @param incoming Attributes assocaited with an incoming measurement.
+   * @param incoming Attributes associated with an incoming measurement.
    */
   protected abstract Attributes process(Attributes incoming);
 

@@ -5,9 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.internal.view;
 
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import java.util.Arrays;
+import java.util.function.Predicate;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -40,6 +44,12 @@ public interface AttributesProcessor {
 
   /** Joins this attribute processor with another that operates after this one. */
   default AttributesProcessor then(AttributesProcessor other) {
+    if (other == NOOP) {
+      return this;
+    }
+    if (this == NOOP) {
+      return other;
+    }
     if (other instanceof JoinedAttribtuesProcessor) {
       return ((JoinedAttribtuesProcessor) other).prepend(this);
     }
@@ -49,6 +59,86 @@ public interface AttributesProcessor {
   /** No-op version of attributes processer, returns what it gets. */
   public static AttributesProcessor noop() {
     return NOOP;
+  }
+
+  /**
+   * Creates a processor which filters down attributes from a measurement.
+   *
+   * @param nameFilter a filter for which attribute keys to preserve.
+   */
+  @SuppressWarnings("unchecked")
+  public static AttributesProcessor filterByKeyName(Predicate<String> nameFilter) {
+    return new SimpleAttributesProcessor() {
+      @Override
+      protected Attributes process(Attributes incoming) {
+        AttributesBuilder result = Attributes.builder();
+        incoming.forEach(
+            (k, v) -> {
+              if (nameFilter.test(k.getKey())) {
+                result.put((AttributeKey<Object>) k, v);
+              }
+            });
+        return result.build();
+      }
+
+      @Override
+      public String toString() {
+        return "KeyNameFilterProcessor";
+      }
+    };
+  }
+
+  /**
+   * Creates a processor which appends values from {@link Baggage}.
+   *
+   * <p>These attributes will not override those attributes provided by instrumentation.
+   *
+   * @param nameFilter a filter for which baggage keys to select.
+   */
+  public static AttributesProcessor appendBaggageByKeyName(Predicate<String> nameFilter) {
+    return new BaggageAttributesProcessor() {
+
+      @Override
+      protected Attributes process(Attributes incoming, Baggage baggage) {
+        AttributesBuilder result = Attributes.builder();
+        baggage.forEach(
+            (k, v) -> {
+              if (nameFilter.test(k)) {
+                result.put(k, v.getValue());
+              }
+            });
+        // Override any baggage keys with existing keys.
+        result.putAll(incoming);
+        return result.build();
+      }
+
+      @Override
+      public String toString() {
+        return "BaggageAppendProcessor";
+      }
+    };
+  }
+
+  /**
+   * Creates a processor which appends (exactly) the given attributes.
+   *
+   * <p>These attributes will not override those attributes provided by instrumentation.
+   *
+   * @param attributes Attributes to append to measurements.
+   */
+  public static AttributesProcessor append(Attributes attributes) {
+    return new SimpleAttributesProcessor() {
+
+      @Override
+      protected Attributes process(Attributes incoming) {
+        return attributes.toBuilder().putAll(incoming).build();
+      }
+
+      @Override
+      public String toString() {
+        return "AppendAttributesProcessor";
+      }
+    };
   }
 
   static final AttributesProcessor NOOP =

@@ -36,7 +36,7 @@ public class AsynchronousMetricStorageTest {
     view =
         View.builder()
             .setAggregation(Aggregation.lastValue())
-            .setAttribtuesProcessor(spyAttributesProcessor)
+            .setAttributesProcessor(spyAttributesProcessor)
             .build();
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
