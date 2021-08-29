@@ -23,7 +23,7 @@ final class AttributeKeyImpl<T> implements AttributeKey<T> {
       throw new NullPointerException("Null key");
     }
     this.key = key;
-    this.hashCode = buildHashCode();
+    this.hashCode = buildHashCode(type, key);
   }
 
   // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
@@ -74,7 +74,13 @@ final class AttributeKeyImpl<T> implements AttributeKey<T> {
     return key;
   }
 
+  // this method exists to make EqualsVerifier happy
+  @SuppressWarnings("unused")
   private int buildHashCode() {
+    return buildHashCode(type, key);
+  }
+
+  private static int buildHashCode(AttributeType type, String key) {
     int result = 1;
     result *= 1000003;
     result ^= type.hashCode();
