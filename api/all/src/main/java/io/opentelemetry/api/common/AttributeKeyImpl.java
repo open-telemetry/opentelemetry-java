@@ -5,12 +5,26 @@
 
 package io.opentelemetry.api.common;
 
-import com.google.auto.value.AutoValue;
 import javax.annotation.Nullable;
 
 @SuppressWarnings("rawtypes")
-@AutoValue
-abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
+final class AttributeKeyImpl<T> implements AttributeKey<T> {
+
+  private final AttributeType type;
+  private final String key;
+  private final int hashCode;
+
+  private AttributeKeyImpl(AttributeType type, String key) {
+    if (type == null) {
+      throw new NullPointerException("Null type");
+    }
+    this.type = type;
+    if (key == null) {
+      throw new NullPointerException("Null key");
+    }
+    this.key = key;
+    this.hashCode = buildHashCode();
+  }
 
   // Used by auto-instrumentation agent. Check with auto-instrumentation before making changes to
   // this method.
@@ -25,14 +39,47 @@ abstract class AttributeKeyImpl<T> implements AttributeKey<T> {
   // Context, which would be the same class (interface) being instrumented at that time,
   // which would lead to the JVM throwing a LinkageError "attempted duplicate interface definition"
   static <T> AttributeKey<T> create(@Nullable String key, AttributeType type) {
-    return new AutoValue_AttributeKeyImpl<>(type, key != null ? key : "");
+    return new AttributeKeyImpl<>(type, key != null ? key : "");
   }
 
   @Override
-  public abstract String getKey();
+  public AttributeType getType() {
+    return type;
+  }
 
   @Override
-  public final String toString() {
-    return getKey();
+  public String getKey() {
+    return key;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (o instanceof AttributeKeyImpl) {
+      AttributeKeyImpl<?> that = (AttributeKeyImpl<?>) o;
+      return this.type.equals(that.getType()) && this.key.equals(that.getKey());
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return hashCode;
+  }
+
+  @Override
+  public String toString() {
+    return key;
+  }
+
+  private int buildHashCode() {
+    int result = 1;
+    result *= 1000003;
+    result ^= type.hashCode();
+    result *= 1000003;
+    result ^= key.hashCode();
+    return result;
   }
 }

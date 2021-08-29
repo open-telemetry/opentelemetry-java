@@ -13,9 +13,11 @@ import org.junit.jupiter.api.Test;
 class AttributeKeyTest {
 
   @Test
-  @SuppressWarnings("AutoValueSubclassLeaked")
   void equalsVerifier() {
-    EqualsVerifier.forClass(AutoValue_AttributeKeyImpl.class).verify();
+    EqualsVerifier.forClass(AttributeKeyImpl.class)
+        .withCachedHashCode(
+            "hashCode", "buildHashCode", (AttributeKeyImpl<?>) AttributeKey.stringKey("test"))
+        .verify();
   }
 
   @Test
