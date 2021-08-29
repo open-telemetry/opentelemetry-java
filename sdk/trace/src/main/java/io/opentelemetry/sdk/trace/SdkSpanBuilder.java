@@ -191,7 +191,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     TraceState samplingResultTraceState =
         samplingResult.getUpdatedTraceState(parentSpanContext.getTraceState());
     SpanContext spanContext =
-        SpanContext.create(
+        ImmutableValidSpanContext.createBypassingValidation(
             traceId,
             spanId,
             isSampled(samplingDecision) ? TraceFlags.getSampled() : TraceFlags.getDefault(),
