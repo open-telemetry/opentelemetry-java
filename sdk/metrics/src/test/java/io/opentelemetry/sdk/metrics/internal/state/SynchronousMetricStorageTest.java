@@ -20,7 +20,6 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
-import io.opentelemetry.sdk.metrics.internal.view.SimpleAttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import org.junit.jupiter.api.Test;
@@ -58,14 +57,9 @@ public class SynchronousMetricStorageTest {
   @Test
   void attributesProcessor_applied() {
     final Attributes labels = Attributes.builder().put("K", "V").build();
-    AttributesProcessor labelsProcessor =
-        new SimpleAttributesProcessor() {
-          @Override
-          public Attributes process(Attributes lbls) {
-            return lbls.toBuilder().put("modifiedK", "modifiedV").build();
-          }
-        };
-    AttributesProcessor spyLabelsProcessor = Mockito.spy(labelsProcessor);
+    AttributesProcessor attributesProcessor =
+        AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
+    AttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);
     SynchronousMetricStorage<?> accumulator =
         new SynchronousMetricStorage<>(
             METRIC_DESCRIPTOR,
