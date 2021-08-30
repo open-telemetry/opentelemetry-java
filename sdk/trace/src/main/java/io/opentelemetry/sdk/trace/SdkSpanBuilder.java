@@ -19,7 +19,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
@@ -215,11 +214,11 @@ final class SdkSpanBuilder implements SpanBuilder {
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentSpanContext,
+        parentSpan,
         parentContext,
         spanLimits,
         tracerSharedState.getActiveSpanProcessor(),
-        getClock(parentSpan, tracerSharedState.getClock()),
+        tracerSharedState.getClock(),
         tracerSharedState.getResource(),
         recordedAttributes,
         immutableLinks,
@@ -234,15 +233,6 @@ final class SdkSpanBuilder implements SpanBuilder {
       attributes = this.attributes;
     }
     return attributes;
-  }
-
-  private static AnchoredClock getClock(Span parent, Clock clock) {
-    if (parent instanceof RecordEventsReadableSpan) {
-      RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parent;
-      return parentRecordEventsSpan.getClock();
-    } else {
-      return AnchoredClock.create(clock);
-    }
   }
 
   // Visible for testing
