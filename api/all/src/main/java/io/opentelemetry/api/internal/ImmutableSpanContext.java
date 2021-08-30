@@ -3,16 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.trace;
+package io.opentelemetry.api.internal;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.api.trace.TraceState;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
 @AutoValue
-abstract class ImmutableSpanContext implements SpanContext {
+public abstract class ImmutableSpanContext implements SpanContext {
 
-  static final SpanContext INVALID =
+  public static final SpanContext INVALID =
       createInternal(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
@@ -32,7 +37,7 @@ abstract class ImmutableSpanContext implements SpanContext {
         traceId, spanId, traceFlags, traceState, remote, valid);
   }
 
-  static SpanContext create(
+  public static SpanContext create(
       String traceIdHex,
       String spanIdHex,
       TraceFlags traceFlags,
@@ -49,6 +54,18 @@ abstract class ImmutableSpanContext implements SpanContext {
         traceState,
         remote,
         /* valid= */ false);
+  }
+
+  /**
+   * This method is provided as an optimization when {@code traceIdHex} and {@code spanIdHex} have
+   * already been validated. Only use this method if you are sure these have both been validated,
+   * e.g. when using {@code traceIdHex} from a parent {@link SpanContext} and {@code spanIdHex} from
+   * an {@code IdGenerator}.
+   */
+  public static SpanContext createBypassingValidation(
+      String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
+    return createInternal(
+        traceIdHex, spanIdHex, traceFlags, traceState, /* remote= */ false, /* valid= */ true);
   }
 
   @Override

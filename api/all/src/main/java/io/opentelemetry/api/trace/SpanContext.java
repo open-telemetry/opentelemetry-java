@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.internal.ImmutableSpanContext;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import javax.annotation.concurrent.Immutable;
 
