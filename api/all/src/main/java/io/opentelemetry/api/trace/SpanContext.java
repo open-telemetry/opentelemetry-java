@@ -52,7 +52,12 @@ public interface SpanContext {
   static SpanContext create(
       String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
     return ImmutableSpanContext.create(
-        traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ false, /* skipIdValidation=*/ false);
+        traceIdHex,
+        spanIdHex,
+        traceFlags,
+        traceState,
+        /* remote=*/ false,
+        /* skipIdValidation=*/ false);
   }
 
   /**
@@ -73,7 +78,12 @@ public interface SpanContext {
   static SpanContext createFromRemoteParent(
       String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
     return ImmutableSpanContext.create(
-        traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ true, /* skipIdValidation=*/ false);
+        traceIdHex,
+        spanIdHex,
+        traceFlags,
+        traceState,
+        /* remote=*/ true,
+        /* skipIdValidation=*/ false);
   }
 
   /**
