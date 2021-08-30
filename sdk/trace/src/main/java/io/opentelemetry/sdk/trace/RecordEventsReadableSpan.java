@@ -128,7 +128,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param parentSpan the parent span, or {@link Span#getInvalid()} if this span is a root span.
    * @param spanLimits trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
-   * @param parentSpan the parent span
    * @param tracerClock the tracer's clock
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
