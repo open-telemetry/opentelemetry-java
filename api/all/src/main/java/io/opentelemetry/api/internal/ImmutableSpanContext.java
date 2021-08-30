@@ -81,7 +81,7 @@ public abstract class ImmutableSpanContext implements SpanContext {
    * e.g. when using {@code traceIdHex} from a parent {@link SpanContext} and {@code spanIdHex} from
    * an {@code IdGenerator}.
    */
-  public static SpanContext createBypassingValidation(
+  public static SpanContext createSkippingIdValidation(
       String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
     return createInternal(
         traceIdHex, spanIdHex, traceFlags, traceState, /* remote= */ false, /* valid= */ true);
