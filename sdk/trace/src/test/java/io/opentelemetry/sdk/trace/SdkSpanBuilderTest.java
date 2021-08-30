@@ -944,8 +944,8 @@ class SdkSpanBuilderTest {
     assertThat(span.toSpanData().toString())
         .matches(
             "SpanData\\{spanContext=ImmutableSpanContext\\{"
-                + "traceId=[0-9a-f]{32}, "
-                + "spanId=[0-9a-f]{16}, "
+                + "traceId=(?!00000000000000000000000000000000)[0-9a-f]{32}, " // check not invalid
+                + "spanId=(?!0000000000000000)[0-9a-f]{16}, " // check not invalid
                 + "traceFlags=01, "
                 + "traceState=ArrayBasedTraceState\\{entries=\\[]}, remote=false, valid=true}, "
                 + "parentSpanContext=ImmutableSpanContext\\{"
