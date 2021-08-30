@@ -166,7 +166,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       startEpochNanos = userStartEpochNanos;
     } else if (createdAnchoredClock) {
       // If this is a new AnchoredClock, the start time is now, so just use it to avoid
-      // recoputing current time.
+      // recomputing current time.
       startEpochNanos = clock.startTime();
     } else {
       // AnchoredClock created in the past, so need to compute now.
