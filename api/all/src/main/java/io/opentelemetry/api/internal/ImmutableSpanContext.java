@@ -61,8 +61,9 @@ public abstract class ImmutableSpanContext implements SpanContext {
       String spanIdHex,
       TraceFlags traceFlags,
       TraceState traceState,
-      boolean remote) {
-    if (SpanId.isValid(spanIdHex) && TraceId.isValid(traceIdHex)) {
+      boolean remote,
+      boolean skipIdValidation) {
+    if (!skipIdValidation && SpanId.isValid(spanIdHex) && TraceId.isValid(traceIdHex)) {
       return createInternal(
           traceIdHex, spanIdHex, traceFlags, traceState, remote, /* valid= */ true);
     }
@@ -73,18 +74,6 @@ public abstract class ImmutableSpanContext implements SpanContext {
         traceState,
         remote,
         /* valid= */ false);
-  }
-
-  /**
-   * This method is provided as an optimization when {@code traceIdHex} and {@code spanIdHex} have
-   * already been validated. Only use this method if you are sure these have both been validated,
-   * e.g. when using {@code traceIdHex} from a parent {@link SpanContext} and {@code spanIdHex} from
-   * an {@code IdGenerator}.
-   */
-  public static SpanContext createSkippingIdValidation(
-      String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
-    return createInternal(
-        traceIdHex, spanIdHex, traceFlags, traceState, /* remote= */ false, /* valid= */ true);
   }
 
   @Override
