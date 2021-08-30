@@ -197,7 +197,7 @@ final class SdkSpanBuilder implements SpanBuilder {
             spanId,
             isSampled(samplingDecision) ? TraceFlags.getSampled() : TraceFlags.getDefault(),
             samplingResultTraceState,
-            false,
+            /* remote= */ false,
             tracerSharedState.isIdGeneratorSafeToSkipIdValidation());
 
     if (!isRecording(samplingDecision)) {
