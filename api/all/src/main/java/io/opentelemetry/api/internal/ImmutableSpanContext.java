@@ -13,6 +13,10 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * This class is internal and is hence not for public use. Its APIs are unstable and can change at
+ * any time.
+ */
 @Immutable
 @AutoValue
 public abstract class ImmutableSpanContext implements SpanContext {
@@ -37,6 +41,21 @@ public abstract class ImmutableSpanContext implements SpanContext {
         traceId, spanId, traceFlags, traceState, remote, valid);
   }
 
+  /**
+   * Creates a new {@code SpanContext} with the given identifiers and options.
+   *
+   * <p>If the traceId or the spanId are invalid (ie. do not conform to the requirements for
+   * hexadecimal ids of the appropriate lengths), both will be replaced with the standard "invalid"
+   * versions (i.e. all '0's). See {@link SpanId#isValid(CharSequence)} and {@link
+   * TraceId#isValid(CharSequence)} for details.
+   *
+   * @param traceIdHex the trace identifier of the {@code SpanContext}.
+   * @param spanIdHex the span identifier of the {@code SpanContext}.
+   * @param traceFlags the trace flags of the {@code SpanContext}.
+   * @param traceState the trace state for the {@code SpanContext}.
+   * @param remote the remote flag for the {@code SpanContext}.
+   * @return a new {@code SpanContext} with the given identifiers and options.
+   */
   public static SpanContext create(
       String traceIdHex,
       String spanIdHex,
