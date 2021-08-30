@@ -72,7 +72,7 @@ public abstract class Aggregation {
   }
 
   /** The default aggregation for an instrument will be chosen. */
-  public static Aggregation defaulAggregation() {
+  public static Aggregation defaultAggregation() {
     return DEFAULT;
   }
 
@@ -81,7 +81,7 @@ public abstract class Aggregation {
     return Aggregation.make("sum", unused -> AggregatorFactory.sum(temporality));
   }
 
-  /** Instrument meaasurements will be combined into a metric Sum. */
+  /** Instrument measurements will be combined into a metric Sum. */
   public static Aggregation sum() {
     return SUM;
   }
@@ -111,7 +111,7 @@ public abstract class Aggregation {
    * Aggregates measurments into an explicit bucket histogram.
    *
    * @param temporality Whether to report DELTA or CUMULATIVE metrics.
-   * @param bucketBoundaries A list of (inlcusive) upper bounds for the histogram. Should be in
+   * @param bucketBoundaries A list of (inclusive) upper bounds for the histogram. Should be in
    *     order from lowest to highest.
    */
   public static Aggregation explictBucketHistogram(
