@@ -192,7 +192,7 @@ These properties can be used to control the maximum size of recordings per span.
 
 ## Customizing the OpenTelemetry SDK
 
-Autoconfiguration exposes SPI [hooks](./src/main/java/io/opentelemetry/sdk/autoconfigure/spi) for customizing behavior programmatically as needed.
+Autoconfiguration exposes SPI [hooks](../autoconfigure-spi/src/main/java/io/opentelemetry/sdk/autoconfigure/spi) for customizing behavior programmatically as needed.
 It's recommended to use the above configuration properties where possible, only implementing the SPI to add functionality not found in the
 SDK by default.
 
