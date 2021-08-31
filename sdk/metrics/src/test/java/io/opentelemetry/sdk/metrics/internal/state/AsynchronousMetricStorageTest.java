@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
@@ -43,7 +43,7 @@ public class AsynchronousMetricStorageTest {
             });
     view =
         View.builder()
-            .setAggregatorFactory(AggregatorFactory.lastValue())
+            .setAggregation(Aggregation.lastValue())
             .setLabelsProcessorFactory(
                 (resource, instrumentationLibraryInfo, descriptor) -> spyLabelProcessor)
             .build();

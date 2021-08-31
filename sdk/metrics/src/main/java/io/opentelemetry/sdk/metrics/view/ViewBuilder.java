@@ -5,14 +5,13 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
 
 /** Builder of metric {@link View}s. */
 public final class ViewBuilder {
   private String name = null;
   private String description = null;
-  private AggregatorFactory aggregatorFactory;
+  private Aggregation aggregation = Aggregation.defaultAggregation();
   private LabelsProcessorFactory labelsProcessorFactory = LabelsProcessorFactory.noop();
 
   ViewBuilder() {}
@@ -41,13 +40,13 @@ public final class ViewBuilder {
   }
 
   /**
-   * sets {@link AggregatorFactory}.
+   * sets {@link Aggregation}.
    *
-   * @param aggregatorFactory aggregator factory.
+   * @param aggregation aggregation to use.
    * @return this Builder.
    */
-  public ViewBuilder setAggregatorFactory(AggregatorFactory aggregatorFactory) {
-    this.aggregatorFactory = aggregatorFactory;
+  public ViewBuilder setAggregation(Aggregation aggregation) {
+    this.aggregation = aggregation;
     return this;
   }
 
@@ -64,7 +63,6 @@ public final class ViewBuilder {
 
   /** Returns the resulting {@link View}. */
   public View build() {
-    return View.create(
-        this.name, this.description, this.aggregatorFactory, this.labelsProcessorFactory);
+    return View.create(this.name, this.description, this.aggregation, this.labelsProcessorFactory);
   }
 }

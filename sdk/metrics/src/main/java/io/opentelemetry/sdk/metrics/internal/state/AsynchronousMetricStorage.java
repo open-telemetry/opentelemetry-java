@@ -10,9 +10,9 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -43,7 +43,8 @@ public final class AsynchronousMetricStorage implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     // TODO: Send metric descriptor to aggregator.
     Aggregator<T> aggregator =
-        view.getAggregatorFactory()
+        view.getAggregation()
+            .config(instrument)
             .create(resource, instrumentationLibraryInfo, instrument, metricDescriptor);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
@@ -79,7 +80,8 @@ public final class AsynchronousMetricStorage implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     // TODO: Send metric descriptor to aggregator.
     Aggregator<T> aggregator =
-        view.getAggregatorFactory()
+        view.getAggregation()
+            .config(instrument)
             .create(resource, instrumentationLibraryInfo, instrument, metricDescriptor);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
