@@ -5,7 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableSamplerProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -44,7 +46,7 @@ final class TracerProviderConfiguration {
     // processors to effect export.
     for (SdkTracerProviderConfigurer configurer :
         ServiceLoader.load(SdkTracerProviderConfigurer.class)) {
-      configurer.configure(tracerProviderBuilder);
+      configurer.configure(tracerProviderBuilder, config);
     }
 
     Map<String, SpanExporter> exportersByName =

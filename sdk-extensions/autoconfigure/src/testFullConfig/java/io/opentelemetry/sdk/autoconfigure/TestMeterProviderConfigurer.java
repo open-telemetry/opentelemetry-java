@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
@@ -17,10 +18,13 @@ import io.opentelemetry.sdk.metrics.view.View;
 public class TestMeterProviderConfigurer implements SdkMeterProviderConfigurer {
 
   @Override
-  public void configure(SdkMeterProviderBuilder meterProviderBuilder) {
+  public void configure(SdkMeterProviderBuilder meterProviderBuilder, ConfigProperties config) {
     LabelsProcessorFactory labelsProcessorFactory =
         (resource, instrumentationLibraryInfo, descriptor) ->
-            (ctx, labels) -> labels.toBuilder().put("configured", "true").build();
+            (ctx, labels) ->
+                labels.toBuilder()
+                    .put("configured", config.getBoolean("otel.test.configured"))
+                    .build();
 
     for (InstrumentType instrumentType : InstrumentType.values()) {
       meterProviderBuilder.registerView(

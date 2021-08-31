@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.sdk.autoconfigure.spi;
 
 /** An exception that is thrown if the user-provided configuration is invalid. */
 public final class ConfigurationException extends RuntimeException {
