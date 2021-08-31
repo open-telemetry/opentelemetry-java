@@ -21,7 +21,7 @@ public class TestMeterProviderConfigurer implements SdkMeterProviderConfigurer {
       meterProviderBuilder.registerView(
           InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
           View.builder()
-              .addAppendedAttributes(Attributes.builder().put("configured", "true").build())
+              .addAppendedAttributes(Attributes.builder().put("configured", true).build())
               .build());
     }
   }
