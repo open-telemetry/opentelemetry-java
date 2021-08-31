@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-  implementation("com.diffplug.spotless:spotless-plugin-gradle:5.13.0")
+  implementation("com.diffplug.spotless:spotless-plugin-gradle:5.14.3")
   // Needed for japicmp but not automatically brought in for some reason.
   implementation("com.google.guava:guava:30.1-jre")
   implementation("com.squareup:javapoet:1.13.0")

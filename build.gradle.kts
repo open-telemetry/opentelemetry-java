@@ -2,10 +2,11 @@ import nebula.plugin.release.git.opinion.Strategies
 import java.time.Duration
 
 plugins {
-  id("com.diffplug.spotless")
   id("com.github.ben-manes.versions")
   id("io.github.gradle-nexus.publish-plugin")
   id("nebula.release")
+
+  id("otel.spotless-conventions")
 }
 
 if (!JavaVersion.current().isJava11Compatible()) {
@@ -55,16 +56,6 @@ nexusPublishing {
     // the timeout for waiting for the repository to close to a comfortable 50 minutes.
     maxRetries.set(300)
     delayBetween.set(Duration.ofSeconds(10))
-  }
-}
-
-allprojects {
-  apply(plugin = "com.diffplug.spotless")
-
-  spotless {
-    kotlinGradle {
-      ktlint("0.42.1").userData(mapOf("indent_size" to "2", "continuation_indent_size" to "2"))
-    }
   }
 }
 

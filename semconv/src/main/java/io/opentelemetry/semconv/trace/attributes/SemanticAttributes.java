@@ -18,7 +18,7 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.6.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.6.1";
 
   /**
    * The full invoked ARN as provided on the {@code Context} passed to the function ({@code
@@ -989,47 +989,47 @@ public final class SemanticAttributes {
 
   public static final class NetHostConnectionSubtypeValues {
     /** GPRS. */
-    public static final String GPRS = "GPRS";
+    public static final String GPRS = "gprs";
     /** EDGE. */
-    public static final String EDGE = "EDGE";
+    public static final String EDGE = "edge";
     /** UMTS. */
-    public static final String UMTS = "UMTS";
+    public static final String UMTS = "umts";
     /** CDMA. */
-    public static final String CDMA = "CDMA";
-    /** EVDO_0. */
-    public static final String EVDO_0 = "EVDO_0";
-    /** EVDO_A. */
-    public static final String EVDO_A = "EVDO_A";
-    /** 1xRTT. */
-    public static final String _1XRTT = "1xRTT";
+    public static final String CDMA = "cdma";
+    /** EVDO Rel. 0. */
+    public static final String EVDO_0 = "evdo_0";
+    /** EVDO Rev. A. */
+    public static final String EVDO_A = "evdo_a";
+    /** CDMA2000 1XRTT. */
+    public static final String CDMA2000_1XRTT = "cdma2000_1xrtt";
     /** HSDPA. */
-    public static final String HSDPA = "HSDPA";
+    public static final String HSDPA = "hsdpa";
     /** HSUPA. */
-    public static final String HSUPA = "HSUPA";
+    public static final String HSUPA = "hsupa";
     /** HSPA. */
-    public static final String HSPA = "HSPA";
+    public static final String HSPA = "hspa";
     /** IDEN. */
-    public static final String IDEN = "IDEN";
-    /** EVDO_B. */
-    public static final String EVDO_B = "EVDO_B";
+    public static final String IDEN = "iden";
+    /** EVDO Rev. B. */
+    public static final String EVDO_B = "evdo_b";
     /** LTE. */
-    public static final String LTE = "LTE";
+    public static final String LTE = "lte";
     /** EHRPD. */
-    public static final String EHRPD = "EHRPD";
+    public static final String EHRPD = "ehrpd";
     /** HSPAP. */
-    public static final String HSPAP = "HSPAP";
+    public static final String HSPAP = "hspap";
     /** GSM. */
-    public static final String GSM = "GSM";
-    /** TD_SCDMA. */
-    public static final String TD_SCDMA = "TD_SCDMA";
+    public static final String GSM = "gsm";
+    /** TD-SCDMA. */
+    public static final String TD_SCDMA = "td_scdma";
     /** IWLAN. */
-    public static final String IWLAN = "IWLAN";
-    /** NR. */
-    public static final String NR = "NR";
-    /** NRNSA. */
-    public static final String NRNSA = "NRNSA";
-    /** LTE_CA. */
-    public static final String LTE_CA = "LTE_CA";
+    public static final String IWLAN = "iwlan";
+    /** 5G NR (New Radio). */
+    public static final String NR = "nr";
+    /** 5G NRNSA (New Radio Non-Standalone). */
+    public static final String NRNSA = "nrnsa";
+    /** LTE CA. */
+    public static final String LTE_CA = "lte_ca";
 
     private NetHostConnectionSubtypeValues() {}
   }

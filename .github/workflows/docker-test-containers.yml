@@ -12,7 +12,7 @@ jobs:
         include:
           - source: jaegertracing/all-in-one:1.17
             target_tag: jaeger
-          - source: otel/opentelemetry-collector-dev:latest
+          - source: otel/opentelemetry-collector-contrib-dev:latest
             target_tag: otel-collector-dev
           - source: shopify/toxiproxy:latest
             target_tag: toxiproxy

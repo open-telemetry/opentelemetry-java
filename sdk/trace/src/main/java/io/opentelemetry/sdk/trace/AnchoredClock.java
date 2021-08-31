@@ -51,4 +51,9 @@ final class AnchoredClock {
     long deltaNanos = clock.nanoTime() - this.nanoTime;
     return epochNanos + deltaNanos;
   }
+
+  /** Returns the start time in nanos of this {@link AnchoredClock}. */
+  long startTime() {
+    return epochNanos;
+  }
 }

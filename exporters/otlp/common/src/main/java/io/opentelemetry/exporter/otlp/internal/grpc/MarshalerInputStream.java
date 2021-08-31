@@ -20,7 +20,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.exporter.otlp.trace;
+package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import com.google.common.io.ByteStreams;
 import io.grpc.Drainable;
@@ -34,14 +34,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import javax.annotation.Nullable;
 
+/**
+ * Adapter from {@link Marshaler} to gRPC types.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 // Adapted from gRPC ProtoInputStream but using our Marshaller
 // https://github.com/grpc/grpc-java/blob/2c2ebaebd5a93acec92fbd2708faac582db99371/protobuf-lite/src/main/java/io/grpc/protobuf/lite/ProtoInputStream.java
-final class MarshalerInputStream extends InputStream implements Drainable, KnownLength {
+public final class MarshalerInputStream extends InputStream implements Drainable, KnownLength {
 
   @Nullable private Marshaler message;
   @Nullable private ByteArrayInputStream partial;
 
-  MarshalerInputStream(Marshaler message) {
+  /** Creates a new {@link MarshalerInputStream}. */
+  public MarshalerInputStream(Marshaler message) {
     this.message = message;
   }
 
@@ -50,9 +57,7 @@ final class MarshalerInputStream extends InputStream implements Drainable, Known
     int written;
     if (message != null) {
       written = message.getSerializedSize();
-      CodedOutputStream cos =
-          CodedOutputStream.newInstance(
-              target, CodedOutputStream.computePreferredBufferSize(message.getSerializedSize()));
+      CodedOutputStream cos = CodedOutputStream.newInstance(target);
       message.writeTo(cos);
       cos.flush();
       message = null;
@@ -103,9 +108,7 @@ final class MarshalerInputStream extends InputStream implements Drainable, Known
 
   private static byte[] toByteArray(Marshaler message) throws IOException {
     ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getSerializedSize());
-    CodedOutputStream cos =
-        CodedOutputStream.newInstance(
-            bos, CodedOutputStream.computePreferredBufferSize(message.getSerializedSize()));
+    CodedOutputStream cos = CodedOutputStream.newInstance(bos);
     message.writeTo(cos);
     cos.flush();
     return bos.toByteArray();

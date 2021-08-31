@@ -34,17 +34,17 @@ Because this is a common usage for spans, we do not support try-with-resources.
 
 ### Goals
 
-- API Stability: 
-    - Once the API for a given signal (spans, logs, metrics, baggage) has been officially released, code instrumented with that API module will 
-function, *with no recompilation required*, with any API+SDK that has the same major version, and equal or greater minor or patch version. 
-    - For example, libraries that are instrumented with `opentelemetry-api-trace:1.0.1` will function, at runtime with 
-SDK library `opentelemetry-sdk-trace:1.11.33` plus `opentelemetry-api-trace:1.11.33` (or whatever specific versions are specified by 
-      the bom version `1.11.33`, if the individual versions have diverged). 
-    - We call this requirement the "ABI" compatibility requirement for "Application Binary Interface" compatibility. 
+- API Stability:
+    - Once the API for a given signal (spans, logs, metrics, baggage) has been officially released, code instrumented with that API module will
+function, *with no recompilation required*, with any API+SDK that has the same major version, and equal or greater minor or patch version.
+    - For example, libraries that are instrumented with `opentelemetry-api-trace:1.0.1` will function, at runtime with
+SDK library `opentelemetry-sdk-trace:1.11.33` plus `opentelemetry-api-trace:1.11.33` (or whatever specific versions are specified by
+      the bom version `1.11.33`, if the individual versions have diverged).
+    - We call this requirement the "ABI" compatibility requirement for "Application Binary Interface" compatibility.
 - SDK Stability:
     - Public portions of the SDK (constructors, configuration, end-user interfaces) must remain backwards compatible.
         - Precisely what this includes has yet to be delineated.
-- Internal implementation details of both the API and SDK are allowed to be changed, 
+- Internal implementation details of both the API and SDK are allowed to be changed,
   as long as the public APIs are not changed in an ABI-incompatible manner.
 
 ### Methods
@@ -62,10 +62,10 @@ SDK library `opentelemetry-sdk-trace:1.11.33` plus `opentelemetry-api-trace:1.11
     - API modules for immature signals will not be transitive dependencies of the `opentelemetry-api` module.
     - API modules will be versioned with an "-alpha" suffix to make it abundantly clear that depending on them is at your own risk.
     - API modules for immature signals will be co-versioned along with mature API modules, with the added suffix.
-    - The java packages for immature APIs will be used as if they were mature signals. This will enable users to easily transition from immature to 
-    mature usage, without having to change imports. 
+    - The java packages for immature APIs will be used as if they were mature signals. This will enable users to easily transition from immature to
+    mature usage, without having to change imports.
     - SDK modules for immature signals will also be versioned with an "-alpha" suffix, in parallel to their API modules.
-    
+
 ### Examples
 
 Purely for illustration purposes, not intended to represent actual releases:
@@ -89,7 +89,7 @@ Purely for illustration purposes, not intended to represent actual releases:
     - `io.opentelemetry:opentelemetry-sdk-trace:1.15.0`
     - `io.opentelemetry:opentelemetry-sdk-common:1.15.0`
         - Shared code for metrics/trace implementations (clocks, etc)
-    - `io.opentelemetry:opentelemetry-sdk-metrics:1.15.0` 
+    - `io.opentelemetry:opentelemetry-sdk-metrics:1.15.0`
         - Note: packages here have not changed from the experimental jar...just a jar rename happened.
     - `io.opentelemetry:opentelemetry-sdk-all:1.15.0`
         - The SDK side of io.opentelemetry:opentelemetry-api:1.15.0

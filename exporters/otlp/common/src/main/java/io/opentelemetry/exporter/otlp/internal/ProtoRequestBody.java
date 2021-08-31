@@ -3,24 +3,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.http.trace;
+package io.opentelemetry.exporter.otlp.internal;
 
-import io.opentelemetry.exporter.otlp.internal.CodedOutputStream;
-import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import java.io.IOException;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
-import org.jetbrains.annotations.NotNull;
 
-final class ProtoRequestBody extends RequestBody {
+/**
+ * A {@link RequestBody} for reading from a {@link Marshaler}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class ProtoRequestBody extends RequestBody {
 
   private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
 
   private final Marshaler marshaler;
   private final int contentLength;
 
-  ProtoRequestBody(Marshaler marshaler) {
+  /** Creates a new {@link ProtoRequestBody}. */
+  public ProtoRequestBody(Marshaler marshaler) {
     this.marshaler = marshaler;
     contentLength = marshaler.getSerializedSize();
   }
@@ -36,9 +40,8 @@ final class ProtoRequestBody extends RequestBody {
   }
 
   @Override
-  public void writeTo(@NotNull BufferedSink bufferedSink) throws IOException {
-    CodedOutputStream cos =
-        CodedOutputStream.newInstance(bufferedSink.outputStream(), contentLength);
+  public void writeTo(BufferedSink bufferedSink) throws IOException {
+    CodedOutputStream cos = CodedOutputStream.newInstance(bufferedSink.outputStream());
     marshaler.writeTo(cos);
     cos.flush();
   }
