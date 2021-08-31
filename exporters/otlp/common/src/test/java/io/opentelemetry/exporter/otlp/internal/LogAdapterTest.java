@@ -13,7 +13,9 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
 public class LogAdapterTest {
@@ -45,12 +47,16 @@ public class LogAdapterTest {
                 .setSpanId(SPAN_ID)
                 .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                 .setUnixTimeNano(12345)
+                .setResource(
+                    Resource.create(Attributes.builder().put("testKey", "testValue").build()))
+                .setInstrumentationLibraryInfo(
+                    InstrumentationLibraryInfo.create("instrumentation", "1"))
                 .build());
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(logRecord.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
     assertThat(logRecord.getName()).isEqualTo(NAME);
-    assertThat(logRecord.getBody().toString()).isEqualTo(BODY);
+    assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue(BODY).build());
     assertThat(logRecord.getAttributesList())
         .containsExactly(
             KeyValue.newBuilder()
