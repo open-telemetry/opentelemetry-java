@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.trace;
 
+import io.opentelemetry.api.internal.ImmutableSpanContext;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
 import javax.annotation.concurrent.Immutable;
 
@@ -51,7 +52,12 @@ public interface SpanContext {
   static SpanContext create(
       String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
     return ImmutableSpanContext.create(
-        traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ false);
+        traceIdHex,
+        spanIdHex,
+        traceFlags,
+        traceState,
+        /* remote=*/ false,
+        /* skipIdValidation=*/ false);
   }
 
   /**
@@ -72,7 +78,12 @@ public interface SpanContext {
   static SpanContext createFromRemoteParent(
       String traceIdHex, String spanIdHex, TraceFlags traceFlags, TraceState traceState) {
     return ImmutableSpanContext.create(
-        traceIdHex, spanIdHex, traceFlags, traceState, /* remote=*/ true);
+        traceIdHex,
+        spanIdHex,
+        traceFlags,
+        traceState,
+        /* remote=*/ true,
+        /* skipIdValidation=*/ false);
   }
 
   /**

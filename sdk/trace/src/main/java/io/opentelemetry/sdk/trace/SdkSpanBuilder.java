@@ -12,6 +12,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.ImmutableSpanContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
@@ -190,11 +191,13 @@ final class SdkSpanBuilder implements SpanBuilder {
     TraceState samplingResultTraceState =
         samplingResult.getUpdatedTraceState(parentSpanContext.getTraceState());
     SpanContext spanContext =
-        SpanContext.create(
+        ImmutableSpanContext.create(
             traceId,
             spanId,
             isSampled(samplingDecision) ? TraceFlags.getSampled() : TraceFlags.getDefault(),
-            samplingResultTraceState);
+            samplingResultTraceState,
+            /* remote= */ false,
+            tracerSharedState.isIdGeneratorSafeToSkipIdValidation());
 
     if (!isRecording(samplingDecision)) {
       return Span.wrap(spanContext);
