@@ -54,7 +54,7 @@ public class RequestMarshalBenchmarks {
   @Threads(1)
   public ByteArrayOutputStream createCustomMarshal(RequestMarshalState state) {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
-    return new ByteArrayOutputStream(requestMarshaler.getSerializedSize());
+    return new ByteArrayOutputStream(requestMarshaler.getProtoSerializedSize());
   }
 
   @Benchmark
@@ -62,7 +62,7 @@ public class RequestMarshalBenchmarks {
   public ByteArrayOutputStream marshalCustom(RequestMarshalState state) throws IOException {
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(state.spanDataList);
     ByteArrayOutputStream customOutput =
-        new ByteArrayOutputStream(requestMarshaler.getSerializedSize());
+        new ByteArrayOutputStream(requestMarshaler.getProtoSerializedSize());
     CodedOutputStream cos = CodedOutputStream.newInstance(customOutput);
     requestMarshaler.writeTo(cos);
     cos.flush();

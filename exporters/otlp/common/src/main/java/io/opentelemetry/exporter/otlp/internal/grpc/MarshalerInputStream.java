@@ -56,7 +56,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   public int drainTo(OutputStream target) throws IOException {
     int written;
     if (message != null) {
-      written = message.getSerializedSize();
+      written = message.getProtoSerializedSize();
       CodedOutputStream cos = CodedOutputStream.newInstance(target);
       message.writeTo(cos);
       cos.flush();
@@ -85,7 +85,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   @Override
   public int read(byte[] b, int off, int len) throws IOException {
     if (message != null) {
-      int size = message.getSerializedSize();
+      int size = message.getProtoSerializedSize();
       if (size == 0) {
         message = null;
         partial = null;
@@ -107,7 +107,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   }
 
   private static byte[] toByteArray(Marshaler message) throws IOException {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getSerializedSize());
+    ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getProtoSerializedSize());
     CodedOutputStream cos = CodedOutputStream.newInstance(bos);
     message.writeTo(cos);
     cos.flush();
@@ -117,7 +117,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   @Override
   public int available() {
     if (message != null) {
-      return message.getSerializedSize();
+      return message.getProtoSerializedSize();
     } else if (partial != null) {
       return partial.available();
     }

@@ -26,7 +26,7 @@ public final class ProtoRequestBody extends RequestBody {
   /** Creates a new {@link ProtoRequestBody}. */
   public ProtoRequestBody(Marshaler marshaler) {
     this.marshaler = marshaler;
-    contentLength = marshaler.getSerializedSize();
+    contentLength = marshaler.getProtoSerializedSize();
   }
 
   @Override

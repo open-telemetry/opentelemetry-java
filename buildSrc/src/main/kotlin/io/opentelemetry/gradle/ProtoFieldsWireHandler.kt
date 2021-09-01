@@ -78,6 +78,8 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
   private class JavaGenerator(private val typeToJavaName: Map<ProtoType, TypeName>) {
 
     companion object {
+      private val STRING_TYPE_NAME = ClassName.get("java.lang", "String")
+
       fun get(schema: Schema): JavaGenerator {
         val nameToJavaName = linkedMapOf<ProtoType, TypeName>()
         for (protoFile in schema.protoFiles) {
@@ -136,6 +138,10 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
         builder.addField(
           FieldSpec.builder(TypeName.INT, "${field.name.toUpperCase()}_FIELD_NUMBER", PUBLIC, STATIC, FINAL)
             .initializer("\$L", field.tag)
+            .build())
+        builder.addField(
+          FieldSpec.builder(STRING_TYPE_NAME, "${field.name.toUpperCase()}_JSON_NAME", PUBLIC, STATIC, FINAL)
+            .initializer("\"\$L\"", field.jsonName)
             .build())
       }
 

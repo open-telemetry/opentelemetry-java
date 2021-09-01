@@ -153,7 +153,7 @@ class TraceRequestMarshalerTest {
     byte[] protoOutput = protoRequest.toByteArray();
 
     ByteArrayOutputStream customOutput =
-        new ByteArrayOutputStream(requestMarshaler.getSerializedSize());
+        new ByteArrayOutputStream(requestMarshaler.getProtoSerializedSize());
     CodedOutputStream cos = CodedOutputStream.newInstance(customOutput);
     requestMarshaler.writeTo(cos);
     cos.flush();
@@ -197,13 +197,13 @@ class TraceRequestMarshalerTest {
             .build();
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(spanDataList);
     int protoSize = protoRequest.getSerializedSize();
-    assertThat(requestMarshaler.getSerializedSize()).isEqualTo(protoSize);
+    assertThat(requestMarshaler.getProtoSerializedSize()).isEqualTo(protoSize);
 
     ByteArrayOutputStream protoOutput = new ByteArrayOutputStream(protoRequest.getSerializedSize());
     protoRequest.writeTo(protoOutput);
 
     ByteArrayOutputStream customOutput =
-        new ByteArrayOutputStream(requestMarshaler.getSerializedSize());
+        new ByteArrayOutputStream(requestMarshaler.getProtoSerializedSize());
     CodedOutputStream cos = CodedOutputStream.newInstance(customOutput);
     requestMarshaler.writeTo(cos);
     cos.flush();

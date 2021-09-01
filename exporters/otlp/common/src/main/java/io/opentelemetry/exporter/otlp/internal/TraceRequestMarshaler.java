@@ -82,9 +82,9 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
   }
 
   @Override
-  public void writeTo(CodedOutputStream output) throws IOException {
-    MarshalerUtil.marshalRepeatedMessage(
-        ExportTraceServiceRequest.RESOURCE_SPANS_FIELD_NUMBER, resourceSpansMarshalers, output);
+  public void writeTo(Serializer output) throws IOException {
+    output.serializeRepeatedMessage(ExportTraceServiceRequest.RESOURCE_SPANS_FIELD_NUMBER,
+        ExportTraceServiceRequest.RESOURCE_SPANS_JSON_NAME, resourceSpansMarshalers);
   }
 
   private static final class ResourceSpansMarshaler extends MarshalerWithSize {
@@ -103,13 +103,13 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     }
 
     @Override
-    public void writeTo(CodedOutputStream output) throws IOException {
-      MarshalerUtil.marshalMessage(ResourceSpans.RESOURCE_FIELD_NUMBER, resourceMarshaler, output);
-      MarshalerUtil.marshalRepeatedMessage(
+    public void writeTo(Serializer output) throws IOException {
+      output.serializeMessage(ResourceSpans.RESOURCE_FIELD_NUMBER, ResourceSpans.RESOURCE_JSON_NAME, resourceMarshaler);
+      output.serializeRepeatedMessage(
           ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_FIELD_NUMBER,
-          instrumentationLibrarySpansMarshalers,
-          output);
-      MarshalerUtil.marshalBytes(ResourceSpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl, output);
+          ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_JSON_NAME,
+          instrumentationLibrarySpansMarshalers);
+      output.serializeBytes(ResourceSpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl, output);
     }
 
     private static int calculateSize(

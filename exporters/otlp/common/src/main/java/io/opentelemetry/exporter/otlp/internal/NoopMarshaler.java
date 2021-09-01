@@ -12,7 +12,7 @@ enum NoopMarshaler implements Marshaler {
   public void writeTo(CodedOutputStream output) {}
 
   @Override
-  public int getSerializedSize() {
+  public int getProtoSerializedSize() {
     return 0;
   }
 }

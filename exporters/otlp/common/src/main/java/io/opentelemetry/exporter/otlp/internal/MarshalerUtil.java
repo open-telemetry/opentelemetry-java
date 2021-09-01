@@ -83,7 +83,7 @@ final class MarshalerUtil {
   static void marshalMessage(int fieldNumber, Marshaler message, CodedOutputStream output)
       throws IOException {
     output.writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    output.writeUInt32NoTag(message.getSerializedSize());
+    output.writeUInt32NoTag(message.getProtoSerializedSize());
     message.writeTo(output);
   }
 
@@ -151,7 +151,7 @@ final class MarshalerUtil {
     int size = 0;
     int fieldTagSize = CodedOutputStream.computeTagSize(fieldNumber);
     for (Marshaler message : repeatedMessage) {
-      int fieldSize = message.getSerializedSize();
+      int fieldSize = message.getProtoSerializedSize();
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
     }
     return size;
@@ -161,14 +161,14 @@ final class MarshalerUtil {
     int size = 0;
     int fieldTagSize = CodedOutputStream.computeTagSize(fieldNumber);
     for (Marshaler message : repeatedMessage) {
-      int fieldSize = message.getSerializedSize();
+      int fieldSize = message.getProtoSerializedSize();
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
     }
     return size;
   }
 
   static int sizeMessage(int fieldNumber, Marshaler message) {
-    int fieldSize = message.getSerializedSize();
+    int fieldSize = message.getProtoSerializedSize();
     return CodedOutputStream.computeTagSize(fieldNumber)
         + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
         + fieldSize;
