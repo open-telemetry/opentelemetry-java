@@ -287,8 +287,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
       MarshalerUtil.marshalBytes(Span.PARENT_SPAN_ID_FIELD_NUMBER, parentSpanId, output);
       MarshalerUtil.marshalBytes(Span.NAME_FIELD_NUMBER, name, output);
 
-      // TODO: Make this a MarshalerUtil helper.
-      output.writeEnum(Span.KIND_FIELD_NUMBER, spanKind);
+      MarshalerUtil.marshalEnum(Span.KIND_FIELD_NUMBER, spanKind, output);
 
       MarshalerUtil.marshalFixed64(Span.START_TIME_UNIX_NANO_FIELD_NUMBER, startEpochNanos, output);
       MarshalerUtil.marshalFixed64(Span.END_TIME_UNIX_NANO_FIELD_NUMBER, endEpochNanos, output);
@@ -330,8 +329,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
       size += MarshalerUtil.sizeBytes(Span.PARENT_SPAN_ID_FIELD_NUMBER, parentSpanId);
       size += MarshalerUtil.sizeBytes(Span.NAME_FIELD_NUMBER, name);
 
-      // TODO: Make this a MarshalerUtil helper.
-      size += CodedOutputStream.computeEnumSize(Span.KIND_FIELD_NUMBER, spanKind);
+      size += MarshalerUtil.sizeEnum(Span.KIND_FIELD_NUMBER, spanKind);
 
       size += MarshalerUtil.sizeFixed64(Span.START_TIME_UNIX_NANO_FIELD_NUMBER, startEpochNanos);
       size += MarshalerUtil.sizeFixed64(Span.END_TIME_UNIX_NANO_FIELD_NUMBER, endEpochNanos);
@@ -518,31 +516,22 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
 
     @Override
     public void writeTo(CodedOutputStream output) throws IOException {
-      // TODO: Make this a MarshalerUtil helper.
       if (deprecatedStatusCode != Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE) {
-        output.writeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
+        MarshalerUtil.marshalEnum(
+            Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode, output);
       }
       MarshalerUtil.marshalBytes(Status.MESSAGE_FIELD_NUMBER, description, output);
-      // TODO: Make this a MarshalerUtil helper.
       if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET_VALUE) {
-        output.writeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode);
+        MarshalerUtil.marshalEnum(Status.CODE_FIELD_NUMBER, protoStatusCode, output);
       }
     }
 
     private static int computeSize(
         int protoStatusCode, int deprecatedStatusCode, byte[] description) {
       int size = 0;
-      // TODO: Make this a MarshalerUtil helper.
-      if (deprecatedStatusCode != Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE) {
-        size +=
-            CodedOutputStream.computeEnumSize(
-                Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
-      }
+      size += MarshalerUtil.sizeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
       size += MarshalerUtil.sizeBytes(Status.MESSAGE_FIELD_NUMBER, description);
-      // TODO: Make this a MarshalerUtil helper.
-      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET_VALUE) {
-        size += CodedOutputStream.computeEnumSize(Status.CODE_FIELD_NUMBER, protoStatusCode);
-      }
+      size += MarshalerUtil.sizeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode);
       return size;
     }
   }
