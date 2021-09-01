@@ -127,6 +127,14 @@ final class MarshalerUtil {
     output.writeByteArray(fieldNumber, message);
   }
 
+  // Assumes OTLP always defines the first item in an enum with number 0, which it does and will.
+  static void marshalEnum(int fieldNumber, int value, CodedOutputStream output) throws IOException {
+    if (value == 0) {
+      return;
+    }
+    output.writeEnum(fieldNumber, value);
+  }
+
   static int sizeRepeatedFixed64(int fieldNumber, List<Long> values) {
     return sizeRepeatedFixed64(fieldNumber, values.size());
   }
@@ -207,6 +215,14 @@ final class MarshalerUtil {
       return 0;
     }
     return CodedOutputStream.computeByteArraySize(fieldNumber, message);
+  }
+
+  // Assumes OTLP always defines the first item in an enum with number 0, which it does and will.
+  static int sizeEnum(int fieldNumber, int value) {
+    if (value == 0) {
+      return 0;
+    }
+    return CodedOutputStream.computeEnumSize(fieldNumber, value);
   }
 
   static byte[] toBytes(@Nullable String value) {
