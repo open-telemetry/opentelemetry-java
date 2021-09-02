@@ -568,7 +568,7 @@ public class SdkMeterProviderTest {
                 selector,
                 View.builder()
                     .setAggregation(Aggregation.sum(AggregationTemporality.CUMULATIVE))
-                    .addAppendBaggage()
+                    .appendAllBaggageAttributes()
                     .build())
             .build();
     Meter meter = provider.get(SdkMeterProviderTest.class.getName());

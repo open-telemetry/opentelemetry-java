@@ -58,6 +58,8 @@ public final class ViewBuilder {
    * Specify the attributes processor for this view.
    *
    * <p>Note: This resets all attribute filters, baggage appending and other processing.
+   * 
+   * <p>Visible for testing.
    *
    * @param processor The pre-processor for measurement attributes.
    * @return this Builder.
@@ -75,7 +77,7 @@ public final class ViewBuilder {
    * @param keyFilter filter for key names to include.
    * @return this Builder.
    */
-  public ViewBuilder addAttributeKeyFilter(Predicate<String> keyFilter) {
+  public ViewBuilder filterAttributes(Predicate<String> keyFilter) {
     this.processor = this.processor.then(AttributesProcessor.filterByKeyName(keyFilter));
     return this;
   }
@@ -88,7 +90,7 @@ public final class ViewBuilder {
    * @param keyPattern the regular expression for selecting attributes by key name.
    * @return this Builder.
    */
-  public ViewBuilder addAttributeKeyPattern(Pattern keyPattern) {
+  public ViewBuilder filterAttributes(Pattern keyPattern) {
     this.processor =
         this.processor.then(
             AttributesProcessor.filterByKeyName(StringPredicates.regex(keyPattern)));
@@ -103,7 +105,7 @@ public final class ViewBuilder {
    * @param extraAttributes The static attributes to append to measurements.
    * @return this Builder.
    */
-  public ViewBuilder addAppendedAttributes(Attributes extraAttributes) {
+  public ViewBuilder appendAttributes(Attributes extraAttributes) {
     this.processor = this.processor.then(AttributesProcessor.append(extraAttributes));
     return this;
   }
@@ -117,7 +119,7 @@ public final class ViewBuilder {
    *     appended.
    * @return this Builder.
    */
-  public ViewBuilder addAppendBaggageFilter(Predicate<String> keyFilter) {
+  public ViewBuilder appendFilteredBaggageAttributes(Predicate<String> keyFilter) {
     this.processor = this.processor.then(AttributesProcessor.appendBaggageByKeyName(keyFilter));
     return this;
   }
@@ -131,7 +133,7 @@ public final class ViewBuilder {
    *     appended.
    * @return this Builder.
    */
-  public ViewBuilder addAppendBaggagePattern(Pattern keyPattern) {
+  public ViewBuilder appendFilteredBaggageAttributesByPattern(Pattern keyPattern) {
     this.processor =
         this.processor.then(
             AttributesProcessor.appendBaggageByKeyName(StringPredicates.regex(keyPattern)));
@@ -145,8 +147,8 @@ public final class ViewBuilder {
    *
    * @return this Builder.
    */
-  public ViewBuilder addAppendBaggage() {
-    return addAppendBaggageFilter(StringPredicates.ALL);
+  public ViewBuilder appendAllBaggageAttributes() {
+    return appendFilteredBaggageAttributes(StringPredicates.ALL);
   }
 
   /** Returns the resulting {@link View}. */

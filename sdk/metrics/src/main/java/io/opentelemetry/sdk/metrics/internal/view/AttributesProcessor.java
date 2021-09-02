@@ -53,13 +53,13 @@ public abstract class AttributesProcessor {
       return other;
     }
 
-    if (other instanceof JoinedAttribtuesProcessor) {
-      return ((JoinedAttribtuesProcessor) other).prepend(this);
+    if (other instanceof JoinedAttributesProcessor) {
+      return ((JoinedAttributesProcessor) other).prepend(this);
     }
-    return new JoinedAttribtuesProcessor(Arrays.asList(this, other));
+    return new JoinedAttributesProcessor(Arrays.asList(this, other));
   }
 
-  /** No-op version of attributes processer, returns what it gets. */
+  /** No-op version of attributes processor, returns what it gets. */
   public static AttributesProcessor noop() {
     return NOOP;
   }
@@ -153,11 +153,11 @@ public abstract class AttributesProcessor {
 
   /** A {@link AttributesProcessor} that runs a sequence of processors. */
   @Immutable
-  static final class JoinedAttribtuesProcessor extends AttributesProcessor {
+  static final class JoinedAttributesProcessor extends AttributesProcessor {
     private final Collection<AttributesProcessor> processors;
     private final boolean usesContextCache;
 
-    JoinedAttribtuesProcessor(Collection<AttributesProcessor> processors) {
+    JoinedAttributesProcessor(Collection<AttributesProcessor> processors) {
       this.processors = processors;
       this.usesContextCache =
           processors.stream().map(AttributesProcessor::usesContext).reduce(false, (l, r) -> l || r);
@@ -180,19 +180,19 @@ public abstract class AttributesProcessor {
     @Override
     public AttributesProcessor then(AttributesProcessor other) {
       ArrayList<AttributesProcessor> newList = new ArrayList<>(processors);
-      if (other instanceof JoinedAttribtuesProcessor) {
-        newList.addAll(((JoinedAttribtuesProcessor) other).processors);
+      if (other instanceof JoinedAttributesProcessor) {
+        newList.addAll(((JoinedAttributesProcessor) other).processors);
       } else {
         newList.add(other);
       }
-      return new JoinedAttribtuesProcessor(newList);
+      return new JoinedAttributesProcessor(newList);
     }
 
     AttributesProcessor prepend(AttributesProcessor other) {
       ArrayList<AttributesProcessor> newList = new ArrayList<>(processors.size() + 1);
       newList.add(other);
       newList.addAll(processors);
-      return new JoinedAttribtuesProcessor(newList);
+      return new JoinedAttributesProcessor(newList);
     }
   }
 }
