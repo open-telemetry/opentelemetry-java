@@ -120,6 +120,14 @@ final class MarshalerUtil {
     return CodedOutputStream.computeByteArraySize(fieldNumber, message);
   }
 
+  // Assumes OTLP always defines the first item in an enum with number 0, which it does and will.
+  static int sizeEnum(int fieldNumber, int value) {
+    if (value == 0) {
+      return 0;
+    }
+    return CodedOutputStream.computeEnumSize(fieldNumber, value);
+  }
+
   static byte[] toBytes(@Nullable String value) {
     if (value == null || value.isEmpty()) {
       return EMPTY_BYTES;

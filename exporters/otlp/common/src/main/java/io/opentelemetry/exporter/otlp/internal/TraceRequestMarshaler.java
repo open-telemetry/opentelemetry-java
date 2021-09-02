@@ -353,8 +353,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
       size += MarshalerUtil.sizeBytes(Span.PARENT_SPAN_ID_FIELD_NUMBER, parentSpanId);
       size += MarshalerUtil.sizeBytes(Span.NAME_FIELD_NUMBER, nameUtf8);
 
-      // TODO: Make this a MarshalerUtil helper.
-      size += CodedOutputStream.computeEnumSize(Span.KIND_FIELD_NUMBER, spanKind);
+      size += MarshalerUtil.sizeEnum(Span.KIND_FIELD_NUMBER, spanKind);
 
       size += MarshalerUtil.sizeFixed64(Span.START_TIME_UNIX_NANO_FIELD_NUMBER, startEpochNanos);
       size += MarshalerUtil.sizeFixed64(Span.END_TIME_UNIX_NANO_FIELD_NUMBER, endEpochNanos);

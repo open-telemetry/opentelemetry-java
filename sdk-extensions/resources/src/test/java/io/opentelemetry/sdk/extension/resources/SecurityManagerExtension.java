@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.extension.resources;
 
 import java.security.Permission;
+import java.util.HashSet;
 import java.util.PropertyPermission;
+import java.util.Set;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -32,10 +34,26 @@ final class SecurityManagerExtension implements BeforeEachCallback, AfterEachCal
 
     private static final BlockPropertiesAccess INSTANCE = new BlockPropertiesAccess();
 
+    private static final Set<String> BLOCKED_PROPERTIES = new HashSet<>();
+
+    static {
+      BLOCKED_PROPERTIES.add("java.home");
+      BLOCKED_PROPERTIES.add("java.runtime.home");
+      BLOCKED_PROPERTIES.add("java.runtime.version");
+      BLOCKED_PROPERTIES.add("java.vm.name");
+      BLOCKED_PROPERTIES.add("java.vm.vendor");
+      BLOCKED_PROPERTIES.add("java.vm.version");
+      BLOCKED_PROPERTIES.add("os.arch");
+      BLOCKED_PROPERTIES.add("os.name");
+      BLOCKED_PROPERTIES.add("os.version");
+    }
+
     @Override
     public void checkPermission(Permission perm) {
       if (perm instanceof PropertyPermission) {
-        throw new SecurityException("Property access not allowed.");
+        if (BLOCKED_PROPERTIES.contains(perm.getName())) {
+          throw new SecurityException("Property access not allowed.");
+        }
       }
     }
   }

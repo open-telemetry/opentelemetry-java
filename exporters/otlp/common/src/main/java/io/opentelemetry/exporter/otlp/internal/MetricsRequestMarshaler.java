@@ -371,9 +371,8 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         HistogramDataPointMarshaler[] dataPoints, int aggregationTemporality) {
       int size = 0;
       size += MarshalerUtil.sizeRepeatedMessage(Histogram.DATA_POINTS_FIELD_NUMBER, dataPoints);
-      // TODO: Make this a MarshalerUtil helper.
       size +=
-          CodedOutputStream.computeEnumSize(
+          MarshalerUtil.sizeEnum(
               Histogram.AGGREGATION_TEMPORALITY_FIELD_NUMBER, aggregationTemporality);
       return size;
     }
@@ -546,10 +545,8 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         NumberDataPointMarshaler[] dataPoints, int aggregationTemporality, boolean isMonotonic) {
       int size = 0;
       size += MarshalerUtil.sizeRepeatedMessage(Sum.DATA_POINTS_FIELD_NUMBER, dataPoints);
-      // TODO: Make this a MarshalerUtil helper.
       size +=
-          CodedOutputStream.computeEnumSize(
-              Sum.AGGREGATION_TEMPORALITY_FIELD_NUMBER, aggregationTemporality);
+          MarshalerUtil.sizeEnum(Sum.AGGREGATION_TEMPORALITY_FIELD_NUMBER, aggregationTemporality);
       size += MarshalerUtil.sizeBool(Sum.IS_MONOTONIC_FIELD_NUMBER, isMonotonic);
       return size;
     }
