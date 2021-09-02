@@ -567,7 +567,7 @@ public class SdkMeterProviderTest {
             .registerView(
                 selector,
                 View.builder()
-                    .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.CUMULATIVE))
+                    .setAggregation(Aggregation.sum(AggregationTemporality.CUMULATIVE))
                     .addAppendBaggage()
                     .build())
             .build();
