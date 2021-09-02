@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.internal;
 import java.io.IOException;
 import java.util.List;
 
+/** Serializer for the protobuf binary wire format. */
 final class ProtoSerializer extends Serializer {
 
   private final CodedOutputStream output;

@@ -8,15 +8,25 @@ package io.opentelemetry.exporter.otlp.internal;
 import java.io.IOException;
 import java.util.List;
 
-@SuppressWarnings("checkstyle:JavadocMethod")
+/**
+ * Serializer to use when converting from an SDK data object into a protobuf output format. Unlike
+ * {@link CodedOutputStream}, which strictly encodes data into the protobuf binary format, this
+ *
+ * <ul>
+ *   <li>Handles proto3 semantics of not outputting the value when it matches the default of a field
+ *   <li>Can be implemented to serialize into protobuf JSON format (not binary)
+ * </ul>
+ */
 public abstract class Serializer {
 
+  /** Returns a {@link Serializer} to serialize into protobuf binary format. */
   public static Serializer createProtoSerializer(CodedOutputStream output) {
     return new ProtoSerializer(output);
   }
 
   Serializer() {}
 
+  /** Serializes a protobuf {@code bool} field. */
   public void serializeBool(int protoFieldNumber, String jsonFieldName, boolean value)
       throws IOException {
     if (!value) {
@@ -28,6 +38,7 @@ public abstract class Serializer {
   protected abstract void writeBool(int protoFieldNumber, String jsonFieldName, boolean value)
       throws IOException;
 
+  /** Serializes a protobuf {@code enum} field. */
   public void serializeEnum(int protoFieldNumber, String jsonFieldName, int enumNumber)
       throws IOException {
     if (enumNumber == 0) {
@@ -39,6 +50,7 @@ public abstract class Serializer {
   protected abstract void writeEnum(int protoFieldNumber, String jsonFieldName, int enumNumber)
       throws IOException;
 
+  /** Serializes a protobuf {@code uint32} field. */
   public void serializeUInt32(int protoFieldNumber, String jsonFieldName, int value)
       throws IOException {
     if (value == 0) {
@@ -53,6 +65,7 @@ public abstract class Serializer {
   protected abstract void writeInt64(int protoFieldNumber, String jsonFieldName, long value)
       throws IOException;
 
+  /** Serializes a protobuf {@code fixed64} field. */
   public void serializeFixed64(int protoFieldNumber, String jsonFieldName, long value)
       throws IOException {
     if (value == 0) {
@@ -66,6 +79,7 @@ public abstract class Serializer {
 
   protected abstract void writeFixed64Value(long value) throws IOException;
 
+  /** Serializes a proto buf {@code double} field. */
   public void serializeDouble(int protoFieldNumber, String jsonFieldName, double value)
       throws IOException {
     if (value == 0D) {
@@ -79,6 +93,10 @@ public abstract class Serializer {
 
   protected abstract void writeDoubleValue(double value) throws IOException;
 
+  /**
+   * Serializes a protobuf {@code string} field. {@code utf8Bytes} is the UTF8 encoded bytes of the
+   * string to serialize.
+   */
   public void serializeString(int protoFieldNumber, String jsonFieldName, byte[] utf8Bytes)
       throws IOException {
     if (utf8Bytes.length == 0) {
@@ -90,6 +108,7 @@ public abstract class Serializer {
   protected abstract void writeString(int protoFieldNumber, String jsonFieldName, byte[] utf8Bytes)
       throws IOException;
 
+  /** Serializes a protobuf {@code bytes} field. */
   public void serializeBytes(int protoFieldNumber, String jsonFieldName, byte[] value)
       throws IOException {
     if (value.length == 0) {
@@ -106,6 +125,7 @@ public abstract class Serializer {
 
   protected abstract void writeEndMessage() throws IOException;
 
+  /** Serializes a protobuf embedded {@code message}. */
   public void serializeMessage(int protoFieldNumber, String jsonFieldName, Marshaler message)
       throws IOException {
     writeStartMessage(protoFieldNumber, jsonFieldName, message.getProtoSerializedSize());
@@ -119,6 +139,7 @@ public abstract class Serializer {
 
   protected abstract void writeEndRepeatedPrimitive() throws IOException;
 
+  /** Serializes a {@code repeated fixed64} field. */
   public void serializeRepeatedFixed64(
       int protoFieldNumber, String jsonFieldName, List<Long> values) throws IOException {
     if (values.isEmpty()) {
@@ -132,6 +153,7 @@ public abstract class Serializer {
     writeEndRepeatedPrimitive();
   }
 
+  /** Serializes a {@code repeated double} field. */
   public void serializeRepeatedDouble(
       int protoFieldNumber, String jsonFieldName, List<Double> values) throws IOException {
     if (values.isEmpty()) {
@@ -145,13 +167,16 @@ public abstract class Serializer {
     writeEndRepeatedPrimitive();
   }
 
+  /** Serializes {@code repeated message} field. */
   public abstract void serializeRepeatedMessage(
       int protoFieldNumber, String jsonFieldName, Marshaler[] repeatedMessage) throws IOException;
 
+  /** Serializes {@code repeated message} field. */
   public abstract void serializeRepeatedMessage(
       int protoFieldNumber, String jsonFieldName, List<? extends Marshaler> repeatedMessage)
       throws IOException;
 
+  /** Writes the value for a message field that has been pre-serialized. */
   public abstract void writeSerializedMessage(byte[] protoSerialized, byte[] jsonSerialized)
       throws IOException;
 }
