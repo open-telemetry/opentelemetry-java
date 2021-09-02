@@ -74,7 +74,6 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
   @Override
   public final void writeTo(Serializer output) throws IOException {
     output.serializeString(KeyValue.KEY_FIELD_NUMBER, KeyValue.KEY_JSON_NAME, keyUtf8);
-    ;
     if (valueSize > 0) {
       // TODO(anuraaga): Replace this hack with directly serializing Value within Serializer. The
       // proto and JSON representations of Value differ too much to use Marshaler.

@@ -297,7 +297,6 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
           Span.PARENT_SPAN_ID_FIELD_NUMBER, Span.PARENT_SPAN_ID_JSON_NAME, parentSpanId);
       output.serializeString(Span.NAME_FIELD_NUMBER, Span.NAME_JSON_NAME, nameUtf8);
 
-      // TODO: Make this a MarshalerUtil helper.
       output.serializeEnum(Span.KIND_FIELD_NUMBER, Span.KIND_JSON_NAME, spanKind);
 
       output.serializeFixed64(
@@ -493,7 +492,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
       // TODO: Set TraceState;
       output.serializeRepeatedMessage(
           Span.Link.ATTRIBUTES_FIELD_NUMBER, Span.Link.ATTRIBUTES_JSON_NAME, attributeMarshalers);
-      output.serializeEnum(
+      output.serializeUInt32(
           Span.Link.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER,
           Span.Link.DROPPED_ATTRIBUTES_COUNT_JSON_NAME,
           droppedAttributesCount);
@@ -562,16 +561,12 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     private static int computeSize(
         int protoStatusCode, int deprecatedStatusCode, byte[] descriptionUtf8) {
       int size = 0;
-      // TODO: Make this a MarshalerUtil helper.
       if (deprecatedStatusCode != Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE) {
-        size +=
-            CodedOutputStream.computeEnumSize(
-                Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
+        size += MarshalerUtil.sizeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
       }
       size += MarshalerUtil.sizeBytes(Status.MESSAGE_FIELD_NUMBER, descriptionUtf8);
-      // TODO: Make this a MarshalerUtil helper.
       if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET_VALUE) {
-        size += CodedOutputStream.computeEnumSize(Status.CODE_FIELD_NUMBER, protoStatusCode);
+        size += MarshalerUtil.sizeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode);
       }
       return size;
     }

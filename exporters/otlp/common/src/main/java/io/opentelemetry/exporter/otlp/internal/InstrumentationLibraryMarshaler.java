@@ -37,9 +37,14 @@ final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
     super(computeSize(name, version));
     ByteArrayOutputStream bos = new ByteArrayOutputStream(getProtoSerializedSize());
     CodedOutputStream output = CodedOutputStream.newInstance(bos);
+    Serializer serializer = Serializer.createProtoSerializer(output);
     try {
-      output.writeByteArray(InstrumentationLibrary.NAME_FIELD_NUMBER, name);
-      output.writeByteArray(InstrumentationLibrary.VERSION_FIELD_NUMBER, version);
+      serializer.serializeBytes(
+          InstrumentationLibrary.NAME_FIELD_NUMBER, InstrumentationLibrary.NAME_JSON_NAME, name);
+      serializer.serializeBytes(
+          InstrumentationLibrary.VERSION_FIELD_NUMBER,
+          InstrumentationLibrary.VERSION_JSON_NAME,
+          version);
       output.flush();
     } catch (IOException e) {
       // Presized so can't happen (we would have already thrown OutOfMemoryError)

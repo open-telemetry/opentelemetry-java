@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import io.opentelemetry.exporter.otlp.internal.CodedOutputStream;
+import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
 import io.opentelemetry.exporter.otlp.internal.TraceRequestMarshaler;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
@@ -64,7 +65,7 @@ public class RequestMarshalBenchmarks {
     ByteArrayOutputStream customOutput =
         new ByteArrayOutputStream(requestMarshaler.getProtoSerializedSize());
     CodedOutputStream cos = CodedOutputStream.newInstance(customOutput);
-    requestMarshaler.writeTo(cos);
+    requestMarshaler.writeTo(Serializer.createProtoSerializer(cos));
     cos.flush();
     return customOutput;
   }
