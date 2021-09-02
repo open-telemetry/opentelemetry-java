@@ -33,9 +33,10 @@ final class ResourceMarshaler extends MarshalerWithSize {
     super(calculateSize(attributeMarshalers));
     ByteArrayOutputStream bos = new ByteArrayOutputStream(getProtoSerializedSize());
     CodedOutputStream output = CodedOutputStream.newInstance(bos);
+    ProtoSerializer serializer = new ProtoSerializer(output);
     try {
-      MarshalerUtil.marshalRepeatedMessage(
-          Resource.ATTRIBUTES_FIELD_NUMBER, attributeMarshalers, output);
+      serializer.serializeRepeatedMessage(
+          Resource.ATTRIBUTES_FIELD_NUMBER, Resource.ATTRIBUTES_JSON_NAME, attributeMarshalers);
       output.flush();
     } catch (IOException e) {
       // Presized so can't happen (we would have already thrown OutOfMemoryError)
@@ -45,8 +46,9 @@ final class ResourceMarshaler extends MarshalerWithSize {
   }
 
   @Override
-  public void writeTo(CodedOutputStream output) throws IOException {
-    output.writeRawBytes(serializedResource);
+  public void writeTo(Serializer output) throws IOException {
+    // TODO(anuraaga): Preserialize JSON as well.
+    output.writeSerializedMessage(serializedResource, MarshalerUtil.EMPTY_BYTES);
   }
 
   private static int calculateSize(AttributeMarshaler[] attributeMarshalers) {

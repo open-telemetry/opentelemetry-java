@@ -788,7 +788,7 @@ class MetricsRequestMarshalerTest {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     CodedOutputStream cos = CodedOutputStream.newInstance(bos);
     try {
-      marshaler.writeTo(cos);
+      marshaler.writeTo(Serializer.createProtoSerializer(cos));
       cos.flush();
     } catch (IOException e) {
       throw new UncheckedIOException(e);

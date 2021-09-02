@@ -27,6 +27,7 @@ import io.grpc.Drainable;
 import io.grpc.KnownLength;
 import io.opentelemetry.exporter.otlp.internal.CodedOutputStream;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.Serializer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -58,7 +59,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
     if (message != null) {
       written = message.getProtoSerializedSize();
       CodedOutputStream cos = CodedOutputStream.newInstance(target);
-      message.writeTo(cos);
+      message.writeTo(Serializer.createProtoSerializer(cos));
       cos.flush();
       message = null;
     } else if (partial != null) {
@@ -109,7 +110,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   private static byte[] toByteArray(Marshaler message) throws IOException {
     ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getProtoSerializedSize());
     CodedOutputStream cos = CodedOutputStream.newInstance(bos);
-    message.writeTo(cos);
+    message.writeTo(Serializer.createProtoSerializer(cos));
     cos.flush();
     return bos.toByteArray();
   }

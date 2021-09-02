@@ -7,7 +7,6 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,94 +36,6 @@ final class MarshalerUtil {
       marshalerList.add(createMarshaler.apply(data));
     }
     return result;
-  }
-
-  static void marshalRepeatedFixed64(int fieldNumber, List<Long> values, CodedOutputStream output)
-      throws IOException {
-    if (values.isEmpty()) {
-      return;
-    }
-    output.writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    // TODO(anuraaga): Consider passing in from calculateSize to avoid recomputing.
-    output.writeUInt32NoTag(WireFormat.FIXED64_SIZE * values.size());
-    for (long value : values) {
-      output.writeFixed64NoTag(value);
-    }
-  }
-
-  static void marshalRepeatedDouble(int fieldNumber, List<Double> values, CodedOutputStream output)
-      throws IOException {
-    if (values.isEmpty()) {
-      return;
-    }
-    output.writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    // TODO(anuraaga): Consider passing in from calculateSize to avoid recomputing.
-    output.writeUInt32NoTag(WireFormat.FIXED64_SIZE * values.size());
-    for (double value : values) {
-      output.writeDoubleNoTag(value);
-    }
-  }
-
-  static <T extends Marshaler> void marshalRepeatedMessage(
-      int fieldNumber, T[] repeatedMessage, CodedOutputStream output) throws IOException {
-    for (Marshaler message : repeatedMessage) {
-      marshalMessage(fieldNumber, message, output);
-    }
-  }
-
-  static void marshalRepeatedMessage(
-      int fieldNumber, List<? extends Marshaler> repeatedMessage, CodedOutputStream output)
-      throws IOException {
-    for (Marshaler message : repeatedMessage) {
-      marshalMessage(fieldNumber, message, output);
-    }
-  }
-
-  static void marshalMessage(int fieldNumber, Marshaler message, CodedOutputStream output)
-      throws IOException {
-    output.writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    output.writeUInt32NoTag(message.getProtoSerializedSize());
-    message.writeTo(output);
-  }
-
-  static void marshalBool(int fieldNumber, boolean value, CodedOutputStream output)
-      throws IOException {
-    if (!value) {
-      return;
-    }
-    output.writeBool(fieldNumber, value);
-  }
-
-  static void marshalUInt32(int fieldNumber, int message, CodedOutputStream output)
-      throws IOException {
-    if (message == 0) {
-      return;
-    }
-    output.writeUInt32(fieldNumber, message);
-  }
-
-  static void marshalFixed64(int fieldNumber, long message, CodedOutputStream output)
-      throws IOException {
-    if (message == 0L) {
-      return;
-    }
-    output.writeFixed64(fieldNumber, message);
-  }
-
-  static void marshalDouble(int fieldNumber, double message, CodedOutputStream output)
-      throws IOException {
-    if (message == 0D) {
-      return;
-    }
-    output.writeDouble(fieldNumber, message);
-  }
-
-  static void marshalBytes(int fieldNumber, byte[] message, CodedOutputStream output)
-      throws IOException {
-    if (message.length == 0) {
-      return;
-    }
-    output.writeByteArray(fieldNumber, message);
   }
 
   static int sizeRepeatedFixed64(int fieldNumber, List<Long> values) {

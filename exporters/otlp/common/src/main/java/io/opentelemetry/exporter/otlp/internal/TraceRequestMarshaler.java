@@ -83,42 +83,46 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
 
   @Override
   public void writeTo(Serializer output) throws IOException {
-    output.serializeRepeatedMessage(ExportTraceServiceRequest.RESOURCE_SPANS_FIELD_NUMBER,
-        ExportTraceServiceRequest.RESOURCE_SPANS_JSON_NAME, resourceSpansMarshalers);
+    output.serializeRepeatedMessage(
+        ExportTraceServiceRequest.RESOURCE_SPANS_FIELD_NUMBER,
+        ExportTraceServiceRequest.RESOURCE_SPANS_JSON_NAME,
+        resourceSpansMarshalers);
   }
 
   private static final class ResourceSpansMarshaler extends MarshalerWithSize {
     private final ResourceMarshaler resourceMarshaler;
-    private final byte[] schemaUrl;
+    private final byte[] schemaUrlUtf8;
     private final InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers;
 
     private ResourceSpansMarshaler(
         ResourceMarshaler resourceMarshaler,
-        byte[] schemaUrl,
+        byte[] schemaUrlUtf8,
         InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers) {
-      super(calculateSize(resourceMarshaler, schemaUrl, instrumentationLibrarySpansMarshalers));
+      super(calculateSize(resourceMarshaler, schemaUrlUtf8, instrumentationLibrarySpansMarshalers));
       this.resourceMarshaler = resourceMarshaler;
-      this.schemaUrl = schemaUrl;
+      this.schemaUrlUtf8 = schemaUrlUtf8;
       this.instrumentationLibrarySpansMarshalers = instrumentationLibrarySpansMarshalers;
     }
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeMessage(ResourceSpans.RESOURCE_FIELD_NUMBER, ResourceSpans.RESOURCE_JSON_NAME, resourceMarshaler);
+      output.serializeMessage(
+          ResourceSpans.RESOURCE_FIELD_NUMBER, ResourceSpans.RESOURCE_JSON_NAME, resourceMarshaler);
       output.serializeRepeatedMessage(
           ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_FIELD_NUMBER,
           ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_JSON_NAME,
           instrumentationLibrarySpansMarshalers);
-      output.serializeBytes(ResourceSpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl, output);
+      output.serializeString(
+          ResourceSpans.SCHEMA_URL_FIELD_NUMBER, ResourceSpans.SCHEMA_URL_JSON_NAME, schemaUrlUtf8);
     }
 
     private static int calculateSize(
         ResourceMarshaler resourceMarshaler,
-        byte[] schemaUrl,
+        byte[] schemaUrlUtf8,
         InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers) {
       int size = 0;
       size += MarshalerUtil.sizeMessage(ResourceSpans.RESOURCE_FIELD_NUMBER, resourceMarshaler);
-      size += MarshalerUtil.sizeBytes(ResourceSpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl);
+      size += MarshalerUtil.sizeBytes(ResourceSpans.SCHEMA_URL_FIELD_NUMBER, schemaUrlUtf8);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
               ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_FIELD_NUMBER,
@@ -130,33 +134,37 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
   private static final class InstrumentationLibrarySpansMarshaler extends MarshalerWithSize {
     private final InstrumentationLibraryMarshaler instrumentationLibrary;
     private final List<SpanMarshaler> spanMarshalers;
-    private final byte[] schemaUrl;
+    private final byte[] schemaUrlUtf8;
 
     private InstrumentationLibrarySpansMarshaler(
         InstrumentationLibraryMarshaler instrumentationLibrary,
-        byte[] schemaUrl,
+        byte[] schemaUrlUtf8,
         List<SpanMarshaler> spanMarshalers) {
-      super(calculateSize(instrumentationLibrary, schemaUrl, spanMarshalers));
+      super(calculateSize(instrumentationLibrary, schemaUrlUtf8, spanMarshalers));
       this.instrumentationLibrary = instrumentationLibrary;
-      this.schemaUrl = schemaUrl;
+      this.schemaUrlUtf8 = schemaUrlUtf8;
       this.spanMarshalers = spanMarshalers;
     }
 
     @Override
-    public void writeTo(CodedOutputStream output) throws IOException {
-      MarshalerUtil.marshalMessage(
+    public void writeTo(Serializer output) throws IOException {
+      output.serializeMessage(
           InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
-          instrumentationLibrary,
-          output);
-      MarshalerUtil.marshalRepeatedMessage(
-          InstrumentationLibrarySpans.SPANS_FIELD_NUMBER, spanMarshalers, output);
-      MarshalerUtil.marshalBytes(
-          InstrumentationLibrarySpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl, output);
+          InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_JSON_NAME,
+          instrumentationLibrary);
+      output.serializeRepeatedMessage(
+          InstrumentationLibrarySpans.SPANS_FIELD_NUMBER,
+          InstrumentationLibrarySpans.SPANS_JSON_NAME,
+          spanMarshalers);
+      output.serializeString(
+          InstrumentationLibrarySpans.SCHEMA_URL_FIELD_NUMBER,
+          InstrumentationLibrarySpans.SCHEMA_URL_JSON_NAME,
+          schemaUrlUtf8);
     }
 
     private static int calculateSize(
         InstrumentationLibraryMarshaler instrumentationLibrary,
-        byte[] schemaUrl,
+        byte[] schemaUrlUtf8,
         List<SpanMarshaler> spanMarshalers) {
       int size = 0;
       size +=
@@ -164,7 +172,8 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
               InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
               instrumentationLibrary);
       size +=
-          MarshalerUtil.sizeBytes(InstrumentationLibrarySpans.SCHEMA_URL_FIELD_NUMBER, schemaUrl);
+          MarshalerUtil.sizeBytes(
+              InstrumentationLibrarySpans.SCHEMA_URL_FIELD_NUMBER, schemaUrlUtf8);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
               InstrumentationLibrarySpans.SPANS_FIELD_NUMBER, spanMarshalers);
@@ -176,7 +185,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     private final byte[] traceId;
     private final byte[] spanId;
     private final byte[] parentSpanId;
-    private final byte[] name;
+    private final byte[] nameUtf8;
     private final int spanKind;
     private final long startEpochNanos;
     private final long endEpochNanos;
@@ -236,7 +245,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
         byte[] traceId,
         byte[] spanId,
         byte[] parentSpanId,
-        byte[] name,
+        byte[] nameUtf8,
         int spanKind,
         long startEpochNanos,
         long endEpochNanos,
@@ -252,7 +261,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
               traceId,
               spanId,
               parentSpanId,
-              name,
+              nameUtf8,
               spanKind,
               startEpochNanos,
               endEpochNanos,
@@ -266,7 +275,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
       this.traceId = traceId;
       this.spanId = spanId;
       this.parentSpanId = parentSpanId;
-      this.name = name;
+      this.nameUtf8 = nameUtf8;
       this.spanKind = spanKind;
       this.startEpochNanos = startEpochNanos;
       this.endEpochNanos = endEpochNanos;
@@ -280,39 +289,53 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     }
 
     @Override
-    public void writeTo(CodedOutputStream output) throws IOException {
-      MarshalerUtil.marshalBytes(Span.TRACE_ID_FIELD_NUMBER, traceId, output);
-      MarshalerUtil.marshalBytes(Span.SPAN_ID_FIELD_NUMBER, spanId, output);
+    public void writeTo(Serializer output) throws IOException {
+      output.serializeBytes(Span.TRACE_ID_FIELD_NUMBER, Span.TRACE_ID_JSON_NAME, traceId);
+      output.serializeBytes(Span.SPAN_ID_FIELD_NUMBER, Span.SPAN_ID_JSON_NAME, spanId);
       // TODO: Set TraceState;
-      MarshalerUtil.marshalBytes(Span.PARENT_SPAN_ID_FIELD_NUMBER, parentSpanId, output);
-      MarshalerUtil.marshalBytes(Span.NAME_FIELD_NUMBER, name, output);
+      output.serializeBytes(
+          Span.PARENT_SPAN_ID_FIELD_NUMBER, Span.PARENT_SPAN_ID_JSON_NAME, parentSpanId);
+      output.serializeString(Span.NAME_FIELD_NUMBER, Span.NAME_JSON_NAME, nameUtf8);
 
       // TODO: Make this a MarshalerUtil helper.
-      output.writeEnum(Span.KIND_FIELD_NUMBER, spanKind);
+      output.serializeEnum(Span.KIND_FIELD_NUMBER, Span.KIND_JSON_NAME, spanKind);
 
-      MarshalerUtil.marshalFixed64(Span.START_TIME_UNIX_NANO_FIELD_NUMBER, startEpochNanos, output);
-      MarshalerUtil.marshalFixed64(Span.END_TIME_UNIX_NANO_FIELD_NUMBER, endEpochNanos, output);
+      output.serializeFixed64(
+          Span.START_TIME_UNIX_NANO_FIELD_NUMBER,
+          Span.START_TIME_UNIX_NANO_JSON_NAME,
+          startEpochNanos);
+      output.serializeFixed64(
+          Span.END_TIME_UNIX_NANO_FIELD_NUMBER, Span.END_TIME_UNIX_NANO_JSON_NAME, endEpochNanos);
 
-      MarshalerUtil.marshalRepeatedMessage(
-          Span.ATTRIBUTES_FIELD_NUMBER, attributeMarshalers, output);
-      MarshalerUtil.marshalUInt32(
-          Span.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER, droppedAttributesCount, output);
+      output.serializeRepeatedMessage(
+          Span.ATTRIBUTES_FIELD_NUMBER, Span.ATTRIBUTES_JSON_NAME, attributeMarshalers);
+      output.serializeUInt32(
+          Span.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER,
+          Span.DROPPED_ATTRIBUTES_COUNT_JSON_NAME,
+          droppedAttributesCount);
 
-      MarshalerUtil.marshalRepeatedMessage(Span.EVENTS_FIELD_NUMBER, spanEventMarshalers, output);
-      MarshalerUtil.marshalUInt32(
-          Span.DROPPED_EVENTS_COUNT_FIELD_NUMBER, droppedEventsCount, output);
+      output.serializeRepeatedMessage(
+          Span.EVENTS_FIELD_NUMBER, Span.EVENTS_JSON_NAME, spanEventMarshalers);
+      output.serializeUInt32(
+          Span.DROPPED_EVENTS_COUNT_FIELD_NUMBER,
+          Span.DROPPED_EVENTS_COUNT_JSON_NAME,
+          droppedEventsCount);
 
-      MarshalerUtil.marshalRepeatedMessage(Span.LINKS_FIELD_NUMBER, spanLinkMarshalers, output);
-      MarshalerUtil.marshalUInt32(Span.DROPPED_LINKS_COUNT_FIELD_NUMBER, droppedLinksCount, output);
+      output.serializeRepeatedMessage(
+          Span.LINKS_FIELD_NUMBER, Span.LINKS_JSON_NAME, spanLinkMarshalers);
+      output.serializeUInt32(
+          Span.DROPPED_LINKS_COUNT_FIELD_NUMBER,
+          Span.DROPPED_LINKS_COUNT_JSON_NAME,
+          droppedLinksCount);
 
-      MarshalerUtil.marshalMessage(Span.STATUS_FIELD_NUMBER, spanStatusMarshaler, output);
+      output.serializeMessage(Span.STATUS_FIELD_NUMBER, Span.STATUS_JSON_NAME, spanStatusMarshaler);
     }
 
     private static int calculateSize(
         byte[] traceId,
         byte[] spanId,
         byte[] parentSpanId,
-        byte[] name,
+        byte[] nameUtf8,
         int spanKind,
         long startEpochNanos,
         long endEpochNanos,
@@ -328,7 +351,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
       size += MarshalerUtil.sizeBytes(Span.SPAN_ID_FIELD_NUMBER, spanId);
       // TODO: Set TraceState;
       size += MarshalerUtil.sizeBytes(Span.PARENT_SPAN_ID_FIELD_NUMBER, parentSpanId);
-      size += MarshalerUtil.sizeBytes(Span.NAME_FIELD_NUMBER, name);
+      size += MarshalerUtil.sizeBytes(Span.NAME_FIELD_NUMBER, nameUtf8);
 
       // TODO: Make this a MarshalerUtil helper.
       size += CodedOutputStream.computeEnumSize(Span.KIND_FIELD_NUMBER, spanKind);
@@ -391,13 +414,16 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     }
 
     @Override
-    public void writeTo(CodedOutputStream output) throws IOException {
-      MarshalerUtil.marshalFixed64(Span.Event.TIME_UNIX_NANO_FIELD_NUMBER, epochNanos, output);
-      MarshalerUtil.marshalBytes(Span.Event.NAME_FIELD_NUMBER, name, output);
-      MarshalerUtil.marshalRepeatedMessage(
-          Span.Event.ATTRIBUTES_FIELD_NUMBER, attributeMarshalers, output);
-      MarshalerUtil.marshalUInt32(
-          Span.Event.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER, droppedAttributesCount, output);
+    public void writeTo(Serializer output) throws IOException {
+      output.serializeFixed64(
+          Span.Event.TIME_UNIX_NANO_FIELD_NUMBER, Span.Event.TIME_UNIX_NANO_JSON_NAME, epochNanos);
+      output.serializeBytes(Span.Event.NAME_FIELD_NUMBER, Span.Event.NAME_JSON_NAME, name);
+      output.serializeRepeatedMessage(
+          Span.Event.ATTRIBUTES_FIELD_NUMBER, Span.Event.ATTRIBUTES_JSON_NAME, attributeMarshalers);
+      output.serializeUInt32(
+          Span.Event.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER,
+          Span.Event.DROPPED_ATTRIBUTES_COUNT_JSON_NAME,
+          droppedAttributesCount);
     }
 
     private static int calculateSize(
@@ -462,14 +488,16 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     }
 
     @Override
-    public void writeTo(CodedOutputStream output) throws IOException {
-      MarshalerUtil.marshalBytes(Span.Link.TRACE_ID_FIELD_NUMBER, traceId, output);
-      MarshalerUtil.marshalBytes(Span.Link.SPAN_ID_FIELD_NUMBER, spanId, output);
+    public void writeTo(Serializer output) throws IOException {
+      output.serializeBytes(Span.Link.TRACE_ID_FIELD_NUMBER, Span.Link.TRACE_ID_JSON_NAME, traceId);
+      output.serializeBytes(Span.Link.SPAN_ID_FIELD_NUMBER, Span.Link.SPAN_ID_JSON_NAME, spanId);
       // TODO: Set TraceState;
-      MarshalerUtil.marshalRepeatedMessage(
-          Span.Link.ATTRIBUTES_FIELD_NUMBER, attributeMarshalers, output);
-      MarshalerUtil.marshalUInt32(
-          Span.Link.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER, droppedAttributesCount, output);
+      output.serializeRepeatedMessage(
+          Span.Link.ATTRIBUTES_FIELD_NUMBER, Span.Link.ATTRIBUTES_JSON_NAME, attributeMarshalers);
+      output.serializeEnum(
+          Span.Link.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER,
+          Span.Link.DROPPED_ATTRIBUTES_COUNT_JSON_NAME,
+          droppedAttributesCount);
     }
 
     private static int calculateSize(
@@ -493,7 +521,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
   private static final class SpanStatusMarshaler extends MarshalerWithSize {
     private final int protoStatusCode;
     private final int deprecatedStatusCode;
-    private final byte[] description;
+    private final byte[] descriptionUtf8;
 
     static SpanStatusMarshaler create(StatusData status) {
       int protoStatusCode = Status.StatusCode.STATUS_CODE_UNSET_VALUE;
@@ -509,28 +537,31 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
       return new SpanStatusMarshaler(protoStatusCode, deprecatedStatusCode, description);
     }
 
-    private SpanStatusMarshaler(int protoStatusCode, int deprecatedStatusCode, byte[] description) {
-      super(computeSize(protoStatusCode, deprecatedStatusCode, description));
+    private SpanStatusMarshaler(
+        int protoStatusCode, int deprecatedStatusCode, byte[] descriptionUtf8) {
+      super(computeSize(protoStatusCode, deprecatedStatusCode, descriptionUtf8));
       this.protoStatusCode = protoStatusCode;
       this.deprecatedStatusCode = deprecatedStatusCode;
-      this.description = description;
+      this.descriptionUtf8 = descriptionUtf8;
     }
 
     @Override
-    public void writeTo(CodedOutputStream output) throws IOException {
-      // TODO: Make this a MarshalerUtil helper.
+    public void writeTo(Serializer output) throws IOException {
       if (deprecatedStatusCode != Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE) {
-        output.writeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
+        output.serializeEnum(
+            Status.DEPRECATED_CODE_FIELD_NUMBER,
+            Status.DEPRECATED_CODE_JSON_NAME,
+            deprecatedStatusCode);
       }
-      MarshalerUtil.marshalBytes(Status.MESSAGE_FIELD_NUMBER, description, output);
-      // TODO: Make this a MarshalerUtil helper.
+      output.serializeString(
+          Status.MESSAGE_FIELD_NUMBER, Status.MESSAGE_JSON_NAME, descriptionUtf8);
       if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET_VALUE) {
-        output.writeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode);
+        output.serializeEnum(Status.CODE_FIELD_NUMBER, Status.CODE_JSON_NAME, protoStatusCode);
       }
     }
 
     private static int computeSize(
-        int protoStatusCode, int deprecatedStatusCode, byte[] description) {
+        int protoStatusCode, int deprecatedStatusCode, byte[] descriptionUtf8) {
       int size = 0;
       // TODO: Make this a MarshalerUtil helper.
       if (deprecatedStatusCode != Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE) {
@@ -538,7 +569,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
             CodedOutputStream.computeEnumSize(
                 Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
       }
-      size += MarshalerUtil.sizeBytes(Status.MESSAGE_FIELD_NUMBER, description);
+      size += MarshalerUtil.sizeBytes(Status.MESSAGE_FIELD_NUMBER, descriptionUtf8);
       // TODO: Make this a MarshalerUtil helper.
       if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET_VALUE) {
         size += CodedOutputStream.computeEnumSize(Status.CODE_FIELD_NUMBER, protoStatusCode);

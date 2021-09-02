@@ -1,8 +1,14 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.otlp.internal;
 
 import java.io.IOException;
 import java.util.List;
 
+@SuppressWarnings("checkstyle:JavadocMethod")
 public abstract class Serializer {
 
   public static Serializer createProtoSerializer(CodedOutputStream output) {
@@ -22,7 +28,18 @@ public abstract class Serializer {
   protected abstract void writeBool(int protoFieldNumber, String jsonFieldName, boolean value)
       throws IOException;
 
-  public void serializeUint32(int protoFieldNumber, String jsonFieldName, int value)
+  public void serializeEnum(int protoFieldNumber, String jsonFieldName, int enumNumber)
+      throws IOException {
+    if (enumNumber == 0) {
+      return;
+    }
+    writeEnum(protoFieldNumber, jsonFieldName, enumNumber);
+  }
+
+  protected abstract void writeEnum(int protoFieldNumber, String jsonFieldName, int enumNumber)
+      throws IOException;
+
+  public void serializeUInt32(int protoFieldNumber, String jsonFieldName, int value)
       throws IOException {
     if (value == 0) {
       return;
@@ -31,6 +48,9 @@ public abstract class Serializer {
   }
 
   protected abstract void writeUint32(int protoFieldNumber, String jsonFieldName, int value)
+      throws IOException;
+
+  protected abstract void writeInt64(int protoFieldNumber, String jsonFieldName, long value)
       throws IOException;
 
   public void serializeFixed64(int protoFieldNumber, String jsonFieldName, long value)
@@ -58,6 +78,17 @@ public abstract class Serializer {
       throws IOException;
 
   protected abstract void writeDoubleValue(double value) throws IOException;
+
+  public void serializeString(int protoFieldNumber, String jsonFieldName, byte[] utf8Bytes)
+      throws IOException {
+    if (utf8Bytes.length == 0) {
+      return;
+    }
+    writeString(protoFieldNumber, jsonFieldName, utf8Bytes);
+  }
+
+  protected abstract void writeString(int protoFieldNumber, String jsonFieldName, byte[] utf8Bytes)
+      throws IOException;
 
   public void serializeBytes(int protoFieldNumber, String jsonFieldName, byte[] value)
       throws IOException {
@@ -115,6 +146,12 @@ public abstract class Serializer {
   }
 
   public abstract void serializeRepeatedMessage(
-      int protoFieldNumber, String jsonFieldName, Marshaler[] repeatedMessage)
+      int protoFieldNumber, String jsonFieldName, Marshaler[] repeatedMessage) throws IOException;
+
+  public abstract void serializeRepeatedMessage(
+      int protoFieldNumber, String jsonFieldName, List<? extends Marshaler> repeatedMessage)
+      throws IOException;
+
+  public abstract void writeSerializedMessage(byte[] protoSerialized, byte[] jsonSerialized)
       throws IOException;
 }

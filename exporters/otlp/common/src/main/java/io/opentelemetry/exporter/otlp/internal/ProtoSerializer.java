@@ -1,6 +1,12 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.exporter.otlp.internal;
 
 import java.io.IOException;
+import java.util.List;
 
 final class ProtoSerializer extends Serializer {
 
@@ -17,9 +23,21 @@ final class ProtoSerializer extends Serializer {
   }
 
   @Override
+  protected void writeEnum(int protoFieldNumber, String jsonFieldName, int enumNumber)
+      throws IOException {
+    output.writeEnum(protoFieldNumber, enumNumber);
+  }
+
+  @Override
   protected void writeUint32(int protoFieldNumber, String jsonFieldName, int value)
       throws IOException {
     output.writeUInt32(protoFieldNumber, value);
+  }
+
+  @Override
+  protected void writeInt64(int protoFieldNumber, String jsonFieldName, long value)
+      throws IOException {
+    output.writeInt64(protoFieldNumber, value);
   }
 
   @Override
@@ -42,6 +60,12 @@ final class ProtoSerializer extends Serializer {
   @Override
   protected void writeDoubleValue(double value) throws IOException {
     output.writeDoubleNoTag(value);
+  }
+
+  @Override
+  protected void writeString(int protoFieldNumber, String jsonFieldName, byte[] utf8Bytes)
+      throws IOException {
+    writeBytes(protoFieldNumber, jsonFieldName, utf8Bytes);
   }
 
   @Override
@@ -77,10 +101,30 @@ final class ProtoSerializer extends Serializer {
 
   @Override
   public void serializeRepeatedMessage(
-      int protoFieldNumber, String jsonFieldName, Marshaler[] repeatedMessage)
+      int protoFieldNumber, String jsonFieldName, Marshaler[] repeatedMessage) throws IOException {
+    for (Marshaler message : repeatedMessage) {
+      serializeMessage(protoFieldNumber, jsonFieldName, message);
+    }
+  }
+
+  @Override
+  public void serializeRepeatedMessage(
+      int protoFieldNumber, String jsonFieldName, List<? extends Marshaler> repeatedMessage)
       throws IOException {
     for (Marshaler message : repeatedMessage) {
       serializeMessage(protoFieldNumber, jsonFieldName, message);
     }
+  }
+
+  @Override
+  public void writeSerializedMessage(byte[] protoSerialized, byte[] jsonSerialized)
+      throws IOException {
+    output.writeRawBytes(protoSerialized);
+  }
+
+  // TODO(anuraaga): Remove after moving protobuf Value serialization from AttributeMarshaler to
+  // here.
+  CodedOutputStream getCodedOutputStream() {
+    return output;
   }
 }

@@ -155,7 +155,7 @@ class TraceRequestMarshalerTest {
     ByteArrayOutputStream customOutput =
         new ByteArrayOutputStream(requestMarshaler.getProtoSerializedSize());
     CodedOutputStream cos = CodedOutputStream.newInstance(customOutput);
-    requestMarshaler.writeTo(cos);
+    requestMarshaler.writeTo(Serializer.createProtoSerializer(cos));
     cos.flush();
     byte[] customOutputBytes = customOutput.toByteArray();
     if (!Arrays.equals(customOutputBytes, protoOutput)) {
@@ -163,7 +163,7 @@ class TraceRequestMarshalerTest {
       try {
         reverse = ExportTraceServiceRequest.parseFrom(customOutputBytes).toString();
       } catch (IOException e) {
-        // Leave <invalid>
+        reverse += " " + e.getMessage();
       }
       throw new AssertionError(
           "Serialization through TraceMarshaller does not match serialization through "
@@ -205,7 +205,7 @@ class TraceRequestMarshalerTest {
     ByteArrayOutputStream customOutput =
         new ByteArrayOutputStream(requestMarshaler.getProtoSerializedSize());
     CodedOutputStream cos = CodedOutputStream.newInstance(customOutput);
-    requestMarshaler.writeTo(cos);
+    requestMarshaler.writeTo(Serializer.createProtoSerializer(cos));
     cos.flush();
     assertThat(customOutput.toByteArray()).isEqualTo(protoOutput.toByteArray());
   }

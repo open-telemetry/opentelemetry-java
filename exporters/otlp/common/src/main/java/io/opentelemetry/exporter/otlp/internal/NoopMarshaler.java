@@ -9,7 +9,7 @@ enum NoopMarshaler implements Marshaler {
   INSTANCE;
 
   @Override
-  public void writeTo(CodedOutputStream output) {}
+  public void writeTo(Serializer output) {}
 
   @Override
   public int getProtoSerializedSize() {

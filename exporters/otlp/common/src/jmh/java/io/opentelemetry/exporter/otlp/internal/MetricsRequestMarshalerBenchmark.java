@@ -129,7 +129,7 @@ public class MetricsRequestMarshalerBenchmark {
     MetricsRequestMarshaler marshaler = MetricsRequestMarshaler.create(METRICS);
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     CodedOutputStream cos = CodedOutputStream.newInstance(bos);
-    marshaler.writeTo(cos);
+    marshaler.writeTo(Serializer.createProtoSerializer(cos));
     cos.flush();
     return bos;
   }
