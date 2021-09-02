@@ -58,7 +58,7 @@ public final class ViewBuilder {
    * Specify the attributes processor for this view.
    *
    * <p>Note: This resets all attribute filters, baggage appending and other processing.
-   * 
+   *
    * <p>Visible for testing.
    *
    * @param processor The pre-processor for measurement attributes.
