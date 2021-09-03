@@ -7,6 +7,7 @@ package io.opentelemetry.api.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
@@ -14,9 +15,9 @@ class AttributeKeyTest {
 
   @Test
   void equalsVerifier() {
-    EqualsVerifier.forClass(AttributeKeyImpl.class)
+    EqualsVerifier.forClass(InternalAttributeKeyImpl.class)
         .withCachedHashCode(
-            "hashCode", "buildHashCode", (AttributeKeyImpl<?>) AttributeKey.stringKey("test"))
+            "hashCode", "buildHashCode", (InternalAttributeKeyImpl<?>) AttributeKey.stringKey("test"))
         .verify();
   }
 

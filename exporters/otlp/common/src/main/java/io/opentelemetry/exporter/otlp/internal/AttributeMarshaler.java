@@ -7,10 +7,12 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import io.opentelemetry.proto.common.v1.internal.ArrayValue;
 import io.opentelemetry.proto.common.v1.internal.KeyValue;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -39,7 +41,14 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
 
   @SuppressWarnings("unchecked")
   static AttributeMarshaler create(AttributeKey<?> attributeKey, Object value) {
-    byte[] key = MarshalerUtil.toBytes(attributeKey.getKey());
+    final byte[] key;
+    if (attributeKey.getKey().isEmpty()) {
+      key = MarshalerUtil.EMPTY_BYTES;
+    } else if (attributeKey instanceof InternalAttributeKeyImpl) {
+      key = ((InternalAttributeKeyImpl<?>) attributeKey).getKeyUtf8();
+    } else {
+      key = attributeKey.getKey().getBytes(StandardCharsets.UTF_8);
+    }
     if (value == null) {
       return new KeyValueNullMarshaler(key);
     }
