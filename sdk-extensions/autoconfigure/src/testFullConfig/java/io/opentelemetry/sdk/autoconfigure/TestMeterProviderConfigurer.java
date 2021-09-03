@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer;
@@ -20,9 +22,7 @@ public class TestMeterProviderConfigurer implements SdkMeterProviderConfigurer {
     for (InstrumentType instrumentType : InstrumentType.values()) {
       meterProviderBuilder.registerView(
           InstrumentSelector.builder().setInstrumentType(instrumentType).build(),
-          View.builder()
-              .appendAttributes(Attributes.builder().put("configured", true).build())
-              .build());
+          View.builder().appendAttributes(Attributes.of(booleanKey("configured"), true)).build());
     }
   }
 }

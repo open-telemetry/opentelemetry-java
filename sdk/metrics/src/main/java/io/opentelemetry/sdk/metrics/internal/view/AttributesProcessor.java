@@ -13,6 +13,7 @@ import io.opentelemetry.context.Context;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -179,7 +180,7 @@ public abstract class AttributesProcessor {
 
     @Override
     public AttributesProcessor then(AttributesProcessor other) {
-      ArrayList<AttributesProcessor> newList = new ArrayList<>(processors);
+      List<AttributesProcessor> newList = new ArrayList<>(processors);
       if (other instanceof JoinedAttributesProcessor) {
         newList.addAll(((JoinedAttributesProcessor) other).processors);
       } else {
@@ -189,7 +190,7 @@ public abstract class AttributesProcessor {
     }
 
     AttributesProcessor prepend(AttributesProcessor other) {
-      ArrayList<AttributesProcessor> newList = new ArrayList<>(processors.size() + 1);
+      List<AttributesProcessor> newList = new ArrayList<>(processors.size() + 1);
       newList.add(other);
       newList.addAll(processors);
       return new JoinedAttributesProcessor(newList);
