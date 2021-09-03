@@ -79,6 +79,10 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
 
     companion object {
       private val PROTO_FIELD_INFO = ClassName.get("io.opentelemetry.exporter.otlp.internal", "ProtoFieldInfo")
+      private val WIRETYPE_VARINT = 0
+      private val WIRETYPE_FIXED64 = 1
+      private val WIRETYPE_LENGTH_DELIMITED = 2
+      private val WIRETYPE_FIXED32 = 5
 
       fun get(schema: Schema): JavaGenerator {
         val nameToJavaName = linkedMapOf<ProtoType, TypeName>()
@@ -175,28 +179,28 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
     private fun fieldEncoding(type: ProtoType, isRepeated: Boolean): Int {
       if (isRepeated) {
         // Repeated fields are always length delimited in proto3
-        return 2
+        return WIRETYPE_LENGTH_DELIMITED
       }
 
       if (schema.getType(type) is EnumType) {
-        return 0
+        return WIRETYPE_VARINT
       }
 
       if (!type.isScalar) {
         // Non-scalar and not enum is a message
-        return 2
+        return WIRETYPE_LENGTH_DELIMITED
       }
 
       return when(type) {
         ProtoType.FIXED32,
         ProtoType.SFIXED32,
-        ProtoType.FLOAT-> 5
+        ProtoType.FLOAT-> WIRETYPE_FIXED32
         ProtoType.FIXED64,
         ProtoType.SFIXED64,
-        ProtoType.DOUBLE -> 1
+        ProtoType.DOUBLE -> WIRETYPE_FIXED64
         ProtoType.BYTES,
-        ProtoType.STRING -> 2
-        else -> 0
+        ProtoType.STRING -> WIRETYPE_LENGTH_DELIMITED
+        else -> WIRETYPE_VARINT
       }
     }
 
