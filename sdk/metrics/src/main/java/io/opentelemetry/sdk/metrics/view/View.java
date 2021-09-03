@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -30,7 +30,8 @@ public abstract class View {
   /** The aggregation used for this view. */
   public abstract Aggregation getAggregation();
 
-  public abstract LabelsProcessorFactory getLabelsProcessorFactory();
+  /** Processor of attributes before performing aggregation. */
+  public abstract AttributesProcessor getAttributesProcessor();
 
   public static ViewBuilder builder() {
     return new ViewBuilder();
@@ -40,7 +41,7 @@ public abstract class View {
       String name,
       String description,
       Aggregation aggregation,
-      LabelsProcessorFactory labelsProcessorFactory) {
-    return new AutoValue_View(name, description, aggregation, labelsProcessorFactory);
+      AttributesProcessor attributesProcessor) {
+    return new AutoValue_View(name, description, aggregation, attributesProcessor);
   }
 }
