@@ -48,7 +48,7 @@ final class MarshalerUtil {
     }
     int dataSize = WireFormat.FIXED64_SIZE * numValues;
     int size = 0;
-    size += CodedOutputStream.computeTagSize(field.getFieldNumber());
+    size += field.getTagSize();
     size += CodedOutputStream.computeLengthDelimitedFieldSize(dataSize);
     return size;
   }
@@ -60,7 +60,7 @@ final class MarshalerUtil {
 
   static <T extends Marshaler> int sizeRepeatedMessage(ProtoFieldInfo field, T[] repeatedMessage) {
     int size = 0;
-    int fieldTagSize = CodedOutputStream.computeTagSize(field.getFieldNumber());
+    int fieldTagSize = field.getTagSize();
     for (Marshaler message : repeatedMessage) {
       int fieldSize = message.getProtoSerializedSize();
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
@@ -70,7 +70,7 @@ final class MarshalerUtil {
 
   static int sizeRepeatedMessage(ProtoFieldInfo field, List<? extends Marshaler> repeatedMessage) {
     int size = 0;
-    int fieldTagSize = CodedOutputStream.computeTagSize(field.getFieldNumber());
+    int fieldTagSize = field.getTagSize();
     for (Marshaler message : repeatedMessage) {
       int fieldSize = message.getProtoSerializedSize();
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
@@ -80,44 +80,42 @@ final class MarshalerUtil {
 
   static int sizeMessage(ProtoFieldInfo field, Marshaler message) {
     int fieldSize = message.getProtoSerializedSize();
-    return CodedOutputStream.computeTagSize(field.getFieldNumber())
-        + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-        + fieldSize;
+    return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
   }
 
   static int sizeBool(ProtoFieldInfo field, boolean value) {
     if (!value) {
       return 0;
     }
-    return CodedOutputStream.computeBoolSize(field.getFieldNumber(), value);
+    return field.getTagSize() + CodedOutputStream.computeBoolSizeNoTag(value);
   }
 
   static int sizeUInt32(ProtoFieldInfo field, int message) {
     if (message == 0) {
       return 0;
     }
-    return CodedOutputStream.computeUInt32Size(field.getFieldNumber(), message);
+    return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(message);
   }
 
   static int sizeDouble(ProtoFieldInfo field, double value) {
     if (value == 0D) {
       return 0;
     }
-    return CodedOutputStream.computeDoubleSize(field.getFieldNumber(), value);
+    return field.getTagSize() + CodedOutputStream.computeDoubleSizeNoTag(value);
   }
 
   static int sizeFixed64(ProtoFieldInfo field, long message) {
     if (message == 0L) {
       return 0;
     }
-    return CodedOutputStream.computeFixed64Size(field.getFieldNumber(), message);
+    return field.getTagSize() + CodedOutputStream.computeFixed64SizeNoTag(message);
   }
 
   static int sizeBytes(ProtoFieldInfo field, byte[] message) {
     if (message.length == 0) {
       return 0;
     }
-    return CodedOutputStream.computeByteArraySize(field.getFieldNumber(), message);
+    return field.getTagSize() + CodedOutputStream.computeByteArraySizeNoTag(message);
   }
 
   // Assumes OTLP always defines the first item in an enum with number 0, which it does and will.
@@ -125,7 +123,7 @@ final class MarshalerUtil {
     if (value == 0) {
       return 0;
     }
-    return CodedOutputStream.computeEnumSize(field.getFieldNumber(), value);
+    return field.getTagSize() + CodedOutputStream.computeEnumSizeNoTag(value);
   }
 
   static byte[] toBytes(@Nullable String value) {

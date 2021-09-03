@@ -19,27 +19,32 @@ final class ProtoSerializer extends Serializer {
 
   @Override
   protected void writeBool(ProtoFieldInfo field, boolean value) throws IOException {
-    output.writeBool(field.getFieldNumber(), value);
+    output.writeUInt32NoTag(field.getTag());
+    output.writeBoolNoTag(value);
   }
 
   @Override
   protected void writeEnum(ProtoFieldInfo field, int enumNumber) throws IOException {
-    output.writeEnum(field.getFieldNumber(), enumNumber);
+    output.writeUInt32NoTag(field.getTag());
+    output.writeEnumNoTag(enumNumber);
   }
 
   @Override
   protected void writeUint32(ProtoFieldInfo field, int value) throws IOException {
-    output.writeUInt32(field.getFieldNumber(), value);
+    output.writeUInt32NoTag(field.getTag());
+    output.writeUInt32NoTag(value);
   }
 
   @Override
   protected void writeInt64(ProtoFieldInfo field, long value) throws IOException {
-    output.writeInt64(field.getFieldNumber(), value);
+    output.writeUInt32NoTag(field.getTag());
+    output.writeInt64NoTag(value);
   }
 
   @Override
   protected void writeFixed64(ProtoFieldInfo field, long value) throws IOException {
-    output.writeFixed64(field.getFieldNumber(), value);
+    output.writeUInt32NoTag(field.getTag());
+    output.writeFixed64NoTag(value);
   }
 
   @Override
@@ -49,7 +54,8 @@ final class ProtoSerializer extends Serializer {
 
   @Override
   protected void writeDouble(ProtoFieldInfo field, double value) throws IOException {
-    output.writeDouble(field.getFieldNumber(), value);
+    output.writeUInt32NoTag(field.getTag());
+    output.writeDoubleNoTag(value);
   }
 
   @Override
@@ -64,12 +70,13 @@ final class ProtoSerializer extends Serializer {
 
   @Override
   protected void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
-    output.writeByteArray(field.getFieldNumber(), value);
+    output.writeUInt32NoTag(field.getTag());
+    output.writeByteArrayNoTag(value);
   }
 
   @Override
   protected void writeStartMessage(ProtoFieldInfo field, int protoMessageSize) throws IOException {
-    output.writeTag(field.getFieldNumber(), WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    output.writeUInt32NoTag(field.getTag());
     output.writeUInt32NoTag(protoMessageSize);
   }
 
@@ -81,7 +88,7 @@ final class ProtoSerializer extends Serializer {
   @Override
   protected void writeStartRepeatedPrimitive(
       ProtoFieldInfo field, int protoSizePerElement, int numElements) throws IOException {
-    output.writeTag(field.getFieldNumber(), WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    output.writeUInt32NoTag(field.getTag());
     output.writeUInt32NoTag(protoSizePerElement * numElements);
   }
 

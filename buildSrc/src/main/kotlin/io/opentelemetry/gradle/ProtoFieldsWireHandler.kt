@@ -75,7 +75,7 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
     }
   }
 
-  private class JavaGenerator(private val typeToJavaName: Map<ProtoType, TypeName>) {
+  private class JavaGenerator(private val schema: Schema, private val typeToJavaName: Map<ProtoType, TypeName>) {
 
     companion object {
       private val PROTO_FIELD_INFO = ClassName.get("io.opentelemetry.exporter.otlp.internal", "ProtoFieldInfo")
@@ -87,7 +87,7 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
           putAll(nameToJavaName, javaPackage, null, protoFile.types)
         }
 
-        return JavaGenerator(nameToJavaName)
+        return JavaGenerator(schema, nameToJavaName)
       }
 
       private fun putAll(
@@ -140,8 +140,13 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
       for (field in type.fieldsAndOneOfFields) {
         builder.addField(
           FieldSpec.builder(PROTO_FIELD_INFO, field.name.toUpperCase(), PUBLIC, STATIC, FINAL)
-            .initializer("\$T.create(\$L, \"\$L\")", PROTO_FIELD_INFO, field.tag, field.jsonName)
+            .initializer("\$T.create(\$L, \$L, \"\$L\")",
+              PROTO_FIELD_INFO,
+              field.tag,
+              makeTag(field.tag, field.type as ProtoType, field.isRepeated),
+              field.jsonName)
             .build())
+        field.type
       }
 
       for (nestedType in type.nestedTypes) {
@@ -165,6 +170,38 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
       }
 
       return builder.build()
+    }
+
+    private fun fieldEncoding(type: ProtoType, isRepeated: Boolean): Int {
+      if (isRepeated) {
+        // Repeated fields are always length delimited in proto3
+        return 2
+      }
+
+      if (schema.getType(type) is EnumType) {
+        return 0
+      }
+
+      if (!type.isScalar) {
+        // Non-scalar and not enum is a message
+        return 2
+      }
+
+      return when(type) {
+        ProtoType.FIXED32,
+        ProtoType.SFIXED32,
+        ProtoType.FLOAT-> 5
+        ProtoType.FIXED64,
+        ProtoType.SFIXED64,
+        ProtoType.DOUBLE -> 1
+        ProtoType.BYTES,
+        ProtoType.STRING -> 2
+        else -> 0
+      }
+    }
+
+    private fun makeTag(fieldNumber: Int, type: ProtoType, isRepeated: Boolean): Int {
+      return (fieldNumber shl 3) or fieldEncoding(type, isRepeated)
     }
   }
 }
