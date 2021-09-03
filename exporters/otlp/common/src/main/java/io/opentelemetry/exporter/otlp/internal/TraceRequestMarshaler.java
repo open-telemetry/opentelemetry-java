@@ -545,29 +545,21 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      if (deprecatedStatusCode != Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE) {
-        output.serializeEnum(
-            Status.DEPRECATED_CODE_FIELD_NUMBER,
-            Status.DEPRECATED_CODE_JSON_NAME,
-            deprecatedStatusCode);
-      }
+      output.serializeEnum(
+          Status.DEPRECATED_CODE_FIELD_NUMBER,
+          Status.DEPRECATED_CODE_JSON_NAME,
+          deprecatedStatusCode);
       output.serializeString(
           Status.MESSAGE_FIELD_NUMBER, Status.MESSAGE_JSON_NAME, descriptionUtf8);
-      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET_VALUE) {
-        output.serializeEnum(Status.CODE_FIELD_NUMBER, Status.CODE_JSON_NAME, protoStatusCode);
-      }
+      output.serializeEnum(Status.CODE_FIELD_NUMBER, Status.CODE_JSON_NAME, protoStatusCode);
     }
 
     private static int computeSize(
         int protoStatusCode, int deprecatedStatusCode, byte[] descriptionUtf8) {
       int size = 0;
-      if (deprecatedStatusCode != Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK_VALUE) {
-        size += MarshalerUtil.sizeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
-      }
+      size += MarshalerUtil.sizeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
       size += MarshalerUtil.sizeBytes(Status.MESSAGE_FIELD_NUMBER, descriptionUtf8);
-      if (protoStatusCode != Status.StatusCode.STATUS_CODE_UNSET_VALUE) {
-        size += MarshalerUtil.sizeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode);
-      }
+      size += MarshalerUtil.sizeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode);
       return size;
     }
   }
