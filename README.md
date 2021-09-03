@@ -107,6 +107,18 @@ dependencies {
 }
 ```
 
+Note that if you want to use any artifacts that have not fully stabilized yet (such as metrics), then you will need to add an entry for the Alpha BOM as well, e.g.
+
+```groovy
+dependencies {
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.5.0")
+  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.5.0-alpha')
+
+  implementation('io.opentelemetry:opentelemetry-api')
+  implementation('io.opentelemetry:opentelemetry-api-metrics')
+}
+```
+
 ## Snapshots
 
 Snapshots based out the `main` branch are available for `opentelemetry-api`, `opentelemetry-sdk` and the rest of the artifacts.

@@ -296,8 +296,6 @@ class OtlpGrpcConfigTest {
 
   @Test
   void configuresGlobal() {
-    // Protocol defaults to grpc but other tests may set system property to change it
-    System.setProperty("otel.experimental.exporter.otlp.protocol", "grpc");
     System.setProperty("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
     System.setProperty(
         "otel.exporter.otlp.certificate", certificate.certificateFile().getAbsolutePath());

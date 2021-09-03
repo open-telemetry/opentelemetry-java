@@ -13,7 +13,8 @@ testSets {
   create("testFullConfig")
   create("testInitializeRegistersGlobal")
   create("testJaeger")
-  create("testOtlp")
+  create("testOtlpGrpc")
+  create("testOtlpHttp")
   create("testPrometheus")
   create("testResourceDisabledByProperty")
   create("testResourceDisabledByEnv")
@@ -57,13 +58,14 @@ dependencies {
   add("testFullConfigImplementation", project(":exporters:zipkin"))
   add("testFullConfigImplementation", project(":sdk-extensions:resources"))
 
-  add("testOtlpImplementation", project(":exporters:otlp:all"))
-  add("testOtlpImplementation", project(":exporters:otlp:metrics"))
-  add("testOtlpImplementation", project(":exporters:otlp-http:trace"))
-  add("testOtlpImplementation", project(":exporters:otlp-http:metrics"))
-  add("testOtlpImplementation", "com.squareup.okhttp3:okhttp")
-  add("testOtlpImplementation", "com.squareup.okhttp3:okhttp-tls")
-  add("testOtlpImplementation", "org.bouncycastle:bcpkix-jdk15on")
+  add("testOtlpGrpcImplementation", project(":exporters:otlp:all"))
+  add("testOtlpGrpcImplementation", project(":exporters:otlp:metrics"))
+  add("testOtlpGrpcImplementation", "org.bouncycastle:bcpkix-jdk15on")
+  add("testOtlpHttpImplementation", project(":exporters:otlp-http:trace"))
+  add("testOtlpHttpImplementation", project(":exporters:otlp-http:metrics"))
+  add("testOtlpHttpImplementation", "com.squareup.okhttp3:okhttp")
+  add("testOtlpHttpImplementation", "com.squareup.okhttp3:okhttp-tls")
+  add("testOtlpHttpImplementation", "org.bouncycastle:bcpkix-jdk15on")
 
   add("testJaegerImplementation", project(":exporters:jaeger"))
 
@@ -110,7 +112,11 @@ tasks {
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
   }
 
-  val testOtlp by existing(Test::class) {
+  val testOtlpGrpc by existing(Test::class) {
+    environment("OTEL_METRICS_EXPORTER", "otlp")
+  }
+
+  val testOtlpHttp by existing(Test::class) {
     environment("OTEL_METRICS_EXPORTER", "otlp")
   }
 
@@ -145,7 +151,8 @@ tasks {
       testFullConfig,
       testInitializeRegistersGlobal,
       testJaeger,
-      testOtlp,
+      testOtlpGrpc,
+      testOtlpHttp,
       testPrometheus,
       testZipkin,
       testResourceDisabledByProperty,
