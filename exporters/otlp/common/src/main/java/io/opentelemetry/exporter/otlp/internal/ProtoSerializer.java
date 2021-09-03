@@ -18,33 +18,28 @@ final class ProtoSerializer extends Serializer {
   }
 
   @Override
-  protected void writeBool(int protoFieldNumber, String jsonFieldName, boolean value)
-      throws IOException {
-    output.writeBool(protoFieldNumber, value);
+  protected void writeBool(ProtoFieldInfo field, boolean value) throws IOException {
+    output.writeBool(field.getFieldNumber(), value);
   }
 
   @Override
-  protected void writeEnum(int protoFieldNumber, String jsonFieldName, int enumNumber)
-      throws IOException {
-    output.writeEnum(protoFieldNumber, enumNumber);
+  protected void writeEnum(ProtoFieldInfo field, int enumNumber) throws IOException {
+    output.writeEnum(field.getFieldNumber(), enumNumber);
   }
 
   @Override
-  protected void writeUint32(int protoFieldNumber, String jsonFieldName, int value)
-      throws IOException {
-    output.writeUInt32(protoFieldNumber, value);
+  protected void writeUint32(ProtoFieldInfo field, int value) throws IOException {
+    output.writeUInt32(field.getFieldNumber(), value);
   }
 
   @Override
-  protected void writeInt64(int protoFieldNumber, String jsonFieldName, long value)
-      throws IOException {
-    output.writeInt64(protoFieldNumber, value);
+  protected void writeInt64(ProtoFieldInfo field, long value) throws IOException {
+    output.writeInt64(field.getFieldNumber(), value);
   }
 
   @Override
-  protected void writeFixed64(int protoFieldNumber, String jsonFieldName, long value)
-      throws IOException {
-    output.writeFixed64(protoFieldNumber, value);
+  protected void writeFixed64(ProtoFieldInfo field, long value) throws IOException {
+    output.writeFixed64(field.getFieldNumber(), value);
   }
 
   @Override
@@ -53,9 +48,8 @@ final class ProtoSerializer extends Serializer {
   }
 
   @Override
-  protected void writeDouble(int protoFieldNumber, String jsonFieldName, double value)
-      throws IOException {
-    output.writeDouble(protoFieldNumber, value);
+  protected void writeDouble(ProtoFieldInfo field, double value) throws IOException {
+    output.writeDouble(field.getFieldNumber(), value);
   }
 
   @Override
@@ -64,21 +58,18 @@ final class ProtoSerializer extends Serializer {
   }
 
   @Override
-  protected void writeString(int protoFieldNumber, String jsonFieldName, byte[] utf8Bytes)
-      throws IOException {
-    writeBytes(protoFieldNumber, jsonFieldName, utf8Bytes);
+  protected void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException {
+    writeBytes(field, utf8Bytes);
   }
 
   @Override
-  protected void writeBytes(int protoFieldNumber, String jsonFieldName, byte[] value)
-      throws IOException {
-    output.writeByteArray(protoFieldNumber, value);
+  protected void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
+    output.writeByteArray(field.getFieldNumber(), value);
   }
 
   @Override
-  protected void writeStartMessage(int protoFieldNumber, String jsonFieldName, int protoMessageSize)
-      throws IOException {
-    output.writeTag(protoFieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+  protected void writeStartMessage(ProtoFieldInfo field, int protoMessageSize) throws IOException {
+    output.writeTag(field.getFieldNumber(), WireFormat.WIRETYPE_LENGTH_DELIMITED);
     output.writeUInt32NoTag(protoMessageSize);
   }
 
@@ -89,9 +80,8 @@ final class ProtoSerializer extends Serializer {
 
   @Override
   protected void writeStartRepeatedPrimitive(
-      int protoFieldNumber, String jsonFieldName, int protoSizePerElement, int numElements)
-      throws IOException {
-    output.writeTag(protoFieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      ProtoFieldInfo field, int protoSizePerElement, int numElements) throws IOException {
+    output.writeTag(field.getFieldNumber(), WireFormat.WIRETYPE_LENGTH_DELIMITED);
     output.writeUInt32NoTag(protoSizePerElement * numElements);
   }
 
@@ -101,19 +91,18 @@ final class ProtoSerializer extends Serializer {
   }
 
   @Override
-  public void serializeRepeatedMessage(
-      int protoFieldNumber, String jsonFieldName, Marshaler[] repeatedMessage) throws IOException {
+  public void serializeRepeatedMessage(ProtoFieldInfo field, Marshaler[] repeatedMessage)
+      throws IOException {
     for (Marshaler message : repeatedMessage) {
-      serializeMessage(protoFieldNumber, jsonFieldName, message);
+      serializeMessage(field, message);
     }
   }
 
   @Override
   public void serializeRepeatedMessage(
-      int protoFieldNumber, String jsonFieldName, List<? extends Marshaler> repeatedMessage)
-      throws IOException {
+      ProtoFieldInfo field, List<? extends Marshaler> repeatedMessage) throws IOException {
     for (Marshaler message : repeatedMessage) {
-      serializeMessage(protoFieldNumber, jsonFieldName, message);
+      serializeMessage(field, message);
     }
   }
 

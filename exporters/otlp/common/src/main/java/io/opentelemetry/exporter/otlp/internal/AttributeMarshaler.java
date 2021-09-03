@@ -73,12 +73,12 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
 
   @Override
   public final void writeTo(Serializer output) throws IOException {
-    output.serializeString(KeyValue.KEY_FIELD_NUMBER, KeyValue.KEY_JSON_NAME, keyUtf8);
+    output.serializeString(KeyValue.KEY, keyUtf8);
     if (valueSize > 0) {
       // TODO(anuraaga): Replace this hack with directly serializing Value within Serializer. The
       // proto and JSON representations of Value differ too much to use Marshaler.
       CodedOutputStream cos = ((ProtoSerializer) output).getCodedOutputStream();
-      cos.writeTag(KeyValue.VALUE_FIELD_NUMBER, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      cos.writeTag(KeyValue.VALUE.getFieldNumber(), WireFormat.WIRETYPE_LENGTH_DELIMITED);
       cos.writeUInt32NoTag(valueSize);
       writeValueTo(output);
     }
@@ -87,8 +87,8 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
   abstract void writeValueTo(Serializer output) throws IOException;
 
   private static int calculateSize(byte[] keyUtf8, int valueSize) {
-    return MarshalerUtil.sizeBytes(KeyValue.KEY_FIELD_NUMBER, keyUtf8)
-        + CodedOutputStream.computeTagSize(KeyValue.VALUE_FIELD_NUMBER)
+    return MarshalerUtil.sizeBytes(KeyValue.KEY, keyUtf8)
+        + CodedOutputStream.computeTagSize(KeyValue.VALUE.getFieldNumber())
         + CodedOutputStream.computeUInt32SizeNoTag(valueSize)
         + valueSize;
   }
@@ -108,7 +108,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
     private KeyValueStringMarshaler(byte[] keyUtf8, byte[] value) {
       super(
           keyUtf8,
-          CodedOutputStream.computeByteArraySize(AnyValue.STRING_VALUE_FIELD_NUMBER, value));
+          CodedOutputStream.computeByteArraySize(AnyValue.STRING_VALUE.getFieldNumber(), value));
       this.value = value;
     }
 
@@ -117,7 +117,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      output.writeBytes(AnyValue.STRING_VALUE_FIELD_NUMBER, AnyValue.STRING_VALUE_JSON_NAME, value);
+      output.writeString(AnyValue.STRING_VALUE, value);
     }
   }
 
@@ -125,7 +125,8 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
     private final long value;
 
     private KeyValueLongMarshaler(byte[] keyUtf8, long value) {
-      super(keyUtf8, CodedOutputStream.computeInt64Size(AnyValue.INT_VALUE_FIELD_NUMBER, value));
+      super(
+          keyUtf8, CodedOutputStream.computeInt64Size(AnyValue.INT_VALUE.getFieldNumber(), value));
       this.value = value;
     }
 
@@ -134,7 +135,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      output.writeInt64(AnyValue.INT_VALUE_FIELD_NUMBER, AnyValue.INT_VALUE_JSON_NAME, value);
+      output.writeInt64(AnyValue.INT_VALUE, value);
     }
   }
 
@@ -142,7 +143,8 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
     private final boolean value;
 
     private KeyValueBooleanMarshaler(byte[] keyUtf8, boolean value) {
-      super(keyUtf8, CodedOutputStream.computeBoolSize(AnyValue.BOOL_VALUE_FIELD_NUMBER, value));
+      super(
+          keyUtf8, CodedOutputStream.computeBoolSize(AnyValue.BOOL_VALUE.getFieldNumber(), value));
       this.value = value;
     }
 
@@ -151,7 +153,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      output.writeBool(AnyValue.BOOL_VALUE_FIELD_NUMBER, AnyValue.BOOL_VALUE_JSON_NAME, value);
+      output.writeBool(AnyValue.BOOL_VALUE, value);
     }
   }
 
@@ -163,7 +165,8 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // value
       // is empty.
       super(
-          keyUtf8, CodedOutputStream.computeDoubleSize(AnyValue.DOUBLE_VALUE_FIELD_NUMBER, value));
+          keyUtf8,
+          CodedOutputStream.computeDoubleSize(AnyValue.DOUBLE_VALUE.getFieldNumber(), value));
       this.value = value;
     }
 
@@ -172,8 +175,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      output.writeDouble(
-          AnyValue.DOUBLE_VALUE_FIELD_NUMBER, AnyValue.DOUBLE_VALUE_JSON_NAME, value);
+      output.writeDouble(AnyValue.DOUBLE_VALUE, value);
     }
   }
 
@@ -192,10 +194,10 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // TODO(anuraaga): Replace this hack with directly serializing Value within Serializer. The
       // proto and JSON representations of Value differ too much to use Marshaler.
       CodedOutputStream cos = ((ProtoSerializer) output).getCodedOutputStream();
-      cos.writeTag(AnyValue.ARRAY_VALUE_FIELD_NUMBER, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      cos.writeTag(AnyValue.ARRAY_VALUE.getFieldNumber(), WireFormat.WIRETYPE_LENGTH_DELIMITED);
       cos.writeUInt32NoTag(valuesSize);
       for (T value : values) {
-        cos.writeTag(ArrayValue.VALUES_FIELD_NUMBER, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+        cos.writeTag(ArrayValue.VALUES.getFieldNumber(), WireFormat.WIRETYPE_LENGTH_DELIMITED);
         cos.writeUInt32NoTag(getArrayElementSerializedSize(value));
         writeArrayElementTo(value, output);
       }
@@ -206,7 +208,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
     abstract int getArrayElementSerializedSize(T value);
 
     private static int calculateWrapperSize(int valuesSize) {
-      return CodedOutputStream.computeTagSize(AnyValue.ARRAY_VALUE_FIELD_NUMBER)
+      return CodedOutputStream.computeTagSize(AnyValue.ARRAY_VALUE.getFieldNumber())
           + CodedOutputStream.computeUInt32SizeNoTag(valuesSize);
     }
   }
@@ -221,10 +223,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      output.writeString(
-          AnyValue.STRING_VALUE_FIELD_NUMBER,
-          AnyValue.STRING_VALUE_JSON_NAME,
-          value.getBytes(StandardCharsets.UTF_8));
+      output.writeString(AnyValue.STRING_VALUE, value.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
@@ -232,18 +231,18 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      return CodedOutputStream.computeStringSize(AnyValue.STRING_VALUE_FIELD_NUMBER, value);
+      return CodedOutputStream.computeStringSize(AnyValue.STRING_VALUE.getFieldNumber(), value);
     }
 
     static int calculateValuesSize(List<String> values) {
       int size = 0;
-      int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES_FIELD_NUMBER);
+      int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES.getFieldNumber());
       for (String value : values) {
         // Do not call serialize* method because we always have to write the message tag even if the
         // value
         // is empty.
         int fieldSize =
-            CodedOutputStream.computeStringSize(AnyValue.STRING_VALUE_FIELD_NUMBER, value);
+            CodedOutputStream.computeStringSize(AnyValue.STRING_VALUE.getFieldNumber(), value);
         size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
       }
       return size;
@@ -260,7 +259,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      output.writeInt64(AnyValue.INT_VALUE_FIELD_NUMBER, AnyValue.INT_VALUE_JSON_NAME, value);
+      output.writeInt64(AnyValue.INT_VALUE, value);
     }
 
     @Override
@@ -268,17 +267,18 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      return CodedOutputStream.computeInt64Size(AnyValue.INT_VALUE_FIELD_NUMBER, value);
+      return CodedOutputStream.computeInt64Size(AnyValue.INT_VALUE.getFieldNumber(), value);
     }
 
     static int calculateValuesSize(List<Long> values) {
       int size = 0;
-      int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES_FIELD_NUMBER);
+      int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES.getFieldNumber());
       for (Long value : values) {
         // Do not call serialize* method because we always have to write the message tag even if the
         // value
         // is empty.
-        int fieldSize = CodedOutputStream.computeInt64Size(AnyValue.INT_VALUE_FIELD_NUMBER, value);
+        int fieldSize =
+            CodedOutputStream.computeInt64Size(AnyValue.INT_VALUE.getFieldNumber(), value);
         size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
       }
       return size;
@@ -295,7 +295,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      output.writeBool(AnyValue.BOOL_VALUE_FIELD_NUMBER, AnyValue.BOOL_VALUE_JSON_NAME, value);
+      output.writeBool(AnyValue.BOOL_VALUE, value);
     }
 
     @Override
@@ -303,17 +303,18 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      return CodedOutputStream.computeBoolSize(AnyValue.BOOL_VALUE_FIELD_NUMBER, value);
+      return CodedOutputStream.computeBoolSize(AnyValue.BOOL_VALUE.getFieldNumber(), value);
     }
 
     static int calculateValuesSize(List<Boolean> values) {
       int size = 0;
-      int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES_FIELD_NUMBER);
+      int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES.getFieldNumber());
       for (Boolean value : values) {
         // Do not call serialize* method because we always have to write the message tag even if the
         // value
         // is empty.
-        int fieldSize = CodedOutputStream.computeBoolSize(AnyValue.BOOL_VALUE_FIELD_NUMBER, value);
+        int fieldSize =
+            CodedOutputStream.computeBoolSize(AnyValue.BOOL_VALUE.getFieldNumber(), value);
         size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
       }
       return size;
@@ -330,8 +331,7 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      output.writeDouble(
-          AnyValue.DOUBLE_VALUE_FIELD_NUMBER, AnyValue.DOUBLE_VALUE_JSON_NAME, value);
+      output.writeDouble(AnyValue.DOUBLE_VALUE, value);
     }
 
     @Override
@@ -339,18 +339,18 @@ abstract class AttributeMarshaler extends MarshalerWithSize {
       // Do not call serialize* method because we always have to write the message tag even if the
       // value
       // is empty.
-      return CodedOutputStream.computeDoubleSize(AnyValue.DOUBLE_VALUE_FIELD_NUMBER, value);
+      return CodedOutputStream.computeDoubleSize(AnyValue.DOUBLE_VALUE.getFieldNumber(), value);
     }
 
     static int calculateValuesSize(List<Double> values) {
       int size = 0;
-      int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES_FIELD_NUMBER);
+      int fieldTagSize = CodedOutputStream.computeTagSize(ArrayValue.VALUES.getFieldNumber());
       for (Double value : values) {
         // Do not call serialize* method because we always have to write the message tag even if the
         // value
         // is empty.
         int fieldSize =
-            CodedOutputStream.computeDoubleSize(AnyValue.DOUBLE_VALUE_FIELD_NUMBER, value);
+            CodedOutputStream.computeDoubleSize(AnyValue.DOUBLE_VALUE.getFieldNumber(), value);
         size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
       }
       return size;

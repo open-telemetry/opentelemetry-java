@@ -27,69 +27,58 @@ public abstract class Serializer {
   Serializer() {}
 
   /** Serializes a protobuf {@code bool} field. */
-  public void serializeBool(int protoFieldNumber, String jsonFieldName, boolean value)
-      throws IOException {
+  public void serializeBool(ProtoFieldInfo field, boolean value) throws IOException {
     if (!value) {
       return;
     }
-    writeBool(protoFieldNumber, jsonFieldName, value);
+    writeBool(field, value);
   }
 
-  protected abstract void writeBool(int protoFieldNumber, String jsonFieldName, boolean value)
-      throws IOException;
+  protected abstract void writeBool(ProtoFieldInfo field, boolean value) throws IOException;
 
   /** Serializes a protobuf {@code enum} field. */
-  public void serializeEnum(int protoFieldNumber, String jsonFieldName, int enumNumber)
-      throws IOException {
+  public void serializeEnum(ProtoFieldInfo field, int enumNumber) throws IOException {
     if (enumNumber == 0) {
       return;
     }
-    writeEnum(protoFieldNumber, jsonFieldName, enumNumber);
+    writeEnum(field, enumNumber);
   }
 
-  protected abstract void writeEnum(int protoFieldNumber, String jsonFieldName, int enumNumber)
-      throws IOException;
+  protected abstract void writeEnum(ProtoFieldInfo field, int enumNumber) throws IOException;
 
   /** Serializes a protobuf {@code uint32} field. */
-  public void serializeUInt32(int protoFieldNumber, String jsonFieldName, int value)
-      throws IOException {
+  public void serializeUInt32(ProtoFieldInfo field, int value) throws IOException {
     if (value == 0) {
       return;
     }
-    writeUint32(protoFieldNumber, jsonFieldName, value);
+    writeUint32(field, value);
   }
 
-  protected abstract void writeUint32(int protoFieldNumber, String jsonFieldName, int value)
-      throws IOException;
+  protected abstract void writeUint32(ProtoFieldInfo field, int value) throws IOException;
 
-  protected abstract void writeInt64(int protoFieldNumber, String jsonFieldName, long value)
-      throws IOException;
+  protected abstract void writeInt64(ProtoFieldInfo field, long value) throws IOException;
 
   /** Serializes a protobuf {@code fixed64} field. */
-  public void serializeFixed64(int protoFieldNumber, String jsonFieldName, long value)
-      throws IOException {
+  public void serializeFixed64(ProtoFieldInfo field, long value) throws IOException {
     if (value == 0) {
       return;
     }
-    writeFixed64(protoFieldNumber, jsonFieldName, value);
+    writeFixed64(field, value);
   }
 
-  protected abstract void writeFixed64(int protoFieldNumber, String jsonFieldName, long value)
-      throws IOException;
+  protected abstract void writeFixed64(ProtoFieldInfo field, long value) throws IOException;
 
   protected abstract void writeFixed64Value(long value) throws IOException;
 
   /** Serializes a proto buf {@code double} field. */
-  public void serializeDouble(int protoFieldNumber, String jsonFieldName, double value)
-      throws IOException {
+  public void serializeDouble(ProtoFieldInfo field, double value) throws IOException {
     if (value == 0D) {
       return;
     }
-    writeDouble(protoFieldNumber, jsonFieldName, value);
+    writeDouble(field, value);
   }
 
-  protected abstract void writeDouble(int protoFieldNumber, String jsonFieldName, double value)
-      throws IOException;
+  protected abstract void writeDouble(ProtoFieldInfo field, double value) throws IOException;
 
   protected abstract void writeDoubleValue(double value) throws IOException;
 
@@ -97,56 +86,48 @@ public abstract class Serializer {
    * Serializes a protobuf {@code string} field. {@code utf8Bytes} is the UTF8 encoded bytes of the
    * string to serialize.
    */
-  public void serializeString(int protoFieldNumber, String jsonFieldName, byte[] utf8Bytes)
-      throws IOException {
+  public void serializeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException {
     if (utf8Bytes.length == 0) {
       return;
     }
-    writeString(protoFieldNumber, jsonFieldName, utf8Bytes);
+    writeString(field, utf8Bytes);
   }
 
-  protected abstract void writeString(int protoFieldNumber, String jsonFieldName, byte[] utf8Bytes)
-      throws IOException;
+  protected abstract void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException;
 
   /** Serializes a protobuf {@code bytes} field. */
-  public void serializeBytes(int protoFieldNumber, String jsonFieldName, byte[] value)
-      throws IOException {
+  public void serializeBytes(ProtoFieldInfo field, byte[] value) throws IOException {
     if (value.length == 0) {
       return;
     }
-    writeBytes(protoFieldNumber, jsonFieldName, value);
+    writeBytes(field, value);
   }
 
-  protected abstract void writeBytes(int protoFieldNumber, String jsonFieldName, byte[] value)
-      throws IOException;
+  protected abstract void writeBytes(ProtoFieldInfo field, byte[] value) throws IOException;
 
-  protected abstract void writeStartMessage(
-      int protoFieldNumber, String jsonFieldName, int protoMessageSize) throws IOException;
+  protected abstract void writeStartMessage(ProtoFieldInfo field, int protoMessageSize)
+      throws IOException;
 
   protected abstract void writeEndMessage() throws IOException;
 
   /** Serializes a protobuf embedded {@code message}. */
-  public void serializeMessage(int protoFieldNumber, String jsonFieldName, Marshaler message)
-      throws IOException {
-    writeStartMessage(protoFieldNumber, jsonFieldName, message.getProtoSerializedSize());
+  public void serializeMessage(ProtoFieldInfo field, Marshaler message) throws IOException {
+    writeStartMessage(field, message.getProtoSerializedSize());
     message.writeTo(this);
     writeEndMessage();
   }
 
   protected abstract void writeStartRepeatedPrimitive(
-      int protoFieldNumber, String jsonFieldName, int protoSizePerElement, int numElements)
-      throws IOException;
+      ProtoFieldInfo field, int protoSizePerElement, int numElements) throws IOException;
 
   protected abstract void writeEndRepeatedPrimitive() throws IOException;
 
   /** Serializes a {@code repeated fixed64} field. */
-  public void serializeRepeatedFixed64(
-      int protoFieldNumber, String jsonFieldName, List<Long> values) throws IOException {
+  public void serializeRepeatedFixed64(ProtoFieldInfo field, List<Long> values) throws IOException {
     if (values.isEmpty()) {
       return;
     }
-    writeStartRepeatedPrimitive(
-        protoFieldNumber, jsonFieldName, WireFormat.FIXED64_SIZE, values.size());
+    writeStartRepeatedPrimitive(field, WireFormat.FIXED64_SIZE, values.size());
     for (long value : values) {
       writeFixed64Value(value);
     }
@@ -154,13 +135,12 @@ public abstract class Serializer {
   }
 
   /** Serializes a {@code repeated double} field. */
-  public void serializeRepeatedDouble(
-      int protoFieldNumber, String jsonFieldName, List<Double> values) throws IOException {
+  public void serializeRepeatedDouble(ProtoFieldInfo field, List<Double> values)
+      throws IOException {
     if (values.isEmpty()) {
       return;
     }
-    writeStartRepeatedPrimitive(
-        protoFieldNumber, jsonFieldName, WireFormat.FIXED64_SIZE, values.size());
+    writeStartRepeatedPrimitive(field, WireFormat.FIXED64_SIZE, values.size());
     for (double value : values) {
       writeDoubleValue(value);
     }
@@ -168,13 +148,12 @@ public abstract class Serializer {
   }
 
   /** Serializes {@code repeated message} field. */
-  public abstract void serializeRepeatedMessage(
-      int protoFieldNumber, String jsonFieldName, Marshaler[] repeatedMessage) throws IOException;
+  public abstract void serializeRepeatedMessage(ProtoFieldInfo field, Marshaler[] repeatedMessage)
+      throws IOException;
 
   /** Serializes {@code repeated message} field. */
   public abstract void serializeRepeatedMessage(
-      int protoFieldNumber, String jsonFieldName, List<? extends Marshaler> repeatedMessage)
-      throws IOException;
+      ProtoFieldInfo field, List<? extends Marshaler> repeatedMessage) throws IOException;
 
   /** Writes the value for a message field that has been pre-serialized. */
   public abstract void writeSerializedMessage(byte[] protoSerialized, byte[] jsonSerialized)

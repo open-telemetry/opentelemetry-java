@@ -49,7 +49,7 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
       override fun handle(extend: Extend, field: Field) = null
       override fun handle(service: Service): List<Path> = emptyList()
       override fun handle(type: Type): Path? {
-        val typeSpec = javaGenerator.generateType(type)
+        val typeSpec = javaGenerator.generateType(type, false)
         val javaTypeName = javaGenerator.generatedTypeName(type)
 
         if (typeSpec == null) {
@@ -78,7 +78,7 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
   private class JavaGenerator(private val typeToJavaName: Map<ProtoType, TypeName>) {
 
     companion object {
-      private val STRING_TYPE_NAME = ClassName.get("java.lang", "String")
+      private val PROTO_FIELD_INFO = ClassName.get("io.opentelemetry.exporter.otlp.internal", "ProtoFieldInfo")
 
       fun get(schema: Schema): JavaGenerator {
         val nameToJavaName = linkedMapOf<ProtoType, TypeName>()
@@ -114,9 +114,9 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
       }
     }
 
-    fun generateType(type: Type): TypeSpec? {
+    fun generateType(type: Type, nested: Boolean): TypeSpec? {
       if (type is MessageType) {
-        return generateMessage(type)
+        return generateMessage(type, nested)
       }
       if (type is EnumType) {
         return generateEnum(type)
@@ -128,25 +128,24 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
       return typeToJavaName[type.type] as ClassName
     }
 
-    private fun generateMessage(type: MessageType): TypeSpec {
+    private fun generateMessage(type: MessageType, nested: Boolean): TypeSpec {
       val javaType = typeToJavaName[type.type] as ClassName
 
       val builder = TypeSpec.classBuilder(javaType.simpleName())
         .addModifiers(PUBLIC, FINAL)
+      if (nested) {
+        builder.addModifiers(STATIC)
+      }
 
       for (field in type.fieldsAndOneOfFields) {
         builder.addField(
-          FieldSpec.builder(TypeName.INT, "${field.name.toUpperCase()}_FIELD_NUMBER", PUBLIC, STATIC, FINAL)
-            .initializer("\$L", field.tag)
-            .build())
-        builder.addField(
-          FieldSpec.builder(STRING_TYPE_NAME, "${field.name.toUpperCase()}_JSON_NAME", PUBLIC, STATIC, FINAL)
-            .initializer("\"\$L\"", field.jsonName)
+          FieldSpec.builder(PROTO_FIELD_INFO, field.name.toUpperCase(), PUBLIC, STATIC, FINAL)
+            .initializer("\$T.create(\$L, \"\$L\")", PROTO_FIELD_INFO, field.tag, field.jsonName)
             .build())
       }
 
       for (nestedType in type.nestedTypes) {
-        builder.addType(generateType(nestedType))
+        builder.addType(generateType(nestedType, true))
       }
 
       return builder.build()

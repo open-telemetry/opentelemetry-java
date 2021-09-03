@@ -93,16 +93,14 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
   @Override
   public void writeTo(Serializer output) throws IOException {
     output.serializeRepeatedMessage(
-        ExportMetricsServiceRequest.RESOURCE_METRICS_FIELD_NUMBER,
-        ExportMetricsServiceRequest.RESOURCE_METRICS_JSON_NAME,
-        resourceMetricsMarshalers);
+        ExportMetricsServiceRequest.RESOURCE_METRICS, resourceMetricsMarshalers);
   }
 
   private static int calculateSize(ResourceMetricsMarshaler[] resourceMetricsMarshalers) {
     int size = 0;
     size +=
         MarshalerUtil.sizeRepeatedMessage(
-            ExportMetricsServiceRequest.RESOURCE_METRICS_FIELD_NUMBER, resourceMetricsMarshalers);
+            ExportMetricsServiceRequest.RESOURCE_METRICS, resourceMetricsMarshalers);
     return size;
   }
 
@@ -134,16 +132,10 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeMessage(
-          ResourceMetrics.RESOURCE_FIELD_NUMBER,
-          ResourceMetrics.RESOURCE_JSON_NAME,
-          resourceMarshaler);
+      output.serializeMessage(ResourceMetrics.RESOURCE, resourceMarshaler);
       output.serializeRepeatedMessage(
-          ResourceMetrics.INSTRUMENTATION_LIBRARY_METRICS_FIELD_NUMBER,
-          ResourceMetrics.INSTRUMENTATION_LIBRARY_METRICS_JSON_NAME,
-          instrumentationLibraryMetricsMarshalers);
-      output.serializeBytes(
-          ResourceMetrics.SCHEMA_URL_FIELD_NUMBER, ResourceMetrics.SCHEMA_URL_JSON_NAME, schemaUrl);
+          ResourceMetrics.INSTRUMENTATION_LIBRARY_METRICS, instrumentationLibraryMetricsMarshalers);
+      output.serializeString(ResourceMetrics.SCHEMA_URL, schemaUrl);
     }
 
     private static int calculateSize(
@@ -151,11 +143,11 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         byte[] schemaUrl,
         InstrumentationLibraryMetricsMarshaler[] instrumentationLibraryMetricsMarshalers) {
       int size = 0;
-      size += MarshalerUtil.sizeMessage(ResourceMetrics.RESOURCE_FIELD_NUMBER, resourceMarshaler);
-      size += MarshalerUtil.sizeBytes(ResourceMetrics.SCHEMA_URL_FIELD_NUMBER, schemaUrl);
+      size += MarshalerUtil.sizeMessage(ResourceMetrics.RESOURCE, resourceMarshaler);
+      size += MarshalerUtil.sizeBytes(ResourceMetrics.SCHEMA_URL, schemaUrl);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
-              ResourceMetrics.INSTRUMENTATION_LIBRARY_METRICS_FIELD_NUMBER,
+              ResourceMetrics.INSTRUMENTATION_LIBRARY_METRICS,
               instrumentationLibraryMetricsMarshalers);
       return size;
     }
@@ -179,17 +171,9 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
     @Override
     public void writeTo(Serializer output) throws IOException {
       output.serializeMessage(
-          InstrumentationLibraryMetrics.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
-          InstrumentationLibraryMetrics.INSTRUMENTATION_LIBRARY_JSON_NAME,
-          instrumentationLibrary);
-      output.serializeRepeatedMessage(
-          InstrumentationLibraryMetrics.METRICS_FIELD_NUMBER,
-          InstrumentationLibraryMetrics.METRICS_JSON_NAME,
-          metricMarshalers);
-      output.serializeString(
-          InstrumentationLibraryMetrics.SCHEMA_URL_FIELD_NUMBER,
-          InstrumentationLibraryMetrics.SCHEMA_URL_JSON_NAME,
-          schemaUrlUtf8);
+          InstrumentationLibraryMetrics.INSTRUMENTATION_LIBRARY, instrumentationLibrary);
+      output.serializeRepeatedMessage(InstrumentationLibraryMetrics.METRICS, metricMarshalers);
+      output.serializeString(InstrumentationLibraryMetrics.SCHEMA_URL, schemaUrlUtf8);
     }
 
     private static int calculateSize(
@@ -199,14 +183,11 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
       int size = 0;
       size +=
           MarshalerUtil.sizeMessage(
-              InstrumentationLibraryMetrics.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
-              instrumentationLibrary);
-      size +=
-          MarshalerUtil.sizeBytes(
-              InstrumentationLibraryMetrics.SCHEMA_URL_FIELD_NUMBER, schemaUrlUtf8);
+              InstrumentationLibraryMetrics.INSTRUMENTATION_LIBRARY, instrumentationLibrary);
+      size += MarshalerUtil.sizeBytes(InstrumentationLibraryMetrics.SCHEMA_URL, schemaUrlUtf8);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
-              InstrumentationLibraryMetrics.METRICS_FIELD_NUMBER, metricMarshalers);
+              InstrumentationLibraryMetrics.METRICS, metricMarshalers);
       return size;
     }
   }
@@ -217,8 +198,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
     private final byte[] unitUtf8;
 
     private final Marshaler dataMarshaler;
-    private final int dataFieldNumber;
-    private final String dataJsonName;
+    private final ProtoFieldInfo dataField;
 
     static Marshaler create(MetricData metric) {
       // TODO(anuraaga): Cache these as they should be effectively singleton.
@@ -227,38 +207,31 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
       byte[] unit = MarshalerUtil.toBytes(metric.getUnit());
 
       Marshaler dataMarshaler = null;
-      int dataFieldNumber = -1;
-      String dataJsonName = null;
+      ProtoFieldInfo dataFIeld = null;
       switch (metric.getType()) {
         case LONG_GAUGE:
           dataMarshaler = GaugeMarshaler.create(metric.getLongGaugeData());
-          dataFieldNumber = Metric.GAUGE_FIELD_NUMBER;
-          dataJsonName = Metric.GAUGE_JSON_NAME;
+          dataFIeld = Metric.GAUGE;
           break;
         case DOUBLE_GAUGE:
           dataMarshaler = GaugeMarshaler.create(metric.getDoubleGaugeData());
-          dataFieldNumber = Metric.GAUGE_FIELD_NUMBER;
-          dataJsonName = Metric.GAUGE_JSON_NAME;
+          dataFIeld = Metric.GAUGE;
           break;
         case LONG_SUM:
           dataMarshaler = SumMarshaler.create(metric.getLongSumData());
-          dataFieldNumber = Metric.SUM_FIELD_NUMBER;
-          dataJsonName = Metric.SUM_JSON_NAME;
+          dataFIeld = Metric.SUM;
           break;
         case DOUBLE_SUM:
           dataMarshaler = SumMarshaler.create(metric.getDoubleSumData());
-          dataFieldNumber = Metric.SUM_FIELD_NUMBER;
-          dataJsonName = Metric.SUM_JSON_NAME;
+          dataFIeld = Metric.SUM;
           break;
         case SUMMARY:
           dataMarshaler = SummaryMarshaler.create(metric.getDoubleSummaryData());
-          dataFieldNumber = Metric.SUMMARY_FIELD_NUMBER;
-          dataJsonName = Metric.SUMMARY_JSON_NAME;
+          dataFIeld = Metric.SUMMARY;
           break;
         case HISTOGRAM:
           dataMarshaler = HistogramMarshaler.create(metric.getDoubleHistogramData());
-          dataFieldNumber = Metric.HISTOGRAM_FIELD_NUMBER;
-          dataJsonName = Metric.HISTOGRAM_JSON_NAME;
+          dataFIeld = Metric.HISTOGRAM;
           break;
       }
 
@@ -267,8 +240,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         return NoopMarshaler.INSTANCE;
       }
 
-      return new MetricMarshaler(
-          name, description, unit, dataMarshaler, dataFieldNumber, dataJsonName);
+      return new MetricMarshaler(name, description, unit, dataMarshaler, dataFIeld);
     }
 
     private MetricMarshaler(
@@ -276,24 +248,21 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         byte[] descriptionUtf8,
         byte[] unitUtf8,
         Marshaler dataMarshaler,
-        int dataFieldNumber,
-        String dataJsonName) {
-      super(calculateSize(nameUtf8, descriptionUtf8, unitUtf8, dataMarshaler, dataFieldNumber));
+        ProtoFieldInfo dataField) {
+      super(calculateSize(nameUtf8, descriptionUtf8, unitUtf8, dataMarshaler, dataField));
       this.nameUtf8 = nameUtf8;
       this.descriptionUtf8 = descriptionUtf8;
       this.unitUtf8 = unitUtf8;
       this.dataMarshaler = dataMarshaler;
-      this.dataFieldNumber = dataFieldNumber;
-      this.dataJsonName = dataJsonName;
+      this.dataField = dataField;
     }
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeBytes(Metric.NAME_FIELD_NUMBER, Metric.NAME_JSON_NAME, nameUtf8);
-      output.serializeBytes(
-          Metric.DESCRIPTION_FIELD_NUMBER, Metric.DESCRIPTION_JSON_NAME, descriptionUtf8);
-      output.serializeBytes(Metric.UNIT_FIELD_NUMBER, Metric.UNIT_JSON_NAME, unitUtf8);
-      output.serializeMessage(dataFieldNumber, dataJsonName, dataMarshaler);
+      output.serializeString(Metric.NAME, nameUtf8);
+      output.serializeString(Metric.DESCRIPTION, descriptionUtf8);
+      output.serializeString(Metric.UNIT, unitUtf8);
+      output.serializeMessage(dataField, dataMarshaler);
     }
 
     private static int calculateSize(
@@ -301,12 +270,12 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         byte[] descriptionUtf8,
         byte[] unitUtf8,
         Marshaler dataMarshaler,
-        int dataFieldNumber) {
+        ProtoFieldInfo dataField) {
       int size = 0;
-      size += MarshalerUtil.sizeBytes(Metric.NAME_FIELD_NUMBER, nameUtf8);
-      size += MarshalerUtil.sizeBytes(Metric.DESCRIPTION_FIELD_NUMBER, descriptionUtf8);
-      size += MarshalerUtil.sizeBytes(Metric.UNIT_FIELD_NUMBER, unitUtf8);
-      size += MarshalerUtil.sizeMessage(dataFieldNumber, dataMarshaler);
+      size += MarshalerUtil.sizeBytes(Metric.NAME, nameUtf8);
+      size += MarshalerUtil.sizeBytes(Metric.DESCRIPTION, descriptionUtf8);
+      size += MarshalerUtil.sizeBytes(Metric.UNIT, unitUtf8);
+      size += MarshalerUtil.sizeMessage(dataField, dataMarshaler);
       return size;
     }
   }
@@ -328,13 +297,12 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeRepeatedMessage(
-          Gauge.DATA_POINTS_FIELD_NUMBER, Gauge.DATA_POINTS_JSON_NAME, dataPoints);
+      output.serializeRepeatedMessage(Gauge.DATA_POINTS, dataPoints);
     }
 
     private static int calculateSize(NumberDataPointMarshaler[] dataPoints) {
       int size = 0;
-      size += MarshalerUtil.sizeRepeatedMessage(Gauge.DATA_POINTS_FIELD_NUMBER, dataPoints);
+      size += MarshalerUtil.sizeRepeatedMessage(Gauge.DATA_POINTS, dataPoints);
       return size;
     }
   }
@@ -359,21 +327,15 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeRepeatedMessage(
-          Histogram.DATA_POINTS_FIELD_NUMBER, Histogram.DATA_POINTS_JSON_NAME, dataPoints);
-      output.serializeEnum(
-          Histogram.AGGREGATION_TEMPORALITY_FIELD_NUMBER,
-          Histogram.AGGREGATION_TEMPORALITY_JSON_NAME,
-          aggregationTemporality);
+      output.serializeRepeatedMessage(Histogram.DATA_POINTS, dataPoints);
+      output.serializeEnum(Histogram.AGGREGATION_TEMPORALITY, aggregationTemporality);
     }
 
     private static int calculateSize(
         HistogramDataPointMarshaler[] dataPoints, int aggregationTemporality) {
       int size = 0;
-      size += MarshalerUtil.sizeRepeatedMessage(Histogram.DATA_POINTS_FIELD_NUMBER, dataPoints);
-      size +=
-          MarshalerUtil.sizeEnum(
-              Histogram.AGGREGATION_TEMPORALITY_FIELD_NUMBER, aggregationTemporality);
+      size += MarshalerUtil.sizeRepeatedMessage(Histogram.DATA_POINTS, dataPoints);
+      size += MarshalerUtil.sizeEnum(Histogram.AGGREGATION_TEMPORALITY, aggregationTemporality);
       return size;
     }
   }
@@ -446,34 +408,14 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeFixed64(
-          HistogramDataPoint.START_TIME_UNIX_NANO_FIELD_NUMBER,
-          HistogramDataPoint.START_TIME_UNIX_NANO_JSON_NAME,
-          startTimeUnixNano);
-      output.serializeFixed64(
-          HistogramDataPoint.TIME_UNIX_NANO_FIELD_NUMBER,
-          HistogramDataPoint.TIME_UNIX_NANO_JSON_NAME,
-          timeUnixNano);
-      output.serializeFixed64(
-          HistogramDataPoint.COUNT_FIELD_NUMBER, HistogramDataPoint.COUNT_JSON_NAME, count);
-      output.serializeDouble(
-          HistogramDataPoint.SUM_FIELD_NUMBER, HistogramDataPoint.SUM_JSON_NAME, sum);
-      output.serializeRepeatedFixed64(
-          HistogramDataPoint.BUCKET_COUNTS_FIELD_NUMBER,
-          HistogramDataPoint.BUCKET_COUNTS_JSON_NAME,
-          bucketCounts);
-      output.serializeRepeatedDouble(
-          HistogramDataPoint.EXPLICIT_BOUNDS_FIELD_NUMBER,
-          HistogramDataPoint.EXPLICIT_BOUNDS_JSON_NAME,
-          explicitBounds);
-      output.serializeRepeatedMessage(
-          HistogramDataPoint.EXEMPLARS_FIELD_NUMBER,
-          HistogramDataPoint.EXEMPLARS_JSON_NAME,
-          exemplars);
-      output.serializeRepeatedMessage(
-          HistogramDataPoint.ATTRIBUTES_FIELD_NUMBER,
-          HistogramDataPoint.ATTRIBUTES_JSON_NAME,
-          attributes);
+      output.serializeFixed64(HistogramDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
+      output.serializeFixed64(HistogramDataPoint.TIME_UNIX_NANO, timeUnixNano);
+      output.serializeFixed64(HistogramDataPoint.COUNT, count);
+      output.serializeDouble(HistogramDataPoint.SUM, sum);
+      output.serializeRepeatedFixed64(HistogramDataPoint.BUCKET_COUNTS, bucketCounts);
+      output.serializeRepeatedDouble(HistogramDataPoint.EXPLICIT_BOUNDS, explicitBounds);
+      output.serializeRepeatedMessage(HistogramDataPoint.EXEMPLARS, exemplars);
+      output.serializeRepeatedMessage(HistogramDataPoint.ATTRIBUTES, attributes);
     }
 
     private static int calculateSize(
@@ -486,23 +428,14 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         ExemplarMarshaler[] exemplars,
         AttributeMarshaler[] attributes) {
       int size = 0;
-      size +=
-          MarshalerUtil.sizeFixed64(
-              HistogramDataPoint.START_TIME_UNIX_NANO_FIELD_NUMBER, startTimeUnixNano);
-      size +=
-          MarshalerUtil.sizeFixed64(HistogramDataPoint.TIME_UNIX_NANO_FIELD_NUMBER, timeUnixNano);
-      size += MarshalerUtil.sizeFixed64(HistogramDataPoint.COUNT_FIELD_NUMBER, count);
-      size += MarshalerUtil.sizeDouble(HistogramDataPoint.SUM_FIELD_NUMBER, sum);
-      size +=
-          MarshalerUtil.sizeRepeatedFixed64(
-              HistogramDataPoint.BUCKET_COUNTS_FIELD_NUMBER, bucketCounts);
-      size +=
-          MarshalerUtil.sizeRepeatedDouble(
-              HistogramDataPoint.EXPLICIT_BOUNDS_FIELD_NUMBER, explicitBounds);
-      size +=
-          MarshalerUtil.sizeRepeatedMessage(HistogramDataPoint.EXEMPLARS_FIELD_NUMBER, exemplars);
-      size +=
-          MarshalerUtil.sizeRepeatedMessage(HistogramDataPoint.ATTRIBUTES_FIELD_NUMBER, attributes);
+      size += MarshalerUtil.sizeFixed64(HistogramDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
+      size += MarshalerUtil.sizeFixed64(HistogramDataPoint.TIME_UNIX_NANO, timeUnixNano);
+      size += MarshalerUtil.sizeFixed64(HistogramDataPoint.COUNT, count);
+      size += MarshalerUtil.sizeDouble(HistogramDataPoint.SUM, sum);
+      size += MarshalerUtil.sizeRepeatedFixed64(HistogramDataPoint.BUCKET_COUNTS, bucketCounts);
+      size += MarshalerUtil.sizeRepeatedDouble(HistogramDataPoint.EXPLICIT_BOUNDS, explicitBounds);
+      size += MarshalerUtil.sizeRepeatedMessage(HistogramDataPoint.EXEMPLARS, exemplars);
+      size += MarshalerUtil.sizeRepeatedMessage(HistogramDataPoint.ATTRIBUTES, attributes);
       return size;
     }
   }
@@ -532,22 +465,17 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeRepeatedMessage(
-          Sum.DATA_POINTS_FIELD_NUMBER, Sum.DATA_POINTS_JSON_NAME, dataPoints);
-      output.serializeEnum(
-          Sum.AGGREGATION_TEMPORALITY_FIELD_NUMBER,
-          Sum.AGGREGATION_TEMPORALITY_JSON_NAME,
-          aggregationTemporality);
-      output.serializeBool(Sum.IS_MONOTONIC_FIELD_NUMBER, Sum.IS_MONOTONIC_JSON_NAME, isMonotonic);
+      output.serializeRepeatedMessage(Sum.DATA_POINTS, dataPoints);
+      output.serializeEnum(Sum.AGGREGATION_TEMPORALITY, aggregationTemporality);
+      output.serializeBool(Sum.IS_MONOTONIC, isMonotonic);
     }
 
     private static int calculateSize(
         NumberDataPointMarshaler[] dataPoints, int aggregationTemporality, boolean isMonotonic) {
       int size = 0;
-      size += MarshalerUtil.sizeRepeatedMessage(Sum.DATA_POINTS_FIELD_NUMBER, dataPoints);
-      size +=
-          MarshalerUtil.sizeEnum(Sum.AGGREGATION_TEMPORALITY_FIELD_NUMBER, aggregationTemporality);
-      size += MarshalerUtil.sizeBool(Sum.IS_MONOTONIC_FIELD_NUMBER, isMonotonic);
+      size += MarshalerUtil.sizeRepeatedMessage(Sum.DATA_POINTS, dataPoints);
+      size += MarshalerUtil.sizeEnum(Sum.AGGREGATION_TEMPORALITY, aggregationTemporality);
+      size += MarshalerUtil.sizeBool(Sum.IS_MONOTONIC, isMonotonic);
       return size;
     }
   }
@@ -568,13 +496,12 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeRepeatedMessage(
-          Summary.DATA_POINTS_FIELD_NUMBER, Summary.DATA_POINTS_JSON_NAME, dataPoints);
+      output.serializeRepeatedMessage(Summary.DATA_POINTS, dataPoints);
     }
 
     private static int calculateSize(SummaryDataPointMarshaler[] dataPoints) {
       int size = 0;
-      size += MarshalerUtil.sizeRepeatedMessage(Summary.DATA_POINTS_FIELD_NUMBER, dataPoints);
+      size += MarshalerUtil.sizeRepeatedMessage(Summary.DATA_POINTS, dataPoints);
       return size;
     }
   }
@@ -629,26 +556,12 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeFixed64(
-          SummaryDataPoint.START_TIME_UNIX_NANO_FIELD_NUMBER,
-          SummaryDataPoint.START_TIME_UNIX_NANO_JSON_NAME,
-          startTimeUnixNano);
-      output.serializeFixed64(
-          SummaryDataPoint.TIME_UNIX_NANO_FIELD_NUMBER,
-          SummaryDataPoint.TIME_UNIX_NANO_JSON_NAME,
-          timeUnixNano);
-      output.serializeFixed64(
-          SummaryDataPoint.COUNT_FIELD_NUMBER, SummaryDataPoint.COUNT_JSON_NAME, count);
-      output.serializeDouble(
-          SummaryDataPoint.SUM_FIELD_NUMBER, SummaryDataPoint.SUM_JSON_NAME, sum);
-      output.serializeRepeatedMessage(
-          SummaryDataPoint.QUANTILE_VALUES_FIELD_NUMBER,
-          SummaryDataPoint.QUANTILE_VALUES_JSON_NAME,
-          quantileValues);
-      output.serializeRepeatedMessage(
-          SummaryDataPoint.ATTRIBUTES_FIELD_NUMBER,
-          SummaryDataPoint.ATTRIBUTES_JSON_NAME,
-          attributes);
+      output.serializeFixed64(SummaryDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
+      output.serializeFixed64(SummaryDataPoint.TIME_UNIX_NANO, timeUnixNano);
+      output.serializeFixed64(SummaryDataPoint.COUNT, count);
+      output.serializeDouble(SummaryDataPoint.SUM, sum);
+      output.serializeRepeatedMessage(SummaryDataPoint.QUANTILE_VALUES, quantileValues);
+      output.serializeRepeatedMessage(SummaryDataPoint.ATTRIBUTES, attributes);
     }
 
     private static int calculateSize(
@@ -659,17 +572,12 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         ValueAtQuantileMarshaler[] quantileValues,
         AttributeMarshaler[] attributes) {
       int size = 0;
-      size +=
-          MarshalerUtil.sizeFixed64(
-              SummaryDataPoint.START_TIME_UNIX_NANO_FIELD_NUMBER, startTimeUnixNano);
-      size += MarshalerUtil.sizeFixed64(SummaryDataPoint.TIME_UNIX_NANO_FIELD_NUMBER, timeUnixNano);
-      size += MarshalerUtil.sizeFixed64(SummaryDataPoint.COUNT_FIELD_NUMBER, count);
-      size += MarshalerUtil.sizeDouble(SummaryDataPoint.SUM_FIELD_NUMBER, sum);
-      size +=
-          MarshalerUtil.sizeRepeatedMessage(
-              SummaryDataPoint.QUANTILE_VALUES_FIELD_NUMBER, quantileValues);
-      size +=
-          MarshalerUtil.sizeRepeatedMessage(SummaryDataPoint.ATTRIBUTES_FIELD_NUMBER, attributes);
+      size += MarshalerUtil.sizeFixed64(SummaryDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
+      size += MarshalerUtil.sizeFixed64(SummaryDataPoint.TIME_UNIX_NANO, timeUnixNano);
+      size += MarshalerUtil.sizeFixed64(SummaryDataPoint.COUNT, count);
+      size += MarshalerUtil.sizeDouble(SummaryDataPoint.SUM, sum);
+      size += MarshalerUtil.sizeRepeatedMessage(SummaryDataPoint.QUANTILE_VALUES, quantileValues);
+      size += MarshalerUtil.sizeRepeatedMessage(SummaryDataPoint.ATTRIBUTES, attributes);
       return size;
     }
   }
@@ -699,22 +607,14 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeDouble(
-          SummaryDataPoint.ValueAtQuantile.QUANTILE_FIELD_NUMBER,
-          SummaryDataPoint.ValueAtQuantile.QUANTILE_JSON_NAME,
-          quantile);
-      output.serializeDouble(
-          SummaryDataPoint.ValueAtQuantile.VALUE_FIELD_NUMBER,
-          SummaryDataPoint.ValueAtQuantile.VALUE_JSON_NAME,
-          value);
+      output.serializeDouble(SummaryDataPoint.ValueAtQuantile.QUANTILE, quantile);
+      output.serializeDouble(SummaryDataPoint.ValueAtQuantile.VALUE, value);
     }
 
     private static int calculateSize(double quantile, double value) {
       int size = 0;
-      size +=
-          MarshalerUtil.sizeDouble(
-              SummaryDataPoint.ValueAtQuantile.QUANTILE_FIELD_NUMBER, quantile);
-      size += MarshalerUtil.sizeDouble(SummaryDataPoint.ValueAtQuantile.VALUE_FIELD_NUMBER, value);
+      size += MarshalerUtil.sizeDouble(SummaryDataPoint.ValueAtQuantile.QUANTILE, quantile);
+      size += MarshalerUtil.sizeDouble(SummaryDataPoint.ValueAtQuantile.VALUE, value);
       return size;
     }
   }
@@ -725,8 +625,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
 
     // Always fixed64, for a double it's the bits themselves.
     private final long value;
-    private final int valueFieldNumber;
-    private final String valueJsonName;
+    private final ProtoFieldInfo valueField;
 
     private final ExemplarMarshaler[] exemplars;
     private final AttributeMarshaler[] attributes;
@@ -748,25 +647,21 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
           AttributeMarshaler.createRepeated(point.getAttributes());
 
       final long value;
-      final int valueFieldNumber;
-      final String valueJsonName;
+      final ProtoFieldInfo valueField;
       if (point instanceof LongPointData) {
         value = ((LongPointData) point).getValue();
-        valueFieldNumber = NumberDataPoint.AS_INT_FIELD_NUMBER;
-        valueJsonName = NumberDataPoint.AS_INT_JSON_NAME;
+        valueField = NumberDataPoint.AS_INT;
       } else {
         assert point instanceof DoublePointData;
         value = Double.doubleToRawLongBits(((DoublePointData) point).getValue());
-        valueFieldNumber = NumberDataPoint.AS_DOUBLE_FIELD_NUMBER;
-        valueJsonName = NumberDataPoint.AS_DOUBLE_JSON_NAME;
+        valueField = NumberDataPoint.AS_DOUBLE;
       }
 
       return new NumberDataPointMarshaler(
           point.getStartEpochNanos(),
           point.getEpochNanos(),
           value,
-          valueFieldNumber,
-          valueJsonName,
+          valueField,
           exemplarMarshalers,
           attributeMarshalers);
     }
@@ -775,57 +670,41 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         long startTimeUnixNano,
         long timeUnixNano,
         long value,
-        int valueFieldNumber,
-        String valueJsonName,
+        ProtoFieldInfo valueField,
         ExemplarMarshaler[] exemplars,
         AttributeMarshaler[] attributes) {
       super(
-          calculateSize(
-              startTimeUnixNano, timeUnixNano, value, valueFieldNumber, exemplars, attributes));
+          calculateSize(startTimeUnixNano, timeUnixNano, value, valueField, exemplars, attributes));
       this.startTimeUnixNano = startTimeUnixNano;
       this.timeUnixNano = timeUnixNano;
       this.value = value;
-      this.valueFieldNumber = valueFieldNumber;
-      this.valueJsonName = valueJsonName;
+      this.valueField = valueField;
       this.exemplars = exemplars;
       this.attributes = attributes;
     }
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeFixed64(
-          NumberDataPoint.START_TIME_UNIX_NANO_FIELD_NUMBER,
-          NumberDataPoint.START_TIME_UNIX_NANO_JSON_NAME,
-          startTimeUnixNano);
-      output.serializeFixed64(
-          NumberDataPoint.TIME_UNIX_NANO_FIELD_NUMBER,
-          NumberDataPoint.TIME_UNIX_NANO_JSON_NAME,
-          timeUnixNano);
-      output.serializeFixed64(valueFieldNumber, valueJsonName, value);
-      output.serializeRepeatedMessage(
-          NumberDataPoint.EXEMPLARS_FIELD_NUMBER, NumberDataPoint.EXEMPLARS_JSON_NAME, exemplars);
-      output.serializeRepeatedMessage(
-          NumberDataPoint.ATTRIBUTES_FIELD_NUMBER,
-          NumberDataPoint.ATTRIBUTES_JSON_NAME,
-          attributes);
+      output.serializeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
+      output.serializeFixed64(NumberDataPoint.TIME_UNIX_NANO, timeUnixNano);
+      output.serializeFixed64(valueField, value);
+      output.serializeRepeatedMessage(NumberDataPoint.EXEMPLARS, exemplars);
+      output.serializeRepeatedMessage(NumberDataPoint.ATTRIBUTES, attributes);
     }
 
     private static int calculateSize(
         long startTimeUnixNano,
         long timeUnixNano,
         long value,
-        int valueFieldNumber,
+        ProtoFieldInfo valueField,
         ExemplarMarshaler[] exemplars,
         AttributeMarshaler[] attributes) {
       int size = 0;
-      size +=
-          MarshalerUtil.sizeFixed64(
-              NumberDataPoint.START_TIME_UNIX_NANO_FIELD_NUMBER, startTimeUnixNano);
-      size += MarshalerUtil.sizeFixed64(NumberDataPoint.TIME_UNIX_NANO_FIELD_NUMBER, timeUnixNano);
-      size += MarshalerUtil.sizeFixed64(valueFieldNumber, value);
-      size += MarshalerUtil.sizeRepeatedMessage(NumberDataPoint.EXEMPLARS_FIELD_NUMBER, exemplars);
-      size +=
-          MarshalerUtil.sizeRepeatedMessage(NumberDataPoint.ATTRIBUTES_FIELD_NUMBER, attributes);
+      size += MarshalerUtil.sizeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
+      size += MarshalerUtil.sizeFixed64(NumberDataPoint.TIME_UNIX_NANO, timeUnixNano);
+      size += MarshalerUtil.sizeFixed64(valueField, value);
+      size += MarshalerUtil.sizeRepeatedMessage(NumberDataPoint.EXEMPLARS, exemplars);
+      size += MarshalerUtil.sizeRepeatedMessage(NumberDataPoint.ATTRIBUTES, attributes);
       return size;
     }
   }
@@ -836,8 +715,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
 
     // Always fixed64, for a double it's the bits themselves.
     private final long value;
-    private final int valueFieldNumber;
-    private final String valueJsonName;
+    private final ProtoFieldInfo valueField;
 
     private final byte[] spanId;
     private final byte[] traceId;
@@ -858,18 +736,14 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
           AttributeMarshaler.createRepeated(exemplar.getFilteredAttributes());
 
       final long value;
-      final int valueFieldNumber;
-      final String valueJsonName;
+      final ProtoFieldInfo valueField;
       if (exemplar instanceof LongExemplar) {
         value = ((LongExemplar) exemplar).getValue();
-        valueFieldNumber = io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT_FIELD_NUMBER;
-        valueJsonName = io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT_JSON_NAME;
+        valueField = io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT;
       } else {
         assert exemplar instanceof DoubleExemplar;
         value = Double.doubleToRawLongBits(((DoubleExemplar) exemplar).getValue());
-        valueFieldNumber =
-            io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_DOUBLE_FIELD_NUMBER;
-        valueJsonName = io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_DOUBLE_JSON_NAME;
+        valueField = io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_DOUBLE;
       }
 
       byte[] spanId = MarshalerUtil.EMPTY_BYTES;
@@ -882,30 +756,22 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
       }
 
       return new ExemplarMarshaler(
-          exemplar.getEpochNanos(),
-          value,
-          valueFieldNumber,
-          valueJsonName,
-          spanId,
-          traceId,
-          attributeMarshalers);
+          exemplar.getEpochNanos(), value, valueField, spanId, traceId, attributeMarshalers);
     }
 
     private ExemplarMarshaler(
         long timeUnixNano,
         long value,
-        int valueFieldNumber,
-        String valueJsonName,
+        ProtoFieldInfo valueField,
         byte[] spanId,
         byte[] traceId,
         AttributeMarshaler[] filteredAttributeMarshalers) {
       super(
           calculateSize(
-              timeUnixNano, value, valueFieldNumber, spanId, traceId, filteredAttributeMarshalers));
+              timeUnixNano, value, valueField, spanId, traceId, filteredAttributeMarshalers));
       this.timeUnixNano = timeUnixNano;
       this.value = value;
-      this.valueFieldNumber = valueFieldNumber;
-      this.valueJsonName = valueJsonName;
+      this.valueField = valueField;
       this.spanId = spanId;
       this.traceId = traceId;
       this.filteredAttributeMarshalers = filteredAttributeMarshalers;
@@ -914,46 +780,36 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
     @Override
     public void writeTo(Serializer output) throws IOException {
       output.serializeFixed64(
-          io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO_FIELD_NUMBER,
-          io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO_JSON_NAME,
-          timeUnixNano);
-      output.serializeFixed64(valueFieldNumber, valueJsonName, value);
-      output.serializeBytes(
-          io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID_FIELD_NUMBER,
-          io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID_JSON_NAME,
-          spanId);
-      output.serializeBytes(
-          io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID_FIELD_NUMBER,
-          io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID_JSON_NAME,
-          traceId);
+          io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO, timeUnixNano);
+      output.serializeFixed64(valueField, value);
+      output.serializeBytes(io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanId);
+      output.serializeBytes(io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID, traceId);
       output.serializeRepeatedMessage(
-          io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES_FIELD_NUMBER,
-          io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES_JSON_NAME,
+          io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES,
           filteredAttributeMarshalers);
     }
 
     private static int calculateSize(
         long timeUnixNano,
         long value,
-        int valueFieldNumber,
+        ProtoFieldInfo valueField,
         byte[] spanId,
         byte[] traceId,
         AttributeMarshaler[] filteredAttributeMarshalers) {
       int size = 0;
       size +=
           MarshalerUtil.sizeFixed64(
-              io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO_FIELD_NUMBER,
-              timeUnixNano);
-      size += MarshalerUtil.sizeFixed64(valueFieldNumber, value);
+              io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO, timeUnixNano);
+      size += MarshalerUtil.sizeFixed64(valueField, value);
       size +=
           MarshalerUtil.sizeBytes(
-              io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID_FIELD_NUMBER, spanId);
+              io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanId);
       size +=
           MarshalerUtil.sizeBytes(
-              io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID_FIELD_NUMBER, traceId);
+              io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID, traceId);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
-              io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES_FIELD_NUMBER,
+              io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES,
               filteredAttributeMarshalers);
       return size;
     }

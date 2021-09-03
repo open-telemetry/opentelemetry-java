@@ -38,29 +38,29 @@ final class MarshalerUtil {
     return result;
   }
 
-  static int sizeRepeatedFixed64(int fieldNumber, List<Long> values) {
-    return sizeRepeatedFixed64(fieldNumber, values.size());
+  static int sizeRepeatedFixed64(ProtoFieldInfo field, List<Long> values) {
+    return sizeRepeatedFixed64(field, values.size());
   }
 
-  private static int sizeRepeatedFixed64(int fieldNumber, int numValues) {
+  private static int sizeRepeatedFixed64(ProtoFieldInfo field, int numValues) {
     if (numValues == 0) {
       return 0;
     }
     int dataSize = WireFormat.FIXED64_SIZE * numValues;
     int size = 0;
-    size += CodedOutputStream.computeTagSize(fieldNumber);
+    size += CodedOutputStream.computeTagSize(field.getFieldNumber());
     size += CodedOutputStream.computeLengthDelimitedFieldSize(dataSize);
     return size;
   }
 
-  static int sizeRepeatedDouble(int fieldNumber, List<Double> values) {
+  static int sizeRepeatedDouble(ProtoFieldInfo field, List<Double> values) {
     // Same as fixed64.
-    return sizeRepeatedFixed64(fieldNumber, values.size());
+    return sizeRepeatedFixed64(field, values.size());
   }
 
-  static <T extends Marshaler> int sizeRepeatedMessage(int fieldNumber, T[] repeatedMessage) {
+  static <T extends Marshaler> int sizeRepeatedMessage(ProtoFieldInfo field, T[] repeatedMessage) {
     int size = 0;
-    int fieldTagSize = CodedOutputStream.computeTagSize(fieldNumber);
+    int fieldTagSize = CodedOutputStream.computeTagSize(field.getFieldNumber());
     for (Marshaler message : repeatedMessage) {
       int fieldSize = message.getProtoSerializedSize();
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
@@ -68,9 +68,9 @@ final class MarshalerUtil {
     return size;
   }
 
-  static int sizeRepeatedMessage(int fieldNumber, List<? extends Marshaler> repeatedMessage) {
+  static int sizeRepeatedMessage(ProtoFieldInfo field, List<? extends Marshaler> repeatedMessage) {
     int size = 0;
-    int fieldTagSize = CodedOutputStream.computeTagSize(fieldNumber);
+    int fieldTagSize = CodedOutputStream.computeTagSize(field.getFieldNumber());
     for (Marshaler message : repeatedMessage) {
       int fieldSize = message.getProtoSerializedSize();
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
@@ -78,54 +78,54 @@ final class MarshalerUtil {
     return size;
   }
 
-  static int sizeMessage(int fieldNumber, Marshaler message) {
+  static int sizeMessage(ProtoFieldInfo field, Marshaler message) {
     int fieldSize = message.getProtoSerializedSize();
-    return CodedOutputStream.computeTagSize(fieldNumber)
+    return CodedOutputStream.computeTagSize(field.getFieldNumber())
         + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
         + fieldSize;
   }
 
-  static int sizeBool(int fieldNumber, boolean value) {
+  static int sizeBool(ProtoFieldInfo field, boolean value) {
     if (!value) {
       return 0;
     }
-    return CodedOutputStream.computeBoolSize(fieldNumber, value);
+    return CodedOutputStream.computeBoolSize(field.getFieldNumber(), value);
   }
 
-  static int sizeUInt32(int fieldNumber, int message) {
+  static int sizeUInt32(ProtoFieldInfo field, int message) {
     if (message == 0) {
       return 0;
     }
-    return CodedOutputStream.computeUInt32Size(fieldNumber, message);
+    return CodedOutputStream.computeUInt32Size(field.getFieldNumber(), message);
   }
 
-  static int sizeDouble(int fieldNumber, double value) {
+  static int sizeDouble(ProtoFieldInfo field, double value) {
     if (value == 0D) {
       return 0;
     }
-    return CodedOutputStream.computeDoubleSize(fieldNumber, value);
+    return CodedOutputStream.computeDoubleSize(field.getFieldNumber(), value);
   }
 
-  static int sizeFixed64(int fieldNumber, long message) {
+  static int sizeFixed64(ProtoFieldInfo field, long message) {
     if (message == 0L) {
       return 0;
     }
-    return CodedOutputStream.computeFixed64Size(fieldNumber, message);
+    return CodedOutputStream.computeFixed64Size(field.getFieldNumber(), message);
   }
 
-  static int sizeBytes(int fieldNumber, byte[] message) {
+  static int sizeBytes(ProtoFieldInfo field, byte[] message) {
     if (message.length == 0) {
       return 0;
     }
-    return CodedOutputStream.computeByteArraySize(fieldNumber, message);
+    return CodedOutputStream.computeByteArraySize(field.getFieldNumber(), message);
   }
 
   // Assumes OTLP always defines the first item in an enum with number 0, which it does and will.
-  static int sizeEnum(int fieldNumber, int value) {
+  static int sizeEnum(ProtoFieldInfo field, int value) {
     if (value == 0) {
       return 0;
     }
-    return CodedOutputStream.computeEnumSize(fieldNumber, value);
+    return CodedOutputStream.computeEnumSize(field.getFieldNumber(), value);
   }
 
   static byte[] toBytes(@Nullable String value) {

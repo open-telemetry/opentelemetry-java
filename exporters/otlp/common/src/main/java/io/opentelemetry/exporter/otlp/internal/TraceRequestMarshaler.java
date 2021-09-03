@@ -77,16 +77,14 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
   private TraceRequestMarshaler(ResourceSpansMarshaler[] resourceSpansMarshalers) {
     super(
         MarshalerUtil.sizeRepeatedMessage(
-            ExportTraceServiceRequest.RESOURCE_SPANS_FIELD_NUMBER, resourceSpansMarshalers));
+            ExportTraceServiceRequest.RESOURCE_SPANS, resourceSpansMarshalers));
     this.resourceSpansMarshalers = resourceSpansMarshalers;
   }
 
   @Override
   public void writeTo(Serializer output) throws IOException {
     output.serializeRepeatedMessage(
-        ExportTraceServiceRequest.RESOURCE_SPANS_FIELD_NUMBER,
-        ExportTraceServiceRequest.RESOURCE_SPANS_JSON_NAME,
-        resourceSpansMarshalers);
+        ExportTraceServiceRequest.RESOURCE_SPANS, resourceSpansMarshalers);
   }
 
   private static final class ResourceSpansMarshaler extends MarshalerWithSize {
@@ -106,14 +104,10 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeMessage(
-          ResourceSpans.RESOURCE_FIELD_NUMBER, ResourceSpans.RESOURCE_JSON_NAME, resourceMarshaler);
+      output.serializeMessage(ResourceSpans.RESOURCE, resourceMarshaler);
       output.serializeRepeatedMessage(
-          ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_FIELD_NUMBER,
-          ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_JSON_NAME,
-          instrumentationLibrarySpansMarshalers);
-      output.serializeString(
-          ResourceSpans.SCHEMA_URL_FIELD_NUMBER, ResourceSpans.SCHEMA_URL_JSON_NAME, schemaUrlUtf8);
+          ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS, instrumentationLibrarySpansMarshalers);
+      output.serializeString(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
     }
 
     private static int calculateSize(
@@ -121,12 +115,11 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
         byte[] schemaUrlUtf8,
         InstrumentationLibrarySpansMarshaler[] instrumentationLibrarySpansMarshalers) {
       int size = 0;
-      size += MarshalerUtil.sizeMessage(ResourceSpans.RESOURCE_FIELD_NUMBER, resourceMarshaler);
-      size += MarshalerUtil.sizeBytes(ResourceSpans.SCHEMA_URL_FIELD_NUMBER, schemaUrlUtf8);
+      size += MarshalerUtil.sizeMessage(ResourceSpans.RESOURCE, resourceMarshaler);
+      size += MarshalerUtil.sizeBytes(ResourceSpans.SCHEMA_URL, schemaUrlUtf8);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
-              ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS_FIELD_NUMBER,
-              instrumentationLibrarySpansMarshalers);
+              ResourceSpans.INSTRUMENTATION_LIBRARY_SPANS, instrumentationLibrarySpansMarshalers);
       return size;
     }
   }
@@ -149,17 +142,9 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     @Override
     public void writeTo(Serializer output) throws IOException {
       output.serializeMessage(
-          InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
-          InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_JSON_NAME,
-          instrumentationLibrary);
-      output.serializeRepeatedMessage(
-          InstrumentationLibrarySpans.SPANS_FIELD_NUMBER,
-          InstrumentationLibrarySpans.SPANS_JSON_NAME,
-          spanMarshalers);
-      output.serializeString(
-          InstrumentationLibrarySpans.SCHEMA_URL_FIELD_NUMBER,
-          InstrumentationLibrarySpans.SCHEMA_URL_JSON_NAME,
-          schemaUrlUtf8);
+          InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY, instrumentationLibrary);
+      output.serializeRepeatedMessage(InstrumentationLibrarySpans.SPANS, spanMarshalers);
+      output.serializeString(InstrumentationLibrarySpans.SCHEMA_URL, schemaUrlUtf8);
     }
 
     private static int calculateSize(
@@ -169,14 +154,9 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
       int size = 0;
       size +=
           MarshalerUtil.sizeMessage(
-              InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY_FIELD_NUMBER,
-              instrumentationLibrary);
-      size +=
-          MarshalerUtil.sizeBytes(
-              InstrumentationLibrarySpans.SCHEMA_URL_FIELD_NUMBER, schemaUrlUtf8);
-      size +=
-          MarshalerUtil.sizeRepeatedMessage(
-              InstrumentationLibrarySpans.SPANS_FIELD_NUMBER, spanMarshalers);
+              InstrumentationLibrarySpans.INSTRUMENTATION_LIBRARY, instrumentationLibrary);
+      size += MarshalerUtil.sizeBytes(InstrumentationLibrarySpans.SCHEMA_URL, schemaUrlUtf8);
+      size += MarshalerUtil.sizeRepeatedMessage(InstrumentationLibrarySpans.SPANS, spanMarshalers);
       return size;
     }
   }
@@ -290,44 +270,27 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeBytes(Span.TRACE_ID_FIELD_NUMBER, Span.TRACE_ID_JSON_NAME, traceId);
-      output.serializeBytes(Span.SPAN_ID_FIELD_NUMBER, Span.SPAN_ID_JSON_NAME, spanId);
+      output.serializeBytes(Span.TRACE_ID, traceId);
+      output.serializeBytes(Span.SPAN_ID, spanId);
       // TODO: Set TraceState;
-      output.serializeBytes(
-          Span.PARENT_SPAN_ID_FIELD_NUMBER, Span.PARENT_SPAN_ID_JSON_NAME, parentSpanId);
-      output.serializeString(Span.NAME_FIELD_NUMBER, Span.NAME_JSON_NAME, nameUtf8);
+      output.serializeBytes(Span.PARENT_SPAN_ID, parentSpanId);
+      output.serializeString(Span.NAME, nameUtf8);
 
-      output.serializeEnum(Span.KIND_FIELD_NUMBER, Span.KIND_JSON_NAME, spanKind);
+      output.serializeEnum(Span.KIND, spanKind);
 
-      output.serializeFixed64(
-          Span.START_TIME_UNIX_NANO_FIELD_NUMBER,
-          Span.START_TIME_UNIX_NANO_JSON_NAME,
-          startEpochNanos);
-      output.serializeFixed64(
-          Span.END_TIME_UNIX_NANO_FIELD_NUMBER, Span.END_TIME_UNIX_NANO_JSON_NAME, endEpochNanos);
+      output.serializeFixed64(Span.START_TIME_UNIX_NANO, startEpochNanos);
+      output.serializeFixed64(Span.END_TIME_UNIX_NANO, endEpochNanos);
 
-      output.serializeRepeatedMessage(
-          Span.ATTRIBUTES_FIELD_NUMBER, Span.ATTRIBUTES_JSON_NAME, attributeMarshalers);
-      output.serializeUInt32(
-          Span.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER,
-          Span.DROPPED_ATTRIBUTES_COUNT_JSON_NAME,
-          droppedAttributesCount);
+      output.serializeRepeatedMessage(Span.ATTRIBUTES, attributeMarshalers);
+      output.serializeUInt32(Span.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
-      output.serializeRepeatedMessage(
-          Span.EVENTS_FIELD_NUMBER, Span.EVENTS_JSON_NAME, spanEventMarshalers);
-      output.serializeUInt32(
-          Span.DROPPED_EVENTS_COUNT_FIELD_NUMBER,
-          Span.DROPPED_EVENTS_COUNT_JSON_NAME,
-          droppedEventsCount);
+      output.serializeRepeatedMessage(Span.EVENTS, spanEventMarshalers);
+      output.serializeUInt32(Span.DROPPED_EVENTS_COUNT, droppedEventsCount);
 
-      output.serializeRepeatedMessage(
-          Span.LINKS_FIELD_NUMBER, Span.LINKS_JSON_NAME, spanLinkMarshalers);
-      output.serializeUInt32(
-          Span.DROPPED_LINKS_COUNT_FIELD_NUMBER,
-          Span.DROPPED_LINKS_COUNT_JSON_NAME,
-          droppedLinksCount);
+      output.serializeRepeatedMessage(Span.LINKS, spanLinkMarshalers);
+      output.serializeUInt32(Span.DROPPED_LINKS_COUNT, droppedLinksCount);
 
-      output.serializeMessage(Span.STATUS_FIELD_NUMBER, Span.STATUS_JSON_NAME, spanStatusMarshaler);
+      output.serializeMessage(Span.STATUS, spanStatusMarshaler);
     }
 
     private static int calculateSize(
@@ -346,29 +309,27 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
         int droppedLinksCount,
         SpanStatusMarshaler spanStatusMarshaler) {
       int size = 0;
-      size += MarshalerUtil.sizeBytes(Span.TRACE_ID_FIELD_NUMBER, traceId);
-      size += MarshalerUtil.sizeBytes(Span.SPAN_ID_FIELD_NUMBER, spanId);
+      size += MarshalerUtil.sizeBytes(Span.TRACE_ID, traceId);
+      size += MarshalerUtil.sizeBytes(Span.SPAN_ID, spanId);
       // TODO: Set TraceState;
-      size += MarshalerUtil.sizeBytes(Span.PARENT_SPAN_ID_FIELD_NUMBER, parentSpanId);
-      size += MarshalerUtil.sizeBytes(Span.NAME_FIELD_NUMBER, nameUtf8);
+      size += MarshalerUtil.sizeBytes(Span.PARENT_SPAN_ID, parentSpanId);
+      size += MarshalerUtil.sizeBytes(Span.NAME, nameUtf8);
 
-      size += MarshalerUtil.sizeEnum(Span.KIND_FIELD_NUMBER, spanKind);
+      size += MarshalerUtil.sizeEnum(Span.KIND, spanKind);
 
-      size += MarshalerUtil.sizeFixed64(Span.START_TIME_UNIX_NANO_FIELD_NUMBER, startEpochNanos);
-      size += MarshalerUtil.sizeFixed64(Span.END_TIME_UNIX_NANO_FIELD_NUMBER, endEpochNanos);
+      size += MarshalerUtil.sizeFixed64(Span.START_TIME_UNIX_NANO, startEpochNanos);
+      size += MarshalerUtil.sizeFixed64(Span.END_TIME_UNIX_NANO, endEpochNanos);
 
-      size += MarshalerUtil.sizeRepeatedMessage(Span.ATTRIBUTES_FIELD_NUMBER, attributeMarshalers);
-      size +=
-          MarshalerUtil.sizeUInt32(
-              Span.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER, droppedAttributesCount);
+      size += MarshalerUtil.sizeRepeatedMessage(Span.ATTRIBUTES, attributeMarshalers);
+      size += MarshalerUtil.sizeUInt32(Span.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
 
-      size += MarshalerUtil.sizeRepeatedMessage(Span.EVENTS_FIELD_NUMBER, spanEventMarshalers);
-      size += MarshalerUtil.sizeUInt32(Span.DROPPED_EVENTS_COUNT_FIELD_NUMBER, droppedEventsCount);
+      size += MarshalerUtil.sizeRepeatedMessage(Span.EVENTS, spanEventMarshalers);
+      size += MarshalerUtil.sizeUInt32(Span.DROPPED_EVENTS_COUNT, droppedEventsCount);
 
-      size += MarshalerUtil.sizeRepeatedMessage(Span.LINKS_FIELD_NUMBER, spanLinkMarshalers);
-      size += MarshalerUtil.sizeUInt32(Span.DROPPED_LINKS_COUNT_FIELD_NUMBER, droppedLinksCount);
+      size += MarshalerUtil.sizeRepeatedMessage(Span.LINKS, spanLinkMarshalers);
+      size += MarshalerUtil.sizeUInt32(Span.DROPPED_LINKS_COUNT, droppedLinksCount);
 
-      size += MarshalerUtil.sizeMessage(Span.STATUS_FIELD_NUMBER, spanStatusMarshaler);
+      size += MarshalerUtil.sizeMessage(Span.STATUS, spanStatusMarshaler);
       return size;
     }
   }
@@ -413,15 +374,10 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeFixed64(
-          Span.Event.TIME_UNIX_NANO_FIELD_NUMBER, Span.Event.TIME_UNIX_NANO_JSON_NAME, epochNanos);
-      output.serializeBytes(Span.Event.NAME_FIELD_NUMBER, Span.Event.NAME_JSON_NAME, name);
-      output.serializeRepeatedMessage(
-          Span.Event.ATTRIBUTES_FIELD_NUMBER, Span.Event.ATTRIBUTES_JSON_NAME, attributeMarshalers);
-      output.serializeUInt32(
-          Span.Event.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER,
-          Span.Event.DROPPED_ATTRIBUTES_COUNT_JSON_NAME,
-          droppedAttributesCount);
+      output.serializeFixed64(Span.Event.TIME_UNIX_NANO, epochNanos);
+      output.serializeBytes(Span.Event.NAME, name);
+      output.serializeRepeatedMessage(Span.Event.ATTRIBUTES, attributeMarshalers);
+      output.serializeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     }
 
     private static int calculateSize(
@@ -430,14 +386,10 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
         AttributeMarshaler[] attributeMarshalers,
         int droppedAttributesCount) {
       int size = 0;
-      size += MarshalerUtil.sizeFixed64(Span.Event.TIME_UNIX_NANO_FIELD_NUMBER, epochNanos);
-      size += MarshalerUtil.sizeBytes(Span.Event.NAME_FIELD_NUMBER, name);
-      size +=
-          MarshalerUtil.sizeRepeatedMessage(
-              Span.Event.ATTRIBUTES_FIELD_NUMBER, attributeMarshalers);
-      size +=
-          MarshalerUtil.sizeUInt32(
-              Span.Event.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER, droppedAttributesCount);
+      size += MarshalerUtil.sizeFixed64(Span.Event.TIME_UNIX_NANO, epochNanos);
+      size += MarshalerUtil.sizeBytes(Span.Event.NAME, name);
+      size += MarshalerUtil.sizeRepeatedMessage(Span.Event.ATTRIBUTES, attributeMarshalers);
+      size += MarshalerUtil.sizeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
       return size;
     }
   }
@@ -487,15 +439,11 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeBytes(Span.Link.TRACE_ID_FIELD_NUMBER, Span.Link.TRACE_ID_JSON_NAME, traceId);
-      output.serializeBytes(Span.Link.SPAN_ID_FIELD_NUMBER, Span.Link.SPAN_ID_JSON_NAME, spanId);
+      output.serializeBytes(Span.Link.TRACE_ID, traceId);
+      output.serializeBytes(Span.Link.SPAN_ID, spanId);
       // TODO: Set TraceState;
-      output.serializeRepeatedMessage(
-          Span.Link.ATTRIBUTES_FIELD_NUMBER, Span.Link.ATTRIBUTES_JSON_NAME, attributeMarshalers);
-      output.serializeUInt32(
-          Span.Link.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER,
-          Span.Link.DROPPED_ATTRIBUTES_COUNT_JSON_NAME,
-          droppedAttributesCount);
+      output.serializeRepeatedMessage(Span.Link.ATTRIBUTES, attributeMarshalers);
+      output.serializeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     }
 
     private static int calculateSize(
@@ -504,14 +452,11 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
         AttributeMarshaler[] attributeMarshalers,
         int droppedAttributesCount) {
       int size = 0;
-      size += MarshalerUtil.sizeBytes(Span.Link.TRACE_ID_FIELD_NUMBER, traceId);
-      size += MarshalerUtil.sizeBytes(Span.Link.SPAN_ID_FIELD_NUMBER, spanId);
+      size += MarshalerUtil.sizeBytes(Span.Link.TRACE_ID, traceId);
+      size += MarshalerUtil.sizeBytes(Span.Link.SPAN_ID, spanId);
       // TODO: Set TraceState;
-      size +=
-          MarshalerUtil.sizeRepeatedMessage(Span.Link.ATTRIBUTES_FIELD_NUMBER, attributeMarshalers);
-      size +=
-          MarshalerUtil.sizeUInt32(
-              Span.Link.DROPPED_ATTRIBUTES_COUNT_FIELD_NUMBER, droppedAttributesCount);
+      size += MarshalerUtil.sizeRepeatedMessage(Span.Link.ATTRIBUTES, attributeMarshalers);
+      size += MarshalerUtil.sizeUInt32(Span.Link.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
       return size;
     }
   }
@@ -545,21 +490,17 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
 
     @Override
     public void writeTo(Serializer output) throws IOException {
-      output.serializeEnum(
-          Status.DEPRECATED_CODE_FIELD_NUMBER,
-          Status.DEPRECATED_CODE_JSON_NAME,
-          deprecatedStatusCode);
-      output.serializeString(
-          Status.MESSAGE_FIELD_NUMBER, Status.MESSAGE_JSON_NAME, descriptionUtf8);
-      output.serializeEnum(Status.CODE_FIELD_NUMBER, Status.CODE_JSON_NAME, protoStatusCode);
+      output.serializeEnum(Status.DEPRECATED_CODE, deprecatedStatusCode);
+      output.serializeString(Status.MESSAGE, descriptionUtf8);
+      output.serializeEnum(Status.CODE, protoStatusCode);
     }
 
     private static int computeSize(
         int protoStatusCode, int deprecatedStatusCode, byte[] descriptionUtf8) {
       int size = 0;
-      size += MarshalerUtil.sizeEnum(Status.DEPRECATED_CODE_FIELD_NUMBER, deprecatedStatusCode);
-      size += MarshalerUtil.sizeBytes(Status.MESSAGE_FIELD_NUMBER, descriptionUtf8);
-      size += MarshalerUtil.sizeEnum(Status.CODE_FIELD_NUMBER, protoStatusCode);
+      size += MarshalerUtil.sizeEnum(Status.DEPRECATED_CODE, deprecatedStatusCode);
+      size += MarshalerUtil.sizeBytes(Status.MESSAGE, descriptionUtf8);
+      size += MarshalerUtil.sizeEnum(Status.CODE, protoStatusCode);
       return size;
     }
   }
