@@ -17,7 +17,9 @@ class AttributeKeyTest {
   void equalsVerifier() {
     EqualsVerifier.forClass(InternalAttributeKeyImpl.class)
         .withCachedHashCode(
-            "hashCode", "buildHashCode", (InternalAttributeKeyImpl<?>) AttributeKey.stringKey("test"))
+            "hashCode",
+            "buildHashCode",
+            (InternalAttributeKeyImpl<?>) AttributeKey.stringKey("test"))
         .verify();
   }
 
