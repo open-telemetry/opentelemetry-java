@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.trace;
 
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -31,7 +31,7 @@ public class ExecutorServiceSpanProcessorDroppedSpansBenchmark {
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
-    private MetricProducer collector;
+    private InMemoryMetricReader collector;
     private ExecutorServiceSpanProcessor processor;
     private Tracer tracer;
     private double dropRatio;
@@ -43,7 +43,7 @@ public class ExecutorServiceSpanProcessorDroppedSpansBenchmark {
     public final void setup() {
       final SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
       // Note: these will (likely) no longer be the same in future SDK.
-      collector = sdkMeterProvider;
+      collector = InMemoryMetricReader.create(sdkMeterProvider);
       SpanExporter exporter = new DelayingSpanExporter(0);
       ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
       processor = ExecutorServiceSpanProcessor.builder(exporter, executor, true).build();

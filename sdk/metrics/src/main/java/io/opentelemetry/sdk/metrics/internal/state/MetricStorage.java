@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import java.util.Set;
 
 /**
  * Stores collected {@link MetricData}.
@@ -25,5 +27,9 @@ public interface MetricStorage {
    * @param epochNanos The timestamp for this collection.
    * @return The {@link MetricData} from this collection period, or {@code null}.
    */
-  MetricData collectAndReset(long startEpochNanos, long epochNanos);
+  MetricData collectAndReset(
+      CollectionHandle collector,
+      Set<CollectionHandle> allCollectors,
+      long startEpochNanos,
+      long epochNanos);
 }

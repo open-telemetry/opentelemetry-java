@@ -7,11 +7,14 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -23,6 +26,7 @@ public final class SdkMeterProviderBuilder {
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
   private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
+  private final List<MetricReader.Factory<?>> metricReaders = new ArrayList<>();
 
   SdkMeterProviderBuilder() {}
 
@@ -92,6 +96,11 @@ public final class SdkMeterProviderBuilder {
     SdkMeterProvider meterProvider = build();
     GlobalMeterProvider.set(meterProvider);
     return meterProvider;
+  }
+
+  public <R extends MetricReader> SdkMeterProviderBuilder register(MetricReader.Factory<R> reader) {
+    metricReaders.add(reader);
+    return this;
   }
 
   /**

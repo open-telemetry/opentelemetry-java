@@ -17,13 +17,11 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReaderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
@@ -141,16 +139,17 @@ final class MetricExporterConfiguration {
 
   private static void configureIntervalMetricReader(
       ConfigProperties config, SdkMeterProvider meterProvider, MetricExporter exporter) {
-    IntervalMetricReaderBuilder readerBuilder =
-        IntervalMetricReader.builder()
-            .setMetricProducers(Collections.singleton(meterProvider))
-            .setMetricExporter(exporter);
+
     Duration exportInterval = config.getDuration("otel.imr.export.interval");
     if (exportInterval != null) {
-      readerBuilder.setExportIntervalMillis(exportInterval.toMillis());
+      // TODO: What default for reading?
+      exportInterval = Duration.ofMinutes(1);
     }
-    IntervalMetricReader reader = readerBuilder.build().startAndRegisterGlobal();
-    Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
+    // Register the reader (which starts it), and use a global shutdown hook rather than
+    // interval reader specific.
+    meterProvider.register(new PeriodicMetricReader.Factory(exporter, exportInterval));
+    // TODO: move this to meter provider configuration.
+    Runtime.getRuntime().addShutdownHook(new Thread(meterProvider::shutdown));
   }
 
   private static void configurePrometheusMetrics(
@@ -159,7 +158,7 @@ final class MetricExporterConfiguration {
         "io.opentelemetry.exporter.prometheus.PrometheusCollector",
         "Prometheus Metrics Server",
         "opentelemetry-exporter-prometheus");
-    PrometheusCollector.builder().setMetricProducer(meterProvider).buildAndRegister();
+    PrometheusCollector.builder().setMeterProvider(meterProvider).buildAndRegister();
     Integer port = config.getInt("otel.exporter.prometheus.port");
     if (port == null) {
       port = 9464;

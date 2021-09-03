@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
@@ -13,13 +14,20 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -32,8 +40,13 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorLabels;
   private final ReentrantLock collectLock;
   private final Aggregator<T> aggregator;
-  private final InstrumentProcessor<T> instrumentProcessor;
   private final AttributesProcessor attributesProcessor;
+
+  @GuardedBy("collectLock")
+  private final List<DeltaAccumulation<T>> savedDeltas;
+
+  @GuardedBy("collectLock")
+  private final Map<CollectionHandle, LastReportedAccumulation<T>> reportHistory;
 
   /** Constructs metric storage for a given synchronous instrument and view. */
   public static <T> SynchronousMetricStorage<T> create(
@@ -48,23 +61,20 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
             .config(instrumentDescriptor)
             .create(resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor);
     return new SynchronousMetricStorage<>(
-        metricDescriptor,
-        aggregator,
-        new InstrumentProcessor<>(aggregator, startEpochNanos),
-        view.getAttributesProcessor());
+        metricDescriptor, aggregator, view.getAttributesProcessor());
   }
 
   SynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
-      InstrumentProcessor<T> instrumentProcessor,
       AttributesProcessor attributesProcessor) {
     this.metricDescriptor = metricDescriptor;
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
     this.aggregator = aggregator;
-    this.instrumentProcessor = instrumentProcessor;
     this.attributesProcessor = attributesProcessor;
+    this.reportHistory = new HashMap<>();
+    this.savedDeltas = new ArrayList<>();
   }
 
   // This is a storage handle to use when the attributes processor requires
@@ -147,30 +157,173 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
   }
 
   @Override
-  public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
+  public MetricDescriptor getMetricDescriptor() {
+    return metricDescriptor;
+  }
+
+  /**
+   * This method leverages the `savedDeltas` and `reportHistory` to construct a final metric point
+   * to report for this synchronous instrument.
+   */
+  @GuardedBy("collectLock")
+  @Nullable
+  private MetricData buildMetricFor(
+      CollectionHandle collector, long startEpochNanos, long epochNanos) {
+    Map<Attributes, T> result = new HashMap<>();
+    // Next merge the delta w/ the last set of points.
+    for (DeltaAccumulation<T> point : savedDeltas) {
+      if (!point.wasReadBy(collector)) {
+        mergeInPlace(result, point.read(collector));
+      }
+    }
+
+    long lastEpochNanos;
+    // First pull the last cumulative value.
+    if (reportHistory.containsKey(collector)) {
+      LastReportedAccumulation<T> last = reportHistory.get(collector);
+      // Send the accumulated deltas in w/ previous accumulation to get final result.
+      if (aggregator.isStateful()) {
+        mergeInPlace(result, last.getAccumlation());
+      }
+      lastEpochNanos = last.getEpochNanos();
+    } else {
+      lastEpochNanos = startEpochNanos;
+    }
+
+    // Now write the aggregated value back, and generate final metric.
+    reportHistory.put(collector, new LastReportedAccumulation<>(result, epochNanos));
+    // Don't make a metric if we have no values.
+    if (result.isEmpty()) {
+      return null;
+    }
+    return aggregator.toMetricData(result, startEpochNanos, lastEpochNanos, epochNanos);
+  }
+
+  /** Merges accumulations from {@code toMerge} into {@code result}. */
+  private void mergeInPlace(Map<Attributes, T> result, Map<Attributes, T> toMerge) {
+    toMerge.forEach(
+        (k, v) -> {
+          if (result.containsKey(k)) {
+            result.put(k, aggregator.merge(result.get(k), v));
+          } else {
+            result.put(k, v);
+          }
+        });
+  }
+
+  /** Removes deltas once all collectors have pulled them. */
+  @GuardedBy("collectLock")
+  private void cleanup(Set<CollectionHandle> collectors) {
+    Iterator<DeltaAccumulation<T>> i = savedDeltas.iterator();
+    while (i.hasNext()) {
+      DeltaAccumulation<T> delta = i.next();
+      if (delta.wasReadyByAll(collectors)) {
+        i.remove();
+      }
+    }
+    // TODO: Do we allow different pipelines?
+    Iterator<CollectionHandle> c = reportHistory.keySet().iterator();
+    while (c.hasNext()) {
+      if (!collectors.contains(c.next())) {
+        c.remove();
+      }
+    }
+  }
+
+  /** Collects bucketed metrics and resets the underlying storage for the next collection period. */
+  @Override
+  public MetricData collectAndReset(
+      CollectionHandle collector,
+      Set<CollectionHandle> allCollectors,
+      long startEpochNanos,
+      long epochNanos) {
     collectLock.lock();
     try {
-      for (Map.Entry<Attributes, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {
-        boolean unmappedEntry = entry.getValue().tryUnmap();
-        if (unmappedEntry) {
-          // If able to unmap then remove the record from the current Map. This can race with the
-          // acquire but because we requested a specific value only one will succeed.
-          aggregatorLabels.remove(entry.getKey(), entry.getValue());
-        }
-        T accumulation = entry.getValue().accumulateThenReset();
-        if (accumulation == null) {
-          continue;
-        }
-        instrumentProcessor.batch(entry.getKey(), accumulation);
-      }
-      return instrumentProcessor.completeCollectionCycle(epochNanos);
+      // First reset currently accumulating synchronous handles.
+      savedDeltas.add(collectSynchronousDeltaAccumulationAndReset());
+      // Next build metric from past history and latest deltas.
+      MetricData result = buildMetricFor(collector, startEpochNanos, epochNanos);
+      // finally, cleanup stale deltas.
+      cleanup(allCollectors);
+      return result;
     } finally {
       collectLock.unlock();
     }
   }
 
-  @Override
-  public MetricDescriptor getMetricDescriptor() {
-    return metricDescriptor;
+  /**
+   * Collects the currently accumulated measurements from the concurrent-friendly synchronous
+   * storage.
+   *
+   * <p>All synchronous handles will be collected + reset during this method. Additionally cleanup
+   * related stale concurrent-map handles will occur. Any {@code null} measurements are ignored.
+   *
+   * <p>This method should be behind a lock.
+   */
+  @GuardedBy("collectLock")
+  private DeltaAccumulation<T> collectSynchronousDeltaAccumulationAndReset() {
+    Map<Attributes, T> result = new HashMap<>();
+    for (Map.Entry<Attributes, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {
+      boolean unmappedEntry = entry.getValue().tryUnmap();
+      if (unmappedEntry) {
+        // If able to unmap then remove the record from the current Map. This can race with the
+        // acquire but because we requested a specific value only one will succeed.
+        aggregatorLabels.remove(entry.getKey(), entry.getValue());
+      }
+      T accumulation = entry.getValue().accumulateThenReset();
+      if (accumulation == null) {
+        continue;
+      }
+      // Feed latest batch to the aggregator.
+      result.put(entry.getKey(), accumulation);
+    }
+    return new DeltaAccumulation<>(result);
+  }
+
+  /**
+   * Synchronous recording of delta-accumulated measurements.
+   *
+   * <p>This stores in-progress metric values that haven't been exported yet.
+   */
+  private static class DeltaAccumulation<T> {
+    private final Map<Attributes, T> recording;
+    private final Set<CollectionHandle> readers;
+
+    DeltaAccumulation(Map<Attributes, T> recording) {
+      this.recording = recording;
+      this.readers = CollectionHandle.mutableSet();
+    }
+
+    boolean wasReadBy(CollectionHandle handle) {
+      return readers.contains(handle);
+    }
+
+    boolean wasReadyByAll(Set<CollectionHandle> handles) {
+      return readers.containsAll(handles);
+    }
+
+    Map<Attributes, T> read(CollectionHandle handle) {
+      readers.add(handle);
+      return recording;
+    }
+  }
+
+  /** Remembers what was presented to a specific exporter. */
+  private static class LastReportedAccumulation<T> {
+    private final Map<Attributes, T> accumulation;
+    private final long epochNanos;
+
+    LastReportedAccumulation(Map<Attributes, T> accumulation, long epochNanos) {
+      this.accumulation = accumulation;
+      this.epochNanos = epochNanos;
+    }
+
+    long getEpochNanos() {
+      return epochNanos;
+    }
+
+    Map<Attributes, T> getAccumlation() {
+      return accumulation;
+    }
   }
 }

@@ -11,6 +11,7 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
@@ -26,6 +27,7 @@ class SdkLongGaugeBuilderTest {
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create(sdkMeterProvider);
 
   @Test
   void collectMetrics_NoRecords() {
@@ -35,7 +37,7 @@ class SdkLongGaugeBuilderTest {
         .setDescription("My own LongValueObserver")
         .setUnit("ms")
         .buildWithCallback(result -> {});
-    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
+    assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 
   @Test
@@ -47,7 +49,7 @@ class SdkLongGaugeBuilderTest {
         .buildWithCallback(
             result -> result.observe(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofSeconds(1));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -64,7 +66,7 @@ class SdkLongGaugeBuilderTest {
                                 .hasAttributes(Attributes.builder().put("k", "v").build())
                                 .hasValue(12)));
     testClock.advance(Duration.ofSeconds(1));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

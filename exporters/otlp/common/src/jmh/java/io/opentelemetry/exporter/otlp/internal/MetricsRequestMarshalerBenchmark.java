@@ -16,6 +16,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -61,6 +62,7 @@ public class MetricsRequestMarshalerBenchmark {
                             Arrays.asList(true, false))
                         .build()))
             .build();
+    InMemoryMetricReader collector = InMemoryMetricReader.create(meterProvider);
 
     Meter meter1 = meterProvider.get("longinstrumentation");
     meter1
@@ -110,7 +112,7 @@ public class MetricsRequestMarshalerBenchmark {
     histogram.record(4.0);
     histogram.record(5.0);
 
-    METRICS = meterProvider.collectAllMetrics();
+    METRICS = collector.collectAllMetrics();
   }
 
   @Benchmark

@@ -16,6 +16,7 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
@@ -32,6 +33,7 @@ class SdkDoubleHistogramTest {
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
+  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create(sdkMeterProvider);
 
   @Test
   void record_PreventNullAttributes() {
@@ -53,7 +55,7 @@ class SdkDoubleHistogramTest {
     BoundDoubleHistogram bound =
         doubleRecorder.bind(Attributes.builder().put("key", "value").build());
     try {
-      assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
+      assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
     } finally {
       bound.unbind();
     }
@@ -70,7 +72,7 @@ class SdkDoubleHistogramTest {
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
     doubleRecorder.record(12d, Attributes.empty());
     doubleRecorder.record(12d);
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -111,7 +113,7 @@ class SdkDoubleHistogramTest {
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(321.5d);
       doubleRecorder.record(-121.5d, Attributes.builder().put("K", "V").build());
-      assertThat(sdkMeterProvider.collectAllMetrics())
+      assertThat(sdkMeterReader.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -143,7 +145,7 @@ class SdkDoubleHistogramTest {
       testClock.advance(Duration.ofNanos(SECOND_NANOS));
       bound.record(222d);
       doubleRecorder.record(17d, Attributes.empty());
-      assertThat(sdkMeterProvider.collectAllMetrics())
+      assertThat(sdkMeterReader.collectAllMetrics())
           .satisfiesExactly(
               metric ->
                   assertThat(metric)
@@ -199,7 +201,7 @@ class SdkDoubleHistogramTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -246,7 +248,7 @@ class SdkDoubleHistogramTest {
     }
 
     stressTestBuilder.build().run();
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

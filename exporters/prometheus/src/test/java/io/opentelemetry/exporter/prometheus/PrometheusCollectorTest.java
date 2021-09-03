@@ -38,8 +38,8 @@ class PrometheusCollectorTest {
 
   @BeforeEach
   void setUp() {
-    prometheusCollector =
-        PrometheusCollector.builder().setMetricProducer(metricProducer).buildAndRegister();
+    prometheusCollector = new PrometheusCollector(metricProducer);
+    prometheusCollector.register();
   }
 
   @Test

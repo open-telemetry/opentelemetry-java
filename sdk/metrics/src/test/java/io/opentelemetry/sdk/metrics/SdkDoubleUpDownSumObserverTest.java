@@ -12,6 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -34,6 +35,7 @@ class SdkDoubleUpDownSumObserverTest {
   @Test
   void collectMetrics_NoRecords() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create(sdkMeterProvider);
     sdkMeterProvider
         .get(getClass().getName())
         .upDownCounterBuilder("testObserver")
@@ -41,13 +43,14 @@ class SdkDoubleUpDownSumObserverTest {
         .setDescription("My own DoubleUpDownSumObserver")
         .setUnit("ms")
         .buildWithCallback(result -> {});
-    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
+    assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create(sdkMeterProvider);
     sdkMeterProvider
         .get(getClass().getName())
         .upDownCounterBuilder("testObserver")
@@ -55,7 +58,7 @@ class SdkDoubleUpDownSumObserverTest {
         .buildWithCallback(
             result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -76,7 +79,7 @@ class SdkDoubleUpDownSumObserverTest {
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -111,6 +114,7 @@ class SdkDoubleUpDownSumObserverTest {
                     .setAggregation(Aggregation.sum(AggregationTemporality.DELTA))
                     .build())
             .build();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create(sdkMeterProvider);
     sdkMeterProvider
         .get(getClass().getName())
         .upDownCounterBuilder("testObserver")
@@ -118,7 +122,7 @@ class SdkDoubleUpDownSumObserverTest {
         .buildWithCallback(
             result -> result.observe(12.1d, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -139,7 +143,7 @@ class SdkDoubleUpDownSumObserverTest {
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)

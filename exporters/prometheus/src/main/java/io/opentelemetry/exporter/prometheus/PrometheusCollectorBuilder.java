@@ -5,24 +5,23 @@
 
 package io.opentelemetry.exporter.prometheus;
 
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.prometheus.client.Collector;
-import java.util.Objects;
 
 /** Builder for {@link PrometheusCollector}. */
 public class PrometheusCollectorBuilder {
-  private MetricProducer metricProducer;
+  private SdkMeterProvider meterProvider;
 
   PrometheusCollectorBuilder() {}
 
   /**
-   * Sets the metric producer for the collector. Required.
+   * Sets the meter provider for the collector. Required.
    *
-   * @param metricProducer the {@link MetricProducer} to use.
+   * @param meterProvider the {@link SdkMeterProvider} to use.
    * @return this builder's instance.
    */
-  public PrometheusCollectorBuilder setMetricProducer(MetricProducer metricProducer) {
-    this.metricProducer = metricProducer;
+  public PrometheusCollectorBuilder setMeterProvider(SdkMeterProvider meterProvider) {
+    this.meterProvider = meterProvider;
     return this;
   }
 
@@ -32,7 +31,7 @@ public class PrometheusCollectorBuilder {
    * @return a new {@code Collector} based on the builder's values.
    */
   public PrometheusCollector build() {
-    return new PrometheusCollector(Objects.requireNonNull(metricProducer, "metricProducer"));
+    return meterProvider.register(PrometheusCollector::new);
   }
 
   /**

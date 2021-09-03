@@ -14,11 +14,15 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+
+// TODO(jsuereth): Error out any "delta" metrics on async instruments.
 
 /**
  * Stores aggregated {@link MetricData} for asynchronous instruments.
@@ -115,7 +119,11 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   }
 
   @Override
-  public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
+  public MetricData collectAndReset(
+      CollectionHandle collector,
+      Set<CollectionHandle> allCollectors,
+      long startEpochNanos,
+      long epochNanos) {
     collectLock.lock();
     try {
       metricUpdater.run();

@@ -15,6 +15,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ class SdkMeterRegistryTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProvider meterProvider =
       SdkMeterProvider.builder().setClock(testClock).setResource(Resource.empty()).build();
+  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create(meterProvider);
 
   @Test
   void builder_HappyPath() {
@@ -106,7 +108,7 @@ class SdkMeterRegistryTest {
     LongCounter longCounter2 = sdkMeter2.counterBuilder("testLongCounter").build();
     longCounter2.add(10, Attributes.empty());
 
-    assertThat(meterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .allSatisfy(
             metric ->
                 assertThat(metric)
