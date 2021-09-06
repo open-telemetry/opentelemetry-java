@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -36,7 +37,8 @@ class AggregatorFactoryTest {
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG),
-                SIMPLE_METRIC_DESCRIPTOR))
+                SIMPLE_METRIC_DESCRIPTOR,
+                ExemplarReservoir::empty))
         .isInstanceOf(CountAggregator.class);
     assertThat(
             count.create(
@@ -48,7 +50,8 @@ class AggregatorFactoryTest {
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE),
-                SIMPLE_METRIC_DESCRIPTOR))
+                SIMPLE_METRIC_DESCRIPTOR,
+                ExemplarReservoir::empty))
         .isInstanceOf(CountAggregator.class);
   }
 
@@ -65,7 +68,8 @@ class AggregatorFactoryTest {
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG),
-                SIMPLE_METRIC_DESCRIPTOR))
+                SIMPLE_METRIC_DESCRIPTOR,
+                ExemplarReservoir::empty))
         .isInstanceOf(LongLastValueAggregator.class);
     assertThat(
             lastValue.create(
@@ -77,7 +81,8 @@ class AggregatorFactoryTest {
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE),
-                SIMPLE_METRIC_DESCRIPTOR))
+                SIMPLE_METRIC_DESCRIPTOR,
+                ExemplarReservoir::empty))
         .isInstanceOf(DoubleLastValueAggregator.class);
   }
 
@@ -94,7 +99,8 @@ class AggregatorFactoryTest {
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG),
-                SIMPLE_METRIC_DESCRIPTOR))
+                SIMPLE_METRIC_DESCRIPTOR,
+                ExemplarReservoir::empty))
         .isInstanceOf(LongMinMaxSumCountAggregator.class);
     assertThat(
             minMaxSumCount.create(
@@ -106,7 +112,8 @@ class AggregatorFactoryTest {
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE),
-                SIMPLE_METRIC_DESCRIPTOR))
+                SIMPLE_METRIC_DESCRIPTOR,
+                ExemplarReservoir::empty))
         .isInstanceOf(DoubleMinMaxSumCountAggregator.class);
   }
 
@@ -123,7 +130,8 @@ class AggregatorFactoryTest {
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG),
-                SIMPLE_METRIC_DESCRIPTOR))
+                SIMPLE_METRIC_DESCRIPTOR,
+                ExemplarReservoir::empty))
         .isInstanceOf(LongSumAggregator.class);
     assertThat(
             sum.create(
@@ -135,7 +143,8 @@ class AggregatorFactoryTest {
                     "unit",
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE),
-                SIMPLE_METRIC_DESCRIPTOR))
+                SIMPLE_METRIC_DESCRIPTOR,
+                ExemplarReservoir::empty))
         .isInstanceOf(DoubleSumAggregator.class);
   }
 
@@ -153,7 +162,8 @@ class AggregatorFactoryTest {
                     "unit",
                     InstrumentType.HISTOGRAM,
                     InstrumentValueType.LONG),
-                SIMPLE_METRIC_DESCRIPTOR))
+                SIMPLE_METRIC_DESCRIPTOR,
+                ExemplarReservoir::empty))
         .isInstanceOf(DoubleHistogramAggregator.class);
     assertThat(
             histogram.create(
@@ -165,7 +175,8 @@ class AggregatorFactoryTest {
                     "unit",
                     InstrumentType.HISTOGRAM,
                     InstrumentValueType.DOUBLE),
-                SIMPLE_METRIC_DESCRIPTOR))
+                SIMPLE_METRIC_DESCRIPTOR,
+                ExemplarReservoir::empty))
         .isInstanceOf(DoubleHistogramAggregator.class);
 
     assertThat(
@@ -179,7 +190,8 @@ class AggregatorFactoryTest {
                         "unit",
                         InstrumentType.HISTOGRAM,
                         InstrumentValueType.LONG),
-                    SIMPLE_METRIC_DESCRIPTOR)
+                    SIMPLE_METRIC_DESCRIPTOR,
+                    ExemplarReservoir::empty)
                 .isStateful())
         .isFalse();
     assertThat(
@@ -194,7 +206,8 @@ class AggregatorFactoryTest {
                         "unit",
                         InstrumentType.HISTOGRAM,
                         InstrumentValueType.DOUBLE),
-                    SIMPLE_METRIC_DESCRIPTOR)
+                    SIMPLE_METRIC_DESCRIPTOR,
+                    ExemplarReservoir::empty)
                 .isStateful())
         .isTrue();
 

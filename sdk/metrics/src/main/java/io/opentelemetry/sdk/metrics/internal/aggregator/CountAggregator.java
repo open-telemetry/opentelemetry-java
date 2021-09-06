@@ -8,34 +8,42 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Supplier;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
 final class CountAggregator extends AbstractAggregator<Long> {
   private final AggregationTemporality temporality;
+  // Workaround
+  private final Supplier<ExemplarReservoir> reservoirBuilder;
 
   CountAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       MetricDescriptor descriptor,
-      AggregationTemporality temporality) {
+      AggregationTemporality temporality,
+      Supplier<ExemplarReservoir> reservoirBuilder) {
     super(
         resource,
         instrumentationLibraryInfo,
         descriptor,
         temporality == AggregationTemporality.CUMULATIVE);
     this.temporality = temporality;
+    this.reservoirBuilder = reservoirBuilder;
   }
 
   @Override
   public AggregatorHandle<Long> createHandle() {
-    return new Handle();
+    return new Handle(reservoirBuilder.get());
   }
 
   @Override
@@ -79,7 +87,9 @@ final class CountAggregator extends AbstractAggregator<Long> {
   static final class Handle extends AggregatorHandle<Long> {
     private final LongAdder current = new LongAdder();
 
-    private Handle() {}
+    private Handle(ExemplarReservoir exemplarReservoir) {
+      super(exemplarReservoir);
+    }
 
     @Override
     protected void doRecordLong(long value) {
@@ -92,7 +102,7 @@ final class CountAggregator extends AbstractAggregator<Long> {
     }
 
     @Override
-    protected Long doAccumulateThenReset() {
+    protected Long doAccumulateThenReset(List<Exemplar> exemplars) {
       return current.sumThenReset();
     }
   }

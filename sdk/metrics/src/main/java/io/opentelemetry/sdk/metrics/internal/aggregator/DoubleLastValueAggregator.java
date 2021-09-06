@@ -8,11 +8,15 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -29,16 +33,20 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 final class DoubleLastValueAggregator extends AbstractAggregator<Double> {
+  private final Supplier<ExemplarReservoir> reservoirBuilder;
+
   DoubleLastValueAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      MetricDescriptor descriptor) {
+      MetricDescriptor descriptor,
+      Supplier<ExemplarReservoir> reservoirBuilder) {
     super(resource, instrumentationLibraryInfo, descriptor, /* stateful= */ true);
+    this.reservoirBuilder = reservoirBuilder;
   }
 
   @Override
   public AggregatorHandle<Double> createHandle() {
-    return new Handle();
+    return new Handle(reservoirBuilder.get());
   }
 
   @Override
@@ -72,10 +80,12 @@ final class DoubleLastValueAggregator extends AbstractAggregator<Double> {
     @Nullable private static final Double DEFAULT_VALUE = null;
     private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
 
-    private Handle() {}
+    private Handle(ExemplarReservoir reservoir) {
+      super(reservoir);
+    }
 
     @Override
-    protected Double doAccumulateThenReset() {
+    protected Double doAccumulateThenReset(List<Exemplar> exemplars) {
       return this.current.getAndSet(DEFAULT_VALUE);
     }
 

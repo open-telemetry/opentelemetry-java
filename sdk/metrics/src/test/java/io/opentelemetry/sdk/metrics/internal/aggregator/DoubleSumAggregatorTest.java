@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AbstractSumAggregator.MergeStrategy;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -34,7 +35,8 @@ class DoubleSumAggregatorTest {
               InstrumentType.COUNTER,
               InstrumentValueType.DOUBLE),
           MetricDescriptor.create("name", "description", "unit"),
-          AggregationTemporality.CUMULATIVE);
+          AggregationTemporality.CUMULATIVE,
+          ExemplarReservoir::empty);
 
   @Test
   void createHandle() {
@@ -49,7 +51,7 @@ class DoubleSumAggregatorTest {
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12.1 * 5);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(12.1 * 5);
   }
 
   @Test
@@ -61,23 +63,23 @@ class DoubleSumAggregatorTest {
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-11);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(14);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(14);
   }
 
   @Test
   void toAccumulationAndReset() {
     AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(13);
     aggregatorHandle.recordDouble(12);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(25);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(25);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(12);
     aggregatorHandle.recordDouble(-25);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(-13);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(-13);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
@@ -91,7 +93,8 @@ class DoubleSumAggregatorTest {
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
                 MetricDescriptor.create("name", "description", "unit"),
-                temporality);
+                temporality,
+                ExemplarReservoir::empty);
         MergeStrategy expectedMergeStrategy =
             AbstractSumAggregator.resolveMergeStrategy(instrumentType, temporality);
         double merged = aggregator.merge(1.0d, 2.0d);
@@ -112,7 +115,8 @@ class DoubleSumAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(
+                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
             0,
             10,
             100);

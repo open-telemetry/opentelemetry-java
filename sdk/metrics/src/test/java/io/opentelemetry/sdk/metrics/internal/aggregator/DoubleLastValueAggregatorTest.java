@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -22,7 +23,8 @@ class DoubleLastValueAggregatorTest {
       new DoubleLastValueAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          MetricDescriptor.create("name", "description", "unit"));
+          MetricDescriptor.create("name", "description", "unit"),
+          ExemplarReservoir::empty);
 
   @Test
   void createHandle() {
@@ -33,24 +35,24 @@ class DoubleLastValueAggregatorTest {
   void multipleRecords() {
     AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(12.1);
     aggregatorHandle.recordDouble(13.1);
     aggregatorHandle.recordDouble(14.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(14.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(14.1);
   }
 
   @Test
   void toAccumulationAndReset() {
     AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(13.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(13.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(13.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(12.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
@@ -61,7 +63,8 @@ class DoubleLastValueAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(
+                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
             0,
             10,
             100);

@@ -10,26 +10,35 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
+import java.util.function.Supplier;
 
 final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
+  private final Supplier<ExemplarReservoir> reservoirBuilder;
+
   DoubleSumAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
       MetricDescriptor metricDescriptor,
-      AggregationTemporality temporality) {
+      AggregationTemporality temporality,
+      Supplier<ExemplarReservoir> reservoirBuilder) {
     super(
         resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor, temporality);
+
+    this.reservoirBuilder = reservoirBuilder;
   }
 
   @Override
   public AggregatorHandle<Double> createHandle() {
-    return new Handle();
+    return new Handle(reservoirBuilder.get());
   }
 
   @Override
@@ -73,8 +82,12 @@ final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
   static final class Handle extends AggregatorHandle<Double> {
     private final DoubleAdder current = new DoubleAdder();
 
+    Handle(ExemplarReservoir exemplarReservoir) {
+      super(exemplarReservoir);
+    }
+
     @Override
-    protected Double doAccumulateThenReset() {
+    protected Double doAccumulateThenReset(List<Exemplar> exemplars) {
       return this.current.sumThenReset();
     }
 

@@ -8,8 +8,10 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.function.Supplier;
 
 final class SumAggregatorFactory implements AggregatorFactory {
 
@@ -25,7 +27,8 @@ final class SumAggregatorFactory implements AggregatorFactory {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
-      MetricDescriptor metricDescriptor) {
+      MetricDescriptor metricDescriptor,
+      Supplier<ExemplarReservoir> reservoirFactory) {
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
         return (Aggregator<T>)
@@ -34,7 +37,8 @@ final class SumAggregatorFactory implements AggregatorFactory {
                 instrumentationLibraryInfo,
                 instrumentDescriptor,
                 metricDescriptor,
-                temporality);
+                temporality,
+                reservoirFactory);
       case DOUBLE:
         return (Aggregator<T>)
             new DoubleSumAggregator(
@@ -42,7 +46,8 @@ final class SumAggregatorFactory implements AggregatorFactory {
                 instrumentationLibraryInfo,
                 instrumentDescriptor,
                 metricDescriptor,
-                temporality);
+                temporality,
+                reservoirFactory);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

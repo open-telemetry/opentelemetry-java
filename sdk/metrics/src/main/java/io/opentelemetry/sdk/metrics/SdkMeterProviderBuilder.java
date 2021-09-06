@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -23,6 +24,8 @@ public final class SdkMeterProviderBuilder {
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
   private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
+  // Default the sampling strategy.
+  private ExemplarSampler exemplarSampler = ExemplarSampler.builder().build();
 
   SdkMeterProviderBuilder() {}
 
@@ -47,6 +50,12 @@ public final class SdkMeterProviderBuilder {
   public SdkMeterProviderBuilder setResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource = resource;
+    return this;
+  }
+
+  /** TODO: document. */
+  public SdkMeterProviderBuilder setExemplarSampler(ExemplarSampler sampler) {
+    this.exemplarSampler = sampler;
     return this;
   }
 
@@ -105,6 +114,6 @@ public final class SdkMeterProviderBuilder {
    * @see GlobalMeterProvider
    */
   public SdkMeterProvider build() {
-    return new SdkMeterProvider(clock, resource, viewRegistryBuilder.build());
+    return new SdkMeterProvider(clock, resource, viewRegistryBuilder.build(), exemplarSampler);
   }
 }

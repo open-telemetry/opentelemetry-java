@@ -7,12 +7,16 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -27,16 +31,20 @@ import javax.annotation.Nullable;
  * at any time.
  */
 final class LongLastValueAggregator extends AbstractAggregator<Long> {
+  private final Supplier<ExemplarReservoir> reservoirBuilder;
+
   LongLastValueAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      MetricDescriptor descriptor) {
+      MetricDescriptor descriptor,
+      Supplier<ExemplarReservoir> reservoirBuilder) {
     super(resource, instrumentationLibraryInfo, descriptor, /* stateful= */ false);
+    this.reservoirBuilder = reservoirBuilder;
   }
 
   @Override
   public AggregatorHandle<Long> createHandle() {
-    return new Handle();
+    return new Handle(reservoirBuilder.get());
   }
 
   @Override
@@ -69,8 +77,12 @@ final class LongLastValueAggregator extends AbstractAggregator<Long> {
     @Nullable private static final Long DEFAULT_VALUE = null;
     private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
+    Handle(ExemplarReservoir exemplarReservoir) {
+      super(exemplarReservoir);
+    }
+
     @Override
-    protected Long doAccumulateThenReset() {
+    protected Long doAccumulateThenReset(List<Exemplar> exemplars) {
       return this.current.getAndSet(DEFAULT_VALUE);
     }
 

@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AbstractSumAggregator.MergeStrategy;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -34,7 +35,8 @@ class LongSumAggregatorTest {
               InstrumentType.COUNTER,
               InstrumentValueType.LONG),
           MetricDescriptor.create("name", "description", "unit"),
-          AggregationTemporality.CUMULATIVE);
+          AggregationTemporality.CUMULATIVE,
+          ExemplarReservoir::empty);
 
   @Test
   void createHandle() {
@@ -49,8 +51,8 @@ class LongSumAggregatorTest {
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12 * 5);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(12 * 5);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
@@ -62,24 +64,24 @@ class LongSumAggregatorTest {
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(-11);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(14);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(14);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
   void toAccumulationAndReset() {
     AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(13);
     aggregatorHandle.recordLong(12);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(25);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(25);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(-25);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(-13);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(-13);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
@@ -93,7 +95,8 @@ class LongSumAggregatorTest {
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
                 MetricDescriptor.create("name", "description", "unit"),
-                temporality);
+                temporality,
+                ExemplarReservoir::empty);
         MergeStrategy expectedMergeStrategy =
             AbstractSumAggregator.resolveMergeStrategy(instrumentType, temporality);
         long merged = aggregator.merge(1L, 2L);
@@ -114,7 +117,8 @@ class LongSumAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(
+                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
             0,
             10,
             100);

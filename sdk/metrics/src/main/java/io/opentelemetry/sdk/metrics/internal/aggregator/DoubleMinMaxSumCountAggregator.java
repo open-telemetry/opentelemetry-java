@@ -7,23 +7,31 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
 final class DoubleMinMaxSumCountAggregator extends AbstractMinMaxSumCountAggregator {
+  private final Supplier<ExemplarReservoir> reservoirBuilder;
+
   DoubleMinMaxSumCountAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      MetricDescriptor descriptor) {
+      MetricDescriptor descriptor,
+      Supplier<ExemplarReservoir> reservoirBuilder) {
     super(resource, instrumentationLibraryInfo, descriptor);
+    this.reservoirBuilder = reservoirBuilder;
   }
 
   @Override
   public AggregatorHandle<MinMaxSumCountAccumulation> createHandle() {
-    return new Handle();
+    return new Handle(reservoirBuilder.get());
   }
 
   @Override
@@ -38,8 +46,12 @@ final class DoubleMinMaxSumCountAggregator extends AbstractMinMaxSumCountAggrega
     @GuardedBy("lock")
     private final DoubleState current = new DoubleState();
 
+    public Handle(ExemplarReservoir exemplarReservoir) {
+      super(exemplarReservoir);
+    }
+
     @Override
-    protected MinMaxSumCountAccumulation doAccumulateThenReset() {
+    protected MinMaxSumCountAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
       lock.writeLock().lock();
       try {
         MinMaxSumCountAccumulation toReturn =

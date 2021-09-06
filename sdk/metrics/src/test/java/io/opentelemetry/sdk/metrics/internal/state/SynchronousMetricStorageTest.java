@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -38,7 +39,9 @@ public class SynchronousMetricStorageTest {
               Resource.empty(),
               InstrumentationLibraryInfo.create("test", "1.0"),
               DESCRIPTOR,
-              METRIC_DESCRIPTOR);
+              METRIC_DESCRIPTOR,
+              // TODO: do we need to verify anything here?
+              ExemplarReservoir::empty);
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
 
   @Test

@@ -13,6 +13,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -31,7 +32,8 @@ public class DoubleHistogramAggregatorTest {
           InstrumentationLibraryInfo.empty(),
           MetricDescriptor.create("name", "description", "unit"),
           boundaries,
-          /* stateful= */ false);
+          /* stateful= */ false,
+          ExemplarReservoir::empty);
 
   @Test
   void createHandle() {
@@ -45,24 +47,24 @@ public class DoubleHistogramAggregatorTest {
     aggregatorHandle.recordLong(5);
     aggregatorHandle.recordLong(150);
     aggregatorHandle.recordLong(2000);
-    assertThat(aggregatorHandle.accumulateThenReset())
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(HistogramAccumulation.create(2175, new long[] {1, 1, 1, 1}));
   }
 
   @Test
   void toAccumulationAndReset() {
     AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(100);
-    assertThat(aggregatorHandle.accumulateThenReset())
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(HistogramAccumulation.create(100, new long[] {0, 1, 0, 0}));
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(0);
-    assertThat(aggregatorHandle.accumulateThenReset())
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(HistogramAccumulation.create(0, new long[] {1, 0, 0, 0}));
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
@@ -80,7 +82,8 @@ public class DoubleHistogramAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(
+                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
             0,
             10,
             100);
@@ -98,7 +101,8 @@ public class DoubleHistogramAggregatorTest {
 
     AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(1.1);
-    HistogramAccumulation histogramAccumulation = aggregatorHandle.accumulateThenReset();
+    HistogramAccumulation histogramAccumulation =
+        aggregatorHandle.accumulateThenReset(Attributes.empty());
     assertThat(histogramAccumulation).isNotNull();
     assertThat(histogramAccumulation.getCounts().length).isEqualTo(boundaries.length + 1);
   }
@@ -123,14 +127,15 @@ public class DoubleHistogramAggregatorTest {
                           for (int j = 0; j < numberOfUpdates; j++) {
                             aggregatorHandle.recordLong(v);
                             if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                              summarizer.process(aggregatorHandle.accumulateThenReset());
+                              summarizer.process(
+                                  aggregatorHandle.accumulateThenReset(Attributes.empty()));
                             }
                           }
                         }))
             .collect(Collectors.toList()));
 
     // make sure everything gets merged when all the aggregation is done.
-    summarizer.process(aggregatorHandle.accumulateThenReset());
+    summarizer.process(aggregatorHandle.accumulateThenReset(Attributes.empty()));
 
     assertThat(summarizer.accumulation)
         .isEqualTo(HistogramAccumulation.create(1010000, new long[] {50000, 50000, 0, 0}));

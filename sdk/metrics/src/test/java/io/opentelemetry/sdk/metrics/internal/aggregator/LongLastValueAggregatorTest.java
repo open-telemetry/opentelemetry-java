@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -23,7 +24,8 @@ class LongLastValueAggregatorTest {
       new LongLastValueAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          MetricDescriptor.create("name", "description", "unit"));
+          MetricDescriptor.create("name", "description", "unit"),
+          ExemplarReservoir::empty);
 
   @Test
   void createHandle() {
@@ -34,24 +36,24 @@ class LongLastValueAggregatorTest {
   void multipleRecords() {
     AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12L);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(12L);
     aggregatorHandle.recordLong(13);
     aggregatorHandle.recordLong(14);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(14L);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(14L);
   }
 
   @Test
   void toAccumulationAndReset() {
     AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(13);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(13L);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(13L);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(12);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12L);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(12L);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
@@ -61,7 +63,8 @@ class LongLastValueAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(
+                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
             0,
             10,
             100);
