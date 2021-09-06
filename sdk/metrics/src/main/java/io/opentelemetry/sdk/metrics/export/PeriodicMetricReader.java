@@ -76,6 +76,11 @@ public class PeriodicMetricReader implements MetricReader {
   }
 
   private void start(Duration duration) {
+    // Autoconfigure sends us null or 0 durations and expects us to just not start.
+    if (duration == null || duration.isZero()) {
+      return;
+    }
+
     synchronized (lock) {
       if (scheduledFuture != null) {
         return;

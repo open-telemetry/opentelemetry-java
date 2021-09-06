@@ -141,7 +141,7 @@ final class MetricExporterConfiguration {
       ConfigProperties config, SdkMeterProvider meterProvider, MetricExporter exporter) {
 
     Duration exportInterval = config.getDuration("otel.imr.export.interval");
-    if (exportInterval != null) {
+    if (exportInterval == null) {
       // TODO: What default for reading?
       exportInterval = Duration.ofMinutes(1);
     }
