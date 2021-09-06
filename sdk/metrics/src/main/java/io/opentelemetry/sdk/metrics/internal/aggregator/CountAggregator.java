@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-final class CountAggregator extends AbstractAggregator<Long> {
+final class CountAggregator extends AbstractAggregator<LongAccumulation> {
   private final AggregationTemporality temporality;
   // Workaround
   private final Supplier<ExemplarReservoir> reservoirBuilder;
@@ -42,28 +42,28 @@ final class CountAggregator extends AbstractAggregator<Long> {
   }
 
   @Override
-  public AggregatorHandle<Long> createHandle() {
+  public AggregatorHandle<LongAccumulation> createHandle() {
     return new Handle(reservoirBuilder.get());
   }
 
   @Override
-  public Long accumulateDouble(double value) {
-    return 1L;
+  public LongAccumulation accumulateDouble(double value) {
+    return LongAccumulation.create(1L);
   }
 
   @Override
-  public Long accumulateLong(long value) {
-    return 1L;
+  public LongAccumulation accumulateLong(long value) {
+    return LongAccumulation.create(1L);
   }
 
   @Override
-  public Long merge(Long a1, Long a2) {
-    return a1 + a2;
+  public LongAccumulation merge(LongAccumulation a1, LongAccumulation a2) {
+    return LongAccumulation.create(a1.getValue() + a2.getValue(), a2.getExemplars());
   }
 
   @Override
   public MetricData toMetricData(
-      Map<Attributes, Long> accumulationByLabels,
+      Map<Attributes, LongAccumulation> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
@@ -84,7 +84,7 @@ final class CountAggregator extends AbstractAggregator<Long> {
                 epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<Long> {
+  static final class Handle extends AggregatorHandle<LongAccumulation> {
     private final LongAdder current = new LongAdder();
 
     private Handle(ExemplarReservoir exemplarReservoir) {
@@ -102,8 +102,8 @@ final class CountAggregator extends AbstractAggregator<Long> {
     }
 
     @Override
-    protected Long doAccumulateThenReset(List<Exemplar> exemplars) {
-      return current.sumThenReset();
+    protected LongAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
+      return LongAccumulation.create(current.sumThenReset(), exemplars);
     }
   }
 }

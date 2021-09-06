@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 
-final class LongSumAggregator extends AbstractSumAggregator<Long> {
+final class LongSumAggregator extends AbstractSumAggregator<LongAccumulation> {
 
   private final Supplier<ExemplarReservoir> reservoirBuilder;
 
@@ -37,28 +37,30 @@ final class LongSumAggregator extends AbstractSumAggregator<Long> {
   }
 
   @Override
-  public AggregatorHandle<Long> createHandle() {
+  public AggregatorHandle<LongAccumulation> createHandle() {
     return new Handle(reservoirBuilder.get());
   }
 
   @Override
-  public Long accumulateLong(long value) {
-    return value;
+  public LongAccumulation accumulateLong(long value) {
+    return LongAccumulation.create(value);
   }
 
   @Override
-  Long mergeSum(Long previousAccumulation, Long accumulation) {
-    return previousAccumulation + accumulation;
+  LongAccumulation mergeSum(LongAccumulation previousAccumulation, LongAccumulation accumulation) {
+    return LongAccumulation.create(
+        previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
-  Long mergeDiff(Long previousAccumulation, Long accumulation) {
-    return accumulation - previousAccumulation;
+  LongAccumulation mergeDiff(LongAccumulation previousAccumulation, LongAccumulation accumulation) {
+    return LongAccumulation.create(
+        accumulation.getValue() - previousAccumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
   public MetricData toMetricData(
-      Map<Attributes, Long> accumulationByLabels,
+      Map<Attributes, LongAccumulation> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
@@ -80,7 +82,7 @@ final class LongSumAggregator extends AbstractSumAggregator<Long> {
                 epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<Long> {
+  static final class Handle extends AggregatorHandle<LongAccumulation> {
     private final LongAdder current = new LongAdder();
 
     Handle(ExemplarReservoir exemplarReservoir) {
@@ -88,8 +90,8 @@ final class LongSumAggregator extends AbstractSumAggregator<Long> {
     }
 
     @Override
-    protected Long doAccumulateThenReset(List<Exemplar> exemplars) {
-      return this.current.sumThenReset();
+    protected LongAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
+      return LongAccumulation.create(this.current.sumThenReset(), exemplars);
     }
 
     @Override

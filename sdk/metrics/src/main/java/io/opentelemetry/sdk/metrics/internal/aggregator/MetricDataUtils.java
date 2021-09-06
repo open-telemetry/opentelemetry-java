@@ -18,11 +18,17 @@ final class MetricDataUtils {
   private MetricDataUtils() {}
 
   static List<LongPointData> toLongPointList(
-      Map<Attributes, Long> accumulationMap, long startEpochNanos, long epochNanos) {
+      Map<Attributes, LongAccumulation> accumulationMap, long startEpochNanos, long epochNanos) {
     List<LongPointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(LongPointData.create(startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(
+                LongPointData.create(
+                    startEpochNanos,
+                    epochNanos,
+                    labels,
+                    accumulation.getValue(),
+                    accumulation.getExemplars())));
     return points;
   }
 

@@ -45,30 +45,30 @@ class CountAggregatorTest {
 
   @Test
   void toPoint() {
-    AggregatorHandle<Long> aggregatorHandle = cumulativeAggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = cumulativeAggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
   void recordLongOperations() {
-    AggregatorHandle<Long> aggregatorHandle = cumulativeAggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = cumulativeAggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(2);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(2);
   }
 
   @Test
   void recordDoubleOperations() {
-    AggregatorHandle<Long> aggregatorHandle = cumulativeAggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = cumulativeAggregator.createHandle();
     aggregatorHandle.recordDouble(12.3);
     aggregatorHandle.recordDouble(12.3);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(2);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(2);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void toMetricData_CumulativeTemporality() {
-    AggregatorHandle<Long> aggregatorHandle = cumulativeAggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = cumulativeAggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
@@ -100,7 +100,7 @@ class CountAggregatorTest {
   @Test
   @SuppressWarnings("unchecked")
   void toMetricData_DeltaTemporality() {
-    AggregatorHandle<Long> aggregatorHandle = deltaAggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = deltaAggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
