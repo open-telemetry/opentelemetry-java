@@ -33,11 +33,17 @@ final class MetricDataUtils {
   }
 
   static List<DoublePointData> toDoublePointList(
-      Map<Attributes, Double> accumulationMap, long startEpochNanos, long epochNanos) {
+      Map<Attributes, DoubleAccumulation> accumulationMap, long startEpochNanos, long epochNanos) {
     List<DoublePointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(DoublePointData.create(startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(
+                DoublePointData.create(
+                    startEpochNanos,
+                    epochNanos,
+                    labels,
+                    accumulation.getValue(),
+                    accumulation.getExemplars())));
     return points;
   }
 

@@ -32,7 +32,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-final class DoubleLastValueAggregator extends AbstractAggregator<Double> {
+final class DoubleLastValueAggregator extends AbstractAggregator<DoubleAccumulation> {
   private final Supplier<ExemplarReservoir> reservoirBuilder;
 
   DoubleLastValueAggregator(
@@ -45,24 +45,24 @@ final class DoubleLastValueAggregator extends AbstractAggregator<Double> {
   }
 
   @Override
-  public AggregatorHandle<Double> createHandle() {
+  public AggregatorHandle<DoubleAccumulation> createHandle() {
     return new Handle(reservoirBuilder.get());
   }
 
   @Override
-  public Double accumulateDouble(double value) {
-    return value;
+  public DoubleAccumulation accumulateDouble(double value) {
+    return DoubleAccumulation.create(value);
   }
 
   @Override
-  public Double merge(Double a1, Double a2) {
+  public DoubleAccumulation merge(DoubleAccumulation a1, DoubleAccumulation a2) {
     // TODO: Define the order between accumulation.
     return a2;
   }
 
   @Override
   public MetricData toMetricData(
-      Map<Attributes, Double> accumulationByLabels,
+      Map<Attributes, DoubleAccumulation> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
@@ -76,7 +76,7 @@ final class DoubleLastValueAggregator extends AbstractAggregator<Double> {
             MetricDataUtils.toDoublePointList(accumulationByLabels, 0, epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<Double> {
+  static final class Handle extends AggregatorHandle<DoubleAccumulation> {
     @Nullable private static final Double DEFAULT_VALUE = null;
     private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
 
@@ -85,8 +85,8 @@ final class DoubleLastValueAggregator extends AbstractAggregator<Double> {
     }
 
     @Override
-    protected Double doAccumulateThenReset(List<Exemplar> exemplars) {
-      return this.current.getAndSet(DEFAULT_VALUE);
+    protected DoubleAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
+      return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
     }
 
     @Override

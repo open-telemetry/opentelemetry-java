@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * An interface for an exemplar reservoir of samples.
  *
- * <p>This represents a resorovoir for a specific "point" of metric data.
+ * <p>This represents a reservoir for a specific "point" of metric data.
  */
 public interface ExemplarReservoir {
 

@@ -33,32 +33,32 @@ class DoubleLastValueAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(12.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12.1);
     aggregatorHandle.recordDouble(13.1);
     aggregatorHandle.recordDouble(14.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(14.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(14.1);
   }
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(13.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(13.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(13.1);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isEqualTo(12.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12.1);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void toMetricData() {
-    AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
 
     MetricData metricData =

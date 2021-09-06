@@ -12,8 +12,8 @@ import javax.annotation.concurrent.Immutable;
  * An interface that provides the two configuration components to exemplar sampling.
  *
  * <ul>
- *   <li>A filter for which measurements should be sampled.
- *   <li>A resorvoir to store exemplars (and can do additional filtering)
+ *   <li>(coming soon) A filter for which measurements should be sampled.
+ *   <li>A reservoir to store exemplars (and can do additional filtering)
  * </ul>
  */
 @AutoValue

@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
 import java.util.function.Supplier;
 
-final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
+final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation> {
   private final Supplier<ExemplarReservoir> reservoirBuilder;
 
   DoubleSumAggregator(
@@ -37,28 +37,32 @@ final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
   }
 
   @Override
-  public AggregatorHandle<Double> createHandle() {
+  public AggregatorHandle<DoubleAccumulation> createHandle() {
     return new Handle(reservoirBuilder.get());
   }
 
   @Override
-  public Double accumulateDouble(double value) {
-    return value;
+  public DoubleAccumulation accumulateDouble(double value) {
+    return DoubleAccumulation.create(value);
   }
 
   @Override
-  Double mergeSum(Double previousAccumulation, Double accumulation) {
-    return previousAccumulation + accumulation;
+  DoubleAccumulation mergeSum(
+      DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
+    return DoubleAccumulation.create(
+        previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
-  Double mergeDiff(Double previousAccumulation, Double accumulation) {
-    return accumulation - previousAccumulation;
+  DoubleAccumulation mergeDiff(
+      DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
+    return DoubleAccumulation.create(
+        accumulation.getValue() - previousAccumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
   public MetricData toMetricData(
-      Map<Attributes, Double> accumulationByLabels,
+      Map<Attributes, DoubleAccumulation> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
@@ -79,7 +83,7 @@ final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
                 epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<Double> {
+  static final class Handle extends AggregatorHandle<DoubleAccumulation> {
     private final DoubleAdder current = new DoubleAdder();
 
     Handle(ExemplarReservoir exemplarReservoir) {
@@ -87,8 +91,8 @@ final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
     }
 
     @Override
-    protected Double doAccumulateThenReset(List<Exemplar> exemplars) {
-      return this.current.sumThenReset();
+    protected DoubleAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
+      return DoubleAccumulation.create(this.current.sumThenReset(), exemplars);
     }
 
     @Override

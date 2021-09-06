@@ -15,10 +15,7 @@ public interface ExemplarStorageStrategy {
 
   /** A sampler which will never store Exemplars. */
   static final ExemplarStorageStrategy ALWAYS_OFF = (agg) -> ExemplarReservoir.empty();
-  /**
-   * Default exemplar storage configuraiton. Optimised for reduced threading contention and
-   * accuracy.
-   */
+  /** Default exemplar storage configuration. */
   static final ExemplarStorageStrategy DEFAULT =
       (agg) -> {
         // TODO: implement
