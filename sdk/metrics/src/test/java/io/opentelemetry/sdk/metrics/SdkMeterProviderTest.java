@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 
+import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -16,6 +17,8 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -550,6 +553,52 @@ public class SdkMeterProviderTest {
                     .hasDescription("not_desc_2")
                     .hasUnit("unit")
                     .hasDoubleSum());
+  }
+
+  @Test
+  void viewSdk_capturesBaggageFromContext() {
+    InstrumentSelector selector =
+        InstrumentSelector.builder()
+            .setInstrumentType(InstrumentType.COUNTER)
+            .setInstrumentName("test")
+            .build();
+    SdkMeterProvider provider =
+        sdkMeterProviderBuilder
+            .registerView(
+                selector,
+                View.builder()
+                    .setAggregation(Aggregation.sum(AggregationTemporality.CUMULATIVE))
+                    .appendAllBaggageAttributes()
+                    .build())
+            .build();
+    Meter meter = provider.get(SdkMeterProviderTest.class.getName());
+    Baggage baggage = Baggage.builder().put("baggage", "value").build();
+    Context context = Context.root().with(baggage);
+    LongCounter counter = meter.counterBuilder("test").build();
+
+    // Make sure whether or not we explicitly pass baggage, all values have it appended.
+    counter.add(1, Attributes.empty(), context);
+    counter.bind(Attributes.empty()).add(1, context);
+    // Also check implicit context
+    try (Scope scope = context.makeCurrent()) {
+      counter.add(1, Attributes.empty());
+      counter.bind(Attributes.empty()).add(1);
+    }
+    // Now make sure all metrics have baggage appended.
+    // Implicitly we should have ONLY ONE metric data point that has baggage appended.
+    assertThat(provider.collectAllMetrics())
+        .satisfiesExactly(
+            metric ->
+                assertThat(metric)
+                    .hasName("test")
+                    .hasLongSum()
+                    .isCumulative()
+                    .points()
+                    .satisfiesExactly(
+                        point ->
+                            assertThat(point)
+                                .hasAttributes(
+                                    Attributes.builder().put("baggage", "value").build())));
   }
 
   @Test

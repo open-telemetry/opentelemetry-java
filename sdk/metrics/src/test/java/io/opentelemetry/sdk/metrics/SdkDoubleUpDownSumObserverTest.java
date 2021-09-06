@@ -12,7 +12,6 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -109,7 +108,6 @@ class SdkDoubleUpDownSumObserverTest {
                     .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_SUM)
                     .build(),
                 View.builder()
-                    .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
                     .setAggregation(Aggregation.sum(AggregationTemporality.DELTA))
                     .build())
             .build();
