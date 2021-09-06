@@ -66,6 +66,7 @@ final class SpanExporterConfiguration {
     Map<String, SpanExporter> spiExporters =
         SpiUtil.loadConfigurable(
             ConfigurableSpanExporterProvider.class,
+            exporterNamesList,
             ConfigurableSpanExporterProvider::getName,
             ConfigurableSpanExporterProvider::createExporter,
             config);

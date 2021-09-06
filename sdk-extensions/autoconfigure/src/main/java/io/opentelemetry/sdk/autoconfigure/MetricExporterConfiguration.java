@@ -62,6 +62,7 @@ final class MetricExporterConfiguration {
     Map<String, MetricExporter> spiExporters =
         SpiUtil.loadConfigurable(
             ConfigurableMetricExporterProvider.class,
+            Collections.singletonList(name),
             ConfigurableMetricExporterProvider::getName,
             ConfigurableMetricExporterProvider::createExporter,
             config);

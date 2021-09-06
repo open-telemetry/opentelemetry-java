@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.function.BiFunction;
@@ -20,6 +21,7 @@ final class SpiUtil {
 
   static <T, U> Map<String, T> loadConfigurable(
       Class<U> spiClass,
+      List<String> requested,
       Function<U, String> getName,
       BiFunction<U, ConfigProperties, T> getConfigurable,
       ConfigProperties config) {
@@ -30,8 +32,9 @@ final class SpiUtil {
       try {
         configurable = getConfigurable.apply(provider, config);
       } catch (Throwable t) {
+        Level level = requested.contains(name) ? Level.WARNING : Level.FINE;
         logger.log(
-            Level.FINE, "Error initializing " + spiClass.getSimpleName() + " with name " + name, t);
+            level, "Error initializing " + spiClass.getSimpleName() + " with name " + name, t);
         continue;
       }
       result.put(name, configurable);

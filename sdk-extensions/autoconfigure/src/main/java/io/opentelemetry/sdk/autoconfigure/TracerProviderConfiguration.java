@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,6 +132,7 @@ final class TracerProviderConfiguration {
     Map<String, Sampler> spiSamplers =
         SpiUtil.loadConfigurable(
             ConfigurableSamplerProvider.class,
+            Collections.singletonList(sampler),
             ConfigurableSamplerProvider::getName,
             ConfigurableSamplerProvider::createSampler,
             config);

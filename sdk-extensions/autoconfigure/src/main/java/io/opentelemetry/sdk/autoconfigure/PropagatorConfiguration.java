@@ -21,18 +21,20 @@ import java.util.Set;
 final class PropagatorConfiguration {
 
   static ContextPropagators configurePropagators(ConfigProperties config) {
-    Map<String, TextMapPropagator> spiPropagators =
-        SpiUtil.loadConfigurable(
-            ConfigurablePropagatorProvider.class,
-            ConfigurablePropagatorProvider::getName,
-            ConfigurablePropagatorProvider::getPropagator,
-            config);
-
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();
     List<String> requestedPropagators = config.getCommaSeparatedValues("otel.propagators");
     if (requestedPropagators.isEmpty()) {
       requestedPropagators = Arrays.asList("tracecontext", "baggage");
     }
+
+    Map<String, TextMapPropagator> spiPropagators =
+        SpiUtil.loadConfigurable(
+            ConfigurablePropagatorProvider.class,
+            requestedPropagators,
+            ConfigurablePropagatorProvider::getName,
+            ConfigurablePropagatorProvider::getPropagator,
+            config);
+
     for (String propagatorName : requestedPropagators) {
       propagators.add(getPropagator(propagatorName, spiPropagators));
     }
