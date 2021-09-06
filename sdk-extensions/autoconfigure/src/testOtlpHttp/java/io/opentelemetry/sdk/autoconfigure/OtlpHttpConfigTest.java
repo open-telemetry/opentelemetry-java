@@ -34,7 +34,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -138,13 +137,13 @@ class OtlpHttpConfigTest {
     metricRequests.clear();
     requestHeaders.clear();
     GlobalOpenTelemetry.resetForTest();
-    IntervalMetricReader.resetGlobalForTest();
+    // IntervalMetricReader.resetGlobalForTest();
   }
 
   @AfterEach
   public void tearDown() {
     GlobalOpenTelemetry.resetForTest();
-    IntervalMetricReader.resetGlobalForTest();
+    // IntervalMetricReader.resetGlobalForTest();
   }
 
   @Test
