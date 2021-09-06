@@ -11,13 +11,13 @@ import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 
 /** Default AttributeKey implementation which preencodes to UTF8 for OTLP export. */
-@SuppressWarnings("rawtypes")
 public final class InternalAttributeKeyImpl<T> implements AttributeKey<T> {
 
   private final AttributeType type;
   private final String key;
-  private final byte[] keyUtf8;
   private final int hashCode;
+
+  private byte[] keyUtf8;
 
   private InternalAttributeKeyImpl(AttributeType type, String key) {
     if (type == null) {
@@ -28,7 +28,6 @@ public final class InternalAttributeKeyImpl<T> implements AttributeKey<T> {
       throw new NullPointerException("Null key");
     }
     this.key = key;
-    this.keyUtf8 = key.getBytes(StandardCharsets.UTF_8);
     this.hashCode = buildHashCode(type, key);
   }
 
@@ -58,7 +57,13 @@ public final class InternalAttributeKeyImpl<T> implements AttributeKey<T> {
     return key;
   }
 
+  /** Returns the key, encoded as UTF-8 bytes. */
   public byte[] getKeyUtf8() {
+    byte[] keyUtf8 = this.keyUtf8;
+    if (keyUtf8 == null) {
+      keyUtf8 = key.getBytes(StandardCharsets.UTF_8);
+      this.keyUtf8 = keyUtf8;
+    }
     return keyUtf8;
   }
 
