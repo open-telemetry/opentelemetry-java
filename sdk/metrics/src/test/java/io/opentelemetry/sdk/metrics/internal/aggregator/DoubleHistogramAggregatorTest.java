@@ -5,26 +5,39 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
+import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class DoubleHistogramAggregatorTest {
+
+  @Mock ExemplarReservoir reservoir;
+
   private static final double[] boundaries = new double[] {10.0, 100.0, 1000.0};
   private static final DoubleHistogramAggregator aggregator =
       new DoubleHistogramAggregator(
@@ -49,6 +62,26 @@ public class DoubleHistogramAggregatorTest {
     aggregatorHandle.recordLong(2000);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(HistogramAccumulation.create(2175, new long[] {1, 1, 1, 1}));
+  }
+
+  @Test
+  void testExemplarsInAccumulation() {
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
+    List<Exemplar> exemplars = Collections.singletonList(exemplar);
+    Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
+    DoubleHistogramAggregator aggregator =
+        new DoubleHistogramAggregator(
+            Resource.getDefault(),
+            InstrumentationLibraryInfo.empty(),
+            MetricDescriptor.create("name", "description", "unit"),
+            boundaries,
+            /* stateful= */ false,
+            () -> reservoir);
+    AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    aggregatorHandle.recordDouble(0, attributes, Context.root());
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
+        .isEqualTo(HistogramAccumulation.create(0, new long[] {1, 0, 0, 0}, exemplars));
   }
 
   @Test
@@ -91,6 +124,27 @@ public class DoubleHistogramAggregatorTest {
     assertThat(metricData.getType()).isEqualTo(MetricDataType.HISTOGRAM);
     assertThat(metricData.getDoubleHistogramData().getAggregationTemporality())
         .isEqualTo(AggregationTemporality.DELTA);
+  }
+
+  @Test
+  void toMetricDataWithExemplars() {
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
+    HistogramAccumulation accumulation =
+        HistogramAccumulation.create(
+            2, new long[] {1, 0, 0, 0}, Collections.singletonList(exemplar));
+    assertThat(
+            aggregator.toMetricData(
+                Collections.singletonMap(Attributes.empty(), accumulation), 0, 10, 100))
+        .hasDoubleHistogram()
+        .points()
+        .satisfiesExactly(
+            point ->
+                assertThat(point)
+                    .hasSum(2)
+                    .hasBucketCounts(1, 0, 0, 0)
+                    .hasCount(1)
+                    .hasExemplars(exemplar));
   }
 
   @Test

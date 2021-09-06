@@ -65,7 +65,8 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
     for (int i = 0; i < x.getCounts().length; ++i) {
       mergedCounts[i] = x.getCounts()[i] + y.getCounts()[i];
     }
-    return HistogramAccumulation.create(x.getSum() + y.getSum(), mergedCounts);
+    // Note: we always preserve the left-side exemplars as these are the "newer" ones.
+    return HistogramAccumulation.create(x.getSum() + y.getSum(), mergedCounts, x.getExemplars());
   }
 
   @Override
@@ -136,7 +137,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       lock.lock();
       try {
         HistogramAccumulation acc =
-            HistogramAccumulation.create(sum, Arrays.copyOf(counts, counts.length));
+            HistogramAccumulation.create(sum, Arrays.copyOf(counts, counts.length), exemplars);
         this.sum = 0;
         Arrays.fill(this.counts, 0);
         return acc;

@@ -60,7 +60,13 @@ final class MetricDataUtils {
           }
           points.add(
               DoubleHistogramPointData.create(
-                  startEpochNanos, epochNanos, labels, aggregator.getSum(), boundaries, counts));
+                  startEpochNanos,
+                  epochNanos,
+                  labels,
+                  aggregator.getSum(),
+                  boundaries,
+                  counts,
+                  aggregator.getExemplars()));
         });
     return points;
   }
