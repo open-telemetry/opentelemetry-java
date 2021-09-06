@@ -13,7 +13,7 @@ abstract class MarshalerWithSize implements Marshaler {
   }
 
   @Override
-  public final int getSerializedSize() {
+  public final int getProtoSerializedSize() {
     return size;
   }
 }

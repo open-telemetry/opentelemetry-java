@@ -31,6 +31,8 @@ dependencies {
   compileOnly("io.grpc:grpc-okhttp")
   compileOnly("io.grpc:grpc-stub")
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 

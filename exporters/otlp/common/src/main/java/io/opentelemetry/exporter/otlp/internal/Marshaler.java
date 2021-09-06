@@ -14,7 +14,7 @@ import java.io.IOException;
  * at any time.
  */
 public interface Marshaler {
-  void writeTo(CodedOutputStream output) throws IOException;
+  void writeTo(Serializer output) throws IOException;
 
-  int getSerializedSize();
+  int getProtoSerializedSize();
 }
