@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
@@ -33,7 +33,7 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
   private final ReentrantLock collectLock;
   private final Aggregator<T> aggregator;
   private final InstrumentProcessor<T> instrumentProcessor;
-  private final LabelsProcessor labelsProcessor;
+  private final AttributesProcessor attributesProcessor;
 
   /** Constructs metric storage for a given synchronous instrument and view. */
   public static <T> SynchronousMetricStorage<T> create(
@@ -47,33 +47,54 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
         view.getAggregation()
             .config(instrumentDescriptor)
             .create(resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor);
-    final LabelsProcessor labelsProcessor =
-        view.getLabelsProcessorFactory()
-            .create(resource, instrumentationLibraryInfo, instrumentDescriptor);
     return new SynchronousMetricStorage<>(
         metricDescriptor,
         aggregator,
         new InstrumentProcessor<>(aggregator, startEpochNanos),
-        labelsProcessor);
+        view.getAttributesProcessor());
   }
 
   SynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
       InstrumentProcessor<T> instrumentProcessor,
-      LabelsProcessor labelsProcessor) {
+      AttributesProcessor attributesProcessor) {
     this.metricDescriptor = metricDescriptor;
     aggregatorLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
     this.aggregator = aggregator;
     this.instrumentProcessor = instrumentProcessor;
-    this.labelsProcessor = labelsProcessor;
+    this.attributesProcessor = attributesProcessor;
   }
+
+  // This is a storage handle to use when the attributes processor requires
+  private final BoundStorageHandle lateBoundStorageHandle =
+      new BoundStorageHandle() {
+        @Override
+        public void release() {}
+
+        @Override
+        public void recordLong(long value, Attributes attributes, Context context) {
+          SynchronousMetricStorage.this.recordLong(value, attributes, context);
+        }
+
+        @Override
+        public void recordDouble(double value, Attributes attributes, Context context) {
+          SynchronousMetricStorage.this.recordDouble(value, attributes, context);
+        }
+      };
 
   @Override
   public BoundStorageHandle bind(Attributes attributes) {
     Objects.requireNonNull(attributes, "attributes");
-    attributes = labelsProcessor.onLabelsBound(Context.current(), attributes);
+    if (attributesProcessor.usesContext()) {
+      // We cannot pre-bind attributes because we need to pull attributes from context.
+      return lateBoundStorageHandle;
+    }
+    return doBind(attributesProcessor.process(attributes, Context.current()));
+  }
+
+  private BoundStorageHandle doBind(Attributes attributes) {
     AggregatorHandle<T> aggregatorHandle = aggregatorLabels.get(attributes);
     if (aggregatorHandle != null && aggregatorHandle.acquire()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
@@ -96,6 +117,32 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
         continue;
       }
       return aggregatorHandle;
+    }
+  }
+
+  // Overridden to make sure attributes processor can pull baggage.
+  @Override
+  public void recordLong(long value, Attributes attributes, Context context) {
+    Objects.requireNonNull(attributes, "attributes");
+    attributes = attributesProcessor.process(attributes, context);
+    BoundStorageHandle handle = doBind(attributes);
+    try {
+      handle.recordLong(value, attributes, context);
+    } finally {
+      handle.release();
+    }
+  }
+
+  // Overridden to make sure attributes processor can pull baggage.
+  @Override
+  public void recordDouble(double value, Attributes attributes, Context context) {
+    Objects.requireNonNull(attributes, "attributes");
+    attributes = attributesProcessor.process(attributes, context);
+    BoundStorageHandle handle = doBind(attributes);
+    try {
+      handle.recordDouble(value, attributes, context);
+    } finally {
+      handle.release();
     }
   }
 
