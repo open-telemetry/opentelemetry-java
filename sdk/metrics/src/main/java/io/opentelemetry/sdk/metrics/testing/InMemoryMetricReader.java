@@ -13,32 +13,31 @@ import io.opentelemetry.sdk.metrics.export.MetricReader;
 import java.util.Collection;
 import java.util.Collections;
 
-
 /**
  * A {@link MetricReader} implementation that can be used to test OpenTelemetry integration.
  *
  * <p>Can be created using {@code InMemoryMetricReader.create(sdkMeterProvider)}
  *
- * <p> Example usage:
- * 
- * <pre><code>{@code
+ * <p>Example usage:
+ *
+ * <pre><code>
  * public class InMemoryMetricReaderExample {
  *   private final SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().build();
  *   private final InMemoryMetricReader reader = InMemoryMetricReader.create(sdkMeterProvider);
  *   private final Meter meter = sdkMeterProvider.get("example");
  *   private final LongCounter metricCallCount = meter.counterBuilder("num_collects");
- * 
- *   public Collection<MetricData> getMetrics() {
+ *
+ *   public void printMetrics() {
  *     metricCallCount.add(1);
- *     return reader.collectAllMetrics();
+ *     System.out.println(reader.collectAllMetrics());
  *   }
- * 
+ *
  *   public static void main(String[] args) {
  *     InMemoryMetricReaderExample example = new InMemoryMetricReaderExample();
- *     System.out.println(example.getMetrics());
+ *     example.printMetrics();
  *   }
  * }
- * }</code></pre>
+ * </code></pre>
  */
 public class InMemoryMetricReader implements MetricReader {
   private final MetricProducer sdkCollection;
@@ -48,9 +47,7 @@ public class InMemoryMetricReader implements MetricReader {
     this.sdkCollection = producer;
   }
 
-  /** 
-   * Returns all metrics accumulated since the last call.
-   */
+  /** Returns all metrics accumulated since the last call. */
   public Collection<MetricData> collectAllMetrics() {
     flush();
     return latest;
@@ -69,9 +66,7 @@ public class InMemoryMetricReader implements MetricReader {
 
   static final MetricReader.Factory<InMemoryMetricReader> FACTORY = InMemoryMetricReader::new;
 
-  /**
-   * Constructs and in-memory reader and registers it with the specific SDK.
-   */
+  /** Constructs and in-memory reader and registers it with the specific SDK. */
   public static InMemoryMetricReader create(SdkMeterProvider provider) {
     return provider.register(FACTORY);
   }

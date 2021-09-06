@@ -16,6 +16,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Wraps a {@link MetricExporter} and automatically reads and exports the metrics every
+ * export interval. Metrics may also be dropped when it becomes time to export again, and there is
+ * an export in progress.
+ */
 public class PeriodicMetricReader implements MetricReader {
   private static final Logger logger = Logger.getLogger(PeriodicMetricReader.class.getName());
 
@@ -81,21 +86,49 @@ public class PeriodicMetricReader implements MetricReader {
     }
   }
 
+  /**
+   * Factory for {@link PeriodicMetricReader}.
+   */
   public static class Factory implements MetricReader.Factory<PeriodicMetricReader> {
     private final MetricExporter exporter;
     private final Duration duration;
     private final ScheduledExecutorService scheduler;
 
+    /**
+     * Builds a factory that will register and start a PeriodMetricReader.
+     * 
+     * <p> This will export once every 5 minutes.
+     * 
+     * <p> This will spin up a new daemon thread to schedule the export on.
+     * 
+     * @param duration The duration (interval) between metric export calls.
+     */
     public Factory(MetricExporter exporter) {
       this(exporter, Duration.ofMinutes(5));
     }
 
+    /**
+     * Builds a factory that will register and start a PeriodMetricReader.
+     * 
+     * <p> This will spin up a new daemon thread to schedule the export on.
+     * 
+     * @param exporter The exporter receiving metrics.
+     * @param duration The duration (interval) between metric export calls.
+     */
     public Factory(MetricExporter exporter, Duration duration) {
-      // TODO: Pull scheduler from global somewhere to limit threads used in export?
-      this(exporter, duration,
-       Executors.newScheduledThreadPool(1, new DaemonThreadFactory("IntervalMetricReader")));
+      this(
+          exporter,
+          duration,
+          Executors.newScheduledThreadPool(1, new DaemonThreadFactory("IntervalMetricReader")));
     }
 
+    /**
+     * Builds a factory that will register and start a PeriodMetricReader.
+     * 
+     * @param exporter The exporter receiving metrics.
+     * @param duration The duration (interval) between metric export calls.
+     * @param scheduler The service to schedule export work.
+     */
     public Factory(MetricExporter exporter, Duration duration, ScheduledExecutorService scheduler) {
       this.exporter = exporter;
       this.duration = duration;
@@ -104,11 +137,7 @@ public class PeriodicMetricReader implements MetricReader {
 
     @Override
     public PeriodicMetricReader apply(MetricProducer producer) {
-      PeriodicMetricReader result =
-          new PeriodicMetricReader(
-              producer,
-              exporter,
-              scheduler);
+      PeriodicMetricReader result = new PeriodicMetricReader(producer, exporter, scheduler);
       result.start(duration);
       return result;
     }

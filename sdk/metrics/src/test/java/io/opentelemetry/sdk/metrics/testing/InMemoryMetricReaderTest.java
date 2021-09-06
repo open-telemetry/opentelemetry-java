@@ -25,16 +25,16 @@ class InMemoryMetricReaderTest {
 
   @BeforeEach
   void setup() {
-    provider = SdkMeterProvider.builder()
-    .registerView(
-      InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(), 
-       View.builder()
-       .setAggregation(Aggregation.sum(AggregationTemporality.DELTA))
-       .build())
-    .build();
+    provider =
+        SdkMeterProvider.builder()
+            .registerView(
+                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                View.builder()
+                    .setAggregation(Aggregation.sum(AggregationTemporality.DELTA))
+                    .build())
+            .build();
     reader = InMemoryMetricReader.create(provider);
   }
-
 
   private void generateFakeMetric(int index) {
     provider.get("test").counterBuilder("test" + index).build().add(1);
@@ -59,7 +59,6 @@ class InMemoryMetricReaderTest {
     assertThat(reader.collectAllMetrics()).hasSize(0);
   }
 
-  
   @Test
   void test_flush() {
     generateFakeMetric(1);
