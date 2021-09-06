@@ -169,7 +169,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     private final int spanKind;
     private final long startEpochNanos;
     private final long endEpochNanos;
-    private final AttributeMarshaler[] attributeMarshalers;
+    private final KeyValueMarshaler[] attributeMarshalers;
     private final int droppedAttributesCount;
     private final SpanEventMarshaler[] spanEventMarshalers;
     private final int droppedEventsCount;
@@ -179,8 +179,8 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
 
     // Because SpanMarshaler is always part of a repeated field, it cannot return "null".
     static SpanMarshaler create(SpanData spanData, ThreadLocalCache threadLocalCache) {
-      AttributeMarshaler[] attributeMarshalers =
-          AttributeMarshaler.createRepeated(spanData.getAttributes());
+      KeyValueMarshaler[] attributeMarshalers =
+          KeyValueMarshaler.createRepeated(spanData.getAttributes());
       SpanEventMarshaler[] spanEventMarshalers = SpanEventMarshaler.create(spanData.getEvents());
       SpanLinkMarshaler[] spanLinkMarshalers =
           SpanLinkMarshaler.create(spanData.getLinks(), threadLocalCache);
@@ -229,7 +229,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
         int spanKind,
         long startEpochNanos,
         long endEpochNanos,
-        AttributeMarshaler[] attributeMarshalers,
+        KeyValueMarshaler[] attributeMarshalers,
         int droppedAttributesCount,
         SpanEventMarshaler[] spanEventMarshalers,
         int droppedEventsCount,
@@ -301,7 +301,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
         int spanKind,
         long startEpochNanos,
         long endEpochNanos,
-        AttributeMarshaler[] attributeMarshalers,
+        KeyValueMarshaler[] attributeMarshalers,
         int droppedAttributesCount,
         SpanEventMarshaler[] spanEventMarshalers,
         int droppedEventsCount,
@@ -338,7 +338,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     private static final SpanEventMarshaler[] EMPTY = new SpanEventMarshaler[0];
     private final long epochNanos;
     private final byte[] name;
-    private final AttributeMarshaler[] attributeMarshalers;
+    private final KeyValueMarshaler[] attributeMarshalers;
     private final int droppedAttributesCount;
 
     static SpanEventMarshaler[] create(List<EventData> events) {
@@ -353,7 +353,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
             new SpanEventMarshaler(
                 event.getEpochNanos(),
                 MarshalerUtil.toBytes(event.getName()),
-                AttributeMarshaler.createRepeated(event.getAttributes()),
+                KeyValueMarshaler.createRepeated(event.getAttributes()),
                 event.getTotalAttributeCount() - event.getAttributes().size());
       }
 
@@ -363,7 +363,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     private SpanEventMarshaler(
         long epochNanos,
         byte[] name,
-        AttributeMarshaler[] attributeMarshalers,
+        KeyValueMarshaler[] attributeMarshalers,
         int droppedAttributesCount) {
       super(calculateSize(epochNanos, name, attributeMarshalers, droppedAttributesCount));
       this.epochNanos = epochNanos;
@@ -383,7 +383,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     private static int calculateSize(
         long epochNanos,
         byte[] name,
-        AttributeMarshaler[] attributeMarshalers,
+        KeyValueMarshaler[] attributeMarshalers,
         int droppedAttributesCount) {
       int size = 0;
       size += MarshalerUtil.sizeFixed64(Span.Event.TIME_UNIX_NANO, epochNanos);
@@ -398,7 +398,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     private static final SpanLinkMarshaler[] EMPTY = new SpanLinkMarshaler[0];
     private final byte[] traceId;
     private final byte[] spanId;
-    private final AttributeMarshaler[] attributeMarshalers;
+    private final KeyValueMarshaler[] attributeMarshalers;
     private final int droppedAttributesCount;
 
     static SpanLinkMarshaler[] create(List<LinkData> links, ThreadLocalCache threadLocalCache) {
@@ -418,7 +418,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
                 idBytesCache.computeIfAbsent(
                     link.getSpanContext().getSpanId(),
                     unused -> link.getSpanContext().getSpanIdBytes()),
-                AttributeMarshaler.createRepeated(link.getAttributes()),
+                KeyValueMarshaler.createRepeated(link.getAttributes()),
                 link.getTotalAttributeCount() - link.getAttributes().size());
       }
 
@@ -428,7 +428,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     private SpanLinkMarshaler(
         byte[] traceId,
         byte[] spanId,
-        AttributeMarshaler[] attributeMarshalers,
+        KeyValueMarshaler[] attributeMarshalers,
         int droppedAttributesCount) {
       super(calculateSize(traceId, spanId, attributeMarshalers, droppedAttributesCount));
       this.traceId = traceId;
@@ -449,7 +449,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize implements Ma
     private static int calculateSize(
         byte[] traceId,
         byte[] spanId,
-        AttributeMarshaler[] attributeMarshalers,
+        KeyValueMarshaler[] attributeMarshalers,
         int droppedAttributesCount) {
       int size = 0;
       size += MarshalerUtil.sizeBytes(Span.Link.TRACE_ID, traceId);
