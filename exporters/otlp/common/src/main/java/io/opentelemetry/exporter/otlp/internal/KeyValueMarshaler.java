@@ -45,29 +45,29 @@ final class KeyValueMarshaler extends MarshalerWithSize {
     switch (attributeKey.getType()) {
       case STRING:
         return new KeyValueMarshaler(
-            keyUtf8, new AnyStringFieldMarshaler(MarshalerUtil.toBytes((String) value)));
+            keyUtf8, new StringAnyValueMarshaler(MarshalerUtil.toBytes((String) value)));
       case LONG:
-        return new KeyValueMarshaler(keyUtf8, new AnyInt64FieldMarshaler((long) value));
+        return new KeyValueMarshaler(keyUtf8, new Int64AnyValueMarshaler((long) value));
       case BOOLEAN:
-        return new KeyValueMarshaler(keyUtf8, new AnyBoolFieldMarshaler((boolean) value));
+        return new KeyValueMarshaler(keyUtf8, new BoolAnyValueMarshaler((boolean) value));
       case DOUBLE:
         return new KeyValueMarshaler(keyUtf8, new AnyDoubleFieldMarshaler((double) value));
       case STRING_ARRAY:
         return new KeyValueMarshaler(
             keyUtf8,
-            new AnyArrayFieldMarshaler(ArrayValueMarshaler.createString((List<String>) value)));
+            new ArrayAnyValueMarshaler(ArrayValueMarshaler.createString((List<String>) value)));
       case LONG_ARRAY:
         return new KeyValueMarshaler(
             keyUtf8,
-            new AnyArrayFieldMarshaler(ArrayValueMarshaler.createInt64((List<Long>) value)));
+            new ArrayAnyValueMarshaler(ArrayValueMarshaler.createInt64((List<Long>) value)));
       case BOOLEAN_ARRAY:
         return new KeyValueMarshaler(
             keyUtf8,
-            new AnyArrayFieldMarshaler(ArrayValueMarshaler.createBool((List<Boolean>) value)));
+            new ArrayAnyValueMarshaler(ArrayValueMarshaler.createBool((List<Boolean>) value)));
       case DOUBLE_ARRAY:
         return new KeyValueMarshaler(
             keyUtf8,
-            new AnyArrayFieldMarshaler(ArrayValueMarshaler.createDouble((List<Double>) value)));
+            new ArrayAnyValueMarshaler(ArrayValueMarshaler.createDouble((List<Double>) value)));
     }
     // Error prone ensures the switch statement is complete, otherwise only can happen with
     // unaligned versions which are not supported.
@@ -93,11 +93,11 @@ final class KeyValueMarshaler extends MarshalerWithSize {
     return size;
   }
 
-  private static class AnyStringFieldMarshaler extends MarshalerWithSize {
+  private static class StringAnyValueMarshaler extends MarshalerWithSize {
 
     private final byte[] valueUtf8;
 
-    AnyStringFieldMarshaler(byte[] valueUtf8) {
+    StringAnyValueMarshaler(byte[] valueUtf8) {
       super(calculateSize(valueUtf8));
       this.valueUtf8 = valueUtf8;
     }
@@ -115,11 +115,11 @@ final class KeyValueMarshaler extends MarshalerWithSize {
     }
   }
 
-  private static class AnyBoolFieldMarshaler extends MarshalerWithSize {
+  private static class BoolAnyValueMarshaler extends MarshalerWithSize {
 
     private final boolean value;
 
-    AnyBoolFieldMarshaler(boolean value) {
+    BoolAnyValueMarshaler(boolean value) {
       super(calculateSize(value));
       this.value = value;
     }
@@ -136,11 +136,11 @@ final class KeyValueMarshaler extends MarshalerWithSize {
     }
   }
 
-  private static class AnyInt64FieldMarshaler extends MarshalerWithSize {
+  private static class Int64AnyValueMarshaler extends MarshalerWithSize {
 
     private final long value;
 
-    AnyInt64FieldMarshaler(long value) {
+    Int64AnyValueMarshaler(long value) {
       super(calculateSize(value));
       this.value = value;
     }
@@ -178,10 +178,10 @@ final class KeyValueMarshaler extends MarshalerWithSize {
     }
   }
 
-  private static class AnyArrayFieldMarshaler extends MarshalerWithSize {
+  private static class ArrayAnyValueMarshaler extends MarshalerWithSize {
     private final Marshaler value;
 
-    private AnyArrayFieldMarshaler(Marshaler value) {
+    private ArrayAnyValueMarshaler(Marshaler value) {
       super(calculateSize(value));
       this.value = value;
     }
@@ -200,27 +200,27 @@ final class KeyValueMarshaler extends MarshalerWithSize {
 
     static ArrayValueMarshaler createString(List<String> values) {
       int len = values.size();
-      Marshaler[] marshalers = new AnyStringFieldMarshaler[len];
+      Marshaler[] marshalers = new StringAnyValueMarshaler[len];
       for (int i = 0; i < len; i++) {
-        marshalers[i] = new AnyStringFieldMarshaler(values.get(i).getBytes(StandardCharsets.UTF_8));
+        marshalers[i] = new StringAnyValueMarshaler(values.get(i).getBytes(StandardCharsets.UTF_8));
       }
       return new ArrayValueMarshaler(marshalers);
     }
 
     static ArrayValueMarshaler createBool(List<Boolean> values) {
       int len = values.size();
-      Marshaler[] marshalers = new AnyBoolFieldMarshaler[len];
+      Marshaler[] marshalers = new BoolAnyValueMarshaler[len];
       for (int i = 0; i < len; i++) {
-        marshalers[i] = new AnyBoolFieldMarshaler(values.get(i));
+        marshalers[i] = new BoolAnyValueMarshaler(values.get(i));
       }
       return new ArrayValueMarshaler(marshalers);
     }
 
     static ArrayValueMarshaler createInt64(List<Long> values) {
       int len = values.size();
-      Marshaler[] marshalers = new AnyInt64FieldMarshaler[len];
+      Marshaler[] marshalers = new Int64AnyValueMarshaler[len];
       for (int i = 0; i < len; i++) {
-        marshalers[i] = new AnyInt64FieldMarshaler(values.get(i));
+        marshalers[i] = new Int64AnyValueMarshaler(values.get(i));
       }
       return new ArrayValueMarshaler(marshalers);
     }
