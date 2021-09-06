@@ -5,14 +5,14 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
-enum NoopMarshaler implements Marshaler {
-  INSTANCE;
+final class NoopMarshaler extends MarshalerWithSize {
+
+  static final NoopMarshaler INSTANCE = new NoopMarshaler();
+
+  private NoopMarshaler() {
+    super(0);
+  }
 
   @Override
   public void writeTo(Serializer output) {}
-
-  @Override
-  public int getProtoSerializedSize() {
-    return 0;
-  }
 }

@@ -26,7 +26,7 @@ public final class ProtoRequestBody extends RequestBody {
   /** Creates a new {@link ProtoRequestBody}. */
   public ProtoRequestBody(Marshaler marshaler) {
     this.marshaler = marshaler;
-    contentLength = marshaler.getProtoSerializedSize();
+    contentLength = marshaler.getBinarySerializedSize();
   }
 
   @Override
@@ -41,8 +41,6 @@ public final class ProtoRequestBody extends RequestBody {
 
   @Override
   public void writeTo(BufferedSink bufferedSink) throws IOException {
-    CodedOutputStream cos = CodedOutputStream.newInstance(bufferedSink.outputStream());
-    marshaler.writeTo(Serializer.createProtoSerializer(cos));
-    cos.flush();
+    marshaler.writeBinaryTo(bufferedSink.outputStream());
   }
 }

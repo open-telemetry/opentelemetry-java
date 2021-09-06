@@ -19,11 +19,6 @@ import java.util.List;
  */
 public abstract class Serializer {
 
-  /** Returns a {@link Serializer} to serialize into protobuf binary format. */
-  public static Serializer createProtoSerializer(CodedOutputStream output) {
-    return new ProtoSerializer(output);
-  }
-
   Serializer() {}
 
   /** Serializes a protobuf {@code bool} field. */
@@ -112,7 +107,7 @@ public abstract class Serializer {
 
   /** Serializes a protobuf embedded {@code message}. */
   public void serializeMessage(ProtoFieldInfo field, Marshaler message) throws IOException {
-    writeStartMessage(field, message.getProtoSerializedSize());
+    writeStartMessage(field, message.getBinarySerializedSize());
     message.writeTo(this);
     writeEndMessage();
   }
