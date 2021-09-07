@@ -348,7 +348,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
     private final List<Long> bucketCounts;
     private final List<Double> explicitBounds;
     private final ExemplarMarshaler[] exemplars;
-    private final AttributeMarshaler[] attributes;
+    private final KeyValueMarshaler[] attributes;
 
     static HistogramDataPointMarshaler[] createRepeated(
         Collection<DoubleHistogramPointData> points) {
@@ -361,8 +361,8 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
     }
 
     static HistogramDataPointMarshaler create(DoubleHistogramPointData point) {
-      AttributeMarshaler[] attributeMarshalers =
-          AttributeMarshaler.createRepeated(point.getAttributes());
+      KeyValueMarshaler[] attributeMarshalers =
+          KeyValueMarshaler.createRepeated(point.getAttributes());
       ExemplarMarshaler[] exemplarMarshalers =
           ExemplarMarshaler.createRepeated(point.getExemplars());
 
@@ -385,7 +385,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         List<Long> bucketCounts,
         List<Double> explicitBounds,
         ExemplarMarshaler[] exemplars,
-        AttributeMarshaler[] attributes) {
+        KeyValueMarshaler[] attributes) {
       super(
           calculateSize(
               startTimeUnixNano,
@@ -426,7 +426,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         List<Long> bucketCounts,
         List<Double> explicitBounds,
         ExemplarMarshaler[] exemplars,
-        AttributeMarshaler[] attributes) {
+        KeyValueMarshaler[] attributes) {
       int size = 0;
       size += MarshalerUtil.sizeFixed64(HistogramDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
       size += MarshalerUtil.sizeFixed64(HistogramDataPoint.TIME_UNIX_NANO, timeUnixNano);
@@ -512,7 +512,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
     private final long count;
     private final double sum;
     private final ValueAtQuantileMarshaler[] quantileValues;
-    private final AttributeMarshaler[] attributes;
+    private final KeyValueMarshaler[] attributes;
 
     static SummaryDataPointMarshaler[] createRepeated(Collection<DoubleSummaryPointData> points) {
       SummaryDataPointMarshaler[] marshalers = new SummaryDataPointMarshaler[points.size()];
@@ -526,8 +526,8 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
     static SummaryDataPointMarshaler create(DoubleSummaryPointData point) {
       ValueAtQuantileMarshaler[] quantileMarshalers =
           ValueAtQuantileMarshaler.createRepeated(point.getPercentileValues());
-      AttributeMarshaler[] attributeMarshalers =
-          AttributeMarshaler.createRepeated(point.getAttributes());
+      KeyValueMarshaler[] attributeMarshalers =
+          KeyValueMarshaler.createRepeated(point.getAttributes());
 
       return new SummaryDataPointMarshaler(
           point.getStartEpochNanos(),
@@ -544,7 +544,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         long count,
         double sum,
         ValueAtQuantileMarshaler[] quantileValues,
-        AttributeMarshaler[] attributes) {
+        KeyValueMarshaler[] attributes) {
       super(calculateSize(startTimeUnixNano, timeUnixNano, count, sum, quantileValues, attributes));
       this.startTimeUnixNano = startTimeUnixNano;
       this.timeUnixNano = timeUnixNano;
@@ -570,7 +570,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         long count,
         double sum,
         ValueAtQuantileMarshaler[] quantileValues,
-        AttributeMarshaler[] attributes) {
+        KeyValueMarshaler[] attributes) {
       int size = 0;
       size += MarshalerUtil.sizeFixed64(SummaryDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
       size += MarshalerUtil.sizeFixed64(SummaryDataPoint.TIME_UNIX_NANO, timeUnixNano);
@@ -628,7 +628,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
     private final ProtoFieldInfo valueField;
 
     private final ExemplarMarshaler[] exemplars;
-    private final AttributeMarshaler[] attributes;
+    private final KeyValueMarshaler[] attributes;
 
     static NumberDataPointMarshaler[] createRepeated(Collection<? extends PointData> points) {
       int numPoints = points.size();
@@ -643,8 +643,8 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
     static NumberDataPointMarshaler create(PointData point) {
       ExemplarMarshaler[] exemplarMarshalers =
           ExemplarMarshaler.createRepeated(point.getExemplars());
-      AttributeMarshaler[] attributeMarshalers =
-          AttributeMarshaler.createRepeated(point.getAttributes());
+      KeyValueMarshaler[] attributeMarshalers =
+          KeyValueMarshaler.createRepeated(point.getAttributes());
 
       final long value;
       final ProtoFieldInfo valueField;
@@ -672,7 +672,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         long value,
         ProtoFieldInfo valueField,
         ExemplarMarshaler[] exemplars,
-        AttributeMarshaler[] attributes) {
+        KeyValueMarshaler[] attributes) {
       super(
           calculateSize(startTimeUnixNano, timeUnixNano, value, valueField, exemplars, attributes));
       this.startTimeUnixNano = startTimeUnixNano;
@@ -698,7 +698,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         long value,
         ProtoFieldInfo valueField,
         ExemplarMarshaler[] exemplars,
-        AttributeMarshaler[] attributes) {
+        KeyValueMarshaler[] attributes) {
       int size = 0;
       size += MarshalerUtil.sizeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
       size += MarshalerUtil.sizeFixed64(NumberDataPoint.TIME_UNIX_NANO, timeUnixNano);
@@ -720,7 +720,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
     private final byte[] spanId;
     private final byte[] traceId;
 
-    private final AttributeMarshaler[] filteredAttributeMarshalers;
+    private final KeyValueMarshaler[] filteredAttributeMarshalers;
 
     static ExemplarMarshaler[] createRepeated(List<Exemplar> exemplars) {
       int numExemplars = exemplars.size();
@@ -732,8 +732,8 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
     }
 
     private static ExemplarMarshaler create(Exemplar exemplar) {
-      AttributeMarshaler[] attributeMarshalers =
-          AttributeMarshaler.createRepeated(exemplar.getFilteredAttributes());
+      KeyValueMarshaler[] attributeMarshalers =
+          KeyValueMarshaler.createRepeated(exemplar.getFilteredAttributes());
 
       final long value;
       final ProtoFieldInfo valueField;
@@ -765,7 +765,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         ProtoFieldInfo valueField,
         byte[] spanId,
         byte[] traceId,
-        AttributeMarshaler[] filteredAttributeMarshalers) {
+        KeyValueMarshaler[] filteredAttributeMarshalers) {
       super(
           calculateSize(
               timeUnixNano, value, valueField, spanId, traceId, filteredAttributeMarshalers));
@@ -795,7 +795,7 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize implements 
         ProtoFieldInfo valueField,
         byte[] spanId,
         byte[] traceId,
-        AttributeMarshaler[] filteredAttributeMarshalers) {
+        KeyValueMarshaler[] filteredAttributeMarshalers) {
       int size = 0;
       size +=
           MarshalerUtil.sizeFixed64(

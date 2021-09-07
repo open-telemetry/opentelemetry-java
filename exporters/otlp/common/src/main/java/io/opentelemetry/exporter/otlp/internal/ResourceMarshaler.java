@@ -23,13 +23,13 @@ final class ResourceMarshaler extends MarshalerWithSize {
     if (cached == null) {
       // Since WeakConcurrentMap doesn't support computeIfAbsent, we may end up doing the conversion
       // a few times until the cache gets filled which is fine.
-      cached = new ResourceMarshaler(AttributeMarshaler.createRepeated(resource.getAttributes()));
+      cached = new ResourceMarshaler(KeyValueMarshaler.createRepeated(resource.getAttributes()));
       RESOURCE_MARSHALER_CACHE.put(resource, cached);
     }
     return cached;
   }
 
-  private ResourceMarshaler(AttributeMarshaler[] attributeMarshalers) {
+  private ResourceMarshaler(KeyValueMarshaler[] attributeMarshalers) {
     super(calculateSize(attributeMarshalers));
     ByteArrayOutputStream bos = new ByteArrayOutputStream(getProtoSerializedSize());
     CodedOutputStream output = CodedOutputStream.newInstance(bos);
@@ -50,7 +50,7 @@ final class ResourceMarshaler extends MarshalerWithSize {
     output.writeSerializedMessage(serializedResource, MarshalerUtil.EMPTY_BYTES);
   }
 
-  private static int calculateSize(AttributeMarshaler[] attributeMarshalers) {
+  private static int calculateSize(KeyValueMarshaler[] attributeMarshalers) {
     return MarshalerUtil.sizeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
   }
 }
