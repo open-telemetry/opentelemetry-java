@@ -30,7 +30,7 @@ class DoubleMinMaxSumCountAggregatorTest {
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           MetricDescriptor.create("name", "description", "unit"),
-          ExemplarReservoir::empty);
+          ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {

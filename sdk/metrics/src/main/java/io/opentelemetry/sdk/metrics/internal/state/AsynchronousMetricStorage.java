@@ -50,7 +50,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
                 instrumentationLibraryInfo,
                 instrument,
                 metricDescriptor,
-                ExemplarReservoir::empty);
+                ExemplarReservoir::noSamples);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
@@ -90,7 +90,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
                 instrumentationLibraryInfo,
                 instrument,
                 metricDescriptor,
-                ExemplarReservoir::empty);
+                ExemplarReservoir::noSamples);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();

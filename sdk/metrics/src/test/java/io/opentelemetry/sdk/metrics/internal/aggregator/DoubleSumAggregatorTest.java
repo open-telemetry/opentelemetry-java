@@ -48,7 +48,7 @@ class DoubleSumAggregatorTest {
               InstrumentValueType.DOUBLE),
           MetricDescriptor.create("name", "description", "unit"),
           AggregationTemporality.CUMULATIVE,
-          ExemplarReservoir::empty);
+          ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -132,7 +132,7 @@ class DoubleSumAggregatorTest {
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
                 MetricDescriptor.create("name", "description", "unit"),
                 temporality,
-                ExemplarReservoir::empty);
+                ExemplarReservoir::noSamples);
         MergeStrategy expectedMergeStrategy =
             AbstractSumAggregator.resolveMergeStrategy(instrumentType, temporality);
         DoubleAccumulation merged =

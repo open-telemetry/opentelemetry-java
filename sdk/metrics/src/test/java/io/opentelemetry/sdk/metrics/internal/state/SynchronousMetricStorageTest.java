@@ -41,7 +41,7 @@ public class SynchronousMetricStorageTest {
               DESCRIPTOR,
               METRIC_DESCRIPTOR,
               // TODO: do we need to verify anything here?
-              ExemplarReservoir::empty);
+              ExemplarReservoir::noSamples);
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
 
   @Test

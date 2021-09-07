@@ -14,11 +14,11 @@ public interface ExemplarStorageStrategy {
   ExemplarReservoir createReservoir(Aggregation aggregator);
 
   /** A sampler which will never store Exemplars. */
-  static final ExemplarStorageStrategy ALWAYS_OFF = (agg) -> ExemplarReservoir.empty();
+  static final ExemplarStorageStrategy ALWAYS_OFF = (agg) -> ExemplarReservoir.noSamples();
   /** Default exemplar storage configuration. */
   static final ExemplarStorageStrategy DEFAULT =
       (agg) -> {
         // TODO: implement
-        return ExemplarReservoir.empty();
+        return ExemplarReservoir.noSamples();
       };
 }

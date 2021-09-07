@@ -29,14 +29,14 @@ class CountAggregatorTest {
           InstrumentationLibraryInfo.empty(),
           SIMPLE_METRIC_DESCRIPTOR,
           AggregationTemporality.CUMULATIVE,
-          ExemplarReservoir::empty);
+          ExemplarReservoir::noSamples);
   private static final CountAggregator deltaAggregator =
       new CountAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
           SIMPLE_METRIC_DESCRIPTOR,
           AggregationTemporality.DELTA,
-          ExemplarReservoir::empty);
+          ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {

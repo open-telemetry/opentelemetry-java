@@ -38,7 +38,7 @@ public class DoubleHistogramBenchmark {
               InstrumentDescriptor.create(
                   "name", "description", "1", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE),
               MetricDescriptor.create("name", "description", "1"),
-              ExemplarReservoir::empty);
+              ExemplarReservoir::noSamples);
   private AggregatorHandle<HistogramAccumulation> aggregatorHandle;
 
   @Setup(Level.Trial)

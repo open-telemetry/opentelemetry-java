@@ -46,7 +46,7 @@ public class DoubleHistogramAggregatorTest {
           MetricDescriptor.create("name", "description", "unit"),
           boundaries,
           /* stateful= */ false,
-          ExemplarReservoir::empty);
+          ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {

@@ -111,7 +111,7 @@ public class AggregatorHandleTest {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     Context context = Context.root();
     testAggregator.recordLong(1L, attributes, context);
-    Mockito.verify(reservoir).offerMeasurementLong(1L, attributes, context);
+    Mockito.verify(reservoir).offerMeasurement(1L, attributes, context);
   }
 
   @Test
@@ -120,7 +120,7 @@ public class AggregatorHandleTest {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     Context context = Context.root();
     testAggregator.recordDouble(1.0d, attributes, context);
-    Mockito.verify(reservoir).offerMeasurementDouble(1.0d, attributes, context);
+    Mockito.verify(reservoir).offerMeasurement(1.0d, attributes, context);
   }
 
   @Test

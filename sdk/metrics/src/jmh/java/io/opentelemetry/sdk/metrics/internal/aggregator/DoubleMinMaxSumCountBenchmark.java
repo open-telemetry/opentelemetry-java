@@ -36,7 +36,7 @@ public class DoubleMinMaxSumCountBenchmark {
               InstrumentDescriptor.create(
                   "name", "description", "1", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE),
               MetricDescriptor.create("name", "description", "1"),
-              ExemplarReservoir::empty);
+              ExemplarReservoir::noSamples);
   private AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle;
 
   @Setup(Level.Trial)

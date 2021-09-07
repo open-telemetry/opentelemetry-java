@@ -112,7 +112,7 @@ public abstract class AggregatorHandle<T> implements BoundStorageHandle {
 
   @Override
   public final void recordLong(long value, Attributes attributes, Context context) {
-    exemplarReservoir.offerMeasurementLong(value, attributes, context);
+    exemplarReservoir.offerMeasurement(value, attributes, context);
     recordLong(value);
   }
 
@@ -137,7 +137,7 @@ public abstract class AggregatorHandle<T> implements BoundStorageHandle {
 
   @Override
   public final void recordDouble(double value, Attributes attributes, Context context) {
-    exemplarReservoir.offerMeasurementDouble(value, attributes, context);
+    exemplarReservoir.offerMeasurement(value, attributes, context);
     recordDouble(value);
   }
 

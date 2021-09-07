@@ -38,7 +38,7 @@ class AggregatorFactoryTest {
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG),
                 SIMPLE_METRIC_DESCRIPTOR,
-                ExemplarReservoir::empty))
+                ExemplarReservoir::noSamples))
         .isInstanceOf(CountAggregator.class);
     assertThat(
             count.create(
@@ -51,7 +51,7 @@ class AggregatorFactoryTest {
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE),
                 SIMPLE_METRIC_DESCRIPTOR,
-                ExemplarReservoir::empty))
+                ExemplarReservoir::noSamples))
         .isInstanceOf(CountAggregator.class);
   }
 
@@ -69,7 +69,7 @@ class AggregatorFactoryTest {
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG),
                 SIMPLE_METRIC_DESCRIPTOR,
-                ExemplarReservoir::empty))
+                ExemplarReservoir::noSamples))
         .isInstanceOf(LongLastValueAggregator.class);
     assertThat(
             lastValue.create(
@@ -82,7 +82,7 @@ class AggregatorFactoryTest {
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE),
                 SIMPLE_METRIC_DESCRIPTOR,
-                ExemplarReservoir::empty))
+                ExemplarReservoir::noSamples))
         .isInstanceOf(DoubleLastValueAggregator.class);
   }
 
@@ -100,7 +100,7 @@ class AggregatorFactoryTest {
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG),
                 SIMPLE_METRIC_DESCRIPTOR,
-                ExemplarReservoir::empty))
+                ExemplarReservoir::noSamples))
         .isInstanceOf(LongMinMaxSumCountAggregator.class);
     assertThat(
             minMaxSumCount.create(
@@ -113,7 +113,7 @@ class AggregatorFactoryTest {
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE),
                 SIMPLE_METRIC_DESCRIPTOR,
-                ExemplarReservoir::empty))
+                ExemplarReservoir::noSamples))
         .isInstanceOf(DoubleMinMaxSumCountAggregator.class);
   }
 
@@ -131,7 +131,7 @@ class AggregatorFactoryTest {
                     InstrumentType.COUNTER,
                     InstrumentValueType.LONG),
                 SIMPLE_METRIC_DESCRIPTOR,
-                ExemplarReservoir::empty))
+                ExemplarReservoir::noSamples))
         .isInstanceOf(LongSumAggregator.class);
     assertThat(
             sum.create(
@@ -144,7 +144,7 @@ class AggregatorFactoryTest {
                     InstrumentType.COUNTER,
                     InstrumentValueType.DOUBLE),
                 SIMPLE_METRIC_DESCRIPTOR,
-                ExemplarReservoir::empty))
+                ExemplarReservoir::noSamples))
         .isInstanceOf(DoubleSumAggregator.class);
   }
 
@@ -163,7 +163,7 @@ class AggregatorFactoryTest {
                     InstrumentType.HISTOGRAM,
                     InstrumentValueType.LONG),
                 SIMPLE_METRIC_DESCRIPTOR,
-                ExemplarReservoir::empty))
+                ExemplarReservoir::noSamples))
         .isInstanceOf(DoubleHistogramAggregator.class);
     assertThat(
             histogram.create(
@@ -176,7 +176,7 @@ class AggregatorFactoryTest {
                     InstrumentType.HISTOGRAM,
                     InstrumentValueType.DOUBLE),
                 SIMPLE_METRIC_DESCRIPTOR,
-                ExemplarReservoir::empty))
+                ExemplarReservoir::noSamples))
         .isInstanceOf(DoubleHistogramAggregator.class);
 
     assertThat(
@@ -191,7 +191,7 @@ class AggregatorFactoryTest {
                         InstrumentType.HISTOGRAM,
                         InstrumentValueType.LONG),
                     SIMPLE_METRIC_DESCRIPTOR,
-                    ExemplarReservoir::empty)
+                    ExemplarReservoir::noSamples)
                 .isStateful())
         .isFalse();
     assertThat(
@@ -207,7 +207,7 @@ class AggregatorFactoryTest {
                         InstrumentType.HISTOGRAM,
                         InstrumentValueType.DOUBLE),
                     SIMPLE_METRIC_DESCRIPTOR,
-                    ExemplarReservoir::empty)
+                    ExemplarReservoir::noSamples)
                 .isStateful())
         .isTrue();
 
