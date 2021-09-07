@@ -21,7 +21,7 @@ final class SpiUtil {
 
   static <T, U> Map<String, T> loadConfigurable(
       Class<U> spiClass,
-      List<String> requested,
+      List<String> requestedNames,
       Function<U, String> getName,
       BiFunction<U, ConfigProperties, T> getConfigurable,
       ConfigProperties config) {
@@ -32,7 +32,7 @@ final class SpiUtil {
       try {
         configurable = getConfigurable.apply(provider, config);
       } catch (Throwable t) {
-        Level level = requested.contains(name) ? Level.WARNING : Level.FINE;
+        Level level = requestedNames.contains(name) ? Level.WARNING : Level.FINE;
         logger.log(
             level, "Error initializing " + spiClass.getSimpleName() + " with name " + name, t);
         continue;
