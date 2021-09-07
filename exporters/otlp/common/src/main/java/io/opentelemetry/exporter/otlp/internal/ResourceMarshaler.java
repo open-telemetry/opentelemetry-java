@@ -31,7 +31,7 @@ final class ResourceMarshaler extends MarshalerWithSize {
 
   private ResourceMarshaler(KeyValueMarshaler[] attributeMarshalers) {
     super(calculateSize(attributeMarshalers));
-    ByteArrayOutputStream bos = new ByteArrayOutputStream(getProtoSerializedSize());
+    ByteArrayOutputStream bos = new ByteArrayOutputStream(getBinarySerializedSize());
     CodedOutputStream output = CodedOutputStream.newInstance(bos);
     ProtoSerializer serializer = new ProtoSerializer(output);
     try {

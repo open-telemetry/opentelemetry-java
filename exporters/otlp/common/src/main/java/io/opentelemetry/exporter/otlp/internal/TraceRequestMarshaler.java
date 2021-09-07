@@ -31,7 +31,7 @@ import java.util.Map;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class TraceRequestMarshaler extends MarshalerWithSize implements Marshaler {
+public final class TraceRequestMarshaler extends MarshalerWithSize {
 
   // In practice, there is often only one thread that calls this code in the BatchSpanProcessor so
   // reusing buffers for the thread is almost free. Even with multiple threads, it should still be

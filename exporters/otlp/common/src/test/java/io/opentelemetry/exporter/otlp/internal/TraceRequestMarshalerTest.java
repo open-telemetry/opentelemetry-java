@@ -153,10 +153,8 @@ class TraceRequestMarshalerTest {
     byte[] protoOutput = protoRequest.toByteArray();
 
     ByteArrayOutputStream customOutput =
-        new ByteArrayOutputStream(requestMarshaler.getProtoSerializedSize());
-    CodedOutputStream cos = CodedOutputStream.newInstance(customOutput);
-    requestMarshaler.writeTo(Serializer.createProtoSerializer(cos));
-    cos.flush();
+        new ByteArrayOutputStream(requestMarshaler.getBinarySerializedSize());
+    requestMarshaler.writeBinaryTo(customOutput);
     byte[] customOutputBytes = customOutput.toByteArray();
     if (!Arrays.equals(customOutputBytes, protoOutput)) {
       String reverse = "<invalid>";
@@ -197,16 +195,14 @@ class TraceRequestMarshalerTest {
             .build();
     TraceRequestMarshaler requestMarshaler = TraceRequestMarshaler.create(spanDataList);
     int protoSize = protoRequest.getSerializedSize();
-    assertThat(requestMarshaler.getProtoSerializedSize()).isEqualTo(protoSize);
+    assertThat(requestMarshaler.getBinarySerializedSize()).isEqualTo(protoSize);
 
     ByteArrayOutputStream protoOutput = new ByteArrayOutputStream(protoRequest.getSerializedSize());
     protoRequest.writeTo(protoOutput);
 
     ByteArrayOutputStream customOutput =
-        new ByteArrayOutputStream(requestMarshaler.getProtoSerializedSize());
-    CodedOutputStream cos = CodedOutputStream.newInstance(customOutput);
-    requestMarshaler.writeTo(Serializer.createProtoSerializer(cos));
-    cos.flush();
+        new ByteArrayOutputStream(requestMarshaler.getBinarySerializedSize());
+    requestMarshaler.writeBinaryTo(customOutput);
     assertThat(customOutput.toByteArray()).isEqualTo(protoOutput.toByteArray());
   }
 

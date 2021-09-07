@@ -25,9 +25,7 @@ package io.opentelemetry.exporter.otlp.internal.grpc;
 import com.google.common.io.ByteStreams;
 import io.grpc.Drainable;
 import io.grpc.KnownLength;
-import io.opentelemetry.exporter.otlp.internal.CodedOutputStream;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.Serializer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -57,10 +55,8 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   public int drainTo(OutputStream target) throws IOException {
     int written;
     if (message != null) {
-      written = message.getProtoSerializedSize();
-      CodedOutputStream cos = CodedOutputStream.newInstance(target);
-      message.writeTo(Serializer.createProtoSerializer(cos));
-      cos.flush();
+      written = message.getBinarySerializedSize();
+      message.writeBinaryTo(target);
       message = null;
     } else if (partial != null) {
       written = (int) ByteStreams.copy(partial, target);
@@ -86,7 +82,7 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   @Override
   public int read(byte[] b, int off, int len) throws IOException {
     if (message != null) {
-      int size = message.getProtoSerializedSize();
+      int size = message.getBinarySerializedSize();
       if (size == 0) {
         message = null;
         partial = null;
@@ -108,17 +104,15 @@ public final class MarshalerInputStream extends InputStream implements Drainable
   }
 
   private static byte[] toByteArray(Marshaler message) throws IOException {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getProtoSerializedSize());
-    CodedOutputStream cos = CodedOutputStream.newInstance(bos);
-    message.writeTo(Serializer.createProtoSerializer(cos));
-    cos.flush();
+    ByteArrayOutputStream bos = new ByteArrayOutputStream(message.getBinarySerializedSize());
+    message.writeBinaryTo(bos);
     return bos.toByteArray();
   }
 
   @Override
   public int available() {
     if (message != null) {
-      return message.getProtoSerializedSize();
+      return message.getBinarySerializedSize();
     } else if (partial != null) {
       return partial.available();
     }

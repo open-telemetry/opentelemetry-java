@@ -62,7 +62,7 @@ final class MarshalerUtil {
     int size = 0;
     int fieldTagSize = field.getTagSize();
     for (Marshaler message : repeatedMessage) {
-      int fieldSize = message.getProtoSerializedSize();
+      int fieldSize = message.getBinarySerializedSize();
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
     }
     return size;
@@ -72,14 +72,14 @@ final class MarshalerUtil {
     int size = 0;
     int fieldTagSize = field.getTagSize();
     for (Marshaler message : repeatedMessage) {
-      int fieldSize = message.getProtoSerializedSize();
+      int fieldSize = message.getBinarySerializedSize();
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
     }
     return size;
   }
 
   static int sizeMessage(ProtoFieldInfo field, Marshaler message) {
-    int fieldSize = message.getProtoSerializedSize();
+    int fieldSize = message.getBinarySerializedSize();
     return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
   }
 
