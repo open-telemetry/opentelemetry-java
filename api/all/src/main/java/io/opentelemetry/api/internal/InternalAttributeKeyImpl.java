@@ -10,7 +10,12 @@ import io.opentelemetry.api.common.AttributeType;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 
-/** Default AttributeKey implementation which preencodes to UTF8 for OTLP export. */
+/**
+ * Default AttributeKey implementation which preencodes to UTF8 for OTLP export.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class InternalAttributeKeyImpl<T> implements AttributeKey<T> {
 
   private final AttributeType type;
