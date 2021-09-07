@@ -85,6 +85,16 @@ class ExportTest {
       };
 
   @Test
+  void gzipCompressionExport() {
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.builder()
+            .setEndpoint("http://localhost:" + server.httpPort())
+            .setCompression("gzip")
+            .build();
+    assertThat(exporter.export(METRICS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
   void plainTextExport() {
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder()

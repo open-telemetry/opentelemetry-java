@@ -45,6 +45,7 @@ dependencies {
   jmhImplementation(project(":proto"))
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation(project(":sdk-extensions:resources"))
+  jmhImplementation("io.grpc:grpc-api")
 }
 
 wire {
