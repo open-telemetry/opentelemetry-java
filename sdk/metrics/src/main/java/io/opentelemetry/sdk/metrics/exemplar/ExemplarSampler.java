@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.exemplar;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -25,12 +26,21 @@ public abstract class ExemplarSampler {
   ExemplarSampler() {}
 
   /** Configuration for exemplar storage. */
-  public abstract ExemplarReservoirFactory getFactory();
+  abstract ExemplarReservoirFactory getFactory();
+  
+  /** Configuration for exemplar measurement pre-filter. */
+  abstract ExemplarFilter getFilter();
+
+  /** Creates a new {@link ExemplarReservoir} using the existing aggregation config. */
+  public ExemplarReservoir createReservoir(Aggregation aggregation) {
+    return ExemplarReservoir.filtered(getFilter(), getFactory().createReservoir(aggregation));
+  }
 
   /** Returns a builder with default exemplar sampling configuration. */
   public static Builder builder() {
     return new AutoValue_ExemplarSampler.Builder()
         .setFactory(ignore -> ExemplarReservoir.noSamples());
+        .setFilter(ExemplarFilter.defaultFilter());
   }
 
   /** Builder for exemplar sampling. */
@@ -38,6 +48,9 @@ public abstract class ExemplarSampler {
   public abstract static class Builder {
     /** Sets the factory used to provide {@link ExemplarReservoir}s for metric streams. */
     public abstract Builder setFactory(ExemplarReservoirFactory storageStrategy);
+
+    /** Sets the pre-filter on which measurements can be sampled. */
+    public abstract Builder setFilter(ExemplarFilter filter);
 
     /** Returns the configured {@link ExemplarSampler}. */
     public abstract ExemplarSampler build();
