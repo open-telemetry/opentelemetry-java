@@ -14,7 +14,7 @@ import java.util.List;
 /** Implementation of a reservoir that keeps no exemplars. */
 class NoExemplarReservoir implements ExemplarReservoir {
 
-  static final ExemplarReservoir NO_SAMPLES = new NoExemplarReservoir();
+  static final ExemplarReservoir INSTANCE = new NoExemplarReservoir();
 
   private NoExemplarReservoir() {}
 

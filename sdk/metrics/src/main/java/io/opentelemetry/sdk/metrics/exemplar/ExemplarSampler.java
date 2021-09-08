@@ -9,7 +9,9 @@ import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An interface that provides the two configuration components to exemplar sampling.
+ * A sampler for measurements to be reported with aggregated metric streams.
+ *
+ * <p>An ExemplarSampler provides two configuration components:
  *
  * <ul>
  *   <li>(coming soon) A filter for which measurements can be sampled.
@@ -24,10 +26,7 @@ public abstract class ExemplarSampler {
   /** Configuration for exemplar storage. */
   public abstract ExemplarReservoirFactory getFactory();
 
-  /**
-   * We hide the ability to create custom exemplar samplers until further specification work is
-   * stable.
-   */
+  /** Returns a builder with default exemplar sampling configuration. */
   public static Builder builder() {
     return new AutoValue_ExemplarSampler.Builder()
         .setFactory(ignore -> ExemplarReservoir.noSamples());

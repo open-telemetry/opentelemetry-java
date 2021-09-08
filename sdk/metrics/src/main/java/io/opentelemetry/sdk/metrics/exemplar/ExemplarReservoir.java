@@ -19,7 +19,7 @@ public interface ExemplarReservoir {
 
   /** An exemplar reservoir that stores no exemplars. */
   public static ExemplarReservoir noSamples() {
-    return NoExemplarReservoir.NO_SAMPLES;
+    return NoExemplarReservoir.INSTANCE;
   }
 
   /** Offers a {@code long} measurement to be sampled. */
