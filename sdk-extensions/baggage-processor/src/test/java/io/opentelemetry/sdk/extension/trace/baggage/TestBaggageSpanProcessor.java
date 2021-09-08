@@ -5,6 +5,11 @@
 
 package io.opentelemetry.sdk.extension.trace.baggage;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
@@ -13,11 +18,10 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class TestBaggageSpanProcessor {
+class TestBaggageSpanProcessor {
   @Mock private SpanProcessor nextProcessor;
   @Mock private ReadWriteSpan readWriteSpan;
 
@@ -29,9 +33,8 @@ public class TestBaggageSpanProcessor {
     Context context = Context.root().with(empty);
 
     processor.onStart(context, readWriteSpan);
-    Mockito.verify(nextProcessor).onStart(context, readWriteSpan);
-    Mockito.verify(readWriteSpan, Mockito.never())
-        .setAttribute(Mockito.anyString(), Mockito.anyString());
+    verify(nextProcessor).onStart(context, readWriteSpan);
+    verify(readWriteSpan, never()).setAttribute(anyString(), anyString());
   }
 
   @Test
@@ -40,9 +43,9 @@ public class TestBaggageSpanProcessor {
     Baggage empty = Baggage.builder().put("test1", "value").put("test2", "value").build();
     Context context = Context.root().with(empty);
     processor.onStart(context, readWriteSpan);
-    Mockito.verify(nextProcessor).onStart(context, readWriteSpan);
-    Mockito.verify(readWriteSpan).setAttribute("test1", "value");
-    Mockito.verify(readWriteSpan).setAttribute("test2", "value");
+    verify(nextProcessor).onStart(context, readWriteSpan);
+    verify(readWriteSpan).setAttribute("test1", "value");
+    verify(readWriteSpan).setAttribute("test2", "value");
   }
 
   @Test
@@ -54,9 +57,9 @@ public class TestBaggageSpanProcessor {
     Baggage empty = Baggage.builder().put("test1", "value").put("test2", "value").build();
     Context context = Context.root().with(empty);
     processor.onStart(context, readWriteSpan);
-    Mockito.verify(nextProcessor).onStart(context, readWriteSpan);
-    Mockito.verify(readWriteSpan).setAttribute("test1", "value");
-    Mockito.verify(readWriteSpan, Mockito.never()).setAttribute("test2", "value");
+    verify(nextProcessor).onStart(context, readWriteSpan);
+    verify(readWriteSpan).setAttribute("test1", "value");
+    verify(readWriteSpan, never()).setAttribute("test2", "value");
   }
 
   @Test
@@ -65,12 +68,12 @@ public class TestBaggageSpanProcessor {
         BaggageSpanProcessor.builder(nextProcessor)
             .setSpanFilter(span -> span.getKind() == SpanKind.CLIENT)
             .build();
-    Mockito.when(readWriteSpan.getKind()).thenReturn(SpanKind.CLIENT);
+    when(readWriteSpan.getKind()).thenReturn(SpanKind.CLIENT);
     Baggage empty = Baggage.builder().put("test1", "value").build();
     Context context = Context.root().with(empty);
     processor.onStart(context, readWriteSpan);
-    Mockito.verify(nextProcessor).onStart(context, readWriteSpan);
-    Mockito.verify(readWriteSpan).setAttribute("test1", "value");
+    verify(nextProcessor).onStart(context, readWriteSpan);
+    verify(readWriteSpan).setAttribute("test1", "value");
   }
 
   @Test
@@ -79,11 +82,11 @@ public class TestBaggageSpanProcessor {
         BaggageSpanProcessor.builder(nextProcessor)
             .setSpanFilter(span -> span.getKind() == SpanKind.CLIENT)
             .build();
-    Mockito.when(readWriteSpan.getKind()).thenReturn(SpanKind.SERVER);
+    when(readWriteSpan.getKind()).thenReturn(SpanKind.SERVER);
     Baggage empty = Baggage.builder().put("test1", "value").build();
     Context context = Context.root().with(empty);
     processor.onStart(context, readWriteSpan);
-    Mockito.verify(nextProcessor).onStart(context, readWriteSpan);
-    Mockito.verify(readWriteSpan, Mockito.never()).setAttribute("test1", "value");
+    verify(nextProcessor).onStart(context, readWriteSpan);
+    verify(readWriteSpan, never()).setAttribute("test1", "value");
   }
 }

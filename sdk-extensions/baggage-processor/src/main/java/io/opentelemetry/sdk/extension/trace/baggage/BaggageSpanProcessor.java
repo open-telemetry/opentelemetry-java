@@ -65,7 +65,7 @@ public class BaggageSpanProcessor implements SpanProcessor {
    *
    * @param next The next processor in the chain.
    */
-  public static final BaggageSpanProcessorBuilder builder(SpanProcessor next) {
+  public static BaggageSpanProcessorBuilder builder(SpanProcessor next) {
     return new BaggageSpanProcessorBuilder(next);
   }
 }
