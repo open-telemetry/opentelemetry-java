@@ -100,20 +100,22 @@ public abstract class AggregatorHandle<T> implements BoundStorageHandle {
   /** Implementation of the {@code accumulateThenReset}. */
   protected abstract T doAccumulateThenReset(List<Exemplar> exemplars);
 
+  @Override
+  public final void recordLong(long value, Attributes attributes, Context context) {
+    exemplarReservoir.offerMeasurement(value, attributes, context);
+    recordLong(value);
+  }
+
   /**
    * Updates the current aggregator with a newly recorded {@code long} value.
+   *
+   * <p>Visible for Testing
    *
    * @param value the new {@code long} value to be added.
    */
   public final void recordLong(long value) {
     doRecordLong(value);
     hasRecordings = true;
-  }
-
-  @Override
-  public final void recordLong(long value, Attributes attributes, Context context) {
-    exemplarReservoir.offerMeasurement(value, attributes, context);
-    recordLong(value);
   }
 
   /**
@@ -125,20 +127,22 @@ public abstract class AggregatorHandle<T> implements BoundStorageHandle {
         "This aggregator does not support recording long values.");
   }
 
+  @Override
+  public final void recordDouble(double value, Attributes attributes, Context context) {
+    exemplarReservoir.offerMeasurement(value, attributes, context);
+    recordDouble(value);
+  }
+
   /**
    * Updates the current aggregator with a newly recorded {@code double} value.
+   *
+   * <p>Visible for Testing
    *
    * @param value the new {@code double} value to be added.
    */
   public final void recordDouble(double value) {
     doRecordDouble(value);
     hasRecordings = true;
-  }
-
-  @Override
-  public final void recordDouble(double value, Attributes attributes, Context context) {
-    exemplarReservoir.offerMeasurement(value, attributes, context);
-    recordDouble(value);
   }
 
   /**
