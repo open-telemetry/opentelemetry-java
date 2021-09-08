@@ -5,9 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
-import io.opentelemetry.api.internal.OtelEncodingUtils;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.collector.metrics.v1.internal.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.metrics.v1.internal.AggregationTemporality;
 import io.opentelemetry.proto.metrics.v1.internal.Gauge;
@@ -40,6 +37,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
  * {@link Marshaler} to convert SDK {@link MetricData} to OTLP ExportMetricsServiceRequest.
@@ -717,8 +715,8 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize {
     private final long value;
     private final ProtoFieldInfo valueField;
 
-    private final byte[] spanId;
-    private final byte[] traceId;
+    @Nullable private final String spanId;
+    @Nullable private final String traceId;
 
     private final KeyValueMarshaler[] filteredAttributeMarshalers;
 
@@ -746,25 +744,21 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize {
         valueField = io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_DOUBLE;
       }
 
-      byte[] spanId = MarshalerUtil.EMPTY_BYTES;
-      if (exemplar.getSpanId() != null) {
-        spanId = OtelEncodingUtils.bytesFromBase16(exemplar.getSpanId(), SpanId.getLength());
-      }
-      byte[] traceId = MarshalerUtil.EMPTY_BYTES;
-      if (exemplar.getTraceId() != null) {
-        traceId = OtelEncodingUtils.bytesFromBase16(exemplar.getTraceId(), TraceId.getLength());
-      }
-
       return new ExemplarMarshaler(
-          exemplar.getEpochNanos(), value, valueField, spanId, traceId, attributeMarshalers);
+          exemplar.getEpochNanos(),
+          value,
+          valueField,
+          exemplar.getSpanId(),
+          exemplar.getTraceId(),
+          attributeMarshalers);
     }
 
     private ExemplarMarshaler(
         long timeUnixNano,
         long value,
         ProtoFieldInfo valueField,
-        byte[] spanId,
-        byte[] traceId,
+        @Nullable String spanId,
+        @Nullable String traceId,
         KeyValueMarshaler[] filteredAttributeMarshalers) {
       super(
           calculateSize(
@@ -782,8 +776,9 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize {
       output.serializeFixed64(
           io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO, timeUnixNano);
       output.serializeFixed64(valueField, value);
-      output.serializeBytes(io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanId);
-      output.serializeBytes(io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID, traceId);
+      output.serializeSpanId(io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanId);
+      output.serializeTraceId(
+          io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID, traceId);
       output.serializeRepeatedMessage(
           io.opentelemetry.proto.metrics.v1.internal.Exemplar.FILTERED_ATTRIBUTES,
           filteredAttributeMarshalers);
@@ -793,8 +788,8 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize {
         long timeUnixNano,
         long value,
         ProtoFieldInfo valueField,
-        byte[] spanId,
-        byte[] traceId,
+        @Nullable String spanId,
+        @Nullable String traceId,
         KeyValueMarshaler[] filteredAttributeMarshalers) {
       int size = 0;
       size +=
@@ -802,10 +797,10 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize {
               io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO, timeUnixNano);
       size += MarshalerUtil.sizeFixed64(valueField, value);
       size +=
-          MarshalerUtil.sizeBytes(
+          MarshalerUtil.sizeSpanId(
               io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanId);
       size +=
-          MarshalerUtil.sizeBytes(
+          MarshalerUtil.sizeTraceId(
               io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID, traceId);
       size +=
           MarshalerUtil.sizeRepeatedMessage(
