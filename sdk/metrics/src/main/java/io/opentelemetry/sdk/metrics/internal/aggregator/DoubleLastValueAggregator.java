@@ -33,20 +33,20 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 final class DoubleLastValueAggregator extends AbstractAggregator<DoubleAccumulation> {
-  private final Supplier<ExemplarReservoir> reservoirBuilder;
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
 
   DoubleLastValueAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       MetricDescriptor descriptor,
-      Supplier<ExemplarReservoir> reservoirBuilder) {
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     super(resource, instrumentationLibraryInfo, descriptor, /* stateful= */ true);
-    this.reservoirBuilder = reservoirBuilder;
+    this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
   public AggregatorHandle<DoubleAccumulation> createHandle() {
-    return new Handle(reservoirBuilder.get());
+    return new Handle(reservoirSupplier.get());
   }
 
   @Override

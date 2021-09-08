@@ -27,9 +27,9 @@ final class CountAggregatorFactory implements AggregatorFactory {
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor unused,
       MetricDescriptor metricDescriptor,
-      Supplier<ExemplarReservoir> reservoirFactory) {
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     return (Aggregator<T>)
         new CountAggregator(
-            resource, instrumentationLibraryInfo, metricDescriptor, temporality, reservoirFactory);
+            resource, instrumentationLibraryInfo, metricDescriptor, temporality, reservoirSupplier);
   }
 }

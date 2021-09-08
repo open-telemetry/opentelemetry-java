@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 
 final class LongSumAggregator extends AbstractSumAggregator<LongAccumulation> {
 
-  private final Supplier<ExemplarReservoir> reservoirBuilder;
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
 
   LongSumAggregator(
       Resource resource,
@@ -30,15 +30,15 @@ final class LongSumAggregator extends AbstractSumAggregator<LongAccumulation> {
       InstrumentDescriptor instrumentDescriptor,
       MetricDescriptor metricDescriptor,
       AggregationTemporality temporality,
-      Supplier<ExemplarReservoir> reservoirBuilder) {
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     super(
         resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor, temporality);
-    this.reservoirBuilder = reservoirBuilder;
+    this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
   public AggregatorHandle<LongAccumulation> createHandle() {
-    return new Handle(reservoirBuilder.get());
+    return new Handle(reservoirSupplier.get());
   }
 
   @Override

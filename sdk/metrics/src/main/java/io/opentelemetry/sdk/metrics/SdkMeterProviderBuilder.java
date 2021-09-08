@@ -42,7 +42,7 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * Assign a {@link Resource} to be attached to all Spans created by Tracers.
+   * Assign a {@link Resource} to be attached to all metrics created by Meters.
    *
    * @param resource A Resource implementation.
    * @return this
@@ -53,7 +53,11 @@ public final class SdkMeterProviderBuilder {
     return this;
   }
 
-  /** TODO: document. */
+  /**
+   * Assign an {@link ExemplarSampler} for all metrics created by Meters.
+   *
+   * @return this
+   */
   public SdkMeterProviderBuilder setExemplarSampler(ExemplarSampler sampler) {
     this.exemplarSampler = sampler;
     return this;

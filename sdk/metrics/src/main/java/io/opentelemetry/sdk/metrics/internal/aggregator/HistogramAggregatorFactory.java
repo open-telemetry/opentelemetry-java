@@ -50,7 +50,7 @@ final class HistogramAggregatorFactory implements AggregatorFactory {
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
       MetricDescriptor metricDescriptor,
-      Supplier<ExemplarReservoir> reservoirFactory) {
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     final boolean stateful = this.temporality == AggregationTemporality.CUMULATIVE;
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
@@ -62,7 +62,7 @@ final class HistogramAggregatorFactory implements AggregatorFactory {
                 metricDescriptor,
                 this.boundaries,
                 stateful,
-                reservoirFactory);
+                reservoirSupplier);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

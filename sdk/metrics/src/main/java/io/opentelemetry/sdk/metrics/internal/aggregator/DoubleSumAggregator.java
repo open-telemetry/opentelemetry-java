@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.DoubleAdder;
 import java.util.function.Supplier;
 
 final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation> {
-  private final Supplier<ExemplarReservoir> reservoirBuilder;
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
 
   DoubleSumAggregator(
       Resource resource,
@@ -29,16 +29,16 @@ final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation
       InstrumentDescriptor instrumentDescriptor,
       MetricDescriptor metricDescriptor,
       AggregationTemporality temporality,
-      Supplier<ExemplarReservoir> reservoirBuilder) {
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     super(
         resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor, temporality);
 
-    this.reservoirBuilder = reservoirBuilder;
+    this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
   public AggregatorHandle<DoubleAccumulation> createHandle() {
-    return new Handle(reservoirBuilder.get());
+    return new Handle(reservoirSupplier.get());
   }
 
   @Override

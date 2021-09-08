@@ -24,26 +24,26 @@ import javax.annotation.concurrent.ThreadSafe;
 final class CountAggregator extends AbstractAggregator<LongAccumulation> {
   private final AggregationTemporality temporality;
   // Workaround
-  private final Supplier<ExemplarReservoir> reservoirBuilder;
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
 
   CountAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       MetricDescriptor descriptor,
       AggregationTemporality temporality,
-      Supplier<ExemplarReservoir> reservoirBuilder) {
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     super(
         resource,
         instrumentationLibraryInfo,
         descriptor,
         temporality == AggregationTemporality.CUMULATIVE);
     this.temporality = temporality;
-    this.reservoirBuilder = reservoirBuilder;
+    this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
   public AggregatorHandle<LongAccumulation> createHandle() {
-    return new Handle(reservoirBuilder.get());
+    return new Handle(reservoirSupplier.get());
   }
 
   @Override

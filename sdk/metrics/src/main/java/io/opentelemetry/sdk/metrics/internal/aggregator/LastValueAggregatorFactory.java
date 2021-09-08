@@ -24,16 +24,16 @@ final class LastValueAggregatorFactory implements AggregatorFactory {
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor descriptor,
       MetricDescriptor metricDescriptor,
-      Supplier<ExemplarReservoir> reservoirFactory) {
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     switch (descriptor.getValueType()) {
       case LONG:
         return (Aggregator<T>)
             new LongLastValueAggregator(
-                resource, instrumentationLibraryInfo, metricDescriptor, reservoirFactory);
+                resource, instrumentationLibraryInfo, metricDescriptor, reservoirSupplier);
       case DOUBLE:
         return (Aggregator<T>)
             new DoubleLastValueAggregator(
-                resource, instrumentationLibraryInfo, metricDescriptor, reservoirFactory);
+                resource, instrumentationLibraryInfo, metricDescriptor, reservoirSupplier);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

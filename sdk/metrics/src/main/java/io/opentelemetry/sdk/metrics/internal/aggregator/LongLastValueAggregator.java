@@ -31,20 +31,20 @@ import javax.annotation.Nullable;
  * at any time.
  */
 final class LongLastValueAggregator extends AbstractAggregator<LongAccumulation> {
-  private final Supplier<ExemplarReservoir> reservoirBuilder;
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
 
   LongLastValueAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       MetricDescriptor descriptor,
-      Supplier<ExemplarReservoir> reservoirBuilder) {
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     super(resource, instrumentationLibraryInfo, descriptor, /* stateful= */ false);
-    this.reservoirBuilder = reservoirBuilder;
+    this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
   public AggregatorHandle<LongAccumulation> createHandle() {
-    return new Handle(reservoirBuilder.get());
+    return new Handle(reservoirSupplier.get());
   }
 
   @Override

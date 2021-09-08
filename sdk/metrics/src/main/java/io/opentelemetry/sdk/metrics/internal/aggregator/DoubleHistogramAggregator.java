@@ -29,7 +29,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   // a cache for converting to MetricData
   private final List<Double> boundaryList;
 
-  private final Supplier<ExemplarReservoir> reservoirBuilder;
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
 
   DoubleHistogramAggregator(
       Resource resource,
@@ -37,7 +37,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       MetricDescriptor metricDescriptor,
       double[] boundaries,
       boolean stateful,
-      Supplier<ExemplarReservoir> reservoirBuilder) {
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     super(resource, instrumentationLibraryInfo, metricDescriptor, stateful);
     this.boundaries = boundaries;
 
@@ -46,12 +46,12 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       boundaryList.add(v);
     }
     this.boundaryList = Collections.unmodifiableList(boundaryList);
-    this.reservoirBuilder = reservoirBuilder;
+    this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
   public AggregatorHandle<HistogramAccumulation> createHandle() {
-    return new Handle(this.boundaries, reservoirBuilder.get());
+    return new Handle(this.boundaries, reservoirSupplier.get());
   }
 
   /**

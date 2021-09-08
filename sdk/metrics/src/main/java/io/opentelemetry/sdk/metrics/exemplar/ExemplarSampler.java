@@ -12,8 +12,9 @@ import javax.annotation.concurrent.Immutable;
  * An interface that provides the two configuration components to exemplar sampling.
  *
  * <ul>
- *   <li>(coming soon) A filter for which measurements should be sampled.
- *   <li>A reservoir to store exemplars (and can do additional filtering)
+ *   <li>(coming soon) A filter for which measurements can be sampled.
+ *   <li>A factory to construct an {@link ExemplarReservoir} per-metric stream. The factory has
+ *       access to the aggregation configuration of the stream.
  * </ul>
  */
 @AutoValue
@@ -21,20 +22,24 @@ import javax.annotation.concurrent.Immutable;
 public abstract class ExemplarSampler {
 
   /** Configuration for exemplar storage. */
-  public abstract ExemplarStorageStrategy getStorage();
+  public abstract ExemplarReservoirFactory getFactory();
 
   /**
    * We hide the ability to create custom exemplar samplers until further specification work is
    * stable.
    */
   public static Builder builder() {
-    return new AutoValue_ExemplarSampler.Builder().setStorage(ExemplarStorageStrategy.ALWAYS_OFF);
+    return new AutoValue_ExemplarSampler.Builder()
+        .setFactory(ignore -> ExemplarReservoir.noSamples());
   }
 
+  /** Builder for exemplar sampling. */
   @AutoValue.Builder
   public abstract static class Builder {
-    public abstract Builder setStorage(ExemplarStorageStrategy storageStrategy);
+    /** Sets the factory used to provide {@link ExemplarReservoir}s for metric streams. */
+    public abstract Builder setFactory(ExemplarReservoirFactory storageStrategy);
 
+    /** Returns the configured {@link ExemplarSampler}. */
     public abstract ExemplarSampler build();
   }
 }
