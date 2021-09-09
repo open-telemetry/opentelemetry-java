@@ -12,10 +12,14 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
+import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logging.data.LogRecord;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class LogAdapterTest {
@@ -29,19 +33,44 @@ public class LogAdapterTest {
 
   @Test
   void toProtoResourceLogs() {
-    //    LogRecord logRecord = LogAdapter.toProtoLogRecord(
-    //
-    //    )
+    List<ResourceLogs> resourceLogs =
+        LogAdapter.toProtoResourceLogs(
+            Collections.singleton(
+                io.opentelemetry.sdk.logging.data.LogRecord.builder()
+                    .setName(NAME)
+                    .setBody(BODY)
+                    .setSeverity(io.opentelemetry.sdk.logging.data.LogRecord.Severity.INFO)
+                    .setSeverityText("INFO")
+                    .setTraceId(TRACE_ID)
+                    .setSpanId(SPAN_ID)
+                    .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                    .setUnixTimeNano(12345)
+                    .setResource(
+                        Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
+                    .setInstrumentationLibraryInfo(
+                        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
+                    .build()));
+
+    assertThat(resourceLogs).hasSize(1);
+    ResourceLogs onlyResourceLogs = resourceLogs.get(0);
+    assertThat(onlyResourceLogs.getSchemaUrl()).isEqualTo("http://url");
+    assertThat(onlyResourceLogs.getInstrumentationLibraryLogsCount()).isEqualTo(1);
+    InstrumentationLibraryLogs instrumentationLibraryLogs =
+        onlyResourceLogs.getInstrumentationLibraryLogs(0);
+    assertThat(instrumentationLibraryLogs.getSchemaUrl()).isEqualTo("http://url");
+    assertThat(instrumentationLibraryLogs.getInstrumentationLibrary())
+        .isEqualTo(
+            InstrumentationLibrary.newBuilder().setName("testLib").setVersion("1.0").build());
   }
-  //
+
   @Test
   void toProtoLogRecord() {
     io.opentelemetry.proto.logs.v1.LogRecord logRecord =
         LogAdapter.toProtoLogRecord(
-            LogRecord.builder()
+            io.opentelemetry.sdk.logging.data.LogRecord.builder()
                 .setName(NAME)
                 .setBody(BODY)
-                .setSeverity(LogRecord.Severity.INFO)
+                .setSeverity(io.opentelemetry.sdk.logging.data.LogRecord.Severity.INFO)
                 .setSeverityText("INFO")
                 .setTraceId(TRACE_ID)
                 .setSpanId(SPAN_ID)
