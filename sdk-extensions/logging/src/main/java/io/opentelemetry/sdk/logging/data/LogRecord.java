@@ -33,7 +33,7 @@ public abstract class LogRecord {
       Severity severity,
       String severityText,
       String name,
-      AnyValue body,
+      String body,
       Attributes attributes) {
     return new AutoValue_LogRecord(
         resource,
@@ -69,7 +69,7 @@ public abstract class LogRecord {
   @Nullable
   public abstract String getName();
 
-  public abstract AnyValue getBody();
+  public abstract String getBody();
 
   public abstract Attributes getAttributes();
 

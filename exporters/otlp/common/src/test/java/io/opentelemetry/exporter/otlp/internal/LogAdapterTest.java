@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class LogAdapterTest {
+class LogAdapterTest {
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4};
   private static final String TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);

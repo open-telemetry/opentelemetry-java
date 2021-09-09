@@ -21,7 +21,7 @@ public final class LogRecordBuilder {
   private LogRecord.Severity severity = LogRecord.Severity.UNDEFINED_SEVERITY_NUMBER;
   private String severityText;
   private String name;
-  private AnyValue body = AnyValue.stringAnyValue("");
+  private String body = "";
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 
   LogRecordBuilder() {}
@@ -76,13 +76,9 @@ public final class LogRecordBuilder {
     return this;
   }
 
-  public LogRecordBuilder setBody(AnyValue body) {
+  public LogRecordBuilder setBody(String body) {
     this.body = body;
     return this;
-  }
-
-  public LogRecordBuilder setBody(String body) {
-    return setBody(AnyValue.stringAnyValue(body));
   }
 
   public LogRecordBuilder setAttributes(Attributes attributes) {

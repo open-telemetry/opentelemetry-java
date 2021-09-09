@@ -63,7 +63,6 @@ public class LogAdapter {
     Map<Resource, Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>>
         result = new HashMap<>();
     for (LogRecord logRecord : logRecordList) {
-
       Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>
           libraryInfoListMap =
               result.computeIfAbsent(logRecord.getResource(), unused -> new HashMap<>());
@@ -104,7 +103,7 @@ public class LogAdapter {
   }
 
   private static AnyValue getLogRecordBodyAnyValue(LogRecord logRecord) {
-    return AnyValue.newBuilder().setStringValue(logRecord.getBody().getStringValue()).build();
+    return AnyValue.newBuilder().setStringValue(logRecord.getBody()).build();
   }
 
   private LogAdapter() {}
