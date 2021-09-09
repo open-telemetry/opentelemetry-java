@@ -20,7 +20,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Converter from SDK {@link LogRecord} to OTLP {@link ResourceLogs}. */
+/**
+ * Converter from SDK {@link LogRecord} to OTLP {@link ResourceLogs}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public class LogAdapter {
 
   /** Returns a new List of {@link LogRecord}. */
