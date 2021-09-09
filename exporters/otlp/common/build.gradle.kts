@@ -23,6 +23,8 @@ dependencies {
   // contains internal code.
   compileOnly(project(":proto"))
 
+  compileOnly("com.fasterxml.jackson.core:jackson-core")
+
   // Similar to above note about :proto, we include helpers shared by gRPC or okhttp exporters but
   // do not want to impose these dependency on all of our consumers.
   compileOnly("com.squareup.okhttp3:okhttp")
@@ -36,6 +38,9 @@ dependencies {
   testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("com.fasterxml.jackson.core:jackson-core")
+  testImplementation("com.google.protobuf:protobuf-java-util")
+
   testImplementation("org.jeasy:easy-random-randomizers")
 
   testImplementation("com.google.api.grpc:proto-google-common-protos")
@@ -45,6 +50,10 @@ dependencies {
   jmhImplementation(project(":proto"))
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation(project(":sdk-extensions:resources"))
+  jmhImplementation("com.fasterxml.jackson.core:jackson-core")
+  jmhImplementation("org.curioswitch.curiostack:protobuf-jackson")
+  jmhImplementation("com.google.protobuf:protobuf-java-util")
+  jmhRuntimeOnly("io.grpc:grpc-netty")
 }
 
 wire {

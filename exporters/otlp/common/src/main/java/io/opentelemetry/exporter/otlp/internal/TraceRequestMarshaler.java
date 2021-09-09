@@ -354,7 +354,7 @@ public final class TraceRequestMarshaler extends MarshalerWithSize {
     @Override
     public void writeTo(Serializer output) throws IOException {
       output.serializeFixed64(Span.Event.TIME_UNIX_NANO, epochNanos);
-      output.serializeBytes(Span.Event.NAME, name);
+      output.serializeString(Span.Event.NAME, name);
       output.serializeRepeatedMessage(Span.Event.ATTRIBUTES, attributeMarshalers);
       output.serializeUInt32(Span.Event.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
     }

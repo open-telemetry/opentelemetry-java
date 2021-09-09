@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
  *   <li>Can be implemented to serialize into protobuf JSON format (not binary)
  * </ul>
  */
-public abstract class Serializer {
+public abstract class Serializer implements AutoCloseable {
 
   Serializer() {}
 
@@ -40,7 +40,7 @@ public abstract class Serializer {
     writeSpanId(field, spanId);
   }
 
-  protected abstract void writeSpanId(ProtoFieldInfo field, String traceId) throws IOException;
+  protected abstract void writeSpanId(ProtoFieldInfo field, String spanId) throws IOException;
 
   /** Serializes a protobuf {@code bool} field. */
   public void serializeBool(ProtoFieldInfo field, boolean value) throws IOException {
@@ -172,6 +172,9 @@ public abstract class Serializer {
       ProtoFieldInfo field, List<? extends Marshaler> repeatedMessage) throws IOException;
 
   /** Writes the value for a message field that has been pre-serialized. */
-  public abstract void writeSerializedMessage(byte[] protoSerialized, byte[] jsonSerialized)
+  public abstract void writeSerializedMessage(byte[] protoSerialized, String jsonSerialized)
       throws IOException;
+
+  @Override
+  public abstract void close() throws IOException;
 }
