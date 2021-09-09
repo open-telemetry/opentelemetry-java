@@ -8,12 +8,12 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
@@ -27,25 +27,16 @@ public class AsynchronousMetricStorageTest {
   private MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState =
       MeterSharedState.create(InstrumentationLibraryInfo.empty());
-  private LabelsProcessor spyLabelProcessor;
+  private AttributesProcessor spyAttributesProcessor;
   private View view;
 
   @BeforeEach
   void setup() {
-    spyLabelProcessor =
-        Mockito.spy(
-            // note: can't convert to a lambda here because Mockito gets grumpy
-            new LabelsProcessor() {
-              @Override
-              public Attributes onLabelsBound(Context ctx, Attributes labels) {
-                return labels.toBuilder().build();
-              }
-            });
+    spyAttributesProcessor = Mockito.spy(AttributesProcessor.noop());
     view =
         View.builder()
-            .setAggregatorFactory(AggregatorFactory.lastValue())
-            .setLabelsProcessorFactory(
-                (resource, instrumentationLibraryInfo, descriptor) -> spyLabelProcessor)
+            .setAggregation(Aggregation.lastValue())
+            .setAttributesProcessor(spyAttributesProcessor)
             .build();
     ViewRegistry viewRegistry =
         ViewRegistry.builder()
@@ -61,7 +52,7 @@ public class AsynchronousMetricStorageTest {
   }
 
   @Test
-  void doubleAsynchronousAccumulator_LabelsProcessor_used() {
+  void doubleAsynchronousAccumulator_AttributesProcessor_used() {
     AsynchronousMetricStorage.doubleAsynchronousAccumulator(
             view,
             InstrumentDescriptor.create(
@@ -75,11 +66,11 @@ public class AsynchronousMetricStorageTest {
             meterProviderSharedState.getStartEpochNanos(),
             value -> value.observe(1.0, Attributes.empty()))
         .collectAndReset(0, testClock.now());
-    Mockito.verify(spyLabelProcessor).onLabelsBound(Context.current(), Attributes.empty());
+    Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 
   @Test
-  void longAsynchronousAccumulator_LabelsProcessor_used() {
+  void longAsynchronousAccumulator_AttributesProcessor_used() {
     AsynchronousMetricStorage.longAsynchronousAccumulator(
             view,
             InstrumentDescriptor.create(
@@ -93,6 +84,6 @@ public class AsynchronousMetricStorageTest {
             meterProviderSharedState.getStartEpochNanos(),
             value -> value.observe(1, Attributes.empty()))
         .collectAndReset(0, testClock.nanoTime());
-    Mockito.verify(spyLabelProcessor).onLabelsBound(Context.current(), Attributes.empty());
+    Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 }

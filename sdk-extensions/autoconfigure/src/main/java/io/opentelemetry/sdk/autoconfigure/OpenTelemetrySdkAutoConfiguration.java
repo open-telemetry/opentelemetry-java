@@ -8,7 +8,8 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.spi.SdkMeterProviderConfigurer;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.resources.Resource;
@@ -75,19 +76,27 @@ public final class OpenTelemetrySdkAutoConfiguration {
   }
 
   private static void configureMeterProvider(Resource resource, ConfigProperties config) {
+    String exporterName = config.getString("otel.metrics.exporter");
+    if (exporterName == null) {
+      exporterName = "none";
+    }
+
+    if (exporterName.equals("none")) {
+      // No possiblity of having any metrics exported so no need to have the SDK installed at all.
+      // NB: If a user wants to add an exporter programatically using SdkMeterProviderConfigurer,
+      // they will need to use ConfigurableMetricExporter instead.
+      return;
+    }
+
     SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
 
     for (SdkMeterProviderConfigurer configurer :
         ServiceLoader.load(SdkMeterProviderConfigurer.class)) {
-      configurer.configure(meterProviderBuilder);
+      configurer.configure(meterProviderBuilder, config);
     }
 
     SdkMeterProvider meterProvider = meterProviderBuilder.buildAndRegisterGlobal();
 
-    String exporterName = config.getString("otel.metrics.exporter");
-    if (exporterName == null) {
-      exporterName = "otlp";
-    }
     MetricExporterConfiguration.configureExporter(exporterName, config, meterProvider);
   }
 

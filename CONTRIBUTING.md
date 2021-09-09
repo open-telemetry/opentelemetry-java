@@ -36,12 +36,12 @@ you must run a local docker daemon.
 check formatting:
 
     `./gradlew build`
-    
+
 4. If you are a Windows user, use the alternate command mentioned below to run tests and
 check formatting:
 
      `gradlew.bat`
-     
+
 ## Checks
 
 Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
@@ -60,7 +60,7 @@ particular PR, but merging to the base branch is authorized to restricted member
 
 ## Style guideline
 
-We follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html). 
+We follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html).
 Our build will fail if source code is not formatted according to that style. To fix any
 style failures the above [checks](#checks) show, automatically apply the formatting with:
 
@@ -68,7 +68,7 @@ style failures the above [checks](#checks) show, automatically apply the formatt
 $ ./gradlew spotlessApply
 ```
 
-To verify code style manually run the following command, 
+To verify code style manually run the following command,
 which uses [google-java-format](https://github.com/google/google-java-format) library:
 
 `./gradlew spotlessCheck`
@@ -99,12 +99,12 @@ of all `toString()` methods should be considered to be unstable unless explicitl
 If you notice any practice being applied in the project consistently that isn't listed here, please consider a pull request to add it.
 
 ### Pre-commit hook
-To completely delegate code style formatting to the machine, 
+To completely delegate code style formatting to the machine,
 you can add [git pre-commit hook](https://git-scm.com/docs/githooks).
 We provide an example script in `buildscripts/pre-commit` file.
 Just copy or symlink it into `.git/hooks` folder.
 
-### Editorconfig 
+### Editorconfig
 As additional convenience for IntelliJ Idea users, we provide `.editorconfig` file.
 Idea will automatically use it to adjust its code formatting settings.
 It does not support all required rules, so you still have to run `spotlessApply` from time to time.
@@ -135,8 +135,8 @@ It does not support all required rules, so you still have to run `spotlessApply`
   possible, for any new value classes. Remember to add package-private
   constructors to all AutoValue classes to prevent classes in other packages
   from extending them.
-  
-  
+
+
 ### Unit Tests
 
 * Unit tests target Java 8, so language features such as lambda and streams can be used in tests.

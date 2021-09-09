@@ -4,12 +4,16 @@ plugins {
 
   id("otel.jmh-conventions")
   id("otel.animalsniffer-conventions")
+
+  id("com.squareup.wire")
 }
 
 description = "OpenTelemetry Protocol Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.internal")
 
 dependencies {
+  protoSource(project(":proto"))
+
   api(project(":api:all"))
   api(project(":sdk:all"))
   api(project(":sdk:metrics"))
@@ -20,22 +24,37 @@ dependencies {
   // contains internal code.
   compileOnly(project(":proto"))
 
-  implementation("com.google.protobuf:protobuf-java")
-
-  // Similar to above note about :proto, we include a helper shared by the gRPC exporters but do not
-  // want to impose the gRPC dependency on all of our consumers.
+  // Similar to above note about :proto, we include helpers shared by gRPC or okhttp exporters but
+  // do not want to impose these dependency on all of our consumers.
+  compileOnly("com.squareup.okhttp3:okhttp")
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
   compileOnly("io.grpc:grpc-okhttp")
   compileOnly("io.grpc:grpc-stub")
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
+
+  testImplementation("org.jeasy:easy-random-randomizers")
 
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("io.grpc:grpc-testing")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 
+  jmhImplementation(project(":proto"))
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation(project(":sdk-extensions:resources"))
+}
+
+wire {
+  root(
+    "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest",
+    "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest",
+  )
+
+  custom {
+    customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
+  }
 }

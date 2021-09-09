@@ -25,11 +25,11 @@ ZipkinSpanExporter exporter =
             .build();
 ```
 
-Service name and Endpoint can be also configured via environment variables or system properties. 
+Service name and Endpoint can be also configured via environment variables or system properties.
 
 ```java
 // Using environment variables
-ZipkinSpanExporter exporter = 
+ZipkinSpanExporter exporter =
         ZipkinSpanExporter.builder()
             .readEnvironmentVariables()
             .build()
@@ -37,7 +37,7 @@ ZipkinSpanExporter exporter =
 
 ```java
 // Using system properties
-ZipkinSpanExporter exporter = 
+ZipkinSpanExporter exporter =
         ZipkinSpanExporter.builder()
             .readSystemProperties()
             .build()

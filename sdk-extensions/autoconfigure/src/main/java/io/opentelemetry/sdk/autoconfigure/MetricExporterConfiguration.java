@@ -8,10 +8,14 @@ package io.opentelemetry.sdk.autoconfigure;
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_METRICS;
 
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableMetricExporterProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReaderBuilder;
@@ -21,9 +25,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
@@ -59,13 +60,12 @@ final class MetricExporterConfiguration {
   @Nullable
   static MetricExporter configureSpiExporter(String name, ConfigProperties config) {
     Map<String, MetricExporter> spiExporters =
-        StreamSupport.stream(
-                ServiceLoader.load(ConfigurableMetricExporterProvider.class).spliterator(), false)
-            .collect(
-                Collectors.toMap(
-                    ConfigurableMetricExporterProvider::getName,
-                    configurableSpanExporterProvider ->
-                        configurableSpanExporterProvider.createExporter(config)));
+        SpiUtil.loadConfigurable(
+            ConfigurableMetricExporterProvider.class,
+            Collections.singletonList(name),
+            ConfigurableMetricExporterProvider::getName,
+            ConfigurableMetricExporterProvider::createExporter,
+            config);
     return spiExporters.get(name);
   }
 
@@ -77,29 +77,58 @@ final class MetricExporterConfiguration {
 
   // Visible for testing
   @Nullable
-  static OtlpGrpcMetricExporter configureOtlpMetrics(
+  static MetricExporter configureOtlpMetrics(
       ConfigProperties config, SdkMeterProvider meterProvider) {
-    try {
-      ClasspathUtil.checkClassExists(
-          "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
-          "OTLP Metrics Exporter",
-          "opentelemetry-exporter-otlp-metrics");
-    } catch (ConfigurationException e) {
-      // Squash this for now, until metrics are stable and included in the `exporter-otlp` artifact
-      // by default,
-      return null;
+    String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_METRICS, config);
+
+    MetricExporter exporter;
+    if (protocol.equals("http/protobuf")) {
+      try {
+        ClasspathUtil.checkClassExists(
+            "io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter",
+            "OTLP HTTP Metrics Exporter",
+            "opentelemetry-exporter-otlp-http-metrics");
+      } catch (ConfigurationException e) {
+        // Squash this for now, until metrics are stable
+        return null;
+      }
+      OtlpHttpMetricExporterBuilder builder = OtlpHttpMetricExporter.builder();
+
+      OtlpConfigUtil.configureOtlpExporterBuilder(
+          DATA_TYPE_METRICS,
+          config,
+          builder::setEndpoint,
+          builder::addHeader,
+          builder::setTimeout,
+          builder::setTrustedCertificates);
+
+      exporter = builder.build();
+    } else if (protocol.equals("grpc")) {
+      try {
+        ClasspathUtil.checkClassExists(
+            "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
+            "OTLP gRPC Metrics Exporter",
+            "opentelemetry-exporter-otlp-metrics");
+      } catch (ConfigurationException e) {
+        // Squash this for now, until metrics are stable and included in the `exporter-otlp`
+        // artifact
+        // by default,
+        return null;
+      }
+      OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
+
+      OtlpConfigUtil.configureOtlpExporterBuilder(
+          DATA_TYPE_METRICS,
+          config,
+          builder::setEndpoint,
+          builder::addHeader,
+          builder::setTimeout,
+          builder::setTrustedCertificates);
+
+      exporter = builder.build();
+    } else {
+      throw new ConfigurationException("Unsupported OTLP metrics protocol: " + protocol);
     }
-    OtlpGrpcMetricExporterBuilder builder = OtlpGrpcMetricExporter.builder();
-
-    OtlpConfigUtil.configureOtlpExporterBuilder(
-        DATA_TYPE_METRICS,
-        config,
-        builder::setEndpoint,
-        builder::addHeader,
-        builder::setTimeout,
-        builder::setTrustedCertificates);
-
-    OtlpGrpcMetricExporter exporter = builder.build();
 
     configureIntervalMetricReader(config, meterProvider, exporter);
 

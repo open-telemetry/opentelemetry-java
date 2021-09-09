@@ -1,5 +1,5 @@
-> This is a design document and is not necessarily updated with evolving APIs. For up-to-date 
-> examples of SDK configuration see the 
+> This is a design document and is not necessarily updated with evolving APIs. For up-to-date
+> examples of SDK configuration see the
 > [documentation](https://opentelemetry.io/docs/java/manual_instrumentation/).
 
 # Design for configuring the SDK
@@ -11,7 +11,7 @@ continuation of discussion started with https://github.com/open-telemetry/opente
 
 There are a few different target audiences that are related to our configuration story.
 
-- Application developers, aka end-users. Often have no knowledge of tracing but want to add 
+- Application developers, aka end-users. Often have no knowledge of tracing but want to add
 OpenTelemetry to their app and see traces show up in a console. Application developers will increase
 in number forever, while the below are more constant.
 
@@ -53,8 +53,8 @@ custom SDKs can fall on their authors, we optimize for our standard usage, the f
 reference to "the SDK" in this document refers to the full SDK with all signals.
 
 - Make sure everything is auto-configurable. This is out of the scope of the SDK, and instead is
-left to auto-configuration layers, which are also described below but not as part of the core SDK. 
-The SDK provides an autoconfiguration extension as an option which is not internal to the main SDK 
+left to auto-configuration layers, which are also described below but not as part of the core SDK.
+The SDK provides an autoconfiguration extension as an option which is not internal to the main SDK
 components.
 
 ## Configuring an instance of the SDK
@@ -214,7 +214,7 @@ setting a property once - `Resource` and `Clock` are shared among signals but co
 An alternative is to flatten all settings onto `OpenTelemetrySdkBuilder` - this has a downside that
 it makes it very natural to create new tracer / meter providers for each configuration of the SDK,
 which could result in a lot of duplication of resources like threads, workers, TCP connections. So
-instead, this can make it clearer that those signals themselves are full-featured, and 
+instead, this can make it clearer that those signals themselves are full-featured, and
 `OpenTelemetry` is just a bag of signals.
 
 Keep in mind, reconfiguring `Clock` is expected to be an extremely uncommon operation.
@@ -245,7 +245,7 @@ public class OpenTelemetryModule {
     public Resource resource() {
         return Resource.getDefault().merge(CoolResource.getDefault());
     }
-    
+
     @Bean
     public Clock otelClock() {
         return AtomicClock.create();
@@ -281,7 +281,7 @@ public class OpenTelemetryModule {
             .setIdGenerator(TimestampedIdGenerator.create())
             .build();
     }
-  
+
     @Bean
     public MeterSdkProvider meterProvider(Resource resource, Clock clock) {
         return SdkMeterProvider.builder()
@@ -326,13 +326,13 @@ public class OpenTelemetryModule {
             .setTracerProvider(tracerProvider)
             .build();
     }
-  
+
     @Bean
     public AuthServiceStub authService(@ForJaeger OpenTelemetry openTelemetry, AuthConfig config) {
         return AuthServiceGrpc.newBlockingStub(ManagedChannelBuilder.forEndpoint(config.getEndpoint()))
           .withInterceptor(TracingClientInterceptor.create(openTelemetry));
     }
-    
+
     @Bean
     public ServletFilter servletFilter(OpenTelemetry openTelemetry) {
         return TracingServletFilter.create(openTelemetry);
@@ -344,12 +344,12 @@ public class OpenTelemetryModule {
 public class MyAuthInterceptor {
 
   private final AuthServiceStub authService;
-  
+
   @Inject
   public MyAuthInterceptor(AuthServiceStub authService) {
     this.authService = authService;
   }
-  
+
   public void doAuth() {
     if (!authService.getToken("credential").isAuthenticated()) {
       throw new HackerException();
@@ -363,13 +363,13 @@ public class MyService {
 
   private final Tracer tracer;
   private final Meter meter;
-  
+
   @Inject
   public MyService(TracerProvider tracerProvider, MeterProvider meterProvider) {
     tracer = tracerProvider.get("my-service");
     meter = meterProvider.get("my-service");
   }
-  
+
   public void doLogic() {
     Span span = tracer.spanBuilder("logic").startSpan();
     try (Scope ignored = span.makeCurrent()) {
@@ -384,7 +384,7 @@ public class MyService {
 ## The global instance of the SDK
 
 A built instance is convenient to use in most Java apps because of dependency injection. Because it
-has a easy-to-reason initialization ordering, being tied into the dependency ordering (even if dependency 
+has a easy-to-reason initialization ordering, being tied into the dependency ordering (even if dependency
 injection happened to be done manually through constructor invocation), we encourage application
 developers to only use it.
 
@@ -394,7 +394,7 @@ built instance of a signal provider. For this case, we must store an SDK instanc
 variable. It is expected that frameworks or end-users will set the SDK as the global to support
 instrumentation that requires this.
 
-Before an SDK has been set, access to the global `OpenTelemetry` will return a no-op 
+Before an SDK has been set, access to the global `OpenTelemetry` will return a no-op
 `DefaultOpenTelemetry`. This is because it is possible library instrumentation is using the global,
 and it may even use it during the processing of a request (rather than only at initialization time).
 For this reason, we cannot throw an exception. Instead, if the SDK is detected on the classpath, we
@@ -428,14 +428,14 @@ interface OpenTelemetryComponent {
 interface SpanExporter extends OpenTelemetryComponent {
 }
 public class BatchExporter implements SpanExporter {
-  
+
   private volatile Tracer tracer;
-  
+
   @Override
   public void setOpenTelemetry(OpenTelemetry openTelemetry) {
         tracer = openTelemetry.getTracerProvider().get("spanexporter");
   }
-  
+
   @Override
   public void export() {
         Tracer tracer = this.tracer;
@@ -449,12 +449,12 @@ public class OpenTelemetrySdkBuilder {
         tracerProvider.addSpanExporter(exporter);
         components.add(exporter);
     }
-    
+
     public OpenTelemetrySdkBuilder setSampler(Sampler sampler) {
         tracerProvider.setSampler(sampler);
         components.add(sampler);
     }
-    
+
     public OpenTelemetry build() {
         OpenTelemetrySdk sdk = new OpenTelemetrySdk(tracerProvider.build(), meterProvider.build());
         for (OpenTelemetryComponent component : components) {
@@ -470,7 +470,7 @@ natively support lazy injection.
 ```java
 @Component
 public class MonitoringModule {
-  
+
     @Bean
     @ForSpanExporter
     public Tracer tracer(TracerProvider tracerProvider) {
@@ -482,12 +482,12 @@ public class MonitoringModule {
 public class MyExporter implements SpanExporter {
 
     private Lazy<Tracer> tracer;
-    
+
     @Inject
     public MyExporter(@ForSpanExporter Lazy<Tracer> tracer) {
     this.tracer = tracer;
     }
-    
+
     @Override
     public void export() {
     tracer.get().spanBuilder("export").startSpan();
@@ -503,9 +503,9 @@ hindrance), can reduce performance (require volatile read on most operations), a
 safety issues if not well implemented. In particular, compared to the current state as of writing,
 
 - `TracerSdkManagement.addSpanProcessor` is not needed. We needed a mutable SDK to allow span
-processors to use global APIs for telemetry, but because we instead push the complexity of handling 
-[telemetry within SDK components](#Telemetry within SDK components) to those components, where the 
-maintainers will have more domain knowledge. It allows this mutator method to be removed from the 
+processors to use global APIs for telemetry, but because we instead push the complexity of handling
+[telemetry within SDK components](#Telemetry within SDK components) to those components, where the
+maintainers will have more domain knowledge. It allows this mutator method to be removed from the
 end-user API.
 
 - `TracerSdkManagement.updateTraceConfig` - instead of allowing replacing of the config at the top level, we should consider making
@@ -522,7 +522,7 @@ Some highly buggy code that could be enabled by mutability.
 
 ```java
 class SleuthUsingService {
-  
+
   @Inject
   private OpenTelemetry openTelemetry;
 
@@ -546,7 +546,7 @@ tracing interceptor, when configuring observability.
 
 The above presents programmatic configuration for the SDK and proposes that the core SDK has no
 other mechanism for configuration. There is no SPI nor processing of environment variables or
-system properties. There are many mechanisms for configuration, for example Spring Boot. 
+system properties. There are many mechanisms for configuration, for example Spring Boot.
 Integration with these systems becomes easier to reason about if we consider auto-configuration at
 a layer above the core SDK.
 
@@ -582,7 +582,7 @@ presence of the wrapper and invoke it automatically.
 
 ### Spring Sleuth
 
-[Spring Sleuth](https://spring.io/projects/spring-cloud-sleuth) (or any similar observability-aware server framework such as 
+[Spring Sleuth](https://spring.io/projects/spring-cloud-sleuth) (or any similar observability-aware server framework such as
 [curio-server-framework](https://github.com/curioswitch/curiostack/blob/master/common/server/framework/src/main/java/org/curioswitch/common/server/framework/monitoring/MonitoringModule.java)
 or internal frameworks developed by devops teams at companies) is also a mechanism for automatically
 configuring the SDK. In general, we would expect Sleuth users to not be using the java agent.
@@ -612,7 +612,7 @@ public OpenTelemetry openTelemetry() {
     .setMeterProvider(MicrometerProvider.builder().build())
     .build();
 }
-``` 
+```
 
 As this should be a fairly minor use case, and commonly handled by framework developers, this seems
 reasonable. We can also hope that where it is important, it is the author of partial SDKs that

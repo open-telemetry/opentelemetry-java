@@ -10,25 +10,23 @@ description = "OpenTelemetry Protocol Metrics Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.metrics")
 
 testSets {
-    create("testGrpcNetty")
-    create("testGrpcNettyShaded")
-    create("testGrpcOkhttp")
+  create("testGrpcNetty")
+  create("testGrpcNettyShaded")
+  create("testGrpcOkhttp")
 }
 
 dependencies {
   api(project(":sdk:metrics"))
 
   implementation(project(":exporters:otlp:common"))
-  implementation(project(":proto"))
 
   api("io.grpc:grpc-stub")
-  implementation("io.grpc:grpc-api")
-  implementation("io.grpc:grpc-protobuf")
-  implementation("io.grpc:grpc-stub")
-  implementation("com.google.protobuf:protobuf-java")
 
+  testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("com.google.protobuf:protobuf-java")
+  testImplementation("io.grpc:grpc-protobuf")
   testImplementation("io.grpc:grpc-testing")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 

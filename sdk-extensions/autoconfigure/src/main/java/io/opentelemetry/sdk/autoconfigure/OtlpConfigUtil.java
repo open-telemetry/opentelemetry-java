@@ -5,6 +5,8 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,6 +21,14 @@ final class OtlpConfigUtil {
   static final String DATA_TYPE_TRACES = "traces";
   static final String DATA_TYPE_METRICS = "metrics";
 
+  static String getOtlpProtocol(String dataType, ConfigProperties config) {
+    String protocol = config.getString("otel.experimental.exporter.otlp." + dataType + ".protocol");
+    if (protocol == null) {
+      protocol = config.getString("otel.experimental.exporter.otlp.protocol");
+    }
+    return (protocol == null) ? "grpc" : protocol;
+  }
+
   static void configureOtlpExporterBuilder(
       String dataType,
       ConfigProperties config,
@@ -26,7 +36,7 @@ final class OtlpConfigUtil {
       BiConsumer<String, String> addHeader,
       Consumer<Duration> setTimeout,
       Consumer<byte[]> setTrustedCertificates) {
-    String endpoint = config.getString(String.format("otel.exporter.otlp.%s.endpoint", dataType));
+    String endpoint = config.getString("otel.exporter.otlp." + dataType + ".endpoint");
     if (endpoint == null) {
       endpoint = config.getString("otel.exporter.otlp.endpoint");
     }
@@ -35,13 +45,13 @@ final class OtlpConfigUtil {
     }
 
     Map<String, String> headers =
-        config.getCommaSeparatedMap(String.format("otel.exporter.otlp.%s.headers", dataType));
+        config.getCommaSeparatedMap("otel.exporter.otlp." + dataType + ".headers");
     if (headers.isEmpty()) {
       headers = config.getCommaSeparatedMap("otel.exporter.otlp.headers");
     }
     headers.forEach(addHeader);
 
-    Duration timeout = config.getDuration(String.format("otel.exporter.otlp.%s.timeout", dataType));
+    Duration timeout = config.getDuration("otel.exporter.otlp." + dataType + ".timeout");
     if (timeout == null) {
       timeout = config.getDuration("otel.exporter.otlp.timeout");
     }
@@ -49,8 +59,7 @@ final class OtlpConfigUtil {
       setTimeout.accept(timeout);
     }
 
-    String certificate =
-        config.getString(String.format("otel.exporter.otlp.%s.certificate", dataType));
+    String certificate = config.getString("otel.exporter.otlp." + dataType + ".certificate");
     if (certificate == null) {
       certificate = config.getString("otel.exporter.otlp.certificate");
     }

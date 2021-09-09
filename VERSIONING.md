@@ -7,17 +7,17 @@ that all artifacts have a version of the format `MAJOR.MINOR.PATCH` or `MAJOR.MI
 For any artifact with a stable release, that is its version does not end in `-alpha`, no backwards-incompatible
 changes will be made unless incrementing the `MAJOR` version number. In practice, this means that
 backwards-incompatible changes will be avoided as long as possible. Most releases are made by
-incrementing the `MINOR` version. Patch releases with urgent cherry-picked bugfixes will be made by 
+incrementing the `MINOR` version. Patch releases with urgent cherry-picked bugfixes will be made by
 incrementing the `PATCH` version.
 
 A backwards-incompatible change affects the public API of a module. The public API is any public
 class or method that is not in a package which includes the word `internal`. Examples of incompatible
 changes are:
 
-- API changes that could require code using the artifact to be changed, e.g., removing a method, 
+- API changes that could require code using the artifact to be changed, e.g., removing a method,
   reordering parameters, adding a method to an interface or abstract class without adding a default
   implementation.
-  
+
 - ABI changes that could require code using the artifact to be recompiled, but not changed, e.g.,
   changing the return type of a method from `void` to non-`void`, changing a `class` to an `interface`.
   The [JLS](https://docs.oracle.com/javase/specs/jls/se7/html/jls-13.html) has more information on
@@ -41,7 +41,7 @@ new artifact which requires adding the new artifact to dependency declarations.
 
 As a user, if you always depend on the latest version of the BOM for a given `MAJOR` version, and
 you do not use classes in the `internal` package (which you MUST NOT do), you can be assured that
-your app will always function and have access to the latest features of OpenTelemetry without needing 
+your app will always function and have access to the latest features of OpenTelemetry without needing
 any changes to code.
 
 ## API vs SDK
@@ -65,7 +65,7 @@ for at least three more years. This includes
 When incrementing the `MAJOR` version of the SDK, previously released `MAJOR` versions will be supported
 for at least one year.
 
-## Stable vs alpha 
+## Stable vs alpha
 
 Not all of our artifacts are published as stable artifacts - any non-stable artifact has the suffix
 `-alpha` on its version. NONE of the guarantees described above apply to alpha artifacts. They may

@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;

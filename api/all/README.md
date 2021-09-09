@@ -4,7 +4,7 @@
 
 * The code in this module is the implementation of stable OpenTelemetry signals.
 * Semantic Conventions for OpenTelemetry are in the `opentelemetry-semconv` module.
-* The default implementation of the interfaces in this module is in the OpenTelemetry SDK module. 
+* The default implementation of the interfaces in this module is in the OpenTelemetry SDK module.
 * The interfaces in this directory can be implemented to create alternative
   implementations of the OpenTelemetry library.
 

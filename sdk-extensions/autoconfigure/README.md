@@ -39,7 +39,7 @@ The following configuration properties are common to all exporters:
 
 | System property | Environment variable | Purpose                                                                                                                                                 |
 |-----------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| otel.traces.exporter   | OTEL_TRACES_EXPORTER        | The exporter to be used for tracing. Default is `otlp`. `none` means no autoconfigured exporter. |
+| otel.traces.exporter   | OTEL_TRACES_EXPORTER        | List of exporters to be used for tracing, separated by commas. Default is `otlp`. `none` means no autoconfigured exporter. |
 | otel.metrics.exporter   | OTEL_METRICS_EXPORTER        | The exporter to be used for metrics. Default is `otlp`. `none` means no autoconfigured exporter. |
 
 ### OTLP exporter (both span and metric exporters)
@@ -62,6 +62,9 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 | otel.exporter.otlp.timeout   | OTEL_EXPORTER_OTLP_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP trace and metric batch. Default is `10000`.  |
 | otel.exporter.otlp.traces.timeout   | OTEL_EXPORTER_OTLP_TRACES_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP trace batch. Default is `10000`.  |
 | otel.exporter.otlp.metrics.timeout   | OTEL_EXPORTER_OTLP_METRICS_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP metric batch. Default is `10000`.  |
+| otel.experimental.exporter.otlp.protocol | OTEL_EXPERIMENTAL_EXPORTER_OTLP_PROTOCOL | The transport protocol to use on OTLP trace and metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
+| otel.experimental.exporter.otlp.traces.protocol | OTEL_EXPERIMENTAL_EXPORTER_OTLP_TRACES_PROTOCOL | The transport protocol to use on OTLP trace requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
+| otel.experimental.exporter.otlp.metrics.protocol | OTEL_EXPERIMENTAL_EXPORTER_OTLP_METRICS_PROTOCOL | The transport protocol to use on OTLP metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
 
 To configure the service name for the OTLP exporter, add the `service.name` key
 to the OpenTelemetry Resource ([see below](#opentelemetry-resource)), e.g. `OTEL_RESOURCE_ATTRIBUTES=service.name=myservice`.
@@ -189,7 +192,7 @@ These properties can be used to control the maximum size of recordings per span.
 
 ## Customizing the OpenTelemetry SDK
 
-Autoconfiguration exposes SPI [hooks](./src/main/java/io/opentelemetry/sdk/autoconfigure/spi) for customizing behavior programmatically as needed.
+Autoconfiguration exposes SPI [hooks](../autoconfigure-spi/src/main/java/io/opentelemetry/sdk/autoconfigure/spi) for customizing behavior programmatically as needed.
 It's recommended to use the above configuration properties where possible, only implementing the SPI to add functionality not found in the
 SDK by default.
 

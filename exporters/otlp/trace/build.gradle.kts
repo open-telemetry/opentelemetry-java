@@ -5,7 +5,6 @@ plugins {
   id("otel.jmh-conventions")
   id("otel.animalsniffer-conventions")
 
-  id("com.squareup.wire")
   id("org.unbroken-dome.test-sets")
 }
 
@@ -16,11 +15,13 @@ testSets {
   create("testGrpcNetty")
   create("testGrpcNettyShaded")
   create("testGrpcOkhttp")
+
+  // Mainly to conveniently profile through IDEA. Don't add to check task, it's for
+  // manual invocation.
+  create("testSpanPipeline")
 }
 
 dependencies {
-  protoSource(project(":proto"))
-
   api(project(":sdk:trace"))
 
   implementation(project(":api:metrics"))
@@ -42,8 +43,6 @@ dependencies {
   testImplementation("io.grpc:grpc-testing")
   testImplementation("org.slf4j:slf4j-simple")
 
-  testImplementation("org.jeasy:easy-random-randomizers")
-
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
   add("testGrpcNettyRuntimeOnly", "io.grpc:grpc-netty")
@@ -59,21 +58,18 @@ dependencies {
   add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
-  jmh(project(":proto"))
-  jmh(project(":sdk:testing"))
-  jmh("io.grpc:grpc-netty")
+  jmhImplementation(project(":proto"))
+  jmhImplementation(project(":sdk:testing"))
+  jmhRuntimeOnly("io.grpc:grpc-netty")
+  jmhImplementation("io.grpc:grpc-testing")
+
+  add("testSpanPipeline", project(":proto"))
+  add("testSpanPipeline", "io.grpc:grpc-protobuf")
+  add("testSpanPipeline", "io.grpc:grpc-testing")
 }
 
 tasks {
   named("check") {
     dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp")
-  }
-}
-
-wire {
-  root("opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest")
-
-  custom {
-    customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
   }
 }

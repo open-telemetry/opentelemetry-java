@@ -23,12 +23,12 @@ dependencies {
 val protoVersion = "0.9.0"
 // To generate checksum, download the file and run "shasum -a 256 ~/path/to/vfoo.zip"
 val protoChecksum = "5e4131064e9471eb09294374db0d55028fdb73898b08aa07a835d17d61e5f017"
-val protoArchive = file("$buildDir/archives/opentelemetry-proto-${protoVersion}.zip")
+val protoArchive = file("$buildDir/archives/opentelemetry-proto-$protoVersion.zip")
 
 tasks {
   val downloadProtoArchive by registering(Download::class) {
     onlyIf { !protoArchive.exists() }
-    src("https://github.com/open-telemetry/opentelemetry-proto/archive/v${protoVersion}.zip")
+    src("https://github.com/open-telemetry/opentelemetry-proto/archive/v$protoVersion.zip")
     dest(protoArchive)
   }
 
@@ -55,7 +55,7 @@ tasks {
 sourceSets {
   main {
     proto {
-      srcDir("$buildDir/protos/opentelemetry-proto-${protoVersion}")
+      srcDir("$buildDir/protos/opentelemetry-proto-$protoVersion")
     }
   }
 }

@@ -115,7 +115,7 @@ dependencies {
   constraints {
     for (set in DEPENDENCY_SETS) {
       for (module in set.modules) {
-        api("${set.group}:${module}:${set.version}")
+        api("${set.group}:$module:${set.version}")
         dependencyVersions[set.group] = set.version
       }
     }

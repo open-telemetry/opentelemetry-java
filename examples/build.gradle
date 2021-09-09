@@ -42,7 +42,7 @@ subprojects {
     spotless {
         java {
             targetExclude '**/generated/**'
-            googleJavaFormat("1.9")
+            googleJavaFormat()
         }
     }
 }

@@ -10,6 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -79,9 +81,9 @@ class TracerProviderConfigurationTest {
   }
 
   @Test
-  void configureSpanProcessor_empty() {
+  void configureBatchSpanProcessor_empty() {
     BatchSpanProcessor processor =
-        TracerProviderConfiguration.configureSpanProcessor(EMPTY, mockSpanExporter);
+        TracerProviderConfiguration.configureBatchSpanProcessor(EMPTY, mockSpanExporter);
 
     try {
       assertThat(processor)
@@ -107,7 +109,7 @@ class TracerProviderConfigurationTest {
   }
 
   @Test
-  void configureSpanProcessor_configured() {
+  void configureBatchSpanProcessor_configured() {
     Map<String, String> properties = new HashMap<>();
     properties.put("otel.bsp.schedule.delay", "100000");
     properties.put("otel.bsp.max.queue.size", "2");
@@ -115,7 +117,7 @@ class TracerProviderConfigurationTest {
     properties.put("otel.bsp.export.timeout", "4");
 
     BatchSpanProcessor processor =
-        TracerProviderConfiguration.configureSpanProcessor(
+        TracerProviderConfiguration.configureBatchSpanProcessor(
             DefaultConfigProperties.createForTest(properties), mockSpanExporter);
 
     try {

@@ -14,14 +14,14 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - ubuntu-18.04
+          - ubuntu-20.04
         test-java-version:
           - 8
           - 11
           - 16
           - 17
         include:
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             test-java-version: 11
             coverage: true
     steps:
@@ -62,7 +62,7 @@ jobs:
           properties: |
             testJavaVersion=${{ matrix.test-java-version }}
             org.gradle.java.installations.paths=${{ steps.setup-java-8.outputs.path }},${{ steps.setup-java-11.outputs.path }},${{ steps.setup-java-16.outputs.path }},${{ steps.setup-java-17.outputs.path }}
-      - uses: codecov/codecov-action@v2.0.2
+      - uses: codecov/codecov-action@v2.0.3
         if: ${{ matrix.coverage }}
       - uses: actions/upload-artifact@v2
         if: ${{ matrix.coverage }}

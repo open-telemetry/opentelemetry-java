@@ -18,7 +18,7 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.5.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.6.1";
 
   /**
    * The full invoked ARN as provided on the {@code Context} passed to the function ({@code
@@ -343,6 +343,30 @@ public final class SemanticAttributes {
 
   /** Local hostname or similar, see note below. */
   public static final AttributeKey<String> NET_HOST_NAME = stringKey("net.host.name");
+
+  /** The internet connection type currently being used by the host. */
+  public static final AttributeKey<String> NET_HOST_CONNECTION_TYPE =
+      stringKey("net.host.connection.type");
+
+  /**
+   * This describes more details regarding the connection.type. It may be the type of cell
+   * technology connection, but it could be used for describing details about a wifi connection.
+   */
+  public static final AttributeKey<String> NET_HOST_CONNECTION_SUBTYPE =
+      stringKey("net.host.connection.subtype");
+
+  /** The name of the mobile carrier. */
+  public static final AttributeKey<String> NET_HOST_CARRIER_NAME =
+      stringKey("net.host.carrier.name");
+
+  /** The mobile carrier country code. */
+  public static final AttributeKey<String> NET_HOST_CARRIER_MCC = stringKey("net.host.carrier.mcc");
+
+  /** The mobile carrier network code. */
+  public static final AttributeKey<String> NET_HOST_CARRIER_MNC = stringKey("net.host.carrier.mnc");
+
+  /** The ISO 3166-1 alpha-2 2-character country code associated with the mobile carrier network. */
+  public static final AttributeKey<String> NET_HOST_CARRIER_ICC = stringKey("net.host.carrier.icc");
 
   /**
    * The <a href="../../resource/semantic_conventions/README.md#service">{@code service.name}</a> of
@@ -917,6 +941,8 @@ public final class SemanticAttributes {
   }
 
   public static final class FaasInvokedProviderValues {
+    /** Alibaba Cloud. */
+    public static final String ALIBABA_CLOUD = "alibaba_cloud";
     /** Amazon Web Services. */
     public static final String AWS = "aws";
     /** Microsoft Azure. */
@@ -944,6 +970,68 @@ public final class SemanticAttributes {
     public static final String OTHER = "other";
 
     private NetTransportValues() {}
+  }
+
+  public static final class NetHostConnectionTypeValues {
+    /** wifi. */
+    public static final String WIFI = "wifi";
+    /** wired. */
+    public static final String WIRED = "wired";
+    /** cell. */
+    public static final String CELL = "cell";
+    /** unavailable. */
+    public static final String UNAVAILABLE = "unavailable";
+    /** unknown. */
+    public static final String UNKNOWN = "unknown";
+
+    private NetHostConnectionTypeValues() {}
+  }
+
+  public static final class NetHostConnectionSubtypeValues {
+    /** GPRS. */
+    public static final String GPRS = "gprs";
+    /** EDGE. */
+    public static final String EDGE = "edge";
+    /** UMTS. */
+    public static final String UMTS = "umts";
+    /** CDMA. */
+    public static final String CDMA = "cdma";
+    /** EVDO Rel. 0. */
+    public static final String EVDO_0 = "evdo_0";
+    /** EVDO Rev. A. */
+    public static final String EVDO_A = "evdo_a";
+    /** CDMA2000 1XRTT. */
+    public static final String CDMA2000_1XRTT = "cdma2000_1xrtt";
+    /** HSDPA. */
+    public static final String HSDPA = "hsdpa";
+    /** HSUPA. */
+    public static final String HSUPA = "hsupa";
+    /** HSPA. */
+    public static final String HSPA = "hspa";
+    /** IDEN. */
+    public static final String IDEN = "iden";
+    /** EVDO Rev. B. */
+    public static final String EVDO_B = "evdo_b";
+    /** LTE. */
+    public static final String LTE = "lte";
+    /** EHRPD. */
+    public static final String EHRPD = "ehrpd";
+    /** HSPAP. */
+    public static final String HSPAP = "hspap";
+    /** GSM. */
+    public static final String GSM = "gsm";
+    /** TD-SCDMA. */
+    public static final String TD_SCDMA = "td_scdma";
+    /** IWLAN. */
+    public static final String IWLAN = "iwlan";
+    /** 5G NR (New Radio). */
+    public static final String NR = "nr";
+    /** 5G NRNSA (New Radio Non-Standalone). */
+    public static final String NRNSA = "nrnsa";
+    /** LTE CA. */
+    public static final String LTE_CA = "lte_ca";
+
+    private NetHostConnectionSubtypeValues() {}
   }
 
   public static final class HttpFlavorValues {

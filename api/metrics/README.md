@@ -3,7 +3,7 @@
 [![Javadocs][javadoc-image]][javadoc-url]
 
 * The code in this module is the implementation of the [experimental OpenTelemetry metrics signal][metrics-spec].
-* The default implementation of the interfaces in this module is in the OpenTelemetry metrics SDK module. 
+* The default implementation of the interfaces in this module is in the OpenTelemetry metrics SDK module.
 * The interfaces in this directory can be implemented to create alternative
   implementations of the OpenTelemetry library.
 

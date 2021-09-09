@@ -56,7 +56,7 @@ details. For example, here are the details of the `ChildSpan` latency sample (ro
 
 #### View and update the tracing configuration on the `/traceconfigz` zPage
 
-The /traceconfigz zPage displays information about the currently active tracing configuration and 
+The /traceconfigz zPage displays information about the currently active tracing configuration and
 provides an interface for users to modify relevant parameters. Here is what the web page looks like:
 
 ![traceconfigz](img/traceconfigz.png)
