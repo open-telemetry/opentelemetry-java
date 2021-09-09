@@ -28,6 +28,14 @@ public class ExemplarFilterTest {
   }
 
   @Test
+  void always_AlwaysReturnsTrue() {
+    assertThat(
+            ExemplarFilter.alwaysSample()
+                .shouldSampleMeasurement(1, Attributes.empty(), Context.root()))
+        .isTrue();
+  }
+
+  @Test
   void withSampledTrace_ReturnsFalseOnNoContext() {
     assertThat(
             ExemplarFilter.sampleWithTraces()

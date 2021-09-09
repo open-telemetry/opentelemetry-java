@@ -31,22 +31,4 @@ public interface ExemplarFilter {
   static ExemplarFilter neverSample() {
     return NeverSampleFilter.INSTANCE;
   }
-  /** Returns the default exemplar filter, pulling from environment variables. */
-  static ExemplarFilter defaultFilter() {
-    String env = System.getenv("OTEL_METRICS_EXEMPLAR_FILTER");
-
-    if (env != null) {
-      switch (env) {
-        case "NONE":
-          return neverSample();
-        case "ALL":
-          return alwaysSample();
-        case "WITH_SAMPLED_TRACE":
-          return sampleWithTraces();
-        default:
-          // TODO: some kind of error.
-      }
-    }
-    return sampleWithTraces();
-  }
 }

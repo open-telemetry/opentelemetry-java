@@ -27,7 +27,7 @@ public abstract class ExemplarSampler {
 
   /** Configuration for exemplar storage. */
   abstract ExemplarReservoirFactory getFactory();
-  
+
   /** Configuration for exemplar measurement pre-filter. */
   abstract ExemplarFilter getFilter();
 
@@ -39,8 +39,8 @@ public abstract class ExemplarSampler {
   /** Returns a builder with default exemplar sampling configuration. */
   public static Builder builder() {
     return new AutoValue_ExemplarSampler.Builder()
-        .setFactory(ignore -> ExemplarReservoir.noSamples());
-        .setFilter(ExemplarFilter.defaultFilter());
+        .setFactory(ignore -> ExemplarReservoir.noSamples())
+        .setFilter(ExemplarFilter.sampleWithTraces());
   }
 
   /** Builder for exemplar sampling. */
