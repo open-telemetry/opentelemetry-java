@@ -119,6 +119,7 @@ final class SpanExporterConfiguration {
           config,
           builder::setEndpoint,
           builder::addHeader,
+          builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates);
 
@@ -135,6 +136,7 @@ final class SpanExporterConfiguration {
           config,
           builder::setEndpoint,
           builder::addHeader,
+          builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates);
 
