@@ -32,11 +32,8 @@ final class ResourceMarshaler extends MarshalerWithSize {
   private ResourceMarshaler(KeyValueMarshaler[] attributeMarshalers) {
     super(calculateSize(attributeMarshalers));
     ByteArrayOutputStream bos = new ByteArrayOutputStream(getBinarySerializedSize());
-    CodedOutputStream output = CodedOutputStream.newInstance(bos);
-    ProtoSerializer serializer = new ProtoSerializer(output);
-    try {
+    try (ProtoSerializer serializer = new ProtoSerializer(bos)) {
       serializer.serializeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
-      output.flush();
     } catch (IOException e) {
       // Presized so can't happen (we would have already thrown OutOfMemoryError)
       throw new UncheckedIOException(e);

@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import java.io.IOException;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Serializer to use when converting from an SDK data object into a protobuf output format. Unlike
@@ -20,6 +21,26 @@ import java.util.List;
 public abstract class Serializer {
 
   Serializer() {}
+
+  /** Serializes a trace ID field. */
+  public void serializeTraceId(ProtoFieldInfo field, @Nullable String traceId) throws IOException {
+    if (traceId == null) {
+      return;
+    }
+    writeTraceId(field, traceId);
+  }
+
+  protected abstract void writeTraceId(ProtoFieldInfo field, String traceId) throws IOException;
+
+  /** Serializes a span ID field. */
+  public void serializeSpanId(ProtoFieldInfo field, @Nullable String spanId) throws IOException {
+    if (spanId == null) {
+      return;
+    }
+    writeSpanId(field, spanId);
+  }
+
+  protected abstract void writeSpanId(ProtoFieldInfo field, String traceId) throws IOException;
 
   /** Serializes a protobuf {@code bool} field. */
   public void serializeBool(ProtoFieldInfo field, boolean value) throws IOException {
