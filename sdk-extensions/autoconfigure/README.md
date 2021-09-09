@@ -59,9 +59,9 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 | otel.exporter.otlp.headers   | OTEL_EXPORTER_OTLP_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP trace and metrics requests.        |
 | otel.exporter.otlp.traces.headers   | OTEL_EXPORTER_OTLP_TRACES_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.        |
 | otel.exporter.otlp.metrics.headers   | OTEL_EXPORTER_OTLP_METRICS_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP metrics requests.        |
-| otel.exporter.otlp.compression   | OTEL_EXPORTER_OTLP_COMPRESSION | The key of the compression type to use on OTLP trace and metric requests. Options include `gzip`. By default no value is specified. |
-| otel.exporter.otlp.traces.compression   | OTEL_EXPORTER_OTLP_TRACES_COMPRESSION | The key of the compression type to use on OTLP trace requests. Options include `gzip`. By default no value is specified. |
-| otel.exporter.otlp.metrics.compression   | OTEL_EXPORTER_OTLP_METRICS_COMPRESSION | The key of the compression type to use on OTLP metric requests. Options include `gzip`. By default no value is specified. |
+| otel.exporter.otlp.compression   | OTEL_EXPORTER_OTLP_COMPRESSION | The compression type to use on OTLP trace and metric requests. Options include `gzip`. By default no compression will be used. |
+| otel.exporter.otlp.traces.compression   | OTEL_EXPORTER_OTLP_TRACES_COMPRESSION | The compression type to use on OTLP trace requests. Options include `gzip`. By default no compression will be used. |
+| otel.exporter.otlp.metrics.compression   | OTEL_EXPORTER_OTLP_METRICS_COMPRESSION | The compression type to use on OTLP metric requests. Options include `gzip`. By default no compression will be used. |
 | otel.exporter.otlp.timeout   | OTEL_EXPORTER_OTLP_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP trace and metric batch. Default is `10000`.  |
 | otel.exporter.otlp.traces.timeout   | OTEL_EXPORTER_OTLP_TRACES_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP trace batch. Default is `10000`.  |
 | otel.exporter.otlp.metrics.timeout   | OTEL_EXPORTER_OTLP_METRICS_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP metric batch. Default is `10000`.  |
