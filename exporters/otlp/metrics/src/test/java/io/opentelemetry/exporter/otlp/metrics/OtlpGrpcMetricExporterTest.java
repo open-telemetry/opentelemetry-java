@@ -101,6 +101,13 @@ class OtlpGrpcMetricExporterTest {
     assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint("gopher://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
+
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setCompression(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("compressionMethod");
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setCompression("foo"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Unsupported compression method. Supported compression methods include: gzip.");
   }
 
   @Test

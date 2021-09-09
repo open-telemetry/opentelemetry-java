@@ -31,6 +31,7 @@ public final class OtlpGrpcSpanExporterBuilder {
   @Nullable private ManagedChannel channel;
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private URI endpoint = DEFAULT_ENDPOINT;
+  private boolean compressionEnabled = false;
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
 
@@ -87,6 +88,19 @@ public final class OtlpGrpcSpanExporterBuilder {
     }
 
     this.endpoint = uri;
+    return this;
+  }
+
+  /**
+   * Sets the method used to compress payloads. If unset, compression is disabled. Currently the
+   * only supported compression method is "gzip".
+   */
+  public OtlpGrpcSpanExporterBuilder setCompression(String compressionMethod) {
+    requireNonNull(compressionMethod, "compressionMethod");
+    checkArgument(
+        compressionMethod.equals("gzip"),
+        "Unsupported compression method. Supported compression methods include: gzip.");
+    this.compressionEnabled = true;
     return this;
   }
 
@@ -151,7 +165,7 @@ public final class OtlpGrpcSpanExporterBuilder {
 
       channel = managedChannelBuilder.build();
     }
-    return new OtlpGrpcSpanExporter(channel, timeoutNanos);
+    return new OtlpGrpcSpanExporter(channel, timeoutNanos, compressionEnabled);
   }
 
   OtlpGrpcSpanExporterBuilder() {}
