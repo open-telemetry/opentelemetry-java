@@ -8,7 +8,7 @@ package io.opentelemetry.exporter.otlp.trace;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
-import io.grpc.ConnectivityState;
+import io.grpc.Codec;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.opentelemetry.api.common.AttributeKey;
@@ -18,6 +18,7 @@ import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.exporter.otlp.internal.TraceRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -61,8 +62,9 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    * @param channel the channel to use when communicating with the OpenTelemetry Collector.
    * @param timeoutNanos max waiting time for the collector to process each span batch. When set to
    *     0 or to a negative value, the exporter will wait indefinitely.
+   * @param compressionEnabled whether or not to enable gzip compression.
    */
-  OtlpGrpcSpanExporter(ManagedChannel channel, long timeoutNanos) {
+  OtlpGrpcSpanExporter(ManagedChannel channel, long timeoutNanos, boolean compressionEnabled) {
     // TODO: telemetry schema version.
     Meter meter = GlobalMeterProvider.get().meterBuilder("io.opentelemetry.exporters.otlp").build();
     this.spansSeen =
@@ -72,8 +74,10 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_ATTRIBUTES);
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
-
-    this.traceService = MarshalerTraceServiceGrpc.newFutureStub(channel);
+    Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
+    this.traceService =
+        MarshalerTraceServiceGrpc.newFutureStub(channel)
+            .withCompression(codec.getMessageEncoding());
   }
 
   /**
@@ -178,16 +182,13 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode shutdown() {
-    final CompletableResultCode result = new CompletableResultCode();
-    managedChannel.notifyWhenStateChanged(ConnectivityState.SHUTDOWN, result::succeed);
-    if (managedChannel.isShutdown()) {
-      return result.succeed();
+    if (managedChannel.isTerminated()) {
+      return CompletableResultCode.ofSuccess();
     }
-    managedChannel.shutdown();
     this.spansSeen.unbind();
     this.spansExportedSuccess.unbind();
     this.spansExportedFailure.unbind();
-    return result;
+    return ManagedChannelUtil.shutdownChannel(managedChannel);
   }
 
   // Visible for testing

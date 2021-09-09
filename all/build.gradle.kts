@@ -66,18 +66,20 @@ tasks.named<JacocoReport>("jacocoTestReport") {
   enabled = true
 
   configurations.runtimeClasspath.get().forEach {
-    additionalClassDirs(zipTree(it).filter {
-      // Exclude mrjar (jacoco complains), shaded, and generated code
-      !it.absolutePath.contains("META-INF/versions/") &&
-        !it.absolutePath.contains("/internal/shaded/") &&
-        !it.absolutePath.contains("io/opentelemetry/proto/") &&
-        !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/proto/") &&
-        !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/") &&
-        !it.absolutePath.contains("io/opentelemetry/semconv/trace/attributes/") &&
-        !it.absolutePath.contains("AutoValue_") &&
-        // TODO(anuraaga): Remove exclusion after enabling coverage for jfr-events
-        !it.absolutePath.contains("io/opentelemetry/sdk/extension/jfr")
-    })
+    additionalClassDirs(
+      zipTree(it).filter {
+        // Exclude mrjar (jacoco complains), shaded, and generated code
+        !it.absolutePath.contains("META-INF/versions/") &&
+          !it.absolutePath.contains("/internal/shaded/") &&
+          !it.absolutePath.contains("io/opentelemetry/proto/") &&
+          !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/proto/") &&
+          !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/") &&
+          !it.absolutePath.contains("io/opentelemetry/semconv/trace/attributes/") &&
+          !it.absolutePath.contains("AutoValue_") &&
+          // TODO(anuraaga): Remove exclusion after enabling coverage for jfr-events
+          !it.absolutePath.contains("io/opentelemetry/sdk/extension/jfr")
+      }
+    )
   }
   additionalSourceDirs(sourcesPath.incoming.artifactView { lenient(true) }.files)
   executionData(coverageDataPath.incoming.artifactView { lenient(true) }.files.filter { it.exists() })

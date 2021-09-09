@@ -10,11 +10,11 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessor;
+import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.locks.ReentrantLock;
@@ -43,19 +43,19 @@ public final class AsynchronousMetricStorage implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     // TODO: Send metric descriptor to aggregator.
     Aggregator<T> aggregator =
-        view.getAggregatorFactory()
+        view.getAggregation()
+            .config(instrument)
             .create(resource, instrumentationLibraryInfo, instrument, metricDescriptor);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
-    final LabelsProcessor labelsProcessor =
-        view.getLabelsProcessorFactory().create(resource, instrumentationLibraryInfo, instrument);
+    final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
     // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
     final ObservableDoubleMeasurement result =
         new ObservableDoubleMeasurement() {
           @Override
           public void observe(double value, Attributes attributes) {
             instrumentProcessor.batch(
-                labelsProcessor.onLabelsBound(Context.current(), attributes),
+                attributesProcessor.process(attributes, Context.current()),
                 aggregator.accumulateDouble(value));
           }
 
@@ -79,12 +79,12 @@ public final class AsynchronousMetricStorage implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     // TODO: Send metric descriptor to aggregator.
     Aggregator<T> aggregator =
-        view.getAggregatorFactory()
+        view.getAggregation()
+            .config(instrument)
             .create(resource, instrumentationLibraryInfo, instrument, metricDescriptor);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
-    final LabelsProcessor labelsProcessor =
-        view.getLabelsProcessorFactory().create(resource, instrumentationLibraryInfo, instrument);
+    final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
     // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
     final ObservableLongMeasurement result =
         new ObservableLongMeasurement() {
@@ -92,7 +92,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
           @Override
           public void observe(long value, Attributes attributes) {
             instrumentProcessor.batch(
-                labelsProcessor.onLabelsBound(Context.current(), attributes),
+                attributesProcessor.process(attributes, Context.current()),
                 aggregator.accumulateLong(value));
           }
 

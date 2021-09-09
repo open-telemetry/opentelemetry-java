@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
-abstract class MarshalerWithSize implements Marshaler {
+abstract class MarshalerWithSize extends Marshaler {
   private final int size;
 
   protected MarshalerWithSize(int size) {
@@ -13,7 +13,7 @@ abstract class MarshalerWithSize implements Marshaler {
   }
 
   @Override
-  public final int getSerializedSize() {
+  public final int getBinarySerializedSize() {
     return size;
   }
 }

@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
@@ -1038,13 +1039,14 @@ class RecordEventsReadableSpanTest {
             instrumentationLibraryInfo,
             kind,
             parentSpanId != null
-                ? SpanContext.create(
-                    traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())
-                : SpanContext.getInvalid(),
+                ? Span.wrap(
+                    SpanContext.create(
+                        traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
+                : Span.getInvalid(),
             Context.root(),
             config,
             spanProcessor,
-            AnchoredClock.create(testClock),
+            testClock,
             resource,
             attributes,
             links,
@@ -1126,13 +1128,14 @@ class RecordEventsReadableSpanTest {
             instrumentationLibraryInfo,
             kind,
             parentSpanId != null
-                ? SpanContext.create(
-                    traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())
-                : SpanContext.getInvalid(),
+                ? Span.wrap(
+                    SpanContext.create(
+                        traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
+                : Span.getInvalid(),
             Context.root(),
             spanLimits,
             spanProcessor,
-            AnchoredClock.create(clock),
+            clock,
             resource,
             attributesWithCapacity,
             Collections.singletonList(link1),

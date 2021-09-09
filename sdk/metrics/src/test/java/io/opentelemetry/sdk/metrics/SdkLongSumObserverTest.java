@@ -10,10 +10,9 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.processor.LabelsProcessorFactory;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
@@ -107,8 +106,7 @@ class SdkLongSumObserverTest {
                     .setInstrumentType(InstrumentType.OBSERVABLE_SUM)
                     .build(),
                 View.builder()
-                    .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
-                    .setAggregatorFactory(AggregatorFactory.sum(AggregationTemporality.DELTA))
+                    .setAggregation(Aggregation.sum(AggregationTemporality.DELTA))
                     .build())
             .build();
     sdkMeterProvider

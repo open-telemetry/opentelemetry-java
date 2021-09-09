@@ -8,13 +8,11 @@ package io.opentelemetry.exporter.otlp.metrics;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.grpc.Codec;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
-import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
-import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
-import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc.MetricsServiceFutureStub;
+import io.opentelemetry.exporter.otlp.internal.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -35,7 +33,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
-  private final MetricsServiceFutureStub metricsService;
+  private final MarshalerMetricsServiceGrpc.MetricsServiceFutureStub metricsService;
   private final ManagedChannel managedChannel;
   private final long timeoutNanos;
 
@@ -45,11 +43,15 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @param channel the channel to use when communicating with the OpenTelemetry Collector.
    * @param timeoutNanos max waiting time for the collector to process each metric batch. When set
    *     to 0 or to a negative value, the exporter will wait indefinitely.
+   * @param compressionEnabled whether or not to enable gzip compression.
    */
-  OtlpGrpcMetricExporter(ManagedChannel channel, long timeoutNanos) {
+  OtlpGrpcMetricExporter(ManagedChannel channel, long timeoutNanos, boolean compressionEnabled) {
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
-    metricsService = MetricsServiceGrpc.newFutureStub(channel);
+    Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
+    this.metricsService =
+        MarshalerMetricsServiceGrpc.newFutureStub(channel)
+            .withCompression(codec.getMessageEncoding());
   }
 
   /**
@@ -60,13 +62,10 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
-    ExportMetricsServiceRequest exportMetricsServiceRequest =
-        ExportMetricsServiceRequest.newBuilder()
-            .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(metrics))
-            .build();
+    MetricsRequestMarshaler request = MetricsRequestMarshaler.create(metrics);
 
     final CompletableResultCode result = new CompletableResultCode();
-    MetricsServiceFutureStub exporter;
+    MarshalerMetricsServiceGrpc.MetricsServiceFutureStub exporter;
     if (timeoutNanos > 0) {
       exporter = metricsService.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
     } else {
@@ -74,7 +73,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     }
 
     Futures.addCallback(
-        exporter.export(exportMetricsServiceRequest),
+        exporter.export(request),
         new FutureCallback<ExportMetricsServiceResponse>() {
           @Override
           public void onSuccess(@Nullable ExportMetricsServiceResponse response) {
@@ -150,12 +149,9 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode shutdown() {
-    try {
-      managedChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      logger.log(Level.WARNING, "Failed to shutdown the gRPC channel", e);
-      return CompletableResultCode.ofFailure();
+    if (managedChannel.isTerminated()) {
+      return CompletableResultCode.ofSuccess();
     }
-    return CompletableResultCode.ofSuccess();
+    return ManagedChannelUtil.shutdownChannel(managedChannel);
   }
 }

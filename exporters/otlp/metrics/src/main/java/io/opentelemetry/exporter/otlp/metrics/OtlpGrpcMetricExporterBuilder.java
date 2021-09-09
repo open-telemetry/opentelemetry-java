@@ -13,7 +13,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.exporter.otlp.internal.SslUtil;
+import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -31,7 +31,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   @Nullable private ManagedChannel channel;
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private URI endpoint = DEFAULT_ENDPOINT;
-
+  private boolean compressionEnabled = false;
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
 
@@ -92,6 +92,19 @@ public final class OtlpGrpcMetricExporterBuilder {
   }
 
   /**
+   * Sets the method used to compress payloads. If unset, compression is disabled. Currently the
+   * only supported compression method is "gzip".
+   */
+  public OtlpGrpcMetricExporterBuilder setCompression(String compressionMethod) {
+    requireNonNull(compressionMethod, "compressionMethod");
+    checkArgument(
+        compressionMethod.equals("gzip"),
+        "Unsupported compression method. Supported compression methods include: gzip.");
+    this.compressionEnabled = true;
+    return this;
+  }
+
+  /**
    * Sets the certificate chain to use for verifying servers when TLS is enabled. The {@code byte[]}
    * should contain an X.509 certificate collection in PEM format. If not set, TLS connections will
    * use the system default trusted certificates.
@@ -140,7 +153,8 @@ public final class OtlpGrpcMetricExporterBuilder {
 
       if (trustedCertificatesPem != null) {
         try {
-          SslUtil.setTrustedCertificatesPem(managedChannelBuilder, trustedCertificatesPem);
+          ManagedChannelUtil.setTrustedCertificatesPem(
+              managedChannelBuilder, trustedCertificatesPem);
         } catch (SSLException e) {
           throw new IllegalStateException(
               "Could not set trusted certificates for gRPC TLS connection, are they valid "
@@ -151,7 +165,7 @@ public final class OtlpGrpcMetricExporterBuilder {
 
       channel = managedChannelBuilder.build();
     }
-    return new OtlpGrpcMetricExporter(channel, timeoutNanos);
+    return new OtlpGrpcMetricExporter(channel, timeoutNanos, compressionEnabled);
   }
 
   OtlpGrpcMetricExporterBuilder() {}

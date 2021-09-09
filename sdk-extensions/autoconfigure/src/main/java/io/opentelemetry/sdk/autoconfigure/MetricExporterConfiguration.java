@@ -13,7 +13,9 @@ import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableMetricExporterProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReaderBuilder;
@@ -23,9 +25,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
@@ -61,13 +60,12 @@ final class MetricExporterConfiguration {
   @Nullable
   static MetricExporter configureSpiExporter(String name, ConfigProperties config) {
     Map<String, MetricExporter> spiExporters =
-        StreamSupport.stream(
-                ServiceLoader.load(ConfigurableMetricExporterProvider.class).spliterator(), false)
-            .collect(
-                Collectors.toMap(
-                    ConfigurableMetricExporterProvider::getName,
-                    configurableSpanExporterProvider ->
-                        configurableSpanExporterProvider.createExporter(config)));
+        SpiUtil.loadConfigurable(
+            ConfigurableMetricExporterProvider.class,
+            Collections.singletonList(name),
+            ConfigurableMetricExporterProvider::getName,
+            ConfigurableMetricExporterProvider::createExporter,
+            config);
     return spiExporters.get(name);
   }
 

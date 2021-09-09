@@ -23,22 +23,17 @@ final class ResourceMarshaler extends MarshalerWithSize {
     if (cached == null) {
       // Since WeakConcurrentMap doesn't support computeIfAbsent, we may end up doing the conversion
       // a few times until the cache gets filled which is fine.
-      cached = new ResourceMarshaler(AttributeMarshaler.createRepeated(resource.getAttributes()));
+      cached = new ResourceMarshaler(KeyValueMarshaler.createRepeated(resource.getAttributes()));
       RESOURCE_MARSHALER_CACHE.put(resource, cached);
     }
     return cached;
   }
 
-  private ResourceMarshaler(AttributeMarshaler[] attributeMarshalers) {
+  private ResourceMarshaler(KeyValueMarshaler[] attributeMarshalers) {
     super(calculateSize(attributeMarshalers));
-    ByteArrayOutputStream bos = new ByteArrayOutputStream(getSerializedSize());
-    CodedOutputStream output =
-        CodedOutputStream.newInstance(
-            bos, CodedOutputStream.computePreferredBufferSize(getSerializedSize()));
-    try {
-      MarshalerUtil.marshalRepeatedMessage(
-          Resource.ATTRIBUTES_FIELD_NUMBER, attributeMarshalers, output);
-      output.flush();
+    ByteArrayOutputStream bos = new ByteArrayOutputStream(getBinarySerializedSize());
+    try (ProtoSerializer serializer = new ProtoSerializer(bos)) {
+      serializer.serializeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
     } catch (IOException e) {
       // Presized so can't happen (we would have already thrown OutOfMemoryError)
       throw new UncheckedIOException(e);
@@ -47,11 +42,12 @@ final class ResourceMarshaler extends MarshalerWithSize {
   }
 
   @Override
-  public void writeTo(CodedOutputStream output) throws IOException {
-    output.writeRawBytes(serializedResource);
+  public void writeTo(Serializer output) throws IOException {
+    // TODO(anuraaga): Preserialize JSON as well.
+    output.writeSerializedMessage(serializedResource, MarshalerUtil.EMPTY_BYTES);
   }
 
-  private static int calculateSize(AttributeMarshaler[] attributeMarshalers) {
-    return MarshalerUtil.sizeRepeatedMessage(Resource.ATTRIBUTES_FIELD_NUMBER, attributeMarshalers);
+  private static int calculateSize(KeyValueMarshaler[] attributeMarshalers) {
+    return MarshalerUtil.sizeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
   }
 }

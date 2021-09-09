@@ -7,8 +7,8 @@ It takes OpenTelemetry Tracer and exposes it as an implementation of an OpenTrac
 
 ## Usage
 
-There are 2 ways to expose an OpenTracing tracer: 
-1. From the global OpenTelemetry configuration: 
+There are 2 ways to expose an OpenTracing tracer:
+1. From the global OpenTelemetry configuration:
     ```java
     Tracer tracer = OpenTracingShim.createTracerShim();
     ```

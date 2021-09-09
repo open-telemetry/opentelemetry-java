@@ -5,8 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableSamplerProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -20,12 +22,11 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 final class TracerProviderConfiguration {
 
@@ -44,7 +45,7 @@ final class TracerProviderConfiguration {
     // processors to effect export.
     for (SdkTracerProviderConfigurer configurer :
         ServiceLoader.load(SdkTracerProviderConfigurer.class)) {
-      configurer.configure(tracerProviderBuilder);
+      configurer.configure(tracerProviderBuilder, config);
     }
 
     Map<String, SpanExporter> exportersByName =
@@ -129,12 +130,12 @@ final class TracerProviderConfiguration {
   // Visible for testing
   static Sampler configureSampler(String sampler, ConfigProperties config) {
     Map<String, Sampler> spiSamplers =
-        StreamSupport.stream(
-                ServiceLoader.load(ConfigurableSamplerProvider.class).spliterator(), false)
-            .collect(
-                Collectors.toMap(
-                    ConfigurableSamplerProvider::getName,
-                    provider -> provider.createSampler(config)));
+        SpiUtil.loadConfigurable(
+            ConfigurableSamplerProvider.class,
+            Collections.singletonList(sampler),
+            ConfigurableSamplerProvider::getName,
+            ConfigurableSamplerProvider::createSampler,
+            config);
 
     switch (sampler) {
       case "always_on":

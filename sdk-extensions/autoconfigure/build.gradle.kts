@@ -13,8 +13,9 @@ testSets {
   create("testFullConfig")
   create("testInitializeRegistersGlobal")
   create("testJaeger")
+  create("testOtlpGrpc")
+  create("testOtlpHttp")
   create("testPrometheus")
-  create("testOtlp")
   create("testResourceDisabledByProperty")
   create("testResourceDisabledByEnv")
   create("testZipkin")
@@ -23,6 +24,7 @@ testSets {
 dependencies {
   api(project(":sdk:all"))
   api(project(":sdk:metrics"))
+  api(project(":sdk-extensions:autoconfigure-spi"))
 
   implementation(project(":semconv"))
 
@@ -56,13 +58,14 @@ dependencies {
   add("testFullConfigImplementation", project(":exporters:zipkin"))
   add("testFullConfigImplementation", project(":sdk-extensions:resources"))
 
-  add("testOtlpImplementation", project(":exporters:otlp:all"))
-  add("testOtlpImplementation", project(":exporters:otlp:metrics"))
-  add("testOtlpImplementation", project(":exporters:otlp-http:trace"))
-  add("testOtlpImplementation", project(":exporters:otlp-http:metrics"))
-  add("testOtlpImplementation", "com.squareup.okhttp3:okhttp")
-  add("testOtlpImplementation", "com.squareup.okhttp3:okhttp-tls")
-  add("testOtlpImplementation", "org.bouncycastle:bcpkix-jdk15on")
+  add("testOtlpGrpcImplementation", project(":exporters:otlp:all"))
+  add("testOtlpGrpcImplementation", project(":exporters:otlp:metrics"))
+  add("testOtlpGrpcImplementation", "org.bouncycastle:bcpkix-jdk15on")
+  add("testOtlpHttpImplementation", project(":exporters:otlp-http:trace"))
+  add("testOtlpHttpImplementation", project(":exporters:otlp-http:metrics"))
+  add("testOtlpHttpImplementation", "com.squareup.okhttp3:okhttp")
+  add("testOtlpHttpImplementation", "com.squareup.okhttp3:okhttp-tls")
+  add("testOtlpHttpImplementation", "org.bouncycastle:bcpkix-jdk15on")
 
   add("testJaegerImplementation", project(":exporters:jaeger"))
 
@@ -89,6 +92,7 @@ tasks {
   val testConfigError by existing(Test::class)
 
   val testFullConfig by existing(Test::class) {
+    environment("OTEL_METRICS_EXPORTER", "otlp")
     environment("OTEL_RESOURCE_ATTRIBUTES", "service.name=test,cat=meow")
     environment("OTEL_PROPAGATORS", "tracecontext,baggage,b3,b3multi,jaeger,ottrace,xray,test")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
@@ -96,24 +100,28 @@ tasks {
     environment("OTEL_EXPORTER_OTLP_HEADERS", "cat=meow,dog=bark")
     environment("OTEL_EXPORTER_OTLP_TIMEOUT", "5000")
     environment("OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT", "2")
+    environment("OTEL_TEST_CONFIGURED", "true")
   }
 
   val testInitializeRegistersGlobal by existing(Test::class) {
     environment("OTEL_TRACES_EXPORTER", "none")
-    environment("OTEL_METRICS_EXPORTER", "none")
   }
 
   val testJaeger by existing(Test::class) {
     environment("OTEL_TRACES_EXPORTER", "jaeger")
-    environment("OTEL_METRICS_EXPORTER", "none")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
   }
 
-  val testOtlp by existing(Test::class)
+  val testOtlpGrpc by existing(Test::class) {
+    environment("OTEL_METRICS_EXPORTER", "otlp")
+  }
+
+  val testOtlpHttp by existing(Test::class) {
+    environment("OTEL_METRICS_EXPORTER", "otlp")
+  }
 
   val testZipkin by existing(Test::class) {
     environment("OTEL_TRACES_EXPORTER", "zipkin")
-    environment("OTEL_METRICS_EXPORTER", "none")
     environment("OTEL_BSP_SCHEDULE_DELAY", "10")
   }
 
@@ -137,13 +145,14 @@ tasks {
     environment("OTEL_METRICS_EXPORTER", "none")
   }
 
-  val check by existing {
+  check {
     dependsOn(
       testConfigError,
       testFullConfig,
       testInitializeRegistersGlobal,
       testJaeger,
-      testOtlp,
+      testOtlpGrpc,
+      testOtlpHttp,
       testPrometheus,
       testZipkin,
       testResourceDisabledByProperty,

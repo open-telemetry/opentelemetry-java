@@ -14,6 +14,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -123,11 +124,10 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param context supplies the trace_id and span_id for the newly started span.
    * @param name the displayed name for the new span.
    * @param kind the span kind.
-   * @param parentSpanContext the parent span context, or {@link SpanContext#getInvalid()} if this
-   *     span is a root span.
+   * @param parentSpan the parent span, or {@link Span#getInvalid()} if this span is a root span.
    * @param spanLimits trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
-   * @param clock the clock used to get the time.
+   * @param tracerClock the tracer's clock
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
    * @param links the links set during span creation, may be truncated. The list MUST be immutable.
@@ -138,23 +138,46 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       SpanKind kind,
-      SpanContext parentSpanContext,
+      Span parentSpan,
       Context parentContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
-      AnchoredClock clock,
+      Clock tracerClock,
       Resource resource,
       @Nullable AttributesMap attributes,
       List<LinkData> links,
       int totalRecordedLinks,
-      long startEpochNanos) {
+      long userStartEpochNanos) {
+    final boolean createdAnchoredClock;
+    final AnchoredClock clock;
+    if (parentSpan instanceof RecordEventsReadableSpan) {
+      RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parentSpan;
+      clock = parentRecordEventsSpan.clock;
+      createdAnchoredClock = false;
+    } else {
+      clock = AnchoredClock.create(tracerClock);
+      createdAnchoredClock = true;
+    }
+
+    final long startEpochNanos;
+    if (userStartEpochNanos != 0) {
+      startEpochNanos = userStartEpochNanos;
+    } else if (createdAnchoredClock) {
+      // If this is a new AnchoredClock, the start time is now, so just use it to avoid
+      // recomputing current time.
+      startEpochNanos = clock.startTime();
+    } else {
+      // AnchoredClock created in the past, so need to compute now.
+      startEpochNanos = clock.now();
+    }
+
     RecordEventsReadableSpan span =
         new RecordEventsReadableSpan(
             context,
             name,
             instrumentationLibraryInfo,
             kind,
-            parentSpanContext,
+            parentSpan.getSpanContext(),
             spanLimits,
             spanProcessor,
             clock,
@@ -162,7 +185,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             attributes,
             links,
             totalRecordedLinks,
-            startEpochNanos == 0 ? clock.now() : startEpochNanos);
+            startEpochNanos);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     spanProcessor.onStart(parentContext, span);

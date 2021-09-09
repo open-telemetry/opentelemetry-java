@@ -20,17 +20,17 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableSpanExporterProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.StreamSupport;
 
 final class SpanExporterConfiguration {
 
@@ -64,13 +64,12 @@ final class SpanExporterConfiguration {
     }
 
     Map<String, SpanExporter> spiExporters =
-        StreamSupport.stream(
-                ServiceLoader.load(ConfigurableSpanExporterProvider.class).spliterator(), false)
-            .collect(
-                toMap(
-                    ConfigurableSpanExporterProvider::getName,
-                    configurableSpanExporterProvider ->
-                        configurableSpanExporterProvider.createExporter(config)));
+        SpiUtil.loadConfigurable(
+            ConfigurableSpanExporterProvider.class,
+            exporterNamesList,
+            ConfigurableSpanExporterProvider::getName,
+            ConfigurableSpanExporterProvider::createExporter,
+            config);
 
     return exporterNames.stream()
         .collect(

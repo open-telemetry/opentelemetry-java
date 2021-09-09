@@ -1,5 +1,3 @@
-import org.gradle.api.plugins.JavaPlugin.*
-
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")

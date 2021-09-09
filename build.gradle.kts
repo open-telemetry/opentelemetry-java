@@ -2,17 +2,20 @@ import nebula.plugin.release.git.opinion.Strategies
 import java.time.Duration
 
 plugins {
-  id("com.diffplug.spotless")
   id("com.github.ben-manes.versions")
   id("io.github.gradle-nexus.publish-plugin")
   id("nebula.release")
+
+  id("otel.spotless-conventions")
 }
 
 if (!JavaVersion.current().isJava11Compatible()) {
-  throw GradleException("JDK 11 or higher is required to build. " +
-    "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
-    "have it, please check that the JAVA_HOME environment variable is pointing at the " +
-    "JDK 11 installation.")
+  throw GradleException(
+    "JDK 11 or higher is required to build. " +
+      "One option is to download it from https://adoptopenjdk.net/. If you believe you already " +
+      "have it, please check that the JAVA_HOME environment variable is pointing at the " +
+      "JDK 11 installation."
+  )
 }
 
 // Nebula plugin will not configure if .git doesn't exist, let's allow building on it by stubbing it
