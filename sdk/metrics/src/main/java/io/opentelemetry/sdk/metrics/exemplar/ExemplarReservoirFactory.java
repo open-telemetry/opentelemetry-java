@@ -16,4 +16,9 @@ public interface ExemplarReservoirFactory {
    * @param aggregation The aggregation configuration.
    */
   ExemplarReservoir createReservoir(Aggregation aggregation);
+
+  /** Returns the default factory that collects exemplars. */
+  static ExemplarReservoirFactory defaultFactory() {
+    return DefaultExemplarReservoirFactory.INSTANCE;
+  }
 }

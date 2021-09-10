@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
@@ -45,15 +46,16 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
       long startEpochNanos,
       ExemplarSampler sampler) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
+    final Aggregation resolved = view.getAggregation().resolve(instrumentDescriptor);
     final Aggregator<T> aggregator =
-        view.getAggregation()
-            .config(instrumentDescriptor)
+        resolved
+            .getFactory(instrumentDescriptor)
             .create(
                 resource,
                 instrumentationLibraryInfo,
                 instrumentDescriptor,
                 metricDescriptor,
-                () -> sampler.createReservoir(view.getAggregation()));
+                () -> sampler.createReservoir(resolved));
     return new SynchronousMetricStorage<>(
         metricDescriptor,
         aggregator,

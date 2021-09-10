@@ -39,7 +39,7 @@ public abstract class ExemplarSampler {
   /** Returns a builder with default exemplar sampling configuration. */
   public static Builder builder() {
     return new AutoValue_ExemplarSampler.Builder()
-        .setFactory(ignore -> ExemplarReservoir.noSamples())
+        .setFactory(ExemplarReservoirFactory.defaultFactory())
         .setFilter(ExemplarFilter.sampleWithTraces());
   }
 
