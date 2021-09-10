@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import io.opentelemetry.proto.common.v1.internal.AnyValue;
 import io.opentelemetry.proto.common.v1.internal.ArrayValue;
 import io.opentelemetry.proto.common.v1.internal.KeyValue;
@@ -41,7 +42,14 @@ final class KeyValueMarshaler extends MarshalerWithSize {
 
   @SuppressWarnings("unchecked")
   static KeyValueMarshaler create(AttributeKey<?> attributeKey, Object value) {
-    byte[] keyUtf8 = MarshalerUtil.toBytes(attributeKey.getKey());
+    final byte[] keyUtf8;
+    if (attributeKey.getKey().isEmpty()) {
+      keyUtf8 = MarshalerUtil.EMPTY_BYTES;
+    } else if (attributeKey instanceof InternalAttributeKeyImpl) {
+      keyUtf8 = ((InternalAttributeKeyImpl<?>) attributeKey).getKeyUtf8();
+    } else {
+      keyUtf8 = attributeKey.getKey().getBytes(StandardCharsets.UTF_8);
+    }
     switch (attributeKey.getType()) {
       case STRING:
         return new KeyValueMarshaler(
