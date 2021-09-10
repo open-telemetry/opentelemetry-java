@@ -57,8 +57,10 @@
 - BUGFIX: Exceptions thrown during the loading of an SPI implementation class are now handled more
   gracefully and will not bubble up unless you have explicitly requested the bad implementation as
   the one to use.
-- You can now specify `gzip` compress for the OTLP exporters via `otel.exporter.otlp.compression`
+- You can now specify `gzip` compress for the OTLP exporters via the `otel.exporter.otlp.compression`
   /`OTEL_EXPORTER_OTLP_COMPRESSION` configuration option.
+- You can now specify maximum Span attribute length via the `otel.span.attribute.value.length.limit`
+  /`OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT` configuration option.
 
 ### Metrics (alpha)
 
