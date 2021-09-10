@@ -68,7 +68,7 @@ public abstract class MeterSharedState {
     List<WriteableMetricStorage> storage = new ArrayList<>(views.size());
     for (View view : views) {
       // TODO - move this in a better location.
-      if (view.getAggregation().config(instrument) == null) {
+      if (view.getAggregation().getFactory(instrument) == null) {
         continue;
       }
       try {
@@ -105,7 +105,7 @@ public abstract class MeterSharedState {
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
       // TODO - move this in a better location.
-      if (view.getAggregation().config(instrument) == null) {
+      if (view.getAggregation().getFactory(instrument) == null) {
         continue;
       }
       try {
@@ -136,7 +136,7 @@ public abstract class MeterSharedState {
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
       // TODO - move this in a better location.
-      if (view.getAggregation().config(instrument) == null) {
+      if (view.getAggregation().getFactory(instrument) == null) {
         continue;
       }
       try {

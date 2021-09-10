@@ -44,7 +44,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
         view.getAggregation()
-            .config(instrument)
+            .getFactory(instrument)
             .create(
                 resource,
                 instrumentationLibraryInfo,
@@ -84,7 +84,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
         view.getAggregation()
-            .config(instrument)
+            .getFactory(instrument)
             .create(
                 resource,
                 instrumentationLibraryInfo,
