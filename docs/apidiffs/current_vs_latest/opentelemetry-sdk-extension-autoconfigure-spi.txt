@@ -3,16 +3,16 @@ Comparing source compatibility of  against
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Boolean getBoolean(java.lang.String)
 		+++  NEW ANNOTATION: javax.annotation.Nullable
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Map getCommaSeparatedMap(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getCommaSeparatedValues(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Double getDouble(java.lang.String)
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.time.Duration getDuration(java.lang.String)
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Integer getInt(java.lang.String)
 		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getList(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Long getLong(java.lang.String)
 		+++  NEW ANNOTATION: javax.annotation.Nullable
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Map getMap(java.lang.String)
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getString(java.lang.String)
 		+++  NEW ANNOTATION: javax.annotation.Nullable
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider  (not serializable)
