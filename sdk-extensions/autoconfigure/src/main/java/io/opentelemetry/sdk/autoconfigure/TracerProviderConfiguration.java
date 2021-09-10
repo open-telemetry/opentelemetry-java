@@ -22,12 +22,11 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 final class TracerProviderConfiguration {
 
@@ -131,12 +130,12 @@ final class TracerProviderConfiguration {
   // Visible for testing
   static Sampler configureSampler(String sampler, ConfigProperties config) {
     Map<String, Sampler> spiSamplers =
-        StreamSupport.stream(
-                ServiceLoader.load(ConfigurableSamplerProvider.class).spliterator(), false)
-            .collect(
-                Collectors.toMap(
-                    ConfigurableSamplerProvider::getName,
-                    provider -> provider.createSampler(config)));
+        SpiUtil.loadConfigurable(
+            ConfigurableSamplerProvider.class,
+            Collections.singletonList(sampler),
+            ConfigurableSamplerProvider::getName,
+            ConfigurableSamplerProvider::createSampler,
+            config);
 
     switch (sampler) {
       case "always_on":

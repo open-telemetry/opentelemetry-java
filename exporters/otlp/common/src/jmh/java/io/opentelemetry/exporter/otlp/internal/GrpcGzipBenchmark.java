@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
+import io.grpc.Codec;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleCounter;
@@ -19,6 +20,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -35,9 +37,11 @@ import org.openjdk.jmh.annotations.Warmup;
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 10, time = 1)
 @Fork(1)
-public class MetricsRequestMarshalerBenchmark {
+public class GrpcGzipBenchmark {
 
-  private static final Collection<MetricData> METRICS;
+  private static final ExportMetricsServiceRequest METRICS_REQUEST;
+  private static final Codec GZIP_CODEC = new Codec.Gzip();
+  private static final Codec IDENTITY_CODEC = Codec.Identity.NONE;
 
   static {
     SdkMeterProvider meterProvider =
@@ -110,25 +114,28 @@ public class MetricsRequestMarshalerBenchmark {
     histogram.record(4.0);
     histogram.record(5.0);
 
-    METRICS = meterProvider.collectAllMetrics();
-  }
-
-  @Benchmark
-  public ByteArrayOutputStream adapter() throws IOException {
-    ExportMetricsServiceRequest request =
+    Collection<MetricData> metricData = meterProvider.collectAllMetrics();
+    METRICS_REQUEST =
         ExportMetricsServiceRequest.newBuilder()
-            .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(METRICS))
+            .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(metricData))
             .build();
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    request.writeTo(bos);
-    return bos;
   }
 
   @Benchmark
-  public ByteArrayOutputStream marshaler() throws IOException {
-    MetricsRequestMarshaler marshaler = MetricsRequestMarshaler.create(METRICS);
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    marshaler.writeBinaryTo(bos);
-    return bos;
+  public ByteArrayOutputStream gzipCompressor() throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    OutputStream gzos = GZIP_CODEC.compress(baos);
+    METRICS_REQUEST.writeTo(gzos);
+    gzos.close();
+    return baos;
+  }
+
+  @Benchmark
+  public ByteArrayOutputStream identityCompressor() throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    OutputStream gzos = IDENTITY_CODEC.compress(baos);
+    METRICS_REQUEST.writeTo(gzos);
+    gzos.close();
+    return baos;
   }
 }

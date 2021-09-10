@@ -31,6 +31,8 @@ dependencies {
   compileOnly("io.grpc:grpc-okhttp")
   compileOnly("io.grpc:grpc-stub")
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 
@@ -43,6 +45,7 @@ dependencies {
   jmhImplementation(project(":proto"))
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation(project(":sdk-extensions:resources"))
+  jmhImplementation("io.grpc:grpc-api")
 }
 
 wire {

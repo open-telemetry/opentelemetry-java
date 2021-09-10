@@ -64,7 +64,7 @@ import java.util.logging.Logger;
 // - Allow resetting and use a ThreadLocal instance
 //
 @SuppressWarnings({"UngroupedOverloads", "InlineMeSuggester"})
-public abstract class CodedOutputStream {
+abstract class CodedOutputStream {
   private static final Logger logger = Logger.getLogger(CodedOutputStream.class.getName());
 
   /** The buffer size used in {@link #newInstance(OutputStream)}. */
@@ -90,7 +90,7 @@ public abstract class CodedOutputStream {
    * the provided byte arrays. Doing so may result in corrupted data, which would be difficult to
    * debug.
    */
-  public static CodedOutputStream newInstance(final OutputStream output) {
+  static CodedOutputStream newInstance(final OutputStream output) {
     OutputStreamEncoder cos = THREAD_LOCAL_CODED_OUTPUT_STREAM.get();
     if (cos == null) {
       cos = new OutputStreamEncoder(output);
@@ -617,7 +617,7 @@ public abstract class CodedOutputStream {
    * Flushes the stream and forces any buffered bytes to be written. This does not flush the
    * underlying OutputStream.
    */
-  public abstract void flush() throws IOException;
+  abstract void flush() throws IOException;
 
   /**
    * If writing to a flat array, return the space left in the array. Otherwise, throws {@code
@@ -1079,7 +1079,7 @@ public abstract class CodedOutputStream {
     }
 
     @Override
-    public void flush() throws IOException {
+    void flush() throws IOException {
       if (position > 0) {
         // Flush the buffer.
         doFlush();
