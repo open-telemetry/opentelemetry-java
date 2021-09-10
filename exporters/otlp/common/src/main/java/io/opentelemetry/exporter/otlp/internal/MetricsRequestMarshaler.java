@@ -700,7 +700,6 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize {
       int size = 0;
       size += MarshalerUtil.sizeFixed64(NumberDataPoint.START_TIME_UNIX_NANO, startTimeUnixNano);
       size += MarshalerUtil.sizeFixed64(NumberDataPoint.TIME_UNIX_NANO, timeUnixNano);
-      // Value doesn't matter when sizing
       if (valueField == NumberDataPoint.AS_INT) {
         size += MarshalerUtil.sizeFixed64(valueField, ((LongPointData) value).getValue());
       } else {
@@ -800,7 +799,6 @@ public final class MetricsRequestMarshaler extends MarshalerWithSize {
       size +=
           MarshalerUtil.sizeFixed64(
               io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO, timeUnixNano);
-      // Value doesn't matter for sizing
       if (valueField == io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT) {
         size += MarshalerUtil.sizeFixed64(valueField, ((LongExemplar) value).getValue());
       } else {
