@@ -99,6 +99,7 @@ final class MetricExporterConfiguration {
           config,
           builder::setEndpoint,
           builder::addHeader,
+          builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates);
 
@@ -122,6 +123,7 @@ final class MetricExporterConfiguration {
           config,
           builder::setEndpoint,
           builder::addHeader,
+          builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates);
 
