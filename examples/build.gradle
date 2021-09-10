@@ -3,7 +3,16 @@ plugins {
     id "com.github.johnrengelman.shadow" apply false
 }
 
-println("Building against OpenTelemetry version: ${project.properties["io.opentelemetry.version"]}")
+ext {
+  openTelemetryVersion = "1.5.0"
+  openTelemetryAlphaVersion = "1.5.0-alpha"
+
+  grpcVersion = '1.34.1'
+  protobufVersion = '3.11.4'
+  protocVersion = protobufVersion
+}
+
+println("Building against OpenTelemetry version: $openTelemetryVersion")
 
 subprojects {
     apply plugin: 'eclipse'
@@ -15,15 +24,6 @@ subprojects {
 
     group = "io.opentelemetry"
     version = "0.1.0-SNAPSHOT"
-
-    ext {
-        openTelemetryVersion = "1.5.0"
-        openTelemetryAlphaVersion = "1.5.0-alpha"
-
-        grpcVersion = '1.34.1'
-        protobufVersion = '3.11.4'
-        protocVersion = protobufVersion
-    }
 
     repositories {
         mavenCentral()
