@@ -2,7 +2,7 @@ pluginManagement {
     plugins {
         id "com.diffplug.spotless" version "5.6.1"
         id "com.github.johnrengelman.shadow" version "6.1.0"
-        id 'com.google.protobuf' version '0.8.8'
+        id 'com.google.protobuf' version '0.8.17'
     }
 }
 
