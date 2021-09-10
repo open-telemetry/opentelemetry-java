@@ -154,6 +154,7 @@ class TracerProviderConfigurationTest {
 
     Map<String, String> properties = new HashMap<>();
     properties.put("otel.traces.sampler", "always_off");
+    properties.put("otel.span.attribute.value.length.limit", "100");
     properties.put("otel.span.attribute.count.limit", "5");
     properties.put("otel.span.event.count.limit", "4");
     properties.put("otel.span.link.count.limit", "3");
@@ -161,6 +162,7 @@ class TracerProviderConfigurationTest {
     SpanLimits config =
         TracerProviderConfiguration.configureSpanLimits(
             DefaultConfigProperties.createForTest(properties));
+    assertThat(config.getMaxAttributeValueLength()).isEqualTo(100);
     assertThat(config.getMaxNumberOfAttributes()).isEqualTo(5);
     assertThat(config.getMaxNumberOfEvents()).isEqualTo(4);
     assertThat(config.getMaxNumberOfLinks()).isEqualTo(3);

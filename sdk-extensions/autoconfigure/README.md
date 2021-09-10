@@ -181,11 +181,12 @@ Supported values for `otel.traces.sampler` are
 
 These properties can be used to control the maximum size of recordings per span.
 
-| System property                 | Environment variable            | Description                                                  |
-|---------------------------------|---------------------------------|--------------------------------------------------------------|
-| otel.span.attribute.count.limit | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT | The maximum number of attributes per span. Default is `128`.  |
-| otel.span.event.count.limit     | OTEL_SPAN_EVENT_COUNT_LIMIT     | The maximum number of events per span. Default is `128`.     |
-| otel.span.link.count.limit      | OTEL_SPAN_LINK_COUNT_LIMIT      | The maximum number of links per span. Default is `128`        |
+| System property                        | Environment variable                   | Description                                                            |
+|----------------------------------------|----------------------------------------|------------------------------------------------------------------------|
+| otel.span.attribute.value.length.limit | OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT | The maximum length of attribute values. By default there is no limit.  |
+| otel.span.attribute.count.limit        | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT        | The maximum number of attributes per span. Default is `128`.           |
+| otel.span.event.count.limit            | OTEL_SPAN_EVENT_COUNT_LIMIT            | The maximum number of events per span. Default is `128`.               |
+| otel.span.link.count.limit             | OTEL_SPAN_LINK_COUNT_LIMIT             | The maximum number of links per span. Default is `128`                 |
 
 ## Interval metric reader
 

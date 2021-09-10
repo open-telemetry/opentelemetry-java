@@ -22,7 +22,7 @@ public final class SpanLimitsBuilder {
   private int maxNumLinks = DEFAULT_SPAN_MAX_NUM_LINKS;
   private int maxNumAttributesPerEvent = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT;
   private int maxNumAttributesPerLink = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK;
-  private int maxAttributeLength = SpanLimits.DEFAULT_SPAN_MAX_ATTRIBUTE_LENGTH;
+  private int maxAttributeValueLength = SpanLimits.DEFAULT_SPAN_MAX_ATTRIBUTE_LENGTH;
 
   SpanLimitsBuilder() {}
 
@@ -94,16 +94,18 @@ public final class SpanLimitsBuilder {
   }
 
   /**
-   * Sets the max number of characters for string attribute values. For string array attributes
+   * Sets the max number of characters for string attribute values. For string array attribute
    * values, applies to each entry individually.
    *
-   * @param maxAttributeLength the max characters for string attribute values. Must not be negative.
+   * @param maxAttributeValueLength the max number of characters for attribute strings. Must not be
+   *     negative.
    * @return this.
-   * @throws IllegalArgumentException if {@code maxAttributeLength} is negative.
+   * @throws IllegalArgumentException if {@code maxAttributeValueLength} is negative.
    */
-  public SpanLimitsBuilder setMaxAttributeLength(int maxAttributeLength) {
-    Utils.checkArgument(maxAttributeLength > -1, "maxAttributeLength must be non-negative");
-    this.maxAttributeLength = maxAttributeLength;
+  public SpanLimitsBuilder setMaxAttributeValueLength(int maxAttributeValueLength) {
+    Utils.checkArgument(
+        maxAttributeValueLength > -1, "maxAttributeValueLength must be non-negative");
+    this.maxAttributeValueLength = maxAttributeValueLength;
     return this;
   }
 
@@ -115,6 +117,6 @@ public final class SpanLimitsBuilder {
         maxNumLinks,
         maxNumAttributesPerEvent,
         maxNumAttributesPerLink,
-        maxAttributeLength);
+        maxAttributeValueLength);
   }
 }
