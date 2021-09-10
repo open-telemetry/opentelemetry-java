@@ -38,7 +38,7 @@ public final class EnvironmentResource {
   // visible for testing
   static Attributes getAttributes(ConfigProperties configProperties) {
     AttributesBuilder resourceAttributes = Attributes.builder();
-    configProperties.getCommaSeparatedMap(ATTRIBUTE_PROPERTY).forEach(resourceAttributes::put);
+    configProperties.getMap(ATTRIBUTE_PROPERTY).forEach(resourceAttributes::put);
     String serviceName = configProperties.getString(SERVICE_NAME_PROPERTY);
     if (serviceName != null) {
       resourceAttributes.put(ResourceAttributes.SERVICE_NAME, serviceName);

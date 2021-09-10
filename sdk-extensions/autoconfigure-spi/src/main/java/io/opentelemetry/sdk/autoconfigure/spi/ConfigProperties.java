@@ -90,7 +90,7 @@ public interface ConfigProperties {
    * @return an empty list if the property has not been configured.
    * @throws ConfigurationException if the property is not a valid comma-separated list.
    */
-  List<String> getCommaSeparatedValues(String name);
+  List<String> getList(String name);
 
   /**
    * Returns a map-valued configuration property. The format of the original value must be
@@ -100,5 +100,5 @@ public interface ConfigProperties {
    * @return an empty map if the property has not been configured.
    * @throws ConfigurationException for malformed map strings.
    */
-  Map<String, String> getCommaSeparatedMap(String name);
+  Map<String, String> getMap(String name);
 }

@@ -38,7 +38,7 @@ final class SpanExporterConfiguration {
 
   // Visible for testing
   static Map<String, SpanExporter> configureSpanExporters(ConfigProperties config) {
-    List<String> exporterNamesList = config.getCommaSeparatedValues("otel.traces.exporter");
+    List<String> exporterNamesList = config.getList("otel.traces.exporter");
     Set<String> exporterNames = new HashSet<>(exporterNamesList);
     if (exporterNamesList.size() != exporterNames.size()) {
       String duplicates =

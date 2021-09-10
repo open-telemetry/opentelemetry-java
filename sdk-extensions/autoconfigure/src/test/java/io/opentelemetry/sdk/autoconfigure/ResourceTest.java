@@ -31,8 +31,7 @@ class ResourceTest {
   @Test
   void customConfigResource() {
     when(config.getString("otel.service.name")).thenReturn("test-service");
-    when(config.getCommaSeparatedMap("otel.resource.attributes"))
-        .thenReturn(singletonMap("food", "cheesecake"));
+    when(config.getMap("otel.resource.attributes")).thenReturn(singletonMap("food", "cheesecake"));
 
     assertThat(OpenTelemetryResourceAutoConfiguration.configureResource(config))
         .isEqualTo(

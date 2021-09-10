@@ -26,12 +26,12 @@ public class JaegerRemoteSamplerProvider implements ConfigurableSamplerProvider 
   public Sampler createSampler(ConfigProperties config) {
     String serviceName = config.getString(SERVICE_NAME_PROPERTY);
     if (serviceName == null) {
-      Map<String, String> resourceAttributes = config.getCommaSeparatedMap(ATTRIBUTE_PROPERTY);
+      Map<String, String> resourceAttributes = config.getMap(ATTRIBUTE_PROPERTY);
       serviceName = resourceAttributes.get(SERVICE_NAME_PROPERTY);
     }
 
     JaegerRemoteSamplerBuilder builder = JaegerRemoteSampler.builder().setServiceName(serviceName);
-    Map<String, String> params = config.getCommaSeparatedMap(SAMPLER_ARG_PROPERTY);
+    Map<String, String> params = config.getMap(SAMPLER_ARG_PROPERTY);
 
     // Optional configuration
     String endpoint = params.get(ENDPOINT_KEY);

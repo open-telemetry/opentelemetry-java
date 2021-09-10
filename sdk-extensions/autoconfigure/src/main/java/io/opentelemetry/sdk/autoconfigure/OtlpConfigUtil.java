@@ -44,10 +44,9 @@ final class OtlpConfigUtil {
       setEndpoint.accept(endpoint);
     }
 
-    Map<String, String> headers =
-        config.getCommaSeparatedMap("otel.exporter.otlp." + dataType + ".headers");
+    Map<String, String> headers = config.getMap("otel.exporter.otlp." + dataType + ".headers");
     if (headers.isEmpty()) {
-      headers = config.getCommaSeparatedMap("otel.exporter.otlp.headers");
+      headers = config.getMap("otel.exporter.otlp.headers");
     }
     headers.forEach(addHeader);
 
