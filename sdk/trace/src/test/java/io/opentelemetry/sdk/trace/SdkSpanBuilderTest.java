@@ -159,7 +159,7 @@ class SdkSpanBuilderTest {
     int maxLength = 25;
     TracerProvider tracerProvider =
         SdkTracerProvider.builder()
-            .setSpanLimits(SpanLimits.builder().setMaxAttributeLength(maxLength).build())
+            .setSpanLimits(SpanLimits.builder().setMaxAttributeValueLength(maxLength).build())
             .build();
     SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
     String strVal = IntStream.range(0, maxLength).mapToObj(i -> "a").collect(joining());

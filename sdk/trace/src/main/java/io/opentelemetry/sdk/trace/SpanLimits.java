@@ -93,7 +93,7 @@ public abstract class SpanLimits {
   public abstract int getMaxNumberOfAttributesPerLink();
 
   /**
-   * Returns the max number of characters for string attribute values. For string array attributes
+   * Returns the max number of characters for string attribute values. For string array attribute
    * values, applies to each entry individually.
    *
    * @return the max number of characters for attribute strings.
@@ -116,7 +116,7 @@ public abstract class SpanLimits {
         .setMaxNumberOfLinks(getMaxNumberOfLinks())
         .setMaxNumberOfAttributesPerEvent(getMaxNumberOfAttributesPerEvent())
         .setMaxNumberOfAttributesPerLink(getMaxNumberOfAttributesPerLink())
-        .setMaxAttributeLength(getMaxAttributeValueLength());
+        .setMaxAttributeValueLength(getMaxAttributeValueLength());
   }
 
   @AutoValue

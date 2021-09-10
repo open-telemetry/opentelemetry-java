@@ -693,7 +693,7 @@ class RecordEventsReadableSpanTest {
   void attributeLength() {
     int maxLength = 25;
     RecordEventsReadableSpan span =
-        createTestSpan(SpanLimits.builder().setMaxAttributeLength(maxLength).build());
+        createTestSpan(SpanLimits.builder().setMaxAttributeValueLength(maxLength).build());
     try {
       String strVal = IntStream.range(0, maxLength).mapToObj(i -> "a").collect(joining());
       String tooLongStrVal = strVal + strVal;
@@ -731,7 +731,7 @@ class RecordEventsReadableSpanTest {
   void eventAttributeLength() {
     int maxLength = 25;
     RecordEventsReadableSpan span =
-        createTestSpan(SpanLimits.builder().setMaxAttributeLength(maxLength).build());
+        createTestSpan(SpanLimits.builder().setMaxAttributeValueLength(maxLength).build());
     try {
       String strVal = IntStream.range(0, maxLength).mapToObj(i -> "a").collect(joining());
       String tooLongStrVal = strVal + strVal;
