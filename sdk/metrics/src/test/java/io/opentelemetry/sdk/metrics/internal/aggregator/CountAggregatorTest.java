@@ -113,7 +113,7 @@ class CountAggregatorTest {
         .hasUnit("1")
         .hasLongSum()
         .isDelta()
-        .isMonotonic()
+        .isNotMonotonic()
         .points()
         .satisfiesExactly(
             point ->

@@ -66,7 +66,7 @@ final class CountAggregator extends AbstractAggregator<Long> {
         getMetricDescriptor().getDescription(),
         "1",
         LongSumData.create(
-            /* isMonotonic= */ true,
+            /* isMonotonic= */ temporality == AggregationTemporality.CUMULATIVE,
             temporality,
             MetricDataUtils.toLongPointList(
                 accumulationByLabels,
