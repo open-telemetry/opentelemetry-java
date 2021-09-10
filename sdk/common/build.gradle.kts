@@ -17,16 +17,16 @@ testSets {
 }
 
 dependencies {
-  api(project(":api:all"))
+  api(project(":api:opentelemetry-api"))
 
-  implementation(project(":semconv"))
+  implementation(project(":opentelemetry-semconv"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
-  testImplementation(project(":sdk:testing"))
-  testImplementation(project(":sdk-extensions:resources"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
+  testImplementation(project(":sdk-extensions:opentelemetry-sdk-extension-resources"))
   testImplementation("com.google.guava:guava-testlib")
 }
 

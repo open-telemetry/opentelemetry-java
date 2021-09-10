@@ -7,8 +7,8 @@ description = "OpenTelemetry SDK Extension JFR"
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.jfr")
 
 dependencies {
-  implementation(project(":api:all"))
-  implementation(project(":sdk:all"))
+  implementation(project(":api:opentelemetry-api"))
+  implementation(project(":sdk:opentelemetry-sdk"))
 }
 
 tasks {

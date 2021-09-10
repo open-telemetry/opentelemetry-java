@@ -21,11 +21,11 @@ testSets {
 }
 
 dependencies {
-  api(project(":sdk:trace"))
+  api(project(":sdk:opentelemetry-sdk-trace"))
 
-  implementation(project(":api:metrics"))
+  implementation(project(":api:opentelemetry-api-metrics"))
 
-  implementation(project(":exporters:otlp:common"))
+  implementation(project(":exporters:otlp:opentelemetry-exporter-otlp-common"))
 
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
@@ -34,8 +34,8 @@ dependencies {
   api("io.grpc:grpc-stub")
   implementation("io.grpc:grpc-api")
 
-  testImplementation(project(":proto"))
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":opentelemetry-proto"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
 
   testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("io.grpc:grpc-protobuf")
@@ -57,7 +57,7 @@ dependencies {
   add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
-  add("testSpanPipeline", project(":proto"))
+  add("testSpanPipeline", project(":opentelemetry-proto"))
   add("testSpanPipeline", "io.grpc:grpc-protobuf")
   add("testSpanPipeline", "io.grpc:grpc-testing")
 }

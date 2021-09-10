@@ -12,16 +12,16 @@ description = "OpenTelemetry Protocol Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.internal")
 
 dependencies {
-  protoSource(project(":proto"))
+  protoSource(project(":opentelemetry-proto"))
 
-  api(project(":api:all"))
-  api(project(":sdk:all"))
-  api(project(":sdk:metrics"))
+  api(project(":api:opentelemetry-api"))
+  api(project(":sdk:opentelemetry-sdk"))
+  api(project(":sdk:opentelemetry-sdk-metrics"))
 
   // We only use the protos for HTTP, logging-otlp, and metric export for now. Let them expose the
   // proto dependency in their POMs instead of here. This is fine because this artifact only
   // contains internal code.
-  compileOnly(project(":proto"))
+  compileOnly(project(":opentelemetry-proto"))
 
   compileOnly("com.fasterxml.jackson.core:jackson-core")
 
@@ -35,8 +35,8 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
-  testImplementation(project(":proto"))
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":opentelemetry-proto"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
 
   testImplementation("com.fasterxml.jackson.core:jackson-core")
   testImplementation("com.google.protobuf:protobuf-java-util")
@@ -47,9 +47,9 @@ dependencies {
   testImplementation("io.grpc:grpc-testing")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 
-  jmhImplementation(project(":proto"))
-  jmhImplementation(project(":sdk:testing"))
-  jmhImplementation(project(":sdk-extensions:resources"))
+  jmhImplementation(project(":opentelemetry-proto"))
+  jmhImplementation(project(":sdk:opentelemetry-sdk-testing"))
+  jmhImplementation(project(":sdk-extensions:opentelemetry-sdk-extension-resources"))
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
   jmhImplementation("org.curioswitch.curiostack:protobuf-jackson")
   jmhImplementation("com.google.protobuf:protobuf-java-util")

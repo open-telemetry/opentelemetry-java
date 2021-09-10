@@ -7,12 +7,12 @@ description = "OpenTelemetry OpenTracing Bridge"
 otelJava.moduleName.set("io.opentelemetry.opentracingshim")
 
 dependencies {
-  api(project(":api:all"))
+  api(project(":api:opentelemetry-api"))
 
   api("io.opentracing:opentracing-api")
-  implementation(project(":semconv"))
+  implementation(project(":opentelemetry-semconv"))
 
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
 
   testImplementation("org.slf4j:slf4j-simple")
 }

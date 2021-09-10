@@ -9,15 +9,15 @@ description = "OpenTelemetry Protocol JSON Logging Exporters"
 otelJava.moduleName.set("io.opentelemetry.exporter.logging.otlp")
 
 dependencies {
-  compileOnly(project(":sdk:trace"))
-  compileOnly(project(":sdk:metrics"))
+  compileOnly(project(":sdk:opentelemetry-sdk-trace"))
+  compileOnly(project(":sdk:opentelemetry-sdk-metrics"))
 
-  implementation(project(":exporters:otlp:common"))
-  implementation(project(":proto"))
+  implementation(project(":exporters:otlp:opentelemetry-exporter-otlp-common"))
+  implementation(project(":opentelemetry-proto"))
 
   implementation("org.curioswitch.curiostack:protobuf-jackson")
 
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
 
   testImplementation("org.skyscreamer:jsonassert")
 }

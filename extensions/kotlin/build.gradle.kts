@@ -20,12 +20,12 @@ testSets {
 dependencies {
   implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
-  api(project(":api:all"))
+  api(project(":api:opentelemetry-api"))
 
   compileOnly("org.jetbrains.kotlin:kotlin-stdlib-common")
   compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
 
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
   testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
 }

@@ -15,14 +15,6 @@ plugins {
 
 val otelJava = extensions.create<OtelJavaExtension>("otelJava")
 
-base {
-  // May be set already by a parent project, only set if not.
-  // TODO(anuraaga): Make this less hacky by creating a "module group" plugin.
-  if (!archivesName.get().startsWith("opentelemetry-")) {
-    archivesName.set("opentelemetry-${name}")
-  }
-}
-
 java {
   toolchain {
     languageVersion.set(JavaLanguageVersion.of(11))
@@ -64,7 +56,7 @@ tasks {
       }
 
       //disable deprecation warnings for the protobuf module
-      if (project.name == "proto") {
+      if (project.name == "opentelemetry-proto") {
         compilerArgs.add("-Xlint:-deprecation")
       }
 
@@ -175,7 +167,7 @@ dependencies {
   dependencyManagement(platform(project(":dependencyManagement")))
   afterEvaluate {
     configurations.configureEach {
-      if (isCanBeResolved && !isCanBeConsumed) {
+      if (!isCanBeConsumed && this != dependencyManagement) {
         extendsFrom(dependencyManagement)
       }
     }

@@ -13,45 +13,45 @@ otelJava.moduleName.set("io.opentelemetry.sdk.trace")
 
 sourceSets {
   main {
-    val traceShadedDeps = project(":sdk:trace-shaded-deps")
-    output.dir(traceShadedDeps.file("build/extracted/shadow"), "builtBy" to ":sdk:trace-shaded-deps:extractShadowJar")
+    val traceShadedDeps = project(":sdk:sdk-trace-shaded-deps")
+    output.dir(traceShadedDeps.file("build/extracted/shadow"), "builtBy" to ":sdk:sdk-trace-shaded-deps:extractShadowJar")
   }
 }
 
 dependencies {
-  api(project(":api:all"))
-  api(project(":sdk:common"))
+  api(project(":api:opentelemetry-api"))
+  api(project(":sdk:opentelemetry-sdk-common"))
 
-  compileOnly(project(":sdk:trace-shaded-deps"))
+  compileOnly(project(":sdk:sdk-trace-shaded-deps"))
 
-  implementation(project(":api:metrics"))
-  implementation(project(":semconv"))
+  implementation(project(":api:opentelemetry-api-metrics"))
+  implementation(project(":opentelemetry-semconv"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
   testImplementation("com.google.guava:guava")
 
-  jmh(project(":sdk:metrics"))
-  jmh(project(":sdk:testing")) {
+  jmh(project(":sdk:opentelemetry-sdk-metrics"))
+  jmh(project(":sdk:opentelemetry-sdk-testing")) {
     // JMH doesn"t handle dependencies that are duplicated between the main and jmh
     // configurations properly, but luckily here it"s simple enough to just exclude transitive
     // dependencies.
     isTransitive = false
   }
-  jmh(project(":exporters:jaeger-thrift"))
-  jmh(project(":exporters:otlp:trace")) {
+  jmh(project(":exporters:opentelemetry-exporter-jaeger-thrift"))
+  jmh(project(":exporters:otlp:opentelemetry-exporter-otlp-trace")) {
     // The opentelemetry-exporter-otlp-trace depends on this project itself. So don"t pull in
     // the transitive dependencies.
     isTransitive = false
   }
   // explicitly adding the opentelemetry-exporter-otlp dependencies
-  jmh(project(":exporters:otlp:common")) {
+  jmh(project(":exporters:otlp:opentelemetry-exporter-otlp-common")) {
     isTransitive = false
   }
-  jmh(project(":proto"))
+  jmh(project(":opentelemetry-proto"))
 
   jmh("com.google.guava:guava")
   jmh("io.grpc:grpc-api")

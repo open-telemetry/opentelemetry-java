@@ -5,9 +5,11 @@
 
 package io.opentelemetry.sdk.example;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -25,6 +27,9 @@ public final class ConfigureSpanProcessorExample {
   private static final Tracer tracer = openTelemetry.getTracer("ConfigureSpanProcessorExample");
 
   public static void main(String[] args) {
+    System.out.println(
+        Resource.getDefault().getAttribute(AttributeKey.stringKey("telemetry.sdk.version")));
+
     // Example how to configure the default SpanProcessors.
     defaultSpanProcessors();
     // After this method, the following SpanProcessors are registered:

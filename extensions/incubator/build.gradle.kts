@@ -10,7 +10,7 @@ description = "OpenTelemetry API Incubator"
 otelJava.moduleName.set("io.opentelemetry.extension.incubator")
 
 dependencies {
-  api(project(":api:all"))
+  api(project(":api:opentelemetry-api"))
 
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
 }

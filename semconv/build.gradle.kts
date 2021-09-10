@@ -9,5 +9,5 @@ description = "OpenTelemetry Semantic Conventions"
 otelJava.moduleName.set("io.opentelemetry.semconv")
 
 dependencies {
-  api(project(":api:all"))
+  api(project(":api:opentelemetry-api"))
 }

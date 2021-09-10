@@ -9,7 +9,7 @@ description = "OpenTelemetry Prometheus Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.prometheus")
 
 dependencies {
-  api(project(":sdk:metrics"))
+  api(project(":sdk:opentelemetry-sdk-metrics"))
 
   api("io.prometheus:simpleclient")
 

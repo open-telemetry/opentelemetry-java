@@ -9,8 +9,8 @@ description = "OpenTelemetry - Logging Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.logging")
 
 dependencies {
-  api(project(":sdk:all"))
-  api(project(":sdk:metrics"))
+  api(project(":sdk:opentelemetry-sdk"))
+  api(project(":sdk:opentelemetry-sdk-metrics"))
 
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
 }

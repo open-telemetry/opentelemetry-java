@@ -1,9 +1,22 @@
+import gradle.kotlin.dsl.accessors._33c50961cbf9e9e490400740be7b5d25.base
+
 plugins {
   `maven-publish`
   signing
 
   id("otel.japicmp-conventions")
 }
+
+base {
+  // May be set already by a parent project, only set if not.
+  // TODO(anuraaga): Make this less hacky by creating a "module group" plugin.
+  if (!project.name.startsWith("opentelemetry-")) {
+    throw Error("archivesName of ${project.path} should start with opentelemetry-")
+  }
+}
+
+// We must not change group ID or artifact ID here, otherwise composite builds won't work.
+// Ensure that the project name matches the expected artifact ID.
 
 publishing {
   publications {
@@ -14,10 +27,8 @@ publishing {
         versionParts[0] += "-${release}"
         version = versionParts.joinToString("-")
       }
-      groupId = "io.opentelemetry"
       afterEvaluate {
         // not available until evaluated.
-        artifactId = base.archivesName.get()
         pom.description.set(project.description)
       }
 

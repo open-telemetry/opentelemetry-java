@@ -9,11 +9,11 @@ description = "OpenTelemetry - Jaeger Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.jaeger")
 
 dependencies {
-  api(project(":sdk:all"))
+  api(project(":sdk:opentelemetry-sdk"))
   api("io.grpc:grpc-api")
 
-  implementation(project(":sdk:all"))
-  implementation(project(":semconv"))
+  implementation(project(":sdk:opentelemetry-sdk"))
+  implementation(project(":opentelemetry-semconv"))
 
   implementation("io.grpc:grpc-protobuf")
   implementation("io.grpc:grpc-stub")
@@ -26,7 +26,7 @@ dependencies {
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.squareup.okhttp3:okhttp")
 
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
 
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 }

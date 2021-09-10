@@ -8,10 +8,9 @@ plugins {
 
 description = "OpenTelemetry API"
 otelJava.moduleName.set("io.opentelemetry.api")
-base.archivesBaseName = "opentelemetry-api"
 
 dependencies {
-  api(project(":context"))
+  api(project(":opentelemetry-context"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 

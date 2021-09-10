@@ -10,12 +10,12 @@ description = "OpenTelemetry Extension : Trace Propagators"
 otelJava.moduleName.set("io.opentelemetry.extension.trace.propagation")
 
 dependencies {
-  api(project(":api:all"))
+  api(project(":api:opentelemetry-api"))
 
-  compileOnly(project(":sdk-extensions:autoconfigure"))
+  compileOnly(project(":sdk-extensions:opentelemetry-sdk-extension-autoconfigure"))
 
   testImplementation("io.jaegertracing:jaeger-client")
   testImplementation("com.google.guava:guava")
 
-  jmhImplementation(project(":extensions:aws"))
+  jmhImplementation(project(":extensions:opentelemetry-extension-aws"))
 }

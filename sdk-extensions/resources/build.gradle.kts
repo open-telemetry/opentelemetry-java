@@ -11,11 +11,11 @@ otelJava.moduleName.set("io.opentelemetry.sdk.extension.resources")
 val mrJarVersions = listOf(11)
 
 dependencies {
-  api(project(":sdk:common"))
+  api(project(":sdk:opentelemetry-sdk-common"))
 
-  implementation(project(":semconv"))
+  implementation(project(":opentelemetry-semconv"))
 
-  compileOnly(project(":sdk-extensions:autoconfigure"))
+  compileOnly(project(":sdk-extensions:opentelemetry-sdk-extension-autoconfigure"))
 
   compileOnly("org.codehaus.mojo:animal-sniffer-annotations")
 

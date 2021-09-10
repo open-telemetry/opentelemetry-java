@@ -4,8 +4,6 @@ plugins {
 }
 
 description = "OpenTelemetry Bill of Materials"
-group = "io.opentelemetry"
-base.archivesBaseName = "opentelemetry-bom"
 
 rootProject.subprojects.forEach { subproject ->
   if (project != subproject) {
@@ -18,7 +16,7 @@ afterEvaluate {
     constraints {
       rootProject.subprojects
         .sortedBy { it.findProperty("archivesBaseName") as String? }
-        .filter { !it.name.startsWith("bom") }
+        .filter { !it.name.startsWith("opentelemetry-bom") }
         .filter { !it.hasProperty("otel.release") }
         .forEach { project ->
           project.plugins.withId("maven-publish") {

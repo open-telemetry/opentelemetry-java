@@ -9,10 +9,10 @@ description = "OpenTelemetry - zPages"
 otelJava.moduleName.set("io.opentelemetry.sdk.extension.zpages")
 
 dependencies {
-  implementation(project(":api:all"))
-  implementation(project(":sdk:all"))
+  implementation(project(":api:opentelemetry-api"))
+  implementation(project(":sdk:opentelemetry-sdk"))
 
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
 
   testImplementation("com.google.guava:guava")
 

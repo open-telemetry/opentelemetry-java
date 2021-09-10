@@ -9,5 +9,5 @@ description = "OpenTelemetry Noop API"
 otelJava.moduleName.set("io.opentelemetry.extension.noopapi")
 
 dependencies {
-  api(project(":api:all"))
+  api(project(":api:opentelemetry-api"))
 }

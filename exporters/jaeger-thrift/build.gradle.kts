@@ -9,10 +9,10 @@ description = "OpenTelemetry - Jaeger Thrift Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.jaeger.thrift")
 
 dependencies {
-  api(project(":sdk:all"))
+  api(project(":sdk:opentelemetry-sdk"))
 
-  implementation(project(":sdk:all"))
-  implementation(project(":semconv"))
+  implementation(project(":sdk:opentelemetry-sdk"))
+  implementation(project(":opentelemetry-semconv"))
 
   implementation("io.jaegertracing:jaeger-client")
 
@@ -21,5 +21,5 @@ dependencies {
   testImplementation("com.squareup.okhttp3:okhttp")
   testImplementation("com.google.guava:guava-testlib")
 
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
 }

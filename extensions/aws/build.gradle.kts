@@ -9,6 +9,6 @@ description = "OpenTelemetry API Extensions for AWS"
 otelJava.moduleName.set("io.opentelemetry.extension.aws")
 
 dependencies {
-  api(project(":api:all"))
-  compileOnly(project(":sdk-extensions:autoconfigure"))
+  api(project(":api:opentelemetry-api"))
+  compileOnly(project(":sdk-extensions:opentelemetry-sdk-extension-autoconfigure"))
 }

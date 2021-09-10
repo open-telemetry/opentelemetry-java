@@ -11,13 +11,13 @@ otelJava.moduleName.set("io.opentelemetry.sdk")
 base.archivesName.set("opentelemetry-sdk")
 
 dependencies {
-  api(project(":api:all"))
-  api(project(":sdk:common"))
-  api(project(":sdk:trace"))
+  api(project(":api:opentelemetry-api"))
+  api(project(":sdk:opentelemetry-sdk-common"))
+  api(project(":sdk:opentelemetry-sdk-trace"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
 }

@@ -16,14 +16,14 @@ testSets {
 }
 
 dependencies {
-  api(project(":sdk:metrics"))
+  api(project(":sdk:opentelemetry-sdk-metrics"))
 
-  implementation(project(":exporters:otlp:common"))
+  implementation(project(":exporters:otlp:opentelemetry-exporter-otlp-common"))
 
   api("io.grpc:grpc-stub")
 
-  testImplementation(project(":proto"))
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":opentelemetry-proto"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
 
   testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("io.grpc:grpc-protobuf")

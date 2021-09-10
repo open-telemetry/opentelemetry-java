@@ -7,10 +7,10 @@ description = "OpenTelemetry Metrics SDK Testing utilities"
 otelJava.moduleName.set("io.opentelemetry.sdk.metrics-testing")
 
 dependencies {
-  api(project(":api:all"))
-  api(project(":sdk:all"))
-  api(project(":sdk:metrics"))
-  api(project(":sdk:testing"))
+  api(project(":api:opentelemetry-api"))
+  api(project(":sdk:opentelemetry-sdk"))
+  api(project(":sdk:opentelemetry-sdk-metrics"))
+  api(project(":sdk:opentelemetry-sdk-testing"))
 
   compileOnly("org.assertj:assertj-core")
   compileOnly("junit:junit")

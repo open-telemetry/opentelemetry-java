@@ -205,6 +205,7 @@ class ResourceTest {
   }
 
   @Test
+  @SuppressWarnings("SystemOut")
   void testDefaultResources() {
     Resource resource = Resource.getDefault();
     assertThat(resource.getAttribute(ResourceAttributes.SERVICE_NAME))
@@ -214,6 +215,7 @@ class ResourceTest {
     assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
     assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_VERSION))
         .isEqualTo(System.getProperty("otel.test.project-version"));
+    System.out.println(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_VERSION));
   }
 
   @Test

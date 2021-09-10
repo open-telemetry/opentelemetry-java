@@ -12,11 +12,13 @@ plugins {
 val latestReleasedVersion: String by lazy {
   // hack to find the current released version of the project
   val temp: Configuration = configurations.create("tempConfig")
-  // pick the api, since it's always there.
-  dependencies.add(temp.name, "io.opentelemetry:opentelemetry-api:latest.release")
+  // Pick the bom, since it's always there. Picking the api gives us the currently built version
+  // when executing this from the context of the api project. But we never compare the bom's API
+  // since there is none.
+  dependencies.add(temp.name, "io.opentelemetry:opentelemetry-bom:latest.release")
   val moduleVersion = configurations["tempConfig"].resolvedConfiguration.firstLevelModuleDependencies.elementAt(0).moduleVersion
   configurations.remove(temp)
-  logger.debug("Discovered latest release version: " + moduleVersion)
+  logger.info("Discovered latest release version: {}", moduleVersion)
   moduleVersion
 }
 
@@ -43,7 +45,7 @@ fun findArtifact(version: String): File {
 }
 
 // generate the api diff report for any module that is stable and publishes a jar.
-if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
+if (!project.hasProperty("otel.release") && !project.name.startsWith("opentelemetry-bom")) {
   afterEvaluate {
     tasks {
       val jApiCmp by registering(JapicmpTask::class) {
@@ -67,6 +69,7 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
           //if we can't find the baseline artifact, this is probably one that's never been published before,
           //so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
           isOnlyModified = false
+          logger.warn("Project is new because and old version couldn't be found: {}", e.toString())
           files()
         }
 

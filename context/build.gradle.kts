@@ -31,7 +31,7 @@ dependencies {
   add("otelAsBraveTestImplementation", "io.zipkin.brave:brave")
   add("otelInBraveTestImplementation", "io.zipkin.brave:brave")
 
-  add("strictContextEnabledTestImplementation", project(":api:all"))
+  add("strictContextEnabledTestImplementation", project(":api:opentelemetry-api"))
 
   // MustBeClosed
   compileOnly("com.google.errorprone:error_prone_annotations")

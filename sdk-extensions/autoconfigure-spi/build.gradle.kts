@@ -7,5 +7,5 @@ description = "OpenTelemetry SDK Auto-configuration SPI"
 otelJava.moduleName.set("io.opentelemetry.sdk.autoconfigure.spi")
 
 dependencies {
-  api(project(":sdk:all"))
+  api(project(":sdk:opentelemetry-sdk"))
 }

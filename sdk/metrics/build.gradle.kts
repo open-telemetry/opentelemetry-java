@@ -13,14 +13,14 @@ description = "OpenTelemetry SDK Metrics"
 otelJava.moduleName.set("io.opentelemetry.sdk.metrics")
 
 dependencies {
-  api(project(":api:metrics"))
-  api(project(":sdk:common"))
+  api(project(":api:opentelemetry-api-metrics"))
+  api(project(":sdk:opentelemetry-sdk-common"))
 
   annotationProcessor("com.google.auto.value:auto-value")
 
   testAnnotationProcessor("com.google.auto.value:auto-value")
 
-  testImplementation(project(":sdk:metrics-testing"))
-  testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-metrics-testing"))
+  testImplementation(project(":sdk:opentelemetry-sdk-testing"))
   testImplementation("com.google.guava:guava")
 }

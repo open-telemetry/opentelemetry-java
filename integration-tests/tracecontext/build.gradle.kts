@@ -8,8 +8,8 @@ description = "OpenTelemetry W3C Context Propagation Integration Tests"
 otelJava.moduleName.set("io.opentelemetry.tracecontext.integration.tests")
 
 dependencies {
-  implementation(project(":sdk:all"))
-  implementation(project(":extensions:trace-propagators"))
+  implementation(project(":sdk:opentelemetry-sdk"))
+  implementation(project(":extensions:opentelemetry-extension-trace-propagators"))
 
   implementation("com.linecorp.armeria:armeria")
   implementation("org.slf4j:slf4j-simple")
