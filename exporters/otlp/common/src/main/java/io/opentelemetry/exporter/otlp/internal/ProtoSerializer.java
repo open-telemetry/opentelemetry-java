@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Serializer for the protobuf binary wire format. */
-final class ProtoSerializer extends Serializer {
+final class ProtoSerializer extends Serializer implements AutoCloseable {
 
   // Cache ID conversion to bytes since we know it's common to use the same ID multiple times within
   // a single export (trace ID and parent span ID).

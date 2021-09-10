@@ -16,28 +16,25 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 final class PropagatorConfiguration {
 
   static ContextPropagators configurePropagators(ConfigProperties config) {
-    Map<String, TextMapPropagator> spiPropagators =
-        StreamSupport.stream(
-                ServiceLoader.load(ConfigurablePropagatorProvider.class).spliterator(), false)
-            .collect(
-                Collectors.toMap(
-                    ConfigurablePropagatorProvider::getName,
-                    configurablePropagatorProvider ->
-                        configurablePropagatorProvider.getPropagator(config)));
-
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();
     List<String> requestedPropagators = config.getCommaSeparatedValues("otel.propagators");
     if (requestedPropagators.isEmpty()) {
       requestedPropagators = Arrays.asList("tracecontext", "baggage");
     }
+
+    Map<String, TextMapPropagator> spiPropagators =
+        SpiUtil.loadConfigurable(
+            ConfigurablePropagatorProvider.class,
+            requestedPropagators,
+            ConfigurablePropagatorProvider::getName,
+            ConfigurablePropagatorProvider::getPropagator,
+            config);
+
     for (String propagatorName : requestedPropagators) {
       propagators.add(getPropagator(propagatorName, spiPropagators));
     }

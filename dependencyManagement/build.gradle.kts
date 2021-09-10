@@ -16,7 +16,6 @@ val DEPENDENCY_BOMS = listOf(
   "com.google.guava:guava-bom:30.1.1-jre",
   "com.google.protobuf:protobuf-bom:3.17.3",
   "com.linecorp.armeria:armeria-bom:1.9.2",
-  "com.squareup.okhttp3:okhttp-bom:4.9.1",
   "io.grpc:grpc-bom:1.39.0",
   "io.zipkin.brave:brave-bom:5.13.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
@@ -79,7 +78,11 @@ val DEPENDENCIES = listOf(
   "com.google.code.gson:gson:2.8.7",
   "com.google.guava:guava-beta-checker:1.0",
   "com.lmax:disruptor:3.4.4",
-  "com.squareup.okhttp3:okhttp:4.9.1",
+  // using old version of okhttp to avoid pulling in kotlin stdlib
+  // not using (old) okhttp bom because that is pulling in old guava version
+  // and overriding the guava bom
+  "com.squareup.okhttp3:okhttp:3.12.13",
+  "com.squareup.okhttp3:okhttp-tls:3.12.13",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit4:0.20.1",
   "com.uber.nullaway:nullaway:0.9.2",

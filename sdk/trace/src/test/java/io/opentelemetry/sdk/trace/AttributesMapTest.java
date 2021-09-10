@@ -15,7 +15,7 @@ class AttributesMapTest {
 
   @Test
   void asMap() {
-    AttributesMap attributesMap = new AttributesMap(2);
+    AttributesMap attributesMap = new AttributesMap(2, Integer.MAX_VALUE);
     attributesMap.put(longKey("one"), 1L);
     attributesMap.put(longKey("two"), 2L);
 

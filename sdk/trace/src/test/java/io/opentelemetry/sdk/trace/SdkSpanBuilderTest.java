@@ -14,6 +14,7 @@ import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -39,6 +40,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -147,6 +149,49 @@ class SdkSpanBuilderTest {
       assertThat(span.toSpanData().getLinks())
           .containsExactly(
               LinkData.create(sampledSpanContext, Attributes.of(stringKey("key0"), "str"), 3));
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void linkAttributeLength() {
+    int maxLength = 25;
+    TracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .setSpanLimits(SpanLimits.builder().setMaxAttributeLength(maxLength).build())
+            .build();
+    SpanBuilder spanBuilder = tracerProvider.get("test").spanBuilder(SPAN_NAME);
+    String strVal = IntStream.range(0, maxLength).mapToObj(i -> "a").collect(joining());
+    String tooLongStrVal = strVal + strVal;
+
+    Attributes attributes =
+        Attributes.builder()
+            .put("string", tooLongStrVal)
+            .put("boolean", true)
+            .put("long", 1L)
+            .put("double", 1.0)
+            .put(stringArrayKey("stringArray"), Arrays.asList(strVal, tooLongStrVal))
+            .put(booleanArrayKey("booleanArray"), Arrays.asList(true, false))
+            .put(longArrayKey("longArray"), Arrays.asList(1L, 2L))
+            .put(doubleArrayKey("doubleArray"), Arrays.asList(1.0, 2.0))
+            .build();
+    spanBuilder.addLink(sampledSpanContext, attributes);
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      attributes = span.toSpanData().getLinks().get(0).getAttributes();
+
+      assertThat(attributes.get(stringKey("string"))).isEqualTo(strVal);
+      assertThat(attributes.get(booleanKey("boolean"))).isEqualTo(true);
+      assertThat(attributes.get(longKey("long"))).isEqualTo(1L);
+      assertThat(attributes.get(doubleKey("double"))).isEqualTo(1.0);
+      assertThat(attributes.get(stringArrayKey("stringArray")))
+          .isEqualTo(Arrays.asList(strVal, strVal));
+      assertThat(attributes.get(booleanArrayKey("booleanArray")))
+          .isEqualTo(Arrays.asList(true, false));
+      assertThat(attributes.get(longArrayKey("longArray"))).isEqualTo(Arrays.asList(1L, 2L));
+      assertThat(attributes.get(doubleArrayKey("doubleArray"))).isEqualTo(Arrays.asList(1.0, 2.0));
     } finally {
       span.end();
     }
