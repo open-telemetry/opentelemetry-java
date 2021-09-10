@@ -97,12 +97,14 @@ public final class SpanLimitsBuilder {
    * Sets the max number of characters for string attribute values. For string array attribute
    * values, applies to each entry individually.
    *
-   * @param maxAttributeValueLength the max number of characters for attribute strings. Must not be negative.
+   * @param maxAttributeValueLength the max number of characters for attribute strings. Must not be
+   *     negative.
    * @return this.
    * @throws IllegalArgumentException if {@code maxAttributeValueLength} is negative.
    */
   public SpanLimitsBuilder setMaxAttributeValueLength(int maxAttributeValueLength) {
-    Utils.checkArgument(maxAttributeValueLength > -1, "maxAttributeValueLength must be non-negative");
+    Utils.checkArgument(
+        maxAttributeValueLength > -1, "maxAttributeValueLength must be non-negative");
     this.maxAttributeValueLength = maxAttributeValueLength;
     return this;
   }
