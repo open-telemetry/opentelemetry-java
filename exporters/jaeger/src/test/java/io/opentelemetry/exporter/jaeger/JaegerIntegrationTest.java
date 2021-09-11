@@ -5,8 +5,9 @@
 
 package io.opentelemetry.exporter.jaeger;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.jr.ob.JSON;
+import com.fasterxml.jackson.jr.stree.JacksonJrsTreeCodec;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.api.OpenTelemetry;
@@ -30,8 +31,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers(disabledWithoutDocker = true)
 class JaegerIntegrationTest {
-
-  private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final OkHttpClient client = new OkHttpClient();
 
   private static final int QUERY_PORT = 16686;
@@ -104,9 +103,13 @@ class JaegerIntegrationTest {
               .header("Accept", "application/json")
               .build();
 
-      final JsonNode json;
+      final TreeNode json;
       try (Response response = client.newCall(request).execute()) {
-        json = objectMapper.readTree(response.body().byteStream());
+        json =
+            JSON.builder()
+                .treeCodec(new JacksonJrsTreeCodec())
+                .build()
+                .treeFrom(response.body().byteStream());
       }
 
       return json.get("data").get(0).get("traceID") != null;
