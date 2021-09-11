@@ -2,6 +2,84 @@
 
 ## Version 1.6.0 (Unreleased):
 
+### API
+
+- Various performance optimizations
+  - 1 and 2 element Attributes instances now bypass some logic to reduce object allocations.
+  - The result of `hashCode()` of `AttributeKey` is now cached.
+  - Checks for base-16 validity of TraceId and SpanId have been optimized.
+  - Internally created `SpanContext` instances now bypass unneeded validation.
+
+### Semantic Conventions (alpha)
+
+- The `SemanticAttributes` and `ResourceAttributes` classes have been updated to match the semantic
+  conventions as of specification release `1.6.1`.
+
+### SDK
+
+- The `io.opentelemetry.sdk.trace.ReadableSpan` interface has been expanded to include
+  a `getAttribute(AttributeKey)` method.
+- The `io.opentelemetry.sdk.trace.SpanLimits` class now supports enforcing a maximum Span attribute
+  length (measured in characters) on String and String-array values.
+
+#### Exporters
+
+- The OTLP exporters have been undergone a significant internal rework. Various performance
+  optimizations have been done on process of converting to the OTLP formats.
+- The OTLP metric exporter no longer exports the deprecated metric `Labels`, only `Attributes`. This
+  means that your collector MUST support at least OTLP version `0.9.0` to properly ingest metric
+  data.
+- BREAKING CHANGE: The `OtlpHttpMetricExporter` class has been moved into
+  the `io.opentelemetry.exporter.otlp.http.metrics` package.
+- BUGFIX: The `OtlpGrpcSpanExporter` and `OtlpGrpcMetricExporter` will now wait for the underlying
+  grpc channel to be terminated when shutting down.
+- The OTLP exporters now optionally support `gzip` compression. It is not enabled by default.
+
+#### SDK Extensions
+
+- The `AwsXrayIdGenerator` in the `opentelemetry-sdk-extension-aws` module has been deprecated. This
+  implementation has been superseded by the one in
+  the [opentelemetry-java-contrib](https://github.com/open-telemetry/opentelemetry-java-contrib)
+  project and will not be maintained here going forward.
+
+### Auto-configuration (alpha)
+
+- The `otel.traces.exporter`/`OTEL_TRACES_EXPORTER` option now supports a comma-separated list of
+  exporters.
+- The Metrics SDK will no longer be configured by default. You must explicitly request an exporter
+  configuration in order to have a Metrics SDK configured.
+- BREAKING CHANGE: All SPI interfaces are now in a separate module from the autoconfiguration
+  module: `opentelemetry-sdk-extension-autoconfigure-spi`.
+- BREAKING CHANGE: `ConfigProperties` and `ConfigurationException` have been moved to a new
+  package (`io.opentelemetry.sdk.autoconfigure.spi`) and
+  module (`opentelemetry-sdk-extension-autoconfigure-spi`).
+- BREAKING CHANGE: All SPI interfaces now take a `ConfigProperties` instance on their methods.
+- BUGFIX: Exceptions thrown during the loading of an SPI implementation class are now handled more
+  gracefully and will not bubble up unless you have explicitly requested the bad implementation as
+  the one to use.
+- You can now specify `gzip` compress for the OTLP exporters via the `otel.exporter.otlp.compression`
+  /`OTEL_EXPORTER_OTLP_COMPRESSION` configuration option.
+- You can now specify maximum Span attribute length via the `otel.span.attribute.value.length.limit`
+  /`OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT` configuration option.
+
+### Metrics (alpha)
+
+- BREAKING CHANGES: The metrics SDK has numerous breaking changes, both behavioral and in the SDK's
+  configuration APIs.
+  - The default aggregation for a `Histogram` instrument has been changed to be a Histogram, rather
+    than a Summary.
+  - Registration of Views has undergone significant rework to match the current state of the SDK
+    specification. Please reach out on CNCF slack in
+    the [#otel-java](https://cloud-native.slack.com/archives/C014L2KCTE3) channel, or in
+    a [github discussion](https://github.com/open-telemetry/opentelemetry-java/discussions) if you
+    need assistance with converting to the new Views API.
+  - The OTLP exporter no longer exports the deprecated metric `Labels`, only `Attributes`. This
+    means that your collector MUST support at least OTLP version `0.9.0` to properly ingest metric
+    data.
+  - It is no longer possible to provide custom aggregations via a View. This feature will return in
+    the future.
+
+---
 ## Version 1.5.0 2021-08-13:
 
 ### API
