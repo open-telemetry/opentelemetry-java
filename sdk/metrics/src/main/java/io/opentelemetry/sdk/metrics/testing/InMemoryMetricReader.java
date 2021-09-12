@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.testing;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -39,12 +38,13 @@ import java.util.Collections;
  * }
  * </code></pre>
  */
-public class InMemoryMetricReader implements MetricReader {
-  private final MetricProducer sdkCollection;
+public class InMemoryMetricReader
+    implements MetricReader, MetricReader.Factory<InMemoryMetricReader> {
+  private volatile MetricProducer sdkCollection;
   private volatile Collection<MetricData> latest = Collections.emptyList();
 
-  private InMemoryMetricReader(MetricProducer producer) {
-    this.sdkCollection = producer;
+  public InMemoryMetricReader() {
+    // Need to wait for registration for initial value.
   }
 
   /** Returns all metrics accumulated since the last call. */
@@ -55,7 +55,9 @@ public class InMemoryMetricReader implements MetricReader {
 
   @Override
   public CompletableResultCode flush() {
-    latest = sdkCollection.collectAllMetrics();
+    if (sdkCollection != null) {
+      latest = sdkCollection.collectAllMetrics();
+    }
     return CompletableResultCode.ofSuccess();
   }
 
@@ -64,10 +66,9 @@ public class InMemoryMetricReader implements MetricReader {
     return CompletableResultCode.ofSuccess();
   }
 
-  static final MetricReader.Factory<InMemoryMetricReader> FACTORY = InMemoryMetricReader::new;
-
-  /** Constructs and in-memory reader and registers it with the specific SDK. */
-  public static InMemoryMetricReader create(SdkMeterProvider provider) {
-    return provider.register(FACTORY);
+  @Override
+  public InMemoryMetricReader apply(MetricProducer producer) {
+    this.sdkCollection = producer;
+    return this;
   }
 }

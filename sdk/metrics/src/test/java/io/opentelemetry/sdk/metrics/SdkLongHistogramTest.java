@@ -30,10 +30,14 @@ class SdkLongHistogramTest {
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(SdkLongHistogramTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
+  private final InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
   private final SdkMeterProvider sdkMeterProvider =
-      SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE).build();
+      SdkMeterProvider.builder()
+          .setClock(testClock)
+          .setResource(RESOURCE)
+          .register(sdkMeterReader)
+          .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
-  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create(sdkMeterProvider);
 
   @Test
   void record_PreventNullAttributes() {

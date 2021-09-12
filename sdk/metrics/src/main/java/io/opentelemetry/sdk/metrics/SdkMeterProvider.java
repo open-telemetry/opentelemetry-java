@@ -77,7 +77,7 @@ public final class SdkMeterProvider implements MeterProvider {
    * @param factory a constructor for the reader, given access to SDK internals.
    * @return the registered reader.
    */
-  public <R extends MetricReader> R register(MetricReader.Factory<R> factory) {
+  <R extends MetricReader> R register(MetricReader.Factory<R> factory) {
     collectorsLock.lock();
     try {
       CollectionHandle handle = CollectionHandle.create();

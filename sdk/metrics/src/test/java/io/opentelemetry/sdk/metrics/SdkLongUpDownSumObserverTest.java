@@ -34,8 +34,8 @@ class SdkLongUpDownSumObserverTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create(sdkMeterProvider);
+    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.register(sdkMeterReader).build();
     sdkMeterProvider
         .get(getClass().getName())
         .upDownCounterBuilder("testObserver")
@@ -48,8 +48,8 @@ class SdkLongUpDownSumObserverTest {
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create(sdkMeterProvider);
+    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.register(sdkMeterReader).build();
     sdkMeterProvider
         .get(getClass().getName())
         .upDownCounterBuilder("testObserver")
@@ -102,8 +102,10 @@ class SdkLongUpDownSumObserverTest {
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_DeltaSumAggregator() {
+    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder
+            .register(sdkMeterReader)
             .registerView(
                 InstrumentSelector.builder()
                     .setInstrumentType(InstrumentType.OBSERVABLE_UP_DOWN_SUM)
@@ -112,7 +114,6 @@ class SdkLongUpDownSumObserverTest {
                     .setAggregation(Aggregation.sum(AggregationTemporality.DELTA))
                     .build())
             .build();
-    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create(sdkMeterProvider);
     sdkMeterProvider
         .get(getClass().getName())
         .upDownCounterBuilder("testObserver")

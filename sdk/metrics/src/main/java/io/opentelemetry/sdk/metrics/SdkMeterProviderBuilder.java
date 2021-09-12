@@ -114,6 +114,9 @@ public final class SdkMeterProviderBuilder {
    * @see GlobalMeterProvider
    */
   public SdkMeterProvider build() {
-    return new SdkMeterProvider(clock, resource, viewRegistryBuilder.build());
+    // TODO - instantiate readers legitimately here, vs. late-registration.
+    SdkMeterProvider provider = new SdkMeterProvider(clock, resource, viewRegistryBuilder.build());
+    metricReaders.forEach(provider::register);
+    return provider;
   }
 }
