@@ -64,9 +64,9 @@ public final class LogAdapter {
     return logsBuilder.build();
   }
 
-  private static Map<
-          Resource, Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>>
-      groupByResourceAndLibrary(Collection<LogRecord> logRecordList) {
+  private static Map<Resource, Map<InstrumentationLibraryInfo,
+      List<io.opentelemetry.proto.logs.v1.LogRecord>>>
+  groupByResourceAndLibrary(Collection<LogRecord> logRecordList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>>
         result = new HashMap<>();
     for (LogRecord logRecord : logRecordList) {
@@ -93,12 +93,10 @@ public final class LogAdapter {
             .setTimeUnixNano(logRecord.getTimeUnixNano())
             .setTraceId(
                 UnsafeByteOperations.unsafeWrap(
-                    OtelEncodingUtils.bytesFromBase16(
-                        logRecord.getTraceId(), TraceId.getLength())))
+                    OtelEncodingUtils.bytesFromBase16(logRecord.getTraceId(), TraceId.getLength())))
             .setSpanId(
                 UnsafeByteOperations.unsafeWrap(
-                    OtelEncodingUtils.bytesFromBase16(
-                        logRecord.getSpanId(), SpanId.getLength())));
+                    OtelEncodingUtils.bytesFromBase16(logRecord.getSpanId(), SpanId.getLength())));
 
     logRecord
         .getAttributes()
