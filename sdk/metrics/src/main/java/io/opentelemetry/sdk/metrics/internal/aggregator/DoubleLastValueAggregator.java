@@ -55,9 +55,8 @@ final class DoubleLastValueAggregator extends AbstractAggregator<DoubleAccumulat
   }
 
   @Override
-  public DoubleAccumulation merge(DoubleAccumulation a1, DoubleAccumulation a2) {
-    // TODO: Define the order between accumulation.
-    return a2;
+  public DoubleAccumulation merge(DoubleAccumulation previous, DoubleAccumulation current) {
+    return current;
   }
 
   @Override

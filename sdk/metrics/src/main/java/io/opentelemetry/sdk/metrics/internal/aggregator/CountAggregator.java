@@ -57,8 +57,9 @@ final class CountAggregator extends AbstractAggregator<LongAccumulation> {
   }
 
   @Override
-  public LongAccumulation merge(LongAccumulation a1, LongAccumulation a2) {
-    return LongAccumulation.create(a1.getValue() + a2.getValue(), a2.getExemplars());
+  public LongAccumulation merge(LongAccumulation previous, LongAccumulation current) {
+    return LongAccumulation.create(
+        previous.getValue() + current.getValue(), current.getExemplars());
   }
 
   @Override

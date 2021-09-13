@@ -35,7 +35,8 @@ public interface ExemplarReservoir {
    *
    * @param pointAttributes the {@link Attributes} associated with the metric point. {@link
    *     Exemplar}s should filter these out of their final data state.
-   * @return An (immutable) list of sampled exemplars for this point.
+   * @return An (immutable) list of sampled exemplars for this point. Implementers are expected to
+   *     filter out {@code pointAttributes} from the original recorded attributes.
    */
   List<Exemplar> collectAndReset(Attributes pointAttributes);
 }

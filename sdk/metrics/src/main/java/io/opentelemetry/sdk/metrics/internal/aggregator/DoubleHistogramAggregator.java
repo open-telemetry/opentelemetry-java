@@ -60,13 +60,14 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
    * merging accumulations with different boundaries.
    */
   @Override
-  public final HistogramAccumulation merge(HistogramAccumulation x, HistogramAccumulation y) {
-    long[] mergedCounts = new long[x.getCounts().length];
-    for (int i = 0; i < x.getCounts().length; ++i) {
-      mergedCounts[i] = x.getCounts()[i] + y.getCounts()[i];
+  public final HistogramAccumulation merge(
+      HistogramAccumulation previous, HistogramAccumulation current) {
+    long[] mergedCounts = new long[previous.getCounts().length];
+    for (int i = 0; i < previous.getCounts().length; ++i) {
+      mergedCounts[i] = previous.getCounts()[i] + current.getCounts()[i];
     }
-    // Note: we always preserve the left-side exemplars as these are the "newer" ones.
-    return HistogramAccumulation.create(x.getSum() + y.getSum(), mergedCounts, x.getExemplars());
+    return HistogramAccumulation.create(
+        previous.getSum() + current.getSum(), mergedCounts, current.getExemplars());
   }
 
   @Override

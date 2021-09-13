@@ -122,6 +122,11 @@ class DoubleSumAggregatorTest {
 
   @Test
   void merge() {
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
+    List<Exemplar> exemplars = Collections.singletonList(exemplar);
+    List<Exemplar> previousExemplars =
+        Collections.singletonList(DoubleExemplar.create(attributes, 1L, "spanId", "traceId", 2));
     for (InstrumentType instrumentType : InstrumentType.values()) {
       for (AggregationTemporality temporality : AggregationTemporality.values()) {
         DoubleSumAggregator aggregator =
@@ -136,12 +141,15 @@ class DoubleSumAggregatorTest {
         MergeStrategy expectedMergeStrategy =
             AbstractSumAggregator.resolveMergeStrategy(instrumentType, temporality);
         DoubleAccumulation merged =
-            aggregator.merge(DoubleAccumulation.create(1.0d), DoubleAccumulation.create(2.0d));
+            aggregator.merge(
+                DoubleAccumulation.create(1.0d, previousExemplars),
+                DoubleAccumulation.create(2.0d, exemplars));
         assertThat(merged.getValue())
             .withFailMessage(
                 "Invalid merge result for instrumentType %s, temporality %s: %s",
                 instrumentType, temporality, merged)
             .isEqualTo(expectedMergeStrategy == MergeStrategy.SUM ? 3.0d : 1.0d);
+        assertThat(merged.getExemplars()).containsExactly(exemplar);
       }
     }
   }

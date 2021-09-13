@@ -10,11 +10,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link AggregatorHandle}. */
@@ -53,6 +56,21 @@ class DoubleLastValueAggregatorTest {
     aggregatorHandle.recordDouble(12.1);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12.1);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+  }
+
+  @Test
+  void mergeAccumulation() {
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
+    List<Exemplar> exemplars = Collections.singletonList(exemplar);
+    List<Exemplar> previousExemplars =
+        Collections.singletonList(DoubleExemplar.create(attributes, 1L, "spanId", "traceId", 2));
+    DoubleAccumulation result =
+        aggregator.merge(
+            DoubleAccumulation.create(1, previousExemplars),
+            DoubleAccumulation.create(2, exemplars));
+    // Assert that latest measurement is kept.
+    assertThat(result).isEqualTo(DoubleAccumulation.create(2, exemplars));
   }
 
   @Test

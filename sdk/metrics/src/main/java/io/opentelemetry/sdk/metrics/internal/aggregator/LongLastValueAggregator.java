@@ -53,9 +53,8 @@ final class LongLastValueAggregator extends AbstractAggregator<LongAccumulation>
   }
 
   @Override
-  public LongAccumulation merge(LongAccumulation a1, LongAccumulation a2) {
-    // TODO: Define the order between accumulation.
-    return a2;
+  public LongAccumulation merge(LongAccumulation previous, LongAccumulation current) {
+    return current;
   }
 
   @Override

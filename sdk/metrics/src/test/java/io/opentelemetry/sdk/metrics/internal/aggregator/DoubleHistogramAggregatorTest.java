@@ -109,6 +109,22 @@ public class DoubleHistogramAggregatorTest {
   }
 
   @Test
+  void mergeAccumulation() {
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
+    List<Exemplar> exemplars = Collections.singletonList(exemplar);
+    List<Exemplar> previousExemplars =
+        Collections.singletonList(DoubleExemplar.create(attributes, 1L, "spanId", "traceId", 2));
+    HistogramAccumulation previousAccumulation =
+        HistogramAccumulation.create(2, new long[] {1, 1, 0}, previousExemplars);
+    HistogramAccumulation nextAccumulation =
+        HistogramAccumulation.create(2, new long[] {0, 0, 2}, exemplars);
+    // Assure most recent exemplars are kept.
+    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
+        .isEqualTo(HistogramAccumulation.create(4, new long[] {1, 1, 2}, exemplars));
+  }
+
+  @Test
   void toMetricData() {
     AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
