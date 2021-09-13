@@ -1,6 +1,8 @@
 # Changelog
 
-## Version 1.6.0 (Unreleased):
+## Version 1.7.0 (unreleased):
+
+## Version 1.6.0 (2021-09-13):
 
 ### API
 
