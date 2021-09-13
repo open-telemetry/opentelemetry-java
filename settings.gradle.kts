@@ -79,8 +79,9 @@ fun patchNames(rootProject: ProjectDescriptor) {
   rootProject.children.forEach {
     if (it.name.startsWith("opentelemetry-")) {
       val pathParts = it.path.split(":").toMutableList()
-      val prefix = "opentelemetry" + pathParts.subList(0, pathParts.lastIndex).joinToString("-")
-      val singularPrefix = "opentelemetry" + pathParts
+      pathParts.removeFirst() // Leading ":" gives us an empty path component, leading to weirdness
+      val prefix = "opentelemetry-" + pathParts.subList(0, pathParts.lastIndex).joinToString("-")
+      val singularPrefix = "opentelemetry-" + pathParts
         .subList(0, pathParts.lastIndex)
         .joinToString("-") { s -> s.removeSuffix("s") }
       pathParts[pathParts.lastIndex] = pathParts.last()
