@@ -16,38 +16,62 @@ final class ResourceMarshaler extends MarshalerWithSize {
   private static final WeakConcurrentMap<io.opentelemetry.sdk.resources.Resource, ResourceMarshaler>
       RESOURCE_MARSHALER_CACHE = new WeakConcurrentMap.WithInlinedExpunction<>();
 
-  private final byte[] serializedResource;
+  private final byte[] serializedBinary;
+  private final String serializedJson;
 
   static ResourceMarshaler create(io.opentelemetry.sdk.resources.Resource resource) {
     ResourceMarshaler cached = RESOURCE_MARSHALER_CACHE.get(resource);
     if (cached == null) {
       // Since WeakConcurrentMap doesn't support computeIfAbsent, we may end up doing the conversion
       // a few times until the cache gets filled which is fine.
-      cached = new ResourceMarshaler(KeyValueMarshaler.createRepeated(resource.getAttributes()));
+
+      RealResourceMarshaler realMarshaler =
+          new RealResourceMarshaler(KeyValueMarshaler.createRepeated(resource.getAttributes()));
+
+      ByteArrayOutputStream binaryBos =
+          new ByteArrayOutputStream(realMarshaler.getBinarySerializedSize());
+
+      try {
+        realMarshaler.writeBinaryTo(binaryBos);
+      } catch (IOException e) {
+        throw new UncheckedIOException(
+            "Serialization error, this is likely a bug in OpenTelemetry.", e);
+      }
+
+      String json = MarshalerUtil.preserializeJsonFields(realMarshaler);
+
+      cached = new ResourceMarshaler(binaryBos.toByteArray(), json);
       RESOURCE_MARSHALER_CACHE.put(resource, cached);
     }
     return cached;
   }
 
-  private ResourceMarshaler(KeyValueMarshaler[] attributeMarshalers) {
-    super(calculateSize(attributeMarshalers));
-    ByteArrayOutputStream bos = new ByteArrayOutputStream(getBinarySerializedSize());
-    try (ProtoSerializer serializer = new ProtoSerializer(bos)) {
-      serializer.serializeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
-    } catch (IOException e) {
-      // Presized so can't happen (we would have already thrown OutOfMemoryError)
-      throw new UncheckedIOException(e);
-    }
-    serializedResource = bos.toByteArray();
+  private ResourceMarshaler(byte[] binary, String json) {
+    super(binary.length);
+    serializedBinary = binary;
+    serializedJson = json;
   }
 
   @Override
   public void writeTo(Serializer output) throws IOException {
-    // TODO(anuraaga): Preserialize JSON as well.
-    output.writeSerializedMessage(serializedResource, MarshalerUtil.EMPTY_BYTES);
+    output.writeSerializedMessage(serializedBinary, serializedJson);
   }
 
-  private static int calculateSize(KeyValueMarshaler[] attributeMarshalers) {
-    return MarshalerUtil.sizeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
+  private static final class RealResourceMarshaler extends MarshalerWithSize {
+    private final KeyValueMarshaler[] attributes;
+
+    private RealResourceMarshaler(KeyValueMarshaler[] attributes) {
+      super(calculateSize(attributes));
+      this.attributes = attributes;
+    }
+
+    @Override
+    void writeTo(Serializer output) throws IOException {
+      output.serializeRepeatedMessage(Resource.ATTRIBUTES, attributes);
+    }
+
+    private static int calculateSize(KeyValueMarshaler[] attributeMarshalers) {
+      return MarshalerUtil.sizeRepeatedMessage(Resource.ATTRIBUTES, attributeMarshalers);
+    }
   }
 }

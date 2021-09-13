@@ -145,7 +145,7 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
-  public void writeSerializedMessage(byte[] protoSerialized, byte[] jsonSerialized)
+  public void writeSerializedMessage(byte[] protoSerialized, String jsonSerialized)
       throws IOException {
     output.writeRawBytes(protoSerialized);
   }
