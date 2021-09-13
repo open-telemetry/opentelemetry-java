@@ -89,6 +89,7 @@ fun patchNames(rootProject: ProjectDescriptor) {
         .removePrefix("-")
         .ifEmpty { "all" }
       it.projectDir = file(pathParts.joinToString("/"))
+      println("Directory of ${it.path} is ${it.projectDir}")
     }
     patchNames(it)
   }
