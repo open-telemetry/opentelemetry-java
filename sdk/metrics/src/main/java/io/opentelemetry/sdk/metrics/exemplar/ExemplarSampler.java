@@ -22,6 +22,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class ExemplarSampler {
+  ExemplarSampler() {}
 
   /** Configuration for exemplar storage. */
   public abstract ExemplarReservoirFactory getFactory();
