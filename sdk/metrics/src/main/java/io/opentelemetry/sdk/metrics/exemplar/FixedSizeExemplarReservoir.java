@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.exemplar;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
@@ -20,8 +19,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
 /**
@@ -108,8 +105,6 @@ public class FixedSizeExemplarReservoir implements ExemplarReservoir {
    * <p>Allocations are acceptable in the {@link #getAndReset(Attributes)} method.
    */
   private class ReservoirCell {
-    private final Lock lock = new ReentrantLock();
-
     private boolean hasValue = false;
     private double value;
     private Attributes attributes;
@@ -117,21 +112,15 @@ public class FixedSizeExemplarReservoir implements ExemplarReservoir {
     private String traceId;
     private long recordTime;
 
-    void offerMeasurement(double value, Attributes attributes, Context context) {
-      lock.lock();
-      try {
-        this.value = value;
-        this.attributes = attributes;
-        // Note: It may make sense in the future to attempt to pull this from an active span.
-        this.recordTime = clock.nanoTime();
-        updateFromContext(context);
-        hasValue = true;
-      } finally {
-        lock.unlock();
-      }
+    synchronized void offerMeasurement(double value, Attributes attributes, Context context) {
+      this.value = value;
+      this.attributes = attributes;
+      // Note: It may make sense in the future to attempt to pull this from an active span.
+      this.recordTime = clock.nanoTime();
+      updateFromContext(context);
+      hasValue = true;
     }
 
-    @GuardedBy("lock")
     private void updateFromContext(Context context) {
       Span current = Span.fromContext(context);
       if (current.getSpanContext().isValid()) {
@@ -141,25 +130,20 @@ public class FixedSizeExemplarReservoir implements ExemplarReservoir {
     }
 
     @Nullable
-    Exemplar getAndReset(Attributes pointAttributes) {
-      lock.lock();
-      try {
-        if (hasValue) {
-          Exemplar result =
-              DoubleExemplar.create(
-                  filtered(attributes, pointAttributes), recordTime, spanId, traceId, value);
-          this.attributes = null;
-          this.value = 0;
-          this.spanId = null;
-          this.traceId = null;
-          this.recordTime = 0;
-          this.hasValue = false;
-          return result;
-        }
-        return null;
-      } finally {
-        lock.unlock();
+    synchronized Exemplar getAndReset(Attributes pointAttributes) {
+      if (hasValue) {
+        Exemplar result =
+            DoubleExemplar.create(
+                filtered(attributes, pointAttributes), recordTime, spanId, traceId, value);
+        this.attributes = null;
+        this.value = 0;
+        this.spanId = null;
+        this.traceId = null;
+        this.recordTime = 0;
+        this.hasValue = false;
+        return result;
       }
+      return null;
     }
   }
 
