@@ -60,6 +60,16 @@ public interface Aggregator<T> {
   /**
    * Returns the result of the merge of the given accumulations.
    *
+   * <p>This is called in several scenarios:
+   *
+   * <ul>
+   *   <li>When merging a delta synchronous accumulation with a previous cumulative to generate a
+   *       new cumulative.
+   *   <li>When merging two measurements reported during the same asynchronous instrument
+   *       collection.
+   *   <li>When merging two cumulative accumulations for calculating deltas from cumulative sums.
+   * </ul>
+   *
    * @param previousAccumulation the previously captured accumulation
    * @param accumulation the newly captured accumulation
    * @return the result of the merge of the given accumulations.
@@ -69,6 +79,13 @@ public interface Aggregator<T> {
   /**
    * Returns {@code true} if the processor needs to keep the previous collected state in order to
    * compute the desired metric.
+   *
+   * <p>This returns true in several scenarios:
+   *
+   * <ul>
+   *   <li>For synchronous instruments reporting cumulative aggregate values.
+   *   <li>For asynchronous sum instruments reporting delta values.
+   * </ul>
    *
    * @return {@code true} if the processor needs to keep the previous collected state.
    */

@@ -10,46 +10,59 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
+import java.util.function.Supplier;
 
-final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
+final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation> {
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
+
   DoubleSumAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
       MetricDescriptor metricDescriptor,
-      AggregationTemporality temporality) {
+      AggregationTemporality temporality,
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     super(
         resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor, temporality);
+
+    this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
-  public AggregatorHandle<Double> createHandle() {
-    return new Handle();
+  public AggregatorHandle<DoubleAccumulation> createHandle() {
+    return new Handle(reservoirSupplier.get());
   }
 
   @Override
-  public Double accumulateDouble(double value) {
-    return value;
+  public DoubleAccumulation accumulateDouble(double value) {
+    return DoubleAccumulation.create(value);
   }
 
   @Override
-  Double mergeSum(Double previousAccumulation, Double accumulation) {
-    return previousAccumulation + accumulation;
+  DoubleAccumulation mergeSum(
+      DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
+    return DoubleAccumulation.create(
+        previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
-  Double mergeDiff(Double previousAccumulation, Double accumulation) {
-    return accumulation - previousAccumulation;
+  DoubleAccumulation mergeDiff(
+      DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
+    return DoubleAccumulation.create(
+        accumulation.getValue() - previousAccumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
   public MetricData toMetricData(
-      Map<Attributes, Double> accumulationByLabels,
+      Map<Attributes, DoubleAccumulation> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
@@ -70,12 +83,16 @@ final class DoubleSumAggregator extends AbstractSumAggregator<Double> {
                 epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<Double> {
+  static final class Handle extends AggregatorHandle<DoubleAccumulation> {
     private final DoubleAdder current = new DoubleAdder();
 
+    Handle(ExemplarReservoir exemplarReservoir) {
+      super(exemplarReservoir);
+    }
+
     @Override
-    protected Double doAccumulateThenReset() {
-      return this.current.sumThenReset();
+    protected DoubleAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
+      return DoubleAccumulation.create(this.current.sumThenReset(), exemplars);
     }
 
     @Override

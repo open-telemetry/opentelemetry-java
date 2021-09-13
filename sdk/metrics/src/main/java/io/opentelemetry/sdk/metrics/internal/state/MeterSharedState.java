@@ -80,7 +80,8 @@ public abstract class MeterSharedState {
                         instrument,
                         meterProviderSharedState.getResource(),
                         getInstrumentationLibraryInfo(),
-                        meterProviderSharedState.getStartEpochNanos())));
+                        meterProviderSharedState.getStartEpochNanos(),
+                        meterProviderSharedState.getExemplarSampler())));
       } catch (DuplicateMetricStorageException e) {
         logger.log(Level.WARNING, e, () -> "Failed to register metric.");
       }

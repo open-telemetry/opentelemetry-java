@@ -25,12 +25,12 @@ abstract class AbstractMinMaxSumCountAggregator
 
   @Override
   public final MinMaxSumCountAccumulation merge(
-      MinMaxSumCountAccumulation a1, MinMaxSumCountAccumulation a2) {
+      MinMaxSumCountAccumulation previous, MinMaxSumCountAccumulation current) {
     return MinMaxSumCountAccumulation.create(
-        a1.getCount() + a2.getCount(),
-        a1.getSum() + a2.getSum(),
-        Math.min(a1.getMin(), a2.getMin()),
-        Math.max(a1.getMax(), a2.getMax()));
+        previous.getCount() + current.getCount(),
+        previous.getSum() + current.getSum(),
+        Math.min(previous.getMin(), current.getMin()),
+        Math.max(previous.getMax(), current.getMax()));
   }
 
   @Override

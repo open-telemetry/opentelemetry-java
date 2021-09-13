@@ -10,7 +10,9 @@ import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumulation> {
   private final double[] boundaries;
@@ -26,12 +29,15 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   // a cache for converting to MetricData
   private final List<Double> boundaryList;
 
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
+
   DoubleHistogramAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       MetricDescriptor metricDescriptor,
       double[] boundaries,
-      boolean stateful) {
+      boolean stateful,
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     super(resource, instrumentationLibraryInfo, metricDescriptor, stateful);
     this.boundaries = boundaries;
 
@@ -40,11 +46,12 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       boundaryList.add(v);
     }
     this.boundaryList = Collections.unmodifiableList(boundaryList);
+    this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
   public AggregatorHandle<HistogramAccumulation> createHandle() {
-    return new Handle(this.boundaries);
+    return new Handle(this.boundaries, reservoirSupplier.get());
   }
 
   /**
@@ -53,12 +60,14 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
    * merging accumulations with different boundaries.
    */
   @Override
-  public final HistogramAccumulation merge(HistogramAccumulation x, HistogramAccumulation y) {
-    long[] mergedCounts = new long[x.getCounts().length];
-    for (int i = 0; i < x.getCounts().length; ++i) {
-      mergedCounts[i] = x.getCounts()[i] + y.getCounts()[i];
+  public final HistogramAccumulation merge(
+      HistogramAccumulation previous, HistogramAccumulation current) {
+    long[] mergedCounts = new long[previous.getCounts().length];
+    for (int i = 0; i < previous.getCounts().length; ++i) {
+      mergedCounts[i] = previous.getCounts()[i] + current.getCounts()[i];
     }
-    return HistogramAccumulation.create(x.getSum() + y.getSum(), mergedCounts);
+    return HistogramAccumulation.create(
+        previous.getSum() + current.getSum(), mergedCounts, current.getExemplars());
   }
 
   @Override
@@ -117,18 +126,19 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
     private final ReentrantLock lock = new ReentrantLock();
 
-    Handle(double[] boundaries) {
+    Handle(double[] boundaries, ExemplarReservoir reservoir) {
+      super(reservoir);
       this.boundaries = boundaries;
       this.counts = new long[this.boundaries.length + 1];
       this.sum = 0;
     }
 
     @Override
-    protected HistogramAccumulation doAccumulateThenReset() {
+    protected HistogramAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
       lock.lock();
       try {
         HistogramAccumulation acc =
-            HistogramAccumulation.create(sum, Arrays.copyOf(counts, counts.length));
+            HistogramAccumulation.create(sum, Arrays.copyOf(counts, counts.length), exemplars);
         this.sum = 0;
         Arrays.fill(this.counts, 0);
         return acc;

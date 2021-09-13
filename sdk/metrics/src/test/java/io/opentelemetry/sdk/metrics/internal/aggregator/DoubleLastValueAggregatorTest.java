@@ -10,10 +10,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link AggregatorHandle}. */
@@ -22,7 +26,8 @@ class DoubleLastValueAggregatorTest {
       new DoubleLastValueAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          MetricDescriptor.create("name", "description", "unit"));
+          MetricDescriptor.create("name", "description", "unit"),
+          ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -31,37 +36,53 @@ class DoubleLastValueAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12.1);
     aggregatorHandle.recordDouble(13.1);
     aggregatorHandle.recordDouble(14.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(14.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(14.1);
   }
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(13.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(13.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(13.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordDouble(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12.1);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12.1);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+  }
+
+  @Test
+  void mergeAccumulation() {
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
+    List<Exemplar> exemplars = Collections.singletonList(exemplar);
+    List<Exemplar> previousExemplars =
+        Collections.singletonList(DoubleExemplar.create(attributes, 1L, "spanId", "traceId", 2));
+    DoubleAccumulation result =
+        aggregator.merge(
+            DoubleAccumulation.create(1, previousExemplars),
+            DoubleAccumulation.create(2, exemplars));
+    // Assert that latest measurement is kept.
+    assertThat(result).isEqualTo(DoubleAccumulation.create(2, exemplars));
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void toMetricData() {
-    AggregatorHandle<Double> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(10);
 
     MetricData metricData =
         aggregator.toMetricData(
-            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(
+                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
             0,
             10,
             100);
