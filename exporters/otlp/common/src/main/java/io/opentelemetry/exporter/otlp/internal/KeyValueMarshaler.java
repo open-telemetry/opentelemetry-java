@@ -16,10 +16,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-final class KeyValueMarshaler extends MarshalerWithSize {
+/**
+ * A Marshaler of {@link Attributes}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class KeyValueMarshaler extends MarshalerWithSize {
   private static final KeyValueMarshaler[] EMPTY_REPEATED = new KeyValueMarshaler[0];
 
-  static KeyValueMarshaler[] createRepeated(Attributes attributes) {
+  /** Returns Marshalers for the given Attributes. */
+  public static KeyValueMarshaler[] createRepeated(Attributes attributes) {
     if (attributes.isEmpty()) {
       return EMPTY_REPEATED;
     }
@@ -41,7 +48,7 @@ final class KeyValueMarshaler extends MarshalerWithSize {
   private final Marshaler value;
 
   @SuppressWarnings("unchecked")
-  static KeyValueMarshaler create(AttributeKey<?> attributeKey, Object value) {
+  private static KeyValueMarshaler create(AttributeKey<?> attributeKey, Object value) {
     final byte[] keyUtf8;
     if (attributeKey.getKey().isEmpty()) {
       keyUtf8 = MarshalerUtil.EMPTY_BYTES;
