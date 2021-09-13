@@ -33,5 +33,5 @@ public abstract class Marshaler {
   /** Returns the number of bytes this Marshaler will write in proto binary format. */
   public abstract int getBinarySerializedSize();
 
-  abstract void writeTo(Serializer output) throws IOException;
+  protected abstract void writeTo(Serializer output) throws IOException;
 }

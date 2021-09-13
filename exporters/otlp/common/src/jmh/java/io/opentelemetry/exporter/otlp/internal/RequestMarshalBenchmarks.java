@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.internal;
 
 import com.google.protobuf.util.JsonFormat;
+import io.opentelemetry.exporter.otlp.internal.traces.TraceRequestMarshaler;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
