@@ -62,6 +62,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -91,9 +92,11 @@ class OtlpExporterIntegrationTest {
       Logger.getLogger(OtlpExporterIntegrationTest.class.getName());
 
   static {
-    // Expose the port the in-process OTLP gRPC server will run on before the collector
-    // is initialized so the collector can connect to it.
-    exposeHostPorts(IN_PROCESS_OTLP_GRPC_PORT);
+    if (DockerClientFactory.instance().isDockerAvailable()) {
+      // If docker is available, expose the port the in-process OTLP gRPC server will run on before
+      // the collector is initialized so the collector can connect to it.
+      exposeHostPorts(IN_PROCESS_OTLP_GRPC_PORT);
+    }
   }
 
   @RegisterExtension
