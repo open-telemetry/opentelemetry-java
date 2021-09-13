@@ -143,7 +143,7 @@ final class DefaultConfigProperties implements ConfigProperties {
   }
 
   @Override
-  public List<String> getCommaSeparatedValues(String name) {
+  public List<String> getList(String name) {
     String value = config.get(name);
     if (value == null) {
       return Collections.emptyList();
@@ -152,8 +152,8 @@ final class DefaultConfigProperties implements ConfigProperties {
   }
 
   @Override
-  public Map<String, String> getCommaSeparatedMap(String name) {
-    return getCommaSeparatedValues(name).stream()
+  public Map<String, String> getMap(String name) {
+    return getList(name).stream()
         .map(keyValuePair -> filterBlanksAndNulls(keyValuePair.split("=", 2)))
         .map(
             splitKeyValuePairs -> {

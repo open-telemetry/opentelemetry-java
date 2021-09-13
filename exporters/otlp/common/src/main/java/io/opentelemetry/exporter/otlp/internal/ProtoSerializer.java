@@ -5,16 +5,47 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
+import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /** Serializer for the protobuf binary wire format. */
-final class ProtoSerializer extends Serializer {
+final class ProtoSerializer extends Serializer implements AutoCloseable {
+
+  // Cache ID conversion to bytes since we know it's common to use the same ID multiple times within
+  // a single export (trace ID and parent span ID).
+  // In practice, there is often only one thread that calls this code in the BatchSpanProcessor so
+  // reusing buffers for the thread is almost free. Even with multiple threads, it should still be
+  // worth it and is common practice in serialization libraries such as Jackson.
+  private static final ThreadLocal<Map<String, byte[]>> THREAD_LOCAL_ID_CACHE = new ThreadLocal<>();
 
   private final CodedOutputStream output;
+  private final Map<String, byte[]> idCache;
 
-  ProtoSerializer(CodedOutputStream output) {
-    this.output = output;
+  ProtoSerializer(OutputStream output) {
+    this.output = CodedOutputStream.newInstance(output);
+    idCache = getIdCache();
+  }
+
+  @Override
+  protected void writeTraceId(ProtoFieldInfo field, String traceId) throws IOException {
+    byte[] traceIdBytes =
+        idCache.computeIfAbsent(
+            traceId, id -> OtelEncodingUtils.bytesFromBase16(id, TraceId.getLength()));
+    writeBytes(field, traceIdBytes);
+  }
+
+  @Override
+  protected void writeSpanId(ProtoFieldInfo field, String spanId) throws IOException {
+    byte[] spanIdBytes =
+        idCache.computeIfAbsent(
+            spanId, id -> OtelEncodingUtils.bytesFromBase16(id, SpanId.getLength()));
+    writeBytes(field, spanIdBytes);
   }
 
   @Override
@@ -114,14 +145,23 @@ final class ProtoSerializer extends Serializer {
   }
 
   @Override
-  public void writeSerializedMessage(byte[] protoSerialized, byte[] jsonSerialized)
+  public void writeSerializedMessage(byte[] protoSerialized, String jsonSerialized)
       throws IOException {
     output.writeRawBytes(protoSerialized);
   }
 
-  // TODO(anuraaga): Remove after moving protobuf Value serialization from AttributeMarshaler to
-  // here.
-  CodedOutputStream getCodedOutputStream() {
-    return output;
+  @Override
+  public void close() throws IOException {
+    output.flush();
+    idCache.clear();
+  }
+
+  private static Map<String, byte[]> getIdCache() {
+    Map<String, byte[]> result = THREAD_LOCAL_ID_CACHE.get();
+    if (result == null) {
+      result = new HashMap<>();
+      THREAD_LOCAL_ID_CACHE.set(result);
+    }
+    return result;
   }
 }

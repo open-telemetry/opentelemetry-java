@@ -7,13 +7,20 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
+import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -23,9 +30,13 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
@@ -172,6 +183,45 @@ class TraceRequestMarshalerTest {
               + "\nparsed from marshaler output: "
               + reverse);
     }
+
+    // We don't compare JSON strings due to some differences (particularly serializing enums as
+    // numbers instead of names). This may improve in the future but what matters is what we produce
+    // can be parsed.
+    ByteArrayOutputStream jsonOutput = new ByteArrayOutputStream();
+    requestMarshaler.writeJsonTo(jsonOutput);
+    String json = new String(jsonOutput.toByteArray(), StandardCharsets.UTF_8);
+    ExportTraceServiceRequest.Builder builder = ExportTraceServiceRequest.newBuilder();
+    try {
+      JsonFormat.parser().merge(json, builder);
+    } catch (InvalidProtocolBufferException e) {
+      throw new UncheckedIOException(e);
+    }
+
+    // Hackily swap out "hex as base64" decoded IDs with correct ones since no JSON protobuf
+    // libraries currently support customizing on the parse side.
+    for (ResourceSpans.Builder rs : builder.getResourceSpansBuilderList()) {
+      for (InstrumentationLibrarySpans.Builder ils :
+          rs.getInstrumentationLibrarySpansBuilderList()) {
+        for (Span.Builder s : ils.getSpansBuilderList()) {
+          s.setTraceId(toHex(s.getTraceId()));
+          s.setSpanId(toHex(s.getSpanId()));
+          s.setParentSpanId(toHex(s.getParentSpanId()));
+
+          for (Span.Link.Builder l : s.getLinksBuilderList()) {
+            l.setTraceId(toHex(l.getTraceId()));
+            l.setSpanId(toHex(l.getSpanId()));
+          }
+        }
+      }
+    }
+
+    assertThat(builder.build()).isEqualTo(ExportTraceServiceRequest.parseFrom(customOutputBytes));
+  }
+
+  private static ByteString toHex(ByteString hexReadAsBase64) {
+    String hex =
+        Base64.getEncoder().encodeToString(hexReadAsBase64.toByteArray()).toLowerCase(Locale.ROOT);
+    return ByteString.copyFrom(OtelEncodingUtils.bytesFromBase16(hex, hex.length()));
   }
 
   private static SpanData testSpanDataWithInstrumentationLibrary(

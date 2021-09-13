@@ -64,6 +64,7 @@ class AdapterTest {
   }
 
   @Test
+  @SuppressWarnings({"ProtoTimestampGetSecondsGetNano", "ProtoDurationGetSecondsGetNano"})
   void testProtoSpan() {
     long duration = 900; // ms
     long startMs = System.currentTimeMillis();
@@ -78,7 +79,7 @@ class AdapterTest {
     assertThat(SpanId.fromBytes(jaegerSpan.getSpanId().toByteArray())).isEqualTo(span.getSpanId());
     assertThat(jaegerSpan.getOperationName()).isEqualTo("GET /api/endpoint");
     assertThat(jaegerSpan.getStartTime()).isEqualTo(Timestamps.fromMillis(startMs));
-    assertThat(Durations.toMillis(jaegerSpan.getDuration())).isEqualTo(duration);
+    assertThat(jaegerSpan.getDuration()).isEqualTo(Durations.fromMillis(duration));
 
     assertThat(jaegerSpan.getTagsCount()).isEqualTo(6);
     Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);

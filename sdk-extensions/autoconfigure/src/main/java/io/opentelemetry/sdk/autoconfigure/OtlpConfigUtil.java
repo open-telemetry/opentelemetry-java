@@ -34,6 +34,7 @@ final class OtlpConfigUtil {
       ConfigProperties config,
       Consumer<String> setEndpoint,
       BiConsumer<String, String> addHeader,
+      Consumer<String> setCompression,
       Consumer<Duration> setTimeout,
       Consumer<byte[]> setTrustedCertificates) {
     String endpoint = config.getString("otel.exporter.otlp." + dataType + ".endpoint");
@@ -44,12 +45,19 @@ final class OtlpConfigUtil {
       setEndpoint.accept(endpoint);
     }
 
-    Map<String, String> headers =
-        config.getCommaSeparatedMap("otel.exporter.otlp." + dataType + ".headers");
+    Map<String, String> headers = config.getMap("otel.exporter.otlp." + dataType + ".headers");
     if (headers.isEmpty()) {
-      headers = config.getCommaSeparatedMap("otel.exporter.otlp.headers");
+      headers = config.getMap("otel.exporter.otlp.headers");
     }
     headers.forEach(addHeader);
+
+    String compression = config.getString("otel.exporter.otlp." + dataType + ".compression");
+    if (compression == null) {
+      compression = config.getString("otel.exporter.otlp.compression");
+    }
+    if (compression != null) {
+      setCompression.accept(compression);
+    }
 
     Duration timeout = config.getDuration("otel.exporter.otlp." + dataType + ".timeout");
     if (timeout == null) {

@@ -9,12 +9,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.LongExemplar;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link LongLastValueAggregator}. */
@@ -23,7 +27,8 @@ class LongLastValueAggregatorTest {
       new LongLastValueAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          MetricDescriptor.create("name", "description", "unit"));
+          MetricDescriptor.create("name", "description", "unit"),
+          ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -32,36 +37,51 @@ class LongLastValueAggregatorTest {
 
   @Test
   void multipleRecords() {
-    AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12L);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12L);
     aggregatorHandle.recordLong(13);
     aggregatorHandle.recordLong(14);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(14L);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(14L);
   }
 
   @Test
   void toAccumulationAndReset() {
-    AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(13);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(13L);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(13L);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(12);
-    assertThat(aggregatorHandle.accumulateThenReset()).isEqualTo(12L);
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(12L);
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
+  }
+
+  @Test
+  void mergeAccumulation() {
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    Exemplar exemplar = LongExemplar.create(attributes, 2L, "spanid", "traceid", 1);
+    List<Exemplar> exemplars = Collections.singletonList(exemplar);
+    List<Exemplar> previousExemplars =
+        Collections.singletonList(LongExemplar.create(attributes, 1L, "spanId", "traceId", 2));
+    LongAccumulation result =
+        aggregator.merge(
+            LongAccumulation.create(1, previousExemplars), LongAccumulation.create(2, exemplars));
+    // Assert that latest measurement is kept.
+    assertThat(result).isEqualTo(LongAccumulation.create(2, exemplars));
   }
 
   @Test
   void toMetricData() {
-    AggregatorHandle<Long> aggregatorHandle = aggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
         aggregator.toMetricData(
-            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(
+                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
             0,
             10,
             100);

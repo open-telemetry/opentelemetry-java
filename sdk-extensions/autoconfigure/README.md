@@ -59,6 +59,9 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 | otel.exporter.otlp.headers   | OTEL_EXPORTER_OTLP_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP trace and metrics requests.        |
 | otel.exporter.otlp.traces.headers   | OTEL_EXPORTER_OTLP_TRACES_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP trace requests.        |
 | otel.exporter.otlp.metrics.headers   | OTEL_EXPORTER_OTLP_METRICS_HEADERS  | Key-value pairs separated by commas to pass as request headers on OTLP metrics requests.        |
+| otel.exporter.otlp.compression   | OTEL_EXPORTER_OTLP_COMPRESSION | The compression type to use on OTLP trace and metric requests. Options include `gzip`. By default no compression will be used. |
+| otel.exporter.otlp.traces.compression   | OTEL_EXPORTER_OTLP_TRACES_COMPRESSION | The compression type to use on OTLP trace requests. Options include `gzip`. By default no compression will be used. |
+| otel.exporter.otlp.metrics.compression   | OTEL_EXPORTER_OTLP_METRICS_COMPRESSION | The compression type to use on OTLP metric requests. Options include `gzip`. By default no compression will be used. |
 | otel.exporter.otlp.timeout   | OTEL_EXPORTER_OTLP_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP trace and metric batch. Default is `10000`.  |
 | otel.exporter.otlp.traces.timeout   | OTEL_EXPORTER_OTLP_TRACES_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP trace batch. Default is `10000`.  |
 | otel.exporter.otlp.metrics.timeout   | OTEL_EXPORTER_OTLP_METRICS_TIMEOUT  | The maximum waiting time, in milliseconds, allowed to send each OTLP metric batch. Default is `10000`.  |
@@ -178,11 +181,12 @@ Supported values for `otel.traces.sampler` are
 
 These properties can be used to control the maximum size of recordings per span.
 
-| System property                 | Environment variable            | Description                                                  |
-|---------------------------------|---------------------------------|--------------------------------------------------------------|
-| otel.span.attribute.count.limit | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT | The maximum number of attributes per span. Default is `128`.  |
-| otel.span.event.count.limit     | OTEL_SPAN_EVENT_COUNT_LIMIT     | The maximum number of events per span. Default is `128`.     |
-| otel.span.link.count.limit      | OTEL_SPAN_LINK_COUNT_LIMIT      | The maximum number of links per span. Default is `128`        |
+| System property                        | Environment variable                   | Description                                                            |
+|----------------------------------------|----------------------------------------|------------------------------------------------------------------------|
+| otel.span.attribute.value.length.limit | OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT | The maximum length of attribute values. By default there is no limit.  |
+| otel.span.attribute.count.limit        | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT        | The maximum number of attributes per span. Default is `128`.           |
+| otel.span.event.count.limit            | OTEL_SPAN_EVENT_COUNT_LIMIT            | The maximum number of events per span. Default is `128`.               |
+| otel.span.link.count.limit             | OTEL_SPAN_LINK_COUNT_LIMIT             | The maximum number of links per span. Default is `128`                 |
 
 ## Interval metric reader
 

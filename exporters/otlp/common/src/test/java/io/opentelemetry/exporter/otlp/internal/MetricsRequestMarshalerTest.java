@@ -15,8 +15,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
-import com.google.protobuf.Parser;
+import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.OtelEncodingUtils;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
@@ -53,9 +54,12 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
@@ -727,8 +731,8 @@ class MetricsRequestMarshalerTest {
         .map(
             point ->
                 parse(
-                    NumberDataPoint.parser(),
-                    toByteArray(MetricsRequestMarshaler.NumberDataPointMarshaler.create(point))))
+                    NumberDataPoint.getDefaultInstance(),
+                    MetricsRequestMarshaler.NumberDataPointMarshaler.create(point)))
         .collect(Collectors.toList());
   }
 
@@ -738,8 +742,8 @@ class MetricsRequestMarshalerTest {
         .map(
             point ->
                 parse(
-                    SummaryDataPoint.parser(),
-                    toByteArray(MetricsRequestMarshaler.SummaryDataPointMarshaler.create(point))))
+                    SummaryDataPoint.getDefaultInstance(),
+                    MetricsRequestMarshaler.SummaryDataPointMarshaler.create(point)))
         .collect(Collectors.toList());
   }
 
@@ -749,29 +753,31 @@ class MetricsRequestMarshalerTest {
         .map(
             point ->
                 parse(
-                    HistogramDataPoint.parser(),
-                    toByteArray(MetricsRequestMarshaler.HistogramDataPointMarshaler.create(point))))
+                    HistogramDataPoint.getDefaultInstance(),
+                    MetricsRequestMarshaler.HistogramDataPointMarshaler.create(point)))
         .collect(Collectors.toList());
   }
 
   private static Metric toProtoMetric(MetricData metricData) {
     return parse(
-        Metric.parser(), toByteArray(MetricsRequestMarshaler.MetricMarshaler.create(metricData)));
+        Metric.getDefaultInstance(), MetricsRequestMarshaler.MetricMarshaler.create(metricData));
   }
 
   private static List<ResourceMetrics> toProtoResourceMetrics(
       Collection<MetricData> metricDataList) {
     ExportMetricsServiceRequest exportRequest =
         parse(
-            ExportMetricsServiceRequest.parser(),
-            toByteArray(MetricsRequestMarshaler.create(metricDataList)));
+            ExportMetricsServiceRequest.getDefaultInstance(),
+            MetricsRequestMarshaler.create(metricDataList));
     return exportRequest.getResourceMetricsList();
   }
 
-  private static <T extends Message> T parse(Parser<T> parser, byte[] serialized) {
-    final T result;
+  @SuppressWarnings("unchecked")
+  private static <T extends Message> T parse(T prototype, Marshaler marshaler) {
+    byte[] serialized = toByteArray(marshaler);
+    T result;
     try {
-      result = parser.parseFrom(serialized);
+      result = (T) prototype.newBuilderForType().mergeFrom(serialized).build();
     } catch (InvalidProtocolBufferException e) {
       throw new UncheckedIOException(e);
     }
@@ -781,7 +787,44 @@ class MetricsRequestMarshalerTest {
     // tieme. If the lengths are equal and the resulting protos are equal, the marshaling is
     // guaranteed to be valid.
     assertThat(result.getSerializedSize()).isEqualTo(serialized.length);
+
+    // We don't compare JSON strings due to some differences (particularly serializing enums as
+    // numbers instead of names). This may improve in the future but what matters is what we produce
+    // can be parsed.
+    String json = toJson(marshaler);
+    Message.Builder builder = prototype.newBuilderForType();
+    try {
+      JsonFormat.parser().merge(json, builder);
+    } catch (InvalidProtocolBufferException e) {
+      throw new UncheckedIOException(e);
+    }
+
+    // Hackily swap out "hex as base64" decoded IDs with correct ones since no JSON protobuf
+    // libraries currently support customizing on the parse side.
+    if (result instanceof NumberDataPoint) {
+      NumberDataPoint.Builder fixed = (NumberDataPoint.Builder) builder;
+      for (Exemplar.Builder exemplar : fixed.getExemplarsBuilderList()) {
+        exemplar.setTraceId(toHex(exemplar.getTraceId()));
+        exemplar.setSpanId(toHex(exemplar.getSpanId()));
+      }
+    }
+    if (result instanceof HistogramDataPoint) {
+      HistogramDataPoint.Builder fixed = (HistogramDataPoint.Builder) builder;
+      for (Exemplar.Builder exemplar : fixed.getExemplarsBuilderList()) {
+        exemplar.setTraceId(toHex(exemplar.getTraceId()));
+        exemplar.setSpanId(toHex(exemplar.getSpanId()));
+      }
+    }
+
+    assertThat(builder.build()).isEqualTo(result);
+
     return result;
+  }
+
+  private static ByteString toHex(ByteString hexReadAsBase64) {
+    String hex =
+        Base64.getEncoder().encodeToString(hexReadAsBase64.toByteArray()).toLowerCase(Locale.ROOT);
+    return ByteString.copyFrom(OtelEncodingUtils.bytesFromBase16(hex, hex.length()));
   }
 
   private static byte[] toByteArray(Marshaler marshaler) {
@@ -792,5 +835,16 @@ class MetricsRequestMarshalerTest {
       throw new UncheckedIOException(e);
     }
     return bos.toByteArray();
+  }
+
+  private static String toJson(Marshaler marshaler) {
+
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    try {
+      marshaler.writeJsonTo(bos);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    return new String(bos.toByteArray(), StandardCharsets.UTF_8);
   }
 }

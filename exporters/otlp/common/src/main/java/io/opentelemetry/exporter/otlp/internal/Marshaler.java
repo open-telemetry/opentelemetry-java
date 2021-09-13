@@ -18,9 +18,16 @@ public abstract class Marshaler {
 
   /** Marshals into the {@link OutputStream} in proto binary format. */
   public final void writeBinaryTo(OutputStream output) throws IOException {
-    CodedOutputStream cos = CodedOutputStream.newInstance(output);
-    writeTo(new ProtoSerializer(cos));
-    cos.flush();
+    try (Serializer serializer = new ProtoSerializer(output)) {
+      writeTo(serializer);
+    }
+  }
+
+  /** Marshals into the {@link OutputStream} in proto JSON format. */
+  public final void writeJsonTo(OutputStream output) throws IOException {
+    try (JsonSerializer serializer = new JsonSerializer(output)) {
+      serializer.writeMessageValue(this);
+    }
   }
 
   /** Returns the number of bytes this Marshaler will write in proto binary format. */

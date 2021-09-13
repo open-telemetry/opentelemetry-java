@@ -39,6 +39,7 @@ import org.jeasy.random.randomizers.number.ByteRandomizer;
 import org.jeasy.random.randomizers.number.DoubleRandomizer;
 import org.jeasy.random.randomizers.number.LongRandomizer;
 import org.jeasy.random.randomizers.range.IntegerRangeRandomizer;
+import org.jeasy.random.randomizers.range.LongRangeRandomizer;
 import org.jeasy.random.randomizers.text.StringRandomizer;
 
 final class SpanDataRandomizerRegistry implements RandomizerRegistry {
@@ -57,6 +58,8 @@ final class SpanDataRandomizerRegistry implements RandomizerRegistry {
   private DoubleRandomizer doubleRandomizer;
   private LongRandomizer longRandomizer;
   private StringRandomizer stringRandomizer;
+  private IntegerRangeRandomizer unsignedInt32Randomizer;
+  private LongRangeRandomizer unsignedInt64Randomizer;
 
   private AttributesRandomizer attributesRandomizer;
   private Map<AttributeType, Supplier<Randomizer<?>>> attributeValueRandomizers;
@@ -94,6 +97,9 @@ final class SpanDataRandomizerRegistry implements RandomizerRegistry {
             parameters.getStringLengthRange().getMin(),
             parameters.getStringLengthRange().getMax(),
             parameters.getSeed());
+    unsignedInt32Randomizer =
+        new IntegerRangeRandomizer(0, Integer.MAX_VALUE, parameters.getSeed());
+    unsignedInt64Randomizer = new LongRangeRandomizer(0L, Long.MAX_VALUE, parameters.getSeed());
 
     attributeValueRandomizers = new EnumMap<>(AttributeType.class);
     for (AttributeType type : AttributeType.values()) {
@@ -161,12 +167,21 @@ final class SpanDataRandomizerRegistry implements RandomizerRegistry {
   @Override
   @Nullable
   public Randomizer<?> getRandomizer(Field field) {
+    if (field.getName().contains("Count") || field.getName().contains("totalRecorded")) {
+      return unsignedInt32Randomizer;
+    }
+
+    if (field.getName().contains("Nanos")) {
+      return unsignedInt64Randomizer;
+    }
+
     // TODO(anuraaga): Make work for autovalue, unfortunately it only adds Nullable to constructor
     // parameters / getters but not to fields.
     // https://github.com/open-telemetry/opentelemetry-java/issues/3498
     if (field.getAnnotation(Nullable.class) == null) {
       return null;
     }
+
     Randomizer<?> delegate = getRandomizer(field.getType());
     if (delegate == null) {
       return null;

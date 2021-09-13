@@ -9,48 +9,58 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Supplier;
 
-final class LongSumAggregator extends AbstractSumAggregator<Long> {
+final class LongSumAggregator extends AbstractSumAggregator<LongAccumulation> {
+
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
 
   LongSumAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
       MetricDescriptor metricDescriptor,
-      AggregationTemporality temporality) {
+      AggregationTemporality temporality,
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     super(
         resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor, temporality);
+    this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
-  public AggregatorHandle<Long> createHandle() {
-    return new Handle();
+  public AggregatorHandle<LongAccumulation> createHandle() {
+    return new Handle(reservoirSupplier.get());
   }
 
   @Override
-  public Long accumulateLong(long value) {
-    return value;
+  public LongAccumulation accumulateLong(long value) {
+    return LongAccumulation.create(value);
   }
 
   @Override
-  Long mergeSum(Long previousAccumulation, Long accumulation) {
-    return previousAccumulation + accumulation;
+  LongAccumulation mergeSum(LongAccumulation previousAccumulation, LongAccumulation accumulation) {
+    return LongAccumulation.create(
+        previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
-  Long mergeDiff(Long previousAccumulation, Long accumulation) {
-    return accumulation - previousAccumulation;
+  LongAccumulation mergeDiff(LongAccumulation previousAccumulation, LongAccumulation accumulation) {
+    return LongAccumulation.create(
+        accumulation.getValue() - previousAccumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
   public MetricData toMetricData(
-      Map<Attributes, Long> accumulationByLabels,
+      Map<Attributes, LongAccumulation> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
@@ -72,12 +82,16 @@ final class LongSumAggregator extends AbstractSumAggregator<Long> {
                 epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<Long> {
+  static final class Handle extends AggregatorHandle<LongAccumulation> {
     private final LongAdder current = new LongAdder();
 
+    Handle(ExemplarReservoir exemplarReservoir) {
+      super(exemplarReservoir);
+    }
+
     @Override
-    protected Long doAccumulateThenReset() {
-      return this.current.sumThenReset();
+    protected LongAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
+      return LongAccumulation.create(this.current.sumThenReset(), exemplars);
     }
 
     @Override

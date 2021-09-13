@@ -101,8 +101,10 @@ final class SdkSpanBuilder implements SpanBuilder {
     addLink(
         LinkData.create(
             spanContext,
-            RecordEventsReadableSpan.applyAttributesLimit(
-                attributes, spanLimits.getMaxNumberOfAttributesPerLink()),
+            AttributeUtil.applyAttributesLimit(
+                attributes,
+                spanLimits.getMaxNumberOfAttributesPerLink(),
+                spanLimits.getMaxAttributeValueLength()),
             totalAttributeCount));
     return this;
   }
@@ -232,7 +234,9 @@ final class SdkSpanBuilder implements SpanBuilder {
   private AttributesMap attributes() {
     AttributesMap attributes = this.attributes;
     if (attributes == null) {
-      this.attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
+      this.attributes =
+          new AttributesMap(
+              spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
       attributes = this.attributes;
     }
     return attributes;

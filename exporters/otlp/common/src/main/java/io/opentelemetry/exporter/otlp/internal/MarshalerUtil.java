@@ -5,8 +5,13 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,6 +22,24 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 final class MarshalerUtil {
+  private static final int TRACE_ID_VALUE_SIZE =
+      CodedOutputStream.computeLengthDelimitedFieldSize(TraceId.getLength() / 2);
+  private static final int SPAN_ID_VALUE_SIZE =
+      CodedOutputStream.computeLengthDelimitedFieldSize(SpanId.getLength() / 2);
+
+  static final boolean JSON_AVAILABLE;
+
+  static {
+    boolean jsonAvailable = false;
+    try {
+      Class.forName("com.fasterxml.jackson.core.JsonFactory");
+      jsonAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    JSON_AVAILABLE = jsonAvailable;
+  }
+
   static final byte[] EMPTY_BYTES = new byte[0];
 
   static <T, U> Map<Resource, Map<InstrumentationLibraryInfo, List<U>>> groupByResourceAndLibrary(
@@ -36,6 +59,28 @@ final class MarshalerUtil {
       marshalerList.add(createMarshaler.apply(data));
     }
     return result;
+  }
+
+  static String preserializeJsonFields(Marshaler marshaler) {
+    if (!MarshalerUtil.JSON_AVAILABLE) {
+      return "";
+    }
+
+    ByteArrayOutputStream jsonBos = new ByteArrayOutputStream();
+    try {
+      marshaler.writeJsonTo(jsonBos);
+    } catch (IOException e) {
+      throw new UncheckedIOException(
+          "Serialization error, this is likely a bug in OpenTelemetry.", e);
+    }
+
+    // We effectively cache `writeTo`, however Jackson would not allow us to only write out
+    // fields
+    // which is what writeTo does. So we need to write to an object but skip the object start
+    // /
+    // end.
+    byte[] jsonBytes = jsonBos.toByteArray();
+    return new String(jsonBytes, 1, jsonBytes.length - 2, StandardCharsets.UTF_8);
   }
 
   static int sizeRepeatedFixed64(ProtoFieldInfo field, List<Long> values) {
@@ -124,6 +169,20 @@ final class MarshalerUtil {
       return 0;
     }
     return field.getTagSize() + CodedOutputStream.computeEnumSizeNoTag(value);
+  }
+
+  static int sizeTraceId(ProtoFieldInfo field, @Nullable String traceId) {
+    if (traceId == null) {
+      return 0;
+    }
+    return field.getTagSize() + TRACE_ID_VALUE_SIZE;
+  }
+
+  static int sizeSpanId(ProtoFieldInfo field, @Nullable String spanId) {
+    if (spanId == null) {
+      return 0;
+    }
+    return field.getTagSize() + SPAN_ID_VALUE_SIZE;
   }
 
   static byte[] toBytes(@Nullable String value) {

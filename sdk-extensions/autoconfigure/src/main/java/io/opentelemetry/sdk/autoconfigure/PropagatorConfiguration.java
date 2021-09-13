@@ -22,7 +22,7 @@ final class PropagatorConfiguration {
 
   static ContextPropagators configurePropagators(ConfigProperties config) {
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();
-    List<String> requestedPropagators = config.getCommaSeparatedValues("otel.propagators");
+    List<String> requestedPropagators = config.getList("otel.propagators");
     if (requestedPropagators.isEmpty()) {
       requestedPropagators = Arrays.asList("tracecontext", "baggage");
     }

@@ -3,18 +3,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.common;
+package io.opentelemetry.api.internal;
 
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.AttributeType;
+import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 
-@SuppressWarnings("rawtypes")
-final class AttributeKeyImpl<T> implements AttributeKey<T> {
+/**
+ * Default AttributeKey implementation which preencodes to UTF8 for OTLP export.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class InternalAttributeKeyImpl<T> implements AttributeKey<T> {
 
   private final AttributeType type;
   private final String key;
   private final int hashCode;
 
-  private AttributeKeyImpl(AttributeType type, String key) {
+  private byte[] keyUtf8;
+
+  private InternalAttributeKeyImpl(AttributeType type, String key) {
     if (type == null) {
       throw new NullPointerException("Null type");
     }
@@ -38,8 +48,8 @@ final class AttributeKeyImpl<T> implements AttributeKey<T> {
   // the class loader automatically resolves its super classes (interfaces), which in this case is
   // Context, which would be the same class (interface) being instrumented at that time,
   // which would lead to the JVM throwing a LinkageError "attempted duplicate interface definition"
-  static <T> AttributeKey<T> create(@Nullable String key, AttributeType type) {
-    return new AttributeKeyImpl<>(type, key != null ? key : "");
+  public static <T> AttributeKey<T> create(@Nullable String key, AttributeType type) {
+    return new InternalAttributeKeyImpl<>(type, key != null ? key : "");
   }
 
   @Override
@@ -52,13 +62,23 @@ final class AttributeKeyImpl<T> implements AttributeKey<T> {
     return key;
   }
 
+  /** Returns the key, encoded as UTF-8 bytes. */
+  public byte[] getKeyUtf8() {
+    byte[] keyUtf8 = this.keyUtf8;
+    if (keyUtf8 == null) {
+      keyUtf8 = key.getBytes(StandardCharsets.UTF_8);
+      this.keyUtf8 = keyUtf8;
+    }
+    return keyUtf8;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     }
-    if (o instanceof AttributeKeyImpl) {
-      AttributeKeyImpl<?> that = (AttributeKeyImpl<?>) o;
+    if (o instanceof InternalAttributeKeyImpl) {
+      InternalAttributeKeyImpl<?> that = (InternalAttributeKeyImpl<?>) o;
       return this.type.equals(that.getType()) && this.key.equals(that.getKey());
     }
     return false;
