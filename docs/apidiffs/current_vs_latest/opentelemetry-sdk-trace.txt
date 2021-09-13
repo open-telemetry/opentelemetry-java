@@ -1,9 +1,2 @@
 Comparing source compatibility of  against 
-***! MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.trace.SpanLimits  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	***  MODIFIED CONSTRUCTOR: PUBLIC (<- PROTECTED) SpanLimits()
-		---  REMOVED ANNOTATION: java.lang.Deprecated
-	---! REMOVED METHOD: PUBLIC(-) int getMaxAttributeValueLength()
-***! MODIFIED CLASS: PUBLIC FINAL io.opentelemetry.sdk.trace.SpanLimitsBuilder  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	---! REMOVED METHOD: PUBLIC(-) io.opentelemetry.sdk.trace.SpanLimitsBuilder setMaxAttributeValueLength(int)
+No changes.
