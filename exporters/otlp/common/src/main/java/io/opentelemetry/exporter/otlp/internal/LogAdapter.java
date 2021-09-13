@@ -81,7 +81,7 @@ public final class LogAdapter {
     return result;
   }
 
-  /** returns a new {@link io.opentelemetry.proto.logs.v1.LogRecord} from a {@link LogRecord}. */
+  /** Returns a new {@link io.opentelemetry.proto.logs.v1.LogRecord} from a {@link LogRecord}. */
   static io.opentelemetry.proto.logs.v1.LogRecord toProtoLogRecord(LogRecord logRecord) {
     io.opentelemetry.proto.logs.v1.LogRecord.Builder builder =
         io.opentelemetry.proto.logs.v1.LogRecord.newBuilder()
