@@ -1,4 +1,2 @@
 Comparing source compatibility of  against 
-***  MODIFIED CLASS: PUBLIC ABSTRACT io.opentelemetry.sdk.resources.Resource  (not serializable)
-	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
-	---  REMOVED METHOD: PUBLIC(-) ABSTRACT(-) int hashCode()
+No changes.
