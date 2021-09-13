@@ -19,14 +19,19 @@ public interface ExemplarFilter {
   /** Returns whether or not a resorvoir should attempt to filter a measurement. */
   boolean shouldSampleMeasurement(double value, Attributes attributes, Context context);
 
-  /** A filter that only allows exemplars with traces. */
+  /**
+   * A filter that only accepts measurements where there is a {@code Span} in {@link Context} that
+   * is being sampled.
+   */
   static ExemplarFilter sampleWithTraces() {
     return WithTraceExemplarFilter.INSTANCE;
   }
+
   /** A filter that accepts any measurement. */
   static ExemplarFilter alwaysSample() {
     return AlwaysSampleFilter.INSTANCE;
   }
+
   /** A filter that accepts no measurements. */
   static ExemplarFilter neverSample() {
     return NeverSampleFilter.INSTANCE;
