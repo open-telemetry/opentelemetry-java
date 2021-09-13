@@ -7,6 +7,8 @@ package io.opentelemetry.exporter.otlp.internal;
 
 import com.google.protobuf.UnsafeByteOperations;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
@@ -26,7 +28,7 @@ import java.util.Map;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public class LogAdapter {
+public final class LogAdapter {
 
   /** Returns a new List of {@link LogRecord}. */
   public static List<ResourceLogs> toProtoResourceLogs(Collection<LogRecord> logRecordList) {
@@ -92,19 +94,17 @@ public class LogAdapter {
             .setTraceId(
                 UnsafeByteOperations.unsafeWrap(
                     OtelEncodingUtils.bytesFromBase16(
-                        logRecord.getTraceId(), logRecord.getTraceId().length())))
+                        logRecord.getTraceId(), TraceId.getLength())))
             .setSpanId(
                 UnsafeByteOperations.unsafeWrap(
                     OtelEncodingUtils.bytesFromBase16(
-                        logRecord.getSpanId(), logRecord.getSpanId().length())));
+                        logRecord.getSpanId(), SpanId.getLength())));
 
     logRecord
         .getAttributes()
         .forEach((key, value) -> builder.addAttributes(CommonAdapter.toProtoAttribute(key, value)));
 
-    io.opentelemetry.proto.logs.v1.LogRecord protoLogRecord = builder.build();
-    builder.clear();
-    return protoLogRecord;
+    return builder.build();
   }
 
   private static AnyValue getLogRecordBodyAnyValue(LogRecord logRecord) {
