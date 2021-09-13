@@ -1,40 +1,7 @@
 Comparing source compatibility of  against 
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Boolean getBoolean(java.lang.String)
-		+++  NEW ANNOTATION: javax.annotation.Nullable
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Map getCommaSeparatedMap(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getCommaSeparatedValues(java.lang.String)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Double getDouble(java.lang.String)
-		+++  NEW ANNOTATION: javax.annotation.Nullable
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.time.Duration getDuration(java.lang.String)
-		+++  NEW ANNOTATION: javax.annotation.Nullable
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Integer getInt(java.lang.String)
-		+++  NEW ANNOTATION: javax.annotation.Nullable
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Long getLong(java.lang.String)
-		+++  NEW ANNOTATION: javax.annotation.Nullable
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getString(java.lang.String)
-		+++  NEW ANNOTATION: javax.annotation.Nullable
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.context.propagation.TextMapPropagator getPropagator(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
-+++  NEW CLASS: PUBLIC(+) FINAL(+) io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException  (compatible)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW INTERFACE: java.io.Serializable
-	+++  NEW CONSTRUCTOR: PUBLIC(+) ConfigurationException(java.lang.String)
-	+++  NEW CONSTRUCTOR: PUBLIC(+) ConfigurationException(java.lang.String, java.lang.Throwable)
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.resources.Resource createResource(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.trace.samplers.Sampler createSampler(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.trace.export.SpanExporter createExporter(io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.String getName()
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void configure(io.opentelemetry.sdk.trace.SdkTracerProviderBuilder, io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
+***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties  (not serializable)
+	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Map getCommaSeparatedMap(java.lang.String)
+	+++* NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.List getCommaSeparatedValues(java.lang.String)
+	---! REMOVED METHOD: PUBLIC(-) ABSTRACT(-) java.util.List getList(java.lang.String)
+	---! REMOVED METHOD: PUBLIC(-) ABSTRACT(-) java.util.Map getMap(java.lang.String)

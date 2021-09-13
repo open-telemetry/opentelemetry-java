@@ -64,9 +64,9 @@ public final class LogAdapter {
     return logsBuilder.build();
   }
 
-  private static Map<Resource, Map<InstrumentationLibraryInfo,
-      List<io.opentelemetry.proto.logs.v1.LogRecord>>>
-  groupByResourceAndLibrary(Collection<LogRecord> logRecordList) {
+  private static Map<
+          Resource, Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>>
+      groupByResourceAndLibrary(Collection<LogRecord> logRecordList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<io.opentelemetry.proto.logs.v1.LogRecord>>>
         result = new HashMap<>();
     for (LogRecord logRecord : logRecordList) {
