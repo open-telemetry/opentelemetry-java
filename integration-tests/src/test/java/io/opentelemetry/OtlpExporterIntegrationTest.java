@@ -57,16 +57,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
@@ -83,7 +81,6 @@ class OtlpExporterIntegrationTest {
   private static final Integer COLLECTOR_OTLP_GRPC_PORT = 4317;
   private static final Integer COLLECTOR_OTLP_HTTP_PORT = 4318;
   private static final Integer COLLECTOR_HEALTH_CHECK_PORT = 13133;
-  private static final Integer IN_PROCESS_OTLP_GRPC_PORT = 4319;
   private static final Resource RESOURCE =
       Resource.getDefault().toBuilder()
           .put(ResourceAttributes.SERVICE_NAME, "integration test")
@@ -91,36 +88,44 @@ class OtlpExporterIntegrationTest {
   private static final Logger LOGGER =
       Logger.getLogger(OtlpExporterIntegrationTest.class.getName());
 
-  static {
-    if (DockerClientFactory.instance().isDockerAvailable()) {
-      // If docker is available, expose the port the in-process OTLP gRPC server will run on before
-      // the collector is initialized so the collector can connect to it.
-      exposeHostPorts(IN_PROCESS_OTLP_GRPC_PORT);
-    }
+  private static OtlpGrpcServer grpcServer;
+  private static GenericContainer<?> collector;
+
+  @BeforeAll
+  static void beforeAll() {
+    grpcServer = new OtlpGrpcServer();
+    grpcServer.start();
+
+    // Expose the port the in-process OTLP gRPC server will run on before the collector is
+    // initialized so the collector can connect to it.
+    exposeHostPorts(grpcServer.httpPort());
+
+    collector =
+        new GenericContainer<>(DockerImageName.parse(COLLECTOR_IMAGE))
+            .withEnv("LOGGING_EXPORTER_LOG_LEVEL", "INFO")
+            .withEnv(
+                "OTLP_EXPORTER_ENDPOINT", "host.testcontainers.internal:" + grpcServer.httpPort())
+            .withClasspathResourceMapping(
+                "otel-config.yaml", "/otel-config.yaml", BindMode.READ_ONLY)
+            .withCommand("--config", "/otel-config.yaml")
+            .withLogConsumer(
+                outputFrame ->
+                    LOGGER.log(Level.INFO, outputFrame.getUtf8String().replace("\n", "")))
+            .withExposedPorts(
+                COLLECTOR_OTLP_GRPC_PORT, COLLECTOR_OTLP_HTTP_PORT, COLLECTOR_HEALTH_CHECK_PORT)
+            .waitingFor(Wait.forHttp("/").forPort(COLLECTOR_HEALTH_CHECK_PORT));
+    collector.start();
   }
 
-  @RegisterExtension
-  @Order(1)
-  public static final OtlpGrpcServer GRPC_SERVER = new OtlpGrpcServer(IN_PROCESS_OTLP_GRPC_PORT);
-
-  @Container
-  @Order(2)
-  public static final GenericContainer<?> COLLECTOR =
-      new GenericContainer<>(DockerImageName.parse(COLLECTOR_IMAGE))
-          .withEnv("LOGGING_EXPORTER_LOG_LEVEL", "INFO")
-          .withEnv(
-              "OTLP_EXPORTER_ENDPOINT", "host.testcontainers.internal:" + IN_PROCESS_OTLP_GRPC_PORT)
-          .withClasspathResourceMapping("otel-config.yaml", "/otel-config.yaml", BindMode.READ_ONLY)
-          .withCommand("--config", "/otel-config.yaml")
-          .withLogConsumer(
-              outputFrame -> LOGGER.log(Level.INFO, outputFrame.getUtf8String().replace("\n", "")))
-          .withExposedPorts(
-              COLLECTOR_OTLP_GRPC_PORT, COLLECTOR_OTLP_HTTP_PORT, COLLECTOR_HEALTH_CHECK_PORT)
-          .waitingFor(Wait.forHttp("/").forPort(COLLECTOR_HEALTH_CHECK_PORT));
+  @AfterAll
+  static void afterAll() {
+    grpcServer.stop().join();
+    collector.stop();
+  }
 
   @BeforeEach
   void beforeEach() {
-    GRPC_SERVER.reset();
+    grpcServer.reset();
     GlobalOpenTelemetry.resetForTest();
   }
 
@@ -135,9 +140,9 @@ class OtlpExporterIntegrationTest {
         OtlpGrpcSpanExporter.builder()
             .setEndpoint(
                 "http://"
-                    + COLLECTOR.getHost()
+                    + collector.getHost()
                     + ":"
-                    + COLLECTOR.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
+                    + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
             .setCompression("gzip")
             .build();
 
@@ -150,9 +155,9 @@ class OtlpExporterIntegrationTest {
         OtlpHttpSpanExporter.builder()
             .setEndpoint(
                 "http://"
-                    + COLLECTOR.getHost()
+                    + collector.getHost()
                     + ":"
-                    + COLLECTOR.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
+                    + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
                     + "/v1/traces")
             .setCompression("gzip")
             .build();
@@ -167,16 +172,17 @@ class OtlpExporterIntegrationTest {
             .setResource(RESOURCE)
             .build();
 
+    SpanContext linkContext =
+        SpanContext.create(
+            IdGenerator.random().generateTraceId(),
+            IdGenerator.random().generateSpanId(),
+            TraceFlags.getDefault(),
+            TraceState.getDefault());
     Span span =
         tracerProvider
             .get(OtlpExporterIntegrationTest.class.getName())
             .spanBuilder("my span name")
-            .addLink(
-                SpanContext.create(
-                    IdGenerator.random().generateTraceId(),
-                    IdGenerator.random().generateSpanId(),
-                    TraceFlags.getDefault(),
-                    TraceState.getDefault()))
+            .addLink(linkContext)
             .startSpan();
     span.setAttribute("key", "value");
     span.addEvent("event");
@@ -184,9 +190,9 @@ class OtlpExporterIntegrationTest {
 
     Awaitility.await()
         .atMost(Duration.ofSeconds(30))
-        .until(() -> GRPC_SERVER.traceRequests.size() == 1);
+        .until(() -> grpcServer.traceRequests.size() == 1);
 
-    ExportTraceServiceRequest request = GRPC_SERVER.traceRequests.get(0);
+    ExportTraceServiceRequest request = grpcServer.traceRequests.get(0);
     assertThat(request.getResourceSpansCount()).isEqualTo(1);
 
     ResourceSpans resourceSpans = request.getResourceSpans(0);
@@ -204,6 +210,10 @@ class OtlpExporterIntegrationTest {
     assertThat(ilSpans.getSpansCount()).isEqualTo(1);
 
     io.opentelemetry.proto.trace.v1.Span protoSpan = ilSpans.getSpans(0);
+    assertThat(protoSpan.getTraceId().toByteArray())
+        .isEqualTo(span.getSpanContext().getTraceIdBytes());
+    assertThat(protoSpan.getSpanId().toByteArray())
+        .isEqualTo(span.getSpanContext().getSpanIdBytes());
     assertThat(protoSpan.getName()).isEqualTo("my span name");
     assertThat(protoSpan.getAttributesList())
         .isEqualTo(
@@ -216,8 +226,8 @@ class OtlpExporterIntegrationTest {
     assertThat(protoSpan.getEvents(0).getName()).isEqualTo("event");
     assertThat(protoSpan.getLinksCount()).isEqualTo(1);
     Link link = protoSpan.getLinks(0);
-    assertThat(link.getTraceId()).isNotEmpty();
-    assertThat(link.getSpanId()).isNotEmpty();
+    assertThat(link.getTraceId().toByteArray()).isEqualTo(linkContext.getTraceIdBytes());
+    assertThat(link.getSpanId().toByteArray()).isEqualTo(linkContext.getSpanIdBytes());
   }
 
   @Test
@@ -226,9 +236,9 @@ class OtlpExporterIntegrationTest {
         OtlpGrpcMetricExporter.builder()
             .setEndpoint(
                 "http://"
-                    + COLLECTOR.getHost()
+                    + collector.getHost()
                     + ":"
-                    + COLLECTOR.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
+                    + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
             .setCompression("gzip")
             .build();
 
@@ -241,9 +251,9 @@ class OtlpExporterIntegrationTest {
         OtlpHttpMetricExporter.builder()
             .setEndpoint(
                 "http://"
-                    + COLLECTOR.getHost()
+                    + collector.getHost()
                     + ":"
-                    + COLLECTOR.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
+                    + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
                     + "/v1/metrics")
             .setCompression("gzip")
             .build();
@@ -268,9 +278,9 @@ class OtlpExporterIntegrationTest {
 
     Awaitility.await()
         .atMost(Duration.ofSeconds(30))
-        .until(() -> GRPC_SERVER.metricRequests.size() == 1);
+        .until(() -> grpcServer.metricRequests.size() == 1);
 
-    ExportMetricsServiceRequest request = GRPC_SERVER.metricRequests.get(0);
+    ExportMetricsServiceRequest request = grpcServer.metricRequests.get(0);
     assertThat(request.getResourceMetricsCount()).isEqualTo(1);
 
     ResourceMetrics resourceMetrics = request.getResourceMetrics(0);
@@ -311,11 +321,6 @@ class OtlpExporterIntegrationTest {
 
     private final List<ExportTraceServiceRequest> traceRequests = new ArrayList<>();
     private final List<ExportMetricsServiceRequest> metricRequests = new ArrayList<>();
-    private final int httpPort;
-
-    private OtlpGrpcServer(int httpPort) {
-      this.httpPort = httpPort;
-    }
 
     private void reset() {
       traceRequests.clear();
@@ -349,7 +354,7 @@ class OtlpExporterIntegrationTest {
                     }
                   })
               .build());
-      sb.http(httpPort);
+      sb.http(0);
     }
   }
 }
