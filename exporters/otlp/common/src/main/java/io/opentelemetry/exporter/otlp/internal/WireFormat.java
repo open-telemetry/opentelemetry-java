@@ -48,13 +48,7 @@ final class WireFormat {
   static final int MAX_VARINT64_SIZE = 10;
   static final int MAX_VARINT_SIZE = 10;
 
-  static final int WIRETYPE_VARINT = 0;
-  static final int WIRETYPE_FIXED64 = 1;
-  static final int WIRETYPE_LENGTH_DELIMITED = 2;
-  static final int WIRETYPE_FIXED32 = 5;
-
   static final int TAG_TYPE_BITS = 3;
-  static final int TAG_TYPE_MASK = (1 << TAG_TYPE_BITS) - 1;
 
   /** Makes a tag value given a field number and wire type. */
   static int makeTag(final int fieldNumber, final int wireType) {
