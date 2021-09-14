@@ -13,14 +13,17 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
+import org.junit.jupiter.api.Test;
 
 public class HistogramBucketExemplarReservoirTest {
+  @Test
   public void noMeasurement_returnsEmpty() {
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir = new HistogramBucketExemplarReservoir(clock, new double[] {});
     assertThat(reservoir.collectAndReset(Attributes.empty())).isEmpty();
   }
 
+  @Test
   public void oneBucket_samplesEverything() {
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir = new HistogramBucketExemplarReservoir(clock, new double[] {});
@@ -58,6 +61,7 @@ public class HistogramBucketExemplarReservoirTest {
                     .hasValue(4));
   }
 
+  @Test
   public void multipleBuckets_samplesIntoCorrectBucket() {
     TestClock clock = TestClock.create();
     AttributeKey<Long> bucketKey = AttributeKey.longKey("bucket");
