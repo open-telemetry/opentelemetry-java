@@ -109,7 +109,7 @@ public class FixedSizeExemplarReservoirTest {
 
   @Test
   public void multiMeasurements_preservesLatestSamples() {
-    AttributeKey<Long> K = AttributeKey.longKey("K");
+    AttributeKey<Long> key = AttributeKey.longKey("K");
     Random mockRandom = mock(Random.class);
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir =
@@ -118,9 +118,9 @@ public class FixedSizeExemplarReservoirTest {
     when(mockRandom.nextInt(1)).thenReturn(0);
     when(mockRandom.nextInt(2)).thenReturn(1);
     when(mockRandom.nextInt(3)).thenReturn(0);
-    reservoir.offerMeasurement(1, Attributes.of(K, 1L), Context.root());
-    reservoir.offerMeasurement(2, Attributes.of(K, 2L), Context.root());
-    reservoir.offerMeasurement(3, Attributes.of(K, 3L), Context.root());
+    reservoir.offerMeasurement(1, Attributes.of(key, 1L), Context.root());
+    reservoir.offerMeasurement(2, Attributes.of(key, 2L), Context.root());
+    reservoir.offerMeasurement(3, Attributes.of(key, 3L), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .satisfiesExactlyInAnyOrder(
             exemplar -> assertThat(exemplar).hasEpochNanos(clock.now()).hasValue(2),
