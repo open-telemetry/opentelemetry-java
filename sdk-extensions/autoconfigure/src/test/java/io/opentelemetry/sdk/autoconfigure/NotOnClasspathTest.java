@@ -34,7 +34,7 @@ class NotOnClasspathTest {
   void otlpHttpSpans() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
-            Collections.singletonMap("otel.experimental.exporter.otlp.protocol", "http/protobuf"));
+            Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf"));
     assertThatThrownBy(
             () ->
                 SpanExporterConfiguration.configureExporter("otlp", config, Collections.emptyMap()))
@@ -104,7 +104,7 @@ class NotOnClasspathTest {
   void otlpHttpMetrics() {
     ConfigProperties config =
         DefaultConfigProperties.createForTest(
-            Collections.singletonMap("otel.experimental.exporter.otlp.protocol", "http/protobuf"));
+            Collections.singletonMap("otel.exporter.otlp.protocol", "http/protobuf"));
     assertThatCode(
             () ->
                 MetricExporterConfiguration.configureExporter(

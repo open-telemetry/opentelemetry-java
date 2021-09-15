@@ -25,7 +25,7 @@ class OtlpConfigUtilTest {
             OtlpConfigUtil.getOtlpProtocol(
                 DATA_TYPE_TRACES,
                 DefaultConfigProperties.createForTest(
-                    ImmutableMap.of("otel.experimental.exporter.otlp.protocol", "foo"))))
+                    ImmutableMap.of("otel.exporter.otlp.protocol", "foo"))))
         .isEqualTo("foo");
 
     assertThat(
@@ -33,9 +33,9 @@ class OtlpConfigUtilTest {
                 DATA_TYPE_TRACES,
                 DefaultConfigProperties.createForTest(
                     ImmutableMap.of(
-                        "otel.experimental.exporter.otlp.protocol",
+                        "otel.exporter.otlp.protocol",
                         "foo",
-                        "otel.experimental.exporter.otlp.traces.protocol",
+                        "otel.exporter.otlp.traces.protocol",
                         "bar"))))
         .isEqualTo("bar");
   }
