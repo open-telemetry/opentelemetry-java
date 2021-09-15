@@ -22,6 +22,11 @@ public interface ExemplarReservoir {
     return NoExemplarReservoir.INSTANCE;
   }
 
+  /** Wraps a {@link ExemplarReservoir} with a measurement pre-filter. */
+  public static ExemplarReservoir filtered(ExemplarFilter filter, ExemplarReservoir original) {
+    return new FilteredExemplarReservoir(filter, original);
+  }
+
   /** Offers a {@code long} measurement to be sampled. */
   void offerMeasurement(long value, Attributes attributes, Context context);
 
