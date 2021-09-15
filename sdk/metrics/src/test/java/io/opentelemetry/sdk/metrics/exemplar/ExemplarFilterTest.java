@@ -15,7 +15,7 @@ import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
 
-public class ExemplarFilterTest {
+class ExemplarFilterTest {
   private static final String TRACE_ID = "ff000000000000000000000000000041";
   private static final String SPAN_ID = "ff00000000000041";
 

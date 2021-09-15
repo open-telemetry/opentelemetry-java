@@ -21,7 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class FilteredExemplarReservoirTest {
+class FilteredExemplarReservoirTest {
   @Mock ExemplarReservoir reservoir;
   @Mock ExemplarFilter filter;
 
