@@ -1,0 +1,22 @@
+extensions:
+  health_check: {}
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+exporters:
+  logging:
+    logLevel: $LOGGING_EXPORTER_LOG_lEVEL
+  otlp:
+    endpoint: $OTLP_EXPORTER_ENDPOINT
+    insecure: true
+service:
+  extensions: [health_check]
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      exporters: [logging, otlp]
+    traces:
+      receivers: [otlp]
+      exporters: [logging, otlp]
