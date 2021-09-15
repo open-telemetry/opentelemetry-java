@@ -53,14 +53,15 @@ public abstract class Serializer implements AutoCloseable {
   protected abstract void writeBool(ProtoFieldInfo field, boolean value) throws IOException;
 
   /** Serializes a protobuf {@code enum} field. */
-  public void serializeEnum(ProtoFieldInfo field, int enumNumber) throws IOException {
-    if (enumNumber == 0) {
+  public void serializeEnum(ProtoFieldInfo field, ProtoEnumInfo enumValue) throws IOException {
+    if (enumValue.getEnumNumber() == 0) {
       return;
     }
-    writeEnum(field, enumNumber);
+    writeEnum(field, enumValue);
   }
 
-  protected abstract void writeEnum(ProtoFieldInfo field, int enumNumber) throws IOException;
+  protected abstract void writeEnum(ProtoFieldInfo field, ProtoEnumInfo enumValue)
+      throws IOException;
 
   /** Serializes a protobuf {@code uint32} field. */
   public void serializeUInt32(ProtoFieldInfo field, int value) throws IOException {

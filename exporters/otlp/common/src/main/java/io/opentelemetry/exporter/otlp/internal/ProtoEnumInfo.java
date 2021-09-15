@@ -14,18 +14,13 @@ import com.google.auto.value.AutoValue;
  * at any time.
  */
 @AutoValue
-public abstract class ProtoFieldInfo {
+public abstract class ProtoEnumInfo {
 
-  public static ProtoFieldInfo create(int fieldNumber, int tag, String jsonName) {
-    return new AutoValue_ProtoFieldInfo(
-        fieldNumber, tag, CodedOutputStream.computeTagSize(fieldNumber), jsonName);
+  public static ProtoEnumInfo create(int enumNumber, String jsonName) {
+    return new AutoValue_ProtoEnumInfo(enumNumber, jsonName);
   }
 
-  public abstract int getFieldNumber();
-
-  public abstract int getTag();
-
-  public abstract int getTagSize();
+  public abstract int getEnumNumber();
 
   public abstract String getJsonName();
 }

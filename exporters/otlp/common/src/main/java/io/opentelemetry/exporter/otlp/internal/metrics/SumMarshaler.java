@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.internal.metrics;
 
 import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
 import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
+import io.opentelemetry.exporter.otlp.internal.ProtoEnumInfo;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.proto.metrics.v1.internal.Sum;
 import io.opentelemetry.sdk.metrics.data.PointData;
@@ -15,7 +16,7 @@ import java.io.IOException;
 
 final class SumMarshaler extends MarshalerWithSize {
   private final NumberDataPointMarshaler[] dataPoints;
-  private final int aggregationTemporality;
+  private final ProtoEnumInfo aggregationTemporality;
   private final boolean isMonotonic;
 
   static SumMarshaler create(SumData<? extends PointData> sum) {
@@ -29,7 +30,9 @@ final class SumMarshaler extends MarshalerWithSize {
   }
 
   private SumMarshaler(
-      NumberDataPointMarshaler[] dataPoints, int aggregationTemporality, boolean isMonotonic) {
+      NumberDataPointMarshaler[] dataPoints,
+      ProtoEnumInfo aggregationTemporality,
+      boolean isMonotonic) {
     super(calculateSize(dataPoints, aggregationTemporality, isMonotonic));
     this.dataPoints = dataPoints;
     this.aggregationTemporality = aggregationTemporality;
@@ -44,7 +47,9 @@ final class SumMarshaler extends MarshalerWithSize {
   }
 
   private static int calculateSize(
-      NumberDataPointMarshaler[] dataPoints, int aggregationTemporality, boolean isMonotonic) {
+      NumberDataPointMarshaler[] dataPoints,
+      ProtoEnumInfo aggregationTemporality,
+      boolean isMonotonic) {
     int size = 0;
     size += MarshalerUtil.sizeRepeatedMessage(Sum.DATA_POINTS, dataPoints);
     size += MarshalerUtil.sizeEnum(Sum.AGGREGATION_TEMPORALITY, aggregationTemporality);
