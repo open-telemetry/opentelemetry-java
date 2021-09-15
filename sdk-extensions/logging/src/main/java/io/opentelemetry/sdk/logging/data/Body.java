@@ -10,16 +10,16 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A class that represents all the possible values for a log message body. A {@code Body} can
- * currently only have 1 types of values: {@code String}, represented through {@code Body.Type}.
- * This class will likely be extended in the future to include additional body types supported by
- * the OpenTelemetry log data model.
+ * This represents all the possible values for a log message body. A {@code Body} can currently only
+ * have 1 type of values: {@code String}, represented through {@code Body.Type}. This class will
+ * likely be extended in the future to include additional body types supported by the OpenTelemetry
+ * log data model.
  */
 @Immutable
-public abstract class Body {
+public interface Body {
 
   /** An enum that represents all the possible value types for an {@code Body}. */
-  public enum Type {
+  enum Type {
     STRING
   }
 
@@ -29,21 +29,18 @@ public abstract class Body {
    * @param stringValue The new value.
    * @return a {@code Body} with a string value.
    */
-  public static Body stringBody(String stringValue) {
+  static Body stringBody(String stringValue) {
     return StringBody.create(stringValue);
   }
 
   /** Returns the string value of this {@code Body}. */
-  public String asString() {
-    throw new UnsupportedOperationException(
-        String.format("This type can only return %s data", getType().name()));
-  }
+  String asString();
 
-  public abstract Type getType();
+  Type getType();
 
   @Immutable
   @AutoValue
-  abstract static class StringBody extends Body {
+  abstract class StringBody implements Body {
     StringBody() {}
 
     static Body create(String stringValue) {
