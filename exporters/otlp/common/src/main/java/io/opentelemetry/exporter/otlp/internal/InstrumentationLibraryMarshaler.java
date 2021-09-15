@@ -12,7 +12,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
+/**
+ * A Marshaler of {@link InstrumentationLibraryInfo}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
 
   private static final WeakConcurrentMap<
           InstrumentationLibraryInfo, InstrumentationLibraryMarshaler>
@@ -21,7 +27,8 @@ final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
   private final byte[] serializedBinary;
   private final String serializedJson;
 
-  static InstrumentationLibraryMarshaler create(InstrumentationLibraryInfo libraryInfo) {
+  /** Returns a Marshaler for InstrumentationLibraryInfo. */
+  public static InstrumentationLibraryMarshaler create(InstrumentationLibraryInfo libraryInfo) {
     InstrumentationLibraryMarshaler cached = LIBRARY_MARSHALER_CACHE.get(libraryInfo);
     if (cached == null) {
       // Since WeakConcurrentMap doesn't support computeIfAbsent, we may end up doing the conversion
@@ -73,7 +80,7 @@ final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
     }
 
     @Override
-    void writeTo(Serializer output) throws IOException {
+    protected void writeTo(Serializer output) throws IOException {
       output.serializeString(InstrumentationLibrary.NAME, name);
       output.serializeString(InstrumentationLibrary.VERSION, version);
     }

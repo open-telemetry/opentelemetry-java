@@ -5,6 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -30,8 +31,15 @@ public abstract class Marshaler {
     }
   }
 
+  /** Marshals into the {@link JsonGenerator} in proto JSON format. */
+  public final void writeJsonTo(JsonGenerator output) throws IOException {
+    try (JsonSerializer serializer = new JsonSerializer(output)) {
+      serializer.writeMessageValue(this);
+    }
+  }
+
   /** Returns the number of bytes this Marshaler will write in proto binary format. */
   public abstract int getBinarySerializedSize();
 
-  abstract void writeTo(Serializer output) throws IOException;
+  protected abstract void writeTo(Serializer output) throws IOException;
 }

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal;
+package io.opentelemetry.exporter.otlp.internal.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.proto.metrics.v1.AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE;
@@ -18,6 +18,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
@@ -730,9 +731,7 @@ class MetricsRequestMarshalerTest {
     return points.stream()
         .map(
             point ->
-                parse(
-                    NumberDataPoint.getDefaultInstance(),
-                    MetricsRequestMarshaler.NumberDataPointMarshaler.create(point)))
+                parse(NumberDataPoint.getDefaultInstance(), NumberDataPointMarshaler.create(point)))
         .collect(Collectors.toList());
   }
 
@@ -742,8 +741,7 @@ class MetricsRequestMarshalerTest {
         .map(
             point ->
                 parse(
-                    SummaryDataPoint.getDefaultInstance(),
-                    MetricsRequestMarshaler.SummaryDataPointMarshaler.create(point)))
+                    SummaryDataPoint.getDefaultInstance(), SummaryDataPointMarshaler.create(point)))
         .collect(Collectors.toList());
   }
 
@@ -754,13 +752,12 @@ class MetricsRequestMarshalerTest {
             point ->
                 parse(
                     HistogramDataPoint.getDefaultInstance(),
-                    MetricsRequestMarshaler.HistogramDataPointMarshaler.create(point)))
+                    HistogramDataPointMarshaler.create(point)))
         .collect(Collectors.toList());
   }
 
   private static Metric toProtoMetric(MetricData metricData) {
-    return parse(
-        Metric.getDefaultInstance(), MetricsRequestMarshaler.MetricMarshaler.create(metricData));
+    return parse(Metric.getDefaultInstance(), MetricMarshaler.create(metricData));
   }
 
   private static List<ResourceMetrics> toProtoResourceMetrics(

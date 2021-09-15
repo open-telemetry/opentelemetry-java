@@ -8,8 +8,8 @@ package io.opentelemetry.exporter.otlp.metrics;
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 
 import io.grpc.MethodDescriptor;
-import io.opentelemetry.exporter.otlp.internal.MetricsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
+import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
 import java.io.InputStream;
 
 // Adapted from the protoc generated code for MetricsServiceGrpc.

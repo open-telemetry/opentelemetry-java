@@ -53,7 +53,7 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
                 instrumentationLibraryInfo,
                 instrumentDescriptor,
                 metricDescriptor,
-                () -> sampler.getFactory().createReservoir(view.getAggregation()));
+                () -> sampler.createReservoir(view.getAggregation()));
     return new SynchronousMetricStorage<>(
         metricDescriptor,
         aggregator,

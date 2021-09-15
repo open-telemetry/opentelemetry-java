@@ -3,7 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal;
+package io.opentelemetry.exporter.otlp.internal.metrics;
+
+import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
+import io.opentelemetry.exporter.otlp.internal.Serializer;
 
 final class NoopMarshaler extends MarshalerWithSize {
 

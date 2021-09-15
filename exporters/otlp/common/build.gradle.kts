@@ -51,8 +51,6 @@ dependencies {
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation(project(":sdk-extensions:resources"))
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
-  jmhImplementation("org.curioswitch.curiostack:protobuf-jackson")
-  jmhImplementation("com.google.protobuf:protobuf-java-util")
   jmhRuntimeOnly("io.grpc:grpc-netty")
 }
 

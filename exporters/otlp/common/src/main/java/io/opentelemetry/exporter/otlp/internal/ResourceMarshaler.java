@@ -11,7 +11,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-final class ResourceMarshaler extends MarshalerWithSize {
+/**
+ * A Marshaler of {@link io.opentelemetry.sdk.resources.Resource}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class ResourceMarshaler extends MarshalerWithSize {
 
   private static final WeakConcurrentMap<io.opentelemetry.sdk.resources.Resource, ResourceMarshaler>
       RESOURCE_MARSHALER_CACHE = new WeakConcurrentMap.WithInlinedExpunction<>();
@@ -19,7 +25,8 @@ final class ResourceMarshaler extends MarshalerWithSize {
   private final byte[] serializedBinary;
   private final String serializedJson;
 
-  static ResourceMarshaler create(io.opentelemetry.sdk.resources.Resource resource) {
+  /** Returns a Marshaler for Resource. */
+  public static ResourceMarshaler create(io.opentelemetry.sdk.resources.Resource resource) {
     ResourceMarshaler cached = RESOURCE_MARSHALER_CACHE.get(resource);
     if (cached == null) {
       // Since WeakConcurrentMap doesn't support computeIfAbsent, we may end up doing the conversion
@@ -66,7 +73,7 @@ final class ResourceMarshaler extends MarshalerWithSize {
     }
 
     @Override
-    void writeTo(Serializer output) throws IOException {
+    protected void writeTo(Serializer output) throws IOException {
       output.serializeRepeatedMessage(Resource.ATTRIBUTES, attributes);
     }
 
