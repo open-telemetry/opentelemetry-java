@@ -26,6 +26,12 @@ final class OtlpConfigUtil {
     if (protocol == null) {
       protocol = config.getString("otel.exporter.otlp.protocol");
     }
+    if (protocol == null) {
+      protocol = config.getString("otel.experimental.exporter.otlp." + dataType + ".protocol");
+    }
+    if (protocol == null) {
+      protocol = config.getString("otel.experimental.exporter.otlp.protocol");
+    }
     return (protocol == null) ? "grpc" : protocol;
   }
 
