@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.jaeger;
 
-import com.google.protobuf.internal.Timestamp;
+import io.opentelemetry.exporter.jaeger.internal.protobuf.internal.Time;
 import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
 import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
@@ -34,14 +34,14 @@ final class TimeMarshaler extends MarshalerWithSize {
 
   @Override
   protected void writeTo(Serializer output) throws IOException {
-    output.serializeInt64(Timestamp.SECONDS, seconds);
-    output.serializeInt32(Timestamp.NANOS, nanos);
+    output.serializeInt64(Time.SECONDS, seconds);
+    output.serializeInt32(Time.NANOS, nanos);
   }
 
   private static int calculateSize(long seconds, int nanos) {
     int size = 0;
-    size += MarshalerUtil.sizeInt64(Timestamp.SECONDS, seconds);
-    size += MarshalerUtil.sizeInt32(Timestamp.NANOS, nanos);
+    size += MarshalerUtil.sizeInt64(Time.SECONDS, seconds);
+    size += MarshalerUtil.sizeInt32(Time.NANOS, nanos);
     return size;
   }
 }

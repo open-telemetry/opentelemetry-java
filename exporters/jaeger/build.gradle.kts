@@ -23,13 +23,6 @@ dependencies {
   implementation("io.grpc:grpc-stub")
   implementation("com.fasterxml.jackson.jr:jackson-jr-objects")
 
-  // We mistakenly exposed the Jaeger generated proto in our public API. We go ahead and compile
-  // them in for compatibility, with the expectation that if a user needs to use these classes for
-  // some reason they can (and probably already do) add the dependency to the protobuf library
-  // in their build.
-  compileOnly("com.google.protobuf:protobuf-java")
-  compileOnly("io.grpc:grpc-protobuf")
-
   testImplementation("com.fasterxml.jackson.jr:jackson-jr-stree")
   testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("com.google.protobuf:protobuf-java-util")
@@ -46,5 +39,21 @@ dependencies {
 wire {
   custom {
     customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
+  }
+}
+
+// We only use the generated protos in tests
+sourceSets {
+  test {
+    proto {
+      srcDir("src/main/proto")
+    }
+  }
+}
+afterEvaluate {
+  tasks {
+    named("generateProto") {
+      enabled = false
+    }
   }
 }
