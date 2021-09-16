@@ -1,2 +1,173 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW CLASS: PUBLIC(+) FINAL(+) com.google.protobuf.Duration  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: com.google.protobuf.DurationOrBuilder
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) int NANOS_FIELD_NUMBER
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) int SECONDS_FIELD_NUMBER
+	+++  NEW METHOD: PUBLIC(+) boolean equals(java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration getDefaultInstance()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration getDefaultInstanceForType()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) FINAL(+) com.google.protobuf.Descriptors$Descriptor getDescriptor()
+	+++  NEW METHOD: PUBLIC(+) int getNanos()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Parser getParserForType()
+	+++  NEW METHOD: PUBLIC(+) long getSeconds()
+	+++  NEW METHOD: PUBLIC(+) int getSerializedSize()
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) com.google.protobuf.UnknownFieldSet getUnknownFields()
+	+++  NEW METHOD: PUBLIC(+) int hashCode()
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) boolean isInitialized()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration$Builder newBuilder()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration$Builder newBuilder(com.google.protobuf.Duration)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder newBuilderForType()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseDelimitedFrom(java.io.InputStream)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseDelimitedFrom(java.io.InputStream, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseFrom(java.nio.ByteBuffer)
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseFrom(java.nio.ByteBuffer, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseFrom(com.google.protobuf.ByteString)
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseFrom(com.google.protobuf.ByteString, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseFrom(byte[])
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseFrom(byte[], com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseFrom(java.io.InputStream)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseFrom(java.io.InputStream, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseFrom(com.google.protobuf.CodedInputStream)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Duration parseFrom(com.google.protobuf.CodedInputStream, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Parser parser()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder toBuilder()
+	+++  NEW METHOD: PUBLIC(+) void writeTo(com.google.protobuf.CodedOutputStream)
+		+++  NEW EXCEPTION: java.io.IOException
++++  NEW CLASS: PUBLIC(+) STATIC(+) FINAL(+) com.google.protobuf.Duration$Builder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: com.google.protobuf.DurationOrBuilder
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder addRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration build()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration buildPartial()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder clear()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder clearField(com.google.protobuf.Descriptors$FieldDescriptor)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder clearNanos()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder clearOneof(com.google.protobuf.Descriptors$OneofDescriptor)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder clearSeconds()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder clone()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration getDefaultInstanceForType()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) FINAL(+) com.google.protobuf.Descriptors$Descriptor getDescriptor()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Descriptors$Descriptor getDescriptorForType()
+	+++  NEW METHOD: PUBLIC(+) int getNanos()
+	+++  NEW METHOD: PUBLIC(+) long getSeconds()
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) boolean isInitialized()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder mergeFrom(com.google.protobuf.Message)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder mergeFrom(com.google.protobuf.Duration)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder mergeFrom(com.google.protobuf.CodedInputStream, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) com.google.protobuf.Duration$Builder mergeUnknownFields(com.google.protobuf.UnknownFieldSet)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder setField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder setNanos(int)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder setRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, int, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Duration$Builder setSeconds(long)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) com.google.protobuf.Duration$Builder setUnknownFields(com.google.protobuf.UnknownFieldSet)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) com.google.protobuf.DurationOrBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getNanos()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getSeconds()
++++  NEW CLASS: PUBLIC(+) FINAL(+) com.google.protobuf.DurationProto  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Descriptors$FileDescriptor getDescriptor()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) void registerAllExtensions(com.google.protobuf.ExtensionRegistryLite)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) void registerAllExtensions(com.google.protobuf.ExtensionRegistry)
++++  NEW CLASS: PUBLIC(+) FINAL(+) com.google.protobuf.Timestamp  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: com.google.protobuf.TimestampOrBuilder
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) int NANOS_FIELD_NUMBER
+	+++  NEW FIELD: PUBLIC(+) STATIC(+) FINAL(+) int SECONDS_FIELD_NUMBER
+	+++  NEW METHOD: PUBLIC(+) boolean equals(java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp getDefaultInstance()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp getDefaultInstanceForType()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) FINAL(+) com.google.protobuf.Descriptors$Descriptor getDescriptor()
+	+++  NEW METHOD: PUBLIC(+) int getNanos()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Parser getParserForType()
+	+++  NEW METHOD: PUBLIC(+) long getSeconds()
+	+++  NEW METHOD: PUBLIC(+) int getSerializedSize()
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) com.google.protobuf.UnknownFieldSet getUnknownFields()
+	+++  NEW METHOD: PUBLIC(+) int hashCode()
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) boolean isInitialized()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp$Builder newBuilder()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp$Builder newBuilder(com.google.protobuf.Timestamp)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder newBuilderForType()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseDelimitedFrom(java.io.InputStream)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseDelimitedFrom(java.io.InputStream, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseFrom(java.nio.ByteBuffer)
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseFrom(java.nio.ByteBuffer, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseFrom(com.google.protobuf.ByteString)
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseFrom(com.google.protobuf.ByteString, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseFrom(byte[])
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseFrom(byte[], com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: com.google.protobuf.InvalidProtocolBufferException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseFrom(java.io.InputStream)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseFrom(java.io.InputStream, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseFrom(com.google.protobuf.CodedInputStream)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Timestamp parseFrom(com.google.protobuf.CodedInputStream, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Parser parser()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder toBuilder()
+	+++  NEW METHOD: PUBLIC(+) void writeTo(com.google.protobuf.CodedOutputStream)
+		+++  NEW EXCEPTION: java.io.IOException
++++  NEW CLASS: PUBLIC(+) STATIC(+) FINAL(+) com.google.protobuf.Timestamp$Builder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW INTERFACE: com.google.protobuf.TimestampOrBuilder
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder addRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp build()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp buildPartial()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder clear()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder clearField(com.google.protobuf.Descriptors$FieldDescriptor)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder clearNanos()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder clearOneof(com.google.protobuf.Descriptors$OneofDescriptor)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder clearSeconds()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder clone()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp getDefaultInstanceForType()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) FINAL(+) com.google.protobuf.Descriptors$Descriptor getDescriptor()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Descriptors$Descriptor getDescriptorForType()
+	+++  NEW METHOD: PUBLIC(+) int getNanos()
+	+++  NEW METHOD: PUBLIC(+) long getSeconds()
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) boolean isInitialized()
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder mergeFrom(com.google.protobuf.Message)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder mergeFrom(com.google.protobuf.Timestamp)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder mergeFrom(com.google.protobuf.CodedInputStream, com.google.protobuf.ExtensionRegistryLite)
+		+++  NEW EXCEPTION: java.io.IOException
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) com.google.protobuf.Timestamp$Builder mergeUnknownFields(com.google.protobuf.UnknownFieldSet)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder setField(com.google.protobuf.Descriptors$FieldDescriptor, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder setNanos(int)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder setRepeatedField(com.google.protobuf.Descriptors$FieldDescriptor, int, java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) com.google.protobuf.Timestamp$Builder setSeconds(long)
+	+++  NEW METHOD: PUBLIC(+) FINAL(+) com.google.protobuf.Timestamp$Builder setUnknownFields(com.google.protobuf.UnknownFieldSet)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) com.google.protobuf.TimestampOrBuilder  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) int getNanos()
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) long getSeconds()
++++  NEW CLASS: PUBLIC(+) FINAL(+) com.google.protobuf.TimestampProto  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) com.google.protobuf.Descriptors$FileDescriptor getDescriptor()
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) void registerAllExtensions(com.google.protobuf.ExtensionRegistryLite)
+	+++  NEW METHOD: PUBLIC(+) STATIC(+) void registerAllExtensions(com.google.protobuf.ExtensionRegistry)

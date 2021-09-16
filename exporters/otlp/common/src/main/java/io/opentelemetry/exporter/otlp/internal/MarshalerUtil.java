@@ -151,12 +151,28 @@ public final class MarshalerUtil {
     return field.getTagSize() + CodedOutputStream.computeBoolSizeNoTag(value);
   }
 
+  /** Returns the size of a int64 field. */
+  public static int sizeInt64(ProtoFieldInfo field, long message) {
+    if (message == 0) {
+      return 0;
+    }
+    return field.getTagSize() + CodedOutputStream.computeInt64SizeNoTag(message);
+  }
+
   /** Returns the size of a uint32 field. */
   public static int sizeUInt32(ProtoFieldInfo field, int message) {
     if (message == 0) {
       return 0;
     }
     return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(message);
+  }
+
+  /** Returns the size of a int32 field. */
+  public static int sizeInt32(ProtoFieldInfo field, int message) {
+    if (message == 0) {
+      return 0;
+    }
+    return field.getTagSize() + CodedOutputStream.computeInt32SizeNoTag(message);
   }
 
   /** Returns the size of a double field. */
