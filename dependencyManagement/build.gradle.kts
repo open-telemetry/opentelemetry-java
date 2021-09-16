@@ -12,11 +12,11 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 val DEPENDENCY_BOMS = listOf(
-  "com.fasterxml.jackson:jackson-bom:2.12.4",
+  "com.fasterxml.jackson:jackson-bom:2.12.5",
   "com.google.guava:guava-bom:30.1.1-jre",
   "com.google.protobuf:protobuf-bom:3.17.3",
-  "com.linecorp.armeria:armeria-bom:1.9.2",
-  "io.grpc:grpc-bom:1.39.0",
+  "com.linecorp.armeria:armeria-bom:1.11.0",
+  "io.grpc:grpc-bom:1.40.1",
   "io.zipkin.brave:brave-bom:5.13.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
   "org.junit:junit-bom:5.7.2",
@@ -31,7 +31,7 @@ val DEPENDENCY_SETS = listOf(
   ),
   DependencySet(
     "com.google.errorprone",
-    "2.8.1",
+    "2.9.0",
     listOf("error_prone_annotations", "error_prone_core")
   ),
   DependencySet(
