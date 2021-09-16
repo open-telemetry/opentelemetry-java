@@ -23,7 +23,7 @@ import java.time.Duration;
 import java.util.Random;
 import org.junit.jupiter.api.Test;
 
-public class FixedSizeExemplarReservoirTest {
+class FixedSizeExemplarReservoirTest {
   private static final String TRACE_ID = "ff000000000000000000000000000041";
   private static final String SPAN_ID = "ff00000000000041";
 

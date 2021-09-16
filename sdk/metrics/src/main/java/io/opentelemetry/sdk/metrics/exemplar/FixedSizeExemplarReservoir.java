@@ -21,7 +21,7 @@ import java.util.function.Supplier;
  *
  * <p>Additionally this implementation ONLY exports double valued exemplars.
  */
-public class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoir {
+final class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoir {
   private final Supplier<Random> randomSupplier;
   private final LongAdder numMeasurements = new LongAdder();
 

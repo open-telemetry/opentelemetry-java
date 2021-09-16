@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
-public class HistogramBucketExemplarReservoirTest {
+class HistogramBucketExemplarReservoirTest {
   @Test
   public void noMeasurement_returnsEmpty() {
     TestClock clock = TestClock.create();

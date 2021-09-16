@@ -12,7 +12,7 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramU
 import java.util.List;
 
 /** A Reservoir sampler that preserves the latest seen measurement per-histogram bucket. */
-public class HistogramBucketExemplarReservoir extends AbstractFixedSizeExemplarReservoir {
+final class HistogramBucketExemplarReservoir extends AbstractFixedSizeExemplarReservoir {
   private final double[] boundaries;
 
   /** Constructs a new histogram bucket exemplar reservoir using standard configuration. */
