@@ -51,6 +51,7 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
    * @return The bucket to sample into or -1 for no sampling.
    */
   protected abstract int bucketFor(double value, Attributes attributes, Context context);
+
   /** Callback to reset any local state after a {@link #collectAndReset} call. */
   protected void reset() {}
 
