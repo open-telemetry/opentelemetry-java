@@ -17,7 +17,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.RandomHolder;
+import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.Random;
@@ -31,7 +31,7 @@ public class FixedSizeExemplarReservoirTest {
   public void noMeasurement_returnsEmpty() {
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir =
-        new FixedSizeExemplarReservoir(clock, 1, RandomHolder.platformDefault());
+        new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
     assertThat(reservoir.collectAndReset(Attributes.empty())).isEmpty();
   }
 
@@ -39,7 +39,7 @@ public class FixedSizeExemplarReservoirTest {
   public void oneMeasurement_alwaysSamplesFirstMeasurement() {
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir =
-        new FixedSizeExemplarReservoir(clock, 1, RandomHolder.platformDefault());
+        new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerMeasurement(1L, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
@@ -71,7 +71,7 @@ public class FixedSizeExemplarReservoirTest {
     Attributes remaining = Attributes.builder().put("one", 1).put("two", "two").build();
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir =
-        new FixedSizeExemplarReservoir(clock, 1, RandomHolder.platformDefault());
+        new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerMeasurement(1L, all, Context.root());
     assertThat(reservoir.collectAndReset(partial))
         .satisfiesExactly(
@@ -94,7 +94,7 @@ public class FixedSizeExemplarReservoirTest {
                         TRACE_ID, SPAN_ID, TraceFlags.getSampled(), TraceState.getDefault())));
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir =
-        new FixedSizeExemplarReservoir(clock, 1, RandomHolder.platformDefault());
+        new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
     reservoir.offerMeasurement(1L, all, context);
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .satisfiesExactly(
@@ -112,8 +112,7 @@ public class FixedSizeExemplarReservoirTest {
     AttributeKey<Long> key = AttributeKey.longKey("K");
     Random mockRandom = mock(Random.class);
     TestClock clock = TestClock.create();
-    ExemplarReservoir reservoir =
-        new FixedSizeExemplarReservoir(clock, 2, RandomHolder.create(mockRandom));
+    ExemplarReservoir reservoir = new FixedSizeExemplarReservoir(clock, 2, () -> mockRandom);
     // Force one sample in bucket 1 and two in bucket 0.
     when(mockRandom.nextInt(1)).thenReturn(0);
     when(mockRandom.nextInt(2)).thenReturn(1);

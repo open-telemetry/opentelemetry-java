@@ -8,8 +8,9 @@ package io.opentelemetry.sdk.metrics.exemplar;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.common.RandomHolder;
+import java.util.Random;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.function.Supplier;
 
 /**
  * A Reservoir sampler with fixed size that stores the given number of exemplars.
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.LongAdder;
  * <p>Additionally this implementation ONLY exports double valued exemplars.
  */
 public class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoir {
-  private final RandomHolder randomHolder;
+  private final Supplier<Random> randomSupplier;
   private final LongAdder numMeasurements = new LongAdder();
 
   /**
@@ -29,18 +30,18 @@ public class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservo
    *
    * @param clock The clock to use when annotating measurements with time.
    * @param size The number of exemplars to preserve.
-   * @param randomHolder The random number generated to use for sampling.
+   * @param randomSupplier The random number generater to use for sampling.
    */
-  public FixedSizeExemplarReservoir(Clock clock, int size, RandomHolder randomHolder) {
+  public FixedSizeExemplarReservoir(Clock clock, int size, Supplier<Random> randomSupplier) {
     super(clock, size);
-    this.randomHolder = randomHolder;
+    this.randomSupplier = randomSupplier;
   }
 
   @Override
   protected int bucketFor(double value, Attributes attributes, Context context) {
     // Purposefuly truncate here.
     int count = (int) numMeasurements.sum() + 1;
-    int index = this.randomHolder.getRandom().nextInt(count > 0 ? count : 1);
+    int index = this.randomSupplier.get().nextInt(count > 0 ? count : 1);
     numMeasurements.increment();
     if (index < maxSize()) {
       return index;
