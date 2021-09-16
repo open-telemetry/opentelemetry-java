@@ -68,6 +68,7 @@ dependencies {
   add("testOtlpHttpImplementation", "org.bouncycastle:bcpkix-jdk15on")
 
   add("testJaegerImplementation", project(":exporters:jaeger"))
+  add("testJaegerImplementation", project(":exporters:jaeger-proto"))
 
   add("testZipkinImplementation", project(":exporters:zipkin"))
 

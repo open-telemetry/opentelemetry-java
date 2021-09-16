@@ -1,6 +1,5 @@
 plugins {
   id("otel.java-conventions")
-  id("otel.protobuf-conventions")
   id("otel.publish-conventions")
 
   id("otel.animalsniffer-conventions")
@@ -15,6 +14,8 @@ dependencies {
   api(project(":sdk:all"))
   api("io.grpc:grpc-api")
 
+  protoSource(project(":exporters:jaeger-proto"))
+
   // TODO(anuraaga): otlp-common has a lot of code not specific to OTLP now. As it's just internal
   // code, this mysterious dependency is possibly still OK but we may need a rename or splitting.
   implementation(project(":exporters:otlp:common"))
@@ -23,8 +24,9 @@ dependencies {
   implementation("io.grpc:grpc-stub")
   implementation("com.fasterxml.jackson.jr:jackson-jr-objects")
 
+  testImplementation(project(":exporters:jaeger-proto"))
+
   testImplementation("com.fasterxml.jackson.jr:jackson-jr-stree")
-  testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.squareup.okhttp3:okhttp")
   testImplementation("io.grpc:grpc-protobuf")
@@ -39,21 +41,5 @@ dependencies {
 wire {
   custom {
     customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
-  }
-}
-
-// We only use the generated protos in tests
-sourceSets {
-  test {
-    proto {
-      srcDir("src/main/proto")
-    }
-  }
-}
-afterEvaluate {
-  tasks {
-    named("generateProto") {
-      enabled = false
-    }
   }
 }
