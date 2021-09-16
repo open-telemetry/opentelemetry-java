@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.exemplar;
 
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.internal.RandomSupplier;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.ExplicitBucketHistogramAggregation;
 
@@ -20,10 +21,11 @@ class DefaultExemplarReservoirFactory implements ExemplarReservoirFactory {
     Clock clock = Clock.getDefault();
     // For histograms, line up reservoirs with buckets.
     if (aggregation instanceof ExplicitBucketHistogramAggregation) {
-      return HistogramBucketExemplarReservoir.create(
+      return ExemplarReservoir.histogramBucketReservoir(
           clock, ((ExplicitBucketHistogramAggregation) aggregation).getBucketBoundaries());
     }
     // By default, reduce threading contention.
-    return new FixedSizeExemplarReservoir(clock, Runtime.getRuntime().availableProcessors());
+    return ExemplarReservoir.fixedSizeReservoir(
+        clock, Runtime.getRuntime().availableProcessors(), RandomSupplier.platformDefault());
   }
 }
