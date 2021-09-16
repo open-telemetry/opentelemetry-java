@@ -7,8 +7,6 @@ package io.opentelemetry.sdk.metrics.exemplar;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -110,13 +108,22 @@ class FixedSizeExemplarReservoirTest {
   @Test
   public void multiMeasurements_preservesLatestSamples() {
     AttributeKey<Long> key = AttributeKey.longKey("K");
-    Random mockRandom = mock(Random.class);
+    // We cannot mock random in latest jdk, so we create an override.
+    Random mockRandom =
+        new Random() {
+          @Override
+          public int nextInt(int max) {
+            switch (max) {
+                // Force one sample in bucket 1 and two in bucket 0.
+              case 2:
+                return 1;
+              default:
+                return 0;
+            }
+          }
+        };
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir = new FixedSizeExemplarReservoir(clock, 2, () -> mockRandom);
-    // Force one sample in bucket 1 and two in bucket 0.
-    when(mockRandom.nextInt(1)).thenReturn(0);
-    when(mockRandom.nextInt(2)).thenReturn(1);
-    when(mockRandom.nextInt(3)).thenReturn(0);
     reservoir.offerMeasurement(1, Attributes.of(key, 1L), Context.root());
     reservoir.offerMeasurement(2, Attributes.of(key, 2L), Context.root());
     reservoir.offerMeasurement(3, Attributes.of(key, 3L), Context.root());
