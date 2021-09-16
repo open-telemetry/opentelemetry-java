@@ -12,6 +12,8 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.ServiceLoader;
@@ -89,6 +91,27 @@ public final class OpenTelemetrySdkAutoConfiguration {
     }
 
     SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
+
+    // Configure default exemplar filters.
+    String exemplarFilter = config.getString("otel.metrics.exemplar.filter");
+    if (exemplarFilter == null) {
+      exemplarFilter = "WITH_SAMPLED_TRACE";
+    }
+    switch (exemplarFilter) {
+      case "NONE":
+        meterProviderBuilder.setExemplarSampler(
+            ExemplarSampler.builder().setFilter(ExemplarFilter.neverSample()).build());
+        break;
+      case "ALL":
+        meterProviderBuilder.setExemplarSampler(
+            ExemplarSampler.builder().setFilter(ExemplarFilter.alwaysSample()).build());
+        break;
+      case "WITH_SAMPLED_TRACE":
+      default:
+        meterProviderBuilder.setExemplarSampler(
+            ExemplarSampler.builder().setFilter(ExemplarFilter.sampleWithTraces()).build());
+        break;
+    }
 
     for (SdkMeterProviderConfigurer configurer :
         ServiceLoader.load(SdkMeterProviderConfigurer.class)) {
