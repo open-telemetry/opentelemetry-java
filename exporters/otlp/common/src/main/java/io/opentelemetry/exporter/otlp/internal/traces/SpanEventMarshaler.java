@@ -21,7 +21,7 @@ final class SpanEventMarshaler extends MarshalerWithSize {
   private final KeyValueMarshaler[] attributeMarshalers;
   private final int droppedAttributesCount;
 
-  static SpanEventMarshaler[] create(List<EventData> events) {
+  static SpanEventMarshaler[] createRepeated(List<EventData> events) {
     if (events.isEmpty()) {
       return EMPTY;
     }
@@ -29,15 +29,19 @@ final class SpanEventMarshaler extends MarshalerWithSize {
     SpanEventMarshaler[] result = new SpanEventMarshaler[events.size()];
     int pos = 0;
     for (EventData event : events) {
-      result[pos++] =
-          new SpanEventMarshaler(
-              event.getEpochNanos(),
-              MarshalerUtil.toBytes(event.getName()),
-              KeyValueMarshaler.createRepeated(event.getAttributes()),
-              event.getTotalAttributeCount() - event.getAttributes().size());
+      result[pos++] = create(event);
     }
 
     return result;
+  }
+
+  // Visible for testing
+  static SpanEventMarshaler create(EventData event) {
+    return new SpanEventMarshaler(
+        event.getEpochNanos(),
+        MarshalerUtil.toBytes(event.getName()),
+        KeyValueMarshaler.createRepeated(event.getAttributes()),
+        event.getTotalAttributeCount() - event.getAttributes().size());
   }
 
   private SpanEventMarshaler(

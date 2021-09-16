@@ -21,7 +21,7 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
   private final KeyValueMarshaler[] attributeMarshalers;
   private final int droppedAttributesCount;
 
-  static SpanLinkMarshaler[] create(List<LinkData> links) {
+  static SpanLinkMarshaler[] createRepeated(List<LinkData> links) {
     if (links.isEmpty()) {
       return EMPTY;
     }
@@ -29,15 +29,19 @@ final class SpanLinkMarshaler extends MarshalerWithSize {
     SpanLinkMarshaler[] result = new SpanLinkMarshaler[links.size()];
     int pos = 0;
     for (LinkData link : links) {
-      result[pos++] =
-          new SpanLinkMarshaler(
-              link.getSpanContext().getTraceId(),
-              link.getSpanContext().getSpanId(),
-              KeyValueMarshaler.createRepeated(link.getAttributes()),
-              link.getTotalAttributeCount() - link.getAttributes().size());
+      result[pos++] = create(link);
     }
 
     return result;
+  }
+
+  // Visible for testing
+  static SpanLinkMarshaler create(LinkData link) {
+    return new SpanLinkMarshaler(
+        link.getSpanContext().getTraceId(),
+        link.getSpanContext().getSpanId(),
+        KeyValueMarshaler.createRepeated(link.getAttributes()),
+        link.getTotalAttributeCount() - link.getAttributes().size());
   }
 
   private SpanLinkMarshaler(
