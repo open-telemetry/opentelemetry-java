@@ -79,6 +79,7 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
 
     companion object {
       private val PROTO_FIELD_INFO = ClassName.get("io.opentelemetry.exporter.otlp.internal", "ProtoFieldInfo")
+      private val PROTO_ENUM_INFO = ClassName.get("io.opentelemetry.exporter.otlp.internal", "ProtoEnumInfo")
       private val WIRETYPE_VARINT = 0
       private val WIRETYPE_FIXED64 = 1
       private val WIRETYPE_LENGTH_DELIMITED = 2
@@ -123,7 +124,7 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
         return generateMessage(type, nested)
       }
       if (type is EnumType) {
-        return generateEnum(type)
+        return generateEnum(type, nested)
       }
       return null
     }
@@ -150,7 +151,6 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
               makeTag(field.tag, field.type as ProtoType, field.isRepeated),
               field.jsonName)
             .build())
-        field.type
       }
 
       for (nestedType in type.nestedTypes) {
@@ -160,16 +160,19 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
       return builder.build()
     }
 
-    private fun generateEnum(type: EnumType): TypeSpec {
+    private fun generateEnum(type: EnumType, nested: Boolean): TypeSpec {
       val javaType = typeToJavaName[type.type] as ClassName
 
       val builder = TypeSpec.classBuilder(javaType.simpleName())
         .addModifiers(PUBLIC, FINAL)
+      if (nested) {
+        builder.addModifiers(STATIC)
+      }
 
       for (constant in type.constants) {
         builder.addField(
-          FieldSpec.builder(TypeName.INT, "${constant.name}_VALUE", PUBLIC, STATIC, FINAL)
-            .initializer("\$L", constant.tag)
+          FieldSpec.builder(PROTO_ENUM_INFO, constant.name, PUBLIC, STATIC, FINAL)
+            .initializer("\$T.create(\$L, \"\$L\")", PROTO_ENUM_INFO, constant.tag, constant.name)
             .build())
       }
 

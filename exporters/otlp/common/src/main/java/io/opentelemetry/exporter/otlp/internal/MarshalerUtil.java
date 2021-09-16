@@ -185,11 +185,12 @@ public final class MarshalerUtil {
 
   /** Returns the size of a enum field. */
   // Assumes OTLP always defines the first item in an enum with number 0, which it does and will.
-  public static int sizeEnum(ProtoFieldInfo field, int value) {
-    if (value == 0) {
+  public static int sizeEnum(ProtoFieldInfo field, ProtoEnumInfo enumValue) {
+    int number = enumValue.getEnumNumber();
+    if (number == 0) {
       return 0;
     }
-    return field.getTagSize() + CodedOutputStream.computeEnumSizeNoTag(value);
+    return field.getTagSize() + CodedOutputStream.computeEnumSizeNoTag(number);
   }
 
   /** Returns the size of a trace_id field. */
