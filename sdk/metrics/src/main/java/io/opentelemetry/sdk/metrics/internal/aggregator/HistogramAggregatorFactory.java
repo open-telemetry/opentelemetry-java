@@ -19,7 +19,7 @@ final class HistogramAggregatorFactory implements AggregatorFactory {
   private final AggregationTemporality temporality;
 
   HistogramAggregatorFactory(List<Double> boundaries, AggregationTemporality temporality) {
-    this.boundaries = boundaries.stream().mapToDouble(i -> i).toArray();
+    this.boundaries = ExplicitBucketHistogramUtils.createBoundaryArray(boundaries);
     this.temporality = temporality;
 
     for (double v : this.boundaries) {
