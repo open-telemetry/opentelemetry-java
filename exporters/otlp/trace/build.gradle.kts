@@ -34,6 +34,8 @@ dependencies {
   api("io.grpc:grpc-stub")
   implementation("io.grpc:grpc-api")
 
+  implementation("net.jodah:failsafe:2.4.3")
+
   testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 

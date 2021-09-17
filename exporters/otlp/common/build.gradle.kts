@@ -33,6 +33,7 @@ dependencies {
   compileOnly("io.grpc:grpc-netty-shaded")
   compileOnly("io.grpc:grpc-okhttp")
   compileOnly("io.grpc:grpc-stub")
+  compileOnly("net.jodah:failsafe:2.4.3")
 
   annotationProcessor("com.google.auto.value:auto-value")
 
