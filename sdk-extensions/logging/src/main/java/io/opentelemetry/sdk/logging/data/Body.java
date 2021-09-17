@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.logging.data;
 
-import com.google.auto.value.AutoValue;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -33,27 +31,8 @@ public interface Body {
     return StringBody.create(stringValue);
   }
 
-  /** Returns the string value of this {@code Body}. */
+  /** Returns the String value of this {@code Body}. */
   String asString();
 
   Type getType();
-
-  @Immutable
-  @AutoValue
-  abstract class StringBody implements Body {
-    StringBody() {}
-
-    static Body create(String stringValue) {
-      return new AutoValue_Body_StringBody(stringValue);
-    }
-
-    @Override
-    public final Type getType() {
-      return Type.STRING;
-    }
-
-    @Override
-    @Nullable
-    public abstract String asString();
-  }
 }
