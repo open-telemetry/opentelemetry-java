@@ -14,16 +14,21 @@ import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
+import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -113,12 +118,23 @@ public class GrpcGzipBenchmark {
     histogram.record(3.0);
     histogram.record(4.0);
     histogram.record(5.0);
-
     Collection<MetricData> metricData = meterProvider.collectAllMetrics();
+
+    List<ResourceMetrics> resourceMetrics =
+        Arrays.stream(ResourceMetricsMarshaler.create(metricData))
+            .map(
+                marshaler -> {
+                  ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                  try {
+                    marshaler.writeBinaryTo(bos);
+                    return ResourceMetrics.parseFrom(bos.toByteArray());
+                  } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                  }
+                })
+            .collect(Collectors.toList());
     METRICS_REQUEST =
-        ExportMetricsServiceRequest.newBuilder()
-            .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(metricData))
-            .build();
+        ExportMetricsServiceRequest.newBuilder().addAllResourceMetrics(resourceMetrics).build();
   }
 
   @Benchmark
