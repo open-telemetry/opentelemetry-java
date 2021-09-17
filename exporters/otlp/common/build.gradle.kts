@@ -17,7 +17,7 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:all"))
   api(project(":sdk:metrics"))
-  api(project(":sdk-extensions:logging"))
+  compileOnly(project(":sdk-extensions:logging"))
 
   // We only use the protos for HTTP, logging-otlp, and metric export for now. Let them expose the
   // proto dependency in their POMs instead of here. This is fine because this artifact only
