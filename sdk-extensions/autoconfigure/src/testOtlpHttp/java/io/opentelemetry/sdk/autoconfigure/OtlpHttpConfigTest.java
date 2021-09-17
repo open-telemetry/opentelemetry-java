@@ -163,7 +163,7 @@ class OtlpHttpConfigTest {
   @Test
   void configureExportersGeneral() {
     Map<String, String> props = new HashMap<>();
-    props.put("otel.experimental.exporter.otlp.protocol", "http/protobuf");
+    props.put("otel.exporter.otlp.protocol", "http/protobuf");
     props.put("otel.exporter.otlp.traces.endpoint", traceEndpoint());
     props.put("otel.exporter.otlp.metrics.endpoint", metricEndpoint());
     props.put("otel.exporter.otlp.certificate", certificateExtension.filePath);
@@ -219,8 +219,8 @@ class OtlpHttpConfigTest {
     // Set values for general and signal specific properties. Signal specific should override
     // general.
     Map<String, String> props = new HashMap<>();
-    props.put("otel.experimental.exporter.otlp.protocol", "grpc");
-    props.put("otel.experimental.exporter.otlp.traces.protocol", "http/protobuf");
+    props.put("otel.exporter.otlp.protocol", "grpc");
+    props.put("otel.exporter.otlp.traces.protocol", "http/protobuf");
     props.put("otel.exporter.otlp.endpoint", "http://foo.bar");
     props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
@@ -259,8 +259,8 @@ class OtlpHttpConfigTest {
     // Set values for general and signal specific properties. Signal specific should override
     // general.
     Map<String, String> props = new HashMap<>();
-    props.put("otel.experimental.exporter.otlp.protocol", "grpc");
-    props.put("otel.experimental.exporter.otlp.metrics.protocol", "http/protobuf");
+    props.put("otel.exporter.otlp.protocol", "grpc");
+    props.put("otel.exporter.otlp.metrics.protocol", "http/protobuf");
     props.put("otel.exporter.otlp.endpoint", "http://foo.bar");
     props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
@@ -296,7 +296,7 @@ class OtlpHttpConfigTest {
   @Test
   void configureTlsInvalidCertificatePath() {
     Map<String, String> props = new HashMap<>();
-    props.put("otel.experimental.exporter.otlp.protocol", "http/protobuf");
+    props.put("otel.exporter.otlp.protocol", "http/protobuf");
     props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
 
@@ -348,7 +348,7 @@ class OtlpHttpConfigTest {
 
   @Test
   void configuresGlobal() {
-    System.setProperty("otel.experimental.exporter.otlp.protocol", "http/protobuf");
+    System.setProperty("otel.exporter.otlp.protocol", "http/protobuf");
     System.setProperty("otel.exporter.otlp.traces.endpoint", traceEndpoint());
     System.setProperty("otel.exporter.otlp.metrics.endpoint", metricEndpoint());
     System.setProperty("otel.exporter.otlp.certificate", certificateExtension.filePath);

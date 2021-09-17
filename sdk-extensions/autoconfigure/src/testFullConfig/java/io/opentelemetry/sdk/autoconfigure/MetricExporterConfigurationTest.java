@@ -20,7 +20,7 @@ public class MetricExporterConfigurationTest {
             () ->
                 MetricExporterConfiguration.configureOtlpMetrics(
                     DefaultConfigProperties.createForTest(
-                        ImmutableMap.of("otel.experimental.exporter.otlp.protocol", "foo")),
+                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo")),
                     SdkMeterProvider.builder().build()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP metrics protocol: foo");
