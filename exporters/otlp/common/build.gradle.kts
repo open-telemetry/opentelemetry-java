@@ -37,6 +37,7 @@ dependencies {
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":proto"))
+  testImplementation(project(":sdk-extensions:logging"))
   testImplementation(project(":sdk:testing"))
 
   testImplementation("com.fasterxml.jackson.core:jackson-core")
