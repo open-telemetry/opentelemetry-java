@@ -172,7 +172,7 @@ final class MetricExporterConfiguration {
     } catch (IOException e) {
       throw new IllegalStateException("Failed to create Prometheus server", e);
     }
-    Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
+    Runtime.getRuntime().addShutdownHook(new Thread(server::close));
   }
 
   private MetricExporterConfiguration() {}

@@ -9,7 +9,6 @@ import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.base.Optional;
 import com.tngtech.archunit.base.PackageMatcher;
 import com.tngtech.archunit.core.domain.JavaClass;
-import com.tngtech.archunit.core.domain.JavaClassList;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
@@ -20,7 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class SdkDesignTest {
+class SdkDesignTest {
 
   private static final JavaClasses SDK_OTEL_CLASSES =
       new ClassFileImporter().importPackages("io.opentelemetry.sdk");
@@ -57,7 +56,7 @@ public class SdkDesignTest {
     return new DescribedPredicate<>("implement or override a method") {
       @Override
       public boolean apply(JavaMethod input) {
-        JavaClassList params = input.getRawParameterTypes();
+        List<JavaClass> params = input.getRawParameterTypes();
         Class<?>[] paramsType = new Class<?>[params.size()];
         for (int i = 0, n = params.size(); i < n; i++) {
           paramsType[i] = params.get(i).reflect();
