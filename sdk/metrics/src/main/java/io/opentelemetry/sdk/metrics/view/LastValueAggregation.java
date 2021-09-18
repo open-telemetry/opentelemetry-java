@@ -19,18 +19,13 @@ class LastValueAggregation extends Aggregation {
   LastValueAggregation() {}
 
   @Override
-  public String toString() {
-    return "lastValue";
-  }
-
-  @Override
   public <T> Aggregator<T> createAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
       MetricDescriptor metricDescriptor,
       ExemplarFilter exemplarFilter) {
-    // TODO - Should we take exemplars of gauges?
+    // For the initial version we do not sample exemplars on gauges.
     return AggregatorFactory.lastValue()
         .create(
             resource,
@@ -38,5 +33,10 @@ class LastValueAggregation extends Aggregation {
             instrumentDescriptor,
             metricDescriptor,
             ExemplarReservoir::noSamples);
+  }
+
+  @Override
+  public String toString() {
+    return "lastValue";
   }
 }

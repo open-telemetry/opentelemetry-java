@@ -26,4 +26,9 @@ class NoAggregation extends Aggregation {
       ExemplarFilter exemplarFilter) {
     return null;
   }
+
+  @Override
+  public String toString() {
+    return "none";
+  }
 }

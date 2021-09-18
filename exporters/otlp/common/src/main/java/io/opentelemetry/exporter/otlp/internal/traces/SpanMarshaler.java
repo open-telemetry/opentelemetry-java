@@ -9,6 +9,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.exporter.otlp.internal.KeyValueMarshaler;
 import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
 import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
+import io.opentelemetry.exporter.otlp.internal.ProtoEnumInfo;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.proto.trace.v1.internal.Span;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -20,7 +21,7 @@ final class SpanMarshaler extends MarshalerWithSize {
   private final String spanId;
   @Nullable private final String parentSpanId;
   private final byte[] nameUtf8;
-  private final int spanKind;
+  private final ProtoEnumInfo spanKind;
   private final long startEpochNanos;
   private final long endEpochNanos;
   private final KeyValueMarshaler[] attributeMarshalers;
@@ -35,8 +36,9 @@ final class SpanMarshaler extends MarshalerWithSize {
   static SpanMarshaler create(SpanData spanData) {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createRepeated(spanData.getAttributes());
-    SpanEventMarshaler[] spanEventMarshalers = SpanEventMarshaler.create(spanData.getEvents());
-    SpanLinkMarshaler[] spanLinkMarshalers = SpanLinkMarshaler.create(spanData.getLinks());
+    SpanEventMarshaler[] spanEventMarshalers =
+        SpanEventMarshaler.createRepeated(spanData.getEvents());
+    SpanLinkMarshaler[] spanLinkMarshalers = SpanLinkMarshaler.createRepeated(spanData.getLinks());
 
     String parentSpanId =
         spanData.getParentSpanContext().isValid()
@@ -65,7 +67,7 @@ final class SpanMarshaler extends MarshalerWithSize {
       String spanId,
       @Nullable String parentSpanId,
       byte[] nameUtf8,
-      int spanKind,
+      ProtoEnumInfo spanKind,
       long startEpochNanos,
       long endEpochNanos,
       KeyValueMarshaler[] attributeMarshalers,
@@ -137,7 +139,7 @@ final class SpanMarshaler extends MarshalerWithSize {
       String spanId,
       @Nullable String parentSpanId,
       byte[] nameUtf8,
-      int spanKind,
+      ProtoEnumInfo spanKind,
       long startEpochNanos,
       long endEpochNanos,
       KeyValueMarshaler[] attributeMarshalers,
@@ -172,19 +174,21 @@ final class SpanMarshaler extends MarshalerWithSize {
     return size;
   }
 
-  private static int toProtoSpanKind(SpanKind kind) {
+  // Visible for testing
+  static ProtoEnumInfo toProtoSpanKind(SpanKind kind) {
     switch (kind) {
       case INTERNAL:
-        return Span.SpanKind.SPAN_KIND_INTERNAL_VALUE;
+        return Span.SpanKind.SPAN_KIND_INTERNAL;
       case SERVER:
-        return Span.SpanKind.SPAN_KIND_SERVER_VALUE;
+        return Span.SpanKind.SPAN_KIND_SERVER;
       case CLIENT:
-        return Span.SpanKind.SPAN_KIND_CLIENT_VALUE;
+        return Span.SpanKind.SPAN_KIND_CLIENT;
       case PRODUCER:
-        return Span.SpanKind.SPAN_KIND_PRODUCER_VALUE;
+        return Span.SpanKind.SPAN_KIND_PRODUCER;
       case CONSUMER:
-        return Span.SpanKind.SPAN_KIND_CONSUMER_VALUE;
+        return Span.SpanKind.SPAN_KIND_CONSUMER;
     }
-    return -1;
+    // NB: Should not be possible with aligned versions.
+    return Span.SpanKind.SPAN_KIND_UNSPECIFIED;
   }
 }

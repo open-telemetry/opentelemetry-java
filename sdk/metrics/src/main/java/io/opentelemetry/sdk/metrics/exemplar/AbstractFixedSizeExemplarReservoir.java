@@ -45,12 +45,14 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
   protected final int maxSize() {
     return storage.length;
   }
+
   /**
-   * Determines the sample bucket for a given measurement.
+   * Determines the sample reservoir index for a given measurement.
    *
-   * @return The bucket to sample into or -1 for no sampling.
+   * @return The index to sample into or -1 for no sampling.
    */
-  protected abstract int bucketFor(double value, Attributes attributes, Context context);
+  protected abstract int reservoirIndexFor(double value, Attributes attributes, Context context);
+
   /** Callback to reset any local state after a {@link #collectAndReset} call. */
   protected void reset() {}
 
@@ -61,7 +63,7 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
 
   @Override
   public final void offerMeasurement(double value, Attributes attributes, Context context) {
-    int bucket = bucketFor(value, attributes, context);
+    int bucket = reservoirIndexFor(value, attributes, context);
     if (bucket != -1) {
       this.storage[bucket].offerMeasurement(value, attributes, context);
     }

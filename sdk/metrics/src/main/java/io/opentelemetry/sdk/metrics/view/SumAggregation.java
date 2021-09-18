@@ -31,11 +31,6 @@ class SumAggregation extends Aggregation {
   }
 
   @Override
-  public String toString() {
-    return "sum(" + temporality + ")";
-  }
-
-  @Override
   public <T> Aggregator<T> createAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
@@ -55,5 +50,10 @@ class SumAggregation extends Aggregation {
                         Clock.getDefault(),
                         Runtime.getRuntime().availableProcessors(),
                         RandomSupplier.platformDefault())));
+  }
+
+  @Override
+  public String toString() {
+    return "sum(" + temporality + ")";
   }
 }

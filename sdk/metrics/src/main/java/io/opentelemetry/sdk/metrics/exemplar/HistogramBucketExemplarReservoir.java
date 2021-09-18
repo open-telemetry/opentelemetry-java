@@ -33,7 +33,7 @@ final class HistogramBucketExemplarReservoir extends AbstractFixedSizeExemplarRe
   }
 
   @Override
-  protected int bucketFor(double value, Attributes attributes, Context context) {
+  protected int reservoirIndexFor(double value, Attributes attributes, Context context) {
     return ExplicitBucketHistogramUtils.findBucketIndex(boundaries, value);
   }
 }

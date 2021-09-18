@@ -38,8 +38,8 @@ final class FixedSizeExemplarReservoir extends AbstractFixedSizeExemplarReservoi
   }
 
   @Override
-  protected int bucketFor(double value, Attributes attributes, Context context) {
-    // Purposefuly truncate here.
+  protected int reservoirIndexFor(double value, Attributes attributes, Context context) {
+    // Purposefully truncate here.
     int count = (int) numMeasurements.sum() + 1;
     int index = this.randomSupplier.get().nextInt(count > 0 ? count : 1);
     numMeasurements.increment();

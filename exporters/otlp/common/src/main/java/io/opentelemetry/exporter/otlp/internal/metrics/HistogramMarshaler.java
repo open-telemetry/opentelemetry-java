@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.internal.metrics;
 
 import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
 import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
+import io.opentelemetry.exporter.otlp.internal.ProtoEnumInfo;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.proto.metrics.v1.internal.Histogram;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
@@ -14,7 +15,7 @@ import java.io.IOException;
 
 final class HistogramMarshaler extends MarshalerWithSize {
   private final HistogramDataPointMarshaler[] dataPoints;
-  private final int aggregationTemporality;
+  private final ProtoEnumInfo aggregationTemporality;
 
   static HistogramMarshaler create(DoubleHistogramData histogram) {
     HistogramDataPointMarshaler[] dataPointMarshalers =
@@ -24,7 +25,8 @@ final class HistogramMarshaler extends MarshalerWithSize {
         MetricsMarshalerUtil.mapToTemporality(histogram.getAggregationTemporality()));
   }
 
-  private HistogramMarshaler(HistogramDataPointMarshaler[] dataPoints, int aggregationTemporality) {
+  private HistogramMarshaler(
+      HistogramDataPointMarshaler[] dataPoints, ProtoEnumInfo aggregationTemporality) {
     super(calculateSize(dataPoints, aggregationTemporality));
     this.dataPoints = dataPoints;
     this.aggregationTemporality = aggregationTemporality;
@@ -37,7 +39,7 @@ final class HistogramMarshaler extends MarshalerWithSize {
   }
 
   private static int calculateSize(
-      HistogramDataPointMarshaler[] dataPoints, int aggregationTemporality) {
+      HistogramDataPointMarshaler[] dataPoints, ProtoEnumInfo aggregationTemporality) {
     int size = 0;
     size += MarshalerUtil.sizeRepeatedMessage(Histogram.DATA_POINTS, dataPoints);
     size += MarshalerUtil.sizeEnum(Histogram.AGGREGATION_TEMPORALITY, aggregationTemporality);

@@ -27,18 +27,8 @@ public final class RandomSupplier {
   public static Supplier<Random> platformDefault() {
     // note: check borrowed from OkHttp's check for Android.
     if ("Dalvik".equals(System.getProperty("java.vm.name"))) {
-      return androidFriendly();
+      return AndroidFriendlyRandomHolder.INSTANCE;
     }
     return ThreadLocalRandom::current;
-  }
-
-  /**
-   * Returns an android-friendly random holder.
-   *
-   * <p>On android, ThreadLocalRandom is instantiated with the same initial seed on all new threads
-   * leading to poor randomness.
-   */
-  public static Supplier<Random> androidFriendly() {
-    return AndroidFriendlyRandomHolder.INSTANCE;
   }
 }
