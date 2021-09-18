@@ -42,8 +42,8 @@ import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -130,9 +130,7 @@ class OtlpExporterIntegrationTest {
   }
 
   @AfterEach
-  void afterEach() {
-    IntervalMetricReader.resetGlobalForTest();
-  }
+  void afterEach() {}
 
   @Test
   void testOtlpGrpcTraceExport() {
@@ -262,23 +260,23 @@ class OtlpExporterIntegrationTest {
   }
 
   private static void testMetricExport(MetricExporter metricExporter) {
-    SdkMeterProvider meterProvider = SdkMeterProvider.builder().setResource(RESOURCE).build();
-    IntervalMetricReader intervalMetricReader =
-        IntervalMetricReader.builder()
-            .setMetricExporter(metricExporter)
-            .setMetricProducers(Collections.singletonList(meterProvider))
-            .setExportIntervalMillis(5000)
-            .build();
-    intervalMetricReader.startAndRegisterGlobal();
+    PeriodicMetricReader.Factory reader =
+        new PeriodicMetricReader.Factory(metricExporter, Duration.ofSeconds(5));
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().setResource(RESOURCE).register(reader).build();
 
     Meter meter = meterProvider.meterBuilder(OtlpExporterIntegrationTest.class.getName()).build();
 
     LongCounter longCounter = meter.counterBuilder("my-counter").build();
     longCounter.add(100, Attributes.builder().put("key", "value").build());
 
-    Awaitility.await()
-        .atMost(Duration.ofSeconds(30))
-        .until(() -> grpcServer.metricRequests.size() == 1);
+    try {
+      Awaitility.await()
+          .atMost(Duration.ofSeconds(30))
+          .until(() -> grpcServer.metricRequests.size() == 1);
+    } finally {
+      meterProvider.shutdown();
+    }
 
     ExportMetricsServiceRequest request = grpcServer.metricRequests.get(0);
     assertThat(request.getResourceMetricsCount()).isEqualTo(1);
