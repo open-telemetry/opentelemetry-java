@@ -51,9 +51,8 @@ public class ExecutorServiceSpanProcessorCpuBenchmark {
 
     @Setup(Level.Iteration)
     public final void setup() {
-      final SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
-      // Note: these will (likely) no longer be the same in future SDK.
-      collector = InMemoryMetricReader.create(sdkMeterProvider);
+      collector = new InMemoryMetricReader();
+      SdkMeterProvider.builder().register(collector).buildAndRegisterGlobal();
       SpanExporter exporter = new DelayingSpanExporter(delayMs);
       ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
       processor = ExecutorServiceSpanProcessor.builder(exporter, executor, true).build();
