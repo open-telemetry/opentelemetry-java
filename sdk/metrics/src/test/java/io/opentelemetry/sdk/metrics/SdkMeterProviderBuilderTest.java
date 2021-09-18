@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
@@ -25,10 +26,20 @@ class SdkMeterProviderBuilderTest {
 
   @Test
   void defaultResource() {
-    SdkMeterProvider meterProvider = SdkMeterProvider.builder().build();
+    // We need a reader to have a resource.
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder().register(new InMemoryMetricReader()).build();
 
     assertThat(meterProvider)
         .extracting("sharedState")
         .hasFieldOrPropertyWithValue("resource", Resource.getDefault());
+  }
+
+  @Test
+  void stubsWithNoReaders() {
+    // We need a reader to have a resource.
+    SdkMeterProvider meterProvider = SdkMeterProvider.builder().build();
+
+    assertThat(meterProvider).isInstanceOf(NoopSdkMeterProvider.class);
   }
 }

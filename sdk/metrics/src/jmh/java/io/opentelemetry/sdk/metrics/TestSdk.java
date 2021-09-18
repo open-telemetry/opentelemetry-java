@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 
 @SuppressWarnings("ImmutableEnumChecker")
@@ -26,6 +27,8 @@ public enum TestSdk {
           return SdkMeterProvider.builder()
               .setClock(Clock.getDefault())
               .setResource(Resource.empty())
+              // Must register reader for real SDK.
+              .register(new InMemoryMetricReader())
               .build()
               .get("io.opentelemetry.sdk.metrics");
         }

@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -42,6 +43,23 @@ public final class CollectionHandle {
       result.add(handle);
     }
     return result;
+  }
+
+  /**
+   * Construct a new supplier of collection handles.
+   *
+   * <p>Handles returned by this supplier should not be used with unique handles produced by any
+   * other supplier.
+   */
+  public static Supplier<CollectionHandle> createSupplier() {
+    return new Supplier<CollectionHandle>() {
+      private final AtomicInteger nextIndex = new AtomicInteger(1);
+
+      @Override
+      public CollectionHandle get() {
+        return new CollectionHandle(nextIndex.getAndIncrement());
+      }
+    };
   }
 
   /** Creates a new collection handle using the next bit. */

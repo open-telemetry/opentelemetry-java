@@ -92,7 +92,7 @@ public class PeriodicMetricReader implements MetricReader {
   }
 
   /** Factory for {@link PeriodicMetricReader}. */
-  public static class Factory implements MetricReader.Factory<PeriodicMetricReader> {
+  public static class Factory implements MetricReader.Factory {
     private final MetricExporter exporter;
     private final Duration duration;
     private final ScheduledExecutorService scheduler;
@@ -139,8 +139,9 @@ public class PeriodicMetricReader implements MetricReader {
     }
 
     @Override
-    public PeriodicMetricReader apply(MetricProducer producer) {
+    public MetricReader apply(MetricProducer producer) {
       PeriodicMetricReader result = new PeriodicMetricReader(producer, exporter, scheduler);
+      // TODO - allow a different start delay.
       result.start(duration);
       return result;
     }

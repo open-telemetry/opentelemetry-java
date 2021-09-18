@@ -137,21 +137,21 @@ class SdkMeterRegistryTest {
   void suppliesDefaultMeterForNullName() {
     SdkMeter meter = (SdkMeter) meterProvider.get(null);
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+        .isEqualTo(DefaultSdkMeterProvider.DEFAULT_METER_NAME);
 
     meter = (SdkMeter) meterProvider.meterBuilder(null).build();
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+        .isEqualTo(DefaultSdkMeterProvider.DEFAULT_METER_NAME);
   }
 
   @Test
   void suppliesDefaultMeterForEmptyName() {
     SdkMeter meter = (SdkMeter) meterProvider.get("");
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+        .isEqualTo(DefaultSdkMeterProvider.DEFAULT_METER_NAME);
 
     meter = (SdkMeter) meterProvider.meterBuilder("").build();
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+        .isEqualTo(DefaultSdkMeterProvider.DEFAULT_METER_NAME);
   }
 }

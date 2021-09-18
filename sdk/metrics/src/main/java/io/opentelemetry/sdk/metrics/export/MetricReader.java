@@ -43,13 +43,13 @@ public interface MetricReader {
 
   /** A constructor of {@link MetricReader}s. */
   @FunctionalInterface
-  interface Factory<R extends MetricReader> {
+  interface Factory {
     /**
      * Construct a new MetricReader.
      *
      * @param producer the mechanism of reading SDK metrics.
      * @return a controller for this metric reader.
      */
-    R apply(MetricProducer producer);
+    MetricReader apply(MetricProducer producer);
   }
 }

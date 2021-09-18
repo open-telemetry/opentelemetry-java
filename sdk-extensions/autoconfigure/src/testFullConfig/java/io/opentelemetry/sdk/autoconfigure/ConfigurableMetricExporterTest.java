@@ -33,13 +33,12 @@ public class ConfigurableMetricExporterTest {
 
   @Test
   void exporterNotFound() {
-    SdkMeterProvider provider = SdkMeterProvider.builder().build();
     assertThatThrownBy(
             () ->
                 MetricExporterConfiguration.configureExporter(
                     "catExporter",
                     DefaultConfigProperties.createForTest(Collections.emptyMap()),
-                    provider))
+                    SdkMeterProvider.builder()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("catExporter");
   }

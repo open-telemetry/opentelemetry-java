@@ -76,18 +76,6 @@ public final class OpenTelemetrySdkAutoConfiguration {
   }
 
   private static void configureMeterProvider(Resource resource, ConfigProperties config) {
-    String exporterName = config.getString("otel.metrics.exporter");
-    if (exporterName == null) {
-      exporterName = "none";
-    }
-
-    if (exporterName.equals("none")) {
-      // No possiblity of having any metrics exported so no need to have the SDK installed at all.
-      // NB: If a user wants to add an exporter programatically using SdkMeterProviderConfigurer,
-      // they will need to use ConfigurableMetricExporter instead.
-      return;
-    }
-
     SdkMeterProviderBuilder meterProviderBuilder = SdkMeterProvider.builder().setResource(resource);
 
     for (SdkMeterProviderConfigurer configurer :
@@ -95,9 +83,17 @@ public final class OpenTelemetrySdkAutoConfiguration {
       configurer.configure(meterProviderBuilder, config);
     }
 
+    String exporterName = config.getString("otel.metrics.exporter");
+    if (exporterName == null) {
+      exporterName = "none";
+    }
+    MetricExporterConfiguration.configureExporter(exporterName, config, meterProviderBuilder);
+
+    // In the event no exporters are configured, this returns a stubbed SdkMeterProvider.
     SdkMeterProvider meterProvider = meterProviderBuilder.buildAndRegisterGlobal();
 
-    MetricExporterConfiguration.configureExporter(exporterName, config, meterProvider);
+    // Make sure metrics shut down when JVM shuts down.
+    Runtime.getRuntime().addShutdownHook(new Thread(meterProvider::shutdown));
   }
 
   private OpenTelemetrySdkAutoConfiguration() {}

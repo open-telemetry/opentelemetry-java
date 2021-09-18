@@ -38,8 +38,9 @@ class PrometheusCollectorTest {
 
   @BeforeEach
   void setUp() {
-    prometheusCollector = new PrometheusCollector(metricProducer);
-    prometheusCollector.register();
+    prometheusCollector = PrometheusCollector.create();
+    // Apply the SDK metric producer registers with prometheus.
+    prometheusCollector.apply(metricProducer);
   }
 
   @Test

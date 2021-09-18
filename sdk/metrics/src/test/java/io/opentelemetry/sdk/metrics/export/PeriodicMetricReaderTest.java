@@ -89,7 +89,7 @@ class PeriodicMetricReaderTest {
     PeriodicMetricReader.Factory factory =
         new PeriodicMetricReader.Factory(waitingMetricExporter, Duration.ofMillis(100));
 
-    PeriodicMetricReader reader = factory.apply(metricProducer);
+    MetricReader reader = factory.apply(metricProducer);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(1))
           .containsExactly(Collections.singletonList(METRIC_DATA));
@@ -108,7 +108,7 @@ class PeriodicMetricReaderTest {
     PeriodicMetricReader.Factory factory =
         new PeriodicMetricReader.Factory(waitingMetricExporter, Duration.ofMillis(Long.MAX_VALUE));
 
-    PeriodicMetricReader reader = factory.apply(metricProducer);
+    MetricReader reader = factory.apply(metricProducer);
     assertThat(reader.flush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
 
     try {
@@ -125,7 +125,7 @@ class PeriodicMetricReaderTest {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
     PeriodicMetricReader.Factory factory =
         new PeriodicMetricReader.Factory(waitingMetricExporter, Duration.ofMillis(100));
-    PeriodicMetricReader reader = factory.apply(metricProducer);
+    MetricReader reader = factory.apply(metricProducer);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(2))
           .containsExactly(
@@ -140,7 +140,7 @@ class PeriodicMetricReaderTest {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     PeriodicMetricReader.Factory factory =
         new PeriodicMetricReader.Factory(waitingMetricExporter, Duration.ofSeconds(100));
-    PeriodicMetricReader reader = factory.apply(metricProducer);
+    MetricReader reader = factory.apply(metricProducer);
     // Assume that this will be called in less than 100 seconds.
     reader.shutdown();
 

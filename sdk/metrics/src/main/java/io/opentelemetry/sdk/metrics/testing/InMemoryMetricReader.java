@@ -38,8 +38,7 @@ import java.util.Collections;
  * }
  * </code></pre>
  */
-public class InMemoryMetricReader
-    implements MetricReader, MetricReader.Factory<InMemoryMetricReader> {
+public class InMemoryMetricReader implements MetricReader, MetricReader.Factory {
   private volatile MetricProducer sdkCollection;
   private volatile Collection<MetricData> latest = Collections.emptyList();
 
@@ -67,7 +66,7 @@ public class InMemoryMetricReader
   }
 
   @Override
-  public InMemoryMetricReader apply(MetricProducer producer) {
+  public MetricReader apply(MetricProducer producer) {
     this.sdkCollection = producer;
     return this;
   }

@@ -150,13 +150,11 @@ class OtlpHttpConfigTest {
     metricRequests.clear();
     requestHeaders.clear();
     GlobalOpenTelemetry.resetForTest();
-    // IntervalMetricReader.resetGlobalForTest();
   }
 
   @AfterEach
   public void tearDown() {
     GlobalOpenTelemetry.resetForTest();
-    // IntervalMetricReader.resetGlobalForTest();
   }
 
   @Test
@@ -173,8 +171,7 @@ class OtlpHttpConfigTest {
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter("otlp", properties, Collections.emptyMap());
     MetricExporter metricExporter =
-        MetricExporterConfiguration.configureOtlpMetrics(
-            properties, SdkMeterProvider.builder().build());
+        MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
 
     assertThat(spanExporter)
         .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
@@ -272,7 +269,7 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
-            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder().build());
+            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
 
     assertThat(metricExporter)
         .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
@@ -309,7 +306,7 @@ class OtlpHttpConfigTest {
     assertThatThrownBy(
             () ->
                 MetricExporterConfiguration.configureOtlpMetrics(
-                    properties, SdkMeterProvider.builder().build()))
+                    properties, SdkMeterProvider.builder()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
   }

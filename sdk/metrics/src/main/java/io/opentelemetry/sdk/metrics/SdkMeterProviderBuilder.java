@@ -27,7 +27,7 @@ public final class SdkMeterProviderBuilder {
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
   private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
-  private final List<MetricReader.Factory<?>> metricReaders = new ArrayList<>();
+  private final List<MetricReader.Factory> metricReaders = new ArrayList<>();
   // Default the sampling strategy.
   private ExemplarSampler exemplarSampler = ExemplarSampler.builder().build();
 
@@ -111,7 +111,13 @@ public final class SdkMeterProviderBuilder {
     return meterProvider;
   }
 
-  public <R extends MetricReader> SdkMeterProviderBuilder register(MetricReader.Factory<R> reader) {
+  /**
+   * Registers a {@link MetricReader} for this SDK.
+   *
+   * @param reader The factory for a reader of metrics.
+   * @return this
+   */
+  public SdkMeterProviderBuilder register(MetricReader.Factory reader) {
     metricReaders.add(reader);
     return this;
   }
@@ -127,10 +133,11 @@ public final class SdkMeterProviderBuilder {
    * @see GlobalMeterProvider
    */
   public SdkMeterProvider build() {
-    // TODO - instantiate readers legitimately here, vs. late-registration.
-    SdkMeterProvider provider =
-        new SdkMeterProvider(clock, resource, viewRegistryBuilder.build(), exemplarSampler);
-    metricReaders.forEach(provider::register);
-    return provider;
+    // If no exporters are configured, optimize by returning no-op implementation.
+    if (metricReaders.isEmpty()) {
+      return new NoopSdkMeterProvider();
+    }
+    return new DefaultSdkMeterProvider(
+        metricReaders, clock, resource, viewRegistryBuilder.build(), exemplarSampler);
   }
 }

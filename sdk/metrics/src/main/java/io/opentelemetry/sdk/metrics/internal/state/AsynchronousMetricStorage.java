@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 // TODO(jsuereth): Error out any "delta" metrics on async instruments.
 
@@ -36,6 +37,8 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   private final ReentrantLock collectLock = new ReentrantLock();
   private final InstrumentProcessor<?> instrumentProcessor;
   private final Runnable metricUpdater;
+
+  private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
 
   /** Constructs storage for {@code double} valued instruments. */
   public static <T> AsynchronousMetricStorage doubleAsynchronousAccumulator(
@@ -55,6 +58,13 @@ public final class AsynchronousMetricStorage implements MetricStorage {
                 instrument,
                 metricDescriptor,
                 ExemplarReservoir::noSamples);
+    if (aggregator.isStateful()) {
+      // The aggregator is expecting to diff SUMs for DELTA temporality.
+      logger.warning(
+          String.format(
+              "Unable to provide DELTA accumulation on %s for instrument: %s",
+              metricDescriptor, instrument));
+    }
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
@@ -95,6 +105,13 @@ public final class AsynchronousMetricStorage implements MetricStorage {
                 instrument,
                 metricDescriptor,
                 ExemplarReservoir::noSamples);
+    if (aggregator.isStateful()) {
+      // The aggregator is expecting to diff SUMs for DELTA temporality.
+      logger.warning(
+          String.format(
+              "Unable to provide DELTA accumulation on %s for instrument: %s",
+              metricDescriptor, instrument));
+    }
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
