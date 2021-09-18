@@ -43,8 +43,6 @@ dependencies {
   testImplementation("com.fasterxml.jackson.core:jackson-core")
   testImplementation("com.google.protobuf:protobuf-java-util")
 
-  testImplementation("org.jeasy:easy-random-randomizers")
-
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("io.grpc:grpc-testing")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
