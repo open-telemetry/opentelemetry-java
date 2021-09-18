@@ -49,7 +49,7 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
       override fun handle(extend: Extend, field: Field) = null
       override fun handle(service: Service): List<Path> = emptyList()
       override fun handle(type: Type): Path? {
-        val typeSpec = javaGenerator.generateType(type)
+        val typeSpec = javaGenerator.generateType(type, false)
         val javaTypeName = javaGenerator.generatedTypeName(type)
 
         if (typeSpec == null) {
@@ -75,9 +75,16 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
     }
   }
 
-  private class JavaGenerator(private val typeToJavaName: Map<ProtoType, TypeName>) {
+  private class JavaGenerator(private val schema: Schema, private val typeToJavaName: Map<ProtoType, TypeName>) {
 
     companion object {
+      private val PROTO_FIELD_INFO = ClassName.get("io.opentelemetry.exporter.otlp.internal", "ProtoFieldInfo")
+      private val PROTO_ENUM_INFO = ClassName.get("io.opentelemetry.exporter.otlp.internal", "ProtoEnumInfo")
+      private val WIRETYPE_VARINT = 0
+      private val WIRETYPE_FIXED64 = 1
+      private val WIRETYPE_LENGTH_DELIMITED = 2
+      private val WIRETYPE_FIXED32 = 5
+
       fun get(schema: Schema): JavaGenerator {
         val nameToJavaName = linkedMapOf<ProtoType, TypeName>()
         for (protoFile in schema.protoFiles) {
@@ -85,7 +92,7 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
           putAll(nameToJavaName, javaPackage, null, protoFile.types)
         }
 
-        return JavaGenerator(nameToJavaName)
+        return JavaGenerator(schema, nameToJavaName)
       }
 
       private fun putAll(
@@ -112,12 +119,12 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
       }
     }
 
-    fun generateType(type: Type): TypeSpec? {
+    fun generateType(type: Type, nested: Boolean): TypeSpec? {
       if (type is MessageType) {
-        return generateMessage(type)
+        return generateMessage(type, nested)
       }
       if (type is EnumType) {
-        return generateEnum(type)
+        return generateEnum(type, nested)
       }
       return null
     }
@@ -126,40 +133,82 @@ class ProtoFieldsWireHandler : CustomHandlerBeta {
       return typeToJavaName[type.type] as ClassName
     }
 
-    private fun generateMessage(type: MessageType): TypeSpec {
+    private fun generateMessage(type: MessageType, nested: Boolean): TypeSpec {
       val javaType = typeToJavaName[type.type] as ClassName
 
       val builder = TypeSpec.classBuilder(javaType.simpleName())
         .addModifiers(PUBLIC, FINAL)
+      if (nested) {
+        builder.addModifiers(STATIC)
+      }
 
       for (field in type.fieldsAndOneOfFields) {
         builder.addField(
-          FieldSpec.builder(TypeName.INT, "${field.name.toUpperCase()}_FIELD_NUMBER", PUBLIC, STATIC, FINAL)
-            .initializer("\$L", field.tag)
+          FieldSpec.builder(PROTO_FIELD_INFO, field.name.toUpperCase(), PUBLIC, STATIC, FINAL)
+            .initializer("\$T.create(\$L, \$L, \"\$L\")",
+              PROTO_FIELD_INFO,
+              field.tag,
+              makeTag(field.tag, field.type as ProtoType, field.isRepeated),
+              field.jsonName)
             .build())
       }
 
       for (nestedType in type.nestedTypes) {
-        builder.addType(generateType(nestedType))
+        builder.addType(generateType(nestedType, true))
       }
 
       return builder.build()
     }
 
-    private fun generateEnum(type: EnumType): TypeSpec {
+    private fun generateEnum(type: EnumType, nested: Boolean): TypeSpec {
       val javaType = typeToJavaName[type.type] as ClassName
 
       val builder = TypeSpec.classBuilder(javaType.simpleName())
         .addModifiers(PUBLIC, FINAL)
+      if (nested) {
+        builder.addModifiers(STATIC)
+      }
 
       for (constant in type.constants) {
         builder.addField(
-          FieldSpec.builder(TypeName.INT, "${constant.name}_VALUE", PUBLIC, STATIC, FINAL)
-            .initializer("\$L", constant.tag)
+          FieldSpec.builder(PROTO_ENUM_INFO, constant.name, PUBLIC, STATIC, FINAL)
+            .initializer("\$T.create(\$L, \"\$L\")", PROTO_ENUM_INFO, constant.tag, constant.name)
             .build())
       }
 
       return builder.build()
+    }
+
+    private fun fieldEncoding(type: ProtoType, isRepeated: Boolean): Int {
+      if (isRepeated) {
+        // Repeated fields are always length delimited in proto3
+        return WIRETYPE_LENGTH_DELIMITED
+      }
+
+      if (schema.getType(type) is EnumType) {
+        return WIRETYPE_VARINT
+      }
+
+      if (!type.isScalar) {
+        // Non-scalar and not enum is a message
+        return WIRETYPE_LENGTH_DELIMITED
+      }
+
+      return when(type) {
+        ProtoType.FIXED32,
+        ProtoType.SFIXED32,
+        ProtoType.FLOAT-> WIRETYPE_FIXED32
+        ProtoType.FIXED64,
+        ProtoType.SFIXED64,
+        ProtoType.DOUBLE -> WIRETYPE_FIXED64
+        ProtoType.BYTES,
+        ProtoType.STRING -> WIRETYPE_LENGTH_DELIMITED
+        else -> WIRETYPE_VARINT
+      }
+    }
+
+    private fun makeTag(fieldNumber: Int, type: ProtoType, isRepeated: Boolean): Int {
+      return (fieldNumber shl 3) or fieldEncoding(type, isRepeated)
     }
   }
 }

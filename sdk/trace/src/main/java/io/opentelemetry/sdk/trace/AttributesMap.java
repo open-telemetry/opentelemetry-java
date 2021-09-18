@@ -13,16 +13,21 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-/** A map with a fixed capacity that drops attributes when the map gets full. */
+/**
+ * A map with a fixed capacity that drops attributes when the map gets full, and which truncates
+ * string and array string attribute values to the {@link #lengthLimit}.
+ */
 final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements Attributes {
 
   private static final long serialVersionUID = -5072696312123632376L;
 
   private final long capacity;
+  private final int lengthLimit;
   private int totalAddedValues = 0;
 
-  AttributesMap(long capacity) {
+  AttributesMap(long capacity, int lengthLimit) {
     this.capacity = capacity;
+    this.lengthLimit = lengthLimit;
   }
 
   <T> void put(AttributeKey<T> key, T value) {
@@ -30,7 +35,7 @@ final class AttributesMap extends HashMap<AttributeKey<?>, Object> implements At
     if (size() >= capacity && !containsKey(key)) {
       return;
     }
-    super.put(key, value);
+    super.put(key, AttributeUtil.applyAttributeLengthLimit(value, lengthLimit));
   }
 
   int getTotalAddedValues() {

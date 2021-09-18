@@ -29,10 +29,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.StreamSupport;
 
 final class SpanExporterConfiguration {
 
@@ -40,7 +38,7 @@ final class SpanExporterConfiguration {
 
   // Visible for testing
   static Map<String, SpanExporter> configureSpanExporters(ConfigProperties config) {
-    List<String> exporterNamesList = config.getCommaSeparatedValues("otel.traces.exporter");
+    List<String> exporterNamesList = config.getList("otel.traces.exporter");
     Set<String> exporterNames = new HashSet<>(exporterNamesList);
     if (exporterNamesList.size() != exporterNames.size()) {
       String duplicates =
@@ -66,13 +64,12 @@ final class SpanExporterConfiguration {
     }
 
     Map<String, SpanExporter> spiExporters =
-        StreamSupport.stream(
-                ServiceLoader.load(ConfigurableSpanExporterProvider.class).spliterator(), false)
-            .collect(
-                toMap(
-                    ConfigurableSpanExporterProvider::getName,
-                    configurableSpanExporterProvider ->
-                        configurableSpanExporterProvider.createExporter(config)));
+        SpiUtil.loadConfigurable(
+            ConfigurableSpanExporterProvider.class,
+            exporterNamesList,
+            ConfigurableSpanExporterProvider::getName,
+            ConfigurableSpanExporterProvider::createExporter,
+            config);
 
     return exporterNames.stream()
         .collect(
@@ -122,6 +119,7 @@ final class SpanExporterConfiguration {
           config,
           builder::setEndpoint,
           builder::addHeader,
+          builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates);
 
@@ -138,6 +136,7 @@ final class SpanExporterConfiguration {
           config,
           builder::setEndpoint,
           builder::addHeader,
+          builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates);
 

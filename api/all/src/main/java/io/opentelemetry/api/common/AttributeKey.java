@@ -5,6 +5,7 @@
 
 package io.opentelemetry.api.common;
 
+import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -27,41 +28,41 @@ public interface AttributeKey<T> {
 
   /** Returns a new AttributeKey for String valued attributes. */
   static AttributeKey<String> stringKey(String key) {
-    return AttributeKeyImpl.create(key, AttributeType.STRING);
+    return InternalAttributeKeyImpl.create(key, AttributeType.STRING);
   }
 
   /** Returns a new AttributeKey for Boolean valued attributes. */
   static AttributeKey<Boolean> booleanKey(String key) {
-    return AttributeKeyImpl.create(key, AttributeType.BOOLEAN);
+    return InternalAttributeKeyImpl.create(key, AttributeType.BOOLEAN);
   }
 
   /** Returns a new AttributeKey for Long valued attributes. */
   static AttributeKey<Long> longKey(String key) {
-    return AttributeKeyImpl.create(key, AttributeType.LONG);
+    return InternalAttributeKeyImpl.create(key, AttributeType.LONG);
   }
 
   /** Returns a new AttributeKey for Double valued attributes. */
   static AttributeKey<Double> doubleKey(String key) {
-    return AttributeKeyImpl.create(key, AttributeType.DOUBLE);
+    return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE);
   }
 
   /** Returns a new AttributeKey for List&lt;String&gt; valued attributes. */
   static AttributeKey<List<String>> stringArrayKey(String key) {
-    return AttributeKeyImpl.create(key, AttributeType.STRING_ARRAY);
+    return InternalAttributeKeyImpl.create(key, AttributeType.STRING_ARRAY);
   }
 
   /** Returns a new AttributeKey for List&lt;Boolean&gt; valued attributes. */
   static AttributeKey<List<Boolean>> booleanArrayKey(String key) {
-    return AttributeKeyImpl.create(key, AttributeType.BOOLEAN_ARRAY);
+    return InternalAttributeKeyImpl.create(key, AttributeType.BOOLEAN_ARRAY);
   }
 
   /** Returns a new AttributeKey for List&lt;Long&gt; valued attributes. */
   static AttributeKey<List<Long>> longArrayKey(String key) {
-    return AttributeKeyImpl.create(key, AttributeType.LONG_ARRAY);
+    return InternalAttributeKeyImpl.create(key, AttributeType.LONG_ARRAY);
   }
 
   /** Returns a new AttributeKey for List&lt;Double&gt; valued attributes. */
   static AttributeKey<List<Double>> doubleArrayKey(String key) {
-    return AttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
+    return InternalAttributeKeyImpl.create(key, AttributeType.DOUBLE_ARRAY);
   }
 }

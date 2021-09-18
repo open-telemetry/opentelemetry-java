@@ -22,7 +22,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
+import io.opentelemetry.exporter.otlp.internal.traces.ResourceSpansMarshaler;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
@@ -32,12 +32,16 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -102,6 +106,13 @@ class OtlpGrpcSpanExporterTest {
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setEndpoint("gopher://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
+
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setCompression(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("compressionMethod");
+    assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setCompression("foo"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Unsupported compression method. Supported compression methods include: gzip.");
   }
 
   @Test
@@ -111,8 +122,8 @@ class OtlpGrpcSpanExporterTest {
         OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(span)).isSuccess()).isTrue();
-      assertThat(fakeCollector.getReceivedSpans())
-          .isEqualTo(SpanAdapter.toProtoResourceSpans(Collections.singletonList(span)));
+      List<ResourceSpans> resourceSpans = toResourceSpans(Collections.singletonList(span));
+      assertThat(fakeCollector.getReceivedSpans()).isEqualTo(resourceSpans);
     } finally {
       exporter.shutdown();
     }
@@ -128,11 +139,25 @@ class OtlpGrpcSpanExporterTest {
         OtlpGrpcSpanExporter.builder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(spans).isSuccess()).isTrue();
-      assertThat(fakeCollector.getReceivedSpans())
-          .isEqualTo(SpanAdapter.toProtoResourceSpans(spans));
+      assertThat(fakeCollector.getReceivedSpans()).isEqualTo(toResourceSpans(spans));
     } finally {
       exporter.shutdown();
     }
+  }
+
+  private static List<ResourceSpans> toResourceSpans(List<SpanData> spans) {
+    return Arrays.stream(ResourceSpansMarshaler.create(spans))
+        .map(
+            marshaler -> {
+              ByteArrayOutputStream bos = new ByteArrayOutputStream();
+              try {
+                marshaler.writeBinaryTo(bos);
+                return ResourceSpans.parseFrom(bos.toByteArray());
+              } catch (IOException e) {
+                throw new UncheckedIOException(e);
+              }
+            })
+        .collect(Collectors.toList());
   }
 
   @Test

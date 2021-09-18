@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
@@ -52,7 +53,8 @@ public class AsynchronousMetricStorageTest {
             .build();
 
     meterProviderSharedState =
-        MeterProviderSharedState.create(testClock, Resource.empty(), viewRegistry);
+        MeterProviderSharedState.create(
+            testClock, Resource.empty(), viewRegistry, ExemplarSampler.builder().build());
 
     handle = CollectionHandle.create();
     all = CollectionHandle.mutableSet();

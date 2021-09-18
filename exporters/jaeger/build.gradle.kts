@@ -17,12 +17,13 @@ dependencies {
 
   implementation("io.grpc:grpc-protobuf")
   implementation("io.grpc:grpc-stub")
+  implementation("com.fasterxml.jackson.jr:jackson-jr-objects")
   implementation("com.google.protobuf:protobuf-java")
-  implementation("com.google.protobuf:protobuf-java-util")
 
+  testImplementation("com.fasterxml.jackson.jr:jackson-jr-stree")
   testImplementation("io.grpc:grpc-testing")
-  testImplementation("com.fasterxml.jackson.core:jackson-databind")
   testImplementation("org.testcontainers:junit-jupiter")
+  testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.squareup.okhttp3:okhttp")
 
   testImplementation(project(":sdk:testing"))

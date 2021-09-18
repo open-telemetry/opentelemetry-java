@@ -12,6 +12,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
@@ -45,11 +46,15 @@ public final class AsynchronousMetricStorage implements MetricStorage {
       long startEpochNanos,
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
-    // TODO: Send metric descriptor to aggregator.
     Aggregator<T> aggregator =
         view.getAggregation()
             .config(instrument)
-            .create(resource, instrumentationLibraryInfo, instrument, metricDescriptor);
+            .create(
+                resource,
+                instrumentationLibraryInfo,
+                instrument,
+                metricDescriptor,
+                ExemplarReservoir::noSamples);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
@@ -81,11 +86,15 @@ public final class AsynchronousMetricStorage implements MetricStorage {
       long startEpochNanos,
       Consumer<ObservableLongMeasurement> metricUpdater) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
-    // TODO: Send metric descriptor to aggregator.
     Aggregator<T> aggregator =
         view.getAggregation()
             .config(instrument)
-            .create(resource, instrumentationLibraryInfo, instrument, metricDescriptor);
+            .create(
+                resource,
+                instrumentationLibraryInfo,
+                instrument,
+                metricDescriptor,
+                ExemplarReservoir::noSamples);
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();

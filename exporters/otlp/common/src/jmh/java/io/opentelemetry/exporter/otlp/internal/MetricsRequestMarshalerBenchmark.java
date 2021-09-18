@@ -13,7 +13,7 @@ import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
+import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
@@ -116,23 +116,10 @@ public class MetricsRequestMarshalerBenchmark {
   }
 
   @Benchmark
-  public ByteArrayOutputStream adapter() throws IOException {
-    ExportMetricsServiceRequest request =
-        ExportMetricsServiceRequest.newBuilder()
-            .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(METRICS))
-            .build();
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    request.writeTo(bos);
-    return bos;
-  }
-
-  @Benchmark
   public ByteArrayOutputStream marshaler() throws IOException {
     MetricsRequestMarshaler marshaler = MetricsRequestMarshaler.create(METRICS);
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    CodedOutputStream cos = CodedOutputStream.newInstance(bos);
-    marshaler.writeTo(cos);
-    cos.flush();
+    marshaler.writeBinaryTo(bos);
     return bos;
   }
 }

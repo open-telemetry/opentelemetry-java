@@ -35,8 +35,8 @@ class ConfigPropertiesTest {
     assertThat(config.getInt("int")).isEqualTo(10);
     assertThat(config.getLong("long")).isEqualTo(20);
     assertThat(config.getDouble("double")).isEqualTo(5.4);
-    assertThat(config.getCommaSeparatedValues("list")).containsExactly("cat", "dog", "bear");
-    assertThat(config.getCommaSeparatedMap("map"))
+    assertThat(config.getList("list")).containsExactly("cat", "dog", "bear");
+    assertThat(config.getMap("map"))
         .containsExactly(entry("cat", "meow"), entry("dog", "bark"), entry("bear", "growl"));
     assertThat(config.getDuration("duration")).isEqualTo(Duration.ofSeconds(1));
   }
@@ -48,8 +48,8 @@ class ConfigPropertiesTest {
     assertThat(config.getInt("int")).isNull();
     assertThat(config.getLong("long")).isNull();
     assertThat(config.getDouble("double")).isNull();
-    assertThat(config.getCommaSeparatedValues("list")).isEmpty();
-    assertThat(config.getCommaSeparatedMap("map")).isEmpty();
+    assertThat(config.getList("list")).isEmpty();
+    assertThat(config.getMap("map")).isEmpty();
     assertThat(config.getDuration("duration")).isNull();
   }
 
@@ -69,8 +69,8 @@ class ConfigPropertiesTest {
     assertThat(config.getInt("int")).isNull();
     assertThat(config.getLong("long")).isNull();
     assertThat(config.getDouble("double")).isNull();
-    assertThat(config.getCommaSeparatedValues("list")).isEmpty();
-    assertThat(config.getCommaSeparatedMap("map")).isEmpty();
+    assertThat(config.getList("list")).isEmpty();
+    assertThat(config.getMap("map")).isEmpty();
     assertThat(config.getDuration("duration")).isNull();
   }
 
@@ -129,7 +129,7 @@ class ConfigPropertiesTest {
     assertThat(
             DefaultConfigProperties.createForTest(
                     Collections.singletonMap("list", "  a  ,b,c  ,  d,,   ,"))
-                .getCommaSeparatedValues("list"))
+                .getList("list"))
         .containsExactly("a", "b", "c", "d");
   }
 
@@ -138,7 +138,7 @@ class ConfigPropertiesTest {
     assertThat(
             DefaultConfigProperties.createForTest(
                     Collections.singletonMap("map", "  a=1  ,b=2,c = 3  ,  d=  4,,  ,"))
-                .getCommaSeparatedMap("map"))
+                .getMap("map"))
         .containsExactly(entry("a", "1"), entry("b", "2"), entry("c", "3"), entry("d", "4"));
   }
 
@@ -147,19 +147,19 @@ class ConfigPropertiesTest {
     assertThatThrownBy(
             () ->
                 DefaultConfigProperties.createForTest(Collections.singletonMap("map", "a=1,b="))
-                    .getCommaSeparatedMap("map"))
+                    .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid map property: map=a=1,b=");
     assertThatThrownBy(
             () ->
                 DefaultConfigProperties.createForTest(Collections.singletonMap("map", "a=1,b"))
-                    .getCommaSeparatedMap("map"))
+                    .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid map property: map=a=1,b");
     assertThatThrownBy(
             () ->
                 DefaultConfigProperties.createForTest(Collections.singletonMap("map", "a=1,=b"))
-                    .getCommaSeparatedMap("map"))
+                    .getMap("map"))
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid map property: map=a=1,=b");
   }

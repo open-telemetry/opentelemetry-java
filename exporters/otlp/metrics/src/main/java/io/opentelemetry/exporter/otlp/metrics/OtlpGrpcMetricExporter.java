@@ -8,10 +8,11 @@ package io.opentelemetry.exporter.otlp.metrics;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.grpc.Codec;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
-import io.opentelemetry.exporter.otlp.internal.MetricsRequestMarshaler;
 import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
+import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -42,11 +43,15 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @param channel the channel to use when communicating with the OpenTelemetry Collector.
    * @param timeoutNanos max waiting time for the collector to process each metric batch. When set
    *     to 0 or to a negative value, the exporter will wait indefinitely.
+   * @param compressionEnabled whether or not to enable gzip compression.
    */
-  OtlpGrpcMetricExporter(ManagedChannel channel, long timeoutNanos) {
+  OtlpGrpcMetricExporter(ManagedChannel channel, long timeoutNanos, boolean compressionEnabled) {
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
-    metricsService = MarshalerMetricsServiceGrpc.newFutureStub(channel);
+    Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
+    this.metricsService =
+        MarshalerMetricsServiceGrpc.newFutureStub(channel)
+            .withCompression(codec.getMessageEncoding());
   }
 
   /**

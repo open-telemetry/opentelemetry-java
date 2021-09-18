@@ -36,7 +36,7 @@ public final class OpenTelemetryResourceAutoConfiguration {
     // otel.java.disabled.resource-providers. But fetching by the dot version is the simplest way
     // to implement it for now.
     Set<String> disabledProviders =
-        new HashSet<>(config.getCommaSeparatedValues("otel.java.disabled.resource.providers"));
+        new HashSet<>(config.getList("otel.java.disabled.resource.providers"));
     for (ResourceProvider resourceProvider : ServiceLoader.load(ResourceProvider.class)) {
       if (disabledProviders.contains(resourceProvider.getClass().getName())) {
         continue;

@@ -8,16 +8,18 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
+import java.util.function.Supplier;
 
 final class HistogramAggregatorFactory implements AggregatorFactory {
   private final double[] boundaries;
   private final AggregationTemporality temporality;
 
   HistogramAggregatorFactory(List<Double> boundaries, AggregationTemporality temporality) {
-    this.boundaries = boundaries.stream().mapToDouble(i -> i).toArray();
+    this.boundaries = ExplicitBucketHistogramUtils.createBoundaryArray(boundaries);
     this.temporality = temporality;
 
     for (double v : this.boundaries) {
@@ -47,14 +49,20 @@ final class HistogramAggregatorFactory implements AggregatorFactory {
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
-      MetricDescriptor metricDescriptor) {
+      MetricDescriptor metricDescriptor,
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     final boolean stateful = this.temporality == AggregationTemporality.CUMULATIVE;
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
       case DOUBLE:
         return (Aggregator<T>)
             new DoubleHistogramAggregator(
-                resource, instrumentationLibraryInfo, metricDescriptor, this.boundaries, stateful);
+                resource,
+                instrumentationLibraryInfo,
+                metricDescriptor,
+                this.boundaries,
+                stateful,
+                reservoirSupplier);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

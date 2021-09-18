@@ -13,7 +13,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
 import com.google.common.collect.Lists;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
@@ -40,6 +39,8 @@ import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -53,6 +54,9 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import okhttp3.tls.HeldCertificate;
+import okio.Buffer;
+import okio.GzipSource;
+import okio.Okio;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -119,16 +123,25 @@ class OtlpHttpConfigTest {
                     aggReq -> {
                       requestHeaders.add(aggReq.headers());
                       try {
-                        queue.add(
-                            (T)
-                                defaultMessage
-                                    .getParserForType()
-                                    .parseFrom(aggReq.content().array()));
-                      } catch (InvalidProtocolBufferException e) {
+                        byte[] requestBody =
+                            maybeGzipInflate(aggReq.headers(), aggReq.content().array());
+                        queue.add((T) defaultMessage.getParserForType().parseFrom(requestBody));
+                      } catch (IOException e) {
                         return HttpResponse.of(HttpStatus.BAD_REQUEST);
                       }
                       return HttpResponse.of(HttpStatus.OK);
                     }));
+  }
+
+  private static byte[] maybeGzipInflate(RequestHeaders requestHeaders, byte[] content)
+      throws IOException {
+    if (!requestHeaders.contains("content-encoding", "gzip")) {
+      return content;
+    }
+    Buffer buffer = new Buffer();
+    GzipSource gzipSource = new GzipSource(Okio.source(new ByteArrayInputStream(content)));
+    gzipSource.read(buffer, Integer.MAX_VALUE);
+    return buffer.readByteArray();
   }
 
   @BeforeEach
@@ -149,11 +162,12 @@ class OtlpHttpConfigTest {
   @Test
   void configureExportersGeneral() {
     Map<String, String> props = new HashMap<>();
-    props.put("otel.experimental.exporter.otlp.protocol", "http/protobuf");
+    props.put("otel.exporter.otlp.protocol", "http/protobuf");
     props.put("otel.exporter.otlp.traces.endpoint", traceEndpoint());
     props.put("otel.exporter.otlp.metrics.endpoint", metricEndpoint());
     props.put("otel.exporter.otlp.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
+    props.put("otel.exporter.otlp.compression", "gzip");
     props.put("otel.exporter.otlp.timeout", "15s");
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     SpanExporter spanExporter =
@@ -177,7 +191,8 @@ class OtlpHttpConfigTest {
         .anyMatch(
             headers ->
                 headers.contains(":path", "/v1/traces")
-                    && headers.contains("header-key", "header-value"));
+                    && headers.contains("header-key", "header-value")
+                    && headers.contains("content-encoding", "gzip"));
 
     assertThat(metricExporter)
         .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
@@ -194,7 +209,8 @@ class OtlpHttpConfigTest {
         .anyMatch(
             headers ->
                 headers.contains(":path", "/v1/metrics")
-                    && headers.contains("header-key", "header-value"));
+                    && headers.contains("header-key", "header-value")
+                    && headers.contains("content-encoding", "gzip"));
   }
 
   @Test
@@ -202,15 +218,17 @@ class OtlpHttpConfigTest {
     // Set values for general and signal specific properties. Signal specific should override
     // general.
     Map<String, String> props = new HashMap<>();
-    props.put("otel.experimental.exporter.otlp.protocol", "grpc");
-    props.put("otel.experimental.exporter.otlp.traces.protocol", "http/protobuf");
+    props.put("otel.exporter.otlp.protocol", "grpc");
+    props.put("otel.exporter.otlp.traces.protocol", "http/protobuf");
     props.put("otel.exporter.otlp.endpoint", "http://foo.bar");
     props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
+    props.put("otel.exporter.otlp.compression", "foo");
     props.put("otel.exporter.otlp.timeout", "10s");
     props.put("otel.exporter.otlp.traces.endpoint", traceEndpoint());
     props.put("otel.exporter.otlp.traces.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
+    props.put("otel.exporter.otlp.traces.compression", "gzip");
     props.put("otel.exporter.otlp.traces.timeout", "15s");
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
@@ -231,7 +249,8 @@ class OtlpHttpConfigTest {
         .anyMatch(
             headers ->
                 headers.contains(":path", "/v1/traces")
-                    && headers.contains("header-key", "header-value"));
+                    && headers.contains("header-key", "header-value")
+                    && headers.contains("content-encoding", "gzip"));
   }
 
   @Test
@@ -239,15 +258,17 @@ class OtlpHttpConfigTest {
     // Set values for general and signal specific properties. Signal specific should override
     // general.
     Map<String, String> props = new HashMap<>();
-    props.put("otel.experimental.exporter.otlp.protocol", "grpc");
-    props.put("otel.experimental.exporter.otlp.metrics.protocol", "http/protobuf");
+    props.put("otel.exporter.otlp.protocol", "grpc");
+    props.put("otel.exporter.otlp.metrics.protocol", "http/protobuf");
     props.put("otel.exporter.otlp.endpoint", "http://foo.bar");
     props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
+    props.put("otel.exporter.otlp.compression", "foo");
     props.put("otel.exporter.otlp.timeout", "10s");
     props.put("otel.exporter.otlp.metrics.endpoint", metricEndpoint());
     props.put("otel.exporter.otlp.metrics.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
+    props.put("otel.exporter.otlp.metrics.compression", "gzip");
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
@@ -274,7 +295,7 @@ class OtlpHttpConfigTest {
   @Test
   void configureTlsInvalidCertificatePath() {
     Map<String, String> props = new HashMap<>();
-    props.put("otel.experimental.exporter.otlp.protocol", "http/protobuf");
+    props.put("otel.exporter.otlp.protocol", "http/protobuf");
     props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
 
@@ -326,7 +347,7 @@ class OtlpHttpConfigTest {
 
   @Test
   void configuresGlobal() {
-    System.setProperty("otel.experimental.exporter.otlp.protocol", "http/protobuf");
+    System.setProperty("otel.exporter.otlp.protocol", "http/protobuf");
     System.setProperty("otel.exporter.otlp.traces.endpoint", traceEndpoint());
     System.setProperty("otel.exporter.otlp.metrics.endpoint", metricEndpoint());
     System.setProperty("otel.exporter.otlp.certificate", certificateExtension.filePath);

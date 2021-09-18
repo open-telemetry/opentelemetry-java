@@ -23,9 +23,6 @@ import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
@@ -61,13 +58,12 @@ final class MetricExporterConfiguration {
   @Nullable
   static MetricExporter configureSpiExporter(String name, ConfigProperties config) {
     Map<String, MetricExporter> spiExporters =
-        StreamSupport.stream(
-                ServiceLoader.load(ConfigurableMetricExporterProvider.class).spliterator(), false)
-            .collect(
-                Collectors.toMap(
-                    ConfigurableMetricExporterProvider::getName,
-                    configurableSpanExporterProvider ->
-                        configurableSpanExporterProvider.createExporter(config)));
+        SpiUtil.loadConfigurable(
+            ConfigurableMetricExporterProvider.class,
+            Collections.singletonList(name),
+            ConfigurableMetricExporterProvider::getName,
+            ConfigurableMetricExporterProvider::createExporter,
+            config);
     return spiExporters.get(name);
   }
 
@@ -101,6 +97,7 @@ final class MetricExporterConfiguration {
           config,
           builder::setEndpoint,
           builder::addHeader,
+          builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates);
 
@@ -124,6 +121,7 @@ final class MetricExporterConfiguration {
           config,
           builder::setEndpoint,
           builder::addHeader,
+          builder::setCompression,
           builder::setTimeout,
           builder::setTrustedCertificates);
 
@@ -173,7 +171,7 @@ final class MetricExporterConfiguration {
     } catch (IOException e) {
       throw new IllegalStateException("Failed to create Prometheus server", e);
     }
-    Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
+    Runtime.getRuntime().addShutdownHook(new Thread(server::close));
   }
 
   private MetricExporterConfiguration() {}

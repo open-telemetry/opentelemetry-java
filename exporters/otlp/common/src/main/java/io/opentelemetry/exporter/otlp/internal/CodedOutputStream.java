@@ -43,9 +43,6 @@ import static io.opentelemetry.exporter.otlp.internal.WireFormat.MAX_VARINT_SIZE
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Protobuf wire encoder.
@@ -61,11 +58,12 @@ import java.util.logging.Logger;
 // - No support for ByteString or ByteBuffer
 // - No support for message set extensions
 // - No support for Unsafe
+// - No support for Java String, only UTF-8 bytes
+// - No support for writing fields with tag, we alway write tags separately
 // - Allow resetting and use a ThreadLocal instance
 //
 @SuppressWarnings({"UngroupedOverloads", "InlineMeSuggester"})
-public abstract class CodedOutputStream {
-  private static final Logger logger = Logger.getLogger(CodedOutputStream.class.getName());
+abstract class CodedOutputStream {
 
   /** The buffer size used in {@link #newInstance(OutputStream)}. */
   private static final int DEFAULT_BUFFER_SIZE;
@@ -90,7 +88,7 @@ public abstract class CodedOutputStream {
    * the provided byte arrays. Doing so may result in corrupted data, which would be difficult to
    * debug.
    */
-  public static CodedOutputStream newInstance(final OutputStream output) {
+  static CodedOutputStream newInstance(final OutputStream output) {
     OutputStreamEncoder cos = THREAD_LOCAL_CODED_OUTPUT_STREAM.get();
     if (cos == null) {
       cos = new OutputStreamEncoder(output);
@@ -103,92 +101,6 @@ public abstract class CodedOutputStream {
 
   // Disallow construction outside of this class.
   private CodedOutputStream() {}
-
-  // -----------------------------------------------------------------
-
-  /** Encode and write a tag. */
-  // Abstract to avoid overhead of additional virtual method calls.
-  abstract void writeTag(int fieldNumber, int wireType) throws IOException;
-
-  /** Write an {@code int32} field, including tag, to the stream. */
-  // Abstract to avoid overhead of additional virtual method calls.
-  abstract void writeInt32(int fieldNumber, int value) throws IOException;
-
-  /** Write a {@code uint32} field, including tag, to the stream. */
-  // Abstract to avoid overhead of additional virtual method calls.
-  abstract void writeUInt32(int fieldNumber, int value) throws IOException;
-
-  /** Write a {@code sint32} field, including tag, to the stream. */
-  final void writeSInt32(final int fieldNumber, final int value) throws IOException {
-    writeUInt32(fieldNumber, encodeZigZag32(value));
-  }
-
-  /** Write a {@code fixed32} field, including tag, to the stream. */
-  // Abstract to avoid overhead of additional virtual method calls.
-  abstract void writeFixed32(int fieldNumber, int value) throws IOException;
-
-  /** Write an {@code sfixed32} field, including tag, to the stream. */
-  final void writeSFixed32(final int fieldNumber, final int value) throws IOException {
-    writeFixed32(fieldNumber, value);
-  }
-
-  /** Write an {@code int64} field, including tag, to the stream. */
-  final void writeInt64(final int fieldNumber, final long value) throws IOException {
-    writeUInt64(fieldNumber, value);
-  }
-
-  /** Write a {@code uint64} field, including tag, to the stream. */
-  // Abstract to avoid overhead of additional virtual method calls.
-  abstract void writeUInt64(int fieldNumber, long value) throws IOException;
-
-  /** Write an {@code sint64} field, including tag, to the stream. */
-  final void writeSInt64(final int fieldNumber, final long value) throws IOException {
-    writeUInt64(fieldNumber, encodeZigZag64(value));
-  }
-
-  /** Write a {@code fixed64} field, including tag, to the stream. */
-  // Abstract to avoid overhead of additional virtual method calls.
-  abstract void writeFixed64(int fieldNumber, long value) throws IOException;
-
-  /** Write an {@code sfixed64} field, including tag, to the stream. */
-  final void writeSFixed64(final int fieldNumber, final long value) throws IOException {
-    writeFixed64(fieldNumber, value);
-  }
-
-  /** Write a {@code float} field, including tag, to the stream. */
-  final void writeFloat(final int fieldNumber, final float value) throws IOException {
-    writeFixed32(fieldNumber, Float.floatToRawIntBits(value));
-  }
-
-  /** Write a {@code double} field, including tag, to the stream. */
-  final void writeDouble(final int fieldNumber, final double value) throws IOException {
-    writeFixed64(fieldNumber, Double.doubleToRawLongBits(value));
-  }
-
-  /** Write a {@code bool} field, including tag, to the stream. */
-  // Abstract to avoid overhead of additional virtual method calls.
-  abstract void writeBool(int fieldNumber, boolean value) throws IOException;
-
-  /**
-   * Write an enum field, including tag, to the stream. The provided value is the numeric value used
-   * to represent the enum value on the wire (not the enum ordinal value).
-   */
-  final void writeEnum(final int fieldNumber, final int value) throws IOException {
-    writeInt32(fieldNumber, value);
-  }
-
-  /** Write a {@code string} field, including tag, to the stream. */
-  // Abstract to avoid overhead of additional virtual method calls.
-  abstract void writeString(int fieldNumber, String value) throws IOException;
-
-  /** Write a {@code bytes} field, including tag, to the stream. */
-  // Abstract to avoid overhead of additional virtual method calls.
-  abstract void writeByteArray(int fieldNumber, byte[] value) throws IOException;
-
-  /** Write a {@code bytes} field, including tag, to the stream. */
-  // Abstract to avoid overhead of additional virtual method calls.
-  abstract void writeByteArray(int fieldNumber, byte[] value, int offset, int length)
-      throws IOException;
 
   /** Write a single byte. */
   final void writeRawByte(final byte value) throws IOException {
@@ -280,11 +192,6 @@ public abstract class CodedOutputStream {
     writeInt32NoTag(value);
   }
 
-  /** Write a {@code string} field to the stream. */
-  // TODO(dweis): Document behavior on ill-formed UTF-16 input.
-  // Abstract to avoid overhead of additional virtual method calls.
-  abstract void writeStringNoTag(String value) throws IOException;
-
   /** Write a {@code bytes} field to the stream. */
   final void writeByteArrayNoTag(final byte[] value) throws IOException {
     writeByteArrayNoTag(value, 0, value.length);
@@ -299,137 +206,6 @@ public abstract class CodedOutputStream {
   abstract void writeLazy(byte[] value, int offset, int length) throws IOException;
 
   // =================================================================
-  // =================================================================
-
-  /**
-   * Compute the number of bytes that would be needed to encode an {@code int32} field, including
-   * tag.
-   */
-  static int computeInt32Size(final int fieldNumber, final int value) {
-    return computeTagSize(fieldNumber) + computeInt32SizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code uint32} field, including
-   * tag.
-   */
-  static int computeUInt32Size(final int fieldNumber, final int value) {
-    return computeTagSize(fieldNumber) + computeUInt32SizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode an {@code sint32} field, including
-   * tag.
-   */
-  static int computeSInt32Size(final int fieldNumber, final int value) {
-    return computeTagSize(fieldNumber) + computeSInt32SizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code fixed32} field, including
-   * tag.
-   */
-  static int computeFixed32Size(final int fieldNumber, final int value) {
-    return computeTagSize(fieldNumber) + computeFixed32SizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode an {@code sfixed32} field, including
-   * tag.
-   */
-  static int computeSFixed32Size(final int fieldNumber, final int value) {
-    return computeTagSize(fieldNumber) + computeSFixed32SizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode an {@code int64} field, including
-   * tag.
-   */
-  static int computeInt64Size(final int fieldNumber, final long value) {
-    return computeTagSize(fieldNumber) + computeInt64SizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code uint64} field, including
-   * tag.
-   */
-  static int computeUInt64Size(final int fieldNumber, final long value) {
-    return computeTagSize(fieldNumber) + computeUInt64SizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode an {@code sint64} field, including
-   * tag.
-   */
-  static int computeSInt64Size(final int fieldNumber, final long value) {
-    return computeTagSize(fieldNumber) + computeSInt64SizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code fixed64} field, including
-   * tag.
-   */
-  static int computeFixed64Size(final int fieldNumber, final long value) {
-    return computeTagSize(fieldNumber) + computeFixed64SizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode an {@code sfixed64} field, including
-   * tag.
-   */
-  static int computeSFixed64Size(final int fieldNumber, final long value) {
-    return computeTagSize(fieldNumber) + computeSFixed64SizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code float} field, including
-   * tag.
-   */
-  static int computeFloatSize(final int fieldNumber, final float value) {
-    return computeTagSize(fieldNumber) + computeFloatSizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code double} field, including
-   * tag.
-   */
-  static int computeDoubleSize(final int fieldNumber, final double value) {
-    return computeTagSize(fieldNumber) + computeDoubleSizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code bool} field, including tag.
-   */
-  static int computeBoolSize(final int fieldNumber, final boolean value) {
-    return computeTagSize(fieldNumber) + computeBoolSizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode an enum field, including tag. The
-   * provided value is the numeric value used to represent the enum value on the wire (not the enum
-   * ordinal value).
-   */
-  static int computeEnumSize(final int fieldNumber, final int value) {
-    return computeTagSize(fieldNumber) + computeEnumSizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code string} field, including
-   * tag.
-   */
-  static int computeStringSize(final int fieldNumber, final String value) {
-    return computeTagSize(fieldNumber) + computeStringSizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code bytes} field, including
-   * tag.
-   */
-  static int computeByteArraySize(final int fieldNumber, final byte[] value) {
-    return computeTagSize(fieldNumber) + computeByteArraySizeNoTag(value);
-  }
-
-  // -----------------------------------------------------------------
 
   /** Compute the number of bytes that would be needed to encode a tag. */
   static int computeTagSize(final int fieldNumber) {
@@ -561,19 +337,6 @@ public abstract class CodedOutputStream {
     return computeInt32SizeNoTag(value);
   }
 
-  /** Compute the number of bytes that would be needed to encode a {@code string} field. */
-  static int computeStringSizeNoTag(final String value) {
-    int length;
-    try {
-      length = Utf8.encodedLength(value);
-    } catch (Utf8.UnpairedSurrogateException e) {
-      final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
-      length = bytes.length;
-    }
-
-    return computeLengthDelimitedFieldSize(length);
-  }
-
   /** Compute the number of bytes that would be needed to encode a {@code bytes} field. */
   static int computeByteArraySizeNoTag(final byte[] value) {
     return computeLengthDelimitedFieldSize(value.length);
@@ -617,7 +380,7 @@ public abstract class CodedOutputStream {
    * Flushes the stream and forces any buffered bytes to be written. This does not flush the
    * underlying OutputStream.
    */
-  public abstract void flush() throws IOException;
+  abstract void flush() throws IOException;
 
   /**
    * If writing to a flat array, return the space left in the array. Otherwise, throws {@code
@@ -675,27 +438,6 @@ public abstract class CodedOutputStream {
   /** Write a {@code bytes} field to the stream. */
   abstract void writeByteArrayNoTag(final byte[] value, final int offset, final int length)
       throws IOException;
-
-  final void inefficientWriteStringNoTag(String value, Utf8.UnpairedSurrogateException cause)
-      throws IOException {
-    logger.log(
-        Level.WARNING,
-        "Converting ill-formed UTF-16. Your Protocol Buffer will not round trip correctly!",
-        cause);
-
-    // Unfortunately there does not appear to be any way to tell Java to encode
-    // UTF-8 directly into our buffer, so we have to let it create its own byte
-    // array and then copy.
-    final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
-    try {
-      writeUInt32NoTag(bytes.length);
-      writeLazy(bytes, 0, bytes.length);
-    } catch (IndexOutOfBoundsException e) {
-      throw new OutOfSpaceException(e);
-    } catch (OutOfSpaceException e) {
-      throw e;
-    }
-  }
 
   // =================================================================
 
@@ -901,72 +643,6 @@ public abstract class CodedOutputStream {
     }
 
     @Override
-    void writeTag(final int fieldNumber, final int wireType) throws IOException {
-      writeUInt32NoTag(WireFormat.makeTag(fieldNumber, wireType));
-    }
-
-    @Override
-    void writeInt32(final int fieldNumber, final int value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE * 2);
-      bufferTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
-      bufferInt32NoTag(value);
-    }
-
-    @Override
-    void writeUInt32(final int fieldNumber, final int value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE * 2);
-      bufferTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
-      bufferUInt32NoTag(value);
-    }
-
-    @Override
-    void writeFixed32(final int fieldNumber, final int value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE + FIXED32_SIZE);
-      bufferTag(fieldNumber, WireFormat.WIRETYPE_FIXED32);
-      bufferFixed32NoTag(value);
-    }
-
-    @Override
-    void writeUInt64(final int fieldNumber, final long value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE * 2);
-      bufferTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
-      bufferUInt64NoTag(value);
-    }
-
-    @Override
-    void writeFixed64(final int fieldNumber, final long value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE + FIXED64_SIZE);
-      bufferTag(fieldNumber, WireFormat.WIRETYPE_FIXED64);
-      bufferFixed64NoTag(value);
-    }
-
-    @Override
-    void writeBool(final int fieldNumber, final boolean value) throws IOException {
-      flushIfNotAvailable(MAX_VARINT_SIZE + 1);
-      bufferTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
-      buffer((byte) (value ? 1 : 0));
-    }
-
-    @Override
-    void writeString(final int fieldNumber, final String value) throws IOException {
-      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-      writeStringNoTag(value);
-    }
-
-    @Override
-    void writeByteArray(final int fieldNumber, final byte[] value) throws IOException {
-      writeByteArray(fieldNumber, value, 0, value.length);
-    }
-
-    @Override
-    void writeByteArray(
-        final int fieldNumber, final byte[] value, final int offset, final int length)
-        throws IOException {
-      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-      writeByteArrayNoTag(value, offset, length);
-    }
-
-    @Override
     void writeByteArrayNoTag(final byte[] value, int offset, int length) throws IOException {
       writeUInt32NoTag(length);
       write(value, offset, length);
@@ -1016,70 +692,7 @@ public abstract class CodedOutputStream {
     }
 
     @Override
-    void writeStringNoTag(String value) throws IOException {
-      try {
-        // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
-        // and at most 3 times of it. We take advantage of this in both branches below.
-        final int maxLength = value.length() * Utf8.MAX_BYTES_PER_CHAR;
-        final int maxLengthVarIntSize = computeUInt32SizeNoTag(maxLength);
-
-        // If we are streaming and the potential length is too big to fit in our buffer, we take the
-        // slower path.
-        if (maxLengthVarIntSize + maxLength > limit) {
-          // Allocate a byte[] that we know can fit the string and encode into it. String.getBytes()
-          // does the same internally and then does *another copy* to return a byte[] of exactly the
-          // right size. We can skip that copy and just writeRawBytes up to the actualLength of the
-          // UTF-8 encoded bytes.
-          final byte[] encodedBytes = new byte[maxLength];
-          int actualLength = Utf8.encode(value, encodedBytes, 0, maxLength);
-          writeUInt32NoTag(actualLength);
-          writeLazy(encodedBytes, 0, actualLength);
-          return;
-        }
-
-        // Fast path: we have enough space available in our buffer for the string...
-        if (maxLengthVarIntSize + maxLength > limit - position) {
-          // Flush to free up space.
-          doFlush();
-        }
-
-        // Optimize for the case where we know this length results in a constant varint length as
-        // this saves a pass for measuring the length of the string.
-        final int minLengthVarIntSize = computeUInt32SizeNoTag(value.length());
-        int oldPosition = position;
-        final int length;
-        try {
-          if (minLengthVarIntSize == maxLengthVarIntSize) {
-            position = oldPosition + minLengthVarIntSize;
-            int newPosition = Utf8.encode(value, buffer, position, limit - position);
-            // Since this class is stateful and tracks the position, we rewind and store the
-            // state, prepend the length, then reset it back to the end of the string.
-            position = oldPosition;
-            length = newPosition - oldPosition - minLengthVarIntSize;
-            bufferUInt32NoTag(length);
-            position = newPosition;
-          } else {
-            length = Utf8.encodedLength(value);
-            bufferUInt32NoTag(length);
-            position = Utf8.encode(value, buffer, position, length);
-          }
-          totalBytesWritten += length;
-        } catch (Utf8.UnpairedSurrogateException e) {
-          // Be extra careful and restore the original position for retrying the write with the
-          // less efficient path.
-          totalBytesWritten -= position - oldPosition;
-          position = oldPosition;
-          throw e;
-        } catch (ArrayIndexOutOfBoundsException e) {
-          throw new OutOfSpaceException(e);
-        }
-      } catch (Utf8.UnpairedSurrogateException e) {
-        inefficientWriteStringNoTag(value, e);
-      }
-    }
-
-    @Override
-    public void flush() throws IOException {
+    void flush() throws IOException {
       if (position > 0) {
         // Flush the buffer.
         doFlush();

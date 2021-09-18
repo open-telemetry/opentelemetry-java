@@ -72,6 +72,16 @@ class ExportTest {
       };
 
   @Test
+  void gzipCompressionExport() {
+    OtlpGrpcSpanExporter exporter =
+        OtlpGrpcSpanExporter.builder()
+            .setEndpoint("http://localhost:" + server.httpPort())
+            .setCompression("gzip")
+            .build();
+    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
   void plainTextExport() {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.builder().setEndpoint("http://localhost:" + server.httpPort()).build();

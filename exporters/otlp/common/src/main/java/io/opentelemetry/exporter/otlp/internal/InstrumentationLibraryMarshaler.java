@@ -12,49 +12,82 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
+/**
+ * A Marshaler of {@link InstrumentationLibraryInfo}.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class InstrumentationLibraryMarshaler extends MarshalerWithSize {
 
   private static final WeakConcurrentMap<
           InstrumentationLibraryInfo, InstrumentationLibraryMarshaler>
       LIBRARY_MARSHALER_CACHE = new WeakConcurrentMap.WithInlinedExpunction<>();
 
-  private final byte[] serializedInfo;
+  private final byte[] serializedBinary;
+  private final String serializedJson;
 
-  static InstrumentationLibraryMarshaler create(InstrumentationLibraryInfo libraryInfo) {
+  /** Returns a Marshaler for InstrumentationLibraryInfo. */
+  public static InstrumentationLibraryMarshaler create(InstrumentationLibraryInfo libraryInfo) {
     InstrumentationLibraryMarshaler cached = LIBRARY_MARSHALER_CACHE.get(libraryInfo);
     if (cached == null) {
       // Since WeakConcurrentMap doesn't support computeIfAbsent, we may end up doing the conversion
       // a few times until the cache gets filled which is fine.
       byte[] name = MarshalerUtil.toBytes(libraryInfo.getName());
       byte[] version = MarshalerUtil.toBytes(libraryInfo.getVersion());
-      cached = new InstrumentationLibraryMarshaler(name, version);
+
+      RealInstrumentationLibraryMarshaler realMarshaler =
+          new RealInstrumentationLibraryMarshaler(name, version);
+
+      ByteArrayOutputStream binaryBos =
+          new ByteArrayOutputStream(realMarshaler.getBinarySerializedSize());
+
+      try {
+        realMarshaler.writeBinaryTo(binaryBos);
+      } catch (IOException e) {
+        throw new UncheckedIOException(
+            "Serialization error, this is likely a bug in OpenTelemetry.", e);
+      }
+
+      String json = MarshalerUtil.preserializeJsonFields(realMarshaler);
+
+      cached = new InstrumentationLibraryMarshaler(binaryBos.toByteArray(), json);
       LIBRARY_MARSHALER_CACHE.put(libraryInfo, cached);
     }
     return cached;
   }
 
-  private InstrumentationLibraryMarshaler(byte[] name, byte[] version) {
-    super(computeSize(name, version));
-    ByteArrayOutputStream bos = new ByteArrayOutputStream(getSerializedSize());
-    CodedOutputStream output = CodedOutputStream.newInstance(bos);
-    try {
-      MarshalerUtil.marshalBytes(InstrumentationLibrary.NAME_FIELD_NUMBER, name, output);
-      MarshalerUtil.marshalBytes(InstrumentationLibrary.VERSION_FIELD_NUMBER, version, output);
-      output.flush();
-    } catch (IOException e) {
-      // Presized so can't happen (we would have already thrown OutOfMemoryError)
-      throw new UncheckedIOException(e);
-    }
-    serializedInfo = bos.toByteArray();
+  private InstrumentationLibraryMarshaler(byte[] binary, String json) {
+    super(binary.length);
+    serializedBinary = binary;
+    serializedJson = json;
   }
 
   @Override
-  public void writeTo(CodedOutputStream output) throws IOException {
-    output.writeRawBytes(serializedInfo);
+  public void writeTo(Serializer output) throws IOException {
+    output.writeSerializedMessage(serializedBinary, serializedJson);
   }
 
-  private static int computeSize(byte[] name, byte[] version) {
-    return MarshalerUtil.sizeBytes(InstrumentationLibrary.NAME_FIELD_NUMBER, name)
-        + MarshalerUtil.sizeBytes(InstrumentationLibrary.VERSION_FIELD_NUMBER, version);
+  private static final class RealInstrumentationLibraryMarshaler extends MarshalerWithSize {
+
+    private final byte[] name;
+    private final byte[] version;
+
+    RealInstrumentationLibraryMarshaler(byte[] name, byte[] version) {
+      super(computeSize(name, version));
+      this.name = name;
+      this.version = version;
+    }
+
+    @Override
+    protected void writeTo(Serializer output) throws IOException {
+      output.serializeString(InstrumentationLibrary.NAME, name);
+      output.serializeString(InstrumentationLibrary.VERSION, version);
+    }
+
+    private static int computeSize(byte[] name, byte[] version) {
+      return MarshalerUtil.sizeBytes(InstrumentationLibrary.NAME, name)
+          + MarshalerUtil.sizeBytes(InstrumentationLibrary.VERSION, version);
+    }
   }
 }

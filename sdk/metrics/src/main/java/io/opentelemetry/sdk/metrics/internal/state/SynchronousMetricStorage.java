@@ -11,6 +11,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -54,12 +55,18 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
       InstrumentDescriptor instrumentDescriptor,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      long startEpochNanos) {
+      long startEpochNanos,
+      ExemplarSampler sampler) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
     final Aggregator<T> aggregator =
         view.getAggregation()
             .config(instrumentDescriptor)
-            .create(resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor);
+            .create(
+                resource,
+                instrumentationLibraryInfo,
+                instrumentDescriptor,
+                metricDescriptor,
+                () -> sampler.createReservoir(view.getAggregation()));
     return new SynchronousMetricStorage<>(
         metricDescriptor, aggregator, view.getAttributesProcessor());
   }
@@ -270,7 +277,7 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
         // acquire but because we requested a specific value only one will succeed.
         aggregatorLabels.remove(entry.getKey(), entry.getValue());
       }
-      T accumulation = entry.getValue().accumulateThenReset();
+      T accumulation = entry.getValue().accumulateThenReset(entry.getKey());
       if (accumulation == null) {
         continue;
       }

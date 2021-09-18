@@ -7,17 +7,20 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceId;
-import java.util.concurrent.ThreadLocalRandom;
+import io.opentelemetry.sdk.internal.RandomSupplier;
+import java.util.Random;
+import java.util.function.Supplier;
 
 enum RandomIdGenerator implements IdGenerator {
   INSTANCE;
 
   private static final long INVALID_ID = 0;
+  private static final Supplier<Random> randomSupplier = RandomSupplier.platformDefault();
 
   @Override
   public String generateSpanId() {
     long id;
-    ThreadLocalRandom random = ThreadLocalRandom.current();
+    Random random = randomSupplier.get();
     do {
       id = random.nextLong();
     } while (id == INVALID_ID);
@@ -26,7 +29,7 @@ enum RandomIdGenerator implements IdGenerator {
 
   @Override
   public String generateTraceId() {
-    ThreadLocalRandom random = ThreadLocalRandom.current();
+    Random random = randomSupplier.get();
     long idHi = random.nextLong();
     long idLo;
     do {

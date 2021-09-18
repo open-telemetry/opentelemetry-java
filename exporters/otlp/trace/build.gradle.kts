@@ -2,7 +2,6 @@ plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
 
-  id("otel.jmh-conventions")
   id("otel.animalsniffer-conventions")
 
   id("org.unbroken-dome.test-sets")
@@ -57,11 +56,6 @@ dependencies {
   add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-junit5")
   add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
-
-  jmhImplementation(project(":proto"))
-  jmhImplementation(project(":sdk:testing"))
-  jmhRuntimeOnly("io.grpc:grpc-netty")
-  jmhImplementation("io.grpc:grpc-testing")
 
   add("testSpanPipeline", project(":proto"))
   add("testSpanPipeline", "io.grpc:grpc-protobuf")

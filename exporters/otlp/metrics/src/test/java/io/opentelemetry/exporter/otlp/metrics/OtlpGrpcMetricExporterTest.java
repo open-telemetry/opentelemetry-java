@@ -19,7 +19,7 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
+import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
@@ -31,13 +31,17 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,17 +105,24 @@ class OtlpGrpcMetricExporterTest {
     assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setEndpoint("gopher://localhost"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Invalid endpoint, must start with http:// or https://: gopher://localhost");
+
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setCompression(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("compressionMethod");
+    assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setCompression("foo"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Unsupported compression method. Supported compression methods include: gzip.");
   }
 
   @Test
   void testExport() {
-    MetricData span = generateFakeMetric();
+    MetricData metric = generateFakeMetric();
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(span)).isSuccess()).isTrue();
+      assertThat(exporter.export(Collections.singletonList(metric)).isSuccess()).isTrue();
       assertThat(fakeCollector.getReceivedMetrics())
-          .isEqualTo(MetricAdapter.toProtoResourceMetrics(Collections.singletonList(span)));
+          .isEqualTo(toResourceMetrics(Collections.singletonList(metric)));
     } finally {
       exporter.shutdown();
     }
@@ -119,19 +130,33 @@ class OtlpGrpcMetricExporterTest {
 
   @Test
   void testExport_MultipleMetrics() {
-    List<MetricData> spans = new ArrayList<>();
+    List<MetricData> metrics = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
-      spans.add(generateFakeMetric());
+      metrics.add(generateFakeMetric());
     }
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(spans).isSuccess()).isTrue();
-      assertThat(fakeCollector.getReceivedMetrics())
-          .isEqualTo(MetricAdapter.toProtoResourceMetrics(spans));
+      assertThat(exporter.export(metrics).isSuccess()).isTrue();
+      assertThat(fakeCollector.getReceivedMetrics()).isEqualTo(toResourceMetrics(metrics));
     } finally {
       exporter.shutdown();
     }
+  }
+
+  private static List<ResourceMetrics> toResourceMetrics(List<MetricData> metrics) {
+    return Arrays.stream(ResourceMetricsMarshaler.create(metrics))
+        .map(
+            marshaler -> {
+              ByteArrayOutputStream bos = new ByteArrayOutputStream();
+              try {
+                marshaler.writeBinaryTo(bos);
+                return ResourceMetrics.parseFrom(bos.toByteArray());
+              } catch (IOException e) {
+                throw new UncheckedIOException(e);
+              }
+            })
+        .collect(Collectors.toList());
   }
 
   @Test

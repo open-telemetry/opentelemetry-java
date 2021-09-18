@@ -9,8 +9,7 @@ import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
-import java.util.Arrays;
-import java.util.Collections;
+import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -25,11 +24,6 @@ public abstract class Aggregation {
   private static final ThrottlingLogger logger =
       new ThrottlingLogger(Logger.getLogger(Aggregation.class.getName()));
 
-  static final List<Double> DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES =
-      Collections.unmodifiableList(
-          Arrays.asList(
-              5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d, 5_000d, 7_500d,
-              10_000d));
   private static final Aggregation NONE = Aggregation.make("none", unused -> null);
   private static final Aggregation DEFAULT =
       Aggregation.make(
@@ -43,7 +37,8 @@ public abstract class Aggregation {
                 return AggregatorFactory.sum(AggregationTemporality.CUMULATIVE);
               case HISTOGRAM:
                 return AggregatorFactory.histogram(
-                    DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES, AggregationTemporality.CUMULATIVE);
+                    ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES,
+                    AggregationTemporality.CUMULATIVE);
               case OBSERVABLE_GAUGE:
                 return AggregatorFactory.lastValue();
             }
@@ -55,7 +50,8 @@ public abstract class Aggregation {
       Aggregation.make("lastValue", unused -> AggregatorFactory.lastValue());
   private static final Aggregation EXPLICIT_BUCKET_HISTOGRAM =
       explictBucketHistogram(
-          AggregationTemporality.CUMULATIVE, DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
+          AggregationTemporality.CUMULATIVE,
+          ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
 
   private Aggregation() {}
 
@@ -92,23 +88,24 @@ public abstract class Aggregation {
   }
 
   /**
-   * Aggregates measurments into an explicit bucket histogram using the default bucket boundaries.
+   * Aggregates measurements into an explicit bucket histogram using the default bucket boundaries.
    */
   public static Aggregation explictBucketHistogram() {
     return EXPLICIT_BUCKET_HISTOGRAM;
   }
 
   /**
-   * Aggregates measurments into an explicit bucket histogram using the default bucket boundaries.
+   * Aggregates measurements into an explicit bucket histogram using the default bucket boundaries.
    *
    * @param temporality Whether to report DELTA or CUMULATIVE metrics.
    */
   public static Aggregation explictBucketHistogram(AggregationTemporality temporality) {
-    return explictBucketHistogram(temporality, DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
+    return explictBucketHistogram(
+        temporality, ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
   }
 
   /**
-   * Aggregates measurments into an explicit bucket histogram.
+   * Aggregates measurements into an explicit bucket histogram.
    *
    * @param temporality Whether to report DELTA or CUMULATIVE metrics.
    * @param bucketBoundaries A list of (inclusive) upper bounds for the histogram. Should be in

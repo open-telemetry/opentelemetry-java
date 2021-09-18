@@ -5,9 +5,13 @@
 
 package io.opentelemetry.exporter.otlp.internal;
 
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,14 +21,40 @@ import java.util.Map;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
-final class MarshalerUtil {
+/**
+ * Marshaler utilities.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class MarshalerUtil {
+  private static final int TRACE_ID_VALUE_SIZE =
+      CodedOutputStream.computeLengthDelimitedFieldSize(TraceId.getLength() / 2);
+  private static final int SPAN_ID_VALUE_SIZE =
+      CodedOutputStream.computeLengthDelimitedFieldSize(SpanId.getLength() / 2);
+
+  private static final boolean JSON_AVAILABLE;
+
+  static {
+    boolean jsonAvailable = false;
+    try {
+      Class.forName("com.fasterxml.jackson.core.JsonFactory");
+      jsonAvailable = true;
+    } catch (ClassNotFoundException e) {
+      // Not available
+    }
+    JSON_AVAILABLE = jsonAvailable;
+  }
+
   static final byte[] EMPTY_BYTES = new byte[0];
 
-  static <T, U> Map<Resource, Map<InstrumentationLibraryInfo, List<U>>> groupByResourceAndLibrary(
-      Collection<T> dataList,
-      Function<T, Resource> getResource,
-      Function<T, InstrumentationLibraryInfo> getInstrumentationLibrary,
-      Function<T, U> createMarshaler) {
+  /** Groups SDK items by resource and instrumentation library. */
+  public static <T, U>
+      Map<Resource, Map<InstrumentationLibraryInfo, List<U>>> groupByResourceAndLibrary(
+          Collection<T> dataList,
+          Function<T, Resource> getResource,
+          Function<T, InstrumentationLibraryInfo> getInstrumentationLibrary,
+          Function<T, U> createMarshaler) {
     // expectedMaxSize of 8 means initial map capacity of 16 to match HashMap
     IdentityHashMap<Resource, Map<InstrumentationLibraryInfo, List<U>>> result =
         new IdentityHashMap<>(8);
@@ -39,193 +69,148 @@ final class MarshalerUtil {
     return result;
   }
 
-  static void marshalRepeatedFixed64(int fieldNumber, List<Long> values, CodedOutputStream output)
-      throws IOException {
-    if (values.isEmpty()) {
-      return;
+  static String preserializeJsonFields(Marshaler marshaler) {
+    if (!MarshalerUtil.JSON_AVAILABLE) {
+      return "";
     }
-    output.writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    // TODO(anuraaga): Consider passing in from calculateSize to avoid recomputing.
-    output.writeUInt32NoTag(WireFormat.FIXED64_SIZE * values.size());
-    for (long value : values) {
-      output.writeFixed64NoTag(value);
+
+    ByteArrayOutputStream jsonBos = new ByteArrayOutputStream();
+    try {
+      marshaler.writeJsonTo(jsonBos);
+    } catch (IOException e) {
+      throw new UncheckedIOException(
+          "Serialization error, this is likely a bug in OpenTelemetry.", e);
     }
+
+    // We effectively cache `writeTo`, however Jackson would not allow us to only write out
+    // fields
+    // which is what writeTo does. So we need to write to an object but skip the object start
+    // /
+    // end.
+    byte[] jsonBytes = jsonBos.toByteArray();
+    return new String(jsonBytes, 1, jsonBytes.length - 2, StandardCharsets.UTF_8);
   }
 
-  static void marshalRepeatedDouble(int fieldNumber, List<Double> values, CodedOutputStream output)
-      throws IOException {
-    if (values.isEmpty()) {
-      return;
-    }
-    output.writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    // TODO(anuraaga): Consider passing in from calculateSize to avoid recomputing.
-    output.writeUInt32NoTag(WireFormat.FIXED64_SIZE * values.size());
-    for (double value : values) {
-      output.writeDoubleNoTag(value);
-    }
+  /** Returns the size of a repeated fixed64 field. */
+  public static int sizeRepeatedFixed64(ProtoFieldInfo field, List<Long> values) {
+    return sizeRepeatedFixed64(field, values.size());
   }
 
-  static <T extends Marshaler> void marshalRepeatedMessage(
-      int fieldNumber, T[] repeatedMessage, CodedOutputStream output) throws IOException {
-    for (Marshaler message : repeatedMessage) {
-      marshalMessage(fieldNumber, message, output);
-    }
-  }
-
-  static void marshalRepeatedMessage(
-      int fieldNumber, List<? extends Marshaler> repeatedMessage, CodedOutputStream output)
-      throws IOException {
-    for (Marshaler message : repeatedMessage) {
-      marshalMessage(fieldNumber, message, output);
-    }
-  }
-
-  static void marshalMessage(int fieldNumber, Marshaler message, CodedOutputStream output)
-      throws IOException {
-    output.writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    output.writeUInt32NoTag(message.getSerializedSize());
-    message.writeTo(output);
-  }
-
-  static void marshalBool(int fieldNumber, boolean value, CodedOutputStream output)
-      throws IOException {
-    if (!value) {
-      return;
-    }
-    output.writeBool(fieldNumber, value);
-  }
-
-  static void marshalUInt32(int fieldNumber, int message, CodedOutputStream output)
-      throws IOException {
-    if (message == 0) {
-      return;
-    }
-    output.writeUInt32(fieldNumber, message);
-  }
-
-  static void marshalFixed64(int fieldNumber, long message, CodedOutputStream output)
-      throws IOException {
-    if (message == 0L) {
-      return;
-    }
-    output.writeFixed64(fieldNumber, message);
-  }
-
-  static void marshalDouble(int fieldNumber, double message, CodedOutputStream output)
-      throws IOException {
-    if (message == 0D) {
-      return;
-    }
-    output.writeDouble(fieldNumber, message);
-  }
-
-  static void marshalBytes(int fieldNumber, byte[] message, CodedOutputStream output)
-      throws IOException {
-    if (message.length == 0) {
-      return;
-    }
-    output.writeByteArray(fieldNumber, message);
-  }
-
-  // Assumes OTLP always defines the first item in an enum with number 0, which it does and will.
-  static void marshalEnum(int fieldNumber, int value, CodedOutputStream output) throws IOException {
-    if (value == 0) {
-      return;
-    }
-    output.writeEnum(fieldNumber, value);
-  }
-
-  static int sizeRepeatedFixed64(int fieldNumber, List<Long> values) {
-    return sizeRepeatedFixed64(fieldNumber, values.size());
-  }
-
-  private static int sizeRepeatedFixed64(int fieldNumber, int numValues) {
+  private static int sizeRepeatedFixed64(ProtoFieldInfo field, int numValues) {
     if (numValues == 0) {
       return 0;
     }
     int dataSize = WireFormat.FIXED64_SIZE * numValues;
     int size = 0;
-    size += CodedOutputStream.computeTagSize(fieldNumber);
+    size += field.getTagSize();
     size += CodedOutputStream.computeLengthDelimitedFieldSize(dataSize);
     return size;
   }
 
-  static int sizeRepeatedDouble(int fieldNumber, List<Double> values) {
+  /** Returns the size of a repeated double field. */
+  public static int sizeRepeatedDouble(ProtoFieldInfo field, List<Double> values) {
     // Same as fixed64.
-    return sizeRepeatedFixed64(fieldNumber, values.size());
+    return sizeRepeatedFixed64(field, values.size());
   }
 
-  static <T extends Marshaler> int sizeRepeatedMessage(int fieldNumber, T[] repeatedMessage) {
+  /** Returns the size of a repeated message field. */
+  public static <T extends Marshaler> int sizeRepeatedMessage(
+      ProtoFieldInfo field, T[] repeatedMessage) {
     int size = 0;
-    int fieldTagSize = CodedOutputStream.computeTagSize(fieldNumber);
+    int fieldTagSize = field.getTagSize();
     for (Marshaler message : repeatedMessage) {
-      int fieldSize = message.getSerializedSize();
+      int fieldSize = message.getBinarySerializedSize();
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
     }
     return size;
   }
 
-  static int sizeRepeatedMessage(int fieldNumber, List<? extends Marshaler> repeatedMessage) {
+  /** Returns the size of a repeated message field. */
+  public static int sizeRepeatedMessage(
+      ProtoFieldInfo field, List<? extends Marshaler> repeatedMessage) {
     int size = 0;
-    int fieldTagSize = CodedOutputStream.computeTagSize(fieldNumber);
+    int fieldTagSize = field.getTagSize();
     for (Marshaler message : repeatedMessage) {
-      int fieldSize = message.getSerializedSize();
+      int fieldSize = message.getBinarySerializedSize();
       size += fieldTagSize + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
     }
     return size;
   }
 
-  static int sizeMessage(int fieldNumber, Marshaler message) {
-    int fieldSize = message.getSerializedSize();
-    return CodedOutputStream.computeTagSize(fieldNumber)
-        + CodedOutputStream.computeUInt32SizeNoTag(fieldSize)
-        + fieldSize;
+  /** Returns the size of a message field. */
+  public static int sizeMessage(ProtoFieldInfo field, Marshaler message) {
+    int fieldSize = message.getBinarySerializedSize();
+    return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(fieldSize) + fieldSize;
   }
 
-  static int sizeBool(int fieldNumber, boolean value) {
+  /** Returns the size of a bool field. */
+  public static int sizeBool(ProtoFieldInfo field, boolean value) {
     if (!value) {
       return 0;
     }
-    return CodedOutputStream.computeBoolSize(fieldNumber, value);
+    return field.getTagSize() + CodedOutputStream.computeBoolSizeNoTag(value);
   }
 
-  static int sizeUInt32(int fieldNumber, int message) {
+  /** Returns the size of a uint32 field. */
+  public static int sizeUInt32(ProtoFieldInfo field, int message) {
     if (message == 0) {
       return 0;
     }
-    return CodedOutputStream.computeUInt32Size(fieldNumber, message);
+    return field.getTagSize() + CodedOutputStream.computeUInt32SizeNoTag(message);
   }
 
-  static int sizeDouble(int fieldNumber, double value) {
+  /** Returns the size of a double field. */
+  public static int sizeDouble(ProtoFieldInfo field, double value) {
     if (value == 0D) {
       return 0;
     }
-    return CodedOutputStream.computeDoubleSize(fieldNumber, value);
+    return field.getTagSize() + CodedOutputStream.computeDoubleSizeNoTag(value);
   }
 
-  static int sizeFixed64(int fieldNumber, long message) {
+  /** Returns the size of a fixed64 field. */
+  public static int sizeFixed64(ProtoFieldInfo field, long message) {
     if (message == 0L) {
       return 0;
     }
-    return CodedOutputStream.computeFixed64Size(fieldNumber, message);
+    return field.getTagSize() + CodedOutputStream.computeFixed64SizeNoTag(message);
   }
 
-  static int sizeBytes(int fieldNumber, byte[] message) {
+  /** Returns the size of a bytes field. */
+  public static int sizeBytes(ProtoFieldInfo field, byte[] message) {
     if (message.length == 0) {
       return 0;
     }
-    return CodedOutputStream.computeByteArraySize(fieldNumber, message);
+    return field.getTagSize() + CodedOutputStream.computeByteArraySizeNoTag(message);
   }
 
+  /** Returns the size of a enum field. */
   // Assumes OTLP always defines the first item in an enum with number 0, which it does and will.
-  static int sizeEnum(int fieldNumber, int value) {
-    if (value == 0) {
+  public static int sizeEnum(ProtoFieldInfo field, ProtoEnumInfo enumValue) {
+    int number = enumValue.getEnumNumber();
+    if (number == 0) {
       return 0;
     }
-    return CodedOutputStream.computeEnumSize(fieldNumber, value);
+    return field.getTagSize() + CodedOutputStream.computeEnumSizeNoTag(number);
   }
 
-  static byte[] toBytes(@Nullable String value) {
+  /** Returns the size of a trace_id field. */
+  public static int sizeTraceId(ProtoFieldInfo field, @Nullable String traceId) {
+    if (traceId == null) {
+      return 0;
+    }
+    return field.getTagSize() + TRACE_ID_VALUE_SIZE;
+  }
+
+  /** Returns the size of a span_id field. */
+  public static int sizeSpanId(ProtoFieldInfo field, @Nullable String spanId) {
+    if (spanId == null) {
+      return 0;
+    }
+    return field.getTagSize() + SPAN_ID_VALUE_SIZE;
+  }
+
+  /** Converts the string to utf8 bytes for encoding. */
+  public static byte[] toBytes(@Nullable String value) {
     if (value == null || value.isEmpty()) {
       return EMPTY_BYTES;
     }

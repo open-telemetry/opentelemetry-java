@@ -7,11 +7,11 @@ package io.opentelemetry.exporter.jaeger;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 
+import com.fasterxml.jackson.jr.ob.JSON;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
-import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanContext;
@@ -21,15 +21,19 @@ import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Adapts OpenTelemetry objects to Jaeger objects. */
 @ThreadSafe
 final class Adapter {
+  private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
+
   static final AttributeKey<Boolean> KEY_ERROR = booleanKey("error");
   static final String KEY_LOG_EVENT = "event";
   static final String KEY_EVENT_DROPPED_ATTRIBUTES_COUNT = "otel.event.dropped_attributes_count";
@@ -71,10 +75,9 @@ final class Adapter {
     target.setTraceId(ByteString.copyFrom(spanContext.getTraceIdBytes()));
     target.setSpanId(ByteString.copyFrom(spanContext.getSpanIdBytes()));
     target.setOperationName(span.getName());
-    Timestamp startTimestamp = Timestamps.fromNanos(span.getStartEpochNanos());
+    Timestamp startTimestamp = timestampProto(span.getStartEpochNanos());
     target.setStartTime(startTimestamp);
-    target.setDuration(
-        Timestamps.between(startTimestamp, Timestamps.fromNanos(span.getEndEpochNanos())));
+    target.setDuration(durationProto(span.getStartEpochNanos(), span.getEndEpochNanos()));
 
     target.addAllTags(toKeyValues(span.getAttributes()));
     int droppedAttributes = span.getTotalAttributeCount() - span.getAttributes().size();
@@ -154,7 +157,7 @@ final class Adapter {
   @VisibleForTesting
   static Model.Log toJaegerLog(EventData event) {
     Model.Log.Builder builder = Model.Log.newBuilder();
-    builder.setTimestamp(Timestamps.fromNanos(event.getEpochNanos()));
+    builder.setTimestamp(timestampProto(event.getEpochNanos()));
 
     // name is a top-level property in OpenTelemetry
     builder.addFields(toKeyValue(KEY_LOG_EVENT, event.getName()));
@@ -219,7 +222,11 @@ final class Adapter {
       case LONG_ARRAY:
       case BOOLEAN_ARRAY:
       case DOUBLE_ARRAY:
-        builder.setVStr(new Gson().toJson(value));
+        try {
+          builder.setVStr(JSON.std.asString(value));
+        } catch (IOException e) {
+          // Can't happen, just ignore it.
+        }
         builder.setVType(Model.ValueType.STRING);
         break;
     }
@@ -267,5 +274,21 @@ final class Adapter {
     builder.setRefType(Model.SpanRefType.FOLLOWS_FROM);
 
     return builder.build();
+  }
+
+  // Visible for testing
+  static Timestamp timestampProto(long timestampNanos) {
+    return Timestamp.newBuilder()
+        .setSeconds(timestampNanos / NANOS_PER_SECOND)
+        .setNanos((int) (timestampNanos % NANOS_PER_SECOND))
+        .build();
+  }
+
+  private static Duration durationProto(long fromNanos, long toNanos) {
+    long durationNanos = toNanos - fromNanos;
+    return Duration.newBuilder()
+        .setSeconds(durationNanos / NANOS_PER_SECOND)
+        .setNanos((int) (durationNanos % NANOS_PER_SECOND))
+        .build();
   }
 }

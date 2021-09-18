@@ -135,6 +135,7 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
     props.put("otel.exporter.otlp.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
+    props.put("otel.exporter.otlp.compression", "gzip");
     props.put("otel.exporter.otlp.timeout", "15s");
     ConfigProperties properties = DefaultConfigProperties.createForTest(props);
     SpanExporter spanExporter =
@@ -156,7 +157,8 @@ class OtlpGrpcConfigTest {
             headers ->
                 headers.contains(
                         ":path", "/opentelemetry.proto.collector.trace.v1.TraceService/Export")
-                    && headers.contains("header-key", "header-value"));
+                    && headers.contains("header-key", "header-value")
+                    && headers.contains("grpc-encoding", "gzip"));
 
     assertThat(metricExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
@@ -171,7 +173,8 @@ class OtlpGrpcConfigTest {
             headers ->
                 headers.contains(
                         ":path", "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export")
-                    && headers.contains("header-key", "header-value"));
+                    && headers.contains("header-key", "header-value")
+                    && headers.contains("grpc-encoding", "gzip"));
   }
 
   @Test
@@ -182,11 +185,13 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.endpoint", "http://foo.bar");
     props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
+    props.put("otel.exporter.otlp.compression", "foo");
     props.put("otel.exporter.otlp.timeout", "10s");
     props.put("otel.exporter.otlp.traces.endpoint", "https://localhost:" + server.httpsPort());
     props.put(
         "otel.exporter.otlp.traces.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
+    props.put("otel.exporter.otlp.traces.compression", "gzip");
     props.put("otel.exporter.otlp.traces.timeout", "15s");
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter(
@@ -216,11 +221,13 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.endpoint", "http://foo.bar");
     props.put("otel.exporter.otlp.certificate", Paths.get("foo", "bar", "baz").toString());
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
+    props.put("otel.exporter.otlp.compression", "gzip");
     props.put("otel.exporter.otlp.timeout", "10s");
     props.put("otel.exporter.otlp.metrics.endpoint", "https://localhost:" + server.httpsPort());
     props.put(
         "otel.exporter.otlp.metrics.certificate", certificate.certificateFile().getAbsolutePath());
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
+    props.put("otel.exporter.otlp.metrics.compression", "gzip");
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
@@ -239,7 +246,8 @@ class OtlpGrpcConfigTest {
             headers ->
                 headers.contains(
                         ":path", "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export")
-                    && headers.contains("header-key", "header-value"));
+                    && headers.contains("header-key", "header-value")
+                    && headers.contains("grpc-encoding", "gzip"));
   }
 
   @Test

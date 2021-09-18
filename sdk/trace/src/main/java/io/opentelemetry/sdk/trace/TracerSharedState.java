@@ -37,9 +37,7 @@ final class TracerSharedState {
       List<SpanProcessor> spanProcessors) {
     this.clock = clock;
     this.idGenerator = idGenerator;
-    this.idGeneratorSafeToSkipIdValidation =
-        idGenerator instanceof RandomIdGenerator
-            || idGenerator instanceof AndroidFriendlyRandomIdGenerator;
+    this.idGeneratorSafeToSkipIdValidation = idGenerator instanceof RandomIdGenerator;
     this.resource = resource;
     this.spanLimitsSupplier = spanLimitsSupplier;
     this.sampler = sampler;

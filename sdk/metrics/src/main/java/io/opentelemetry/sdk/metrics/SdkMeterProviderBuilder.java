@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
@@ -27,6 +28,8 @@ public final class SdkMeterProviderBuilder {
   private Resource resource = Resource.getDefault();
   private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
   private final List<MetricReader.Factory<?>> metricReaders = new ArrayList<>();
+  // Default the sampling strategy.
+  private ExemplarSampler exemplarSampler = ExemplarSampler.builder().build();
 
   SdkMeterProviderBuilder() {}
 
@@ -43,7 +46,7 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * Assign a {@link Resource} to be attached to all Spans created by Tracers.
+   * Assign a {@link Resource} to be attached to all metrics created by Meters.
    *
    * @param resource A Resource implementation.
    * @return this
@@ -51,6 +54,16 @@ public final class SdkMeterProviderBuilder {
   public SdkMeterProviderBuilder setResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource = resource;
+    return this;
+  }
+
+  /**
+   * Assign an {@link ExemplarSampler} for all metrics created by Meters.
+   *
+   * @return this
+   */
+  public SdkMeterProviderBuilder setExemplarSampler(ExemplarSampler sampler) {
+    this.exemplarSampler = sampler;
     return this;
   }
 
@@ -115,7 +128,8 @@ public final class SdkMeterProviderBuilder {
    */
   public SdkMeterProvider build() {
     // TODO - instantiate readers legitimately here, vs. late-registration.
-    SdkMeterProvider provider = new SdkMeterProvider(clock, resource, viewRegistryBuilder.build());
+    SdkMeterProvider provider =
+        new SdkMeterProvider(clock, resource, viewRegistryBuilder.build(), exemplarSampler);
     metricReaders.forEach(provider::register);
     return provider;
   }

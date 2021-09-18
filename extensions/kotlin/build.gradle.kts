@@ -23,11 +23,11 @@ dependencies {
   api(project(":api:all"))
 
   compileOnly("org.jetbrains.kotlin:kotlin-stdlib-common")
-  compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+  compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
   testImplementation(project(":sdk:testing"))
   testImplementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 }
 
 tasks {
