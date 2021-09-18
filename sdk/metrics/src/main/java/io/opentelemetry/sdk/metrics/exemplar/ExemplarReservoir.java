@@ -27,6 +27,10 @@ public interface ExemplarReservoir {
 
   /** Wraps a {@link ExemplarReservoir} with a measurement pre-filter. */
   public static ExemplarReservoir filtered(ExemplarFilter filter, ExemplarReservoir original) {
+    // Optimisation on memory usage.
+    if (filter == ExemplarFilter.neverSample()) {
+      return ExemplarReservoir.noSamples();
+    }
     return new FilteredExemplarReservoir(filter, original);
   }
 

@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.ServiceLoader;
@@ -99,17 +98,14 @@ public final class OpenTelemetrySdkAutoConfiguration {
     }
     switch (exemplarFilter) {
       case "NONE":
-        meterProviderBuilder.setExemplarSampler(
-            ExemplarSampler.builder().setFilter(ExemplarFilter.neverSample()).build());
+        meterProviderBuilder.setExemplarFilter(ExemplarFilter.neverSample());
         break;
       case "ALL":
-        meterProviderBuilder.setExemplarSampler(
-            ExemplarSampler.builder().setFilter(ExemplarFilter.alwaysSample()).build());
+        meterProviderBuilder.setExemplarFilter(ExemplarFilter.alwaysSample());
         break;
       case "WITH_SAMPLED_TRACE":
       default:
-        meterProviderBuilder.setExemplarSampler(
-            ExemplarSampler.builder().setFilter(ExemplarFilter.sampleWithTraces()).build());
+        meterProviderBuilder.setExemplarFilter(ExemplarFilter.sampleWithTraces());
         break;
     }
 

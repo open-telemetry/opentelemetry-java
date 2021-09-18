@@ -5,13 +5,20 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
+import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 
-/** Explciit bucket histogram aggregation configuration. */
-public class ExplicitBucketHistogramAggregation extends Aggregation {
+/** Explicit bucket histogram aggregation configuration. */
+class ExplicitBucketHistogramAggregation extends Aggregation {
   private final AggregationTemporality temporality;
   private final List<Double> bucketBoundaries;
 
@@ -32,13 +39,24 @@ public class ExplicitBucketHistogramAggregation extends Aggregation {
   }
 
   @Override
-  public AggregatorFactory getFactory(InstrumentDescriptor instrument) {
-    return AggregatorFactory.histogram(bucketBoundaries, temporality);
-  }
+  public <T> Aggregator<T> createAggregator(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor instrumentDescriptor,
+      MetricDescriptor metricDescriptor,
+      ExemplarFilter exemplarFilter) {
 
-  @Override
-  public Aggregation resolve(InstrumentDescriptor instrument) {
-    return this;
+    return AggregatorFactory.histogram(bucketBoundaries, temporality)
+        .create(
+            resource,
+            instrumentationLibraryInfo,
+            instrumentDescriptor,
+            metricDescriptor,
+            () ->
+                ExemplarReservoir.filtered(
+                    exemplarFilter,
+                    ExemplarReservoir.histogramBucketReservoir(
+                        Clock.getDefault(), bucketBoundaries)));
   }
 
   @Override

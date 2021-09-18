@@ -5,11 +5,15 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,13 +31,7 @@ public abstract class Aggregation {
   private static final Aggregation NONE = new NoAggregation();
   private static final Aggregation DEFAULT =
       new Aggregation() {
-        @Override
-        public AggregatorFactory getFactory(InstrumentDescriptor instrument) {
-          return resolve(instrument).getFactory(instrument);
-        }
-
-        @Override
-        public Aggregation resolve(InstrumentDescriptor instrument) {
+        private Aggregation resolve(InstrumentDescriptor instrument) {
           switch (instrument.getType()) {
             case COUNTER:
             case UP_DOWN_COUNTER:
@@ -51,6 +49,22 @@ public abstract class Aggregation {
         }
 
         @Override
+        public <T> Aggregator<T> createAggregator(
+            Resource resource,
+            InstrumentationLibraryInfo instrumentationLibraryInfo,
+            InstrumentDescriptor instrumentDescriptor,
+            MetricDescriptor metricDescriptor,
+            ExemplarFilter exemplarFilter) {
+          return resolve(instrumentDescriptor)
+              .createAggregator(
+                  resource,
+                  instrumentationLibraryInfo,
+                  instrumentDescriptor,
+                  metricDescriptor,
+                  exemplarFilter);
+        }
+
+        @Override
         public String toString() {
           return "default";
         }
@@ -65,15 +79,25 @@ public abstract class Aggregation {
   Aggregation() {}
 
   /**
-   * Returns the appropriate aggregator factory for a given instrument.
+   * Returns a new {@link Aggregator}.
    *
-   * @return The AggregatorFactory or {@code null} if none.
+   * @param resource the Resource associated with the {@code Instrument} that will record
+   *     measurements.
+   * @param instrumentationLibraryInfo the InstrumentationLibraryInfo associated with the {@code
+   *     Instrument} that will record measurements.
+   * @param instrumentDescriptor the descriptor of the {@code Instrument} that will record
+   *     measurements.
+   * @param metricDescriptor the descriptor of the {@code MetricData} that should be generated.
+   * @param exemplarFilter the filter on which measurements should turn into exemplars
+   * @return a new {@link Aggregator}, or {@code null} if no measurements should be recorded.
    */
   @Nullable
-  public abstract AggregatorFactory getFactory(InstrumentDescriptor instrument);
-
-  /** Resolve from a generic aggregation to a specific instance. */
-  public abstract Aggregation resolve(InstrumentDescriptor instrument);
+  public abstract <T> Aggregator<T> createAggregator(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor instrumentDescriptor,
+      MetricDescriptor metricDescriptor,
+      ExemplarFilter exemplarFilter);
 
   /** The None Aggregation will ignore/drop all Instrument Measurements. */
   public static Aggregation none() {

@@ -10,18 +10,18 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -37,25 +37,32 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
   private final InstrumentProcessor<T> instrumentProcessor;
   private final AttributesProcessor attributesProcessor;
 
-  /** Constructs metric storage for a given synchronous instrument and view. */
+  /**
+   * Constructs metric storage for a given synchronous instrument and view.
+   *
+   * @return The storage, or {@code null} if the instrument should not be recorded.
+   */
+  @Nullable
   public static <T> SynchronousMetricStorage<T> create(
       View view,
       InstrumentDescriptor instrumentDescriptor,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       long startEpochNanos,
-      ExemplarSampler sampler) {
+      ExemplarFilter exemplarFilter) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
-    final Aggregation resolved = view.getAggregation().resolve(instrumentDescriptor);
     final Aggregator<T> aggregator =
-        resolved
-            .getFactory(instrumentDescriptor)
-            .create(
+        view.getAggregation()
+            .createAggregator(
                 resource,
                 instrumentationLibraryInfo,
                 instrumentDescriptor,
                 metricDescriptor,
-                () -> sampler.createReservoir(resolved));
+                exemplarFilter);
+    // We won't be storing this metric.
+    if (aggregator == null) {
+      return null;
+    }
     return new SynchronousMetricStorage<>(
         metricDescriptor,
         aggregator,
