@@ -10,8 +10,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 
 /** Implementation of SdkMeterProvider which does not collect metrics. */
-// Visible for testing.
-public final class NoopSdkMeterProvider implements SdkMeterProvider {
+final class NoopSdkMeterProvider implements SdkMeterProvider {
 
   @Override
   public MeterBuilder meterBuilder(String instrumentationName) {

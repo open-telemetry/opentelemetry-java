@@ -41,8 +41,10 @@ public class MetricsRequestMarshalerBenchmark {
   private static final Collection<MetricData> METRICS;
 
   static {
+    InMemoryMetricReader collector = new InMemoryMetricReader();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
+            .register(collector)
             .setResource(
                 Resource.create(
                     Attributes.builder()
@@ -62,7 +64,6 @@ public class MetricsRequestMarshalerBenchmark {
                             Arrays.asList(true, false))
                         .build()))
             .build();
-    InMemoryMetricReader collector = InMemoryMetricReader.create(meterProvider);
 
     Meter meter1 = meterProvider.get("longinstrumentation");
     meter1

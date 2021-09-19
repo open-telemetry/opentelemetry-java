@@ -10,7 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.metrics.NoopSdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -42,6 +43,10 @@ class OpenTelemetrySdkAutoConfigurationTest {
   @Test
   void noMetricsSdk() {
     // OTEL_METRICS_EXPORTER=none so the metrics SDK should be completely disabled.
-    assertThat(GlobalMeterProvider.get()).isInstanceOf(NoopSdkMeterProvider.class);
+    // This is a bit of an odd test, so we just ensure that we don't have the same impl class as if
+    // we instantiated an SDK with a reader.
+    assertThat(GlobalMeterProvider.get())
+        .doesNotHaveSameClassAs(
+            SdkMeterProvider.builder().register(new InMemoryMetricReader()).build());
   }
 }
