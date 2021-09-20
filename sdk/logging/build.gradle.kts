@@ -6,7 +6,7 @@ plugins {
 }
 
 description = "OpenTelemetry Contrib Logging Support"
-otelJava.moduleName.set("io.opentelemetry.sdk.extension.logging")
+otelJava.moduleName.set("io.opentelemetry.sdk.logging")
 
 dependencies {
   api(project(":sdk:all"))

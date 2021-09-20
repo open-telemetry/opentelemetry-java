@@ -17,7 +17,7 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:all"))
   api(project(":sdk:metrics"))
-  compileOnly(project(":sdk-extensions:logging"))
+  compileOnly(project(":sdk:logging"))
 
   // We only use the protos for HTTP, logging-otlp, and metric export for now. Let them expose the
   // proto dependency in their POMs instead of here. This is fine because this artifact only
@@ -37,7 +37,7 @@ dependencies {
   annotationProcessor("com.google.auto.value:auto-value")
 
   testImplementation(project(":proto"))
-  testImplementation(project(":sdk-extensions:logging"))
+  testImplementation(project(":sdk:logging"))
   testImplementation(project(":sdk:testing"))
 
   testImplementation("com.fasterxml.jackson.core:jackson-core")
