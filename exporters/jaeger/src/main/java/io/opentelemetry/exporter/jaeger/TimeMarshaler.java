@@ -17,14 +17,14 @@ import java.util.concurrent.TimeUnit;
 final class TimeMarshaler extends MarshalerWithSize {
   private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
 
+  private final long seconds;
+  private final int nanos;
+
   static TimeMarshaler create(long timeNanos) {
     long seconds = timeNanos / NANOS_PER_SECOND;
     int nanos = (int) (timeNanos % NANOS_PER_SECOND);
     return new TimeMarshaler(seconds, nanos);
   }
-
-  private final long seconds;
-  private final int nanos;
 
   TimeMarshaler(long seconds, int nanos) {
     super(calculateSize(seconds, nanos));

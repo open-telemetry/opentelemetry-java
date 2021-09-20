@@ -16,6 +16,9 @@ import java.util.List;
 
 final class ProcessMarshaler extends MarshalerWithSize {
 
+  private final byte[] serviceNameUtf8;
+  private final List<KeyValueMarshaler> tags;
+
   static ProcessMarshaler create(Resource resource) {
     String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
     if (serviceName == null || serviceName.isEmpty()) {
@@ -26,9 +29,6 @@ final class ProcessMarshaler extends MarshalerWithSize {
         MarshalerUtil.toBytes(serviceName),
         KeyValueMarshaler.createRepeated(resource.getAttributes()));
   }
-
-  private final byte[] serviceNameUtf8;
-  private final List<KeyValueMarshaler> tags;
 
   ProcessMarshaler(byte[] serviceNameUtf8, List<KeyValueMarshaler> tags) {
     super(calculateSize(serviceNameUtf8, tags));

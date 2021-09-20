@@ -37,6 +37,15 @@ final class SpanMarshaler extends MarshalerWithSize {
   private static final AttributeKey<String> KEY_INSTRUMENTATION_LIBRARY_VERSION =
       AttributeKey.stringKey("otel.library.version");
 
+  private final String traceId;
+  private final String spanId;
+  private final byte[] operationNameUtf8;
+  private final TimeMarshaler startTime;
+  private final TimeMarshaler duration;
+  private final List<KeyValueMarshaler> tags;
+  private final LogMarshaler[] logs;
+  private final List<SpanRefMarshaler> references;
+
   static SpanMarshaler[] createRepeated(List<SpanData> spans) {
     int len = spans.size();
     SpanMarshaler[] marshalers = new SpanMarshaler[len];
@@ -107,15 +116,6 @@ final class SpanMarshaler extends MarshalerWithSize {
     return new SpanMarshaler(
         traceId, spanId, operationNameUtf8, startTime, duration, tags, logs, references);
   }
-
-  private final String traceId;
-  private final String spanId;
-  private final byte[] operationNameUtf8;
-  private final TimeMarshaler startTime;
-  private final TimeMarshaler duration;
-  private final List<KeyValueMarshaler> tags;
-  private final LogMarshaler[] logs;
-  private final List<SpanRefMarshaler> references;
 
   SpanMarshaler(
       String traceId,

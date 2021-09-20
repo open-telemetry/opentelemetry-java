@@ -19,6 +19,10 @@ import java.util.List;
 
 final class SpanRefMarshaler extends MarshalerWithSize {
 
+  private final String traceId;
+  private final String spanId;
+  private final ProtoEnumInfo refType;
+
   static List<SpanRefMarshaler> createRepeated(List<LinkData> links) {
     List<SpanRefMarshaler> marshalers = new ArrayList<>(links.size());
     for (LinkData link : links) {
@@ -42,10 +46,6 @@ final class SpanRefMarshaler extends MarshalerWithSize {
         link.getSpanContext().getSpanId(),
         SpanRefType.FOLLOWS_FROM);
   }
-
-  private final String traceId;
-  private final String spanId;
-  private final ProtoEnumInfo refType;
 
   SpanRefMarshaler(String traceId, String spanId, ProtoEnumInfo refType) {
     super(calculateSize(traceId, spanId, refType));

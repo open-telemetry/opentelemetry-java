@@ -16,11 +16,11 @@ import java.util.List;
 
 final class PostSpansRequestMarshaler extends MarshalerWithSize {
 
+  private final BatchMarshaler batch;
+
   static PostSpansRequestMarshaler create(List<SpanData> spans, Resource resource) {
     return new PostSpansRequestMarshaler(BatchMarshaler.create(spans, resource));
   }
-
-  private final BatchMarshaler batch;
 
   PostSpansRequestMarshaler(BatchMarshaler batch) {
     super(calculateSize(batch));

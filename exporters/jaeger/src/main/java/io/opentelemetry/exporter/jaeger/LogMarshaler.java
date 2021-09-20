@@ -20,6 +20,9 @@ final class LogMarshaler extends MarshalerWithSize {
   private static final AttributeKey<Long> KEY_EVENT_DROPPED_ATTRIBUTES_COUNT =
       AttributeKey.longKey("otel.event.dropped_attributes_count");
 
+  private final TimeMarshaler timestamp;
+  private final List<KeyValueMarshaler> fields;
+
   static LogMarshaler[] createRepeated(List<EventData> events) {
     int len = events.size();
     LogMarshaler[] marshalers = new LogMarshaler[len];
@@ -46,9 +49,6 @@ final class LogMarshaler extends MarshalerWithSize {
 
     return new LogMarshaler(timestamp, fields);
   }
-
-  private final TimeMarshaler timestamp;
-  private final List<KeyValueMarshaler> fields;
 
   LogMarshaler(TimeMarshaler timestamp, List<KeyValueMarshaler> fields) {
     super(calculateSize(timestamp, fields));

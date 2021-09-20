@@ -16,14 +16,14 @@ import java.util.List;
 
 final class BatchMarshaler extends MarshalerWithSize {
 
+  private final SpanMarshaler[] spans;
+  private final ProcessMarshaler process;
+
   static BatchMarshaler create(List<SpanData> spans, Resource resource) {
     SpanMarshaler[] spanMarshalers = SpanMarshaler.createRepeated(spans);
     ProcessMarshaler processMarshaler = ProcessMarshaler.create(resource);
     return new BatchMarshaler(spanMarshalers, processMarshaler);
   }
-
-  private final SpanMarshaler[] spans;
-  private final ProcessMarshaler process;
 
   BatchMarshaler(SpanMarshaler[] spans, ProcessMarshaler process) {
     super(calculateSize(spans, process));

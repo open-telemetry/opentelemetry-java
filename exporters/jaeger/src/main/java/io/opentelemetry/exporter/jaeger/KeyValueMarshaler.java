@@ -27,6 +27,13 @@ final class KeyValueMarshaler extends MarshalerWithSize {
 
   private static final byte[] EMPTY_BYTES = new byte[0];
 
+  private final byte[] keyUtf8;
+  private final ProtoEnumInfo valueType;
+  private final byte[] vStrUtf8;
+  private final boolean vBool;
+  private final long vInt64;
+  private final double vFloat64;
+
   static List<KeyValueMarshaler> createRepeated(Attributes attributes) {
     if (attributes.isEmpty()) {
       return new ArrayList<>();
@@ -79,13 +86,6 @@ final class KeyValueMarshaler extends MarshalerWithSize {
 
     return new KeyValueMarshaler(keyUtf8, valueType, vStrUtf8, vBool, vInt64, vFloat64);
   }
-
-  private final byte[] keyUtf8;
-  private final ProtoEnumInfo valueType;
-  private final byte[] vStrUtf8;
-  private final boolean vBool;
-  private final long vInt64;
-  private final double vFloat64;
 
   KeyValueMarshaler(
       byte[] keyUtf8,
