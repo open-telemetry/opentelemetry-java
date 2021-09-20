@@ -6,7 +6,7 @@
 
 #### Exporters
 
-- BREAKING CHANGE: The Jaeger gRPC exporter does not directly use the `protobuf-java` library for 
+- BREAKING CHANGE: The Jaeger gRPC exporter does not directly use the `protobuf-java` library for
 marshaling trace data. Along with this, the `opentelemetry-exporter-jaeger` artifact does not
 contain generated protobuf classes for the Jaeger API. If you were using these in your application,
 you must update your build configuration to also include the new `jaeger-proto` artifact. This
