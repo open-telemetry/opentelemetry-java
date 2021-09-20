@@ -7,7 +7,10 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -39,9 +42,13 @@ public abstract class AggregatorHandle<T> implements BoundStorageHandle {
   // it should be picked up in the next, assuming that more recordings are being made.
   private volatile boolean hasRecordings = false;
 
-  protected AggregatorHandle() {
+  // A reservoir of sampled exemplars for this time period.
+  private final ExemplarReservoir exemplarReservoir;
+
+  protected AggregatorHandle(ExemplarReservoir exemplarReservoir) {
     // Start with this binding already bound.
     this.refCountMapped = new AtomicLong(2);
+    this.exemplarReservoir = exemplarReservoir;
   }
 
   /**
@@ -82,30 +89,33 @@ public abstract class AggregatorHandle<T> implements BoundStorageHandle {
    * Aggregator}.
    */
   @Nullable
-  public final T accumulateThenReset() {
+  public final T accumulateThenReset(Attributes attributes) {
     if (!hasRecordings) {
       return null;
     }
     hasRecordings = false;
-    return doAccumulateThenReset();
+    return doAccumulateThenReset(exemplarReservoir.collectAndReset(attributes));
   }
 
   /** Implementation of the {@code accumulateThenReset}. */
-  protected abstract T doAccumulateThenReset();
+  protected abstract T doAccumulateThenReset(List<Exemplar> exemplars);
+
+  @Override
+  public final void recordLong(long value, Attributes attributes, Context context) {
+    exemplarReservoir.offerMeasurement(value, attributes, context);
+    recordLong(value);
+  }
 
   /**
    * Updates the current aggregator with a newly recorded {@code long} value.
+   *
+   * <p>Visible for Testing
    *
    * @param value the new {@code long} value to be added.
    */
   public final void recordLong(long value) {
     doRecordLong(value);
     hasRecordings = true;
-  }
-
-  @Override
-  public final void recordLong(long value, Attributes attributes, Context context) {
-    recordLong(value);
   }
 
   /**
@@ -117,19 +127,22 @@ public abstract class AggregatorHandle<T> implements BoundStorageHandle {
         "This aggregator does not support recording long values.");
   }
 
+  @Override
+  public final void recordDouble(double value, Attributes attributes, Context context) {
+    exemplarReservoir.offerMeasurement(value, attributes, context);
+    recordDouble(value);
+  }
+
   /**
    * Updates the current aggregator with a newly recorded {@code double} value.
+   *
+   * <p>Visible for Testing
    *
    * @param value the new {@code double} value to be added.
    */
   public final void recordDouble(double value) {
     doRecordDouble(value);
     hasRecordings = true;
-  }
-
-  @Override
-  public final void recordDouble(double value, Attributes attributes, Context context) {
-    recordDouble(value);
   }
 
   /**

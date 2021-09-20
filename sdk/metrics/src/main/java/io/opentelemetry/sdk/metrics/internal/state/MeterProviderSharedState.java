@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.concurrent.Immutable;
@@ -21,8 +22,9 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class MeterProviderSharedState {
   public static MeterProviderSharedState create(
-      Clock clock, Resource resource, ViewRegistry viewRegistry) {
-    return new AutoValue_MeterProviderSharedState(clock, resource, viewRegistry, clock.now());
+      Clock clock, Resource resource, ViewRegistry viewRegistry, ExemplarSampler sampler) {
+    return new AutoValue_MeterProviderSharedState(
+        clock, resource, viewRegistry, clock.now(), sampler);
   }
 
   /** Returns the clock used for measurements. */
@@ -39,4 +41,7 @@ public abstract class MeterProviderSharedState {
    * epoch time.
    */
   abstract long getStartEpochNanos();
+
+  /** Returns the {@link ExemplarSampler} for remembering synchronous measurements. */
+  abstract ExemplarSampler getExemplarSampler();
 }

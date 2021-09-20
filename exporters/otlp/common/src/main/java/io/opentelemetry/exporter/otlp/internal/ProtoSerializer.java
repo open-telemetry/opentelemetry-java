@@ -55,9 +55,9 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
-  protected void writeEnum(ProtoFieldInfo field, int enumNumber) throws IOException {
+  protected void writeEnum(ProtoFieldInfo field, ProtoEnumInfo enumValue) throws IOException {
     output.writeUInt32NoTag(field.getTag());
-    output.writeEnumNoTag(enumNumber);
+    output.writeEnumNoTag(enumValue.getEnumNumber());
   }
 
   @Override

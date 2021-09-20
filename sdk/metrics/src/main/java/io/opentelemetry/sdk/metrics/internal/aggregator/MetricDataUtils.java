@@ -18,20 +18,32 @@ final class MetricDataUtils {
   private MetricDataUtils() {}
 
   static List<LongPointData> toLongPointList(
-      Map<Attributes, Long> accumulationMap, long startEpochNanos, long epochNanos) {
+      Map<Attributes, LongAccumulation> accumulationMap, long startEpochNanos, long epochNanos) {
     List<LongPointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(LongPointData.create(startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(
+                LongPointData.create(
+                    startEpochNanos,
+                    epochNanos,
+                    labels,
+                    accumulation.getValue(),
+                    accumulation.getExemplars())));
     return points;
   }
 
   static List<DoublePointData> toDoublePointList(
-      Map<Attributes, Double> accumulationMap, long startEpochNanos, long epochNanos) {
+      Map<Attributes, DoubleAccumulation> accumulationMap, long startEpochNanos, long epochNanos) {
     List<DoublePointData> points = new ArrayList<>(accumulationMap.size());
     accumulationMap.forEach(
         (labels, accumulation) ->
-            points.add(DoublePointData.create(startEpochNanos, epochNanos, labels, accumulation)));
+            points.add(
+                DoublePointData.create(
+                    startEpochNanos,
+                    epochNanos,
+                    labels,
+                    accumulation.getValue(),
+                    accumulation.getExemplars())));
     return points;
   }
 
@@ -60,7 +72,13 @@ final class MetricDataUtils {
           }
           points.add(
               DoubleHistogramPointData.create(
-                  startEpochNanos, epochNanos, labels, aggregator.getSum(), boundaries, counts));
+                  startEpochNanos,
+                  epochNanos,
+                  labels,
+                  aggregator.getSum(),
+                  boundaries,
+                  counts,
+                  aggregator.getExemplars()));
         });
     return points;
   }

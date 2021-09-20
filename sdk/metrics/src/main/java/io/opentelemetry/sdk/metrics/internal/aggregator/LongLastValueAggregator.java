@@ -7,12 +7,16 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.Exemplar;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -26,33 +30,36 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-final class LongLastValueAggregator extends AbstractAggregator<Long> {
+final class LongLastValueAggregator extends AbstractAggregator<LongAccumulation> {
+  private final Supplier<ExemplarReservoir> reservoirSupplier;
+
   LongLastValueAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      MetricDescriptor descriptor) {
+      MetricDescriptor descriptor,
+      Supplier<ExemplarReservoir> reservoirSupplier) {
     super(resource, instrumentationLibraryInfo, descriptor, /* stateful= */ false);
+    this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
-  public AggregatorHandle<Long> createHandle() {
-    return new Handle();
+  public AggregatorHandle<LongAccumulation> createHandle() {
+    return new Handle(reservoirSupplier.get());
   }
 
   @Override
-  public Long accumulateLong(long value) {
-    return value;
+  public LongAccumulation accumulateLong(long value) {
+    return LongAccumulation.create(value);
   }
 
   @Override
-  public Long merge(Long a1, Long a2) {
-    // TODO: Define the order between accumulation.
-    return a2;
+  public LongAccumulation merge(LongAccumulation previous, LongAccumulation current) {
+    return current;
   }
 
   @Override
   public MetricData toMetricData(
-      Map<Attributes, Long> accumulationByLabels,
+      Map<Attributes, LongAccumulation> accumulationByLabels,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
@@ -65,13 +72,17 @@ final class LongLastValueAggregator extends AbstractAggregator<Long> {
         LongGaugeData.create(MetricDataUtils.toLongPointList(accumulationByLabels, 0, epochNanos)));
   }
 
-  static final class Handle extends AggregatorHandle<Long> {
+  static final class Handle extends AggregatorHandle<LongAccumulation> {
     @Nullable private static final Long DEFAULT_VALUE = null;
     private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
+    Handle(ExemplarReservoir exemplarReservoir) {
+      super(exemplarReservoir);
+    }
+
     @Override
-    protected Long doAccumulateThenReset() {
-      return this.current.getAndSet(DEFAULT_VALUE);
+    protected LongAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
+      return LongAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
     }
 
     @Override

@@ -13,7 +13,7 @@ import io.opentelemetry.api.metrics.DoubleUpDownCounter;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
+import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -111,17 +111,6 @@ public class MetricsRequestMarshalerBenchmark {
     histogram.record(5.0);
 
     METRICS = meterProvider.collectAllMetrics();
-  }
-
-  @Benchmark
-  public ByteArrayOutputStream adapter() throws IOException {
-    ExportMetricsServiceRequest request =
-        ExportMetricsServiceRequest.newBuilder()
-            .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(METRICS))
-            .build();
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    request.writeTo(bos);
-    return bos;
   }
 
   @Benchmark

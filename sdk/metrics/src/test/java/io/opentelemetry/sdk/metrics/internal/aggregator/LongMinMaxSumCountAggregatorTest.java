@@ -12,6 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
@@ -28,7 +29,8 @@ class LongMinMaxSumCountAggregatorTest {
       new LongMinMaxSumCountAggregator(
           Resource.getDefault(),
           InstrumentationLibraryInfo.empty(),
-          MetricDescriptor.create("name", "description", "unit"));
+          MetricDescriptor.create("name", "description", "unit"),
+          ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -39,30 +41,30 @@ class LongMinMaxSumCountAggregatorTest {
   void testRecordings() {
     AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(100);
-    assertThat(aggregatorHandle.accumulateThenReset())
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
     aggregatorHandle.recordLong(200);
-    assertThat(aggregatorHandle.accumulateThenReset())
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 200, 200, 200));
     aggregatorHandle.recordLong(-75);
-    assertThat(aggregatorHandle.accumulateThenReset())
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(MinMaxSumCountAccumulation.create(1, -75, -75, -75));
   }
 
   @Test
   void toAccumulationAndReset() {
     AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle = aggregator.createHandle();
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(100);
-    assertThat(aggregatorHandle.accumulateThenReset())
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
 
     aggregatorHandle.recordLong(100);
-    assertThat(aggregatorHandle.accumulateThenReset())
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(MinMaxSumCountAccumulation.create(1, 100, 100, 100));
-    assertThat(aggregatorHandle.accumulateThenReset()).isNull();
+    assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
@@ -72,7 +74,8 @@ class LongMinMaxSumCountAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-            Collections.singletonMap(Attributes.empty(), aggregatorHandle.accumulateThenReset()),
+            Collections.singletonMap(
+                Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
             0,
             10,
             100);
@@ -103,7 +106,7 @@ class LongMinMaxSumCountAggregatorTest {
                 for (int j = 0; j < numberOfUpdates; j++) {
                   aggregatorHandle.recordLong(update);
                   if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                    summarizer.process(aggregatorHandle.accumulateThenReset());
+                    summarizer.process(aggregatorHandle.accumulateThenReset(Attributes.empty()));
                   }
                 }
               });
@@ -118,7 +121,7 @@ class LongMinMaxSumCountAggregatorTest {
       worker.join();
     }
     // make sure everything gets merged when all the aggregation is done.
-    summarizer.process(aggregatorHandle.accumulateThenReset());
+    summarizer.process(aggregatorHandle.accumulateThenReset(Attributes.empty()));
 
     assertThat(summarizer.accumulation)
         .isEqualTo(

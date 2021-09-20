@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 final class JsonSerializer extends Serializer {
@@ -18,7 +19,11 @@ final class JsonSerializer extends Serializer {
   private final JsonGenerator generator;
 
   JsonSerializer(OutputStream output) throws IOException {
-    generator = JSON_FACTORY.createGenerator(output);
+    this(JSON_FACTORY.createGenerator(output));
+  }
+
+  JsonSerializer(JsonGenerator generator) {
+    this.generator = generator;
   }
 
   @Override
@@ -37,8 +42,8 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
-  protected void writeEnum(ProtoFieldInfo field, int enumNumber) throws IOException {
-    generator.writeNumberField(field.getJsonName(), enumNumber);
+  protected void writeEnum(ProtoFieldInfo field, ProtoEnumInfo enumValue) throws IOException {
+    generator.writeStringField(field.getJsonName(), enumValue.getJsonName());
   }
 
   @Override
@@ -74,7 +79,13 @@ final class JsonSerializer extends Serializer {
   @Override
   protected void writeString(ProtoFieldInfo field, byte[] utf8Bytes) throws IOException {
     generator.writeFieldName(field.getJsonName());
-    generator.writeUTF8String(utf8Bytes, 0, utf8Bytes.length);
+    // Marshalers encoded String into UTF-8 bytes to optimize for binary serialization where
+    // we are able to avoid the encoding process happening twice, one for size computation and one
+    // for actual writing. JsonGenerator actually has a writeUTF8String that would be able to accept
+    // this, but it only works when writing to an OutputStream, but not to a String like we do for
+    // writing to logs. It's wasteful to take a String, convert it to bytes, and convert back to
+    // the same String but we can see if this can be improved in the future.
+    generator.writeString(new String(utf8Bytes, StandardCharsets.UTF_8));
   }
 
   @Override

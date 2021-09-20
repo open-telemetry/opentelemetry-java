@@ -22,7 +22,13 @@ final class OtlpConfigUtil {
   static final String DATA_TYPE_METRICS = "metrics";
 
   static String getOtlpProtocol(String dataType, ConfigProperties config) {
-    String protocol = config.getString("otel.experimental.exporter.otlp." + dataType + ".protocol");
+    String protocol = config.getString("otel.exporter.otlp." + dataType + ".protocol");
+    if (protocol == null) {
+      protocol = config.getString("otel.exporter.otlp.protocol");
+    }
+    if (protocol == null) {
+      protocol = config.getString("otel.experimental.exporter.otlp." + dataType + ".protocol");
+    }
     if (protocol == null) {
       protocol = config.getString("otel.experimental.exporter.otlp.protocol");
     }
