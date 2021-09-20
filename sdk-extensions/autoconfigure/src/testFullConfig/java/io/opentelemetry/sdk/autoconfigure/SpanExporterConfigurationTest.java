@@ -25,7 +25,7 @@ class SpanExporterConfigurationTest {
             () ->
                 SpanExporterConfiguration.configureOtlp(
                     DefaultConfigProperties.createForTest(
-                        ImmutableMap.of("otel.experimental.exporter.otlp.protocol", "foo"))))
+                        ImmutableMap.of("otel.exporter.otlp.protocol", "foo"))))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unsupported OTLP traces protocol: foo");
   }

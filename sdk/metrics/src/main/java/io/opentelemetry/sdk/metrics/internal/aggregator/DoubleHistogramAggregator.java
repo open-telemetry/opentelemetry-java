@@ -94,24 +94,13 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   @Override
   public HistogramAccumulation accumulateDouble(double value) {
     long[] counts = new long[this.boundaries.length + 1];
-    counts[findBucketIndex(this.boundaries, value)] = 1;
+    counts[ExplicitBucketHistogramUtils.findBucketIndex(this.boundaries, value)] = 1;
     return HistogramAccumulation.create(value, counts);
   }
 
   @Override
   public HistogramAccumulation accumulateLong(long value) {
     return accumulateDouble((double) value);
-  }
-
-  // Benchmark shows that linear search performs better than binary search with ordinary
-  // buckets.
-  private static int findBucketIndex(double[] boundaries, double value) {
-    for (int i = 0; i < boundaries.length; ++i) {
-      if (value <= boundaries[i]) {
-        return i;
-      }
-    }
-    return boundaries.length;
   }
 
   static final class Handle extends AggregatorHandle<HistogramAccumulation> {
@@ -149,7 +138,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
     @Override
     protected void doRecordDouble(double value) {
-      int bucketIndex = findBucketIndex(this.boundaries, value);
+      int bucketIndex = ExplicitBucketHistogramUtils.findBucketIndex(this.boundaries, value);
 
       lock.lock();
       try {

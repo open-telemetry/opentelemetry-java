@@ -36,8 +36,9 @@ final class SpanMarshaler extends MarshalerWithSize {
   static SpanMarshaler create(SpanData spanData) {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createRepeated(spanData.getAttributes());
-    SpanEventMarshaler[] spanEventMarshalers = SpanEventMarshaler.create(spanData.getEvents());
-    SpanLinkMarshaler[] spanLinkMarshalers = SpanLinkMarshaler.create(spanData.getLinks());
+    SpanEventMarshaler[] spanEventMarshalers =
+        SpanEventMarshaler.createRepeated(spanData.getEvents());
+    SpanLinkMarshaler[] spanLinkMarshalers = SpanLinkMarshaler.createRepeated(spanData.getLinks());
 
     String parentSpanId =
         spanData.getParentSpanContext().isValid()
@@ -173,7 +174,8 @@ final class SpanMarshaler extends MarshalerWithSize {
     return size;
   }
 
-  private static ProtoEnumInfo toProtoSpanKind(SpanKind kind) {
+  // Visible for testing
+  static ProtoEnumInfo toProtoSpanKind(SpanKind kind) {
     switch (kind) {
       case INTERNAL:
         return Span.SpanKind.SPAN_KIND_INTERNAL;
