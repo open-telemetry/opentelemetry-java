@@ -78,7 +78,7 @@ val DEPENDENCIES = listOf(
   "com.squareup.okhttp3:okhttp:3.12.13",
   "com.squareup.okhttp3:okhttp-tls:3.12.13",
   "com.sun.net.httpserver:http:20070405",
-  "com.tngtech.archunit:archunit-junit4:0.21.0",
+  "com.tngtech.archunit:archunit-junit5:0.21.0",
   "com.uber.nullaway:nullaway:0.9.2",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.4",
