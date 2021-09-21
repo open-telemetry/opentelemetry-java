@@ -85,7 +85,6 @@ val DEPENDENCIES = listOf(
   "io.github.netmikey.logunit:logunit-jul:1.1.0",
   "io.jaegertracing:jaeger-client:1.6.0",
   "io.opentracing:opentracing-api:0.33.0",
-  "io.zipkin.zipkin2:zipkin-junit:2.23.4",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.7.1",
   "org.assertj:assertj-core:3.20.2",
