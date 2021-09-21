@@ -24,6 +24,13 @@ public abstract class DoubleExponentialHistogramData
     implements Data<DoubleExponentialHistogramPointData> {
   DoubleExponentialHistogramData() {}
 
+  /**
+   * Creates a DoubleExponentialHistogramData.
+   *
+   * @param temporality The {@link AggregationTemporality}
+   * @param points A collection of {@link DoubleExponentialHistogramPointData} to hold measurements
+   * @return
+   */
   public static DoubleExponentialHistogramData create(
       AggregationTemporality temporality, Collection<DoubleExponentialHistogramPointData> points) {
     return new AutoValue_DoubleExponentialHistogramData(temporality, points);
