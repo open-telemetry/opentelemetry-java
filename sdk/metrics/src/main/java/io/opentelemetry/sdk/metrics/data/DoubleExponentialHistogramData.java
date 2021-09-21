@@ -29,7 +29,7 @@ public abstract class DoubleExponentialHistogramData
    *
    * @param temporality The {@link AggregationTemporality}
    * @param points A collection of {@link DoubleExponentialHistogramPointData} to hold measurements
-   * @return
+   * @return a DoubleExponentialHistogramData
    */
   public static DoubleExponentialHistogramData create(
       AggregationTemporality temporality, Collection<DoubleExponentialHistogramPointData> points) {
