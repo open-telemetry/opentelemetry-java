@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
@@ -15,8 +14,6 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramU
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -25,57 +22,6 @@ import javax.annotation.Nullable;
  * <p>Aggregation provides a set of built-in aggregations via static methods.
  */
 public abstract class Aggregation {
-  private static final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(Aggregation.class.getName()));
-
-  private static final Aggregation NONE = new NoAggregation();
-  private static final Aggregation DEFAULT =
-      new Aggregation() {
-        private Aggregation resolve(InstrumentDescriptor instrument) {
-          switch (instrument.getType()) {
-            case COUNTER:
-            case UP_DOWN_COUNTER:
-            case OBSERVABLE_SUM:
-            case OBSERVABLE_UP_DOWN_SUM:
-              return SUM;
-            case HISTOGRAM:
-              return EXPLICIT_BUCKET_HISTOGRAM;
-            case OBSERVABLE_GAUGE:
-              return LAST_VALUE;
-          }
-          logger.log(
-              Level.WARNING, "Unable to find default aggregation for instrument: " + instrument);
-          return NONE;
-        }
-
-        @Override
-        public <T> Aggregator<T> createAggregator(
-            Resource resource,
-            InstrumentationLibraryInfo instrumentationLibraryInfo,
-            InstrumentDescriptor instrumentDescriptor,
-            MetricDescriptor metricDescriptor,
-            ExemplarFilter exemplarFilter) {
-          return resolve(instrumentDescriptor)
-              .createAggregator(
-                  resource,
-                  instrumentationLibraryInfo,
-                  instrumentDescriptor,
-                  metricDescriptor,
-                  exemplarFilter);
-        }
-
-        @Override
-        public String toString() {
-          return "default";
-        }
-      };
-  private static final Aggregation SUM = sum(AggregationTemporality.CUMULATIVE);
-  private static final Aggregation LAST_VALUE = new LastValueAggregation();
-  private static final Aggregation EXPLICIT_BUCKET_HISTOGRAM =
-      explicitBucketHistogram(
-          AggregationTemporality.CUMULATIVE,
-          ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
-
   Aggregation() {}
 
   /**
@@ -101,12 +47,12 @@ public abstract class Aggregation {
 
   /** The None Aggregation will ignore/drop all Instrument Measurements. */
   public static Aggregation none() {
-    return NONE;
+    return NoAggregation.INSTANCE;
   }
 
   /** The default aggregation for an instrument will be chosen. */
   public static Aggregation defaultAggregation() {
-    return DEFAULT;
+    return DefaultAggregation.INSTANCE;
   }
 
   /** Instrument measurements will be combined into a metric Sum. */
@@ -116,19 +62,19 @@ public abstract class Aggregation {
 
   /** Instrument measurements will be combined into a metric Sum. */
   public static Aggregation sum() {
-    return SUM;
+    return SumAggregation.DEFAULT;
   }
 
   /** Remembers the last seen measurement and reports as a Gauge. */
   public static Aggregation lastValue() {
-    return LAST_VALUE;
+    return LastValueAggregation.INSTANCE;
   }
 
   /**
    * Aggregates measurements into an explicit bucket histogram using the default bucket boundaries.
    */
   public static Aggregation explictBucketHistogram() {
-    return EXPLICIT_BUCKET_HISTOGRAM;
+    return ExplicitBucketHistogramAggregation.DEFAULT;
   }
 
   /**
@@ -154,7 +100,7 @@ public abstract class Aggregation {
   }
 
   /** Aggregates measurements using the best available Histogram. */
-  public static final Aggregation histogram() {
-    return EXPLICIT_BUCKET_HISTOGRAM;
+  public static Aggregation histogram() {
+    return explictBucketHistogram();
   }
 }

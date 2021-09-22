@@ -19,6 +19,8 @@ import io.opentelemetry.sdk.resources.Resource;
 
 /** A sum aggregation configuration. */
 class SumAggregation extends Aggregation {
+  static final SumAggregation DEFAULT = new SumAggregation(AggregationTemporality.CUMULATIVE);
+
   private final AggregationTemporality temporality;
 
   SumAggregation(AggregationTemporality temporality) {

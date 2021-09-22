@@ -15,16 +15,19 @@ import io.opentelemetry.sdk.resources.Resource;
 /** Configuration representing no aggregation. */
 class NoAggregation extends Aggregation {
 
-  NoAggregation() {}
+  static final Aggregation INSTANCE = new NoAggregation();
+
+  private NoAggregation() {}
 
   @Override
+  @SuppressWarnings("unchecked")
   public <T> Aggregator<T> createAggregator(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
       MetricDescriptor metricDescriptor,
       ExemplarFilter exemplarFilter) {
-    return null;
+    return (Aggregator<T>) Aggregator.empty();
   }
 
   @Override

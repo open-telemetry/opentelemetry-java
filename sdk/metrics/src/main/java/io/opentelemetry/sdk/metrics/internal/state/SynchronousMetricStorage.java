@@ -60,7 +60,8 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
                 metricDescriptor,
                 exemplarFilter);
     // We won't be storing this metric.
-    if (aggregator == null) {
+    if (Aggregator.empty().equals(aggregator)) {
+      // Short circuit with null-object.
       return null;
     }
     return new SynchronousMetricStorage<>(

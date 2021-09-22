@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for asynchronous instruments.
@@ -34,6 +35,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   private final Runnable metricUpdater;
 
   /** Constructs storage for {@code double} valued instruments. */
+  @Nullable
   public static <T> AsynchronousMetricStorage doubleAsynchronousAccumulator(
       View view,
       InstrumentDescriptor instrument,
@@ -50,6 +52,10 @@ public final class AsynchronousMetricStorage implements MetricStorage {
                 instrument,
                 metricDescriptor,
                 ExemplarFilter.neverSample());
+    if (Aggregator.empty().equals(aggregator)) {
+      // Short circuit with null-object.
+      return null;
+    }
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
@@ -73,6 +79,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   }
 
   /** Constructs storage for {@code long} valued instruments. */
+  @Nullable
   public static <T> AsynchronousMetricStorage longAsynchronousAccumulator(
       View view,
       InstrumentDescriptor instrument,
@@ -89,6 +96,10 @@ public final class AsynchronousMetricStorage implements MetricStorage {
                 instrument,
                 metricDescriptor,
                 ExemplarFilter.neverSample());
+    if (Aggregator.empty().equals(aggregator)) {
+      // Short circuit with null-object.
+      return null;
+    }
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();

@@ -16,7 +16,10 @@ import io.opentelemetry.sdk.resources.Resource;
 
 /** Last-value aggregation configuration. */
 class LastValueAggregation extends Aggregation {
-  LastValueAggregation() {}
+
+  static final Aggregation INSTANCE = new LastValueAggregation();
+
+  private LastValueAggregation() {}
 
   @Override
   public <T> Aggregator<T> createAggregator(
