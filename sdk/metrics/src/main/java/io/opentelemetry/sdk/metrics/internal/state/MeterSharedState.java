@@ -67,7 +67,7 @@ public abstract class MeterSharedState {
             .findViews(instrument, getInstrumentationLibraryInfo());
     List<WriteableMetricStorage> storage = new ArrayList<>(views.size());
     for (View view : views) {
-      SynchronousMetricStorage<Object> currentStorage =
+      SynchronousMetricStorage currentStorage =
           SynchronousMetricStorage.create(
               view,
               instrument,
@@ -76,7 +76,7 @@ public abstract class MeterSharedState {
               meterProviderSharedState.getStartEpochNanos(),
               meterProviderSharedState.getExemplarFilter());
       // TODO - move this in a better location.
-      if (currentStorage == null) {
+      if (currentStorage == EmptyMetricStorage.INSTANCE) {
         continue;
       }
       try {
@@ -103,7 +103,7 @@ public abstract class MeterSharedState {
             .getViewRegistry()
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
-      AsynchronousMetricStorage currentStorage =
+      MetricStorage currentStorage =
           AsynchronousMetricStorage.longAsynchronousAccumulator(
               view,
               instrument,
@@ -112,7 +112,7 @@ public abstract class MeterSharedState {
               meterProviderSharedState.getStartEpochNanos(),
               metricUpdater);
       // TODO - move this in a better location.
-      if (currentStorage == null) {
+      if (currentStorage == EmptyMetricStorage.INSTANCE) {
         continue;
       }
       try {
@@ -134,7 +134,7 @@ public abstract class MeterSharedState {
             .getViewRegistry()
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
-      AsynchronousMetricStorage currentStorage =
+      MetricStorage currentStorage =
           AsynchronousMetricStorage.doubleAsynchronousAccumulator(
               view,
               instrument,
@@ -143,7 +143,7 @@ public abstract class MeterSharedState {
               meterProviderSharedState.getStartEpochNanos(),
               metricUpdater);
       // TODO - move this in a better location.
-      if (currentStorage == null) {
+      if (currentStorage == EmptyMetricStorage.INSTANCE) {
         continue;
       }
       try {

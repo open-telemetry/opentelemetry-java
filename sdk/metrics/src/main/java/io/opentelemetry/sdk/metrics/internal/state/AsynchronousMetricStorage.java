@@ -36,7 +36,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
 
   /** Constructs storage for {@code double} valued instruments. */
   @Nullable
-  public static <T> AsynchronousMetricStorage doubleAsynchronousAccumulator(
+  public static <T> MetricStorage doubleAsynchronousAccumulator(
       View view,
       InstrumentDescriptor instrument,
       Resource resource,
@@ -53,8 +53,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
                 metricDescriptor,
                 ExemplarFilter.neverSample());
     if (Aggregator.empty().equals(aggregator)) {
-      // Short circuit with null-object.
-      return null;
+      return EmptyMetricStorage.INSTANCE;
     }
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
@@ -79,8 +78,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   }
 
   /** Constructs storage for {@code long} valued instruments. */
-  @Nullable
-  public static <T> AsynchronousMetricStorage longAsynchronousAccumulator(
+  public static <T> MetricStorage longAsynchronousAccumulator(
       View view,
       InstrumentDescriptor instrument,
       Resource resource,
@@ -97,8 +95,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
                 metricDescriptor,
                 ExemplarFilter.neverSample());
     if (Aggregator.empty().equals(aggregator)) {
-      // Short circuit with null-object.
-      return null;
+      return EmptyMetricStorage.INSTANCE;
     }
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
