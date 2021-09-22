@@ -5,31 +5,31 @@
 
 package io.opentelemetry.exporter.otlp.http.metrics;
 
+import static io.opentelemetry.exporter.otlp.internal.http.OkHttpUtil.gzipRequestBody;
+import static io.opentelemetry.exporter.otlp.internal.http.OkHttpUtil.toListenableFuture;
+
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.opentelemetry.exporter.otlp.internal.ProtoRequestBody;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
+import io.opentelemetry.exporter.otlp.internal.http.HttpStatusException;
 import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryExecutor;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Headers;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okio.BufferedSink;
-import okio.GzipSink;
-import okio.Okio;
 
 /** Exports metrics using OTLP via HTTP, using OpenTelemetry's protobuf model. */
 @ThreadSafe
@@ -44,13 +44,23 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   private final String endpoint;
   @Nullable private final Headers headers;
   private final boolean compressionEnabled;
+  private final RetryExecutor retryExecutor;
 
   OtlpHttpMetricExporter(
-      OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
+      OkHttpClient client,
+      String endpoint,
+      @Nullable Headers headers,
+      boolean compressionEnabled,
+      RetryPolicy retryPolicy) {
     this.client = client;
     this.endpoint = endpoint;
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
+    this.retryExecutor =
+        new RetryExecutor(
+            OtlpHttpMetricExporter.class.getSimpleName(),
+            retryPolicy,
+            t -> !(t instanceof HttpStatusException));
   }
 
   /**
@@ -77,74 +87,38 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
 
     CompletableResultCode result = new CompletableResultCode();
 
-    client
-        .newCall(requestBuilder.build())
-        .enqueue(
-            new Callback() {
-              @Override
-              public void onFailure(Call call, IOException e) {
-                logger.log(
-                    Level.SEVERE,
-                    "Failed to export metrics. The request could not be executed. Full error message: "
-                        + e.getMessage());
-                result.fail();
-              }
-
-              @Override
-              public void onResponse(Call call, Response response) {
-                if (response.isSuccessful()) {
-                  result.succeed();
-                  return;
-                }
-
-                int code = response.code();
-
-                String status = extractErrorStatus(response);
-
+    Futures.addCallback(
+        retryExecutor.submit(
+            retryContext -> {
+              int attemptCount = retryContext.getAttemptCount();
+              if (attemptCount > 0) {
+                Throwable lastAttemptFailure = retryContext.getLastAttemptFailure();
+                String message =
+                    lastAttemptFailure == null ? "No error" : lastAttemptFailure.getMessage();
                 logger.log(
                     Level.WARNING,
-                    "Failed to export metrics. Server responded with HTTP status code "
-                        + code
-                        + ". Error message: "
-                        + status);
-                result.fail();
+                    "Retrying metric export (try "
+                        + (attemptCount + 1)
+                        + "). Last attempt error message: "
+                        + message);
               }
-            });
+              return toListenableFuture(client.newCall(requestBuilder.build()));
+            }),
+        new FutureCallback<Response>() {
+          @Override
+          public void onSuccess(@Nullable Response response) {
+            result.succeed();
+          }
+
+          @Override
+          public void onFailure(Throwable t) {
+            logger.log(Level.WARNING, "Failed to export metrics. " + t.getMessage());
+            result.fail();
+          }
+        },
+        MoreExecutors.directExecutor());
 
     return result;
-  }
-
-  private static RequestBody gzipRequestBody(RequestBody requestBody) {
-    return new RequestBody() {
-      @Override
-      public MediaType contentType() {
-        return requestBody.contentType();
-      }
-
-      @Override
-      public long contentLength() {
-        return -1;
-      }
-
-      @Override
-      public void writeTo(BufferedSink bufferedSink) throws IOException {
-        BufferedSink gzipSink = Okio.buffer(new GzipSink(bufferedSink));
-        requestBody.writeTo(gzipSink);
-        gzipSink.close();
-      }
-    };
-  }
-
-  private static String extractErrorStatus(Response response) {
-    ResponseBody responseBody = response.body();
-    if (responseBody == null) {
-      return "Response body missing, HTTP status message: " + response.message();
-    }
-    try {
-      return GrpcStatusUtil.getStatusMessage(responseBody.bytes());
-    } catch (IOException e) {
-      return "Unable to parse response body, HTTP status message: " + response.message();
-    }
   }
 
   /**

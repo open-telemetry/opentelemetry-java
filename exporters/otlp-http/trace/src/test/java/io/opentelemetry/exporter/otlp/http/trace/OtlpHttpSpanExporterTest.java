@@ -24,6 +24,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.otlp.internal.traces.ResourceSpansMarshaler;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
@@ -39,6 +40,7 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -228,6 +230,24 @@ class OtlpHttpSpanExporterTest {
         logs.assertContains(
             "Failed to export spans. Server responded with HTTP status code 500. Error message: Unable to parse response body, HTTP status message:");
     assertThat(log.getLevel()).isEqualTo(Level.WARN);
+  }
+
+  @Test
+  void testRetryPolicy() {
+    OtlpHttpSpanExporter exporter =
+        builder
+            .setTimeout(Duration.ofSeconds(10))
+            .setRetryPolicy(
+                RetryPolicy.exponentialBackoff(4, Duration.ofMillis(100), Duration.ofSeconds(1), 2))
+            .build();
+
+    server.enqueue(
+        buildResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            Status.newBuilder().setMessage("Server error!").build()));
+    server.enqueue(successResponse());
+
+    exportAndAssertResult(exporter, /* expectedResult= */ true);
   }
 
   private static ExportTraceServiceRequest exportAndAssertResult(

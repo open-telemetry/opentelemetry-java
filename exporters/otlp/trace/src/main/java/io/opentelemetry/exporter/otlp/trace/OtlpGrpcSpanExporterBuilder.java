@@ -13,16 +13,14 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.RetryConfig;
-import io.opentelemetry.exporter.otlp.internal.RetryUtil;
 import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
-import net.jodah.failsafe.RetryPolicy;
 
 /** Builder utility for this exporter. */
 public final class OtlpGrpcSpanExporterBuilder {
@@ -37,7 +35,7 @@ public final class OtlpGrpcSpanExporterBuilder {
   private boolean compressionEnabled = false;
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
-  private RetryConfig retryConfig;
+  private RetryPolicy retryPolicy = RetryPolicy.noRetry();
 
   /**
    * Sets the managed chanel to use when communicating with the backend. Takes precedence over
@@ -134,10 +132,10 @@ public final class OtlpGrpcSpanExporterBuilder {
     return this;
   }
 
-  /** Set the retry config. */
-  public OtlpGrpcSpanExporterBuilder setRetryConfig(RetryConfig retryConfig) {
-    requireNonNull(retryConfig, "retryPolicy");
-    this.retryConfig = retryConfig;
+  /** Set the retry policy. */
+  public OtlpGrpcSpanExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    this.retryPolicy = retryPolicy;
     return this;
   }
 
@@ -176,11 +174,6 @@ public final class OtlpGrpcSpanExporterBuilder {
 
       channel = managedChannelBuilder.build();
     }
-
-    RetryPolicy<ExportTraceServiceResponse> retryPolicy =
-        retryConfig == null
-            ? new RetryPolicy<ExportTraceServiceResponse>().withMaxRetries(0)
-            : RetryUtil.toRetryPolicy(retryConfig);
 
     return new OtlpGrpcSpanExporter(channel, timeoutNanos, compressionEnabled, retryPolicy);
   }

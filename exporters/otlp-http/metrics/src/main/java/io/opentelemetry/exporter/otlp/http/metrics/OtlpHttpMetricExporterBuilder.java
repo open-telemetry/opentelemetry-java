@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.http.metrics;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,6 +33,7 @@ public final class OtlpHttpMetricExporterBuilder {
   private boolean compressionEnabled = false;
   @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
+  private RetryPolicy retryPolicy = RetryPolicy.noRetry();
 
   /**
    * Sets the maximum time to wait for the collector to process an exported batch of metrics. If
@@ -109,6 +111,13 @@ public final class OtlpHttpMetricExporterBuilder {
     return this;
   }
 
+  /** Set the retry policy. */
+  public OtlpHttpMetricExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    this.retryPolicy = retryPolicy;
+    return this;
+  }
+
   /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
@@ -133,7 +142,8 @@ public final class OtlpHttpMetricExporterBuilder {
 
     Headers headers = headersBuilder == null ? null : headersBuilder.build();
 
-    return new OtlpHttpMetricExporter(clientBuilder.build(), endpoint, headers, compressionEnabled);
+    return new OtlpHttpMetricExporter(
+        clientBuilder.build(), endpoint, headers, compressionEnabled, retryPolicy);
   }
 
   /**

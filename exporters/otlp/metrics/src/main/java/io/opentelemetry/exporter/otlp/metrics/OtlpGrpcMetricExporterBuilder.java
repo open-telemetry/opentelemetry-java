@@ -14,6 +14,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -34,6 +35,7 @@ public final class OtlpGrpcMetricExporterBuilder {
   private boolean compressionEnabled = false;
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
+  private RetryPolicy retryPolicy = RetryPolicy.noRetry();
 
   /**
    * Sets the managed chanel to use when communicating with the backend. Takes precedence over
@@ -130,6 +132,13 @@ public final class OtlpGrpcMetricExporterBuilder {
     return this;
   }
 
+  /** Set the retry policy. */
+  public OtlpGrpcMetricExporterBuilder setRetryPolicy(RetryPolicy retryPolicy) {
+    requireNonNull(retryPolicy, "retryPolicy");
+    this.retryPolicy = retryPolicy;
+    return this;
+  }
+
   /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
@@ -165,7 +174,7 @@ public final class OtlpGrpcMetricExporterBuilder {
 
       channel = managedChannelBuilder.build();
     }
-    return new OtlpGrpcMetricExporter(channel, timeoutNanos, compressionEnabled);
+    return new OtlpGrpcMetricExporter(channel, timeoutNanos, compressionEnabled, retryPolicy);
   }
 
   OtlpGrpcMetricExporterBuilder() {}

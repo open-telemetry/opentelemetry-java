@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
-import static io.opentelemetry.exporter.otlp.internal.RetryUtil.retryableStatusCodes;
+import static io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil.otlpRetryableStatusCodes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -15,8 +15,8 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import io.opentelemetry.RetryConfig;
 import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
@@ -124,10 +124,9 @@ class ExportTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.builder()
             .setEndpoint("http://localhost:" + server.httpPort())
-            .setTimeout(Duration.ofSeconds(5))
-            .setRetryConfig(
-                RetryConfig.exponentialBackoff(
-                    5, Duration.ofMillis(500), Duration.ofSeconds(30), 2, Duration.ofMillis(20)))
+            .setTimeout(Duration.ofSeconds(10))
+            .setRetryPolicy(
+                RetryPolicy.exponentialBackoff(4, Duration.ofMillis(100), Duration.ofSeconds(1), 2))
             .build();
 
     for (Status.Code code : Status.Code.values()) {
@@ -136,8 +135,9 @@ class ExportTest {
       server.returnStatuses.add(Status.fromCode(code));
       server.returnStatuses.add(Status.OK);
 
-      CompletableResultCode resultCode = exporter.export(SPANS).join(10, TimeUnit.SECONDS);
-      boolean retryable = retryableStatusCodes().contains(code);
+      CompletableResultCode resultCode = exporter.export(SPANS);
+      resultCode = resultCode.join(10, TimeUnit.SECONDS);
+      boolean retryable = otlpRetryableStatusCodes().contains(code);
       boolean expectedResult = retryable || code == Status.Code.OK;
       assertThat(resultCode.isSuccess())
           .as(

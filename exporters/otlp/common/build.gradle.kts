@@ -33,7 +33,7 @@ dependencies {
   compileOnly("io.grpc:grpc-netty-shaded")
   compileOnly("io.grpc:grpc-okhttp")
   compileOnly("io.grpc:grpc-stub")
-  compileOnly("net.jodah:failsafe:2.4.3")
+  api("com.google.guava:guava")
 
   annotationProcessor("com.google.auto.value:auto-value")
 
@@ -43,6 +43,7 @@ dependencies {
 
   testImplementation("com.fasterxml.jackson.core:jackson-core")
   testImplementation("com.google.protobuf:protobuf-java-util")
+  testImplementation("com.squareup.okhttp3:okhttp")
 
   testImplementation("org.jeasy:easy-random-randomizers")
 

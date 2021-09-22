@@ -5,6 +5,8 @@
 
 package io.opentelemetry.exporter.otlp.metrics;
 
+import static io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil.hasOtlpRetryableStatusCode;
+
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -13,6 +15,8 @@ import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
 import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryExecutor;
+import io.opentelemetry.exporter.otlp.internal.retry.RetryPolicy;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -36,6 +40,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   private final MarshalerMetricsServiceGrpc.MetricsServiceFutureStub metricsService;
   private final ManagedChannel managedChannel;
   private final long timeoutNanos;
+  private final RetryExecutor retryExecutor;
 
   /**
    * Creates a new OTLP gRPC Metric Reporter with the given name, using the given channel.
@@ -44,14 +49,24 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @param timeoutNanos max waiting time for the collector to process each metric batch. When set
    *     to 0 or to a negative value, the exporter will wait indefinitely.
    * @param compressionEnabled whether or not to enable gzip compression.
+   * @param retryPolicy the retry policy.
    */
-  OtlpGrpcMetricExporter(ManagedChannel channel, long timeoutNanos, boolean compressionEnabled) {
+  OtlpGrpcMetricExporter(
+      ManagedChannel channel,
+      long timeoutNanos,
+      boolean compressionEnabled,
+      RetryPolicy retryPolicy) {
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
     Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
     this.metricsService =
         MarshalerMetricsServiceGrpc.newFutureStub(channel)
             .withCompression(codec.getMessageEncoding());
+    this.retryExecutor =
+        new RetryExecutor(
+            OtlpGrpcMetricExporter.class.getSimpleName(),
+            retryPolicy,
+            t -> !hasOtlpRetryableStatusCode(t));
   }
 
   /**
@@ -65,15 +80,26 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     MetricsRequestMarshaler request = MetricsRequestMarshaler.create(metrics);
 
     final CompletableResultCode result = new CompletableResultCode();
-    MarshalerMetricsServiceGrpc.MetricsServiceFutureStub exporter;
-    if (timeoutNanos > 0) {
-      exporter = metricsService.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
-    } else {
-      exporter = metricsService;
-    }
+    MarshalerMetricsServiceGrpc.MetricsServiceFutureStub exporter =
+        metricsService.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
 
     Futures.addCallback(
-        exporter.export(request),
+        retryExecutor.submit(
+            retryContext -> {
+              int attemptCount = retryContext.getAttemptCount();
+              if (attemptCount > 0) {
+                Throwable lastAttemptFailure = retryContext.getLastAttemptFailure();
+                String message =
+                    lastAttemptFailure == null ? "No error" : lastAttemptFailure.getMessage();
+                logger.log(
+                    Level.WARNING,
+                    "Retrying metric export (try "
+                        + (attemptCount + 1)
+                        + "). Last attempt error message: "
+                        + message);
+              }
+              return exporter.export(request);
+            }),
         new FutureCallback<ExportMetricsServiceResponse>() {
           @Override
           public void onSuccess(@Nullable ExportMetricsServiceResponse response) {
