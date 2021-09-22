@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for asynchronous instruments.
@@ -124,6 +125,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   }
 
   @Override
+  @Nullable
   public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
     collectLock.lock();
     try {

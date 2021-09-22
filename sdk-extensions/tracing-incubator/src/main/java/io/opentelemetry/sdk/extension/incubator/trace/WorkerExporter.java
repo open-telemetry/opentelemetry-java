@@ -111,7 +111,10 @@ class WorkerExporter {
       }
     }
     exportCurrentBatch(batch);
-    flushSignal.get().succeed();
-    flushSignal.set(null);
+    CompletableResultCode flushResult = flushSignal.get();
+    if (flushResult != null) {
+      flushResult.succeed();
+      flushSignal.set(null);
+    }
   }
 }

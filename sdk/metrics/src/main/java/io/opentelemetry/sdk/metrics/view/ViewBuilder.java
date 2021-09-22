@@ -10,11 +10,12 @@ import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.StringPredicates;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 /** Builder of metric {@link View}s. */
 public final class ViewBuilder {
-  private String name = null;
-  private String description = null;
+  @Nullable private String name = null;
+  @Nullable private String description = null;
   private Aggregation aggregation = Aggregation.defaultAggregation();
   private AttributesProcessor processor = AttributesProcessor.noop();
 
