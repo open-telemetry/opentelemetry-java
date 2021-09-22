@@ -38,8 +38,8 @@ public abstract class View {
   }
 
   static View create(
-      String name,
-      String description,
+      @Nullable String name,
+      @Nullable String description,
       Aggregation aggregation,
       AttributesProcessor attributesProcessor) {
     return new AutoValue_View(name, description, aggregation, attributesProcessor);
