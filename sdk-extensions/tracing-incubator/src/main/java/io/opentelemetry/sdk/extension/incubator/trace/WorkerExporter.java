@@ -112,6 +112,7 @@ class WorkerExporter {
     }
     exportCurrentBatch(batch);
     CompletableResultCode flushResult = flushSignal.get();
+    // In practice shouldn't be null but easiest way to work with the null checker.
     if (flushResult != null) {
       flushResult.succeed();
       flushSignal.set(null);
