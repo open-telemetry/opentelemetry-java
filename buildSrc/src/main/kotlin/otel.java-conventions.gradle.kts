@@ -198,7 +198,6 @@ dependencies {
   testImplementation("io.github.netmikey.logunit:logunit-jul")
 
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
   errorprone("com.google.errorprone:error_prone_core")
   errorprone("com.uber.nullaway:nullaway")

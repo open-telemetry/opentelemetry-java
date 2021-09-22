@@ -19,7 +19,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.grpc:grpc-bom:1.40.1",
   "io.zipkin.brave:brave-bom:5.13.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
-  "org.junit:junit-bom:5.7.2",
+  "org.junit:junit-bom:5.8.0",
   "org.testcontainers:testcontainers-bom:1.16.0"
 )
 
@@ -87,7 +87,7 @@ val DEPENDENCIES = listOf(
   "io.opentracing:opentracing-api:0.33.0",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.7.1",
-  "org.assertj:assertj-core:3.20.2",
+  "org.assertj:assertj-core:3.21.0",
   "org.awaitility:awaitility:4.1.0",
   "org.bouncycastle:bcpkix-jdk15on:1.69",
   "org.codehaus.mojo:animal-sniffer-annotations:1.20",
