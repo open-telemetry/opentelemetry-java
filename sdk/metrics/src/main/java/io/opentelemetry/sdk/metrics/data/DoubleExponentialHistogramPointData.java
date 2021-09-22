@@ -13,10 +13,12 @@ import javax.annotation.concurrent.Immutable;
 /**
  * DoubleExponentialHistogramPointData represents an approximate distribution of measurements across
  * exponentially increasing bucket boundaries, taken for a {@link DoubleExponentialHistogramData}.
- * It also contains the necessary information to calculate bucket boundaries and perform
- * aggregation.
+ * It contains the necessary information to calculate bucket boundaries and perform aggregation.
  *
- * <p>The bucket boundaries increase exponentially according to the scale and the offset. See:
+ * <p>The bucket boundaries are calculated using both the scale {@link #getScale()}, and the offset
+ * {@link DoubleExponentialHistogramBuckets#getOffset()}.
+ *
+ * <p>See:
  * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponentialhistogram
  */
 @Immutable
@@ -72,6 +74,13 @@ public abstract class DoubleExponentialHistogramPointData implements PointData {
   @Override
   public abstract Attributes getAttributes();
 
+  /**
+   * Scale characterises the resolution of the histogram, with larger values of scale offering
+   * greater precision. Bucket boundaries of the histogram are located at integer powers of the
+   * base, where <code>base = Math.pow(2, Math.pow(2, -scale))</code>.
+   *
+   * @return the scale.
+   */
   public abstract int getScale();
 
   public abstract double getSum();

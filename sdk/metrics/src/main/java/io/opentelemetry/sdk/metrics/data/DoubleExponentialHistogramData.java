@@ -10,7 +10,10 @@ import java.util.Collection;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An exponential histogram metric point, as defined by the OpenTelemetry Exponential Histogram.
+ * A base-2 exponential histogram metric point, as defined by the OpenTelemetry Exponential
+ * Histogram specification.
+ *
+ * <p>See {@link DoubleExponentialHistogramPointData} for more information.
  *
  * <p>See:
  * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponentialhistogram
