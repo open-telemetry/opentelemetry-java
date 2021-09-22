@@ -30,7 +30,9 @@ public abstract class DoubleExponentialHistogramPointData implements PointData {
   /**
    * Creates a DoubleExponentialHistogramPointData.
    *
-   * @param scale Scale is used to calculate bucket boundaries as outlined in the OTLP.
+   * @param scale Scale characterises the resolution of the histogram, with larger values of scale
+   *     offering greater precision. Bucket boundaries of the histogram are located at integer
+   *     powers of the base, where <code>base = Math.pow(2, Math.pow(2, -scale))</code>.
    * @param sum The sum of all measurements in the histogram.
    * @param zeroCount Number of values that are zero.
    * @param positiveBuckets Buckets with positive values.
