@@ -12,9 +12,9 @@ import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import java.util.List;
 import java.util.Map;
 
-/** 
- * A "null object" Aggregator which denotes no aggregation should occur. 
- * 
+/**
+ * A "null object" Aggregator which denotes no aggregation should occur.
+ *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
