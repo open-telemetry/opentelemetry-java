@@ -78,7 +78,7 @@ class DeltaMetricStorage<T> {
   public synchronized Map<Attributes, T> collectFor(
       CollectionHandle collector, Set<CollectionHandle> collectors) {
     // First we force a collection
-    unreportedDeltas.add(collectSynchronousDeltaAccumulationAndReset());
+    collectSynchronousDeltaAccumulationAndReset();
     // Now build a delta result.
     Map<Attributes, T> result = new HashMap<>();
     for (DeltaAccumulation<T> point : unreportedDeltas) {
@@ -109,11 +109,9 @@ class DeltaMetricStorage<T> {
    *
    * <p>All synchronous handles will be collected + reset during this method. Additionally cleanup
    * related stale concurrent-map handles will occur. Any {@code null} measurements are ignored.
-   *
-   * <p>This method should be behind a lock.
    */
   @GuardedBy("this")
-  private DeltaAccumulation<T> collectSynchronousDeltaAccumulationAndReset() {
+  private void collectSynchronousDeltaAccumulationAndReset() {
     Map<Attributes, T> result = new HashMap<>();
     for (Map.Entry<Attributes, AggregatorHandle<T>> entry : activeCollectionStorage.entrySet()) {
       boolean unmappedEntry = entry.getValue().tryUnmap();
@@ -129,7 +127,9 @@ class DeltaMetricStorage<T> {
       // Feed latest batch to the aggregator.
       result.put(entry.getKey(), accumulation);
     }
-    return new DeltaAccumulation<>(result);
+    if (!result.isEmpty()) {
+      unreportedDeltas.add(new DeltaAccumulation<>(result));
+    }
   }
 
   /**

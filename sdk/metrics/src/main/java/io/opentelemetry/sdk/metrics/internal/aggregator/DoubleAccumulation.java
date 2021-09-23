@@ -11,10 +11,17 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
-/** An accumulation representing {@code long} values and exemplars. */
+/**
+ * An accumulation representing {@code long} values and exemplars.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ *
+ * <p>Visible for testing.
+ */
 @Immutable
 @AutoValue
-abstract class DoubleAccumulation {
+public abstract class DoubleAccumulation {
 
   static DoubleAccumulation create(double value, List<Exemplar> exemplars) {
     return new AutoValue_DoubleAccumulation(value, exemplars);
@@ -27,7 +34,7 @@ abstract class DoubleAccumulation {
   DoubleAccumulation() {}
 
   /** The current value. */
-  abstract double getValue();
+  public abstract double getValue();
 
   /** Sampled measurements recorded during this accumulation. */
   abstract List<Exemplar> getExemplars();
