@@ -20,7 +20,7 @@ public interface MetricExporter {
   /**
    * Exports the collection of given {@link MetricData}. Note that export operations can be
    * performed simultaneously depending on the type of metric reader being used. However, the caller
-   * will ensure that only one export can occur at a time.
+   * MUST ensure that only one export can occur at a time.
    *
    * @param metrics the collection of {@link MetricData} to be exported.
    * @return the result of the export, which is often an asynchronous operation.
@@ -30,7 +30,7 @@ public interface MetricExporter {
   /**
    * Exports the collection of {@link MetricData} that have not yet been exported. Note that flush
    * operations can be performed simultaneously depending on the type of metric reader being used.
-   * However, the caller will ensure that only one export can occur at a time.
+   * However, the caller MUST ensure that only one export can occur at a time.
    *
    * @return the result of the flush, which is often an asynchronous operation.
    */

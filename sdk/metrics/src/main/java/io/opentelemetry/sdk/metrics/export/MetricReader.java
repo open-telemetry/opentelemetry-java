@@ -14,10 +14,11 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
  * of global control over metrics during shutdown or memory pressure scenarios.
  */
 public interface MetricReader {
+
   /**
    * Flushes metrics read by this reader.
    *
-   * <p>In all scenarios, the {@link MetricProducer} should have its {@link
+   * <p>In all scenarios, the associated {@link MetricProducer} should have its {@link
    * MetricProducer#collectAllMetrics()} method called.
    *
    * <p>For push endpoints, this should collect and report metrics as normal.
@@ -29,6 +30,7 @@ public interface MetricReader {
    * @return the result of the shutdown.
    */
   CompletableResultCode flush();
+  
   /**
    * Shuts down the metric reader.
    *
