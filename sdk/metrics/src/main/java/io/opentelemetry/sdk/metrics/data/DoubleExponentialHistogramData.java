@@ -49,6 +49,11 @@ public abstract class DoubleExponentialHistogramData
    */
   public abstract AggregationTemporality getAggregationTemporality();
 
+  /**
+   * Returns the collection of {@link DoubleExponentialHistogramPointData} for this histogram.
+   *
+   * @return the collection of data points for this histogram.
+   */
   @Override
   public abstract Collection<DoubleExponentialHistogramPointData> getPoints();
 }

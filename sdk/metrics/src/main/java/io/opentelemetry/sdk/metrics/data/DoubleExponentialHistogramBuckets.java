@@ -55,7 +55,18 @@ public abstract class DoubleExponentialHistogramBuckets {
    */
   public abstract int getOffset();
 
+  /**
+   * The bucket counts is a of counts representing number of measurements that fall into each
+   * bucket.
+   *
+   * @return the bucket counts.
+   */
   public abstract List<Long> getBucketCounts();
 
+  /**
+   * The total count is the sum of all the values in the list {@link #getBucketCounts()}.
+   *
+   * @return the total count.
+   */
   public abstract long getTotalCount();
 }

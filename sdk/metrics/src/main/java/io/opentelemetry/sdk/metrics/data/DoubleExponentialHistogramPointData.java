@@ -30,13 +30,18 @@ public abstract class DoubleExponentialHistogramPointData implements PointData {
   /**
    * Creates a DoubleExponentialHistogramPointData.
    *
+   * @param startEpochNanos epoch timestamp in nanos indicating when the histogram was created.
+   * @param epochNanos epoch timestamp in nanos indicating when the data was collected.
+   * @param attributes attributes associated with this data point.
    * @param scale Scale characterises the resolution of the histogram, with larger values of scale
    *     offering greater precision. Bucket boundaries of the histogram are located at integer
    *     powers of the base, where <code>base = Math.pow(2, Math.pow(2, -scale))</code>.
    * @param sum The sum of all measurements in the histogram.
    * @param zeroCount Number of values that are zero.
-   * @param positiveBuckets Buckets with positive values.
-   * @param negativeBuckets Buckets with negative values.
+   * @param positiveBuckets Buckets that measure positive values.
+   * @param negativeBuckets Buckets that measure negative values.
+   * @param exemplars List of exemplars collected from measurements that were used to form the data
+   *     point.
    * @return a DoubleExponentialHistogramPointData
    */
   public static DoubleExponentialHistogramPointData create(
@@ -57,24 +62,15 @@ public abstract class DoubleExponentialHistogramPointData implements PointData {
         startEpochNanos,
         epochNanos,
         attributes,
+        exemplars,
         scale,
         sum,
         count,
         base,
         zeroCount,
         positiveBuckets,
-        negativeBuckets,
-        exemplars);
+        negativeBuckets);
   }
-
-  @Override
-  public abstract long getStartEpochNanos();
-
-  @Override
-  public abstract long getEpochNanos();
-
-  @Override
-  public abstract Attributes getAttributes();
 
   /**
    * Scale characterises the resolution of the histogram, with larger values of scale offering
@@ -85,18 +81,52 @@ public abstract class DoubleExponentialHistogramPointData implements PointData {
    */
   public abstract int getScale();
 
+  /**
+   * Returns the sum of all measurements in the data point. The sum should be disregarded if there
+   * are both positive and negative measurements.
+   *
+   * @return the sum of all measurements in this data point.
+   */
   public abstract double getSum();
 
+  /**
+   * Returns the number of measurements taken for this data point, including the positive bucket
+   * counts, negative bucket counts, and the zero count.
+   *
+   * @return the number of measurements in this data point.
+   */
   public abstract long getCount();
 
+  /**
+   * Returns the base, which is calculated via the scale {@link #getScale()}. The larger the base,
+   * the further away bucket boundaries are from each other.
+   *
+   * <p><code>base = 2^(2^-scale)</code>
+   *
+   * @return the base.
+   */
   public abstract double getBase();
 
+  /**
+   * Returns the number of measurements equal to zero in this data point.
+   *
+   * @return the number of values equal to zero.
+   */
   public abstract long getZeroCount();
 
+  /**
+   * Return the {@link DoubleExponentialHistogramBuckets} representing the positive measurements
+   * taken for this histogram.
+   *
+   * @return the positive buckets.
+   */
   public abstract DoubleExponentialHistogramBuckets getPositiveBuckets();
 
+  /**
+   * Return the {@link DoubleExponentialHistogramBuckets} representing the negative measurements
+   * taken for this histogram.
+   *
+   * @return the negative buckets.
+   */
   public abstract DoubleExponentialHistogramBuckets getNegativeBuckets();
-
-  @Override
-  public abstract List<Exemplar> getExemplars();
 }
