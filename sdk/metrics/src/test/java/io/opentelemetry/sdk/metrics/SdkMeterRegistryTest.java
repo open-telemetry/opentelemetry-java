@@ -28,7 +28,7 @@ class SdkMeterRegistryTest {
       SdkMeterProvider.builder()
           .setClock(testClock)
           .setResource(Resource.empty())
-          .register(sdkMeterReader)
+          .registerMetricReader(sdkMeterReader)
           .build();
 
   @Test

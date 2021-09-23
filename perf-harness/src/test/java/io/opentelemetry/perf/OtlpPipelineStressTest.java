@@ -250,7 +250,8 @@ public class OtlpPipelineStressTest {
     meterProvider =
         SdkMeterProvider.builder()
             .setResource(resource)
-            .register(new PeriodicMetricReader.Factory(metricExporter, Duration.ofSeconds(1)))
+            .registerMetricReader(
+                new PeriodicMetricReader.Factory(metricExporter, Duration.ofSeconds(1)))
             .buildAndRegisterGlobal();
 
     // set up the span exporter and wire it into the SDK

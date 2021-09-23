@@ -264,7 +264,7 @@ class OtlpExporterIntegrationTest {
     PeriodicMetricReader.Factory reader =
         new PeriodicMetricReader.Factory(metricExporter, Duration.ofSeconds(5));
     SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().setResource(RESOURCE).register(reader).build();
+        SdkMeterProvider.builder().setResource(RESOURCE).registerMetricReader(reader).build();
 
     Meter meter = meterProvider.meterBuilder(OtlpExporterIntegrationTest.class.getName()).build();
 

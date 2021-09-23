@@ -51,7 +51,8 @@ public class SdkMeterProviderTest {
   @SuppressWarnings("unchecked")
   void collectAllSyncInstruments() {
     InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.register(sdkMeterReader).build();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
 
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
@@ -176,7 +177,8 @@ public class SdkMeterProviderTest {
                     AggregationTemporality.DELTA, Collections.emptyList()))
             .build());
     InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.register(sdkMeterReader).build();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
 
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
@@ -229,7 +231,8 @@ public class SdkMeterProviderTest {
         sdkMeterProviderBuilder,
         Aggregation.explictBucketHistogram(AggregationTemporality.DELTA, Collections.emptyList()));
     InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.register(sdkMeterReader).build();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
     longCounter.add(10, Attributes.empty());
@@ -318,7 +321,8 @@ public class SdkMeterProviderTest {
   @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments() {
     InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.register(sdkMeterReader).build();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
         .counterBuilder("testLongSumObserver")
@@ -440,7 +444,7 @@ public class SdkMeterProviderTest {
     InMemoryMetricReader reader = new InMemoryMetricReader();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
-            .register(reader)
+            .registerMetricReader(reader)
             .registerView(
                 InstrumentSelector.builder()
                     // TODO: Make instrument type optional.
@@ -481,7 +485,7 @@ public class SdkMeterProviderTest {
     InMemoryMetricReader reader = new InMemoryMetricReader();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
-            .register(reader)
+            .registerMetricReader(reader)
             .registerView(
                 selector,
                 View.builder()
@@ -529,7 +533,7 @@ public class SdkMeterProviderTest {
     InMemoryMetricReader reader = new InMemoryMetricReader();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
-            .register(reader)
+            .registerMetricReader(reader)
             .registerView(
                 selector,
                 View.builder()
@@ -577,7 +581,7 @@ public class SdkMeterProviderTest {
     InMemoryMetricReader reader = new InMemoryMetricReader();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
-            .register(reader)
+            .registerMetricReader(reader)
             .registerView(
                 selector,
                 View.builder()
@@ -623,7 +627,8 @@ public class SdkMeterProviderTest {
         Aggregation.explictBucketHistogram(
             AggregationTemporality.CUMULATIVE, Collections.emptyList()));
     InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.register(sdkMeterReader).build();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
     sdkMeter
         .counterBuilder("testLongSumObserver")
@@ -713,7 +718,10 @@ public class SdkMeterProviderTest {
     InMemoryMetricReader collector1 = new InMemoryMetricReader();
     InMemoryMetricReader collector2 = new InMemoryMetricReader();
     SdkMeterProvider meterProvider =
-        sdkMeterProviderBuilder.register(collector1).register(collector2).build();
+        sdkMeterProviderBuilder
+            .registerMetricReader(collector1)
+            .registerMetricReader(collector2)
+            .build();
     Meter sdkMeter = meterProvider.get(SdkMeterProviderTest.class.getName());
     final LongCounter counter = sdkMeter.counterBuilder("testSum").build();
     final long startTime = testClock.now();
@@ -784,8 +792,8 @@ public class SdkMeterProviderTest {
     InMemoryMetricReader collector2 = new InMemoryMetricReader();
     SdkMeterProvider meterProvider =
         sdkMeterProviderBuilder
-            .register(collector1)
-            .register(collector2)
+            .registerMetricReader(collector1)
+            .registerMetricReader(collector2)
             .registerView(
                 InstrumentSelector.builder()
                     .setInstrumentType(InstrumentType.COUNTER)

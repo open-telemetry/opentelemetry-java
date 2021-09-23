@@ -28,7 +28,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
-    private InMemoryMetricReader collector;
+    private InMemoryMetricReader metricReader;
     private BatchSpanProcessor processor;
     private Tracer tracer;
     private double dropRatio;
@@ -38,8 +38,8 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
 
     @Setup(Level.Iteration)
     public final void setup() {
-      collector = new InMemoryMetricReader();
-      SdkMeterProvider.builder().register(collector).buildAndRegisterGlobal();
+      metricReader = new InMemoryMetricReader();
+      SdkMeterProvider.builder().registerMetricReader(metricReader).buildAndRegisterGlobal();
       SpanExporter exporter = new DelayingSpanExporter(0);
       processor = BatchSpanProcessor.builder(exporter).build();
 
@@ -49,7 +49,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
     @TearDown(Level.Iteration)
     public final void recordMetrics() {
       BatchSpanProcessorMetrics metrics =
-          new BatchSpanProcessorMetrics(collector.collectAllMetrics(), numThreads);
+          new BatchSpanProcessorMetrics(metricReader.collectAllMetrics(), numThreads);
       dropRatio = metrics.dropRatio();
       exportedSpans = metrics.exportedSpans();
       droppedSpans = metrics.droppedSpans();

@@ -9,6 +9,7 @@ import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -27,7 +28,7 @@ public final class SdkMeterProviderBuilder {
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
   private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
-  private final List<MetricReader.Factory> metricReaders = new ArrayList<>();
+  private final List<MetricReaderFactory> metricReaders = new ArrayList<>();
   // Default the sampling strategy.
   private ExemplarSampler exemplarSampler = ExemplarSampler.builder().build();
 
@@ -117,7 +118,7 @@ public final class SdkMeterProviderBuilder {
    * @param reader The factory for a reader of metrics.
    * @return this
    */
-  public SdkMeterProviderBuilder register(MetricReader.Factory reader) {
+  public SdkMeterProviderBuilder registerMetricReader(MetricReaderFactory reader) {
     metricReaders.add(reader);
     return this;
   }

@@ -34,7 +34,7 @@ import org.openjdk.jmh.annotations.Warmup;
 public class BatchSpanProcessorCpuBenchmark {
   @State(Scope.Benchmark)
   public static class BenchmarkState {
-    private InMemoryMetricReader collector;
+    private InMemoryMetricReader metricReader;
     private BatchSpanProcessor processor;
     private Tracer tracer;
     private int numThreads = 1;
@@ -47,8 +47,8 @@ public class BatchSpanProcessorCpuBenchmark {
 
     @Setup(Level.Iteration)
     public final void setup() {
-      collector = new InMemoryMetricReader();
-      SdkMeterProvider.builder().register(collector).buildAndRegisterGlobal();
+      metricReader = new InMemoryMetricReader();
+      SdkMeterProvider.builder().registerMetricReader(metricReader).buildAndRegisterGlobal();
       SpanExporter exporter = new DelayingSpanExporter(delayMs);
       processor = BatchSpanProcessor.builder(exporter).build();
       tracer =
@@ -58,7 +58,7 @@ public class BatchSpanProcessorCpuBenchmark {
     @TearDown(Level.Iteration)
     public final void recordMetrics() {
       BatchSpanProcessorMetrics metrics =
-          new BatchSpanProcessorMetrics(collector.collectAllMetrics(), numThreads);
+          new BatchSpanProcessorMetrics(metricReader.collectAllMetrics(), numThreads);
       exportedSpans = metrics.exportedSpans();
       droppedSpans = metrics.droppedSpans();
     }

@@ -29,7 +29,7 @@ class SdkLongGaugeBuilderTest {
       SdkMeterProvider.builder()
           .setClock(testClock)
           .setResource(RESOURCE)
-          .register(sdkMeterReader)
+          .registerMetricReader(sdkMeterReader)
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
 

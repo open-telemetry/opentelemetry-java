@@ -40,16 +40,4 @@ public interface MetricReader {
    * @return the result of the shutdown.
    */
   CompletableResultCode shutdown();
-
-  /** A constructor of {@link MetricReader}s. */
-  @FunctionalInterface
-  interface Factory {
-    /**
-     * Construct a new MetricReader.
-     *
-     * @param producer the mechanism of reading SDK metrics.
-     * @return a controller for this metric reader.
-     */
-    MetricReader apply(MetricProducer producer);
-  }
 }

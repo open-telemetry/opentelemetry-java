@@ -50,10 +50,10 @@ public class GrpcGzipBenchmark {
   private static final Codec IDENTITY_CODEC = Codec.Identity.NONE;
 
   static {
-    InMemoryMetricReader collector = new InMemoryMetricReader();
+    InMemoryMetricReader metricReader = new InMemoryMetricReader();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
-            .register(collector)
+            .registerMetricReader(metricReader)
             .setResource(
                 Resource.create(
                     Attributes.builder()
@@ -121,7 +121,7 @@ public class GrpcGzipBenchmark {
     histogram.record(3.0);
     histogram.record(4.0);
     histogram.record(5.0);
-    Collection<MetricData> metricData = collector.collectAllMetrics();
+    Collection<MetricData> metricData = metricReader.collectAllMetrics();
 
     List<ResourceMetrics> resourceMetrics =
         Arrays.stream(ResourceMetricsMarshaler.create(metricData))

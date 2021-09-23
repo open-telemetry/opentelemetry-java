@@ -41,10 +41,10 @@ public class MetricsRequestMarshalerBenchmark {
   private static final Collection<MetricData> METRICS;
 
   static {
-    InMemoryMetricReader collector = new InMemoryMetricReader();
+    InMemoryMetricReader metricReader = new InMemoryMetricReader();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
-            .register(collector)
+            .registerMetricReader(metricReader)
             .setResource(
                 Resource.create(
                     Attributes.builder()
@@ -113,7 +113,7 @@ public class MetricsRequestMarshalerBenchmark {
     histogram.record(4.0);
     histogram.record(5.0);
 
-    METRICS = collector.collectAllMetrics();
+    METRICS = metricReader.collectAllMetrics();
   }
 
   @Benchmark

@@ -35,7 +35,8 @@ class SdkLongSumObserverTest {
   @Test
   void collectMetrics_NoRecords() {
     InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.register(sdkMeterReader).build();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
         .get(getClass().getName())
         .counterBuilder("testObserver")
@@ -49,7 +50,8 @@ class SdkLongSumObserverTest {
   @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
     InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.register(sdkMeterReader).build();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
         .get(getClass().getName())
         .counterBuilder("testObserver")
@@ -105,7 +107,7 @@ class SdkLongSumObserverTest {
     InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder
-            .register(sdkMeterReader)
+            .registerMetricReader(sdkMeterReader)
             .registerView(
                 InstrumentSelector.builder()
                     .setInstrumentType(InstrumentType.OBSERVABLE_SUM)

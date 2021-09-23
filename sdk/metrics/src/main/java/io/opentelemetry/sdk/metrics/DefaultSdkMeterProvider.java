@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
@@ -50,7 +51,7 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
   private final List<MetricReader> readers = new ArrayList<>();
 
   DefaultSdkMeterProvider(
-      List<MetricReader.Factory> readerFactories,
+      List<MetricReaderFactory> readerFactories,
       Clock clock,
       Resource resource,
       ViewRegistry viewRegistry,
@@ -64,7 +65,7 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
     // Here we construct our own unique handle ids for this SDK.
     // These are guaranteed to be unique per-reader for this SDK, and only this SDK.
     Supplier<CollectionHandle> handleSupplier = CollectionHandle.createSupplier();
-    for (MetricReader.Factory readerFactory : readerFactories) {
+    for (MetricReaderFactory readerFactory : readerFactories) {
       CollectionHandle handle = handleSupplier.get();
       // TODO: handle failure in creation or just crash?
       MetricReader reader = readerFactory.apply(new LeasedMetricProducer(handle));

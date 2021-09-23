@@ -146,7 +146,8 @@ final class MetricExporterConfiguration {
     }
     // Register the reader (which starts it), and use a global shutdown hook rather than
     // interval reader specific.
-    sdkMeterProviderBuilder.register(new PeriodicMetricReader.Factory(exporter, exportInterval));
+    sdkMeterProviderBuilder.registerMetricReader(
+        new PeriodicMetricReader.Factory(exporter, exportInterval));
   }
 
   private static void configurePrometheusMetrics(
@@ -155,7 +156,7 @@ final class MetricExporterConfiguration {
         "io.opentelemetry.exporter.prometheus.PrometheusCollector",
         "Prometheus Metrics Server",
         "opentelemetry-exporter-prometheus");
-    sdkMeterProviderBuilder.register(PrometheusCollector.create());
+    sdkMeterProviderBuilder.registerMetricReader(PrometheusCollector.create());
     // TODO: Can we move this portion into the PrometheusCollector so shutdown on SdkMeterProvider
     // will collapse prometheus too?
     Integer port = config.getInt("otel.exporter.prometheus.port");

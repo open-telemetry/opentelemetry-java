@@ -28,7 +28,7 @@ public enum TestSdk {
               .setClock(Clock.getDefault())
               .setResource(Resource.empty())
               // Must register reader for real SDK.
-              .register(new InMemoryMetricReader())
+              .registerMetricReader(new InMemoryMetricReader())
               .build()
               .get("io.opentelemetry.sdk.metrics");
         }

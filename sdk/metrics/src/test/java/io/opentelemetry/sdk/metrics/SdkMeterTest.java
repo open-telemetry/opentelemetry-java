@@ -24,7 +24,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class SdkMeterTest {
   // Meter must have an exporter configured to actual run.
   private final SdkMeterProvider testMeterProvider =
-      SdkMeterProvider.builder().register(new InMemoryMetricReader()).build();
+      SdkMeterProvider.builder().registerMetricReader(new InMemoryMetricReader()).build();
   private final Meter sdkMeter = testMeterProvider.get(getClass().getName());
 
   @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(MeterSharedState.class);

@@ -28,7 +28,7 @@ class InMemoryMetricReaderTest {
     reader = new InMemoryMetricReader();
     provider =
         SdkMeterProvider.builder()
-            .register(reader)
+            .registerMetricReader(reader)
             .registerView(
                 InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
                 View.builder()

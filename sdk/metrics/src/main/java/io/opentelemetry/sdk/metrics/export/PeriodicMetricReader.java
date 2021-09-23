@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.annotation.Nullable;
 
 /**
@@ -31,8 +30,7 @@ public class PeriodicMetricReader implements MetricReader {
   private final ScheduledExecutorService scheduler;
 
   private final Scheduled scheduled;
-  @Nullable
-  private volatile ScheduledFuture<?> scheduledFuture;
+  @Nullable private volatile ScheduledFuture<?> scheduledFuture;
   private final Object lock = new Object();
 
   private PeriodicMetricReader(
@@ -95,7 +93,7 @@ public class PeriodicMetricReader implements MetricReader {
   }
 
   /** Factory for {@link PeriodicMetricReader}. */
-  public static class Factory implements MetricReader.Factory {
+  public static class Factory implements MetricReaderFactory {
     private final MetricExporter exporter;
     private final Duration duration;
     private final ScheduledExecutorService scheduler;

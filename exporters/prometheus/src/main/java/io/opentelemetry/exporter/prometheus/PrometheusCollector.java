@@ -9,14 +9,24 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.prometheus.client.Collector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * A reader of OpenTelemetry metrics that exports into Prometheus as a Collector.
+ *
+ * <p>Usage: <code>sdkMeterProvider.registerMetricReader(PrometheusCollector.create());</code>
+ */
 public final class PrometheusCollector extends Collector
-    implements MetricReader, MetricReader.Factory {
+    implements MetricReader, MetricReaderFactory {
+  // Note: we expect the `apply` method of `MetricReaderFactory` to be called
+  // prior to registering this collector with the prometheus client library.
+  // This means this field does not need to be volatile because it will
+  // be filled out (and no longer mutated) prior to being shared with other threads.
   private MetricProducer metricProducer;
 
   PrometheusCollector() {}

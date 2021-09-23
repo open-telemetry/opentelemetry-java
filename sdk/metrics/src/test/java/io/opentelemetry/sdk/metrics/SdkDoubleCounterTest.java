@@ -33,7 +33,7 @@ class SdkDoubleCounterTest {
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder()
           .setClock(testClock)
-          .register(sdkMeterReader)
+          .registerMetricReader(sdkMeterReader)
           .setResource(RESOURCE)
           .build();
   private final Meter sdkMeter = sdkMeterProvider.get(getClass().getName());
