@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderFactory;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -251,7 +251,7 @@ public class OtlpPipelineStressTest {
         SdkMeterProvider.builder()
             .setResource(resource)
             .registerMetricReader(
-                new PeriodicMetricReader.Factory(metricExporter, Duration.ofSeconds(1)))
+                new PeriodicMetricReaderFactory(metricExporter, Duration.ofSeconds(1)))
             .buildAndRegisterGlobal();
 
     // set up the span exporter and wire it into the SDK

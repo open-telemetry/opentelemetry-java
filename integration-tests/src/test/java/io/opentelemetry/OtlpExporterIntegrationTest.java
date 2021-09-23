@@ -43,7 +43,7 @@ import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderFactory;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -261,8 +261,8 @@ class OtlpExporterIntegrationTest {
   }
 
   private static void testMetricExport(MetricExporter metricExporter) {
-    PeriodicMetricReader.Factory reader =
-        new PeriodicMetricReader.Factory(metricExporter, Duration.ofSeconds(5));
+    PeriodicMetricReaderFactory reader =
+        new PeriodicMetricReaderFactory(metricExporter, Duration.ofSeconds(5));
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().setResource(RESOURCE).registerMetricReader(reader).build();
 

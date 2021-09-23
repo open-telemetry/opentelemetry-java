@@ -18,7 +18,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderFactory;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
@@ -147,7 +147,7 @@ final class MetricExporterConfiguration {
     // Register the reader (which starts it), and use a global shutdown hook rather than
     // interval reader specific.
     sdkMeterProviderBuilder.registerMetricReader(
-        new PeriodicMetricReader.Factory(exporter, exportInterval));
+        new PeriodicMetricReaderFactory(exporter, exportInterval));
   }
 
   private static void configurePrometheusMetrics(
