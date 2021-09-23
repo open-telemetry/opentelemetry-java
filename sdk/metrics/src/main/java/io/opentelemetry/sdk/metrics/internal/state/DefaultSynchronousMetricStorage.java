@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for synchronous instruments.
@@ -124,6 +125,7 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
   }
 
   @Override
+  @Nullable
   public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
     collectLock.lock();
     try {

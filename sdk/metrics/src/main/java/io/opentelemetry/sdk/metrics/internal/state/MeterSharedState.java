@@ -76,7 +76,7 @@ public abstract class MeterSharedState {
               meterProviderSharedState.getStartEpochNanos(),
               meterProviderSharedState.getExemplarFilter());
       // TODO - move this in a better location.
-      if (currentStorage == EmptyMetricStorage.INSTANCE) {
+      if (SynchronousMetricStorage.empty().equals(currentStorage)) {
         continue;
       }
       try {
@@ -112,7 +112,7 @@ public abstract class MeterSharedState {
               meterProviderSharedState.getStartEpochNanos(),
               metricUpdater);
       // TODO - move this in a better location.
-      if (currentStorage == EmptyMetricStorage.INSTANCE) {
+      if (AsynchronousMetricStorage.empty().equals(currentStorage)) {
         continue;
       }
       try {
@@ -143,7 +143,7 @@ public abstract class MeterSharedState {
               meterProviderSharedState.getStartEpochNanos(),
               metricUpdater);
       // TODO - move this in a better location.
-      if (currentStorage == EmptyMetricStorage.INSTANCE) {
+      if (AsynchronousMetricStorage.empty().equals(currentStorage)) {
         continue;
       }
       try {

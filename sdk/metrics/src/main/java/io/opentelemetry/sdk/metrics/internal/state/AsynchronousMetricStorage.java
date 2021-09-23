@@ -34,6 +34,11 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   private final InstrumentProcessor<?> instrumentProcessor;
   private final Runnable metricUpdater;
 
+  /** Constructs asynchronous metric storage which stores nothing. */
+  public static MetricStorage empty() {
+    return EmptyMetricStorage.INSTANCE;
+  }
+
   /** Constructs storage for {@code double} valued instruments. */
   @Nullable
   public static <T> MetricStorage doubleAsynchronousAccumulator(
@@ -53,7 +58,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
                 metricDescriptor,
                 ExemplarFilter.neverSample());
     if (Aggregator.empty().equals(aggregator)) {
-      return EmptyMetricStorage.INSTANCE;
+      return empty();
     }
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
@@ -95,7 +100,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
                 metricDescriptor,
                 ExemplarFilter.neverSample());
     if (Aggregator.empty().equals(aggregator)) {
-      return EmptyMetricStorage.INSTANCE;
+      return empty();
     }
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
@@ -130,6 +135,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   }
 
   @Override
+  @Nullable
   public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
     collectLock.lock();
     try {

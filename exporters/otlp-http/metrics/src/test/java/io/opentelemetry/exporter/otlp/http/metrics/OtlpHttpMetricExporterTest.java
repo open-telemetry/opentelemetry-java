@@ -21,9 +21,10 @@ import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.otlp.internal.MetricAdapter;
+import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
+import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -31,13 +32,17 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import okhttp3.tls.HeldCertificate;
 import okio.Buffer;
 import okio.GzipSource;
@@ -208,9 +213,20 @@ class OtlpHttpMetricExporterTest {
     CompletableResultCode resultCode = otlpHttpMetricExporter.export(metrics);
     resultCode.join(10, TimeUnit.SECONDS);
     assertThat(resultCode.isSuccess()).isEqualTo(expectedResult);
-    return ExportMetricsServiceRequest.newBuilder()
-        .addAllResourceMetrics(MetricAdapter.toProtoResourceMetrics(metrics))
-        .build();
+    List<ResourceMetrics> resourceMetrics =
+        Arrays.stream(ResourceMetricsMarshaler.create(metrics))
+            .map(
+                marshaler -> {
+                  ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                  try {
+                    marshaler.writeBinaryTo(bos);
+                    return ResourceMetrics.parseFrom(bos.toByteArray());
+                  } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                  }
+                })
+            .collect(Collectors.toList());
+    return ExportMetricsServiceRequest.newBuilder().addAllResourceMetrics(resourceMetrics).build();
   }
 
   private static HttpResponse successResponse() {

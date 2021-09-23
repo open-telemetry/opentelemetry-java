@@ -22,12 +22,17 @@ import io.opentelemetry.sdk.resources.Resource;
  */
 public interface SynchronousMetricStorage extends MetricStorage, WriteableMetricStorage {
 
+  /** Returns metric storage which doesn't store or generate any metrics. */
+  static SynchronousMetricStorage empty() {
+    return EmptyMetricStorage.INSTANCE;
+  }
+
   /**
    * Constructs metric storage for a given synchronous instrument and view.
    *
    * @return The storage, or {@code null} if the instrument should not be recorded.
    */
-  public static <T> SynchronousMetricStorage create(
+  static <T> SynchronousMetricStorage create(
       View view,
       InstrumentDescriptor instrumentDescriptor,
       Resource resource,
@@ -45,8 +50,7 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
                 exemplarFilter);
     // We won't be storing this metric.
     if (Aggregator.empty().equals(aggregator)) {
-      // Short circuit with null-object.
-      return EmptyMetricStorage.INSTANCE;
+      return empty();
     }
     return new DefaultSynchronousMetricStorage<>(
         metricDescriptor,

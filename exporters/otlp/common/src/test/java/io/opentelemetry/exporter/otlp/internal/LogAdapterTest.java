@@ -36,7 +36,9 @@ class LogAdapterTest {
     List<ResourceLogs> resourceLogs =
         LogAdapter.toProtoResourceLogs(
             Collections.singleton(
-                io.opentelemetry.sdk.logging.data.LogRecord.builder()
+                io.opentelemetry.sdk.logging.data.LogRecord.builder(
+                        Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
+                        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
                     .setName(NAME)
                     .setBody(BODY)
                     .setSeverity(io.opentelemetry.sdk.logging.data.LogRecord.Severity.INFO)
@@ -45,10 +47,6 @@ class LogAdapterTest {
                     .setSpanId(SPAN_ID)
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                     .setUnixTimeNano(12345)
-                    .setResource(
-                        Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
-                    .setInstrumentationLibraryInfo(
-                        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
                     .build()));
 
     assertThat(resourceLogs).hasSize(1);
@@ -67,7 +65,9 @@ class LogAdapterTest {
   void toProtoLogRecord() {
     io.opentelemetry.proto.logs.v1.LogRecord logRecord =
         LogAdapter.toProtoLogRecord(
-            io.opentelemetry.sdk.logging.data.LogRecord.builder()
+            io.opentelemetry.sdk.logging.data.LogRecord.builder(
+                    Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+                    InstrumentationLibraryInfo.create("instrumentation", "1"))
                 .setName(NAME)
                 .setBody(BODY)
                 .setSeverity(io.opentelemetry.sdk.logging.data.LogRecord.Severity.INFO)
@@ -76,10 +76,6 @@ class LogAdapterTest {
                 .setSpanId(SPAN_ID)
                 .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                 .setUnixTimeNano(12345)
-                .setResource(
-                    Resource.create(Attributes.builder().put("testKey", "testValue").build()))
-                .setInstrumentationLibraryInfo(
-                    InstrumentationLibraryInfo.create("instrumentation", "1"))
                 .build());
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);

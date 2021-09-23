@@ -43,10 +43,9 @@ public final class LogAdapter {
             resourceLogsBuilder.setSchemaUrl(resource.getSchemaUrl());
           }
           libraryInfoListMap.forEach(
-              (instrumentationLibraryInfo, logRecords) -> {
-                resourceLogsBuilder.addInstrumentationLibraryLogs(
-                    buildInstrumentationLibraryLogs(instrumentationLibraryInfo, logRecords));
-              });
+              (instrumentationLibraryInfo, logRecords) ->
+                  resourceLogsBuilder.addInstrumentationLibraryLogs(
+                      buildInstrumentationLibraryLogs(instrumentationLibraryInfo, logRecords)));
           resourceLogs.add(resourceLogsBuilder.build());
         });
     return resourceLogs;
@@ -106,7 +105,8 @@ public final class LogAdapter {
   }
 
   private static AnyValue getLogRecordBodyAnyValue(LogRecord logRecord) {
-    return AnyValue.newBuilder().setStringValue(logRecord.getBody()).build();
+    // For now, map all the bodies to String AnyValue.
+    return AnyValue.newBuilder().setStringValue(logRecord.getBody().asString()).build();
   }
 
   private LogAdapter() {}

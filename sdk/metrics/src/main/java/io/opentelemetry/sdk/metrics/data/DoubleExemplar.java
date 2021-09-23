@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** An {@link Exemplar} with {@code double} measurments. */
@@ -27,8 +28,8 @@ public abstract class DoubleExemplar implements Exemplar {
   public static DoubleExemplar create(
       Attributes filteredAttributes,
       long recordTimeNanos,
-      String spanId,
-      String traceId,
+      @Nullable String spanId,
+      @Nullable String traceId,
       double value) {
     return new AutoValue_DoubleExemplar(
         filteredAttributes, recordTimeNanos, spanId, traceId, value);

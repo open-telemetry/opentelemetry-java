@@ -33,7 +33,7 @@ dependencies {
       }
     }
   }
-  testImplementation("com.tngtech.archunit:archunit-junit4")
+  testImplementation("com.tngtech.archunit:archunit-junit5")
 }
 
 // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html

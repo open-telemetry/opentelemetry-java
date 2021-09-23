@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -37,7 +38,7 @@ public final class IntervalMetricReader {
   private final Exporter exporter;
   private final ScheduledExecutorService scheduler;
 
-  private volatile ScheduledFuture<?> scheduledFuture;
+  @Nullable private volatile ScheduledFuture<?> scheduledFuture;
   private final Object lock = new Object();
 
   /**
@@ -68,6 +69,7 @@ public final class IntervalMetricReader {
   /** Stops the scheduled task and calls export one more time. */
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = new CompletableResultCode();
+    ScheduledFuture<?> scheduledFuture = this.scheduledFuture;
     if (scheduledFuture != null) {
       scheduledFuture.cancel(false);
     }

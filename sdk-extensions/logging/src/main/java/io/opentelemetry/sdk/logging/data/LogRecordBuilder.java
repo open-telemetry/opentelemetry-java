@@ -12,8 +12,9 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.TimeUnit;
 
 public final class LogRecordBuilder {
-  private Resource resource;
-  private InstrumentationLibraryInfo instrumentationLibraryInfo;
+  private final Resource resource;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+
   private long timeUnixNano;
   private String traceId = "";
   private String spanId = "";
@@ -21,20 +22,12 @@ public final class LogRecordBuilder {
   private LogRecord.Severity severity = LogRecord.Severity.UNDEFINED_SEVERITY_NUMBER;
   private String severityText;
   private String name;
-  private String body = "";
+  private Body body = Body.stringBody("");
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 
-  LogRecordBuilder() {}
-
-  public LogRecordBuilder setResource(Resource resource) {
+  LogRecordBuilder(Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.resource = resource;
-    return this;
-  }
-
-  public LogRecordBuilder setInstrumentationLibraryInfo(
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    return this;
   }
 
   public LogRecordBuilder setUnixTimeNano(long timestamp) {
@@ -76,9 +69,13 @@ public final class LogRecordBuilder {
     return this;
   }
 
-  public LogRecordBuilder setBody(String body) {
+  public LogRecordBuilder setBody(Body body) {
     this.body = body;
     return this;
+  }
+
+  public LogRecordBuilder setBody(String body) {
+    return setBody(Body.stringBody(body));
   }
 
   public LogRecordBuilder setAttributes(Attributes attributes) {

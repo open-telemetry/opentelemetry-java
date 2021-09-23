@@ -11,15 +11,12 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.Collector;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.CollectorServiceGrpc;
-import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -38,16 +35,19 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class JaegerGrpcSpanExporter implements SpanExporter {
 
   private static final String DEFAULT_HOST_NAME = "unknown";
-  private static final String CLIENT_VERSION_KEY = "jaeger.version";
+  private static final AttributeKey<String> CLIENT_VERSION_KEY =
+      AttributeKey.stringKey("jaeger.version");
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
-  private static final String HOSTNAME_KEY = "hostname";
-  private static final String IP_KEY = "ip";
+  private static final AttributeKey<String> HOSTNAME_KEY = AttributeKey.stringKey("hostname");
+  private static final AttributeKey<String> IP_KEY = AttributeKey.stringKey("ip");
   private static final String IP_DEFAULT = "0.0.0.0";
   private final ThrottlingLogger logger =
       new ThrottlingLogger(Logger.getLogger(JaegerGrpcSpanExporter.class.getName()));
 
-  private final CollectorServiceGrpc.CollectorServiceFutureStub stub;
-  private final Model.Process.Builder processBuilder;
+  private final MarshalerCollectorServiceGrpc.CollectorServiceFutureStub stub;
+
+  // Jaeger-specific resource information
+  private final Resource jaegerResource;
   private final ManagedChannel managedChannel;
   private final long timeoutNanos;
 
@@ -70,22 +70,15 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       ipv4 = IP_DEFAULT;
     }
 
-    Model.KeyValue clientTag =
-        Model.KeyValue.newBuilder()
-            .setKey(CLIENT_VERSION_KEY)
-            .setVStr(CLIENT_VERSION_VALUE)
+    jaegerResource =
+        Resource.builder()
+            .put(CLIENT_VERSION_KEY, CLIENT_VERSION_VALUE)
+            .put(IP_KEY, ipv4)
+            .put(HOSTNAME_KEY, hostname)
             .build();
 
-    Model.KeyValue ipv4Tag = Model.KeyValue.newBuilder().setKey(IP_KEY).setVStr(ipv4).build();
-
-    Model.KeyValue hostnameTag =
-        Model.KeyValue.newBuilder().setKey(HOSTNAME_KEY).setVStr(hostname).build();
-
-    this.processBuilder =
-        Model.Process.newBuilder().addTags(clientTag).addTags(ipv4Tag).addTags(hostnameTag);
-
     this.managedChannel = channel;
-    this.stub = CollectorServiceGrpc.newFutureStub(channel);
+    this.stub = MarshalerCollectorServiceGrpc.newFutureStub(channel);
     this.timeoutNanos = timeoutNanos;
   }
 
@@ -97,31 +90,30 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    CollectorServiceGrpc.CollectorServiceFutureStub stub = this.stub;
+    MarshalerCollectorServiceGrpc.CollectorServiceFutureStub stub = this.stub;
     if (timeoutNanos > 0) {
       stub = stub.withDeadlineAfter(timeoutNanos, TimeUnit.NANOSECONDS);
     }
 
-    List<Collector.PostSpansRequest> requests = new ArrayList<>();
+    List<PostSpansRequestMarshaler> requests = new ArrayList<>();
     spans.stream()
         .collect(Collectors.groupingBy(SpanData::getResource))
         .forEach((resource, spanData) -> requests.add(buildRequest(resource, spanData)));
 
-    List<ListenableFuture<Collector.PostSpansResponse>> listenableFutures =
-        new ArrayList<>(requests.size());
-    for (Collector.PostSpansRequest request : requests) {
+    List<ListenableFuture<PostSpansResponse>> listenableFutures = new ArrayList<>(requests.size());
+    for (PostSpansRequestMarshaler request : requests) {
       listenableFutures.add(stub.postSpans(request));
     }
 
     final CompletableResultCode result = new CompletableResultCode();
     AtomicInteger pending = new AtomicInteger(listenableFutures.size());
     AtomicReference<Throwable> error = new AtomicReference<>();
-    for (ListenableFuture<Collector.PostSpansResponse> future : listenableFutures) {
+    for (ListenableFuture<PostSpansResponse> future : listenableFutures) {
       Futures.addCallback(
           future,
-          new FutureCallback<Collector.PostSpansResponse>() {
+          new FutureCallback<PostSpansResponse>() {
             @Override
-            public void onSuccess(Collector.PostSpansResponse result) {
+            public void onSuccess(PostSpansResponse result) {
               fulfill();
             }
 
@@ -148,27 +140,9 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     return result;
   }
 
-  private Collector.PostSpansRequest buildRequest(Resource resource, List<SpanData> spans) {
-    Model.Process.Builder builder = this.processBuilder.clone();
-
-    String serviceName = resource.getAttribute(ResourceAttributes.SERVICE_NAME);
-    if (serviceName == null || serviceName.isEmpty()) {
-      serviceName = Resource.getDefault().getAttribute(ResourceAttributes.SERVICE_NAME);
-    }
-    // In practice should never be null unless the default Resource spec is changed.
-    if (serviceName != null) {
-      builder.setServiceName(serviceName);
-    }
-
-    builder.addAllTags(Adapter.toKeyValues(resource.getAttributes()));
-
-    return Collector.PostSpansRequest.newBuilder()
-        .setBatch(
-            Model.Batch.newBuilder()
-                .addAllSpans(Adapter.toJaeger(spans))
-                .setProcess(builder.build())
-                .build())
-        .build();
+  private PostSpansRequestMarshaler buildRequest(Resource resource, List<SpanData> spans) {
+    Resource mergedResource = jaegerResource.merge(resource);
+    return PostSpansRequestMarshaler.create(spans, mergedResource);
   }
 
   /**
@@ -206,8 +180,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   }
 
   // Visible for testing
-  Model.Process.Builder getProcessBuilder() {
-    return processBuilder;
+  Resource getJaegerResource() {
+    return jaegerResource;
   }
 
   // Visible for testing
