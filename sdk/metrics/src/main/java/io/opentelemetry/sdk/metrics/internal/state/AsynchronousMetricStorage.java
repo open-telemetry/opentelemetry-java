@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 // TODO(jsuereth): Error out any "delta" metrics on async instruments.
 
@@ -145,6 +146,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   }
 
   @Override
+  @Nullable
   public MetricData collectAndReset(
       CollectionHandle collector,
       Set<CollectionHandle> allCollectors,

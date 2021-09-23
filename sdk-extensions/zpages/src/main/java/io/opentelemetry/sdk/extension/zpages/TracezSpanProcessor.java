@@ -49,8 +49,9 @@ final class TracezSpanProcessor implements SpanProcessor {
   public void onEnd(ReadableSpan span) {
     runningSpanCache.remove(span.getSpanContext().getSpanId());
     if (!sampled || span.getSpanContext().isSampled()) {
-      completedSpanCache.putIfAbsent(span.getName(), new TracezSpanBuckets());
-      completedSpanCache.get(span.getName()).addToBucket(span);
+      completedSpanCache
+          .computeIfAbsent(span.getName(), unused -> new TracezSpanBuckets())
+          .addToBucket(span);
     }
   }
 

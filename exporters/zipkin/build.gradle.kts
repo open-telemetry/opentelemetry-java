@@ -9,13 +9,9 @@ description = "OpenTelemetry - Zipkin Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.zipkin")
 
 dependencies {
-  compileOnly("com.google.auto.value:auto-value")
-
   api(project(":sdk:all"))
 
   api("io.zipkin.reporter2:zipkin-reporter")
-
-  annotationProcessor("com.google.auto.value:auto-value")
 
   implementation(project(":semconv"))
 
@@ -23,5 +19,6 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
 
-  testImplementation("io.zipkin.zipkin2:zipkin-junit")
+  testImplementation("com.linecorp.armeria:armeria")
+  testImplementation("org.testcontainers:junit-jupiter")
 }

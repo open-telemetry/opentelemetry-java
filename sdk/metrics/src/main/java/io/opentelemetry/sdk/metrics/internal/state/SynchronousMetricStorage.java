@@ -239,6 +239,7 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
 
   /** Collects bucketed metrics and resets the underlying storage for the next collection period. */
   @Override
+  @Nullable
   public MetricData collectAndReset(
       CollectionHandle collector,
       Set<CollectionHandle> allCollectors,

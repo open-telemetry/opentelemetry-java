@@ -16,6 +16,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 /**
  * Wraps a {@link MetricExporter} and automatically reads and exports the metrics every export
  * interval. Metrics may also be dropped when it becomes time to export again, and there is an
@@ -29,6 +31,7 @@ public class PeriodicMetricReader implements MetricReader {
   private final ScheduledExecutorService scheduler;
 
   private final Scheduled scheduled;
+  @Nullable
   private volatile ScheduledFuture<?> scheduledFuture;
   private final Object lock = new Object();
 

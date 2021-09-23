@@ -77,7 +77,8 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers(disabledWithoutDocker = true)
 class OtlpExporterIntegrationTest {
 
-  private static final String COLLECTOR_IMAGE = "otel/opentelemetry-collector:0.33.0";
+  private static final String COLLECTOR_IMAGE =
+      "ghcr.io/open-telemetry/opentelemetry-java/otel-collector";
   private static final Integer COLLECTOR_OTLP_GRPC_PORT = 4317;
   private static final Integer COLLECTOR_OTLP_HTTP_PORT = 4318;
   private static final Integer COLLECTOR_HEALTH_CHECK_PORT = 13133;

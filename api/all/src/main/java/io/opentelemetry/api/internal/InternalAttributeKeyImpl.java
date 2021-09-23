@@ -22,7 +22,7 @@ public final class InternalAttributeKeyImpl<T> implements AttributeKey<T> {
   private final String key;
   private final int hashCode;
 
-  private byte[] keyUtf8;
+  @Nullable private byte[] keyUtf8;
 
   private InternalAttributeKeyImpl(AttributeType type, String key) {
     if (type == null) {

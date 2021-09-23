@@ -41,7 +41,7 @@ class JaegerIntegrationTest {
 
   @Container
   public static GenericContainer<?> jaegerContainer =
-      new GenericContainer<>("ghcr.io/open-telemetry/java-test-containers:jaeger")
+      new GenericContainer<>("ghcr.io/open-telemetry/opentelemetry-java/jaeger")
           .withExposedPorts(COLLECTOR_PORT, QUERY_PORT, HEALTH_PORT)
           .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));
 

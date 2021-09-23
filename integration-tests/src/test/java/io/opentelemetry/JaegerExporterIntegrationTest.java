@@ -45,7 +45,7 @@ class JaegerExporterIntegrationTest {
   @Container
   public static GenericContainer<?> jaegerContainer =
       new GenericContainer<>(
-              DockerImageName.parse("ghcr.io/open-telemetry/java-test-containers:jaeger"))
+              DockerImageName.parse("ghcr.io/open-telemetry/opentelemetry-java/jaeger"))
           .withExposedPorts(JAEGER_API_PORT, QUERY_PORT, HEALTH_PORT)
           .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));
 

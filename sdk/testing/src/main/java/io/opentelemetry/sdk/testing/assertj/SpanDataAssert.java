@@ -272,6 +272,10 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
    * Asserts the span has an exception event for the given {@link Throwable}. The stack trace is not
    * matched against.
    */
+  // Workaround "passing @Nullable parameter 'stackTrace' where @NonNull is required", Nullaway
+  // seems to think assertThat is supposed to be passed NonNull even though we know that can't be
+  // true for assertions.
+  @SuppressWarnings("NullAway")
   public SpanDataAssert hasException(Throwable exception) {
     EventData exceptionEvent =
         actual.getEvents().stream()
@@ -298,9 +302,8 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
 
     // Exceptions used in assertions always have a different stack trace, just confirm it was
     // recorded.
-    assertThat(exceptionEvent.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE))
-        .as("exception.stacktrace")
-        .isNotNull();
+    String stackTrace = exceptionEvent.getAttributes().get(SemanticAttributes.EXCEPTION_STACKTRACE);
+    assertThat(stackTrace).as("exception.stacktrace").isNotNull();
 
     return this;
   }

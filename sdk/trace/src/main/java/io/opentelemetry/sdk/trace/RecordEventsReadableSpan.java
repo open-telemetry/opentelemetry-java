@@ -534,30 +534,28 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       totalRecordedEvents = this.totalRecordedEvents;
       endEpochNanos = this.endEpochNanos;
     }
-    StringBuilder sb = new StringBuilder();
-    sb.append("RecordEventsReadableSpan{traceId=");
-    sb.append(context.getTraceId());
-    sb.append(", spanId=");
-    sb.append(context.getSpanId());
-    sb.append(", parentSpanContext=");
-    sb.append(parentSpanContext);
-    sb.append(", name=");
-    sb.append(name);
-    sb.append(", kind=");
-    sb.append(kind);
-    sb.append(", attributes=");
-    sb.append(attributes);
-    sb.append(", status=");
-    sb.append(status);
-    sb.append(", totalRecordedEvents=");
-    sb.append(totalRecordedEvents);
-    sb.append(", totalRecordedLinks=");
-    sb.append(totalRecordedLinks);
-    sb.append(", startEpochNanos=");
-    sb.append(startEpochNanos);
-    sb.append(", endEpochNanos=");
-    sb.append(endEpochNanos);
-    sb.append("}");
-    return sb.toString();
+    return "RecordEventsReadableSpan{traceId="
+        + context.getTraceId()
+        + ", spanId="
+        + context.getSpanId()
+        + ", parentSpanContext="
+        + parentSpanContext
+        + ", name="
+        + name
+        + ", kind="
+        + kind
+        + ", attributes="
+        + attributes
+        + ", status="
+        + status
+        + ", totalRecordedEvents="
+        + totalRecordedEvents
+        + ", totalRecordedLinks="
+        + totalRecordedLinks
+        + ", startEpochNanos="
+        + startEpochNanos
+        + ", endEpochNanos="
+        + endEpochNanos
+        + "}";
   }
 }

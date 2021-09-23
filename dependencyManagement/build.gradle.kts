@@ -19,7 +19,7 @@ val DEPENDENCY_BOMS = listOf(
   "io.grpc:grpc-bom:1.40.1",
   "io.zipkin.brave:brave-bom:5.13.3",
   "io.zipkin.reporter2:zipkin-reporter-bom:2.16.3",
-  "org.junit:junit-bom:5.7.2",
+  "org.junit:junit-bom:5.8.0",
   "org.testcontainers:testcontainers-bom:1.16.0"
 )
 
@@ -78,17 +78,16 @@ val DEPENDENCIES = listOf(
   "com.squareup.okhttp3:okhttp:3.12.13",
   "com.squareup.okhttp3:okhttp-tls:3.12.13",
   "com.sun.net.httpserver:http:20070405",
-  "com.tngtech.archunit:archunit-junit4:0.21.0",
+  "com.tngtech.archunit:archunit-junit5:0.21.0",
   "com.uber.nullaway:nullaway:0.9.2",
   "edu.berkeley.cs.jqf:jqf-fuzz:1.7",
   "eu.rekawek.toxiproxy:toxiproxy-java:2.1.4",
   "io.github.netmikey.logunit:logunit-jul:1.1.0",
   "io.jaegertracing:jaeger-client:1.6.0",
   "io.opentracing:opentracing-api:0.33.0",
-  "io.zipkin.zipkin2:zipkin-junit:2.23.4",
   "junit:junit:4.13.2",
   "nl.jqno.equalsverifier:equalsverifier:3.7.1",
-  "org.assertj:assertj-core:3.20.2",
+  "org.assertj:assertj-core:3.21.0",
   "org.awaitility:awaitility:4.1.0",
   "org.bouncycastle:bcpkix-jdk15on:1.69",
   "org.codehaus.mojo:animal-sniffer-annotations:1.20",
