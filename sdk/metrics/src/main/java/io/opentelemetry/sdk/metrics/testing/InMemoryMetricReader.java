@@ -22,8 +22,8 @@ import java.util.Collections;
  *
  * <pre><code>
  * public class InMemoryMetricReaderExample {
- *   private final SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().build();
- *   private final InMemoryMetricReader reader = InMemoryMetricReader.create(sdkMeterProvider);
+ *   private final InMemoryMetricReader reader = new InMemoryMetricReader();
+ *   private final SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
  *   private final Meter meter = sdkMeterProvider.get("example");
  *   private final LongCounter metricCallCount = meter.counterBuilder("num_collects");
  *
@@ -40,12 +40,12 @@ import java.util.Collections;
  * </code></pre>
  */
 public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
-  private volatile MetricProducer sdkCollection;
+  // Note: we expect the `apply` method of `MetricReaderFactory` to be called
+  // prior to registering this being shared with other threads.
+  // This means this field does not need to be volatile because it will
+  // be filled out (and no longer mutated) prior to being shared with other threads.
+  private MetricProducer metricProducer;
   private volatile Collection<MetricData> latest = Collections.emptyList();
-
-  public InMemoryMetricReader() {
-    // Need to wait for registration for initial value.
-  }
 
   /** Returns all metrics accumulated since the last call. */
   public Collection<MetricData> collectAllMetrics() {
@@ -55,8 +55,8 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
 
   @Override
   public CompletableResultCode flush() {
-    if (sdkCollection != null) {
-      latest = sdkCollection.collectAllMetrics();
+    if (metricProducer != null) {
+      latest = metricProducer.collectAllMetrics();
     }
     return CompletableResultCode.ofSuccess();
   }
@@ -68,7 +68,7 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
 
   @Override
   public MetricReader apply(MetricProducer producer) {
-    this.sdkCollection = producer;
+    this.metricProducer = producer;
     return this;
   }
 }

@@ -29,15 +29,10 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
- * {@code SdkMeterProvider} implementation for {@link MeterProvider}.
+ * Default implementation for {@link SdkMeterProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * OpenTelemetry}.
- *
- * <p>WARNING: A MetricProducer is stateful. It will only return changes since the last time it was
- * accessed. This means that if more than one {@link
- * io.opentelemetry.sdk.metrics.export.MetricExporter} has a handle to this MetricProducer, the two
- * exporters will not receive copies of the same metric data to export.
  */
 final class DefaultSdkMeterProvider implements SdkMeterProvider {
 
