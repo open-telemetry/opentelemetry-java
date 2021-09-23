@@ -27,7 +27,7 @@ public interface SdkMeterProvider extends MeterProvider {
    *
    * @return a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
    */
-  public static SdkMeterProviderBuilder builder() {
+  static SdkMeterProviderBuilder builder() {
     return new SdkMeterProviderBuilder();
   }
 }
