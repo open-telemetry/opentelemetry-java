@@ -9,14 +9,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 public class TestCollectionHandle {
 
   @Test
   public void created_haveUniqueIdentity() {
-    CollectionHandle one = CollectionHandle.create();
-    CollectionHandle two = CollectionHandle.create();
+    Supplier<CollectionHandle> supplier = CollectionHandle.createSupplier();
+    CollectionHandle one = supplier.get();
+    CollectionHandle two = supplier.get();
 
     assertThat(one).isEqualTo(one);
     assertThat(one).isNotEqualTo(two);
@@ -24,15 +26,16 @@ public class TestCollectionHandle {
 
   @Test
   public void mutableSet_allowsAddAndContains() {
+    Supplier<CollectionHandle> supplier = CollectionHandle.createSupplier();
     Set<CollectionHandle> mutable = CollectionHandle.mutableSet();
-    CollectionHandle one = CollectionHandle.create();
+    CollectionHandle one = supplier.get();
     assertThat(mutable).hasSize(0);
     assertThat(mutable.contains(one)).isFalse();
     mutable.add(one);
     assertThat(mutable).hasSize(1);
     assertThat(mutable.contains(one)).isTrue();
 
-    CollectionHandle two = CollectionHandle.create();
+    CollectionHandle two = supplier.get();
     assertThat(mutable.contains(two)).isFalse();
     mutable.add(two);
     assertThat(mutable).hasSize(2);
@@ -41,9 +44,10 @@ public class TestCollectionHandle {
 
   @Test
   public void mutableSet_allowsContainsAll() {
-    CollectionHandle one = CollectionHandle.create();
-    CollectionHandle two = CollectionHandle.create();
-    CollectionHandle three = CollectionHandle.create();
+    Supplier<CollectionHandle> supplier = CollectionHandle.createSupplier();
+    CollectionHandle one = supplier.get();
+    CollectionHandle two = supplier.get();
+    CollectionHandle three = supplier.get();
     Set<CollectionHandle> mutable = CollectionHandle.mutableSet();
     mutable.add(one);
     mutable.add(two);
@@ -56,10 +60,11 @@ public class TestCollectionHandle {
   }
 
   @Test
-  public void mutableSet_iteratingWOrks() {
-    CollectionHandle one = CollectionHandle.create();
-    CollectionHandle two = CollectionHandle.create();
-    CollectionHandle three = CollectionHandle.create();
+  public void mutableSet_iteratingWorks() {
+    Supplier<CollectionHandle> supplier = CollectionHandle.createSupplier();
+    CollectionHandle one = supplier.get();
+    CollectionHandle two = supplier.get();
+    CollectionHandle three = supplier.get();
     Set<CollectionHandle> set = CollectionHandle.of(one, two, three);
     assertThat(set).hasSize(3);
     Iterator<CollectionHandle> iterator = set.iterator();

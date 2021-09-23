@@ -36,8 +36,12 @@ public final class CollectionHandle {
     return new CollectionHandleSet();
   }
 
-  /** Construct a new (mutable) set consistenting of the passed in collection handles. */
-  public static Set<CollectionHandle> of(CollectionHandle... handles) {
+  /**
+   * Construct a new (mutable) set consistenting of the passed in collection handles.
+   *
+   * <p>Used by tests.
+   */
+  static Set<CollectionHandle> of(CollectionHandle... handles) {
     Set<CollectionHandle> result = mutableSet();
     for (CollectionHandle handle : handles) {
       result.add(handle);
@@ -60,11 +64,6 @@ public final class CollectionHandle {
         return new CollectionHandle(nextIndex.getAndIncrement());
       }
     };
-  }
-
-  /** Creates a new collection handle using the next bit. */
-  public static CollectionHandle create() {
-    return new CollectionHandle(nextIndex.getAndIncrement());
   }
 
   @Override
@@ -90,9 +89,6 @@ public final class CollectionHandle {
   public String toString() {
     return "CollectionHandle(" + index + ")";
   }
-
-  // TODO: Better mechanism of this?
-  private static final AtomicInteger nextIndex = new AtomicInteger(1);
 
   /** An optimised bitset version of {@code Set<CollectionHandle>}. */
   private static class CollectionHandleSet extends AbstractSet<CollectionHandle> {

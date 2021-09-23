@@ -56,7 +56,7 @@ public class AsynchronousMetricStorageTest {
         MeterProviderSharedState.create(
             testClock, Resource.empty(), viewRegistry, ExemplarSampler.builder().build());
 
-    handle = CollectionHandle.create();
+    handle = CollectionHandle.createSupplier().get();
     all = CollectionHandle.mutableSet();
     all.add(handle);
   }

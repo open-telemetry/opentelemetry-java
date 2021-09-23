@@ -24,6 +24,11 @@ public interface MetricStorage {
   /**
    * Collects the metrics from this storage and resets for the next collection period.
    *
+   * <p>Note: This is a stateful operation and will reset any interval-related state for the {@code
+   * collector}.
+   *
+   * @param collector The identity of the current reader of metrics.
+   * @param allCollectors The set of all registered readers for metrics.
    * @param startEpochNanos The start timestamp for this SDK.
    * @param epochNanos The timestamp for this collection.
    * @return The {@link MetricData} from this collection period, or {@code null}.

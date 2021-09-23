@@ -30,7 +30,7 @@ public interface MetricReader {
    * @return the result of the shutdown.
    */
   CompletableResultCode flush();
-  
+
   /**
    * Shuts down the metric reader.
    *

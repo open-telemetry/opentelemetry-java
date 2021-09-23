@@ -51,7 +51,7 @@ public class SynchronousMetricStorageTest {
 
   @BeforeEach
   void setup() {
-    collector = CollectionHandle.create();
+    collector = CollectionHandle.createSupplier().get();
     allCollectors = CollectionHandle.mutableSet();
     allCollectors.add(collector);
   }
