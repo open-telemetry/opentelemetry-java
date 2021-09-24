@@ -18,12 +18,12 @@ final class NoopSdkMeterProvider implements SdkMeterProvider {
   }
 
   @Override
-  public CompletableResultCode flush() {
+  public CompletableResultCode forceFlush() {
     return CompletableResultCode.ofSuccess();
   }
 
   @Override
-  public CompletableResultCode shutdown() {
+  public CompletableResultCode close() {
     return CompletableResultCode.ofSuccess();
   }
 }

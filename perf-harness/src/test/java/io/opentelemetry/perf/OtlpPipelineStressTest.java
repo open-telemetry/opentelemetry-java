@@ -131,7 +131,7 @@ public class OtlpPipelineStressTest {
 
   @AfterEach
   void tearDown() throws IOException {
-    meterProvider.shutdown();
+    meterProvider.close();
     sdkTracerProvider.shutdown();
 
     toxiproxyClient.reset();
@@ -185,7 +185,7 @@ public class OtlpPipelineStressTest {
 
     Thread.sleep(10000);
     List<MetricData> finishedMetricItems = metricExporter.getFinishedMetricItems();
-    meterProvider.shutdown();
+    meterProvider.close();
     Thread.sleep(1000);
     reportMetrics(finishedMetricItems);
     Thread.sleep(10000);

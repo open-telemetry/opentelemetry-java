@@ -178,7 +178,7 @@ class PeriodicMetricReaderTest {
     }
 
     @Override
-    public CompletableResultCode flush() {
+    public CompletableResultCode forceFlush() {
       return CompletableResultCode.ofSuccess();
     }
 

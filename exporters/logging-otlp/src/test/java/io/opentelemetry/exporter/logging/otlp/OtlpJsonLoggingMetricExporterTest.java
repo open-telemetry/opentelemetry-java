@@ -137,7 +137,7 @@ class OtlpJsonLoggingMetricExporterTest {
 
   @Test
   void flush() {
-    assertThat(exporter.flush().isSuccess()).isTrue();
+    assertThat(exporter.forceFlush().isSuccess()).isTrue();
   }
 
   @Test

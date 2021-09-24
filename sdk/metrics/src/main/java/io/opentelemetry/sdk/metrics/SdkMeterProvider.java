@@ -17,10 +17,10 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 public interface SdkMeterProvider extends MeterProvider {
 
   /** Forces metric readers to immediately read metrics, if able. */
-  CompletableResultCode flush();
+  CompletableResultCode forceFlush();
 
   /** Shuts down metric collection and all associated metric readers. */
-  CompletableResultCode shutdown();
+  CompletableResultCode close();
 
   /**
    * Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.

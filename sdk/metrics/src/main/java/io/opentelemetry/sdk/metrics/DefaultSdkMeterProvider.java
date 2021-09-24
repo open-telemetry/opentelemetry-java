@@ -79,7 +79,7 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
   }
 
   @Override
-  public CompletableResultCode flush() {
+  public CompletableResultCode forceFlush() {
     List<CompletableResultCode> results = new ArrayList<>();
     for (MetricReader reader : readers) {
       results.add(reader.flush());
@@ -88,7 +88,7 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
   }
 
   @Override
-  public CompletableResultCode shutdown() {
+  public CompletableResultCode close() {
     // TODO - prevent multiple calls.
     List<CompletableResultCode> results = new ArrayList<>();
     for (MetricReader reader : readers) {

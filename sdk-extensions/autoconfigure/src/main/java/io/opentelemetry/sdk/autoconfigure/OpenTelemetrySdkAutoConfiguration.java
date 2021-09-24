@@ -93,7 +93,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     SdkMeterProvider meterProvider = meterProviderBuilder.buildAndRegisterGlobal();
 
     // Make sure metrics shut down when JVM shuts down.
-    Runtime.getRuntime().addShutdownHook(new Thread(meterProvider::shutdown));
+    Runtime.getRuntime().addShutdownHook(new Thread(meterProvider::close));
   }
 
   private OpenTelemetrySdkAutoConfiguration() {}

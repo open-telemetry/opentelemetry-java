@@ -119,9 +119,8 @@ public final class CollectionHandle {
     @Override
     public boolean containsAll(Collection<?> other) {
       if (other instanceof CollectionHandleSet) {
-        BitSet result = new BitSet();
+        BitSet result = (BitSet) storage.clone();
         BitSet otherStorage = ((CollectionHandleSet) other).storage;
-        result.or(storage);
         result.and(otherStorage);
         return result.equals(otherStorage);
       }

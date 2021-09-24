@@ -26,10 +26,10 @@ public class PeriodicMetricReader implements MetricReader {
   private final MetricProducer producer;
   private final MetricExporter exporter;
   private final ScheduledExecutorService scheduler;
-
   private final Scheduled scheduled;
-  @Nullable private volatile ScheduledFuture<?> scheduledFuture;
   private final Object lock = new Object();
+
+  @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
   PeriodicMetricReader(
       MetricProducer producer, MetricExporter exporter, ScheduledExecutorService scheduler) {
@@ -47,6 +47,7 @@ public class PeriodicMetricReader implements MetricReader {
   @Override
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = new CompletableResultCode();
+    ScheduledFuture<?> scheduledFuture = this.scheduledFuture;
     if (scheduledFuture != null) {
       scheduledFuture.cancel(false);
     }

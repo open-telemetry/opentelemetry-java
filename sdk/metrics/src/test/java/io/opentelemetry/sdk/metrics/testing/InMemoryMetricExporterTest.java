@@ -100,6 +100,6 @@ class InMemoryMetricExporterTest {
 
   @Test
   void test_flush() {
-    assertThat(exporter.flush().isSuccess()).isTrue();
+    assertThat(exporter.forceFlush().isSuccess()).isTrue();
   }
 }

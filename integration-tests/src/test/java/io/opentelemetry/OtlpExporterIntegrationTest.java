@@ -276,7 +276,7 @@ class OtlpExporterIntegrationTest {
           .atMost(Duration.ofSeconds(30))
           .until(() -> grpcServer.metricRequests.size() == 1);
     } finally {
-      meterProvider.shutdown();
+      meterProvider.close();
     }
 
     ExportMetricsServiceRequest request = grpcServer.metricRequests.get(0);
