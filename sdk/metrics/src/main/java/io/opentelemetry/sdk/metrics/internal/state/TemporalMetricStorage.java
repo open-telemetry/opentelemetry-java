@@ -18,10 +18,12 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 class TemporalMetricStorage<T> {
   private final Aggregator<T> aggregator;
+  private final boolean isSynchronous;
   private final Map<CollectionHandle, LastReportedAccumulation<T>> reportHistory = new HashMap<>();
 
-  TemporalMetricStorage(Aggregator<T> aggregator) {
+  TemporalMetricStorage(Aggregator<T> aggregator, boolean isSynchronous) {
     this.aggregator = aggregator;
+    this.isSynchronous = isSynchronous;
   }
 
   /**
@@ -42,6 +44,7 @@ class TemporalMetricStorage<T> {
       long epochNanos) {
     // In case it's our first collection, default to start timestmap.
     long lastCollectionEpoch = startEpochNanos;
+    Map<Attributes, T> result = currentAccumulation;
     // Check our last report time.
     if (reportHistory.containsKey(collector)) {
       LastReportedAccumulation<T> last = reportHistory.get(collector);
@@ -50,16 +53,21 @@ class TemporalMetricStorage<T> {
       if (aggregator.isStateful()) {
         // We merge the current into last, and take over that memory.
         DeltaMetricStorage.mergeInPlace(last.getAccumlation(), currentAccumulation, aggregator);
-        currentAccumulation = last.getAccumlation();
+        result = last.getAccumlation();
       }
     }
     // Update last reported accumulation
-    reportHistory.put(collector, new LastReportedAccumulation<>(currentAccumulation, epochNanos));
-    if (currentAccumulation.isEmpty()) {
+    if (isSynchronous) {
+      // Sync instruments remember the full recording.
+      reportHistory.put(collector, new LastReportedAccumulation<>(result, epochNanos));
+    } else {
+      // Async instruments record the raw measurement.
+      reportHistory.put(collector, new LastReportedAccumulation<>(currentAccumulation, epochNanos));
+    }
+    if (result.isEmpty()) {
       return null;
     }
-    return aggregator.toMetricData(
-        currentAccumulation, startEpochNanos, lastCollectionEpoch, epochNanos);
+    return aggregator.toMetricData(result, startEpochNanos, lastCollectionEpoch, epochNanos);
   }
 
   /** Remembers what was presented to a specific exporter. */

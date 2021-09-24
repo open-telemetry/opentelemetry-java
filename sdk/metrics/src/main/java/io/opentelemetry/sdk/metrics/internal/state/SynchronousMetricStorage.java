@@ -63,7 +63,7 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
     this.attributesProcessor = attributesProcessor;
     this.metricDescriptor = metricDescriptor;
     this.deltaMetricStorage = new DeltaMetricStorage<>(aggregator);
-    this.temporalMetricStorage = new TemporalMetricStorage<>(aggregator);
+    this.temporalMetricStorage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ true);
   }
 
   // This is a storage handle to use when the attributes processor requires
