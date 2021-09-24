@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
@@ -50,7 +50,7 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
       Clock clock,
       Resource resource,
       ViewRegistry viewRegistry,
-      ExemplarSampler exemplarSampler) {
+      ExemplarFilter exemplarSampler) {
     this.sharedState =
         MeterProviderSharedState.create(clock, resource, viewRegistry, exemplarSampler);
     this.registry =

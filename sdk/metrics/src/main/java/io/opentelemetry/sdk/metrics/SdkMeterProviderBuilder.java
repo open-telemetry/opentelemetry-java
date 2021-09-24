@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarSampler;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
@@ -30,7 +30,7 @@ public final class SdkMeterProviderBuilder {
   private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
   private final List<MetricReaderFactory> metricReaders = new ArrayList<>();
   // Default the sampling strategy.
-  private ExemplarSampler exemplarSampler = ExemplarSampler.builder().build();
+  private ExemplarFilter exemplarFilter = ExemplarFilter.sampleWithTraces();
 
   SdkMeterProviderBuilder() {}
 
@@ -59,12 +59,12 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * Assign an {@link ExemplarSampler} for all metrics created by Meters.
+   * Assign an {@link ExemplarFilter} for all metrics created by Meters.
    *
    * @return this
    */
-  public SdkMeterProviderBuilder setExemplarSampler(ExemplarSampler sampler) {
-    this.exemplarSampler = sampler;
+  public SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
+    this.exemplarFilter = filter;
     return this;
   }
 
@@ -139,6 +139,6 @@ public final class SdkMeterProviderBuilder {
       return new NoopSdkMeterProvider();
     }
     return new DefaultSdkMeterProvider(
-        metricReaders, clock, resource, viewRegistryBuilder.build(), exemplarSampler);
+        metricReaders, clock, resource, viewRegistryBuilder.build(), exemplarFilter);
   }
 }

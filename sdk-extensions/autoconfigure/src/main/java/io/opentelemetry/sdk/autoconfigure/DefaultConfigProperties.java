@@ -135,7 +135,8 @@ final class DefaultConfigProperties implements ConfigProperties {
               + "="
               + value
               + ". Expected number, found: "
-              + numberString);
+              + numberString,
+          ex);
     } catch (ConfigurationException ex) {
       throw new ConfigurationException(
           "Invalid duration property " + name + "=" + value + ". " + ex.getMessage());

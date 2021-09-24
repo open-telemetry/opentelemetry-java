@@ -191,6 +191,12 @@ These properties can be used to control the maximum size of recordings per span.
 | otel.span.event.count.limit            | OTEL_SPAN_EVENT_COUNT_LIMIT            | The maximum number of events per span. Default is `128`.               |
 | otel.span.link.count.limit             | OTEL_SPAN_LINK_COUNT_LIMIT             | The maximum number of links per span. Default is `128`                 |
 
+## Exemplars
+
+| System property          | Environment variable     | Description                                                                       |
+|--------------------------|--------------------------|-----------------------------------------------------------------------------------|
+| otel.metrics.exemplar.filter | OTEL_METRICS_EXEMPLAR_FILTER | The filter for exemplar sampling.  Can be `NONE`, `ALL` or `WITH_SAMPLED_TRACE`. Default is `WITH_SAMPLED_TRACE`.|
+
 ## Interval metric reader
 
 | System property          | Environment variable     | Description                                                                       |

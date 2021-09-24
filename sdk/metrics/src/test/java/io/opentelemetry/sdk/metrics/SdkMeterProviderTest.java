@@ -173,7 +173,7 @@ public class SdkMeterProviderTest {
         InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
         View.builder()
             .setAggregation(
-                Aggregation.explictBucketHistogram(
+                Aggregation.explicitBucketHistogram(
                     AggregationTemporality.DELTA, Collections.emptyList()))
             .build());
     InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
@@ -229,7 +229,7 @@ public class SdkMeterProviderTest {
   void collectAllSyncInstruments_DeltaHistogram() {
     registerViewForAllTypes(
         sdkMeterProviderBuilder,
-        Aggregation.explictBucketHistogram(AggregationTemporality.DELTA, Collections.emptyList()));
+        Aggregation.explicitBucketHistogram(AggregationTemporality.DELTA, Collections.emptyList()));
     InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
@@ -624,7 +624,7 @@ public class SdkMeterProviderTest {
   void collectAllAsyncInstruments_CumulativeHistogram() {
     registerViewForAllTypes(
         sdkMeterProviderBuilder,
-        Aggregation.explictBucketHistogram(
+        Aggregation.explicitBucketHistogram(
             AggregationTemporality.CUMULATIVE, Collections.emptyList()));
     InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
     SdkMeterProvider sdkMeterProvider =

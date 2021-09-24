@@ -12,7 +12,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
@@ -42,8 +42,14 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
 
   private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
 
+  /** Constructs asynchronous metric storage which stores nothing. */
+  public static MetricStorage empty() {
+    return EmptyMetricStorage.INSTANCE;
+  }
+
   /** Constructs storage for {@code double} valued instruments. */
-  public static <T> AsynchronousMetricStorage<T> doubleAsynchronousAccumulator(
+  @Nullable
+  public static <T> MetricStorage doubleAsynchronousAccumulator(
       View view,
       InstrumentDescriptor instrument,
       Resource resource,
@@ -52,15 +58,17 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
         view.getAggregation()
-            .config(instrument)
-            .create(
+            .createAggregator(
                 resource,
                 instrumentationLibraryInfo,
                 instrument,
                 metricDescriptor,
-                ExemplarReservoir::noSamples);
+                ExemplarFilter.neverSample());
 
     final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>();
+    if (Aggregator.empty() == aggregator) {
+      return empty();
+    }
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
     // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
     final ObservableDoubleMeasurement result =
@@ -82,7 +90,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   }
 
   /** Constructs storage for {@code long} valued instruments. */
-  public static <T> AsynchronousMetricStorage<T> longAsynchronousAccumulator(
+  public static <T> MetricStorage longAsynchronousAccumulator(
       View view,
       InstrumentDescriptor instrument,
       Resource resource,
@@ -91,13 +99,12 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
         view.getAggregation()
-            .config(instrument)
-            .create(
+            .createAggregator(
                 resource,
                 instrumentationLibraryInfo,
                 instrument,
                 metricDescriptor,
-                ExemplarReservoir::noSamples);
+                ExemplarFilter.neverSample());
     if (aggregator.isStateful()) {
       // The aggregator is expecting to diff SUMs for DELTA temporality.
       logger.warning(

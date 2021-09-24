@@ -43,7 +43,6 @@ public class SynchronousMetricStorageTest {
               InstrumentationLibraryInfo.create("test", "1.0"),
               DESCRIPTOR,
               METRIC_DESCRIPTOR,
-              // TODO: do we need to verify anything here?
               ExemplarReservoir::noSamples);
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
   private CollectionHandle collector;
@@ -59,8 +58,9 @@ public class SynchronousMetricStorageTest {
   @Test
   void attributesProcessor_used() {
     AttributesProcessor spyAttributesProcessor = Mockito.spy(this.attributesProcessor);
-    SynchronousMetricStorage<?> accumulator =
-        new SynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, spyAttributesProcessor);
+    SynchronousMetricStorage accumulator =
+        new DefaultSynchronousMetricStorage<>(
+            METRIC_DESCRIPTOR, aggregator, spyAttributesProcessor);
     accumulator.bind(Attributes.empty());
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
@@ -71,8 +71,8 @@ public class SynchronousMetricStorageTest {
     AttributesProcessor attributesProcessor =
         AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
     AttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);
-    SynchronousMetricStorage<?> accumulator =
-        new SynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
+    SynchronousMetricStorage accumulator =
+        new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
     BoundStorageHandle handle = accumulator.bind(labels);
     handle.recordDouble(1, labels, Context.root());
     MetricData md = accumulator.collectAndReset(collector, allCollectors, 0, testClock.now());
@@ -90,8 +90,8 @@ public class SynchronousMetricStorageTest {
 
   @Test
   void sameAggregator_ForSameAttributes() {
-    SynchronousMetricStorage<?> accumulator =
-        new SynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, attributesProcessor);
+    SynchronousMetricStorage accumulator =
+        new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, attributesProcessor);
     BoundStorageHandle handle = accumulator.bind(Attributes.builder().put("K", "V").build());
     BoundStorageHandle duplicateHandle =
         accumulator.bind(Attributes.builder().put("K", "V").build());
