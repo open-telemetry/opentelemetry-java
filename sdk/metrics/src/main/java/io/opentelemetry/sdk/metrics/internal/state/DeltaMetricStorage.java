@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,20 +86,8 @@ class DeltaMetricStorage<T> {
       }
     }
     // Now run a quick cleanup of deltas before returning.
-    cleanup(collectors);
+    unreportedDeltas.removeIf(delta -> delta.wasReadyByAll(collectors));
     return result;
-  }
-
-  /** Removes deltas once all collectors have pulled them. */
-  @GuardedBy("this")
-  private void cleanup(Set<CollectionHandle> collectors) {
-    Iterator<DeltaAccumulation<T>> i = unreportedDeltas.iterator();
-    while (i.hasNext()) {
-      DeltaAccumulation<T> delta = i.next();
-      if (delta.wasReadyByAll(collectors)) {
-        i.remove();
-      }
-    }
   }
 
   /**
