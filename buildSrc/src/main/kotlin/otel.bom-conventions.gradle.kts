@@ -32,7 +32,7 @@ rootProject.tasks.named(generateBuildSubstitutions.name) {
 
 afterEvaluate {
   otelBom.projectFilter.finalizeValue()
-  val stableProjects = rootProject.subprojects
+  val bomProjects = rootProject.subprojects
     .sortedBy { it.findProperty("archivesBaseName") as String? }
     .filter { !it.name.startsWith("bom") }
     .filter(otelBom.projectFilter.get()::test)
@@ -41,7 +41,7 @@ afterEvaluate {
   generateBuildSubstitutions {
     val outputFile = File(buildDir, "substitutions.gradle.kts")
     outputs.file(outputFile)
-    val substitutionSnippet = stableProjects.joinToString(
+    val substitutionSnippet = bomProjects.joinToString(
       separator = "\n",
       prefix = "dependencySubstitution {\n",
       postfix = "\n}\n"
@@ -54,7 +54,7 @@ afterEvaluate {
       outputFile.writeText(substitutionSnippet)
     }
   }
-  stableProjects.forEach { project ->
+  bomProjects.forEach { project ->
     dependencies {
       constraints {
         api(project)
