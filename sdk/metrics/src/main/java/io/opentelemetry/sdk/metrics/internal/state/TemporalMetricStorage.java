@@ -14,7 +14,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Stores last reported time or accumulation for metrics. */
+/** Stores last reported time and (optional) accumulation for metrics. */
 @ThreadSafe
 class TemporalMetricStorage<T> {
   private final Aggregator<T> aggregator;
