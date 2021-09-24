@@ -26,6 +26,10 @@ tasks.named("publish") {
   dependsOn(generateBuildSubstitutions)
 }
 
+rootProject.tasks.named(generateBuildSubstitutions.name) {
+  dependsOn(generateBuildSubstitutions)
+}
+
 afterEvaluate {
   otelBom.projectFilter.finalizeValue()
   val stableProjects = rootProject.subprojects

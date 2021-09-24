@@ -59,6 +59,12 @@ nexusPublishing {
   }
 }
 
+// The BOM projects register dependent tasks that actually do the generating.
+tasks.register("generateBuildSubstitutions") {
+  group = "publishing"
+  description = "Generate a code snippet that can be copy-pasted for use in composite builds."
+}
+
 subprojects {
   group = "io.opentelemetry"
 }
