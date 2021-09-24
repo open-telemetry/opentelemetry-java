@@ -73,7 +73,6 @@ public class AsynchronousMetricStorageTest {
                 InstrumentValueType.DOUBLE),
             meterProviderSharedState.getResource(),
             meterSharedState.getInstrumentationLibraryInfo(),
-            meterProviderSharedState.getStartEpochNanos(),
             value -> value.observe(1.0, Attributes.empty()))
         .collectAndReset(handle, all, 0, testClock.now());
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
@@ -91,7 +90,6 @@ public class AsynchronousMetricStorageTest {
                 InstrumentValueType.LONG),
             meterProviderSharedState.getResource(),
             meterSharedState.getInstrumentationLibraryInfo(),
-            meterProviderSharedState.getStartEpochNanos(),
             value -> value.observe(1, Attributes.empty()))
         .collectAndReset(handle, all, 0, testClock.nanoTime());
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());

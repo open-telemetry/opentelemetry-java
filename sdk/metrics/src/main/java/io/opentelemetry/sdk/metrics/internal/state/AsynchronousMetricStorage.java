@@ -48,7 +48,6 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       InstrumentDescriptor instrument,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      long startEpochNanos,
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
@@ -88,7 +87,6 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       InstrumentDescriptor instrument,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      long startEpochNanos,
       Consumer<ObservableLongMeasurement> metricUpdater) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =

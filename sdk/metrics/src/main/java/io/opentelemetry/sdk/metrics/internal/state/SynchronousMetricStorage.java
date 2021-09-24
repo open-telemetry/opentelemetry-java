@@ -40,7 +40,6 @@ public final class SynchronousMetricStorage<T> implements MetricStorage, Writeab
       InstrumentDescriptor instrumentDescriptor,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      long startEpochNanos,
       ExemplarSampler sampler) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
     final Aggregator<T> aggregator =
