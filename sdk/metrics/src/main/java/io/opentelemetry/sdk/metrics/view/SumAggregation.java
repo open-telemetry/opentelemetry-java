@@ -56,6 +56,6 @@ class SumAggregation extends Aggregation {
 
   @Override
   public String toString() {
-    return "sum(" + temporality + ")";
+    return "SumAggregation(" + temporality + ")";
   }
 }

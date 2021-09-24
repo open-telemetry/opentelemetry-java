@@ -99,7 +99,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
                 instrument,
                 metricDescriptor,
                 ExemplarFilter.neverSample());
-    if (Aggregator.empty().equals(aggregator)) {
+    if (Aggregator.empty() == aggregator) {
       return empty();
     }
     final InstrumentProcessor<T> instrumentProcessor =

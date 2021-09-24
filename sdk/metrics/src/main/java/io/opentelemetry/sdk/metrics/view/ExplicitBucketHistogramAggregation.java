@@ -68,6 +68,6 @@ class ExplicitBucketHistogramAggregation extends Aggregation {
 
   @Override
   public String toString() {
-    return "explicitBucketHistogram(" + temporality + ")";
+    return "ExplicitBucketHistogramAggregation(" + temporality + ")";
   }
 }

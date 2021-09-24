@@ -59,6 +59,6 @@ class DefaultAggregation extends Aggregation {
 
   @Override
   public String toString() {
-    return "default";
+    return "DefaultAggregation";
   }
 }

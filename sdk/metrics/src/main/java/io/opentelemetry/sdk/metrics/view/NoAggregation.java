@@ -32,6 +32,6 @@ class NoAggregation extends Aggregation {
 
   @Override
   public String toString() {
-    return "none";
+    return "NoAggregation";
   }
 }

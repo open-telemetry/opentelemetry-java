@@ -40,6 +40,6 @@ class LastValueAggregation extends Aggregation {
 
   @Override
   public String toString() {
-    return "lastValue";
+    return "LastValueAggregation";
   }
 }

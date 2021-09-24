@@ -49,7 +49,7 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
                 metricDescriptor,
                 exemplarFilter);
     // We won't be storing this metric.
-    if (Aggregator.empty().equals(aggregator)) {
+    if (Aggregator.empty() == aggregator) {
       return empty();
     }
     return new DefaultSynchronousMetricStorage<>(
