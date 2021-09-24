@@ -214,8 +214,7 @@ public final class BatchLogProcessor implements LogProcessor {
       }
       flushResult = this.flushRequested.get();
       if (flushResult == null) {
-        // Not really expected, but it is conceivable for flush to complete between compareAndSet
-        // and get, causing this to be null. It means the flush completed already successfully.
+        // A pending flush completed successfully while executing this method.
         return CompletableResultCode.ofSuccess();
       }
       return flushResult;
