@@ -64,8 +64,9 @@ final class TracerProviderConfiguration {
     Map<String, SpanExporter> exportersByNameCopy = new HashMap<>(exportersByName);
     List<SpanProcessor> spanProcessors = new ArrayList<>();
 
-    if (exportersByNameCopy.containsKey("logging")) {
-      spanProcessors.add(SimpleSpanProcessor.create(exportersByName.get("logging")));
+    SpanExporter exporter = exportersByName.get("logging");
+    if (exporter != null) {
+      spanProcessors.add(SimpleSpanProcessor.create(exporter));
       exportersByNameCopy.remove("logging");
     }
 

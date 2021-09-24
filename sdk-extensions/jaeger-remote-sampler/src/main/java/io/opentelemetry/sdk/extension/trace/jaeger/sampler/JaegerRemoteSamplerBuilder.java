@@ -13,6 +13,7 @@ import io.opentelemetry.api.internal.Utils;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /** A builder for {@link JaegerRemoteSampler}. */
 public final class JaegerRemoteSamplerBuilder {
@@ -22,8 +23,8 @@ public final class JaegerRemoteSamplerBuilder {
       Sampler.parentBased(Sampler.traceIdRatioBased(0.001));
 
   private String endpoint = DEFAULT_ENDPOINT;
-  private ManagedChannel channel;
-  private String serviceName;
+  @Nullable private ManagedChannel channel;
+  @Nullable private String serviceName;
   private Sampler initialSampler = INITIAL_SAMPLER;
   private int pollingIntervalMillis = DEFAULT_POLLING_INTERVAL_MILLIS;
   private boolean closeChannel = true;
@@ -97,6 +98,7 @@ public final class JaegerRemoteSamplerBuilder {
    * @return the remote sampler instance.
    */
   public JaegerRemoteSampler build() {
+    ManagedChannel channel = this.channel;
     if (channel == null) {
       channel = ManagedChannelBuilder.forTarget(endpoint).usePlaintext().build();
     }

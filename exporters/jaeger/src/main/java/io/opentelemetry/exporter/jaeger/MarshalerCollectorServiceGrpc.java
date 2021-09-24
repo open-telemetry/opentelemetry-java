@@ -42,19 +42,17 @@ final class MarshalerCollectorServiceGrpc {
         }
       };
 
-  private static volatile MethodDescriptor<PostSpansRequestMarshaler, PostSpansResponse>
-      getPostSpansMethod;
+  private static final MethodDescriptor<PostSpansRequestMarshaler, PostSpansResponse>
+      getPostSpansMethod =
+          MethodDescriptor.<PostSpansRequestMarshaler, PostSpansResponse>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "PostSpans"))
+              .setRequestMarshaller(REQUEST_MARSHALLER)
+              .setResponseMarshaller(RESPONSE_MARSHALER)
+              .build();
 
   static CollectorServiceFutureStub newFutureStub(io.grpc.Channel channel) {
-    io.grpc.stub.AbstractStub.StubFactory<CollectorServiceFutureStub> factory =
-        new io.grpc.stub.AbstractStub.StubFactory<CollectorServiceFutureStub>() {
-          @Override
-          public CollectorServiceFutureStub newStub(
-              io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
-            return new CollectorServiceFutureStub(channel, callOptions);
-          }
-        };
-    return CollectorServiceFutureStub.newStub(factory, channel);
+    return CollectorServiceFutureStub.newStub(CollectorServiceFutureStub::new, channel);
   }
 
   static final class CollectorServiceFutureStub
@@ -73,28 +71,8 @@ final class MarshalerCollectorServiceGrpc {
     com.google.common.util.concurrent.ListenableFuture<PostSpansResponse> postSpans(
         PostSpansRequestMarshaler request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getPostSpansMethod(), getCallOptions()), request);
+          getChannel().newCall(getPostSpansMethod, getCallOptions()), request);
     }
-  }
-
-  private static MethodDescriptor<PostSpansRequestMarshaler, PostSpansResponse>
-      getPostSpansMethod() {
-    MethodDescriptor<PostSpansRequestMarshaler, PostSpansResponse> getPostSpansMethod;
-    if ((getPostSpansMethod = MarshalerCollectorServiceGrpc.getPostSpansMethod) == null) {
-      synchronized (MarshalerCollectorServiceGrpc.class) {
-        if ((getPostSpansMethod = MarshalerCollectorServiceGrpc.getPostSpansMethod) == null) {
-          MarshalerCollectorServiceGrpc.getPostSpansMethod =
-              getPostSpansMethod =
-                  MethodDescriptor.<PostSpansRequestMarshaler, PostSpansResponse>newBuilder()
-                      .setType(MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "PostSpans"))
-                      .setRequestMarshaller(REQUEST_MARSHALLER)
-                      .setResponseMarshaller(RESPONSE_MARSHALER)
-                      .build();
-        }
-      }
-    }
-    return getPostSpansMethod;
   }
 
   private MarshalerCollectorServiceGrpc() {}

@@ -84,9 +84,7 @@ public final class LogAdapter {
   static io.opentelemetry.proto.logs.v1.LogRecord toProtoLogRecord(LogRecord logRecord) {
     io.opentelemetry.proto.logs.v1.LogRecord.Builder builder =
         io.opentelemetry.proto.logs.v1.LogRecord.newBuilder()
-            .setName(logRecord.getName())
             .setBody(getLogRecordBodyAnyValue(logRecord))
-            .setSeverityText(logRecord.getSeverityText())
             .setSeverityNumber(
                 SeverityNumber.forNumber(logRecord.getSeverity().getSeverityNumber()))
             .setTimeUnixNano(logRecord.getTimeUnixNano())
@@ -96,6 +94,14 @@ public final class LogAdapter {
             .setSpanId(
                 UnsafeByteOperations.unsafeWrap(
                     OtelEncodingUtils.bytesFromBase16(logRecord.getSpanId(), SpanId.getLength())));
+    String severityText = logRecord.getSeverityText();
+    if (severityText != null) {
+      builder.setSeverityText(severityText);
+    }
+    String name = logRecord.getName();
+    if (name != null) {
+      builder.setName(name);
+    }
 
     logRecord
         .getAttributes()

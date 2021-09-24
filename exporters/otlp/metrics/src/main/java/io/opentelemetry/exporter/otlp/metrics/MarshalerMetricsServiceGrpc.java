@@ -45,8 +45,14 @@ final class MarshalerMetricsServiceGrpc {
             }
           };
 
-  private static volatile MethodDescriptor<MetricsRequestMarshaler, ExportMetricsServiceResponse>
-      getExportMethod;
+  private static final MethodDescriptor<MetricsRequestMarshaler, ExportMetricsServiceResponse>
+      getExportMethod =
+          MethodDescriptor.<MetricsRequestMarshaler, ExportMetricsServiceResponse>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Export"))
+              .setRequestMarshaller(REQUEST_MARSHALLER)
+              .setResponseMarshaller(RESPONSE_MARSHALER)
+              .build();
 
   static MetricsServiceFutureStub newFutureStub(io.grpc.Channel channel) {
     return MetricsServiceFutureStub.newStub(MetricsServiceFutureStub::new, channel);
@@ -68,29 +74,8 @@ final class MarshalerMetricsServiceGrpc {
     com.google.common.util.concurrent.ListenableFuture<ExportMetricsServiceResponse> export(
         MetricsRequestMarshaler request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getExportMethod(), getCallOptions()), request);
+          getChannel().newCall(getExportMethod, getCallOptions()), request);
     }
-  }
-
-  private static MethodDescriptor<MetricsRequestMarshaler, ExportMetricsServiceResponse>
-      getExportMethod() {
-    MethodDescriptor<MetricsRequestMarshaler, ExportMetricsServiceResponse> getExportMethod;
-    if ((getExportMethod = MarshalerMetricsServiceGrpc.getExportMethod) == null) {
-      synchronized (MarshalerMetricsServiceGrpc.class) {
-        if ((getExportMethod = MarshalerMetricsServiceGrpc.getExportMethod) == null) {
-          MarshalerMetricsServiceGrpc.getExportMethod =
-              getExportMethod =
-                  MethodDescriptor
-                      .<MetricsRequestMarshaler, ExportMetricsServiceResponse>newBuilder()
-                      .setType(MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Export"))
-                      .setRequestMarshaller(REQUEST_MARSHALLER)
-                      .setResponseMarshaller(RESPONSE_MARSHALER)
-                      .build();
-        }
-      }
-    }
-    return getExportMethod;
   }
 
   private MarshalerMetricsServiceGrpc() {}

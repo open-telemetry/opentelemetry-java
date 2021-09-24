@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /** Remote sampler that gets sampling configuration from remote Jaeger server. */
 public final class JaegerRemoteSampler implements Sampler, Closeable {
@@ -45,14 +46,16 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
   private volatile Sampler sampler;
 
   JaegerRemoteSampler(
-      String serviceName,
+      @Nullable String serviceName,
       ManagedChannel channel,
       int pollingIntervalMs,
       Sampler initialSampler,
       boolean closeChannel) {
     this.channel = channel;
     this.closeChannel = closeChannel;
-    this.serviceName = serviceName;
+    // TODO(anuraaga): This probably needs to be replaced with using the Resource, but the spec
+    // won't ever accept that.
+    this.serviceName = serviceName != null ? serviceName : "";
     this.stub = SamplingManagerGrpc.newBlockingStub(channel);
     this.sampler = initialSampler;
     pollExecutor = Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));

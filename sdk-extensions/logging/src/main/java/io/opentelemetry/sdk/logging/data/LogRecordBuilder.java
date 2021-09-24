@@ -10,6 +10,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 public final class LogRecordBuilder {
   private final Resource resource;
@@ -20,8 +21,8 @@ public final class LogRecordBuilder {
   private String spanId = "";
   private int flags;
   private LogRecord.Severity severity = LogRecord.Severity.UNDEFINED_SEVERITY_NUMBER;
-  private String severityText;
-  private String name;
+  @Nullable private String severityText;
+  @Nullable private String name;
   private Body body = Body.stringBody("");
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 

@@ -209,8 +209,16 @@ public final class BatchLogProcessor implements LogProcessor {
 
     private CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
-      this.flushRequested.compareAndSet(null, flushResult);
-      return this.flushRequested.get();
+      if (this.flushRequested.compareAndSet(null, flushResult)) {
+        return flushResult;
+      }
+      flushResult = this.flushRequested.get();
+      if (flushResult == null) {
+        // Not really expected, but it is conceivable for flush to complete between compareAndSet
+        // and get, causing this to be null. It means the flush completed already successfully.
+        return CompletableResultCode.ofSuccess();
+      }
+      return flushResult;
     }
 
     public void addLogRecord(LogRecord record) {
