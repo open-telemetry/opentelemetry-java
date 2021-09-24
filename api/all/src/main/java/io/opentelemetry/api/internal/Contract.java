@@ -89,9 +89,9 @@ import java.lang.annotation.Target;
  * verifying nullness. We copy the annotation to avoid an external dependency.
  */
 @Documented
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-public @interface Contract {
+@interface Contract {
   /**
    * Contains the contract clauses describing causal relations between call arguments and the
    * returned value.
