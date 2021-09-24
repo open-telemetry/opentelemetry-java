@@ -189,6 +189,9 @@ Example usage could be as follows:
    }
    ```
 
+   See [the Gradle documentation](https://docs.gradle.org/current/userguide/composite_builds.html#included_build_declaring_substitutions)
+   for more information.
+
 4. If you now build your project, it will use the included build to supply the opentelemetry-java artifacts,
    ignoring any version declarations. Use the prefix `:DIRECTORY:` to refer to tasks/projects within
    the included build, where DIRECTORY is the name of the directory in the included build (only the part after the last `/`).
