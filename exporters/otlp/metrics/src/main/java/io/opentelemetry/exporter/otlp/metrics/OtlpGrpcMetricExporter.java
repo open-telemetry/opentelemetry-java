@@ -119,7 +119,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @return always Success
    */
   @Override
-  public CompletableResultCode flush() {
+  public CompletableResultCode forceFlush() {
     return CompletableResultCode.ofSuccess();
   }
 

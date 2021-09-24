@@ -37,7 +37,7 @@ public class TestConfigurableMetricExporterProvider implements ConfigurableMetri
     }
 
     @Override
-    public CompletableResultCode flush() {
+    public CompletableResultCode forceFlush() {
       return CompletableResultCode.ofSuccess();
     }
 

@@ -21,15 +21,16 @@ import java.util.List;
  *
  * <p>Usage: <code>sdkMeterProvider.registerMetricReader(PrometheusCollector.create());</code>
  */
-public final class PrometheusCollector extends Collector
-    implements MetricReader, MetricReaderFactory {
+public final class PrometheusCollector extends Collector implements MetricReader {
   // Note: we expect the `apply` method of `MetricReaderFactory` to be called
   // prior to registering this collector with the prometheus client library.
   // This means this field does not need to be volatile because it will
   // be filled out (and no longer mutated) prior to being shared with other threads.
-  private MetricProducer metricProducer;
+  private final MetricProducer metricProducer;
 
-  PrometheusCollector() {}
+  PrometheusCollector(MetricProducer metricProducer) {
+    this.metricProducer = metricProducer;
+  }
 
   @Override
   public List<MetricFamilySamples> collect() {
@@ -48,8 +49,8 @@ public final class PrometheusCollector extends Collector
    * Returns a new collector to be registered with a {@link
    * io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder}.
    */
-  public static PrometheusCollector create() {
-    return new PrometheusCollector();
+  public static MetricReaderFactory create() {
+    return new Factory();
   }
 
   // Prometheus cannot flush.
@@ -64,11 +65,14 @@ public final class PrometheusCollector extends Collector
     return CompletableResultCode.ofSuccess();
   }
 
-  @Override
-  public MetricReader apply(MetricProducer producer) {
-    this.metricProducer = producer;
-    // When SdkMeterProvider constructs us, we register with prometheus.
-    register();
-    return this;
+  /** Our implementation of the metric reader factory. */
+  private static class Factory implements MetricReaderFactory {
+    @Override
+    public MetricReader apply(MetricProducer producer) {
+      PrometheusCollector collector = new PrometheusCollector(producer);
+      // When SdkMeterProvider constructs us, we register with prometheus.
+      collector.register();
+      return collector;
+    }
   }
 }

@@ -153,7 +153,7 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
    * @return always Success
    */
   @Override
-  public CompletableResultCode flush() {
+  public CompletableResultCode forceFlush() {
     return CompletableResultCode.ofSuccess();
   }
 
