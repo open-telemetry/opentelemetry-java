@@ -26,6 +26,12 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface Aggregator<T> {
   /**
+   * Returns the empty aggregator, an aggregator that never records measurements or reports values.
+   */
+  static Aggregator<Void> empty() {
+    return EmptyAggregator.INSTANCE;
+  }
+  /**
    * Returns a new {@link AggregatorHandle}. This MUST by used by the synchronous to aggregate
    * recorded measurements during the collection cycle.
    *
