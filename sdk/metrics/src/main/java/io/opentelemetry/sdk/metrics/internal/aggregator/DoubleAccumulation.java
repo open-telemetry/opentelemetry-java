@@ -27,7 +27,7 @@ public abstract class DoubleAccumulation {
     return new AutoValue_DoubleAccumulation(value, exemplars);
   }
 
-  static DoubleAccumulation create(double value) {
+  public static DoubleAccumulation create(double value) {
     return create(value, Collections.emptyList());
   }
 
