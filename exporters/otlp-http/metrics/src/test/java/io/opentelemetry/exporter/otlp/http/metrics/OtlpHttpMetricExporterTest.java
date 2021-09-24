@@ -153,6 +153,16 @@ class OtlpHttpMetricExporterTest {
     assertThat(parseRequestBody(gzipDecompress(request.content().array()))).isEqualTo(payload);
   }
 
+  @Test
+  void testExport_flush() {
+    OtlpHttpMetricExporter exporter = OtlpHttpMetricExporter.builder().build();
+    try {
+      assertThat(exporter.forceFlush().isSuccess()).isTrue();
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
   private static void assertRequestCommon(AggregatedHttpRequest request) {
     assertThat(request.method()).isEqualTo(HttpMethod.POST);
     assertThat(request.path()).isEqualTo("/v1/metrics");
