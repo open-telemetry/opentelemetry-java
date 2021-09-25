@@ -161,7 +161,7 @@ with the next one already.
 Gradle provides a feature called ["composite builds"](https://docs.gradle.org/current/userguide/composite_builds.html)
 that allows to replace some normally externally provided dependencies with a project that is built
 (included) in the same Gradle invocation. This can be useful to quickly test a new feature or bug fix you are
-developing in opentelmetry-java with the examples or the app or instrumentation library where you
+developing in opentelemetry-java with the examples or the app or instrumentation library where you
 need the feature or run into the bug. Unfortunately, opentelemetry-java does not work out of the box
 with this feature because Gradle is unable to map the project names to the customized artifact
 coordinates (see e.g. [gradle/gradle#18291](https://github.com/gradle/gradle/issues/18291)
