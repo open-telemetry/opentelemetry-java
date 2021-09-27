@@ -115,7 +115,7 @@ class LoggingMetricExporterTest {
                 flushed.set(true);
               }
             });
-    exporter.forceFlush();
+    exporter.flush();
     assertThat(flushed.get()).isTrue();
   }
 }

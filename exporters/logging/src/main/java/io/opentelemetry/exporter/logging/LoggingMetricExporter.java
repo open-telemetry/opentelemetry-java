@@ -31,7 +31,7 @@ public final class LoggingMetricExporter implements MetricExporter {
    * @return the result of the operation
    */
   @Override
-  public CompletableResultCode forceFlush() {
+  public CompletableResultCode flush() {
     CompletableResultCode resultCode = new CompletableResultCode();
     for (Handler handler : logger.getHandlers()) {
       try {
@@ -46,7 +46,7 @@ public final class LoggingMetricExporter implements MetricExporter {
   @Override
   public CompletableResultCode shutdown() {
     // no-op
-    this.forceFlush();
+    this.flush();
     return CompletableResultCode.ofSuccess();
   }
 }

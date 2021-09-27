@@ -108,7 +108,7 @@ public final class InMemoryMetricExporter implements MetricExporter {
    * @return always Success
    */
   @Override
-  public CompletableResultCode forceFlush() {
+  public CompletableResultCode flush() {
     return CompletableResultCode.ofSuccess();
   }
 

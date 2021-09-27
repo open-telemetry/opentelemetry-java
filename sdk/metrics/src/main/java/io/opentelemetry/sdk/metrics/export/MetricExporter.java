@@ -34,7 +34,7 @@ public interface MetricExporter {
    *
    * @return the result of the flush, which is often an asynchronous operation.
    */
-  CompletableResultCode forceFlush();
+  CompletableResultCode flush();
 
   /**
    * Called when the associated IntervalMetricReader is shutdown.

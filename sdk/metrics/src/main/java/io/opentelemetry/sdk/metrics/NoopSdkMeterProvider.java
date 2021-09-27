@@ -26,4 +26,9 @@ final class NoopSdkMeterProvider implements SdkMeterProvider {
   public CompletableResultCode close() {
     return CompletableResultCode.ofSuccess();
   }
+
+  @Override
+  public CompletableResultCode shutdown() {
+    return close();
+  }
 }

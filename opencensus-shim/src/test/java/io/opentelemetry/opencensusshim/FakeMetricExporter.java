@@ -71,7 +71,7 @@ class FakeMetricExporter implements MetricExporter {
   }
 
   @Override
-  public CompletableResultCode forceFlush() {
+  public CompletableResultCode flush() {
     return CompletableResultCode.ofSuccess();
   }
 

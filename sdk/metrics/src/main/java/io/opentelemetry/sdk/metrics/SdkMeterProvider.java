@@ -22,6 +22,9 @@ public interface SdkMeterProvider extends MeterProvider {
   /** Shuts down metric collection and all associated metric readers. */
   CompletableResultCode close();
 
+  /** Shuts down metric collection and all associated metric readers. */
+  CompletableResultCode shutdown();
+
   /**
    * Returns a new {@link SdkMeterProviderBuilder} for {@link SdkMeterProvider}.
    *

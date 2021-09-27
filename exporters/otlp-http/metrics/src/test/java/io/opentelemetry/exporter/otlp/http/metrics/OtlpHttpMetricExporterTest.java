@@ -157,7 +157,7 @@ class OtlpHttpMetricExporterTest {
   void testExport_flush() {
     OtlpHttpMetricExporter exporter = OtlpHttpMetricExporter.builder().build();
     try {
-      assertThat(exporter.forceFlush().isSuccess()).isTrue();
+      assertThat(exporter.flush().isSuccess()).isTrue();
     } finally {
       exporter.shutdown();
     }

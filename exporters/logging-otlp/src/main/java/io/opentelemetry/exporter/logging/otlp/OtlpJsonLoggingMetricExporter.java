@@ -51,7 +51,7 @@ public final class OtlpJsonLoggingMetricExporter implements MetricExporter {
   }
 
   @Override
-  public CompletableResultCode forceFlush() {
+  public CompletableResultCode flush() {
     return CompletableResultCode.ofSuccess();
   }
 

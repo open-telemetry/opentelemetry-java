@@ -307,7 +307,7 @@ class OtlpGrpcMetricExporterTest {
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.forceFlush().isSuccess()).isTrue();
+      assertThat(exporter.flush().isSuccess()).isTrue();
     } finally {
       exporter.shutdown();
     }

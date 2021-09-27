@@ -104,6 +104,11 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
     return CompletableResultCode.ofAll(results);
   }
 
+  @Override
+  public CompletableResultCode shutdown() {
+    return close();
+  }
+
   /** Helper class to expose registered metric exports. */
   private class LeasedMetricProducer implements MetricProducer {
     private final CollectionHandle handle;
