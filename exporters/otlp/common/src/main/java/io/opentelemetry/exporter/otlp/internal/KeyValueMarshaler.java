@@ -108,28 +108,6 @@ public final class KeyValueMarshaler extends MarshalerWithSize {
     return size;
   }
 
-  private static class StringAnyValueMarshaler extends MarshalerWithSize {
-
-    private final byte[] valueUtf8;
-
-    StringAnyValueMarshaler(byte[] valueUtf8) {
-      super(calculateSize(valueUtf8));
-      this.valueUtf8 = valueUtf8;
-    }
-
-    @Override
-    public void writeTo(Serializer output) throws IOException {
-      // Do not call serialize* method because we always have to write the message tag even if the
-      // value is empty since it's a oneof.
-      output.writeString(AnyValue.STRING_VALUE, valueUtf8);
-    }
-
-    private static int calculateSize(byte[] valueUtf8) {
-      return AnyValue.STRING_VALUE.getTagSize()
-          + CodedOutputStream.computeByteArraySizeNoTag(valueUtf8);
-    }
-  }
-
   private static class BoolAnyValueMarshaler extends MarshalerWithSize {
 
     private final boolean value;

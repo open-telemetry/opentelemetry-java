@@ -47,8 +47,8 @@ public class SynchronousMetricStorageTest {
   @Test
   void attributesProcessor_used() {
     AttributesProcessor spyAttributesProcessor = Mockito.spy(this.attributesProcessor);
-    SynchronousMetricStorage<?> accumulator =
-        new SynchronousMetricStorage<>(
+    SynchronousMetricStorage accumulator =
+        new DefaultSynchronousMetricStorage<>(
             METRIC_DESCRIPTOR,
             aggregator,
             new InstrumentProcessor<>(aggregator, testClock.now()),
@@ -63,8 +63,8 @@ public class SynchronousMetricStorageTest {
     AttributesProcessor attributesProcessor =
         AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
     AttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);
-    SynchronousMetricStorage<?> accumulator =
-        new SynchronousMetricStorage<>(
+    SynchronousMetricStorage accumulator =
+        new DefaultSynchronousMetricStorage<>(
             METRIC_DESCRIPTOR,
             aggregator,
             new InstrumentProcessor<>(aggregator, testClock.now()),
@@ -86,8 +86,8 @@ public class SynchronousMetricStorageTest {
 
   @Test
   void sameAggregator_ForSameAttributes() {
-    SynchronousMetricStorage<?> accumulator =
-        new SynchronousMetricStorage<>(
+    SynchronousMetricStorage accumulator =
+        new DefaultSynchronousMetricStorage<>(
             METRIC_DESCRIPTOR,
             aggregator,
             new InstrumentProcessor<>(aggregator, testClock.now()),
