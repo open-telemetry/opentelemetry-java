@@ -54,7 +54,9 @@ public interface ExponentialHistogramPointData extends PointData {
    *
    * @return the base.
    */
-  double getBase();
+  default double getBase() {
+    return Math.pow(2, Math.pow(2, -getScale()));
+  }
 
   /**
    * Returns the number of measurements equal to zero in this data point.
