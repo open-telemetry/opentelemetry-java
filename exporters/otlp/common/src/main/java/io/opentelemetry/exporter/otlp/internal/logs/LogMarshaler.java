@@ -5,12 +5,12 @@
 
 package io.opentelemetry.exporter.otlp.internal.logs;
 
-import io.opentelemetry.exporter.otlp.internal.AnyValueMarshaler;
 import io.opentelemetry.exporter.otlp.internal.KeyValueMarshaler;
 import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
 import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
 import io.opentelemetry.exporter.otlp.internal.ProtoEnumInfo;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
+import io.opentelemetry.exporter.otlp.internal.StringAnyValueMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
 import io.opentelemetry.sdk.logging.data.LogRecord.Severity;
@@ -21,7 +21,7 @@ final class LogMarshaler extends MarshalerWithSize {
   private final ProtoEnumInfo severityNumber;
   private final byte[] severityText;
   private final byte[] nameUtf8;
-  private final AnyValueMarshaler anyValueMarshaler;
+  private final MarshalerWithSize anyValueMarshaler;
   private final KeyValueMarshaler[] attributeMarshalers;
   private final int droppedAttributesCount;
   private final int flags;
@@ -33,8 +33,8 @@ final class LogMarshaler extends MarshalerWithSize {
         KeyValueMarshaler.createRepeated(logRecord.getAttributes());
 
     // For now, map all the bodies to String AnyValue.
-    AnyValueMarshaler anyValueMarshaler =
-        AnyValueMarshaler.createString(MarshalerUtil.toBytes(logRecord.getBody().asString()));
+    StringAnyValueMarshaler anyValueMarshaler =
+        new StringAnyValueMarshaler(MarshalerUtil.toBytes(logRecord.getBody().asString()));
 
     return new LogMarshaler(
         logRecord.getTimeUnixNano(),
@@ -43,10 +43,11 @@ final class LogMarshaler extends MarshalerWithSize {
         MarshalerUtil.toBytes(logRecord.getName()),
         anyValueMarshaler,
         attributeMarshalers,
+        // TODO (trask) implement droppedAttributesCount in LogRecord
         0,
         logRecord.getFlags(),
         logRecord.getTraceId(),
-        logRecord.getSpanId()); // TODO (trask) implement droppedAttributesCount in LogRecord
+        logRecord.getSpanId());
   }
 
   private LogMarshaler(
@@ -54,7 +55,7 @@ final class LogMarshaler extends MarshalerWithSize {
       ProtoEnumInfo severityNumber,
       byte[] severityText,
       byte[] nameUtf8,
-      AnyValueMarshaler anyValueMarshaler,
+      MarshalerWithSize anyValueMarshaler,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
       int flags,
@@ -109,7 +110,7 @@ final class LogMarshaler extends MarshalerWithSize {
       ProtoEnumInfo severityNumber,
       byte[] severityText,
       byte[] nameUtf8,
-      AnyValueMarshaler anyValueMarshaler,
+      MarshalerWithSize anyValueMarshaler,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
       int flags,

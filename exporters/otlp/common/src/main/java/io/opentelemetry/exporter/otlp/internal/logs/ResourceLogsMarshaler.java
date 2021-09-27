@@ -20,6 +20,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A Marshaler of ResourceLogs.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 public final class ResourceLogsMarshaler extends MarshalerWithSize {
   private final ResourceMarshaler resourceMarshaler;
   private final byte[] schemaUrl;
