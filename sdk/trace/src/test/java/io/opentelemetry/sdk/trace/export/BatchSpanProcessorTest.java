@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
@@ -306,6 +307,21 @@ class BatchSpanProcessorTest {
     exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported).containsExactlyElementsOf(spansToExport);
+  }
+
+  @Test
+  void ignoresNullSpans() {
+    BatchSpanProcessor processor = BatchSpanProcessor.builder(mockSpanExporter).build();
+    try {
+      assertThatCode(
+              () -> {
+                processor.onStart(null, null);
+                processor.onEnd(null);
+              })
+          .doesNotThrowAnyException();
+    } finally {
+      processor.shutdown();
+    }
   }
 
   @Test
