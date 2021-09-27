@@ -5,8 +5,6 @@
 
 package io.opentelemetry.sdk.extension.trace.export;
 
-import static java.util.Objects.requireNonNull;
-
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.EventTranslatorThreeArg;
@@ -190,14 +188,19 @@ final class DisruptorEventQueue {
       try {
         switch (eventType) {
           case ON_START:
-            @SuppressWarnings("unchecked")
-            final SimpleImmutableEntry<ReadWriteSpan, Context> eventArgs =
-                (SimpleImmutableEntry<ReadWriteSpan, Context>)
-                    requireNonNull(readableSpan, "readableSpan");
-            spanProcessor.onStart(eventArgs.getValue(), eventArgs.getKey());
+            // In practice never null
+            if (readableSpan != null) {
+              @SuppressWarnings("unchecked")
+              final SimpleImmutableEntry<ReadWriteSpan, Context> eventArgs =
+                  (SimpleImmutableEntry<ReadWriteSpan, Context>) readableSpan;
+              spanProcessor.onStart(eventArgs.getValue(), eventArgs.getKey());
+            }
             break;
           case ON_END:
-            spanProcessor.onEnd((ReadableSpan) requireNonNull(readableSpan, "readableSpan"));
+            // In practice never null
+            if (readableSpan != null) {
+              spanProcessor.onEnd((ReadableSpan) readableSpan);
+            }
             break;
           case ON_SHUTDOWN:
             propagateResult(spanProcessor.shutdown(), event);
