@@ -60,7 +60,7 @@ public final class PrometheusCollector extends Collector implements MetricReader
   }
 
   /** Our implementation of the metric reader factory. */
-  // NOTE: This should be updated to (optionally) start the simpel Http server exposing the metrics
+  // NOTE: This should be updated to (optionally) start the simple Http server exposing the metrics
   // path.
   private static class Factory implements MetricReaderFactory {
     @Override

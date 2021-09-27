@@ -25,6 +25,14 @@ import javax.annotation.Nullable;
 public class PeriodicMetricReader implements MetricReader {
   private static final Logger logger = Logger.getLogger(PeriodicMetricReader.class.getName());
 
+  private final MetricProducer producer;
+  private final MetricExporter exporter;
+  private final ScheduledExecutorService scheduler;
+  private final Scheduled scheduled;
+  private final Object lock = new Object();
+
+  @Nullable private volatile ScheduledFuture<?> scheduledFuture;
+
   /**
    * Builds a factory that will register and start a PeriodicMetricReader.
    *
@@ -64,14 +72,6 @@ public class PeriodicMetricReader implements MetricReader {
       MetricExporter exporter, Duration duration, ScheduledExecutorService scheduler) {
     return new PeriodicMetricReaderFactory(exporter, duration, scheduler);
   }
-
-  private final MetricProducer producer;
-  private final MetricExporter exporter;
-  private final ScheduledExecutorService scheduler;
-  private final Scheduled scheduled;
-  private final Object lock = new Object();
-
-  @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
   PeriodicMetricReader(
       MetricProducer producer, MetricExporter exporter, ScheduledExecutorService scheduler) {
