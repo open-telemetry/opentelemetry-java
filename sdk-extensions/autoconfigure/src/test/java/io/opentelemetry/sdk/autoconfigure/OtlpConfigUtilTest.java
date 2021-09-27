@@ -69,8 +69,6 @@ class OtlpConfigUtilTest {
         .isEqualTo("http://localhost:4317/v1/traces");
     assertThat(configureHttpProtobufEndpoint(DATA_TYPE_TRACES, "http://localhost:4317/"))
         .isEqualTo("http://localhost:4317/v1/traces");
-    assertThat(configureHttpProtobufEndpoint(DATA_TYPE_TRACES, "http://localhost:4317/foo"))
-        .isEqualTo("http://localhost:4317/foo/v1/traces");
     assertThat(configureHttpProtobufEndpoint(DATA_TYPE_TRACES, "http://localhost:4317/v1/traces"))
         .isEqualTo("http://localhost:4317/v1/traces");
 
@@ -78,8 +76,6 @@ class OtlpConfigUtilTest {
         .isEqualTo("http://localhost:4317/v1/metrics");
     assertThat(configureHttpProtobufEndpoint(DATA_TYPE_METRICS, "http://localhost:4317/"))
         .isEqualTo("http://localhost:4317/v1/metrics");
-    assertThat(configureHttpProtobufEndpoint(DATA_TYPE_METRICS, "http://localhost:4317/foo"))
-        .isEqualTo("http://localhost:4317/foo/v1/metrics");
     assertThat(configureHttpProtobufEndpoint(DATA_TYPE_METRICS, "http://localhost:4317/v1/metrics"))
         .isEqualTo("http://localhost:4317/v1/metrics");
   }
