@@ -23,10 +23,6 @@ public interface MetricReader {
    *
    * <p>For push endpoints, this should collect and report metrics as normal.
    *
-   * <p>For pull endpoints, this may be called due to memory pressure or during shutdown of the
-   * application. Delta metrics collected in this way may be dropped, and the {@link MetricReader}
-   * is expected to handle this scenario.
-   *
    * @return the result of the shutdown.
    */
   CompletableResultCode flush();

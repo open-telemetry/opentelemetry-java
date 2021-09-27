@@ -86,7 +86,7 @@ class DeltaMetricStorage<T> {
       }
     }
     // Now run a quick cleanup of deltas before returning.
-    unreportedDeltas.removeIf(delta -> delta.wasReadyByAll(collectors));
+    unreportedDeltas.removeIf(delta -> delta.wasReadByAll(collectors));
     return result;
   }
 

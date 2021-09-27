@@ -6,7 +6,9 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.time.Duration;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +24,46 @@ import javax.annotation.Nullable;
  */
 public class PeriodicMetricReader implements MetricReader {
   private static final Logger logger = Logger.getLogger(PeriodicMetricReader.class.getName());
+
+  /**
+   * Builds a factory that will register and start a PeriodicMetricReader.
+   *
+   * <p>This will export once every 5 minutes.
+   *
+   * <p>This will spin up a new daemon thread to schedule the export on.
+   *
+   * @param exporter The exporter receiving metrics.
+   */
+  public static MetricReaderFactory create(MetricExporter exporter) {
+    return create(exporter, Duration.ofMinutes(5));
+  }
+
+  /**
+   * Builds a factory that will register and start a PeriodicMetricReader.
+   *
+   * <p>This will spin up a new daemon thread to schedule the export on.
+   *
+   * @param exporter The exporter receiving metrics.
+   * @param duration The duration (interval) between metric export calls.
+   */
+  public static MetricReaderFactory create(MetricExporter exporter, Duration duration) {
+    return create(
+        exporter,
+        duration,
+        Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader")));
+  }
+
+  /**
+   * Builds a factory that will register and start a PeriodicMetricReader.
+   *
+   * @param exporter The exporter receiving metrics.
+   * @param duration The duration (interval) between metric export calls.
+   * @param scheduler The service to schedule export work.
+   */
+  public static MetricReaderFactory create(
+      MetricExporter exporter, Duration duration, ScheduledExecutorService scheduler) {
+    return new PeriodicMetricReaderFactory(exporter, duration, scheduler);
+  }
 
   private final MetricProducer producer;
   private final MetricExporter exporter;

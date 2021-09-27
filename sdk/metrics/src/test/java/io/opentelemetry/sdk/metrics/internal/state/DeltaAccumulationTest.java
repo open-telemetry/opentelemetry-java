@@ -38,18 +38,18 @@ class DeltaAccumulationTest {
     DeltaAccumulation<Long> accumlation = new DeltaAccumulation<>(measurement);
     assertThat(accumlation.wasReadBy(handle1)).isFalse();
     assertThat(accumlation.wasReadBy(handle2)).isFalse();
-    assertThat(accumlation.wasReadyByAll(all)).isFalse();
+    assertThat(accumlation.wasReadByAll(all)).isFalse();
 
     // Read and check.
     assertThat(accumlation.read(handle1)).isEqualTo(measurement);
     assertThat(accumlation.wasReadBy(handle1)).isTrue();
     assertThat(accumlation.wasReadBy(handle2)).isFalse();
-    assertThat(accumlation.wasReadyByAll(all)).isFalse();
+    assertThat(accumlation.wasReadByAll(all)).isFalse();
 
     // Read and check.
     assertThat(accumlation.read(handle2)).isEqualTo(measurement);
     assertThat(accumlation.wasReadBy(handle1)).isTrue();
     assertThat(accumlation.wasReadBy(handle2)).isTrue();
-    assertThat(accumlation.wasReadyByAll(all)).isTrue();
+    assertThat(accumlation.wasReadByAll(all)).isTrue();
   }
 }

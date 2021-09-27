@@ -86,8 +86,8 @@ class PeriodicMetricReaderTest {
   @Test
   void periodicExport() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    PeriodicMetricReaderFactory factory =
-        new PeriodicMetricReaderFactory(waitingMetricExporter, Duration.ofMillis(100));
+    MetricReaderFactory factory =
+        PeriodicMetricReader.create(waitingMetricExporter, Duration.ofMillis(100));
 
     MetricReader reader = factory.apply(metricProducer);
     try {
@@ -105,8 +105,8 @@ class PeriodicMetricReaderTest {
   @Test
   void flush() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    PeriodicMetricReaderFactory factory =
-        new PeriodicMetricReaderFactory(waitingMetricExporter, Duration.ofMillis(Long.MAX_VALUE));
+    MetricReaderFactory factory =
+        PeriodicMetricReader.create(waitingMetricExporter, Duration.ofMillis(Long.MAX_VALUE));
 
     MetricReader reader = factory.apply(metricProducer);
     assertThat(reader.flush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
@@ -123,8 +123,8 @@ class PeriodicMetricReaderTest {
   @Timeout(2)
   public void intervalExport_exporterThrowsException() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
-    PeriodicMetricReaderFactory factory =
-        new PeriodicMetricReaderFactory(waitingMetricExporter, Duration.ofMillis(100));
+    MetricReaderFactory factory =
+        PeriodicMetricReader.create(waitingMetricExporter, Duration.ofMillis(100));
     MetricReader reader = factory.apply(metricProducer);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(2))
@@ -138,8 +138,8 @@ class PeriodicMetricReaderTest {
   @Test
   void oneLastExportAfterShutdown() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    PeriodicMetricReaderFactory factory =
-        new PeriodicMetricReaderFactory(waitingMetricExporter, Duration.ofSeconds(100));
+    MetricReaderFactory factory =
+        PeriodicMetricReader.create(waitingMetricExporter, Duration.ofSeconds(100));
     MetricReader reader = factory.apply(metricProducer);
     // Assume that this will be called in less than 100 seconds.
     reader.shutdown();

@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.prometheus.client.Collector;
+import io.prometheus.client.CollectorRegistry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,10 +23,6 @@ import java.util.List;
  * <p>Usage: <code>sdkMeterProvider.registerMetricReader(PrometheusCollector.create());</code>
  */
 public final class PrometheusCollector extends Collector implements MetricReader {
-  // Note: we expect the `apply` method of `MetricReaderFactory` to be called
-  // prior to registering this collector with the prometheus client library.
-  // This means this field does not need to be volatile because it will
-  // be filled out (and no longer mutated) prior to being shared with other threads.
   private final MetricProducer metricProducer;
 
   PrometheusCollector(MetricProducer metricProducer) {
@@ -34,9 +31,6 @@ public final class PrometheusCollector extends Collector implements MetricReader
 
   @Override
   public List<MetricFamilySamples> collect() {
-    if (metricProducer == null) {
-      return Collections.emptyList();
-    }
     Collection<MetricData> allMetrics = metricProducer.collectAllMetrics();
     List<MetricFamilySamples> allSamples = new ArrayList<>(allMetrics.size());
     for (MetricData metricData : allMetrics) {
@@ -61,11 +55,13 @@ public final class PrometheusCollector extends Collector implements MetricReader
 
   @Override
   public CompletableResultCode shutdown() {
-    // TODO - Can we unsubscribe ourselves from callbacks?
+    CollectorRegistry.defaultRegistry.unregister(this);
     return CompletableResultCode.ofSuccess();
   }
 
   /** Our implementation of the metric reader factory. */
+  // NOTE: This should be updated to (optionally) start the simpel Http server exposing the metrics
+  // path.
   private static class Factory implements MetricReaderFactory {
     @Override
     public MetricReader apply(MetricProducer producer) {

@@ -18,7 +18,7 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReaderFactory;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
@@ -50,7 +50,7 @@ final class MetricExporterConfiguration {
         if (spiExporter == null) {
           throw new ConfigurationException("Unrecognized value for otel.metrics.exporter: " + name);
         }
-        configureIntervalMetricReader(config, sdkMeterProviderBuilder, spiExporter);
+        configurePeriodicMetricReader(config, sdkMeterProviderBuilder, spiExporter);
         return;
     }
   }
@@ -70,7 +70,7 @@ final class MetricExporterConfiguration {
 
   private static void configureLoggingMetrics(
       ConfigProperties config, SdkMeterProviderBuilder sdkMeterProviderBuilder) {
-    configureIntervalMetricReader(config, sdkMeterProviderBuilder, new LoggingMetricExporter());
+    configurePeriodicMetricReader(config, sdkMeterProviderBuilder, new LoggingMetricExporter());
   }
 
   // Visible for testing
@@ -130,12 +130,12 @@ final class MetricExporterConfiguration {
       throw new ConfigurationException("Unsupported OTLP metrics protocol: " + protocol);
     }
 
-    configureIntervalMetricReader(config, sdkMeterProviderBuilder, exporter);
+    configurePeriodicMetricReader(config, sdkMeterProviderBuilder, exporter);
 
     return exporter;
   }
 
-  private static void configureIntervalMetricReader(
+  private static void configurePeriodicMetricReader(
       ConfigProperties config,
       SdkMeterProviderBuilder sdkMeterProviderBuilder,
       MetricExporter exporter) {
@@ -144,10 +144,10 @@ final class MetricExporterConfiguration {
     if (exportInterval == null) {
       exportInterval = Duration.ofMinutes(1);
     }
-    // Register the reader (which starts it), and use a global shutdown hook rather than
-    // interval reader specific.
+    // Register the reader (which will start when SDK is built).
+    // This will shutdown when the SDK is shutdown.
     sdkMeterProviderBuilder.registerMetricReader(
-        new PeriodicMetricReaderFactory(exporter, exportInterval));
+        PeriodicMetricReader.create(exporter, exportInterval));
   }
 
   private static void configurePrometheusMetrics(
@@ -157,7 +157,7 @@ final class MetricExporterConfiguration {
         "Prometheus Metrics Server",
         "opentelemetry-exporter-prometheus");
     sdkMeterProviderBuilder.registerMetricReader(PrometheusCollector.create());
-    // TODO: Can we move this portion into the PrometheusCollector so shutdown on SdkMeterProvider
+    // TODO: Move this portion into the PrometheusCollector so shutdown on SdkMeterProvider
     // will collapse prometheus too?
     Integer port = config.getInt("otel.exporter.prometheus.port");
     if (port == null) {

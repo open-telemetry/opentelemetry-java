@@ -24,14 +24,22 @@ class DeltaAccumulation<T> {
     this.readers = CollectionHandle.mutableSet();
   }
 
+  /** Returns true if this accumulation was read by the {@link CollectionHandle}. */
   boolean wasReadBy(CollectionHandle handle) {
     return readers.contains(handle);
   }
 
-  boolean wasReadyByAll(Set<CollectionHandle> handles) {
+  /** Returns true if all readers in the given set have read this accumulation. */
+  boolean wasReadByAll(Set<CollectionHandle> handles) {
     return readers.containsAll(handles);
   }
 
+  /**
+   * Reads the current delta accumulation.
+   *
+   * @param handle The reader of the accumulation.
+   * @return the accumulation.
+   */
   Map<Attributes, T> read(CollectionHandle handle) {
     readers.add(handle);
     return recording;

@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -38,12 +39,12 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
 
   private static final Logger LOGGER = Logger.getLogger(DefaultSdkMeterProvider.class.getName());
   static final String DEFAULT_METER_NAME = "unknown";
+
   private final ComponentRegistry<SdkMeter> registry;
   private final MeterProviderSharedState sharedState;
-
-  // These are *only* mutated in our constructor, and safe to use concurrently after construction.
-  private final Set<CollectionHandle> collectors = CollectionHandle.mutableSet();
-  private final List<MetricReader> readers = new ArrayList<>();
+  private final Set<CollectionHandle> collectors;
+  private final List<MetricReader> readers;
+  private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
   DefaultSdkMeterProvider(
       List<MetricReaderFactory> readerFactories,
@@ -59,6 +60,9 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
 
     // Here we construct our own unique handle ids for this SDK.
     // These are guaranteed to be unique per-reader for this SDK, and only this SDK.
+    // These are *only* mutated in our constructor, and safe to use concurrently after construction.
+    collectors = CollectionHandle.mutableSet();
+    readers = new ArrayList<>();
     Supplier<CollectionHandle> handleSupplier = CollectionHandle.createSupplier();
     for (MetricReaderFactory readerFactory : readerFactories) {
       CollectionHandle handle = handleSupplier.get();
@@ -89,7 +93,10 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
 
   @Override
   public CompletableResultCode close() {
-    // TODO - prevent multiple calls.
+    if (isClosed.compareAndSet(false, true)) {
+      LOGGER.info("Multiple close calls");
+      return CompletableResultCode.ofSuccess();
+    }
     List<CompletableResultCode> results = new ArrayList<>();
     for (MetricReader reader : readers) {
       results.add(reader.shutdown());
@@ -108,6 +115,9 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
     @Override
     public Collection<MetricData> collectAllMetrics() {
       Collection<SdkMeter> meters = registry.getComponents();
+      // TODO: This can be made more efficient by passing the list through the collection and
+      // appending
+      // rather than allocating individual lists and concatenating.
       List<MetricData> result = new ArrayList<>(meters.size());
       for (SdkMeter meter : meters) {
         result.addAll(meter.collectAll(handle, collectors, sharedState.getClock().now()));
