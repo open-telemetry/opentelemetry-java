@@ -20,6 +20,8 @@ final class OtlpConfigUtil {
 
   static final String DATA_TYPE_TRACES = "traces";
   static final String DATA_TYPE_METRICS = "metrics";
+  static final String PROTOCOL_GRPC = "grpc";
+  static final String PROTOCOL_HTTP_PROTOBUF = "http/protobuf";
 
   static String getOtlpProtocol(String dataType, ConfigProperties config) {
     String protocol = config.getString("otel.exporter.otlp." + dataType + ".protocol");
@@ -32,7 +34,7 @@ final class OtlpConfigUtil {
     if (protocol == null) {
       protocol = config.getString("otel.experimental.exporter.otlp.protocol");
     }
-    return (protocol == null) ? "grpc" : protocol;
+    return (protocol == null) ? PROTOCOL_GRPC : protocol;
   }
 
   static void configureOtlpExporterBuilder(
@@ -46,6 +48,16 @@ final class OtlpConfigUtil {
     String endpoint = config.getString("otel.exporter.otlp." + dataType + ".endpoint");
     if (endpoint == null) {
       endpoint = config.getString("otel.exporter.otlp.endpoint");
+      String signalPath = signalPath(dataType);
+      String protocol = getOtlpProtocol(dataType, config);
+      if (endpoint != null
+          && protocol.equals(PROTOCOL_HTTP_PROTOBUF)
+          && !endpoint.endsWith(signalPath)) {
+        if (!endpoint.endsWith("/")) {
+          endpoint += "/";
+        }
+        endpoint += signalPath;
+      }
     }
     if (endpoint != null) {
       setEndpoint.accept(endpoint);
@@ -89,6 +101,18 @@ final class OtlpConfigUtil {
         throw new ConfigurationException("Error reading OTLP certificate.", e);
       }
       setTrustedCertificates.accept(certificateBytes);
+    }
+  }
+
+  private static String signalPath(String dataType) {
+    switch (dataType) {
+      case DATA_TYPE_METRICS:
+        return "v1/metrics";
+      case DATA_TYPE_TRACES:
+        return "v1/traces";
+      default:
+        throw new IllegalArgumentException(
+            "Cannot determine signal path for unrecognized data type: " + dataType);
     }
   }
 

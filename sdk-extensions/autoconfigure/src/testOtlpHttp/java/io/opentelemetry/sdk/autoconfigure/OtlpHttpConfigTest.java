@@ -164,8 +164,7 @@ class OtlpHttpConfigTest {
   void configureExportersGeneral() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.protocol", "http/protobuf");
-    props.put("otel.exporter.otlp.traces.endpoint", traceEndpoint());
-    props.put("otel.exporter.otlp.metrics.endpoint", metricEndpoint());
+    props.put("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
     props.put("otel.exporter.otlp.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.compression", "gzip");
@@ -226,7 +225,9 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
     props.put("otel.exporter.otlp.compression", "foo");
     props.put("otel.exporter.otlp.timeout", "10s");
-    props.put("otel.exporter.otlp.traces.endpoint", traceEndpoint());
+    props.put(
+        "otel.exporter.otlp.traces.endpoint",
+        "https://localhost:" + server.httpsPort() + "/v1/traces");
     props.put("otel.exporter.otlp.traces.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.traces.compression", "gzip");
@@ -266,7 +267,9 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
     props.put("otel.exporter.otlp.compression", "foo");
     props.put("otel.exporter.otlp.timeout", "10s");
-    props.put("otel.exporter.otlp.metrics.endpoint", metricEndpoint());
+    props.put(
+        "otel.exporter.otlp.metrics.endpoint",
+        "https://localhost:" + server.httpsPort() + "/v1/metrics");
     props.put("otel.exporter.otlp.metrics.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.metrics.compression", "gzip");
@@ -349,8 +352,8 @@ class OtlpHttpConfigTest {
   @Test
   void configuresGlobal() {
     System.setProperty("otel.exporter.otlp.protocol", "http/protobuf");
-    System.setProperty("otel.exporter.otlp.traces.endpoint", traceEndpoint());
-    System.setProperty("otel.exporter.otlp.metrics.endpoint", metricEndpoint());
+    System.setProperty(
+        "otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort() + "/");
     System.setProperty("otel.exporter.otlp.certificate", certificateExtension.filePath);
     System.setProperty("otel.imr.export.interval", "1s");
 
@@ -366,13 +369,5 @@ class OtlpHttpConfigTest {
               // potentially others.
               assertThat(metricRequests).isNotEmpty();
             });
-  }
-
-  private static String traceEndpoint() {
-    return String.format("https://localhost:%s/v1/traces", server.httpsPort());
-  }
-
-  private static String metricEndpoint() {
-    return String.format("https://localhost:%s/v1/metrics", server.httpsPort());
   }
 }
