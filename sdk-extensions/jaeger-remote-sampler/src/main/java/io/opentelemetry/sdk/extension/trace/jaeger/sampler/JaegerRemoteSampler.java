@@ -53,8 +53,6 @@ public final class JaegerRemoteSampler implements Sampler, Closeable {
       boolean closeChannel) {
     this.channel = channel;
     this.closeChannel = closeChannel;
-    // TODO(anuraaga): This probably needs to be replaced with using the Resource, but the spec
-    // won't ever accept that.
     this.serviceName = serviceName != null ? serviceName : "";
     this.stub = SamplingManagerGrpc.newBlockingStub(channel);
     this.sampler = initialSampler;
