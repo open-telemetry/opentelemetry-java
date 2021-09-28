@@ -143,7 +143,7 @@ public class ResourceBuilder {
 
   /** Puts a {@link AttributeKey} with associated value into this. */
   public <T> ResourceBuilder put(AttributeKey<T> key, T value) {
-    if (key != null && key.getKey() != null && key.getKey().length() > 0 && value != null) {
+    if (key != null && key.getKey() != null && !key.getKey().isEmpty() && value != null) {
       attributesBuilder.put(key, value);
     }
     return this;
@@ -151,7 +151,7 @@ public class ResourceBuilder {
 
   /** Puts a {@link AttributeKey} with associated value into this. */
   public ResourceBuilder put(AttributeKey<Long> key, int value) {
-    if (key != null && key.getKey() != null) {
+    if (key != null && key.getKey() != null && !key.getKey().isEmpty()) {
       attributesBuilder.put(key, value);
     }
     return this;
