@@ -1,3 +1,7 @@
+import net.ltgt.gradle.errorprone.CheckSeverity.*
+import net.ltgt.gradle.errorprone.errorprone
+import net.ltgt.gradle.nullaway.nullaway
+
 plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
@@ -25,4 +29,14 @@ dependencies {
   testImplementation("com.google.guava:guava")
 
   jmh(project(":sdk:trace"))
+}
+
+tasks {
+  named<JavaCompile>("compileJava") {
+    with(options) {
+      errorprone.nullaway {
+        severity.set(OFF)
+      }
+    }
+  }
 }

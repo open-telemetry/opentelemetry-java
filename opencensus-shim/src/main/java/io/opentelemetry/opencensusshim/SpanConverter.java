@@ -6,6 +6,7 @@
 package io.opentelemetry.opencensusshim;
 
 import io.opencensus.common.Function;
+import io.opencensus.trace.BlankSpan;
 import io.opencensus.trace.Span;
 import io.opencensus.trace.SpanContext;
 import io.opencensus.trace.SpanId;
@@ -40,10 +41,9 @@ final class SpanConverter {
     return SpanKind.INTERNAL;
   }
 
-  @Nullable
   static Span fromOtelSpan(@Nullable io.opentelemetry.api.trace.Span otSpan) {
     if (otSpan == null) {
-      return null;
+      return BlankSpan.INSTANCE;
     }
     return new OpenTelemetrySpanImpl(otSpan);
   }
