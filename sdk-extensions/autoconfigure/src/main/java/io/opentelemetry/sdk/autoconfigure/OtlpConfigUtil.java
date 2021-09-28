@@ -8,8 +8,6 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,16 +48,15 @@ final class OtlpConfigUtil {
     String endpoint = config.getString("otel.exporter.otlp." + dataType + ".endpoint");
     if (endpoint == null) {
       endpoint = config.getString("otel.exporter.otlp.endpoint");
+      String signalPath = signalPath(dataType);
       String protocol = getOtlpProtocol(dataType, config);
-      if (endpoint != null && protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
-        URI endpointUri;
-        try {
-          endpointUri = new URI(endpoint);
-        } catch (URISyntaxException e) {
-          throw new ConfigurationException("Invalid endpoint, must be a URI: " + endpoint, e);
+      if (endpoint != null
+          && protocol.equals(PROTOCOL_HTTP_PROTOBUF)
+          && !endpoint.endsWith(signalPath)) {
+        if (!endpoint.endsWith("/")) {
+          endpoint += "/";
         }
-        String signalPath = signalPath(dataType);
-        endpoint = endpointUri.resolve(signalPath).toString();
+        endpoint += signalPath;
       }
     }
     if (endpoint != null) {
@@ -110,9 +107,9 @@ final class OtlpConfigUtil {
   private static String signalPath(String dataType) {
     switch (dataType) {
       case DATA_TYPE_METRICS:
-        return "/v1/metrics";
+        return "v1/metrics";
       case DATA_TYPE_TRACES:
-        return "/v1/traces";
+        return "v1/traces";
       default:
         throw new IllegalArgumentException(
             "Cannot determine signal path for unrecognized data type: " + dataType);
