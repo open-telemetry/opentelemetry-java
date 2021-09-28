@@ -5,7 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.internal.traces;
 
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.opentelemetry.proto.trace.v1.Span.SpanKind.SPAN_KIND_SERVER;
 import static io.opentelemetry.proto.trace.v1.Status.DeprecatedStatusCode.DEPRECATED_STATUS_CODE_OK;
@@ -30,6 +29,7 @@ import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.proto.common.v1.AnyValue;
+import io.opentelemetry.proto.common.v1.ArrayValue;
 import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
@@ -109,8 +109,18 @@ class TraceRequestMarshalerTest {
                     .setKind(SpanKind.SERVER)
                     .setStartEpochNanos(12345)
                     .setEndEpochNanos(12349)
-                    .setAttributes(Attributes.of(booleanKey("key"), true))
-                    .setTotalAttributeCount(2)
+                    .setAttributes(
+                        Attributes.builder()
+                            .put("key", true)
+                            .put("string", "string")
+                            .put("int", 100L)
+                            .put("double", 100.3)
+                            .put("string_array", "string1", "string2")
+                            .put("long_array", 12L, 23L)
+                            .put("double_array", 12.3, 23.1)
+                            .put("boolean_array", true, false)
+                            .build())
+                    .setTotalAttributeCount(9)
                     .setEvents(
                         Collections.singletonList(
                             EventData.create(12347, "my_event", Attributes.empty())))
@@ -128,10 +138,66 @@ class TraceRequestMarshalerTest {
     assertThat(span.getStartTimeUnixNano()).isEqualTo(12345);
     assertThat(span.getEndTimeUnixNano()).isEqualTo(12349);
     assertThat(span.getAttributesList())
-        .containsExactly(
+        .containsOnly(
             KeyValue.newBuilder()
                 .setKey("key")
                 .setValue(AnyValue.newBuilder().setBoolValue(true).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("string")
+                .setValue(AnyValue.newBuilder().setStringValue("string").build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("int")
+                .setValue(AnyValue.newBuilder().setIntValue(100).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("double")
+                .setValue(AnyValue.newBuilder().setDoubleValue(100.3).build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("string_array")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setStringValue("string1").build())
+                                .addValues(AnyValue.newBuilder().setStringValue("string2").build())
+                                .build())
+                        .build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("long_array")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setIntValue(12).build())
+                                .addValues(AnyValue.newBuilder().setIntValue(23).build())
+                                .build())
+                        .build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("double_array")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setDoubleValue(12.3).build())
+                                .addValues(AnyValue.newBuilder().setDoubleValue(23.1).build())
+                                .build())
+                        .build())
+                .build(),
+            KeyValue.newBuilder()
+                .setKey("boolean_array")
+                .setValue(
+                    AnyValue.newBuilder()
+                        .setArrayValue(
+                            ArrayValue.newBuilder()
+                                .addValues(AnyValue.newBuilder().setBoolValue(true).build())
+                                .addValues(AnyValue.newBuilder().setBoolValue(false).build())
+                                .build())
+                        .build())
                 .build());
     assertThat(span.getDroppedAttributesCount()).isEqualTo(1);
     assertThat(span.getEventsList())
