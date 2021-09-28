@@ -63,7 +63,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   private final boolean compressionEnabled;
 
   OtlpHttpSpanExporter(
-      OkHttpClient client, String endpoint, Headers headers, boolean compressionEnabled) {
+      OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
     Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http");
     this.spansSeen = meter.counterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
     LongCounter spansExportedCounter = meter.counterBuilder("spansExportedByExporter").build();

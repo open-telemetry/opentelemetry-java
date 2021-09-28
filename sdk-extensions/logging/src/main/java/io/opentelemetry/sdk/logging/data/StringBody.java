@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.logging.data;
 
 import com.google.auto.value.AutoValue;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -24,6 +23,5 @@ abstract class StringBody implements Body {
   }
 
   @Override
-  @Nullable
   public abstract String asString();
 }

@@ -209,8 +209,15 @@ public final class BatchLogProcessor implements LogProcessor {
 
     private CompletableResultCode forceFlush() {
       CompletableResultCode flushResult = new CompletableResultCode();
-      this.flushRequested.compareAndSet(null, flushResult);
-      return this.flushRequested.get();
+      if (this.flushRequested.compareAndSet(null, flushResult)) {
+        return flushResult;
+      }
+      flushResult = this.flushRequested.get();
+      if (flushResult == null) {
+        // A pending flush completed successfully while executing this method.
+        return CompletableResultCode.ofSuccess();
+      }
+      return flushResult;
     }
 
     public void addLogRecord(LogRecord record) {

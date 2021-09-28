@@ -32,8 +32,8 @@ public abstract class LogRecord {
       String spanId,
       int flags,
       Severity severity,
-      String severityText,
-      String name,
+      @Nullable String severityText,
+      @Nullable String name,
       Body body,
       Attributes attributes) {
     return new AutoValue_LogRecord(

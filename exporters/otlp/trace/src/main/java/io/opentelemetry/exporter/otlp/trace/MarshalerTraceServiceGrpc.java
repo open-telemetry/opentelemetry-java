@@ -43,20 +43,17 @@ final class MarshalerTraceServiceGrpc {
         }
       };
 
-  private static volatile io.grpc.MethodDescriptor<
-          TraceRequestMarshaler, ExportTraceServiceResponse>
-      getExportMethod;
+  private static final io.grpc.MethodDescriptor<TraceRequestMarshaler, ExportTraceServiceResponse>
+      getExportMethod =
+          io.grpc.MethodDescriptor.<TraceRequestMarshaler, ExportTraceServiceResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Export"))
+              .setRequestMarshaller(REQUEST_MARSHALLER)
+              .setResponseMarshaller(RESPONSE_MARSHALER)
+              .build();
 
   static TraceServiceFutureStub newFutureStub(io.grpc.Channel channel) {
-    io.grpc.stub.AbstractStub.StubFactory<TraceServiceFutureStub> factory =
-        new io.grpc.stub.AbstractStub.StubFactory<TraceServiceFutureStub>() {
-          @java.lang.Override
-          public TraceServiceFutureStub newStub(
-              io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
-            return new TraceServiceFutureStub(channel, callOptions);
-          }
-        };
-    return TraceServiceFutureStub.newStub(factory, channel);
+    return TraceServiceFutureStub.newStub(TraceServiceFutureStub::new, channel);
   }
 
   static final class TraceServiceFutureStub
@@ -74,29 +71,8 @@ final class MarshalerTraceServiceGrpc {
     com.google.common.util.concurrent.ListenableFuture<ExportTraceServiceResponse> export(
         TraceRequestMarshaler request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getExportMethod(), getCallOptions()), request);
+          getChannel().newCall(getExportMethod, getCallOptions()), request);
     }
-  }
-
-  private static io.grpc.MethodDescriptor<TraceRequestMarshaler, ExportTraceServiceResponse>
-      getExportMethod() {
-    io.grpc.MethodDescriptor<TraceRequestMarshaler, ExportTraceServiceResponse> getExportMethod;
-    if ((getExportMethod = MarshalerTraceServiceGrpc.getExportMethod) == null) {
-      synchronized (MarshalerTraceServiceGrpc.class) {
-        if ((getExportMethod = MarshalerTraceServiceGrpc.getExportMethod) == null) {
-          MarshalerTraceServiceGrpc.getExportMethod =
-              getExportMethod =
-                  io.grpc.MethodDescriptor
-                      .<TraceRequestMarshaler, ExportTraceServiceResponse>newBuilder()
-                      .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Export"))
-                      .setRequestMarshaller(REQUEST_MARSHALLER)
-                      .setResponseMarshaller(RESPONSE_MARSHALER)
-                      .build();
-        }
-      }
-    }
-    return getExportMethod;
   }
 
   private MarshalerTraceServiceGrpc() {}
