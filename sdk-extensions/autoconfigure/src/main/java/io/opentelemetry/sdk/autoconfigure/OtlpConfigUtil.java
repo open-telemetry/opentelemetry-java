@@ -8,6 +8,8 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,6 +17,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 final class OtlpConfigUtil {
 
@@ -45,22 +48,32 @@ final class OtlpConfigUtil {
       Consumer<String> setCompression,
       Consumer<Duration> setTimeout,
       Consumer<byte[]> setTrustedCertificates) {
-    String endpoint = config.getString("otel.exporter.otlp." + dataType + ".endpoint");
+    String protocol = getOtlpProtocol(dataType, config);
+    boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
+    URL endpoint =
+        validateEndpoint(
+            config.getString("otel.exporter.otlp." + dataType + ".endpoint"), isHttpProtobuf);
     if (endpoint == null) {
-      endpoint = config.getString("otel.exporter.otlp.endpoint");
-      String signalPath = signalPath(dataType);
-      String protocol = getOtlpProtocol(dataType, config);
-      if (endpoint != null
-          && protocol.equals(PROTOCOL_HTTP_PROTOBUF)
-          && !endpoint.endsWith(signalPath)) {
-        if (!endpoint.endsWith("/")) {
-          endpoint += "/";
+      endpoint = validateEndpoint(config.getString("otel.exporter.otlp.endpoint"), isHttpProtobuf);
+      if (endpoint != null && isHttpProtobuf) {
+        String path = endpoint.getPath();
+        String signalPath = signalPath(dataType);
+        if (!path.endsWith(signalPath)) {
+          if (!path.endsWith("/")) {
+            path += "/";
+          }
+          path += signalPath;
         }
-        endpoint += signalPath;
+        try {
+          endpoint = new URL(endpoint, path);
+        } catch (MalformedURLException e) {
+          throw new ConfigurationException(
+              "Unexpected exception appending signal path to OTLP endpoint", e);
+        }
       }
     }
     if (endpoint != null) {
-      setEndpoint.accept(endpoint);
+      setEndpoint.accept(endpoint.toString());
     }
 
     Map<String, String> headers = config.getMap("otel.exporter.otlp." + dataType + ".headers");
@@ -102,6 +115,36 @@ final class OtlpConfigUtil {
       }
       setTrustedCertificates.accept(certificateBytes);
     }
+  }
+
+  @Nullable
+  private static URL validateEndpoint(@Nullable String endpoint, boolean allowPath) {
+    if (endpoint == null) {
+      return null;
+    }
+    URL endpointUrl;
+    try {
+      endpointUrl = new URL(endpoint);
+    } catch (MalformedURLException e) {
+      throw new ConfigurationException("OTLP endpoint must be a valid URL: " + endpoint, e);
+    }
+    if (!endpointUrl.getProtocol().equals("http") && !endpointUrl.getProtocol().equals("https")) {
+      throw new ConfigurationException(
+          "OTLP endpoint scheme must be http or https: " + endpointUrl.getProtocol());
+    }
+    if (endpointUrl.getQuery() != null) {
+      throw new ConfigurationException(
+          "OTLP endpoint must not have a query string: " + endpointUrl.getQuery());
+    }
+    if (endpointUrl.getRef() != null) {
+      throw new ConfigurationException(
+          "OTLP endpoint must not have a fragment: " + endpointUrl.getRef());
+    }
+    if (!allowPath && (!endpointUrl.getPath().isEmpty() && !endpointUrl.getPath().equals("/"))) {
+      throw new ConfigurationException(
+          "OTLP endpoint must not have a path: " + endpointUrl.getPath());
+    }
+    return endpointUrl;
   }
 
   private static String signalPath(String dataType) {
