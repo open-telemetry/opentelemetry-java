@@ -38,24 +38,8 @@ final class DisruptorEventQueue {
   private static final EventTranslatorThreeArg<
           DisruptorEvent, EventType, Object, CompletableResultCode>
       TRANSLATOR_THREE_ARG =
-          new EventTranslatorThreeArg<DisruptorEvent, EventType, Object, CompletableResultCode>() {
-            @Override
-            public void translateTo(
-                DisruptorEvent event,
-                long sequence,
-                EventType eventType,
-                Object span,
-                CompletableResultCode result) {
-              event.setEntry(eventType, span, result);
-            }
-          };
-  private static final EventFactory<DisruptorEvent> EVENT_FACTORY =
-      new EventFactory<DisruptorEvent>() {
-        @Override
-        public DisruptorEvent newInstance() {
-          return new DisruptorEvent();
-        }
-      };
+          (event, sequence, eventType, span, result) -> event.setEntry(eventType, span, result);
+  private static final EventFactory<DisruptorEvent> EVENT_FACTORY = DisruptorEvent::new;
 
   private final RingBuffer<DisruptorEvent> ringBuffer;
   private final AtomicBoolean loggedShutdownMessage = new AtomicBoolean(false);
@@ -138,7 +122,8 @@ final class DisruptorEventQueue {
   }
 
   // Enqueues an event on the {@link DisruptorEventQueue}.
-  private void enqueue(EventType eventType, Object span, CompletableResultCode result) {
+  private void enqueue(
+      EventType eventType, @Nullable Object span, @Nullable CompletableResultCode result) {
     if (blocking) {
       ringBuffer.publishEvent(TRANSLATOR_THREE_ARG, eventType, span, result);
     } else {
@@ -203,13 +188,19 @@ final class DisruptorEventQueue {
       try {
         switch (eventType) {
           case ON_START:
-            @SuppressWarnings("unchecked")
-            final SimpleImmutableEntry<ReadWriteSpan, Context> eventArgs =
-                (SimpleImmutableEntry<ReadWriteSpan, Context>) readableSpan;
-            spanProcessor.onStart(eventArgs.getValue(), eventArgs.getKey());
+            // In practice never null
+            if (readableSpan != null) {
+              @SuppressWarnings("unchecked")
+              final SimpleImmutableEntry<ReadWriteSpan, Context> eventArgs =
+                  (SimpleImmutableEntry<ReadWriteSpan, Context>) readableSpan;
+              spanProcessor.onStart(eventArgs.getValue(), eventArgs.getKey());
+            }
             break;
           case ON_END:
-            spanProcessor.onEnd((ReadableSpan) readableSpan);
+            // In practice never null
+            if (readableSpan != null) {
+              spanProcessor.onEnd((ReadableSpan) readableSpan);
+            }
             break;
           case ON_SHUTDOWN:
             propagateResult(spanProcessor.shutdown(), event);
@@ -229,14 +220,11 @@ final class DisruptorEventQueue {
   private static void propagateResult(
       final CompletableResultCode result, final DisruptorEvent event) {
     result.whenComplete(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (result.isSuccess()) {
-              event.succeed();
-            } else {
-              event.fail();
-            }
+        () -> {
+          if (result.isSuccess()) {
+            event.succeed();
+          } else {
+            event.fail();
           }
         });
   }
