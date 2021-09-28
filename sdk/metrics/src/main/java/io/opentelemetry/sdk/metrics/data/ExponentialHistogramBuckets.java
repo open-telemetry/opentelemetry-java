@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.data;
 
-import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -33,15 +32,19 @@ public interface ExponentialHistogramBuckets {
   int getOffset();
 
   /**
-   * The bucket counts is a of counts representing number of measurements that fall into each
-   * bucket.
+   * The bucket count is the number of measurements that fall into a bucket corresponding to the
+   * given index. Index can be negative, in which case the bucket would be lower bounded somewhere
+   * between 0 and 1 (or 0 and -1 if these buckets represent negative measurements).
    *
-   * @return the bucket counts.
+   * <p>Bucket boundaries are inclusive lower bound and exclusive upper bound.
+   *
+   * @param index signed int corresponding to the relevant bucket.
+   * @return the number of measurements in the bucket.
    */
-  List<Long> getBucketCounts();
+  long getBucketCountAt(int index);
 
   /**
-   * The total count is the sum of all the values in the list {@link #getBucketCounts()}.
+   * The total count is the sum of all the values in the buckets.
    *
    * @return the total count.
    */
