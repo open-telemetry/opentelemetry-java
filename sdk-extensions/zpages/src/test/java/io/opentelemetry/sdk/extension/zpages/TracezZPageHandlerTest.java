@@ -27,15 +27,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-/** Unit tests for {@link TracezZPageHandler}. */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class TracezZPageHandlerTest {
   private static final String FINISHED_SPAN_ONE = "FinishedSpanOne";
   private static final String FINISHED_SPAN_TWO = "FinishedSpanTwo";
+  private static final String WEIRD_SPAN = "Weird \"' & 1 < 3 \"";
   private static final String RUNNING_SPAN = "RunningSpan";
   private static final String LATENCY_SPAN = "LatencySpan";
   private static final String ERROR_SPAN = "ErrorSpan";
+  private static final String EVENT = "event on a span";
   private final TestClock testClock = TestClock.create();
   private final TracezSpanProcessor spanProcessor = TracezSpanProcessor.builder().build();
   private final SdkTracerProvider sdkTracerProvider =
@@ -47,10 +48,9 @@ class TracezZPageHandlerTest {
   @Test
   void summaryTable_emitRowForEachSpan() {
     OutputStream output = new ByteArrayOutputStream();
-    Span finishedSpan1 = tracer.spanBuilder(FINISHED_SPAN_ONE).startSpan();
-    Span finishedSpan2 = tracer.spanBuilder(FINISHED_SPAN_TWO).startSpan();
-    finishedSpan1.end();
-    finishedSpan2.end();
+    tracer.spanBuilder(FINISHED_SPAN_ONE).startSpan().end();
+    tracer.spanBuilder(FINISHED_SPAN_TWO).startSpan().end();
+    tracer.spanBuilder(WEIRD_SPAN).startSpan().end();
 
     Span runningSpan = tracer.spanBuilder(RUNNING_SPAN).startSpan();
 
@@ -65,12 +65,14 @@ class TracezZPageHandlerTest {
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
     tracezZPageHandler.emitHtml(emptyQueryMap, output);
 
-    // Emit a row for all types of spans
-    assertThat(output.toString()).contains(FINISHED_SPAN_ONE);
-    assertThat(output.toString()).contains(FINISHED_SPAN_TWO);
-    assertThat(output.toString()).contains(RUNNING_SPAN);
-    assertThat(output.toString()).contains(LATENCY_SPAN);
-    assertThat(output.toString()).contains(ERROR_SPAN);
+    String result = output.toString();
+    // Emit a row for all types of spans.
+    assertThat(result).contains(FINISHED_SPAN_ONE);
+    assertThat(result).contains(FINISHED_SPAN_TWO);
+    assertThat(result).contains("Weird&quot;&#39; &amp; 1 &lt; 3 &quot;");
+    assertThat(result).contains(RUNNING_SPAN);
+    assertThat(result).contains(LATENCY_SPAN);
+    assertThat(result).contains(ERROR_SPAN);
 
     runningSpan.end();
   }
@@ -260,18 +262,20 @@ class TracezZPageHandlerTest {
   @Test
   void spanDetails_emitRunningSpanDetailsCorrectly() {
     OutputStream output = new ByteArrayOutputStream();
-    Span runningSpan = tracer.spanBuilder(RUNNING_SPAN).startSpan();
+    Span runningSpan = tracer.spanBuilder(RUNNING_SPAN).startSpan().addEvent(EVENT);
     Map<String, String> queryMap =
         ImmutableMap.of("zspanname", RUNNING_SPAN, "ztype", "0", "zsubtype", "0");
 
     TracezZPageHandler tracezZPageHandler = new TracezZPageHandler(dataAggregator);
     tracezZPageHandler.emitHtml(queryMap, output);
 
-    assertThat(output.toString()).contains("<h2>Span Details</h2>");
-    assertThat(output.toString()).contains("<b> Span Name: " + RUNNING_SPAN + "</b>");
-    assertThat(output.toString()).contains("<b> Number of running: 1");
-    assertThat(output.toString()).contains(runningSpan.getSpanContext().getTraceId());
-    assertThat(output.toString()).contains(runningSpan.getSpanContext().getSpanId());
+    String result = output.toString();
+    assertThat(result).contains("<h2>Span Details</h2>");
+    assertThat(result).contains("<b> Span Name: " + RUNNING_SPAN + "</b>");
+    assertThat(result).contains("<b> Number of running: 1");
+    assertThat(result).contains(runningSpan.getSpanContext().getTraceId());
+    assertThat(result).contains(runningSpan.getSpanContext().getSpanId());
+    assertThat(result).contains(EVENT);
 
     runningSpan.end();
   }
