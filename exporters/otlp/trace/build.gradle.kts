@@ -54,7 +54,9 @@ dependencies {
 
   add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-junit5")
-  add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
+  add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp") {
+    exclude("com.squareup.okhttp", "okhttp")
+  }
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
   add("testSpanPipeline", project(":proto"))
