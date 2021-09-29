@@ -94,16 +94,16 @@ public final class OpenTelemetrySdkAutoConfiguration {
     // Configure default exemplar filters.
     String exemplarFilter = config.getString("otel.metrics.exemplar.filter");
     if (exemplarFilter == null) {
-      exemplarFilter = "WITH_SAMPLED_TRACE";
+      exemplarFilter = "with_sampled_trace";
     }
     switch (exemplarFilter) {
-      case "NONE":
+      case "none":
         meterProviderBuilder.setExemplarFilter(ExemplarFilter.neverSample());
         break;
-      case "ALL":
+      case "all":
         meterProviderBuilder.setExemplarFilter(ExemplarFilter.alwaysSample());
         break;
-      case "WITH_SAMPLED_TRACE":
+      case "with_sampled_trace":
       default:
         meterProviderBuilder.setExemplarFilter(ExemplarFilter.sampleWithTraces());
         break;
