@@ -47,18 +47,6 @@ public interface ExponentialHistogramPointData extends PointData {
   long getCount();
 
   /**
-   * Returns the base, which is calculated via the scale {@link #getScale()}. The larger the base,
-   * the further away bucket boundaries are from each other.
-   *
-   * <p><code>base = 2^(2^-scale)</code>
-   *
-   * @return the base.
-   */
-  default double getBase() {
-    return Math.pow(2, Math.pow(2, -getScale()));
-  }
-
-  /**
    * Returns the number of measurements equal to zero in this data point.
    *
    * @return the number of values equal to zero.
