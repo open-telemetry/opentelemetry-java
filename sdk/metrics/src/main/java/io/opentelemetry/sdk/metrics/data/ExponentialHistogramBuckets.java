@@ -44,6 +44,24 @@ public interface ExponentialHistogramBuckets {
   long getBucketCountAt(int index);
 
   /**
+   * Returns the index corresponding to the bucket that has the lower bound with the lowest absolute
+   * value.
+   *
+   * <p>Can be used to start iteration over the buckets, in combination with {@link
+   * #getNumBuckets()} and {@link #getBucketCountAt(int)}.
+   *
+   * @return the index of the lowest bucket.
+   */
+  int getStartIndex();
+
+  /**
+   * Returns the number of buckets.
+   *
+   * @return the number of buckets.
+   */
+  int getNumBuckets();
+
+  /**
    * The total count is the sum of all the values in the buckets.
    *
    * @return the total count.
