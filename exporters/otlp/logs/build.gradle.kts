@@ -17,7 +17,7 @@ testSets {
 }
 
 dependencies {
-  api(project(":sdk-extensions:logging"))
+  api(project(":sdk:logging"))
 
   implementation(project(":exporters:otlp:common"))
 
