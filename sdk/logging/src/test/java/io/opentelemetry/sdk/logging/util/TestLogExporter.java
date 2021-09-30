@@ -29,6 +29,11 @@ public class TestLogExporter implements LogExporter {
   }
 
   @Override
+  public CompletableResultCode flush() {
+    return new CompletableResultCode().succeed();
+  }
+
+  @Override
   public CompletableResultCode shutdown() {
     return new CompletableResultCode().succeed();
   }

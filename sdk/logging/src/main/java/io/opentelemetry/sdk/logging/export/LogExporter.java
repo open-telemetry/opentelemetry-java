@@ -16,5 +16,7 @@ import java.util.Collection;
 public interface LogExporter {
   CompletableResultCode export(Collection<LogRecord> records);
 
+  CompletableResultCode flush();
+
   CompletableResultCode shutdown();
 }

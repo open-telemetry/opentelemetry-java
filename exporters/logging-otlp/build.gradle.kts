@@ -11,12 +11,14 @@ otelJava.moduleName.set("io.opentelemetry.exporter.logging.otlp")
 dependencies {
   compileOnly(project(":sdk:trace"))
   compileOnly(project(":sdk:metrics"))
+  compileOnly(project(":sdk:logging"))
 
   implementation(project(":exporters:otlp:common"))
 
   implementation("com.fasterxml.jackson.core:jackson-core")
 
   testImplementation(project(":sdk:testing"))
+  testImplementation(project(":sdk:logging"))
 
   testImplementation("org.skyscreamer:jsonassert")
 }
