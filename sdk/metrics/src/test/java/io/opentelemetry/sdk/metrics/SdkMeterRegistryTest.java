@@ -15,6 +15,7 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import org.junit.jupiter.api.Test;
@@ -22,8 +23,13 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link SdkMeterProvider}. */
 class SdkMeterRegistryTest {
   private final TestClock testClock = TestClock.create();
+  private final InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
   private final SdkMeterProvider meterProvider =
-      SdkMeterProvider.builder().setClock(testClock).setResource(Resource.empty()).build();
+      SdkMeterProvider.builder()
+          .setClock(testClock)
+          .setResource(Resource.empty())
+          .registerMetricReader(sdkMeterReader)
+          .build();
 
   @Test
   void builder_HappyPath() {
@@ -106,7 +112,7 @@ class SdkMeterRegistryTest {
     LongCounter longCounter2 = sdkMeter2.counterBuilder("testLongCounter").build();
     longCounter2.add(10, Attributes.empty());
 
-    assertThat(meterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .allSatisfy(
             metric ->
                 assertThat(metric)
@@ -131,21 +137,21 @@ class SdkMeterRegistryTest {
   void suppliesDefaultMeterForNullName() {
     SdkMeter meter = (SdkMeter) meterProvider.get(null);
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+        .isEqualTo(DefaultSdkMeterProvider.DEFAULT_METER_NAME);
 
     meter = (SdkMeter) meterProvider.meterBuilder(null).build();
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+        .isEqualTo(DefaultSdkMeterProvider.DEFAULT_METER_NAME);
   }
 
   @Test
   void suppliesDefaultMeterForEmptyName() {
     SdkMeter meter = (SdkMeter) meterProvider.get("");
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+        .isEqualTo(DefaultSdkMeterProvider.DEFAULT_METER_NAME);
 
     meter = (SdkMeter) meterProvider.meterBuilder("").build();
     assertThat(meter.getInstrumentationLibraryInfo().getName())
-        .isEqualTo(SdkMeterProvider.DEFAULT_METER_NAME);
+        .isEqualTo(DefaultSdkMeterProvider.DEFAULT_METER_NAME);
   }
 }

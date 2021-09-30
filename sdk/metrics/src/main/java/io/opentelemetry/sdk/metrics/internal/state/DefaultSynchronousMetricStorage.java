@@ -9,13 +9,12 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 /**
@@ -26,23 +25,18 @@ import javax.annotation.Nullable;
  */
 public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetricStorage {
   private final MetricDescriptor metricDescriptor;
-  private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> aggregatorLabels;
-  private final ReentrantLock collectLock;
-  private final Aggregator<T> aggregator;
-  private final InstrumentProcessor<T> instrumentProcessor;
+  private final DeltaMetricStorage<T> deltaMetricStorage;
+  private final TemporalMetricStorage<T> temporalMetricStorage;
   private final AttributesProcessor attributesProcessor;
 
   DefaultSynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
-      InstrumentProcessor<T> instrumentProcessor,
       AttributesProcessor attributesProcessor) {
-    this.metricDescriptor = metricDescriptor;
-    aggregatorLabels = new ConcurrentHashMap<>();
-    collectLock = new ReentrantLock();
-    this.aggregator = aggregator;
-    this.instrumentProcessor = instrumentProcessor;
     this.attributesProcessor = attributesProcessor;
+    this.metricDescriptor = metricDescriptor;
+    this.deltaMetricStorage = new DeltaMetricStorage<>(aggregator);
+    this.temporalMetricStorage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ true);
   }
 
   // This is a storage handle to use when the attributes processor requires
@@ -69,33 +63,7 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
       // We cannot pre-bind attributes because we need to pull attributes from context.
       return lateBoundStorageHandle;
     }
-    return doBind(attributesProcessor.process(attributes, Context.current()));
-  }
-
-  private BoundStorageHandle doBind(Attributes attributes) {
-    AggregatorHandle<T> aggregatorHandle = aggregatorLabels.get(attributes);
-    if (aggregatorHandle != null && aggregatorHandle.acquire()) {
-      // At this moment it is guaranteed that the Bound is in the map and will not be removed.
-      return aggregatorHandle;
-    }
-
-    // Missing entry or no longer mapped, try to add a new entry.
-    aggregatorHandle = aggregator.createHandle();
-    while (true) {
-      AggregatorHandle<?> boundAggregatorHandle =
-          aggregatorLabels.putIfAbsent(attributes, aggregatorHandle);
-      if (boundAggregatorHandle != null) {
-        if (boundAggregatorHandle.acquire()) {
-          // At this moment it is guaranteed that the Bound is in the map and will not be removed.
-          return boundAggregatorHandle;
-        }
-        // Try to remove the boundAggregator. This will race with the collect method, but only one
-        // will succeed.
-        aggregatorLabels.remove(attributes, boundAggregatorHandle);
-        continue;
-      }
-      return aggregatorHandle;
-    }
+    return deltaMetricStorage.bind(attributesProcessor.process(attributes, Context.current()));
   }
 
   // Overridden to make sure attributes processor can pull baggage.
@@ -103,7 +71,7 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
   public void recordLong(long value, Attributes attributes, Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);
-    BoundStorageHandle handle = doBind(attributes);
+    BoundStorageHandle handle = deltaMetricStorage.bind(attributes);
     try {
       handle.recordLong(value, attributes, context);
     } finally {
@@ -116,7 +84,7 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
   public void recordDouble(double value, Attributes attributes, Context context) {
     Objects.requireNonNull(attributes, "attributes");
     attributes = attributesProcessor.process(attributes, context);
-    BoundStorageHandle handle = doBind(attributes);
+    BoundStorageHandle handle = deltaMetricStorage.bind(attributes);
     try {
       handle.recordDouble(value, attributes, context);
     } finally {
@@ -126,26 +94,13 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
 
   @Override
   @Nullable
-  public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
-    collectLock.lock();
-    try {
-      for (Map.Entry<Attributes, AggregatorHandle<T>> entry : aggregatorLabels.entrySet()) {
-        boolean unmappedEntry = entry.getValue().tryUnmap();
-        if (unmappedEntry) {
-          // If able to unmap then remove the record from the current Map. This can race with the
-          // acquire but because we requested a specific value only one will succeed.
-          aggregatorLabels.remove(entry.getKey(), entry.getValue());
-        }
-        T accumulation = entry.getValue().accumulateThenReset(entry.getKey());
-        if (accumulation == null) {
-          continue;
-        }
-        instrumentProcessor.batch(entry.getKey(), accumulation);
-      }
-      return instrumentProcessor.completeCollectionCycle(epochNanos);
-    } finally {
-      collectLock.unlock();
-    }
+  public MetricData collectAndReset(
+      CollectionHandle collector,
+      Set<CollectionHandle> allCollectors,
+      long startEpochNanos,
+      long epochNanos) {
+    Map<Attributes, T> result = deltaMetricStorage.collectFor(collector, allCollectors);
+    return temporalMetricStorage.buildMetricFor(collector, result, startEpochNanos, epochNanos);
   }
 
   @Override

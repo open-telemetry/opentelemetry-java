@@ -9,6 +9,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import java.util.Set;
+import javax.annotation.Nullable;
 
 final class EmptyMetricStorage implements SynchronousMetricStorage {
   static final EmptyMetricStorage INSTANCE = new EmptyMetricStorage();
@@ -34,12 +37,17 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
   }
 
   @Override
-  public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
-    return null;
-  }
-
-  @Override
   public BoundStorageHandle bind(Attributes attributes) {
     return emptyHandle;
+  }
+
+  @Nullable
+  @Override
+  public MetricData collectAndReset(
+      CollectionHandle collector,
+      Set<CollectionHandle> allCollectors,
+      long startEpochNanos,
+      long epochNanos) {
+    return null;
   }
 }

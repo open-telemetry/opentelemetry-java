@@ -12,6 +12,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -33,27 +34,31 @@ class SdkLongSumObserverTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
         .get(getClass().getName())
         .counterBuilder("testObserver")
         .setDescription("My own LongSumObserver")
         .setUnit("ms")
         .buildWithCallback(result -> {});
-    assertThat(sdkMeterProvider.collectAllMetrics()).isEmpty();
+    assertThat(sdkMeterReader.collectAllMetrics()).isEmpty();
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
-    SdkMeterProvider sdkMeterProvider = sdkMeterProviderBuilder.build();
+    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    SdkMeterProvider sdkMeterProvider =
+        sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
         .get(getClass().getName())
         .counterBuilder("testObserver")
         .buildWithCallback(
             result -> result.observe(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -74,7 +79,7 @@ class SdkLongSumObserverTest {
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -99,8 +104,10 @@ class SdkLongSumObserverTest {
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_DeltaSumAggregator() {
+    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder
+            .registerMetricReader(sdkMeterReader)
             .registerView(
                 InstrumentSelector.builder()
                     .setInstrumentType(InstrumentType.OBSERVABLE_SUM)
@@ -115,7 +122,7 @@ class SdkLongSumObserverTest {
         .buildWithCallback(
             result -> result.observe(12, Attributes.builder().put("k", "v").build()));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
@@ -136,7 +143,7 @@ class SdkLongSumObserverTest {
                                 .hasSize(1)
                                 .containsEntry("k", "v")));
     testClock.advance(Duration.ofNanos(SECOND_NANOS));
-    assertThat(sdkMeterProvider.collectAllMetrics())
+    assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
             metric ->
                 assertThat(metric)
