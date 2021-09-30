@@ -112,8 +112,11 @@ void childOne(Span parentSpan) {
   Span childSpan = tracer.spanBuilder("child")
         .setParent(Context.current().with(parentSpan))
         .startSpan();
-  // do stuff
-  childSpan.end();
+  try {
+    // do stuff
+  } finally {
+    childSpan.end();
+  }
 }
 ```
 The OpenTelemetry API offers also an automated way to propagate the parent span on the current thread:

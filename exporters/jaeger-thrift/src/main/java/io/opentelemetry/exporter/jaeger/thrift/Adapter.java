@@ -213,7 +213,7 @@ final class Adapter {
           // Can't have an exception serializing a plain Java object to a String. Add an exception
           // mostly to satisfy the compiler.
           throw new UncheckedIOException(
-              "Error serializing plan Java object to String. "
+              "Error serializing a plain Java object to String. "
                   + "This is a bug in the OpenTelemetry library.",
               e);
         }

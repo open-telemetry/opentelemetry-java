@@ -10,7 +10,8 @@ exporters:
     logLevel: $LOGGING_EXPORTER_LOG_lEVEL
   otlp:
     endpoint: $OTLP_EXPORTER_ENDPOINT
-    insecure: true
+    tls:
+      insecure: true
 service:
   extensions: [health_check]
   pipelines:

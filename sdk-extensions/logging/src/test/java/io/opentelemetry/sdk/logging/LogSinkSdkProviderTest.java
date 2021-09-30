@@ -28,9 +28,9 @@ import org.junit.jupiter.api.Test;
 class LogSinkSdkProviderTest {
 
   private static LogRecord createLog(LogRecord.Severity severity, String message) {
-    return LogRecord.builder()
-        .setResource(Resource.create(Attributes.builder().put("testKey", "testValue").build()))
-        .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.create("instrumentation", "1"))
+    return LogRecord.builder(
+            Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+            InstrumentationLibraryInfo.create("instrumentation", "1"))
         .setUnixTimeMillis(System.currentTimeMillis())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())

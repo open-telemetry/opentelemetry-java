@@ -126,7 +126,8 @@ public final class OtTracePropagator implements TextMapPropagator {
     return extractedContext;
   }
 
-  static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {
+  private static SpanContext buildSpanContext(
+      @Nullable String traceId, @Nullable String spanId, @Nullable String sampled) {
     if (!Common.isTraceIdValid(traceId) || !Common.isSpanIdValid(spanId)) {
       return SpanContext.getInvalid();
     }

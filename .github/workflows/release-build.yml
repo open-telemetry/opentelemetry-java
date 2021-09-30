@@ -16,10 +16,10 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: adopt
-          java-version: 11
+          java-version: 17
       - uses: burrunan/gradle-cache-action@v1.10
         with:
-          job-id: jdk11
+          job-id: jdk17
           remote-build-cache-proxy-enabled: false
           arguments: build --stacktrace -Prelease.version=${{ github.event.inputs.version }}
       - name: Publish artifacts

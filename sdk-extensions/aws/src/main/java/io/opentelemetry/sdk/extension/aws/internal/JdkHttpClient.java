@@ -56,7 +56,7 @@ public final class JdkHttpClient {
     final HttpURLConnection connection;
 
     try {
-      if (urlStr.startsWith("https")) {
+      if (urlStr.startsWith("https") && certPath != null) {
         connection = (HttpURLConnection) new URL(urlStr).openConnection();
         KeyStore keyStore = getKeystoreForTrustedCert(certPath);
         if (keyStore != null) {

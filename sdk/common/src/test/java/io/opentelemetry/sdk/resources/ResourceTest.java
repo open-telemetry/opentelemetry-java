@@ -17,6 +17,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -91,6 +92,35 @@ class ResourceTest {
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(7);
+  }
+
+  @Test
+  void builder_ignoreNull() {
+    Resource resource =
+        Resource.builder()
+            .put((String) null, "cat")
+            .put("bear", (String) null)
+            .put(null, 1.0)
+            .put(null, false)
+            .put(null, "foo", "bar")
+            .put("dog", (String[]) null)
+            .put(null, 1.0, 2.0)
+            .put("mouse", (double[]) null)
+            .put(null, true, false)
+            .put("elephant", (boolean[]) null)
+            .put((AttributeKey<String>) null, "foo")
+            .put(stringKey("monkey"), null)
+            .put(stringKey(null), "foo")
+            .put(stringKey(""), "foo")
+            .put((AttributeKey<Long>) null, 10)
+            .put(longKey(null), 10)
+            .put(longKey(""), 10)
+            .putAll((Attributes) null)
+            .putAll((Resource) null)
+            .setSchemaUrl(null)
+            .build();
+
+    assertThat(resource).isEqualTo(Resource.empty());
   }
 
   @Test

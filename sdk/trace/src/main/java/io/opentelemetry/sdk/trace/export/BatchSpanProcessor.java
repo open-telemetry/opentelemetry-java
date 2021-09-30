@@ -91,7 +91,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (!span.getSpanContext().isSampled()) {
+    if (span == null || !span.getSpanContext().isSampled()) {
       return;
     }
     worker.addSpan(span);

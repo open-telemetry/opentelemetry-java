@@ -67,21 +67,20 @@ public abstract class MeterSharedState {
             .findViews(instrument, getInstrumentationLibraryInfo());
     List<WriteableMetricStorage> storage = new ArrayList<>(views.size());
     for (View view : views) {
+      SynchronousMetricStorage currentStorage =
+          SynchronousMetricStorage.create(
+              view,
+              instrument,
+              meterProviderSharedState.getResource(),
+              getInstrumentationLibraryInfo(),
+              meterProviderSharedState.getStartEpochNanos(),
+              meterProviderSharedState.getExemplarFilter());
       // TODO - move this in a better location.
-      if (view.getAggregation().config(instrument) == null) {
+      if (SynchronousMetricStorage.empty().equals(currentStorage)) {
         continue;
       }
       try {
-        storage.add(
-            getMetricStorageRegistry()
-                .register(
-                    SynchronousMetricStorage.create(
-                        view,
-                        instrument,
-                        meterProviderSharedState.getResource(),
-                        getInstrumentationLibraryInfo(),
-                        meterProviderSharedState.getStartEpochNanos(),
-                        meterProviderSharedState.getExemplarSampler())));
+        storage.add(getMetricStorageRegistry().register(currentStorage));
       } catch (DuplicateMetricStorageException e) {
         logger.log(Level.WARNING, e, () -> "Failed to register metric.");
       }
@@ -104,20 +103,20 @@ public abstract class MeterSharedState {
             .getViewRegistry()
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
+      MetricStorage currentStorage =
+          AsynchronousMetricStorage.longAsynchronousAccumulator(
+              view,
+              instrument,
+              meterProviderSharedState.getResource(),
+              getInstrumentationLibraryInfo(),
+              meterProviderSharedState.getStartEpochNanos(),
+              metricUpdater);
       // TODO - move this in a better location.
-      if (view.getAggregation().config(instrument) == null) {
+      if (AsynchronousMetricStorage.empty().equals(currentStorage)) {
         continue;
       }
       try {
-        getMetricStorageRegistry()
-            .register(
-                AsynchronousMetricStorage.longAsynchronousAccumulator(
-                    view,
-                    instrument,
-                    meterProviderSharedState.getResource(),
-                    getInstrumentationLibraryInfo(),
-                    meterProviderSharedState.getStartEpochNanos(),
-                    metricUpdater));
+        getMetricStorageRegistry().register(currentStorage);
       } catch (DuplicateMetricStorageException e) {
         logger.log(Level.WARNING, e, () -> "Failed to register metric.");
       }
@@ -135,20 +134,20 @@ public abstract class MeterSharedState {
             .getViewRegistry()
             .findViews(instrument, getInstrumentationLibraryInfo());
     for (View view : views) {
+      MetricStorage currentStorage =
+          AsynchronousMetricStorage.doubleAsynchronousAccumulator(
+              view,
+              instrument,
+              meterProviderSharedState.getResource(),
+              getInstrumentationLibraryInfo(),
+              meterProviderSharedState.getStartEpochNanos(),
+              metricUpdater);
       // TODO - move this in a better location.
-      if (view.getAggregation().config(instrument) == null) {
+      if (AsynchronousMetricStorage.empty().equals(currentStorage)) {
         continue;
       }
       try {
-        getMetricStorageRegistry()
-            .register(
-                AsynchronousMetricStorage.doubleAsynchronousAccumulator(
-                    view,
-                    instrument,
-                    meterProviderSharedState.getResource(),
-                    getInstrumentationLibraryInfo(),
-                    meterProviderSharedState.getStartEpochNanos(),
-                    metricUpdater));
+        getMetricStorageRegistry().register(currentStorage);
       } catch (DuplicateMetricStorageException e) {
         logger.log(Level.WARNING, e, () -> "Failed to register metric.");
       }

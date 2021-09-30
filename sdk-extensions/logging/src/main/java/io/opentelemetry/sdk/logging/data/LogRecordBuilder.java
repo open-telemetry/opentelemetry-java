@@ -10,31 +10,25 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 public final class LogRecordBuilder {
-  private Resource resource;
-  private InstrumentationLibraryInfo instrumentationLibraryInfo;
+  private final Resource resource;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+
   private long timeUnixNano;
   private String traceId = "";
   private String spanId = "";
   private int flags;
   private LogRecord.Severity severity = LogRecord.Severity.UNDEFINED_SEVERITY_NUMBER;
-  private String severityText;
-  private String name;
+  @Nullable private String severityText;
+  @Nullable private String name;
   private Body body = Body.stringBody("");
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 
-  LogRecordBuilder() {}
-
-  public LogRecordBuilder setResource(Resource resource) {
+  LogRecordBuilder(Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.resource = resource;
-    return this;
-  }
-
-  public LogRecordBuilder setInstrumentationLibraryInfo(
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    return this;
   }
 
   public LogRecordBuilder setUnixTimeNano(long timestamp) {

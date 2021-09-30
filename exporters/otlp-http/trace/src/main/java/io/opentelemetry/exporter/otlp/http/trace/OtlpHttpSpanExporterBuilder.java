@@ -8,18 +8,16 @@ package io.opentelemetry.exporter.otlp.http.trace;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
-import java.io.ByteArrayInputStream;
+import io.opentelemetry.exporter.otlp.internal.TlsUtil;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
-import okhttp3.tls.HandshakeCertificates;
 
 /** Builder utility for {@link OtlpHttpSpanExporter}. */
 public final class OtlpHttpSpanExporterBuilder {
@@ -120,11 +118,9 @@ public final class OtlpHttpSpanExporterBuilder {
 
     if (trustedCertificatesPem != null) {
       try {
-        HandshakeCertificates handshakeCertificates =
-            toHandshakeCertificates(trustedCertificatesPem);
-        clientBuilder.sslSocketFactory(
-            handshakeCertificates.sslSocketFactory(), handshakeCertificates.trustManager());
-      } catch (CertificateException e) {
+        X509TrustManager trustManager = TlsUtil.trustManager(trustedCertificatesPem);
+        clientBuilder.sslSocketFactory(TlsUtil.sslSocketFactory(trustManager), trustManager);
+      } catch (SSLException e) {
         throw new IllegalStateException(
             "Could not set trusted certificate for OTLP HTTP connection, are they valid X.509 in PEM format?",
             e);
@@ -134,25 +130,6 @@ public final class OtlpHttpSpanExporterBuilder {
     Headers headers = headersBuilder == null ? null : headersBuilder.build();
 
     return new OtlpHttpSpanExporter(clientBuilder.build(), endpoint, headers, compressionEnabled);
-  }
-
-  /**
-   * Extract X.509 certificates from the bytes.
-   *
-   * @param trustedCertificatesPem bytes containing an X.509 certificate collection in PEM format.
-   * @return a HandshakeCertificates with the certificates
-   * @throws CertificateException if an error occurs extracting certificates
-   */
-  private static HandshakeCertificates toHandshakeCertificates(byte[] trustedCertificatesPem)
-      throws CertificateException {
-    ByteArrayInputStream is = new ByteArrayInputStream(trustedCertificatesPem);
-    CertificateFactory factory = CertificateFactory.getInstance("X.509");
-    HandshakeCertificates.Builder certBuilder = new HandshakeCertificates.Builder();
-    while (is.available() > 0) {
-      X509Certificate cert = (X509Certificate) factory.generateCertificate(is);
-      certBuilder.addTrustedCertificate(cert);
-    }
-    return certBuilder.build();
   }
 
   OtlpHttpSpanExporterBuilder() {}
