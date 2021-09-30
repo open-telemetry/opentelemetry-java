@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 /** Unit tests for {@link DisruptorAsyncSpanProcessor}. */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("deprecation")
 class DisruptorAsyncSpanProcessorTest {
   private static final boolean REQUIRED = true;
   private static final boolean NOT_REQUIRED = false;
