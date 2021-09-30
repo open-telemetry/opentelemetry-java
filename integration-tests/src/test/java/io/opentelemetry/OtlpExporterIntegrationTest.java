@@ -151,6 +151,22 @@ class OtlpExporterIntegrationTest {
   }
 
   @Test
+  void testOtlpGrpcViaHttpTraceExport() {
+    SpanExporter otlpGrpcHttpTraceExporter =
+        OtlpHttpSpanExporter.builder()
+            .setEndpoint(
+                "http://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT)
+                    + "/opentelemetry.proto.collector.trace.v1.TraceService/Export")
+            .setCompression("gzip")
+            .build();
+
+    testTraceExport(otlpGrpcHttpTraceExporter);
+  }
+
+  @Test
   void testOtlpHttpTraceExport() {
     SpanExporter otlpGrpcTraceExporter =
         OtlpHttpSpanExporter.builder()
