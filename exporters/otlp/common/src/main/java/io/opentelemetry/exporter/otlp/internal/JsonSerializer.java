@@ -52,6 +52,11 @@ final class JsonSerializer extends Serializer {
   }
 
   @Override
+  protected void writeint32(ProtoFieldInfo field, int value) throws IOException {
+    generator.writeNumberField(field.getJsonName(), value);
+  }
+
+  @Override
   protected void writeInt64(ProtoFieldInfo field, long value) throws IOException {
     generator.writeStringField(field.getJsonName(), Long.toString(value));
   }
@@ -64,6 +69,11 @@ final class JsonSerializer extends Serializer {
   @Override
   protected void writeFixed64Value(long value) throws IOException {
     generator.writeString(Long.toString(value));
+  }
+
+  @Override
+  protected void writeFixed32(ProtoFieldInfo field, int value) throws IOException {
+    generator.writeNumberField(field.getJsonName(), value);
   }
 
   @Override

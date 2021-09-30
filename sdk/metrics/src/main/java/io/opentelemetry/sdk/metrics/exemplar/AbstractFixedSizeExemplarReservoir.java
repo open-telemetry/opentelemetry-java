@@ -93,11 +93,10 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
    * <p>Allocations are acceptable in the {@link #getAndReset(Attributes)} method.
    */
   private class ReservoirCell {
-    private boolean hasValue = false;
     private double value;
-    private Attributes attributes;
-    private String spanId;
-    private String traceId;
+    @Nullable private Attributes attributes;
+    @Nullable private String spanId;
+    @Nullable private String traceId;
     private long recordTime;
 
     synchronized void offerMeasurement(double value, Attributes attributes, Context context) {
@@ -106,7 +105,6 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
       // Note: It may make sense in the future to attempt to pull this from an active span.
       this.recordTime = clock.nanoTime();
       updateFromContext(context);
-      hasValue = true;
     }
 
     private void updateFromContext(Context context) {
@@ -119,7 +117,8 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
 
     @Nullable
     synchronized Exemplar getAndReset(Attributes pointAttributes) {
-      if (hasValue) {
+      Attributes attributes = this.attributes;
+      if (attributes != null) {
         Exemplar result =
             DoubleExemplar.create(
                 filtered(attributes, pointAttributes), recordTime, spanId, traceId, value);
@@ -128,7 +127,6 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
         this.spanId = null;
         this.traceId = null;
         this.recordTime = 0;
-        this.hasValue = false;
         return result;
       }
       return null;

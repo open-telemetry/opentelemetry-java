@@ -15,6 +15,7 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This enum allows for iteration over all of the operations that we want to benchmark. To ensure
@@ -80,12 +81,13 @@ public enum MetricsTestOperationBuilder {
 
           @Override
           public void perform(Attributes labels) {
-            metric.record(5.0d, labels);
+            // We record different values to try to hit more areas of the histogram buckets.
+            metric.record(ThreadLocalRandom.current().nextDouble(0, 20_000d), labels);
           }
 
           @Override
           public void performBound() {
-            boundMetric.record(5.0d);
+            boundMetric.record(ThreadLocalRandom.current().nextDouble(0, 20_000d));
           }
         };
       }),
@@ -103,12 +105,12 @@ public enum MetricsTestOperationBuilder {
 
           @Override
           public void perform(Attributes labels) {
-            metric.record(5L, labels);
+            metric.record(ThreadLocalRandom.current().nextLong(0, 20_000L), labels);
           }
 
           @Override
           public void performBound() {
-            boundMetric.record(5L);
+            boundMetric.record(ThreadLocalRandom.current().nextLong(0, 20_000L));
           }
         };
       });

@@ -8,10 +8,11 @@ package io.opentelemetry.exporter.prometheus;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.prometheus.client.Collector;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 /** Builder for {@link PrometheusCollector}. */
 public class PrometheusCollectorBuilder {
-  private MetricProducer metricProducer;
+  @Nullable private MetricProducer metricProducer;
 
   PrometheusCollectorBuilder() {}
 

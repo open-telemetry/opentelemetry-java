@@ -19,8 +19,9 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class LogRecord {
 
-  public static LogRecordBuilder builder() {
-    return new LogRecordBuilder();
+  public static LogRecordBuilder builder(
+      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new LogRecordBuilder(resource, instrumentationLibraryInfo);
   }
 
   static LogRecord create(
@@ -31,8 +32,8 @@ public abstract class LogRecord {
       String spanId,
       int flags,
       Severity severity,
-      String severityText,
-      String name,
+      @Nullable String severityText,
+      @Nullable String name,
       Body body,
       Attributes attributes) {
     return new AutoValue_LogRecord(

@@ -9,6 +9,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.Scope;
+import javax.annotation.Nullable;
 
 public final class JfrContextStorageWrapper implements ContextStorage {
 
@@ -32,6 +33,7 @@ public final class JfrContextStorageWrapper implements ContextStorage {
   }
 
   @Override
+  @Nullable
   public Context current() {
     return wrapped.current();
   }

@@ -171,6 +171,12 @@ Libraries will usually only need `opentelemetry-api`, while applications
 will want to use the `opentelemetry-sdk` module which contains our standard implementation
 of the APIs.
 
+## Gradle composite builds
+
+For opentelemetry-java developers that need to test the latest source code with another
+project, composite builds can be used as an alternative to `publishToMavenLocal`. This
+requires some setup which is explained [here](CONTRIBUTING.md#composing-builds).
+
 ## Releases
 
 See the [VERSIONING.md](VERSIONING.md) document for our policies for releases and compatibility

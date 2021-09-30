@@ -73,6 +73,24 @@ public abstract class Serializer implements AutoCloseable {
 
   protected abstract void writeUint32(ProtoFieldInfo field, int value) throws IOException;
 
+  /** Serializes a protobuf {@code uint32} field. */
+  public void serializeInt32(ProtoFieldInfo field, int value) throws IOException {
+    if (value == 0) {
+      return;
+    }
+    writeint32(field, value);
+  }
+
+  protected abstract void writeint32(ProtoFieldInfo field, int value) throws IOException;
+
+  /** Serializes a protobuf {@code int64} field. */
+  public void serializeInt64(ProtoFieldInfo field, long value) throws IOException {
+    if (value == 0) {
+      return;
+    }
+    writeInt64(field, value);
+  }
+
   protected abstract void writeInt64(ProtoFieldInfo field, long value) throws IOException;
 
   /** Serializes a protobuf {@code fixed64} field. */
@@ -86,6 +104,16 @@ public abstract class Serializer implements AutoCloseable {
   protected abstract void writeFixed64(ProtoFieldInfo field, long value) throws IOException;
 
   protected abstract void writeFixed64Value(long value) throws IOException;
+
+  /** Serializes a protobuf {@code fixed32} field. */
+  public void serializeFixed32(ProtoFieldInfo field, int value) throws IOException {
+    if (value == 0) {
+      return;
+    }
+    writeFixed32(field, value);
+  }
+
+  protected abstract void writeFixed32(ProtoFieldInfo field, int value) throws IOException;
 
   /** Serializes a proto buf {@code double} field. */
   public void serializeDouble(ProtoFieldInfo field, double value) throws IOException {

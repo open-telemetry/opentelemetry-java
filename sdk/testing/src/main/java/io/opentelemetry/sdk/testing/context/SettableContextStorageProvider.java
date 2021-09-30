@@ -12,6 +12,7 @@ import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
+import javax.annotation.Nullable;
 
 /** A {@link ContextStorageProvider} which can have it's {@link ContextStorage} set at any time. */
 public final class SettableContextStorageProvider implements ContextStorageProvider {
@@ -41,6 +42,7 @@ public final class SettableContextStorageProvider implements ContextStorageProvi
     }
 
     @Override
+    @Nullable
     public Context current() {
       return delegate.current();
     }

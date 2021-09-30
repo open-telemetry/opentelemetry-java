@@ -15,6 +15,8 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.api.common.Attributes;
@@ -25,22 +27,31 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.jaeger.proto.api_v2.Model;
+import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link Adapter}. */
-class AdapterTest {
+class PostSpansRequestMarshalerTest {
+
+  private static final String KEY_LOG_EVENT = "event";
+  private static final String KEY_EVENT_DROPPED_ATTRIBUTES_COUNT =
+      "otel.event.dropped_attributes_count";
+  private static final String KEY_DROPPED_ATTRIBUTES_COUNT = "otel.dropped_attributes_count";
+  private static final String KEY_DROPPED_EVENTS_COUNT = "otel.dropped_events_count";
+  private static final String KEY_SPAN_KIND = "span.kind";
 
   private static final String LINK_TRACE_ID = "00000000000000000000000000cba123";
   private static final String LINK_SPAN_ID = "0000000000fed456";
@@ -57,7 +68,7 @@ class AdapterTest {
     SpanData span = getSpanData(startMs, endMs, SpanKind.SERVER);
     List<SpanData> spans = Collections.singletonList(span);
 
-    Collection<Model.Span> jaegerSpans = Adapter.toJaeger(spans);
+    SpanMarshaler[] jaegerSpans = SpanMarshaler.createRepeated(spans);
 
     // the span contents are checked somewhere else
     assertThat(jaegerSpans).hasSize(1);
@@ -73,7 +84,7 @@ class AdapterTest {
     SpanData span = getSpanData(startMs, endMs, SpanKind.SERVER, 2);
 
     // test
-    Model.Span jaegerSpan = Adapter.toJaeger(span);
+    Model.Span jaegerSpan = parse(Model.Span.getDefaultInstance(), SpanMarshaler.create(span));
     assertThat(TraceId.fromBytes(jaegerSpan.getTraceId().toByteArray()))
         .isEqualTo(span.getTraceId());
     assertThat(SpanId.fromBytes(jaegerSpan.getSpanId().toByteArray())).isEqualTo(span.getSpanId());
@@ -82,31 +93,32 @@ class AdapterTest {
     assertThat(jaegerSpan.getDuration()).isEqualTo(Durations.fromMillis(duration));
 
     assertThat(jaegerSpan.getTagsCount()).isEqualTo(6);
-    Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);
+    Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), KEY_SPAN_KIND);
     assertThat(keyValue).isNotNull();
     assertThat(keyValue.getVStr()).isEqualTo("server");
 
     Model.KeyValue droppedAttributes =
-        getValue(jaegerSpan.getTagsList(), Adapter.KEY_DROPPED_ATTRIBUTES_COUNT);
+        getValue(jaegerSpan.getTagsList(), KEY_DROPPED_ATTRIBUTES_COUNT);
     assertThat(droppedAttributes)
         .isEqualTo(
             Model.KeyValue.newBuilder()
-                .setKey(Adapter.KEY_DROPPED_ATTRIBUTES_COUNT)
+                .setKey(KEY_DROPPED_ATTRIBUTES_COUNT)
+                .setVType(Model.ValueType.INT64)
                 .setVInt64(2)
                 .build());
 
     assertThat(jaegerSpan.getLogsCount()).isEqualTo(1);
-    Model.KeyValue droppedEvents =
-        getValue(jaegerSpan.getTagsList(), Adapter.KEY_DROPPED_EVENTS_COUNT);
+    Model.KeyValue droppedEvents = getValue(jaegerSpan.getTagsList(), KEY_DROPPED_EVENTS_COUNT);
     assertThat(droppedEvents)
         .isEqualTo(
             Model.KeyValue.newBuilder()
-                .setKey(Adapter.KEY_DROPPED_EVENTS_COUNT)
+                .setKey(KEY_DROPPED_EVENTS_COUNT)
+                .setVType(Model.ValueType.INT64)
                 .setVInt64(1)
                 .build());
 
     Model.Log log = jaegerSpan.getLogs(0);
-    keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_EVENT);
+    keyValue = getValue(log.getFieldsList(), KEY_LOG_EVENT);
     assertThat(keyValue).isNotNull();
     assertThat(keyValue.getVStr()).isEqualTo("the log message");
     keyValue = getValue(log.getFieldsList(), "foo");
@@ -128,8 +140,8 @@ class AdapterTest {
     SpanData span = getSpanData(startMs, endMs, SpanKind.INTERNAL);
 
     // test
-    Model.Span jaegerSpan = Adapter.toJaeger(span);
-    Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);
+    Model.Span jaegerSpan = parse(Model.Span.getDefaultInstance(), SpanMarshaler.create(span));
+    Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), KEY_SPAN_KIND);
     assertThat(keyValue).isNull();
   }
 
@@ -139,7 +151,7 @@ class AdapterTest {
     EventData eventsData = getTimedEvent();
 
     // test
-    Collection<Model.Log> logs = Adapter.toJaegerLogs(Collections.singletonList(eventsData));
+    LogMarshaler[] logs = LogMarshaler.createRepeated(Collections.singletonList(eventsData));
 
     // verify
     assertThat(logs).hasSize(1);
@@ -151,24 +163,24 @@ class AdapterTest {
     EventData event = getTimedEvent();
 
     // test
-    Model.Log log = Adapter.toJaegerLog(event);
+    Model.Log log = parse(Model.Log.getDefaultInstance(), LogMarshaler.create(event));
 
     // verify
     assertThat(log.getFieldsCount()).isEqualTo(2);
 
-    Model.KeyValue keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_EVENT);
+    Model.KeyValue keyValue = getValue(log.getFieldsList(), KEY_LOG_EVENT);
     assertThat(keyValue).isNotNull();
     assertThat(keyValue.getVStr()).isEqualTo("the log message");
     keyValue = getValue(log.getFieldsList(), "foo");
     assertThat(keyValue).isNotNull();
     assertThat(keyValue.getVStr()).isEqualTo("bar");
-    keyValue = getValue(log.getFieldsList(), Adapter.KEY_EVENT_DROPPED_ATTRIBUTES_COUNT);
+    keyValue = getValue(log.getFieldsList(), KEY_EVENT_DROPPED_ATTRIBUTES_COUNT);
     assertThat(keyValue).isNull();
 
     // verify dropped_attributes_count
     event = getTimedEvent(3);
-    log = Adapter.toJaegerLog(event);
-    keyValue = getValue(log.getFieldsList(), Adapter.KEY_EVENT_DROPPED_ATTRIBUTES_COUNT);
+    log = parse(Model.Log.getDefaultInstance(), LogMarshaler.create(event));
+    keyValue = getValue(log.getFieldsList(), KEY_EVENT_DROPPED_ATTRIBUTES_COUNT);
     assertThat(keyValue).isNotNull();
     assertThat(keyValue.getVInt64()).isEqualTo(2);
   }
@@ -176,18 +188,36 @@ class AdapterTest {
   @Test
   void testKeyValue() {
     // test
-    Model.KeyValue kvB = Adapter.toKeyValue(booleanKey("valueB"), true);
-    Model.KeyValue kvD = Adapter.toKeyValue(doubleKey("valueD"), 1.);
-    Model.KeyValue kvI = Adapter.toKeyValue(longKey("valueI"), 2L);
-    Model.KeyValue kvS = Adapter.toKeyValue(stringKey("valueS"), "foobar");
+    Model.KeyValue kvB =
+        parse(
+            Model.KeyValue.getDefaultInstance(),
+            KeyValueMarshaler.create(booleanKey("valueB"), true));
+    Model.KeyValue kvD =
+        parse(
+            Model.KeyValue.getDefaultInstance(), KeyValueMarshaler.create(doubleKey("valueD"), 1.));
+    Model.KeyValue kvI =
+        parse(Model.KeyValue.getDefaultInstance(), KeyValueMarshaler.create(longKey("valueI"), 2L));
+    Model.KeyValue kvS =
+        parse(
+            Model.KeyValue.getDefaultInstance(),
+            KeyValueMarshaler.create(stringKey("valueS"), "foobar"));
     Model.KeyValue kvArrayB =
-        Adapter.toKeyValue(booleanArrayKey("valueArrayB"), Arrays.asList(true, false));
+        parse(
+            Model.KeyValue.getDefaultInstance(),
+            KeyValueMarshaler.create(booleanArrayKey("valueArrayB"), Arrays.asList(true, false)));
     Model.KeyValue kvArrayD =
-        Adapter.toKeyValue(doubleArrayKey("valueArrayD"), Arrays.asList(1.2345, 6.789));
+        parse(
+            Model.KeyValue.getDefaultInstance(),
+            KeyValueMarshaler.create(doubleArrayKey("valueArrayD"), Arrays.asList(1.2345, 6.789)));
     Model.KeyValue kvArrayI =
-        Adapter.toKeyValue(longArrayKey("valueArrayI"), Arrays.asList(12345L, 67890L));
+        parse(
+            Model.KeyValue.getDefaultInstance(),
+            KeyValueMarshaler.create(longArrayKey("valueArrayI"), Arrays.asList(12345L, 67890L)));
     Model.KeyValue kvArrayS =
-        Adapter.toKeyValue(stringArrayKey("valueArrayS"), Arrays.asList("foobar", "barfoo"));
+        parse(
+            Model.KeyValue.getDefaultInstance(),
+            KeyValueMarshaler.create(
+                stringArrayKey("valueArrayS"), Arrays.asList("foobar", "barfoo")));
 
     // verify
     assertThat(kvB.getVBool()).isTrue();
@@ -220,7 +250,8 @@ class AdapterTest {
         LinkData.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
-    Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
+    List<SpanRefMarshaler> spanRefs =
+        SpanRefMarshaler.createRepeated(Collections.singletonList(link));
 
     // verify
     assertThat(spanRefs).hasSize(1); // the actual span ref is tested in another test
@@ -232,7 +263,8 @@ class AdapterTest {
     LinkData link = LinkData.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
-    Model.SpanRef spanRef = Adapter.toSpanRef(link);
+    Model.SpanRef spanRef =
+        parse(Model.SpanRef.getDefaultInstance(), SpanRefMarshaler.create(link));
 
     // verify
     assertThat(SpanId.fromBytes(spanRef.getSpanId().toByteArray())).isEqualTo(SPAN_ID);
@@ -257,7 +289,7 @@ class AdapterTest {
             .setTotalRecordedLinks(0)
             .build();
 
-    assertThat(Adapter.toJaeger(span)).isNotNull();
+    assertThat(SpanMarshaler.create(span)).isNotNull();
   }
 
   @Test
@@ -284,7 +316,7 @@ class AdapterTest {
             .setTotalRecordedLinks(0)
             .build();
 
-    Model.Span jaegerSpan = Adapter.toJaeger(span);
+    Model.Span jaegerSpan = parse(Model.Span.getDefaultInstance(), SpanMarshaler.create(span));
     Model.KeyValue errorType = getValue(jaegerSpan.getTagsList(), "error.type");
     assertThat(errorType).isNotNull();
     assertThat(errorType.getVStr()).isEqualTo(this.getClass().getName());
@@ -373,5 +405,33 @@ class AdapterTest {
       }
     }
     assertThat(found).withFailMessage("Should have found the parent reference").isTrue();
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T extends Message> T parse(T prototype, Marshaler marshaler) {
+    byte[] serialized = toByteArray(marshaler);
+    T result;
+    try {
+      result = (T) prototype.newBuilderForType().mergeFrom(serialized).build();
+    } catch (InvalidProtocolBufferException e) {
+      throw new UncheckedIOException(e);
+    }
+    // Our marshaler should produce the exact same length of serialized output (for example, field
+    // default values are not outputted), so we check that here. The output itself may have slightly
+    // different ordering, mostly due to the way we don't output oneof values in field order all the
+    // tieme. If the lengths are equal and the resulting protos are equal, the marshaling is
+    // guaranteed to be valid.
+    assertThat(result.getSerializedSize()).isEqualTo(serialized.length);
+    return result;
+  }
+
+  private static byte[] toByteArray(Marshaler marshaler) {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    try {
+      marshaler.writeBinaryTo(bos);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    return bos.toByteArray();
   }
 }

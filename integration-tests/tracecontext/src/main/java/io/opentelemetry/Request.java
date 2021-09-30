@@ -6,11 +6,13 @@
 package io.opentelemetry;
 
 import java.util.Arrays;
+import javax.annotation.Nullable;
 
 public final class Request {
-  private String url;
-  private Request[] arguments;
+  @Nullable private String url;
+  @Nullable private Request[] arguments;
 
+  @Nullable
   public String getUrl() {
     return url;
   }
@@ -19,6 +21,7 @@ public final class Request {
     this.url = url;
   }
 
+  @Nullable
   public Request[] getArguments() {
     return arguments;
   }

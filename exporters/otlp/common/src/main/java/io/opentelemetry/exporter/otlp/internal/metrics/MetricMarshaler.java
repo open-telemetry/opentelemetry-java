@@ -29,40 +29,40 @@ final class MetricMarshaler extends MarshalerWithSize {
     byte[] unit = MarshalerUtil.toBytes(metric.getUnit());
 
     Marshaler dataMarshaler = null;
-    ProtoFieldInfo dataFIeld = null;
+    ProtoFieldInfo dataField = null;
     switch (metric.getType()) {
       case LONG_GAUGE:
         dataMarshaler = GaugeMarshaler.create(metric.getLongGaugeData());
-        dataFIeld = Metric.GAUGE;
+        dataField = Metric.GAUGE;
         break;
       case DOUBLE_GAUGE:
         dataMarshaler = GaugeMarshaler.create(metric.getDoubleGaugeData());
-        dataFIeld = Metric.GAUGE;
+        dataField = Metric.GAUGE;
         break;
       case LONG_SUM:
         dataMarshaler = SumMarshaler.create(metric.getLongSumData());
-        dataFIeld = Metric.SUM;
+        dataField = Metric.SUM;
         break;
       case DOUBLE_SUM:
         dataMarshaler = SumMarshaler.create(metric.getDoubleSumData());
-        dataFIeld = Metric.SUM;
+        dataField = Metric.SUM;
         break;
       case SUMMARY:
         dataMarshaler = SummaryMarshaler.create(metric.getDoubleSummaryData());
-        dataFIeld = Metric.SUMMARY;
+        dataField = Metric.SUMMARY;
         break;
       case HISTOGRAM:
         dataMarshaler = HistogramMarshaler.create(metric.getDoubleHistogramData());
-        dataFIeld = Metric.HISTOGRAM;
+        dataField = Metric.HISTOGRAM;
         break;
     }
 
-    if (dataMarshaler == null) {
+    if (dataMarshaler == null || dataField == null) {
       // Someone not using BOM to align versions as we require. Just skip the metric.
       return NoopMarshaler.INSTANCE;
     }
 
-    return new MetricMarshaler(name, description, unit, dataMarshaler, dataFIeld);
+    return new MetricMarshaler(name, description, unit, dataMarshaler, dataField);
   }
 
   private MetricMarshaler(

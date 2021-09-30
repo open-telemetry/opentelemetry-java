@@ -12,7 +12,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 
 /**
  * Stores aggregated {@link MetricData} for asynchronous instruments.
@@ -33,8 +34,14 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   private final InstrumentProcessor<?> instrumentProcessor;
   private final Runnable metricUpdater;
 
+  /** Constructs asynchronous metric storage which stores nothing. */
+  public static MetricStorage empty() {
+    return EmptyMetricStorage.INSTANCE;
+  }
+
   /** Constructs storage for {@code double} valued instruments. */
-  public static <T> AsynchronousMetricStorage doubleAsynchronousAccumulator(
+  @Nullable
+  public static <T> MetricStorage doubleAsynchronousAccumulator(
       View view,
       InstrumentDescriptor instrument,
       Resource resource,
@@ -44,13 +51,15 @@ public final class AsynchronousMetricStorage implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
         view.getAggregation()
-            .config(instrument)
-            .create(
+            .createAggregator(
                 resource,
                 instrumentationLibraryInfo,
                 instrument,
                 metricDescriptor,
-                ExemplarReservoir::noSamples);
+                ExemplarFilter.neverSample());
+    if (Aggregator.empty() == aggregator) {
+      return empty();
+    }
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
@@ -74,7 +83,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   }
 
   /** Constructs storage for {@code long} valued instruments. */
-  public static <T> AsynchronousMetricStorage longAsynchronousAccumulator(
+  public static <T> MetricStorage longAsynchronousAccumulator(
       View view,
       InstrumentDescriptor instrument,
       Resource resource,
@@ -84,13 +93,15 @@ public final class AsynchronousMetricStorage implements MetricStorage {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
         view.getAggregation()
-            .config(instrument)
-            .create(
+            .createAggregator(
                 resource,
                 instrumentationLibraryInfo,
                 instrument,
                 metricDescriptor,
-                ExemplarReservoir::noSamples);
+                ExemplarFilter.neverSample());
+    if (Aggregator.empty() == aggregator) {
+      return empty();
+    }
     final InstrumentProcessor<T> instrumentProcessor =
         new InstrumentProcessor<>(aggregator, startEpochNanos);
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
@@ -124,6 +135,7 @@ public final class AsynchronousMetricStorage implements MetricStorage {
   }
 
   @Override
+  @Nullable
   public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
     collectLock.lock();
     try {

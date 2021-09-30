@@ -5,15 +5,16 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
-import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.annotation.Nullable;
 
 /**
  * Configures how measurements are combined into metrics for {@link View}s.
@@ -21,77 +22,59 @@ import java.util.logging.Logger;
  * <p>Aggregation provides a set of built-in aggregations via static methods.
  */
 public abstract class Aggregation {
-  private static final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(Aggregation.class.getName()));
-
-  private static final Aggregation NONE = Aggregation.make("none", unused -> null);
-  private static final Aggregation DEFAULT =
-      Aggregation.make(
-          "default",
-          i -> {
-            switch (i.getType()) {
-              case COUNTER:
-              case UP_DOWN_COUNTER:
-              case OBSERVABLE_SUM:
-              case OBSERVABLE_UP_DOWN_SUM:
-                return AggregatorFactory.sum(AggregationTemporality.CUMULATIVE);
-              case HISTOGRAM:
-                return AggregatorFactory.histogram(
-                    ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES,
-                    AggregationTemporality.CUMULATIVE);
-              case OBSERVABLE_GAUGE:
-                return AggregatorFactory.lastValue();
-            }
-            logger.log(Level.WARNING, "Unable to find default aggregation for instrument: " + i);
-            return null;
-          });
-  private static final Aggregation SUM = sum(AggregationTemporality.CUMULATIVE);
-  private static final Aggregation LAST_VALUE =
-      Aggregation.make("lastValue", unused -> AggregatorFactory.lastValue());
-  private static final Aggregation EXPLICIT_BUCKET_HISTOGRAM =
-      explictBucketHistogram(
-          AggregationTemporality.CUMULATIVE,
-          ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
-
-  private Aggregation() {}
+  Aggregation() {}
 
   /**
-   * Returns the appropriate aggregator factory for a given instrument.
+   * Returns a new {@link Aggregator}.
    *
-   * @return The AggregatorFactory or {@code null} if none.
+   * @param resource the Resource associated with the {@code Instrument} that will record
+   *     measurements.
+   * @param instrumentationLibraryInfo the InstrumentationLibraryInfo associated with the {@code
+   *     Instrument} that will record measurements.
+   * @param instrumentDescriptor the descriptor of the {@code Instrument} that will record
+   *     measurements.
+   * @param metricDescriptor the descriptor of the {@code MetricData} that should be generated.
+   * @param exemplarFilter the filter on which measurements should turn into exemplars
+   * @return a new {@link Aggregator}, or {@code null} if no measurements should be recorded.
    */
-  public abstract AggregatorFactory config(InstrumentDescriptor instrument);
+  @Nullable
+  public abstract <T> Aggregator<T> createAggregator(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor instrumentDescriptor,
+      MetricDescriptor metricDescriptor,
+      ExemplarFilter exemplarFilter);
 
   /** The None Aggregation will ignore/drop all Instrument Measurements. */
   public static Aggregation none() {
-    return NONE;
+    return NoAggregation.INSTANCE;
   }
 
   /** The default aggregation for an instrument will be chosen. */
   public static Aggregation defaultAggregation() {
-    return DEFAULT;
+    return DefaultAggregation.INSTANCE;
   }
 
   /** Instrument measurements will be combined into a metric Sum. */
   public static Aggregation sum(AggregationTemporality temporality) {
-    return Aggregation.make("sum", unused -> AggregatorFactory.sum(temporality));
+    return new SumAggregation(temporality);
   }
 
   /** Instrument measurements will be combined into a metric Sum. */
   public static Aggregation sum() {
-    return SUM;
+    return SumAggregation.DEFAULT;
   }
 
   /** Remembers the last seen measurement and reports as a Gauge. */
   public static Aggregation lastValue() {
-    return LAST_VALUE;
+    return LastValueAggregation.INSTANCE;
   }
 
   /**
    * Aggregates measurements into an explicit bucket histogram using the default bucket boundaries.
    */
   public static Aggregation explictBucketHistogram() {
-    return EXPLICIT_BUCKET_HISTOGRAM;
+    return ExplicitBucketHistogramAggregation.DEFAULT;
   }
 
   /**
@@ -99,8 +82,8 @@ public abstract class Aggregation {
    *
    * @param temporality Whether to report DELTA or CUMULATIVE metrics.
    */
-  public static Aggregation explictBucketHistogram(AggregationTemporality temporality) {
-    return explictBucketHistogram(
+  public static Aggregation explicitBucketHistogram(AggregationTemporality temporality) {
+    return explicitBucketHistogram(
         temporality, ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
   }
 
@@ -111,30 +94,13 @@ public abstract class Aggregation {
    * @param bucketBoundaries A list of (inclusive) upper bounds for the histogram. Should be in
    *     order from lowest to highest.
    */
-  public static Aggregation explictBucketHistogram(
+  public static Aggregation explicitBucketHistogram(
       AggregationTemporality temporality, List<Double> bucketBoundaries) {
-    return Aggregation.make(
-        "explicitBucketHistogram",
-        unused -> AggregatorFactory.histogram(bucketBoundaries, temporality));
+    return new ExplicitBucketHistogramAggregation(temporality, bucketBoundaries);
   }
 
   /** Aggregates measurements using the best available Histogram. */
-  public static final Aggregation histogram() {
-    return EXPLICIT_BUCKET_HISTOGRAM;
-  }
-
-  static Aggregation make(String name, Function<InstrumentDescriptor, AggregatorFactory> factory) {
-    return new Aggregation() {
-
-      @Override
-      public AggregatorFactory config(InstrumentDescriptor instrument) {
-        return factory.apply(instrument);
-      }
-
-      @Override
-      public String toString() {
-        return name;
-      }
-    };
+  public static Aggregation histogram() {
+    return explictBucketHistogram();
   }
 }

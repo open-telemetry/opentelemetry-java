@@ -67,6 +67,12 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   }
 
   @Override
+  protected void writeint32(ProtoFieldInfo field, int value) throws IOException {
+    output.writeUInt32NoTag(field.getTag());
+    output.writeInt32NoTag(value);
+  }
+
+  @Override
   protected void writeInt64(ProtoFieldInfo field, long value) throws IOException {
     output.writeUInt32NoTag(field.getTag());
     output.writeInt64NoTag(value);
@@ -81,6 +87,12 @@ final class ProtoSerializer extends Serializer implements AutoCloseable {
   @Override
   protected void writeFixed64Value(long value) throws IOException {
     output.writeFixed64NoTag(value);
+  }
+
+  @Override
+  protected void writeFixed32(ProtoFieldInfo field, int value) throws IOException {
+    output.writeUInt32NoTag(field.getTag());
+    output.writeFixed32NoTag(value);
   }
 
   @Override

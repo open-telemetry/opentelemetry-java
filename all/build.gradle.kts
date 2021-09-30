@@ -33,7 +33,7 @@ dependencies {
       }
     }
   }
-  testImplementation("com.tngtech.archunit:archunit-junit4")
+  testImplementation("com.tngtech.archunit:archunit-junit5")
 }
 
 // https://docs.gradle.org/current/samples/sample_jvm_multi_project_with_code_coverage.html
@@ -73,6 +73,7 @@ tasks.named<JacocoReport>("jacocoTestReport") {
           !it.absolutePath.contains("/internal/shaded/") &&
           !it.absolutePath.contains("io/opentelemetry/proto/") &&
           !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/proto/") &&
+          !it.absolutePath.contains("io/opentelemetry/exporter/jaeger/internal/protobuf/") &&
           !it.absolutePath.contains("io/opentelemetry/sdk/extension/trace/jaeger/proto/") &&
           !it.absolutePath.contains("io/opentelemetry/semconv/trace/attributes/") &&
           !it.absolutePath.contains("AutoValue_") &&
