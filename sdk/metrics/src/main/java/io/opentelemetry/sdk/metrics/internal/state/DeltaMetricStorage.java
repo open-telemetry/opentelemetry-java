@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
@@ -97,8 +96,7 @@ class DeltaMetricStorage<T> {
    * <p>All synchronous handles will be collected + reset during this method. Additionally cleanup
    * related stale concurrent-map handles will occur. Any {@code null} measurements are ignored.
    */
-  @GuardedBy("this")
-  private void collectSynchronousDeltaAccumulationAndReset() {
+  private synchronized void collectSynchronousDeltaAccumulationAndReset() {
     Map<Attributes, T> result = new HashMap<>();
     for (Map.Entry<Attributes, AggregatorHandle<T>> entry : activeCollectionStorage.entrySet()) {
       boolean unmappedEntry = entry.getValue().tryUnmap();
