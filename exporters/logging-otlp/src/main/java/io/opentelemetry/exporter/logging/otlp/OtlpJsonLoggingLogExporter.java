@@ -24,12 +24,6 @@ import java.util.logging.Logger;
  */
 public final class OtlpJsonLoggingLogExporter implements LogExporter {
 
-  //  private static final MessageMarshaller marshaller =
-  //      MessageMarshaller.builder()
-  //          .register(ResourceLogs.class)
-  //          .omittingInsignificantWhitespace(true)
-  //          .build();
-
   private static final Logger logger = Logger.getLogger(OtlpJsonLoggingLogExporter.class.getName());
 
   /** Returns a new {@link OtlpJsonLoggingLogExporter}. */
