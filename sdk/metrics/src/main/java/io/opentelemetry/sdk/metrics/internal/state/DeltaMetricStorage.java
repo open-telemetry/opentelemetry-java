@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -29,6 +30,12 @@ class DeltaMetricStorage<T> {
   private final ConcurrentHashMap<Attributes, AggregatorHandle<T>> activeCollectionStorage =
       new ConcurrentHashMap<>();
   private final List<DeltaAccumulation<T>> unreportedDeltas = new ArrayList<>();
+  private long lastCollectionTimeNanos = 0;
+
+  // Minimum amount of time we allow between synchronous collections.
+  // This meant to reduce overhead when multiple exporters attempt to read metrics quickly.
+  // TODO: This should be configurable at the SDK level.
+  private static final long MINIMUM_COLLECTION_INTERVAL_NANOS = TimeUnit.MILLISECONDS.toNanos(100);
 
   DeltaMetricStorage(Aggregator<T> aggregator) {
     this.aggregator = aggregator;
@@ -71,12 +78,13 @@ class DeltaMetricStorage<T> {
    *
    * @param collector The current reader of metrics.
    * @param collectors All possible readers of metrics.
+   * @param epochNanos the timestamp of the current collection in nanoseconds since Jan 1, 1970 GMT.
    * @return The delta accumulation of metrics since the last read of a the specified reader.
    */
   public synchronized Map<Attributes, T> collectFor(
-      CollectionHandle collector, Set<CollectionHandle> collectors) {
+      CollectionHandle collector, Set<CollectionHandle> collectors, long epochNanos) {
     // First we force a collection
-    collectSynchronousDeltaAccumulationAndReset();
+    collectSynchronousDeltaAccumulationAndReset(epochNanos);
     // Now build a delta result.
     Map<Attributes, T> result = new HashMap<>();
     for (DeltaAccumulation<T> point : unreportedDeltas) {
@@ -96,7 +104,19 @@ class DeltaMetricStorage<T> {
    * <p>All synchronous handles will be collected + reset during this method. Additionally cleanup
    * related stale concurrent-map handles will occur. Any {@code null} measurements are ignored.
    */
-  private synchronized void collectSynchronousDeltaAccumulationAndReset() {
+  private synchronized void collectSynchronousDeltaAccumulationAndReset(long epochNanos) {
+    // First check for a clock reset, and make sure we can limp along.
+    if (epochNanos < lastCollectionTimeNanos) {
+      // Reboot time tracking
+      lastCollectionTimeNanos = 0;
+    }
+    // Next, make sure we don't poll/reset synchronous accumulations too quickly.
+    if (epochNanos - lastCollectionTimeNanos < MINIMUM_COLLECTION_INTERVAL_NANOS) {
+      // Skip collection, we already have recent data.
+      return;
+    }
+    // Now we can go grab accumulated measurements.
+    lastCollectionTimeNanos = epochNanos;
     Map<Attributes, T> result = new HashMap<>();
     for (Map.Entry<Attributes, AggregatorHandle<T>> entry : activeCollectionStorage.entrySet()) {
       boolean unmappedEntry = entry.getValue().tryUnmap();
