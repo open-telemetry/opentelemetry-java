@@ -12,14 +12,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.LongExemplar;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
@@ -106,8 +106,8 @@ public class MetricAssertionsTest {
               // Points
               Collections.emptyList()));
 
-  private static final DoubleExemplar DOUBLE_EXEMPLAR =
-      DoubleExemplar.create(Attributes.empty(), 0, "span", "trace", 1.0);
+  private static final DoubleExemplarData DOUBLE_EXEMPLAR =
+      DoubleExemplarData.create(Attributes.empty(), 0, "span", "trace", 1.0);
 
   private static final DoublePointData DOUBLE_POINT_DATA =
       DoublePointData.create(1, 2, Attributes.empty(), 3.0, Collections.emptyList());
@@ -153,8 +153,8 @@ public class MetricAssertionsTest {
               // Points
               Collections.emptyList()));
 
-  private static final LongExemplar LONG_EXEMPLAR =
-      LongExemplar.create(Attributes.empty(), 0, "span", "trace", 1);
+  private static final LongExemplarData LONG_EXEMPLAR =
+      LongExemplarData.create(Attributes.empty(), 0, "span", "trace", 1);
 
   private static final LongPointData LONG_POINT_DATA =
       LongPointData.create(1, 2, Attributes.empty(), 3, Collections.emptyList());
@@ -294,7 +294,7 @@ public class MetricAssertionsTest {
             () ->
                 assertThat(DOUBLE_POINT_DATA)
                     .hasExemplars(
-                        DoubleExemplar.create(Attributes.empty(), 0, "span", "trace", 1.0)))
+                        DoubleExemplarData.create(Attributes.empty(), 0, "span", "trace", 1.0)))
         .isInstanceOf(AssertionError.class);
   }
 
@@ -328,7 +328,8 @@ public class MetricAssertionsTest {
     assertThatThrownBy(
             () ->
                 assertThat(LONG_POINT_DATA)
-                    .hasExemplars(LongExemplar.create(Attributes.empty(), 0, "span", "trace", 1)))
+                    .hasExemplars(
+                        LongExemplarData.create(Attributes.empty(), 0, "span", "trace", 1)))
         .isInstanceOf(AssertionError.class);
   }
 

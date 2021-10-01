@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -222,18 +222,19 @@ final class MetricAdapter {
   }
 
   @Nullable
-  private static Exemplar lastExemplarOrNull(Collection<Exemplar> exemplars) {
-    Exemplar result = null;
-    for (Exemplar e : exemplars) {
+  private static ExemplarData lastExemplarOrNull(Collection<ExemplarData> exemplars) {
+    ExemplarData result = null;
+    for (ExemplarData e : exemplars) {
       result = e;
     }
     return result;
   }
 
   @Nullable
-  private static Exemplar filterExemplars(Collection<Exemplar> exemplars, double min, double max) {
-    Exemplar result = null;
-    for (Exemplar e : exemplars) {
+  private static ExemplarData filterExemplars(
+      Collection<ExemplarData> exemplars, double min, double max) {
+    ExemplarData result = null;
+    for (ExemplarData e : exemplars) {
       double value = e.getValueAsDouble();
       if (value <= max && value > min) {
         result = e;
@@ -273,14 +274,15 @@ final class MetricAdapter {
       List<String> labelNames,
       List<String> labelValues,
       double value,
-      @Nullable Exemplar exemplar) {
+      @Nullable ExemplarData exemplar) {
     if (exemplar != null) {
       return new Sample(name, labelNames, labelValues, value, toPrometheusExemplar(exemplar));
     }
     return new Sample(name, labelNames, labelValues, value);
   }
 
-  private static io.prometheus.client.exemplars.Exemplar toPrometheusExemplar(Exemplar exemplar) {
+  private static io.prometheus.client.exemplars.Exemplar toPrometheusExemplar(
+      ExemplarData exemplar) {
     if (exemplar.getSpanId() != null && exemplar.getTraceId() != null) {
       return new io.prometheus.client.exemplars.Exemplar(
           exemplar.getValueAsDouble(),
