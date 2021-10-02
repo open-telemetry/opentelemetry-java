@@ -12,6 +12,7 @@ dependencies {
   testImplementation(project(":exporters:jaeger"))
   testImplementation(project(":exporters:otlp:trace"))
   testImplementation(project(":exporters:otlp:metrics"))
+  testImplementation(project(":exporters:otlp:logs"))
   testImplementation(project(":exporters:otlp-http:trace"))
   testImplementation(project(":exporters:otlp-http:metrics"))
   testImplementation(project(":semconv"))
