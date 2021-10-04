@@ -57,13 +57,10 @@ final class OtlpConfigUtil {
       endpoint = validateEndpoint(config.getString("otel.exporter.otlp.endpoint"), isHttpProtobuf);
       if (endpoint != null && isHttpProtobuf) {
         String path = endpoint.getPath();
-        String signalPath = signalPath(dataType);
-        if (!path.endsWith(signalPath)) {
-          if (!path.endsWith("/")) {
-            path += "/";
-          }
-          path += signalPath;
+        if (!path.endsWith("/")) {
+          path += "/";
         }
+        path += signalPath(dataType);
         try {
           endpoint = new URL(endpoint, path);
         } catch (MalformedURLException e) {
