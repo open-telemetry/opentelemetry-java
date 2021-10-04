@@ -18,12 +18,18 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
+import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
+import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
+import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
+import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
@@ -32,6 +38,8 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
+import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.proto.metrics.v1.AggregationTemporality;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
 import io.opentelemetry.proto.metrics.v1.Metric;
@@ -41,6 +49,10 @@ import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logging.data.Body;
+import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logging.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
@@ -52,9 +64,11 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.awaitility.Awaitility;
@@ -316,14 +330,92 @@ class OtlpExporterIntegrationTest {
                     .build()));
   }
 
+  @Test
+  void testOtlpGrpcLogExport() {
+    LogExporter otlpGrpcLogExporter =
+        OtlpGrpcLogExporter.builder()
+            .setEndpoint(
+                "http://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
+            .setCompression("gzip")
+            .build();
+
+    testLogExporter(otlpGrpcLogExporter);
+  }
+
+  private static void testLogExporter(LogExporter logExporter) {
+    LogRecord logRecord =
+        LogRecord.builder(
+                RESOURCE,
+                InstrumentationLibraryInfo.create(
+                    OtlpExporterIntegrationTest.class.getName(), null))
+            .setName("log-name")
+            .setBody(Body.stringBody("log body"))
+            .setAttributes(Attributes.builder().put("key", "value").build())
+            .setSeverity(LogRecord.Severity.DEBUG)
+            .setSeverityText("DEBUG")
+            .setTraceId(IdGenerator.random().generateTraceId())
+            .setSpanId(IdGenerator.random().generateSpanId())
+            .setUnixTimeNano(TimeUnit.MILLISECONDS.toNanos(Instant.now().toEpochMilli()))
+            .setFlags(0)
+            .build();
+
+    logExporter.export(Collections.singletonList(logRecord));
+
+    Awaitility.await()
+        .atMost(Duration.ofSeconds(30))
+        .until(() -> grpcServer.logRequests.size() == 1);
+
+    ExportLogsServiceRequest request = grpcServer.logRequests.get(0);
+    assertThat(request.getResourceLogsCount()).isEqualTo(1);
+
+    ResourceLogs resourceLogs = request.getResourceLogs(0);
+    assertThat(resourceLogs.getResource().getAttributesList())
+        .contains(
+            KeyValue.newBuilder()
+                .setKey(ResourceAttributes.SERVICE_NAME.getKey())
+                .setValue(AnyValue.newBuilder().setStringValue("integration test").build())
+                .build());
+    assertThat(resourceLogs.getInstrumentationLibraryLogsCount()).isEqualTo(1);
+
+    InstrumentationLibraryLogs ilLogs = resourceLogs.getInstrumentationLibraryLogs(0);
+    assertThat(ilLogs.getInstrumentationLibrary().getName())
+        .isEqualTo(OtlpExporterIntegrationTest.class.getName());
+    assertThat(ilLogs.getLogsCount()).isEqualTo(1);
+
+    io.opentelemetry.proto.logs.v1.LogRecord protoLog = ilLogs.getLogs(0);
+    assertThat(protoLog.getName()).isEqualTo("log-name");
+    assertThat(protoLog.getBody().getStringValue()).isEqualTo("log body");
+    assertThat(protoLog.getAttributesList())
+        .isEqualTo(
+            Collections.singletonList(
+                KeyValue.newBuilder()
+                    .setKey("key")
+                    .setValue(AnyValue.newBuilder().setStringValue("value").build())
+                    .build()));
+    assertThat(protoLog.getSeverityNumber().getNumber())
+        .isEqualTo(logRecord.getSeverity().getSeverityNumber());
+    assertThat(protoLog.getSeverityText()).isEqualTo("DEBUG");
+    assertThat(TraceId.fromBytes(protoLog.getTraceId().toByteArray()))
+        .isEqualTo(logRecord.getTraceId());
+    assertThat(SpanId.fromBytes(protoLog.getSpanId().toByteArray()))
+        .isEqualTo(logRecord.getSpanId());
+    assertThat(protoLog.getTimeUnixNano()).isEqualTo(logRecord.getTimeUnixNano());
+    assertThat(protoLog.getFlags()).isEqualTo(logRecord.getFlags());
+  }
+
   private static class OtlpGrpcServer extends ServerExtension {
 
     private final List<ExportTraceServiceRequest> traceRequests = new ArrayList<>();
     private final List<ExportMetricsServiceRequest> metricRequests = new ArrayList<>();
+    private final List<ExportLogsServiceRequest> logRequests = new ArrayList<>();
 
     private void reset() {
       traceRequests.clear();
       metricRequests.clear();
+      logRequests.clear();
     }
 
     @Override
@@ -349,6 +441,17 @@ class OtlpExporterIntegrationTest {
                         StreamObserver<ExportMetricsServiceResponse> responseObserver) {
                       metricRequests.add(request);
                       responseObserver.onNext(ExportMetricsServiceResponse.getDefaultInstance());
+                      responseObserver.onCompleted();
+                    }
+                  })
+              .addService(
+                  new LogsServiceGrpc.LogsServiceImplBase() {
+                    @Override
+                    public void export(
+                        ExportLogsServiceRequest request,
+                        StreamObserver<ExportLogsServiceResponse> responseObserver) {
+                      logRequests.add(request);
+                      responseObserver.onNext(ExportLogsServiceResponse.getDefaultInstance());
                       responseObserver.onCompleted();
                     }
                   })

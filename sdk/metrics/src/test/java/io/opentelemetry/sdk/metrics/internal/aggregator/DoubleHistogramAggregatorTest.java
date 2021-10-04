@@ -6,15 +6,14 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
@@ -67,8 +66,8 @@ public class DoubleHistogramAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
-    List<Exemplar> exemplars = Collections.singletonList(exemplar);
+    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
     DoubleHistogramAggregator aggregator =
         new DoubleHistogramAggregator(
@@ -111,10 +110,11 @@ public class DoubleHistogramAggregatorTest {
   @Test
   void mergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
-    List<Exemplar> exemplars = Collections.singletonList(exemplar);
-    List<Exemplar> previousExemplars =
-        Collections.singletonList(DoubleExemplar.create(attributes, 1L, "spanId", "traceId", 2));
+    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<ExemplarData> previousExemplars =
+        Collections.singletonList(
+            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
     HistogramAccumulation previousAccumulation =
         HistogramAccumulation.create(2, new long[] {1, 1, 0}, previousExemplars);
     HistogramAccumulation nextAccumulation =
@@ -145,7 +145,7 @@ public class DoubleHistogramAggregatorTest {
   @Test
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
     HistogramAccumulation accumulation =
         HistogramAccumulation.create(
             2, new long[] {1, 0, 0, 0}, Collections.singletonList(exemplar));

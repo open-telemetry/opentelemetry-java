@@ -7,13 +7,12 @@ package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** An {@link Exemplar} with {@code double} measurments. */
+/** An {@link ExemplarData} with {@code long} measurments. */
 @Immutable
 @AutoValue
-public abstract class DoubleExemplar implements Exemplar {
+public abstract class LongExemplarData implements ExemplarData {
 
   /**
    * Construct a new exemplar.
@@ -25,23 +24,23 @@ public abstract class DoubleExemplar implements Exemplar {
    * @param traceId (optional) The associated TraceId.
    * @param value The value recorded.
    */
-  public static DoubleExemplar create(
+  public static LongExemplarData create(
       Attributes filteredAttributes,
       long recordTimeNanos,
-      @Nullable String spanId,
-      @Nullable String traceId,
-      double value) {
-    return new AutoValue_DoubleExemplar(
+      String spanId,
+      String traceId,
+      long value) {
+    return new AutoValue_LongExemplarData(
         filteredAttributes, recordTimeNanos, spanId, traceId, value);
   }
 
-  DoubleExemplar() {}
+  LongExemplarData() {}
 
   /** Numerical value of the measurement that was recorded. */
-  public abstract double getValue();
+  public abstract long getValue();
 
   @Override
   public final double getValueAsDouble() {
-    return getValue();
+    return (double) getValue();
   }
 }

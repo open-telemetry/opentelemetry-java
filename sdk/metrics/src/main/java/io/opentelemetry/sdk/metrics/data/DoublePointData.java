@@ -50,7 +50,7 @@ public abstract class DoublePointData implements PointData {
       long epochNanos,
       Attributes attributes,
       double value,
-      List<Exemplar> exemplars) {
+      List<ExemplarData> exemplars) {
     return new AutoValue_DoublePointData(startEpochNanos, epochNanos, attributes, exemplars, value);
   }
 

@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,7 +29,7 @@ class NoExemplarReservoir implements ExemplarReservoir {
   }
 
   @Override
-  public List<Exemplar> collectAndReset(Attributes pointAttributes) {
+  public List<ExemplarData> collectAndReset(Attributes pointAttributes) {
     return Collections.emptyList();
   }
 }

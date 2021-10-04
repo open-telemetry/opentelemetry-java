@@ -16,7 +16,7 @@ import javax.annotation.concurrent.Immutable;
  * example the span and trace ID of the active span when the exemplar was recorded.
  */
 @Immutable
-public interface Exemplar {
+public interface ExemplarData {
   /**
    * The set of key/value pairs that were filtered out by the aggregator, but recorded alongside the
    * original measurement. Only key/value pairs that were filtered out by the aggregator should be
