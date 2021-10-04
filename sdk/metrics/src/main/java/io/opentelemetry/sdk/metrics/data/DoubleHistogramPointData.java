@@ -52,7 +52,7 @@ public abstract class DoubleHistogramPointData implements PointData {
       double sum,
       List<Double> boundaries,
       List<Long> counts,
-      List<Exemplar> exemplars) {
+      List<ExemplarData> exemplars) {
     if (counts.size() != boundaries.size() + 1) {
       throw new IllegalArgumentException(
           "invalid counts: size should be "

@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -84,7 +84,7 @@ final class DoubleLastValueAggregator extends AbstractAggregator<DoubleAccumulat
     }
 
     @Override
-    protected DoubleAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
+    protected DoubleAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
       return DoubleAccumulation.create(this.current.getAndSet(DEFAULT_VALUE), exemplars);
     }
 

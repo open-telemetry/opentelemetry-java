@@ -10,9 +10,9 @@ import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
 import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
 import io.opentelemetry.exporter.otlp.internal.ProtoFieldInfo;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
-import io.opentelemetry.sdk.metrics.data.LongExemplar;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import java.io.IOException;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -21,7 +21,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
 
   private final long timeUnixNano;
 
-  private final Exemplar value;
+  private final ExemplarData value;
   private final ProtoFieldInfo valueField;
 
   @Nullable private final String spanId;
@@ -29,7 +29,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
 
   private final KeyValueMarshaler[] filteredAttributeMarshalers;
 
-  static ExemplarMarshaler[] createRepeated(List<Exemplar> exemplars) {
+  static ExemplarMarshaler[] createRepeated(List<ExemplarData> exemplars) {
     int numExemplars = exemplars.size();
     ExemplarMarshaler[] marshalers = new ExemplarMarshaler[numExemplars];
     for (int i = 0; i < numExemplars; i++) {
@@ -38,15 +38,15 @@ final class ExemplarMarshaler extends MarshalerWithSize {
     return marshalers;
   }
 
-  private static ExemplarMarshaler create(Exemplar exemplar) {
+  private static ExemplarMarshaler create(ExemplarData exemplar) {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createRepeated(exemplar.getFilteredAttributes());
 
     final ProtoFieldInfo valueField;
-    if (exemplar instanceof LongExemplar) {
+    if (exemplar instanceof LongExemplarData) {
       valueField = io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT;
     } else {
-      assert exemplar instanceof DoubleExemplar;
+      assert exemplar instanceof DoubleExemplarData;
       valueField = io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_DOUBLE;
     }
 
@@ -61,7 +61,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
 
   private ExemplarMarshaler(
       long timeUnixNano,
-      Exemplar value,
+      ExemplarData value,
       ProtoFieldInfo valueField,
       @Nullable String spanId,
       @Nullable String traceId,
@@ -82,9 +82,9 @@ final class ExemplarMarshaler extends MarshalerWithSize {
     output.serializeFixed64(
         io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO, timeUnixNano);
     if (valueField == io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT) {
-      output.serializeFixed64(valueField, ((LongExemplar) value).getValue());
+      output.serializeFixed64(valueField, ((LongExemplarData) value).getValue());
     } else {
-      output.serializeDouble(valueField, ((DoubleExemplar) value).getValue());
+      output.serializeDouble(valueField, ((DoubleExemplarData) value).getValue());
     }
     output.serializeSpanId(io.opentelemetry.proto.metrics.v1.internal.Exemplar.SPAN_ID, spanId);
     output.serializeTraceId(io.opentelemetry.proto.metrics.v1.internal.Exemplar.TRACE_ID, traceId);
@@ -96,7 +96,7 @@ final class ExemplarMarshaler extends MarshalerWithSize {
   private static int calculateSize(
       long timeUnixNano,
       ProtoFieldInfo valueField,
-      Exemplar value,
+      ExemplarData value,
       @Nullable String spanId,
       @Nullable String traceId,
       KeyValueMarshaler[] filteredAttributeMarshalers) {
@@ -105,9 +105,9 @@ final class ExemplarMarshaler extends MarshalerWithSize {
         MarshalerUtil.sizeFixed64(
             io.opentelemetry.proto.metrics.v1.internal.Exemplar.TIME_UNIX_NANO, timeUnixNano);
     if (valueField == io.opentelemetry.proto.metrics.v1.internal.Exemplar.AS_INT) {
-      size += MarshalerUtil.sizeFixed64(valueField, ((LongExemplar) value).getValue());
+      size += MarshalerUtil.sizeFixed64(valueField, ((LongExemplarData) value).getValue());
     } else {
-      size += MarshalerUtil.sizeDouble(valueField, ((DoubleExemplar) value).getValue());
+      size += MarshalerUtil.sizeDouble(valueField, ((DoubleExemplarData) value).getValue());
     }
     size +=
         MarshalerUtil.sizeSpanId(

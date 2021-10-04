@@ -36,7 +36,7 @@ import io.opentelemetry.proto.metrics.v1.Summary;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
@@ -44,7 +44,7 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.LongExemplar;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
@@ -85,7 +85,7 @@ class MetricsRequestMarshalerTest {
                         KV_ATTR,
                         5,
                         singletonList(
-                            LongExemplar.create(
+                            LongExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
                                 /*spanId=*/ "0000000000000002",
@@ -253,7 +253,7 @@ class MetricsRequestMarshalerTest {
                         ImmutableList.of(),
                         ImmutableList.of(7L),
                         ImmutableList.of(
-                            DoubleExemplar.create(
+                            DoubleExemplarData.create(
                                 Attributes.of(stringKey("test"), "value"),
                                 2,
                                 /*spanId=*/ "0000000000000002",
