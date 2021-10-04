@@ -126,4 +126,9 @@ class ExportTest {
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Could not set trusted certificates");
   }
+
+  @Test
+  void usingGrpc() {
+    assertThat(OtlpGrpcSpanExporterBuilder.USE_OKHTTP).isFalse();
+  }
 }

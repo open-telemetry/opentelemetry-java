@@ -9,27 +9,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.server.ServerBuilder;
-import com.linecorp.armeria.server.grpc.GrpcService;
-import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
-import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
-import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
+import okhttp3.tls.HeldCertificate;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-class ExportTest {
+class OkHttpOnlyExportTest {
 
   private static final List<SpanData> SPANS =
       Collections.singletonList(
@@ -42,9 +43,19 @@ class ExportTest {
               .setHasEnded(true)
               .build());
 
-  @RegisterExtension
-  @Order(1)
-  public static SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
+  private static final HeldCertificate HELD_CERTIFICATE;
+
+  static {
+    try {
+      HELD_CERTIFICATE =
+          new HeldCertificate.Builder()
+              .commonName("localhost")
+              .addSubjectAlternativeName(InetAddress.getByName("localhost").getCanonicalHostName())
+              .build();
+    } catch (UnknownHostException e) {
+      throw new IllegalStateException("Error building certificate.", e);
+    }
+  }
 
   @RegisterExtension
   @Order(2)
@@ -53,32 +64,35 @@ class ExportTest {
         @Override
         protected void configure(ServerBuilder sb) {
           sb.service(
-              GrpcService.builder()
-                  .addService(
-                      new TraceServiceGrpc.TraceServiceImplBase() {
-                        @Override
-                        public void export(
-                            ExportTraceServiceRequest request,
-                            StreamObserver<ExportTraceServiceResponse> responseObserver) {
-                          responseObserver.onNext(ExportTraceServiceResponse.getDefaultInstance());
-                          responseObserver.onCompleted();
-                        }
-                      })
-                  .build());
+              OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH,
+              new AbstractUnaryGrpcService() {
+                @Override
+                protected CompletionStage<byte[]> handleMessage(
+                    ServiceRequestContext ctx, byte[] message) {
+                  return CompletableFuture.completedFuture(
+                      ExportTraceServiceResponse.getDefaultInstance().toByteArray());
+                }
+              });
           sb.http(0);
           sb.https(0);
-          sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
+          sb.tls(HELD_CERTIFICATE.keyPair().getPrivate(), HELD_CERTIFICATE.certificate());
         }
       };
 
+  // NB: Armeria does not support decompression without using the actual grpc-java (naturally
+  // this is the same for grpc-java as a test server). The failure does indicate compression, or at
+  // least some sort of data transformation was attempted. Separate integration tests using the
+  // OTel collector verify that this is indeed correct compression.
   @Test
-  void gzipCompressionExport() {
+  void gzipCompressionExportAttemptedButFails() {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.builder()
             .setEndpoint("http://localhost:" + server.httpPort())
             .setCompression("gzip")
             .build();
-    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+
+    // See note on test method on why this checks isFalse.
+    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
   }
 
   @Test
@@ -102,7 +116,8 @@ class ExportTest {
     OtlpGrpcSpanExporter exporter =
         OtlpGrpcSpanExporter.builder()
             .setEndpoint("https://localhost:" + server.httpsPort())
-            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setTrustedCertificates(
+                HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8))
             .build();
     assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
   }
@@ -128,7 +143,7 @@ class ExportTest {
   }
 
   @Test
-  void usingGrpc() {
-    assertThat(OtlpGrpcSpanExporterBuilder.USE_OKHTTP).isFalse();
+  void usingOkhttp() {
+    assertThat(OtlpGrpcSpanExporterBuilder.USE_OKHTTP).isTrue();
   }
 }

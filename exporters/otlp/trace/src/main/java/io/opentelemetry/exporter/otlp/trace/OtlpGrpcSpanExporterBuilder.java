@@ -5,35 +5,64 @@
 
 package io.opentelemetry.exporter.otlp.trace;
 
-import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
 import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.Metadata;
-import io.grpc.stub.MetadataUtils;
-import io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.traces.TraceRequestMarshaler;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
-import javax.net.ssl.SSLException;
 
 /** Builder utility for this exporter. */
 public final class OtlpGrpcSpanExporterBuilder {
+
+  // Visible for testing
+  static final String GRPC_ENDPOINT_PATH =
+      "/opentelemetry.proto.collector.trace.v1.TraceService/Export";
 
   private static final String DEFAULT_ENDPOINT_URL = "http://localhost:4317";
   private static final URI DEFAULT_ENDPOINT = URI.create(DEFAULT_ENDPOINT_URL);
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
-  @Nullable private ManagedChannel channel;
-  private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
-  private URI endpoint = DEFAULT_ENDPOINT;
-  private boolean compressionEnabled = false;
-  @Nullable private Metadata metadata;
-  @Nullable private byte[] trustedCertificatesPem;
+  // Visible for testing
+  static final boolean USE_OKHTTP;
+
+  static {
+    boolean useOkhttp = false;
+    // Use the OkHttp exporter if ManagedChannel is not found and OkHttp is.
+    try {
+      Class.forName("io.grpc.ManagedChannel");
+    } catch (ClassNotFoundException e) {
+      try {
+        Class.forName("okhttp3.OkHttpClient");
+        useOkhttp = true;
+      } catch (ClassNotFoundException classNotFoundException) {
+        // Fall through
+      }
+    }
+    USE_OKHTTP = useOkhttp;
+  }
+
+  private final GrpcExporterBuilder<TraceRequestMarshaler> delegate;
+
+  OtlpGrpcSpanExporterBuilder() {
+    if (USE_OKHTTP) {
+      delegate =
+          new OkHttpExporterBuilder<>(
+              "span", GRPC_ENDPOINT_PATH, DEFAULT_TIMEOUT_SECS, DEFAULT_ENDPOINT);
+    } else {
+      delegate =
+          new DefaultGrpcExporterBuilder<>(
+              "span",
+              MarshalerTraceServiceGrpc::newFutureStub,
+              DEFAULT_TIMEOUT_SECS,
+              DEFAULT_ENDPOINT);
+    }
+  }
 
   /**
    * Sets the managed chanel to use when communicating with the backend. Takes precedence over
@@ -43,7 +72,7 @@ public final class OtlpGrpcSpanExporterBuilder {
    * @return this builder's instance
    */
   public OtlpGrpcSpanExporterBuilder setChannel(ManagedChannel channel) {
-    this.channel = channel;
+    delegate.setChannel(channel);
     return this;
   }
 
@@ -54,7 +83,7 @@ public final class OtlpGrpcSpanExporterBuilder {
   public OtlpGrpcSpanExporterBuilder setTimeout(long timeout, TimeUnit unit) {
     requireNonNull(unit, "unit");
     checkArgument(timeout >= 0, "timeout must be non-negative");
-    timeoutNanos = unit.toNanos(timeout);
+    delegate.setTimeout(timeout, unit);
     return this;
   }
 
@@ -64,7 +93,8 @@ public final class OtlpGrpcSpanExporterBuilder {
    */
   public OtlpGrpcSpanExporterBuilder setTimeout(Duration timeout) {
     requireNonNull(timeout, "timeout");
-    return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
+    delegate.setTimeout(timeout);
+    return this;
   }
 
   /**
@@ -73,21 +103,7 @@ public final class OtlpGrpcSpanExporterBuilder {
    */
   public OtlpGrpcSpanExporterBuilder setEndpoint(String endpoint) {
     requireNonNull(endpoint, "endpoint");
-
-    URI uri;
-    try {
-      uri = new URI(endpoint);
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException("Invalid endpoint, must be a URL: " + endpoint, e);
-    }
-
-    if (uri.getScheme() == null
-        || (!uri.getScheme().equals("http") && !uri.getScheme().equals("https"))) {
-      throw new IllegalArgumentException(
-          "Invalid endpoint, must start with http:// or https://: " + uri);
-    }
-
-    this.endpoint = uri;
+    delegate.setEndpoint(endpoint);
     return this;
   }
 
@@ -100,7 +116,7 @@ public final class OtlpGrpcSpanExporterBuilder {
     checkArgument(
         compressionMethod.equals("gzip"),
         "Unsupported compression method. Supported compression methods include: gzip.");
-    this.compressionEnabled = true;
+    delegate.setCompression(compressionMethod);
     return this;
   }
 
@@ -110,23 +126,20 @@ public final class OtlpGrpcSpanExporterBuilder {
    * use the system default trusted certificates.
    */
   public OtlpGrpcSpanExporterBuilder setTrustedCertificates(byte[] trustedCertificatesPem) {
-    this.trustedCertificatesPem = trustedCertificatesPem;
+    delegate.setTrustedCertificates(trustedCertificatesPem);
     return this;
   }
 
   /**
    * Add header to request. Optional. Applicable only if {@link
-   * OtlpGrpcSpanExporterBuilder#endpoint} is set to build channel.
+   * OtlpGrpcSpanExporterBuilder#setChannel(ManagedChannel)} is not called.
    *
    * @param key header key
    * @param value header value
    * @return this builder's instance
    */
   public OtlpGrpcSpanExporterBuilder addHeader(String key, String value) {
-    if (metadata == null) {
-      metadata = new Metadata();
-    }
-    metadata.put(Metadata.Key.of(key, ASCII_STRING_MARSHALLER), value);
+    delegate.addHeader(key, value);
     return this;
   }
 
@@ -136,37 +149,6 @@ public final class OtlpGrpcSpanExporterBuilder {
    * @return a new exporter's instance
    */
   public OtlpGrpcSpanExporter build() {
-    ManagedChannel channel = this.channel;
-    if (channel == null) {
-      final ManagedChannelBuilder<?> managedChannelBuilder =
-          ManagedChannelBuilder.forTarget(endpoint.getAuthority());
-
-      if (endpoint.getScheme().equals("https")) {
-        managedChannelBuilder.useTransportSecurity();
-      } else {
-        managedChannelBuilder.usePlaintext();
-      }
-
-      if (metadata != null) {
-        managedChannelBuilder.intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
-      }
-
-      if (trustedCertificatesPem != null) {
-        try {
-          ManagedChannelUtil.setTrustedCertificatesPem(
-              managedChannelBuilder, trustedCertificatesPem);
-        } catch (SSLException e) {
-          throw new IllegalStateException(
-              "Could not set trusted certificates for gRPC TLS connection, are they valid "
-                  + "X.509 in PEM format?",
-              e);
-        }
-      }
-
-      channel = managedChannelBuilder.build();
-    }
-    return new OtlpGrpcSpanExporter(channel, timeoutNanos, compressionEnabled);
+    return new OtlpGrpcSpanExporter(delegate.build());
   }
-
-  OtlpGrpcSpanExporterBuilder() {}
 }

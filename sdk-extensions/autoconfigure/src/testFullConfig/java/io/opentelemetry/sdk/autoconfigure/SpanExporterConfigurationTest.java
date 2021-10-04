@@ -45,7 +45,7 @@ class SpanExporterConfigurationTest {
               OtlpGrpcSpanExporter.class,
               otlp ->
                   assertThat(otlp)
-                      .extracting("timeoutNanos")
+                      .extracting("exporter.timeoutNanos")
                       .isEqualTo(TimeUnit.MILLISECONDS.toNanos(10L)));
     } finally {
       exporter.shutdown();

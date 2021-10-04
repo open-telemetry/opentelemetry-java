@@ -144,7 +144,9 @@ class OtlpGrpcConfigTest {
         MetricExporterConfiguration.configureOtlpMetrics(
             properties, SdkMeterProvider.builder().build());
 
-    assertThat(spanExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
+    assertThat(spanExporter)
+        .extracting("exporter.timeoutNanos")
+        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             spanExporter
                 .export(Lists.newArrayList(generateFakeSpan()))
@@ -197,7 +199,9 @@ class OtlpGrpcConfigTest {
         SpanExporterConfiguration.configureExporter(
             "otlp", DefaultConfigProperties.createForTest(props), Collections.emptyMap());
 
-    assertThat(spanExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
+    assertThat(spanExporter)
+        .extracting("exporter.timeoutNanos")
+        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             spanExporter
                 .export(Lists.newArrayList(generateFakeSpan()))
