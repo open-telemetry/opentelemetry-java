@@ -17,7 +17,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
 
-  private final GrpcExporter<TraceRequestMarshaler> exporter;
+  private final GrpcExporter<TraceRequestMarshaler> delegate;
 
   /**
    * Returns a new {@link OtlpGrpcSpanExporter} reading the configuration values from the
@@ -39,8 +39,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     return new OtlpGrpcSpanExporterBuilder();
   }
 
-  OtlpGrpcSpanExporter(GrpcExporter<TraceRequestMarshaler> exporter) {
-    this.exporter = exporter;
+  OtlpGrpcSpanExporter(GrpcExporter<TraceRequestMarshaler> delegate) {
+    this.delegate = delegate;
   }
 
   /**
@@ -53,7 +53,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   public CompletableResultCode export(Collection<SpanData> spans) {
     TraceRequestMarshaler request = TraceRequestMarshaler.create(spans);
 
-    return exporter.export(request, spans.size());
+    return delegate.export(request, spans.size());
   }
 
   /**
@@ -72,6 +72,6 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode shutdown() {
-    return exporter.shutdown();
+    return delegate.shutdown();
   }
 }

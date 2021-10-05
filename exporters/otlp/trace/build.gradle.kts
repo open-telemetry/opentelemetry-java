@@ -72,7 +72,7 @@ dependencies {
 }
 
 tasks {
-  named("check") {
+  check {
     dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp", "testOkhttpOnly")
   }
 }

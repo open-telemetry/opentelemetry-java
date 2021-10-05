@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.trace;
+package io.opentelemetry.exporter.otlp.logs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -12,12 +12,15 @@ import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
-import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
-import io.opentelemetry.sdk.testing.trace.TestSpanData;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.StatusData;
+import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.resources.Resource;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -33,15 +36,20 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 class OkHttpOnlyExportTest {
 
-  private static final List<SpanData> SPANS =
+  private static final List<LogRecord> LOGS =
       Collections.singletonList(
-          TestSpanData.builder()
-              .setName("name")
-              .setKind(SpanKind.CLIENT)
-              .setStartEpochNanos(1)
-              .setEndEpochNanos(2)
-              .setStatus(StatusData.ok())
-              .setHasEnded(true)
+          LogRecord.builder(
+                  Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+                  InstrumentationLibraryInfo.create("instrumentation", "1"))
+              .setUnixTimeMillis(System.currentTimeMillis())
+              .setTraceId(TraceId.getInvalid())
+              .setSpanId(SpanId.getInvalid())
+              .setFlags(TraceFlags.getDefault().asByte())
+              .setSeverity(LogRecord.Severity.ERROR)
+              .setSeverityText("really severe")
+              .setName("log1")
+              .setBody("message")
+              .setAttributes(Attributes.builder().put("animal", "cat").build())
               .build());
 
   private static final HeldCertificate HELD_CERTIFICATE;
@@ -65,13 +73,13 @@ class OkHttpOnlyExportTest {
         @Override
         protected void configure(ServerBuilder sb) {
           sb.service(
-              OtlpGrpcSpanExporterBuilder.GRPC_ENDPOINT_PATH,
+              OtlpGrpcLogExporterBuilder.GRPC_ENDPOINT_PATH,
               new AbstractUnaryGrpcService() {
                 @Override
                 protected CompletionStage<byte[]> handleMessage(
                     ServiceRequestContext ctx, byte[] message) {
                   return CompletableFuture.completedFuture(
-                      ExportTraceServiceResponse.getDefaultInstance().toByteArray());
+                      ExportLogsServiceResponse.getDefaultInstance().toByteArray());
                 }
               });
           sb.http(0);
@@ -85,58 +93,57 @@ class OkHttpOnlyExportTest {
   // least some sort of data transformation was attempted. Separate integration tests using the
   // OTel collector verify that this is indeed correct compression.
   @Test
-  void gzipCompressionExportAttemptedButFails() {
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.builder()
+  void gzipCompressionExport() {
+    OtlpGrpcLogExporter exporter =
+        OtlpGrpcLogExporter.builder()
             .setEndpoint("http://localhost:" + server.httpPort())
             .setCompression("gzip")
             .build();
-
     // See note on test method on why this checks isFalse.
-    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    assertThat(exporter.export(LOGS).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
   }
 
   @Test
   void plainTextExport() {
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.builder().setEndpoint("http://localhost:" + server.httpPort()).build();
-    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    OtlpGrpcLogExporter exporter =
+        OtlpGrpcLogExporter.builder().setEndpoint("http://localhost:" + server.httpPort()).build();
+    assertThat(exporter.export(LOGS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
   }
 
   @Test
   void authorityWithAuth() {
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.builder()
+    OtlpGrpcLogExporter exporter =
+        OtlpGrpcLogExporter.builder()
             .setEndpoint("http://foo:bar@localhost:" + server.httpPort())
             .build();
-    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(exporter.export(LOGS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
   }
 
   @Test
-  void testTlsExport() throws Exception {
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.builder()
+  void testTlsExport() {
+    OtlpGrpcLogExporter exporter =
+        OtlpGrpcLogExporter.builder()
             .setEndpoint("https://localhost:" + server.httpsPort())
             .setTrustedCertificates(
                 HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8))
             .build();
-    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    assertThat(exporter.export(LOGS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
   }
 
   @Test
   void testTlsExport_untrusted() {
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.builder()
+    OtlpGrpcLogExporter exporter =
+        OtlpGrpcLogExporter.builder()
             .setEndpoint("https://localhost:" + server.httpsPort())
             .build();
-    assertThat(exporter.export(SPANS).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
+    assertThat(exporter.export(LOGS).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
   }
 
   @Test
   void tlsBadCert() {
     assertThatThrownBy(
             () ->
-                OtlpGrpcSpanExporter.builder()
+                OtlpGrpcLogExporter.builder()
                     .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8))
                     .build())
         .isInstanceOf(IllegalStateException.class)
@@ -145,7 +152,7 @@ class OkHttpOnlyExportTest {
 
   @Test
   void usingOkhttp() {
-    assertThat(OtlpGrpcSpanExporter.builder().delegate)
+    assertThat(OtlpGrpcLogExporter.builder().delegate)
         .isInstanceOf(OkHttpGrpcExporterBuilder.class);
   }
 }

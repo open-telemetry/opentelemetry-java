@@ -21,7 +21,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.exporter.otlp.internal.okhttp;
+package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
@@ -29,7 +29,6 @@ import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
-import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import java.io.IOException;
@@ -71,7 +70,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler, U> implements GrpcExp
   private final BoundLongCounter failed;
 
   /** Creates a new {@link OkHttpGrpcExporter}. */
-  public OkHttpGrpcExporter(
+  OkHttpGrpcExporter(
       String type,
       OkHttpClient client,
       String endpoint,

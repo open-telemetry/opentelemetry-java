@@ -10,31 +10,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.linecorp.armeria.server.ServerBuilder;
-import com.linecorp.armeria.server.grpc.GrpcService;
-import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
-import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
-import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
+import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
-import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
+import okhttp3.tls.HeldCertificate;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-class ExportTest {
+class OkHttpOnlyExportTest {
 
   private static final long START_NS = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
   private static final List<MetricData> METRICS =
@@ -55,9 +56,19 @@ class ExportTest {
                           Attributes.of(stringKey("k"), "v"),
                           5)))));
 
-  @RegisterExtension
-  @Order(1)
-  public static SelfSignedCertificateExtension certificate = new SelfSignedCertificateExtension();
+  private static final HeldCertificate HELD_CERTIFICATE;
+
+  static {
+    try {
+      HELD_CERTIFICATE =
+          new HeldCertificate.Builder()
+              .commonName("localhost")
+              .addSubjectAlternativeName(InetAddress.getByName("localhost").getCanonicalHostName())
+              .build();
+    } catch (UnknownHostException e) {
+      throw new IllegalStateException("Error building certificate.", e);
+    }
+  }
 
   @RegisterExtension
   @Order(2)
@@ -66,33 +77,34 @@ class ExportTest {
         @Override
         protected void configure(ServerBuilder sb) {
           sb.service(
-              GrpcService.builder()
-                  .addService(
-                      new MetricsServiceGrpc.MetricsServiceImplBase() {
-                        @Override
-                        public void export(
-                            ExportMetricsServiceRequest request,
-                            StreamObserver<ExportMetricsServiceResponse> responseObserver) {
-                          responseObserver.onNext(
-                              ExportMetricsServiceResponse.getDefaultInstance());
-                          responseObserver.onCompleted();
-                        }
-                      })
-                  .build());
+              OtlpGrpcMetricExporterBuilder.GRPC_ENDPOINT_PATH,
+              new AbstractUnaryGrpcService() {
+                @Override
+                protected CompletionStage<byte[]> handleMessage(
+                    ServiceRequestContext ctx, byte[] message) {
+                  return CompletableFuture.completedFuture(
+                      ExportMetricsServiceResponse.getDefaultInstance().toByteArray());
+                }
+              });
           sb.http(0);
           sb.https(0);
-          sb.tls(certificate.certificateFile(), certificate.privateKeyFile());
+          sb.tls(HELD_CERTIFICATE.keyPair().getPrivate(), HELD_CERTIFICATE.certificate());
         }
       };
 
+  // NB: Armeria does not support decompression without using the actual grpc-java (naturally
+  // this is the same for grpc-java as a test server). The failure does indicate compression, or at
+  // least some sort of data transformation was attempted. Separate integration tests using the
+  // OTel collector verify that this is indeed correct compression.
   @Test
-  void gzipCompressionExport() {
+  void gzipCompressionExportButFails() {
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder()
             .setEndpoint("http://localhost:" + server.httpPort())
             .setCompression("gzip")
             .build();
-    assertThat(exporter.export(METRICS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    // See note on test method on why this checks isFalse.
+    assertThat(exporter.export(METRICS).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
   }
 
   @Test
@@ -114,11 +126,12 @@ class ExportTest {
   }
 
   @Test
-  void testTlsExport() throws Exception {
+  void testTlsExport() {
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder()
             .setEndpoint("https://localhost:" + server.httpsPort())
-            .setTrustedCertificates(Files.readAllBytes(certificate.certificateFile().toPath()))
+            .setTrustedCertificates(
+                HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8))
             .build();
     assertThat(exporter.export(METRICS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
   }
@@ -144,8 +157,8 @@ class ExportTest {
   }
 
   @Test
-  void usingGrpc() {
+  void usingOkhttp() {
     assertThat(OtlpGrpcMetricExporter.builder().delegate)
-        .isInstanceOf(DefaultGrpcExporterBuilder.class);
+        .isInstanceOf(OkHttpGrpcExporterBuilder.class);
   }
 }

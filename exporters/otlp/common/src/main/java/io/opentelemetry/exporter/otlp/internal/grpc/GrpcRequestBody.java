@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.exporter.otlp.internal.okhttp;
+package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import okio.Okio;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class GrpcRequestBody extends RequestBody {
+final class GrpcRequestBody extends RequestBody {
 
   private static final int HEADER_LENGTH = 5;
 
@@ -36,7 +36,7 @@ public final class GrpcRequestBody extends RequestBody {
   private final boolean compressed;
 
   /** Creates a new {@link GrpcRequestBody}. */
-  public GrpcRequestBody(Marshaler marshaler, boolean compressed) {
+  GrpcRequestBody(Marshaler marshaler, boolean compressed) {
     this.marshaler = marshaler;
     this.compressed = compressed;
 

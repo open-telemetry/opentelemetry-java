@@ -9,9 +9,8 @@ import static io.opentelemetry.api.internal.Utils.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import io.grpc.ManagedChannel;
-import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporterBuilder;
-import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.traces.TraceRequestMarshaler;
 import java.net.URI;
 import java.time.Duration;
@@ -29,39 +28,16 @@ public final class OtlpGrpcSpanExporterBuilder {
   private static final long DEFAULT_TIMEOUT_SECS = 10;
 
   // Visible for testing
-  static final boolean USE_OKHTTP;
-
-  static {
-    boolean useOkhttp = false;
-    // Use the OkHttp exporter if ManagedChannel is not found and OkHttp is.
-    try {
-      Class.forName("io.grpc.ManagedChannel");
-    } catch (ClassNotFoundException e) {
-      try {
-        Class.forName("okhttp3.OkHttpClient");
-        useOkhttp = true;
-      } catch (ClassNotFoundException classNotFoundException) {
-        // Fall through
-      }
-    }
-    USE_OKHTTP = useOkhttp;
-  }
-
-  private final GrpcExporterBuilder<TraceRequestMarshaler> delegate;
+  final GrpcExporterBuilder<TraceRequestMarshaler> delegate;
 
   OtlpGrpcSpanExporterBuilder() {
-    if (USE_OKHTTP) {
-      delegate =
-          new OkHttpExporterBuilder<>(
-              "span", GRPC_ENDPOINT_PATH, DEFAULT_TIMEOUT_SECS, DEFAULT_ENDPOINT);
-    } else {
-      delegate =
-          new DefaultGrpcExporterBuilder<>(
-              "span",
-              MarshalerTraceServiceGrpc::newFutureStub,
-              DEFAULT_TIMEOUT_SECS,
-              DEFAULT_ENDPOINT);
-    }
+    delegate =
+        GrpcExporter.builder(
+            "span",
+            DEFAULT_TIMEOUT_SECS,
+            DEFAULT_ENDPOINT,
+            () -> MarshalerTraceServiceGrpc::newFutureStub,
+            GRPC_ENDPOINT_PATH);
   }
 
   /**
