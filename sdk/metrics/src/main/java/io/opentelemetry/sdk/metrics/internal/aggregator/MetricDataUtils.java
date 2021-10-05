@@ -9,8 +9,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -80,6 +82,27 @@ final class MetricDataUtils {
                   counts,
                   aggregator.getExemplars()));
         });
+    return points;
+  }
+
+  static List<ExponentialHistogramPointData> toExponentialHistogramPointList(
+      Map<Attributes, ExponentialHistogramAccumulation> accumulationMap,
+      long startEpochNanos,
+      long epochNanos) {
+    List<ExponentialHistogramPointData> points = new ArrayList<>(accumulationMap.size());
+    accumulationMap.forEach(
+        (attributes, aggregator) ->
+            points.add(
+                DoubleExponentialHistogramPointData.create(
+                    aggregator.getScale(),
+                    aggregator.getSum(),
+                    aggregator.getZeroCount(),
+                    aggregator.getPositiveBuckets(),
+                    aggregator.getNegativeBuckets(),
+                    startEpochNanos,
+                    epochNanos,
+                    attributes,
+                    Collections.emptyList())));
     return points;
   }
 }
