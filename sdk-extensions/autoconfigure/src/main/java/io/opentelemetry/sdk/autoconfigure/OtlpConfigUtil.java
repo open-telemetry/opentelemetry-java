@@ -53,7 +53,11 @@ final class OtlpConfigUtil {
     URL endpoint =
         validateEndpoint(
             config.getString("otel.exporter.otlp." + dataType + ".endpoint"), isHttpProtobuf);
-    if (endpoint == null) {
+    if (endpoint != null) {
+      if (endpoint.getPath().isEmpty()) {
+        endpoint = createUrl(endpoint, "/");
+      }
+    } else {
       endpoint = validateEndpoint(config.getString("otel.exporter.otlp.endpoint"), isHttpProtobuf);
       if (endpoint != null && isHttpProtobuf) {
         String path = endpoint.getPath();
@@ -61,12 +65,7 @@ final class OtlpConfigUtil {
           path += "/";
         }
         path += signalPath(dataType);
-        try {
-          endpoint = new URL(endpoint, path);
-        } catch (MalformedURLException e) {
-          throw new ConfigurationException(
-              "Unexpected exception appending signal path to OTLP endpoint", e);
-        }
+        endpoint = createUrl(endpoint, path);
       }
     }
     if (endpoint != null) {
@@ -111,6 +110,14 @@ final class OtlpConfigUtil {
         throw new ConfigurationException("Error reading OTLP certificate.", e);
       }
       setTrustedCertificates.accept(certificateBytes);
+    }
+  }
+
+  private static URL createUrl(URL context, String spec) {
+    try {
+      return new URL(context, spec);
+    } catch (MalformedURLException e) {
+      throw new ConfigurationException("Unexpected exception creating URL.", e);
     }
   }
 
