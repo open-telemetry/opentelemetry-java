@@ -13,6 +13,16 @@ you must update your build configuration to also include the new `jaeger-proto` 
 artifact will not be included in a future 2.0 release of the SDK so it is recommended to instead
 generated the protobuf classes in your own build.
 
+### Auto-configuration (alpha)
+
+- BREAKING CHANGE: The behavior of `otel.exporter.otlp.endpoint` has changed when the protocol
+  is `http/protobuf`. The new behavior is in line
+  with [recent changes](https://github.com/open-telemetry/opentelemetry-specification/pull/1975) to
+  the specification, which states that the signal path  (e.g. `v1/traces` or `v1/metrics`) is
+  appended to the configured endpoint. Values for signal specific endpoint configuration (
+  e.g. `otel.exporter.otlp.traces.endpoint` and `otel.exporter.otlp.metrics.endpoint`) override the
+  generic endpoint configuration and are used as-is without modification.
+
 ## Version 1.6.0 (2021-09-13):
 
 ### API
