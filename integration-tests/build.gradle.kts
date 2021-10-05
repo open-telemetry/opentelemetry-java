@@ -15,6 +15,7 @@ dependencies {
   testImplementation(project(":exporters:otlp:logs"))
   testImplementation(project(":exporters:otlp-http:trace"))
   testImplementation(project(":exporters:otlp-http:metrics"))
+  testImplementation(project(":exporters:otlp-http:logs"))
   testImplementation(project(":semconv"))
   testImplementation(project(":proto"))
 
