@@ -109,7 +109,7 @@ class OtlpHttpSpanExporterTest {
     assertThatCode(() -> OtlpHttpSpanExporter.builder().setTimeout(Duration.ofMillis(10)))
         .doesNotThrowAnyException();
 
-    assertThatCode(() -> OtlpHttpSpanExporter.builder().setEndpoint("http://localhost:4317"))
+    assertThatCode(() -> OtlpHttpSpanExporter.builder().setEndpoint("http://localhost:4318"))
         .doesNotThrowAnyException();
     assertThatCode(() -> OtlpHttpSpanExporter.builder().setEndpoint("http://localhost"))
         .doesNotThrowAnyException();

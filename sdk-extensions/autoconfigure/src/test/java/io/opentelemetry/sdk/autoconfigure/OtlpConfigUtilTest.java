@@ -96,7 +96,7 @@ class OtlpConfigUtilTest {
             configureEndpointCallable(
                 ImmutableMap.of(
                     GENERIC_ENDPOINT_KEY,
-                    "http://localhost:4317/path",
+                    "http://localhost:4318/path",
                     "otel.exporter.otlp.protocol",
                     "http/protobuf")))
         .doesNotThrowAnyException();
@@ -141,77 +141,77 @@ class OtlpConfigUtilTest {
   void configureOtlpExporterBuilder_HttpGenericEndpointKey() {
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4317"))
-        .isEqualTo("http://localhost:4317/v1/traces");
+                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4318"))
+        .isEqualTo("http://localhost:4318/v1/traces");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4317/"))
-        .isEqualTo("http://localhost:4317/v1/traces");
+                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4318/"))
+        .isEqualTo("http://localhost:4318/v1/traces");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4317/foo"))
-        .isEqualTo("http://localhost:4317/foo/v1/traces");
+                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4318/foo"))
+        .isEqualTo("http://localhost:4318/foo/v1/traces");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4317/foo/"))
-        .isEqualTo("http://localhost:4317/foo/v1/traces");
+                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4318/foo/"))
+        .isEqualTo("http://localhost:4318/foo/v1/traces");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4317/v1/traces"))
-        .isEqualTo("http://localhost:4317/v1/traces/v1/traces");
+                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4318/v1/traces"))
+        .isEqualTo("http://localhost:4318/v1/traces/v1/traces");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4317/v1/metrics"))
-        .isEqualTo("http://localhost:4317/v1/metrics/v1/traces");
+                DATA_TYPE_TRACES, GENERIC_ENDPOINT_KEY, "http://localhost:4318/v1/metrics"))
+        .isEqualTo("http://localhost:4318/v1/metrics/v1/traces");
 
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4317"))
-        .isEqualTo("http://localhost:4317/v1/metrics");
+                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4318"))
+        .isEqualTo("http://localhost:4318/v1/metrics");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4317/"))
-        .isEqualTo("http://localhost:4317/v1/metrics");
+                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4318/"))
+        .isEqualTo("http://localhost:4318/v1/metrics");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4317/foo"))
-        .isEqualTo("http://localhost:4317/foo/v1/metrics");
+                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4318/foo"))
+        .isEqualTo("http://localhost:4318/foo/v1/metrics");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4317/foo/"))
-        .isEqualTo("http://localhost:4317/foo/v1/metrics");
+                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4318/foo/"))
+        .isEqualTo("http://localhost:4318/foo/v1/metrics");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4317/v1/metrics"))
-        .isEqualTo("http://localhost:4317/v1/metrics/v1/metrics");
+                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4318/v1/metrics"))
+        .isEqualTo("http://localhost:4318/v1/metrics/v1/metrics");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4317/v1/traces"))
-        .isEqualTo("http://localhost:4317/v1/traces/v1/metrics");
+                DATA_TYPE_METRICS, GENERIC_ENDPOINT_KEY, "http://localhost:4318/v1/traces"))
+        .isEqualTo("http://localhost:4318/v1/traces/v1/metrics");
   }
 
   @Test
   void configureOtlpExporterBuilder_HttpTracesEndpointKey() {
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_TRACES, TRACES_ENDPOINT_KEY, "http://localhost:4317"))
-        .isEqualTo("http://localhost:4317/");
+                DATA_TYPE_TRACES, TRACES_ENDPOINT_KEY, "http://localhost:4318"))
+        .isEqualTo("http://localhost:4318/");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_TRACES, TRACES_ENDPOINT_KEY, "http://localhost:4317"))
-        .isEqualTo("http://localhost:4317/");
+                DATA_TYPE_TRACES, TRACES_ENDPOINT_KEY, "http://localhost:4318"))
+        .isEqualTo("http://localhost:4318/");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_TRACES, TRACES_ENDPOINT_KEY, "http://localhost:4317/"))
-        .isEqualTo("http://localhost:4317/");
+                DATA_TYPE_TRACES, TRACES_ENDPOINT_KEY, "http://localhost:4318/"))
+        .isEqualTo("http://localhost:4318/");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_TRACES, TRACES_ENDPOINT_KEY, "http://localhost:4317/v1/traces"))
-        .isEqualTo("http://localhost:4317/v1/traces");
+                DATA_TYPE_TRACES, TRACES_ENDPOINT_KEY, "http://localhost:4318/v1/traces"))
+        .isEqualTo("http://localhost:4318/v1/traces");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_TRACES, TRACES_ENDPOINT_KEY, "http://localhost:4317/foo/bar"))
-        .isEqualTo("http://localhost:4317/foo/bar");
+                DATA_TYPE_TRACES, TRACES_ENDPOINT_KEY, "http://localhost:4318/foo/bar"))
+        .isEqualTo("http://localhost:4318/foo/bar");
     assertThat(
             configureEndpoint(
                 DATA_TYPE_TRACES,
@@ -219,34 +219,34 @@ class OtlpConfigUtilTest {
                     "otel.exporter.otlp.protocol",
                     PROTOCOL_HTTP_PROTOBUF,
                     GENERIC_ENDPOINT_KEY,
-                    "http://localhost:4317/foo/bar",
+                    "http://localhost:4318/foo/bar",
                     TRACES_ENDPOINT_KEY,
-                    "http://localhost:4317/baz/qux")))
-        .isEqualTo("http://localhost:4317/baz/qux");
+                    "http://localhost:4318/baz/qux")))
+        .isEqualTo("http://localhost:4318/baz/qux");
   }
 
   @Test
   void configureOtlpExporterBuilder_HttpMetricsEndpointKey() {
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_METRICS, METRICS_ENDPOINT_KEY, "http://localhost:4317"))
-        .isEqualTo("http://localhost:4317/");
+                DATA_TYPE_METRICS, METRICS_ENDPOINT_KEY, "http://localhost:4318"))
+        .isEqualTo("http://localhost:4318/");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_METRICS, METRICS_ENDPOINT_KEY, "http://localhost:4317"))
-        .isEqualTo("http://localhost:4317/");
+                DATA_TYPE_METRICS, METRICS_ENDPOINT_KEY, "http://localhost:4318"))
+        .isEqualTo("http://localhost:4318/");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_METRICS, METRICS_ENDPOINT_KEY, "http://localhost:4317/"))
-        .isEqualTo("http://localhost:4317/");
+                DATA_TYPE_METRICS, METRICS_ENDPOINT_KEY, "http://localhost:4318/"))
+        .isEqualTo("http://localhost:4318/");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_METRICS, METRICS_ENDPOINT_KEY, "http://localhost:4317/v1/traces"))
-        .isEqualTo("http://localhost:4317/v1/traces");
+                DATA_TYPE_METRICS, METRICS_ENDPOINT_KEY, "http://localhost:4318/v1/traces"))
+        .isEqualTo("http://localhost:4318/v1/traces");
     assertThat(
             configureEndpointForHttp(
-                DATA_TYPE_METRICS, METRICS_ENDPOINT_KEY, "http://localhost:4317/foo/bar"))
-        .isEqualTo("http://localhost:4317/foo/bar");
+                DATA_TYPE_METRICS, METRICS_ENDPOINT_KEY, "http://localhost:4318/foo/bar"))
+        .isEqualTo("http://localhost:4318/foo/bar");
     assertThat(
             configureEndpoint(
                 DATA_TYPE_METRICS,
@@ -254,10 +254,10 @@ class OtlpConfigUtilTest {
                     "otel.exporter.otlp.protocol",
                     PROTOCOL_HTTP_PROTOBUF,
                     GENERIC_ENDPOINT_KEY,
-                    "http://localhost:4317/foo/bar",
+                    "http://localhost:4318/foo/bar",
                     METRICS_ENDPOINT_KEY,
-                    "http://localhost:4317/baz/qux")))
-        .isEqualTo("http://localhost:4317/baz/qux");
+                    "http://localhost:4318/baz/qux")))
+        .isEqualTo("http://localhost:4318/baz/qux");
   }
 
   private static String configureEndpointForHttp(
