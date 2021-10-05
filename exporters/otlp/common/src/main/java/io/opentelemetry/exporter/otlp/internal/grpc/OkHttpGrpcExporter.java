@@ -148,7 +148,9 @@ public final class OkHttpGrpcExporter<T extends Marshaler, U> implements GrpcExp
                 String errorMessage = grpcMessage(response);
                 logger.log(
                     Level.WARNING,
-                    "Failed to export spans. Server responded with "
+                    "Failed to export "
+                        + type
+                        + "s. Server responded with "
                         + codeMessage
                         + ". Error message: "
                         + errorMessage);

@@ -353,8 +353,9 @@ abstract class OtlpExporterIntegrationTest {
     testLogExporter(otlpGrpcLogExporter);
   }
 
-  @Test
-  void testOtlpHttpLogExport() {
+  @ParameterizedTest
+  @ValueSource(strings = {"gzip", "none"})
+  void testOtlpHttpLogExport(String compression) {
     LogExporter otlpHttpLogExporter =
         OtlpHttpLogExporter.builder()
             .setEndpoint(
@@ -363,7 +364,7 @@ abstract class OtlpExporterIntegrationTest {
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
                     + "/v1/logs")
-            .setCompression("gzip")
+            .setCompression(compression)
             .build();
 
     testLogExporter(otlpHttpLogExporter);
