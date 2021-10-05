@@ -12,6 +12,10 @@ contain generated protobuf classes for the Jaeger API. If you were using these i
 you must update your build configuration to also include the new `jaeger-proto` artifact. This
 artifact will not be included in a future 2.0 release of the SDK so it is recommended to instead
 generated the protobuf classes in your own build.
+- BREAKING CHANGE: The `opentelemetry-exporter-otlp-http-*` exporter default endpoint ports have
+  changed from `4317` to `4318`, in line
+  with [recent changes](https://github.com/open-telemetry/opentelemetry-specification/pull/1970) to
+  the spec.
 
 ### Auto-configuration (alpha)
 

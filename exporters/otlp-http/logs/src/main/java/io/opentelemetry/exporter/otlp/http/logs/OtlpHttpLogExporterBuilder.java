@@ -23,7 +23,7 @@ import okhttp3.OkHttpClient;
 public final class OtlpHttpLogExporterBuilder {
 
   private static final long DEFAULT_TIMEOUT_SECS = 10;
-  private static final String DEFAULT_ENDPOINT = "http://localhost:4317/v1/logs";
+  private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/logs";
 
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private String endpoint = DEFAULT_ENDPOINT;
