@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_METRICS;
+import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
+import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
@@ -80,7 +82,7 @@ final class MetricExporterConfiguration {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_METRICS, config);
 
     MetricExporter exporter;
-    if (protocol.equals("http/protobuf")) {
+    if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
       try {
         ClasspathUtil.checkClassExists(
             "io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter",
@@ -102,7 +104,7 @@ final class MetricExporterConfiguration {
           builder::setTrustedCertificates);
 
       exporter = builder.build();
-    } else if (protocol.equals("grpc")) {
+    } else if (protocol.equals(PROTOCOL_GRPC)) {
       try {
         ClasspathUtil.checkClassExists(
             "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
