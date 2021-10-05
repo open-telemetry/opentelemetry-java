@@ -95,8 +95,8 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   public OkHttpGrpcExporterBuilder<T> setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
     checkArgument(
-        compressionMethod.equals("gzip"),
-        "Unsupported compression method. Supported compression methods include: gzip.");
+        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
+        "Unsupported compression method. Supported compression methods include: gzip, none.");
     this.compressionEnabled = true;
     return this;
   }

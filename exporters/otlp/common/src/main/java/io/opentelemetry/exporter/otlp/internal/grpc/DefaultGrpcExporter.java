@@ -47,7 +47,7 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
   private final BoundLongCounter failed;
 
   /** Creates a new {@link DefaultGrpcExporter}. */
-  public DefaultGrpcExporter(
+  DefaultGrpcExporter(
       String type,
       ManagedChannel channel,
       MarshalerServiceStub<T, ?, ?> stub,

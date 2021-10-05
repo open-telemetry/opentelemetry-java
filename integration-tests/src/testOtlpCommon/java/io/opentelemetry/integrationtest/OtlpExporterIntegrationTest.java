@@ -3,15 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry;
+package io.opentelemetry.integrationtest;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.Testcontainers.exposeHostPorts;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.linecorp.armeria.server.ServerBuilder;
-import com.linecorp.armeria.server.grpc.GrpcService;
+import com.linecorp.armeria.server.ServiceRequestContext;
+import com.linecorp.armeria.server.grpc.protocol.AbstractUnaryGrpcService;
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
-import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
@@ -29,13 +31,10 @@ import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
-import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
-import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
-import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
@@ -63,11 +62,13 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +77,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -90,7 +92,7 @@ import org.testcontainers.utility.DockerImageName;
  * the data.
  */
 @Testcontainers(disabledWithoutDocker = true)
-class OtlpExporterIntegrationTest {
+abstract class OtlpExporterIntegrationTest {
 
   private static final String COLLECTOR_IMAGE =
       "ghcr.io/open-telemetry/opentelemetry-java/otel-collector";
@@ -148,8 +150,9 @@ class OtlpExporterIntegrationTest {
   @AfterEach
   void afterEach() {}
 
-  @Test
-  void testOtlpGrpcTraceExport() {
+  @ParameterizedTest
+  @ValueSource(strings = {"gzip", "none"})
+  void testOtlpGrpcTraceExport(String compression) {
     SpanExporter otlpGrpcTraceExporter =
         OtlpGrpcSpanExporter.builder()
             .setEndpoint(
@@ -157,14 +160,15 @@ class OtlpExporterIntegrationTest {
                     + collector.getHost()
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
-            .setCompression("gzip")
+            .setCompression(compression)
             .build();
 
     testTraceExport(otlpGrpcTraceExporter);
   }
 
-  @Test
-  void testOtlpHttpTraceExport() {
+  @ParameterizedTest
+  @ValueSource(strings = {"gzip", "none"})
+  void testOtlpHttpTraceExport(String compression) {
     SpanExporter otlpGrpcTraceExporter =
         OtlpHttpSpanExporter.builder()
             .setEndpoint(
@@ -173,7 +177,7 @@ class OtlpExporterIntegrationTest {
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
                     + "/v1/traces")
-            .setCompression("gzip")
+            .setCompression(compression)
             .build();
 
     testTraceExport(otlpGrpcTraceExporter);
@@ -244,8 +248,9 @@ class OtlpExporterIntegrationTest {
     assertThat(link.getSpanId().toByteArray()).isEqualTo(linkContext.getSpanIdBytes());
   }
 
-  @Test
-  void testOtlpGrpcMetricExport() {
+  @ParameterizedTest
+  @ValueSource(strings = {"gzip", "none"})
+  void testOtlpGrpcMetricExport(String compression) {
     MetricExporter otlpGrpcMetricExporter =
         OtlpGrpcMetricExporter.builder()
             .setEndpoint(
@@ -253,14 +258,15 @@ class OtlpExporterIntegrationTest {
                     + collector.getHost()
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
-            .setCompression("gzip")
+            .setCompression(compression)
             .build();
 
     testMetricExport(otlpGrpcMetricExporter);
   }
 
-  @Test
-  void testOtlpHttpMetricExport() {
+  @ParameterizedTest
+  @ValueSource(strings = {"gzip", "none"})
+  void testOtlpHttpMetricExport(String compression) {
     MetricExporter otlpGrpcMetricExporter =
         OtlpHttpMetricExporter.builder()
             .setEndpoint(
@@ -269,7 +275,7 @@ class OtlpExporterIntegrationTest {
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
                     + "/v1/metrics")
-            .setCompression("gzip")
+            .setCompression(compression)
             .build();
 
     testMetricExport(otlpGrpcMetricExporter);
@@ -330,8 +336,9 @@ class OtlpExporterIntegrationTest {
                     .build()));
   }
 
-  @Test
-  void testOtlpGrpcLogExport() {
+  @ParameterizedTest
+  @ValueSource(strings = {"gzip", "none"})
+  void testOtlpGrpcLogExport(String compression) {
     LogExporter otlpGrpcLogExporter =
         OtlpGrpcLogExporter.builder()
             .setEndpoint(
@@ -339,7 +346,7 @@ class OtlpExporterIntegrationTest {
                     + collector.getHost()
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
-            .setCompression("gzip")
+            .setCompression(compression)
             .build();
 
     testLogExporter(otlpGrpcLogExporter);
@@ -421,41 +428,48 @@ class OtlpExporterIntegrationTest {
     @Override
     protected void configure(ServerBuilder sb) {
       sb.service(
-          GrpcService.builder()
-              .addService(
-                  new TraceServiceGrpc.TraceServiceImplBase() {
-                    @Override
-                    public void export(
-                        ExportTraceServiceRequest request,
-                        StreamObserver<ExportTraceServiceResponse> responseObserver) {
-                      traceRequests.add(request);
-                      responseObserver.onNext(ExportTraceServiceResponse.getDefaultInstance());
-                      responseObserver.onCompleted();
-                    }
-                  })
-              .addService(
-                  new MetricsServiceGrpc.MetricsServiceImplBase() {
-                    @Override
-                    public void export(
-                        ExportMetricsServiceRequest request,
-                        StreamObserver<ExportMetricsServiceResponse> responseObserver) {
-                      metricRequests.add(request);
-                      responseObserver.onNext(ExportMetricsServiceResponse.getDefaultInstance());
-                      responseObserver.onCompleted();
-                    }
-                  })
-              .addService(
-                  new LogsServiceGrpc.LogsServiceImplBase() {
-                    @Override
-                    public void export(
-                        ExportLogsServiceRequest request,
-                        StreamObserver<ExportLogsServiceResponse> responseObserver) {
-                      logRequests.add(request);
-                      responseObserver.onNext(ExportLogsServiceResponse.getDefaultInstance());
-                      responseObserver.onCompleted();
-                    }
-                  })
-              .build());
+          "/opentelemetry.proto.collector.trace.v1.TraceService/Export",
+          new AbstractUnaryGrpcService() {
+            @Override
+            protected CompletionStage<byte[]> handleMessage(
+                ServiceRequestContext ctx, byte[] message) {
+              try {
+                traceRequests.add(ExportTraceServiceRequest.parseFrom(message));
+              } catch (InvalidProtocolBufferException e) {
+                throw new UncheckedIOException(e);
+              }
+              return completedFuture(ExportTraceServiceResponse.getDefaultInstance().toByteArray());
+            }
+          });
+      sb.service(
+          "/opentelemetry.proto.collector.metrics.v1.MetricsService/Export",
+          new AbstractUnaryGrpcService() {
+            @Override
+            protected CompletionStage<byte[]> handleMessage(
+                ServiceRequestContext ctx, byte[] message) {
+              try {
+                metricRequests.add(ExportMetricsServiceRequest.parseFrom(message));
+              } catch (InvalidProtocolBufferException e) {
+                throw new UncheckedIOException(e);
+              }
+              return completedFuture(
+                  ExportMetricsServiceResponse.getDefaultInstance().toByteArray());
+            }
+          });
+      sb.service(
+          "/opentelemetry.proto.collector.logs.v1.LogsService/Export",
+          new AbstractUnaryGrpcService() {
+            @Override
+            protected CompletionStage<byte[]> handleMessage(
+                ServiceRequestContext ctx, byte[] message) {
+              try {
+                logRequests.add(ExportLogsServiceRequest.parseFrom(message));
+              } catch (InvalidProtocolBufferException e) {
+                throw new UncheckedIOException(e);
+              }
+              return completedFuture(ExportLogsServiceResponse.getDefaultInstance().toByteArray());
+            }
+          });
       sb.http(0);
     }
   }

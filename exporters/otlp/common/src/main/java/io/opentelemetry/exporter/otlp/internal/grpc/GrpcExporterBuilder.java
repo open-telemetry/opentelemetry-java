@@ -10,9 +10,7 @@ import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-/**
- * A builder for {@link GrpcExporter}.
- */
+/** A builder for {@link GrpcExporter}. */
 public interface GrpcExporterBuilder<T extends Marshaler> {
   GrpcExporterBuilder<T> setChannel(ManagedChannel channel);
 
