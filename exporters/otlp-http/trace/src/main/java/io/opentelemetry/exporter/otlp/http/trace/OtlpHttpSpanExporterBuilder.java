@@ -12,20 +12,15 @@ import io.opentelemetry.exporter.otlp.internal.TlsUtil;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
-import okhttp3.Protocol;
 
 /** Builder utility for {@link OtlpHttpSpanExporter}. */
 public final class OtlpHttpSpanExporterBuilder {
-
-  private static final String GRPC_ENDPOINT_PATH =
-      "/opentelemetry.proto.collector.trace.v1.TraceService/Export";
 
   private static final long DEFAULT_TIMEOUT_SECS = 10;
   private static final String DEFAULT_ENDPOINT = "http://localhost:4317/v1/traces";
@@ -33,7 +28,7 @@ public final class OtlpHttpSpanExporterBuilder {
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private String endpoint = DEFAULT_ENDPOINT;
   private boolean compressionEnabled = false;
-  private final Headers.Builder headersBuilder = new Headers.Builder();
+  @Nullable private Headers.Builder headersBuilder;
   @Nullable private byte[] trustedCertificatesPem;
 
   /**
@@ -81,20 +76,25 @@ public final class OtlpHttpSpanExporterBuilder {
   }
 
   /**
-   * Sets the method used to compress payloads. If unset, compression is disabled. Currently the
-   * only supported compression method is "gzip".
+   * Sets the method used to compress payloads. If unset, compression is disabled. Currently
+   * supported compression methods include "gzip" and "none".
    */
   public OtlpHttpSpanExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
     checkArgument(
-        compressionMethod.equals("gzip"),
-        "Unsupported compression method. Supported compression methods include: gzip.");
-    this.compressionEnabled = true;
+        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
+        "Unsupported compression method. Supported compression methods include: gzip, none.");
+    if (compressionMethod.equals("gzip")) {
+      this.compressionEnabled = true;
+    }
     return this;
   }
 
   /** Add header to requests. */
   public OtlpHttpSpanExporterBuilder addHeader(String key, String value) {
+    if (headersBuilder == null) {
+      headersBuilder = new Headers.Builder();
+    }
     headersBuilder.add(key, value);
     return this;
   }
@@ -129,28 +129,9 @@ public final class OtlpHttpSpanExporterBuilder {
       }
     }
 
-    String endpoint = this.endpoint;
+    Headers headers = headersBuilder == null ? null : headersBuilder.build();
 
-    boolean useGrpc = endpoint.endsWith(GRPC_ENDPOINT_PATH);
-    if (useGrpc) {
-      if (endpoint.startsWith("http://")) {
-        clientBuilder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));
-      } else {
-        clientBuilder.protocols(Collections.singletonList(Protocol.HTTP_2));
-      }
-
-      headersBuilder.add("te", "trailers");
-      if (compressionEnabled) {
-        headersBuilder.add("grpc-encoding", "gzip");
-      }
-    } else if (compressionEnabled) {
-      headersBuilder.add("Content-Encoding", "gzip");
-    }
-
-    Headers headers = headersBuilder.build();
-
-    return new OtlpHttpSpanExporter(
-        clientBuilder.build(), endpoint, headers, compressionEnabled, useGrpc);
+    return new OtlpHttpSpanExporter(clientBuilder.build(), endpoint, headers, compressionEnabled);
   }
 
   OtlpHttpSpanExporterBuilder() {}

@@ -11,7 +11,6 @@ import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
-import io.opentelemetry.exporter.otlp.internal.okhttp.GrpcRequestBody;
 import io.opentelemetry.exporter.otlp.internal.okhttp.ProtoRequestBody;
 import io.opentelemetry.exporter.otlp.internal.traces.TraceRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -22,6 +21,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -39,9 +39,6 @@ import okio.Okio;
 /** Exports spans using OTLP via HTTP, using OpenTelemetry's protobuf model. */
 @ThreadSafe
 public final class OtlpHttpSpanExporter implements SpanExporter {
-
-  private static final String GRPC_STATUS = "grpc-status";
-  private static final String GRPC_MESSAGE = "grpc-message";
 
   private static final String EXPORTER_NAME = OtlpHttpSpanExporter.class.getSimpleName();
   private static final Attributes EXPORTER_NAME_LABELS =
@@ -62,17 +59,11 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
 
   private final OkHttpClient client;
   private final String endpoint;
-  private final Headers headers;
+  @Nullable private final Headers headers;
   private final boolean compressionEnabled;
-  private final boolean useGrpc;
 
   OtlpHttpSpanExporter(
-      OkHttpClient client,
-      String endpoint,
-      Headers headers,
-      boolean compressionEnabled,
-      boolean useGrpc) {
-    this.useGrpc = useGrpc;
+      OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
     Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http");
     this.spansSeen = meter.counterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
     LongCounter spansExportedCounter = meter.counterBuilder("spansExportedByExporter").build();
@@ -98,18 +89,16 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     TraceRequestMarshaler exportRequest = TraceRequestMarshaler.create(spans);
 
     Request.Builder requestBuilder = new Request.Builder().url(endpoint);
-    requestBuilder.headers(headers);
-    RequestBody requestBody;
-    if (!useGrpc) {
-      requestBody = new ProtoRequestBody(exportRequest);
-      if (compressionEnabled) {
-        requestBody = gzipRequestBody(requestBody);
-      }
-    } else {
-      requestBody = new GrpcRequestBody(exportRequest, compressionEnabled);
+    if (headers != null) {
+      requestBuilder.headers(headers);
     }
-
-    requestBuilder.post(requestBody);
+    RequestBody requestBody = new ProtoRequestBody(exportRequest);
+    if (compressionEnabled) {
+      requestBuilder.addHeader("Content-Encoding", "gzip");
+      requestBuilder.post(gzipRequestBody(requestBody));
+    } else {
+      requestBuilder.post(requestBody);
+    }
 
     CompletableResultCode result = new CompletableResultCode();
 
@@ -129,21 +118,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
 
               @Override
               public void onResponse(Call call, Response response) {
-                if (useGrpc) {
-                  // Response body is empty but must be consumed to access trailers.
-                  try {
-                    response.body().bytes();
-                  } catch (IOException e) {
-                    logger.log(
-                        Level.WARNING,
-                        "Failed to export spans, could not consume server response.",
-                        e);
-                    result.fail();
-                    return;
-                  }
-                }
-
-                if (isSuccessful(response)) {
+                if (response.isSuccessful()) {
                   spansExportedSuccess.add(spans.size());
                   result.succeed();
                   return;
@@ -167,28 +142,6 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     return result;
   }
 
-  private boolean isSuccessful(Response response) {
-    if (!response.isSuccessful()) {
-      return false;
-    }
-
-    if (!useGrpc) {
-      return true;
-    }
-
-    // Status can either be in the headers or trailers depending on error
-    String grpcStatus = response.header(GRPC_STATUS);
-    if (grpcStatus == null) {
-      try {
-        grpcStatus = response.trailers().get(GRPC_STATUS);
-      } catch (IOException e) {
-        // Could not read a status so assume the request failed.
-        return false;
-      }
-    }
-    return "0".equals(grpcStatus);
-  }
-
   private static RequestBody gzipRequestBody(RequestBody requestBody) {
     return new RequestBody() {
       @Override
@@ -210,23 +163,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     };
   }
 
-  private String extractErrorStatus(Response response) {
-    if (useGrpc) {
-      String message = response.header(GRPC_MESSAGE);
-      if (message == null) {
-        try {
-          message = response.trailers().get(GRPC_MESSAGE);
-        } catch (IOException e) {
-          // Fall through
-        }
-      }
-      if (message != null) {
-        return message;
-      }
-      // Couldn't get message for some reason, shouldn't happen in practice.
-      return "";
-    }
-
+  private static String extractErrorStatus(Response response) {
     ResponseBody responseBody = response.body();
     if (responseBody == null) {
       return "Response body missing, HTTP status message: " + response.message();

@@ -166,22 +166,6 @@ class OtlpExporterIntegrationTest {
     testTraceExport(otlpGrpcHttpTraceExporter);
   }
 
-  @Test
-  void testOtlpHttpTraceExport() {
-    SpanExporter otlpGrpcTraceExporter =
-        OtlpHttpSpanExporter.builder()
-            .setEndpoint(
-                "http://"
-                    + collector.getHost()
-                    + ":"
-                    + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
-                    + "/v1/traces")
-            .setCompression("gzip")
-            .build();
-
-    testTraceExport(otlpGrpcTraceExporter);
-  }
-
   private static void testTraceExport(SpanExporter spanExporter) {
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
