@@ -141,7 +141,7 @@ class OtlpGrpcConfigTest {
         MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
 
     assertThat(spanExporter)
-        .extracting("exporter.timeoutNanos")
+        .extracting("delegate.timeoutNanos")
         .isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             spanExporter
@@ -158,7 +158,9 @@ class OtlpGrpcConfigTest {
                     && headers.contains("header-key", "header-value")
                     && headers.contains("grpc-encoding", "gzip"));
 
-    assertThat(metricExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
+    assertThat(metricExporter)
+        .extracting("delegate.timeoutNanos")
+        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             metricExporter
                 .export(Lists.newArrayList(generateFakeMetric()))
@@ -196,7 +198,7 @@ class OtlpGrpcConfigTest {
             "otlp", DefaultConfigProperties.createForTest(props), Collections.emptyMap());
 
     assertThat(spanExporter)
-        .extracting("exporter.timeoutNanos")
+        .extracting("delegate.timeoutNanos")
         .isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             spanExporter
@@ -233,7 +235,9 @@ class OtlpGrpcConfigTest {
         MetricExporterConfiguration.configureOtlpMetrics(
             DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
 
-    assertThat(metricExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
+    assertThat(metricExporter)
+        .extracting("delegate.timeoutNanos")
+        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             metricExporter
                 .export(Lists.newArrayList(generateFakeMetric()))
