@@ -108,7 +108,7 @@ class OtlpHttpMetricExporterTest {
     assertThatCode(() -> OtlpHttpMetricExporter.builder().setTimeout(Duration.ofMillis(10)))
         .doesNotThrowAnyException();
 
-    assertThatCode(() -> OtlpHttpMetricExporter.builder().setEndpoint("http://localhost:4317"))
+    assertThatCode(() -> OtlpHttpMetricExporter.builder().setEndpoint("http://localhost:4318"))
         .doesNotThrowAnyException();
     assertThatCode(() -> OtlpHttpMetricExporter.builder().setEndpoint("http://localhost"))
         .doesNotThrowAnyException();
