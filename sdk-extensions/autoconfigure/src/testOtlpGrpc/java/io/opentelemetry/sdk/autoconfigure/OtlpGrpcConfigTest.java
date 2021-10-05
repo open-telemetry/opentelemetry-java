@@ -35,7 +35,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -120,13 +119,11 @@ class OtlpGrpcConfigTest {
     metricRequests.clear();
     requestHeaders.clear();
     GlobalOpenTelemetry.resetForTest();
-    IntervalMetricReader.resetGlobalForTest();
   }
 
   @AfterEach
   public void tearDown() {
     GlobalOpenTelemetry.resetForTest();
-    IntervalMetricReader.resetGlobalForTest();
   }
 
   @Test
@@ -141,8 +138,7 @@ class OtlpGrpcConfigTest {
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter("otlp", properties, Collections.emptyMap());
     MetricExporter metricExporter =
-        MetricExporterConfiguration.configureOtlpMetrics(
-            properties, SdkMeterProvider.builder().build());
+        MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
 
     assertThat(spanExporter)
         .extracting("exporter.timeoutNanos")
@@ -235,7 +231,7 @@ class OtlpGrpcConfigTest {
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
-            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder().build());
+            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
 
     assertThat(metricExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
@@ -270,7 +266,7 @@ class OtlpGrpcConfigTest {
     assertThatThrownBy(
             () ->
                 MetricExporterConfiguration.configureOtlpMetrics(
-                    properties, SdkMeterProvider.builder().build()))
+                    properties, SdkMeterProvider.builder()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
   }

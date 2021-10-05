@@ -61,7 +61,7 @@ public abstract class LongPointData implements PointData {
       long epochNanos,
       Attributes attributes,
       long value,
-      List<Exemplar> exemplars) {
+      List<ExemplarData> exemplars) {
     return new AutoValue_LongPointData(startEpochNanos, epochNanos, attributes, exemplars, value);
   }
 }

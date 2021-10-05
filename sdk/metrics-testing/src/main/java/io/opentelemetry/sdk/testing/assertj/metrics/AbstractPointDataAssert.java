@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.testing.assertj.metrics;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.testing.assertj.AttributesAssert;
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions;
@@ -51,7 +51,7 @@ public class AbstractPointDataAssert<
   }
 
   /** Returns convenience API to assert against the {@code exemplars} field. */
-  public AbstractIterableAssert<?, ? extends Iterable<? extends Exemplar>, Exemplar, ?>
+  public AbstractIterableAssert<?, ? extends Iterable<? extends ExemplarData>, ExemplarData, ?>
       exemplars() {
     isNotNull();
     return Assertions.assertThat(actual.getExemplars());
@@ -62,7 +62,7 @@ public class AbstractPointDataAssert<
    *
    * @param exemplars The list of exemplars that will be checked, can be in any order.
    */
-  public PointAssertT hasExemplars(Exemplar... exemplars) {
+  public PointAssertT hasExemplars(ExemplarData... exemplars) {
     isNotNull();
     Assertions.assertThat(actual.getExemplars())
         .as("exemplars")

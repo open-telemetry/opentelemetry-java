@@ -12,6 +12,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link MetricStorageRegistry}. */
@@ -81,7 +83,11 @@ class MetricStorageRegistryTest {
     }
 
     @Override
-    public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
+    public MetricData collectAndReset(
+        CollectionHandle collector,
+        Set<CollectionHandle> all,
+        long startEpochNanos,
+        long epochNanos) {
       return null;
     }
 
@@ -105,7 +111,11 @@ class MetricStorageRegistryTest {
     }
 
     @Override
-    public MetricData collectAndReset(long startEpochNanos, long epochNanos) {
+    public MetricData collectAndReset(
+        CollectionHandle collector,
+        Set<CollectionHandle> allCollectors,
+        long startEpochNanos,
+        long epochNanos) {
       return null;
     }
 

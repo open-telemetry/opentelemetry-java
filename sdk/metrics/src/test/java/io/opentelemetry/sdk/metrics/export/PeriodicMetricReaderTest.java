@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +44,7 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class IntervalMetricReaderTest {
+class PeriodicMetricReaderTest {
   private static final List<LongPointData> LONG_POINT_LIST =
       Collections.singletonList(LongPointData.create(1000, 3000, Attributes.empty(), 1234567));
 
@@ -72,30 +73,23 @@ class IntervalMetricReaderTest {
     ScheduledFuture mock = mock(ScheduledFuture.class);
     when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(mock);
 
-    IntervalMetricReader intervalMetricReader =
-        new IntervalMetricReader(
-            IntervalMetricReader.InternalState.builder()
-                .setMetricProducers(Collections.emptyList())
-                .setMetricExporter(mock(MetricExporter.class))
-                .build(),
-            scheduler);
+    PeriodicMetricReaderFactory factory =
+        new PeriodicMetricReaderFactory(
+            mock(MetricExporter.class), Duration.ofMillis(1), scheduler);
 
-    intervalMetricReader.start();
-    intervalMetricReader.start();
+    // Starts the interval reader.
+    factory.apply(metricProducer);
 
     verify(scheduler, times(1)).scheduleAtFixedRate(any(), anyLong(), anyLong(), any());
   }
 
   @Test
-  void intervalExport() throws Exception {
+  void periodicExport() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    IntervalMetricReader intervalMetricReader =
-        IntervalMetricReader.builder()
-            .setExportIntervalMillis(100)
-            .setMetricExporter(waitingMetricExporter)
-            .setMetricProducers(Collections.singletonList(metricProducer))
-            .buildAndStart();
+    MetricReaderFactory factory =
+        PeriodicMetricReader.create(waitingMetricExporter, Duration.ofMillis(100));
 
+    MetricReader reader = factory.apply(metricProducer);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(1))
           .containsExactly(Collections.singletonList(METRIC_DATA));
@@ -104,52 +98,24 @@ class IntervalMetricReaderTest {
           .containsExactly(
               Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
     } finally {
-      intervalMetricReader.shutdown();
+      reader.shutdown();
     }
   }
 
   @Test
-  void forceFlush() throws Exception {
+  void flush() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    IntervalMetricReader intervalMetricReader =
-        IntervalMetricReader.builder()
-            // Will force flush.
-            .setExportIntervalMillis(Long.MAX_VALUE)
-            .setMetricExporter(waitingMetricExporter)
-            .setMetricProducers(Collections.singletonList(metricProducer))
-            .buildAndStart();
+    MetricReaderFactory factory =
+        PeriodicMetricReader.create(waitingMetricExporter, Duration.ofMillis(Long.MAX_VALUE));
 
-    assertThat(intervalMetricReader.forceFlush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+    MetricReader reader = factory.apply(metricProducer);
+    assertThat(reader.flush().join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
 
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(1))
           .containsExactly(Collections.singletonList(METRIC_DATA));
     } finally {
-      intervalMetricReader.shutdown();
-    }
-  }
-
-  @Test
-  void forceFlushGlobal() throws Exception {
-    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    IntervalMetricReader intervalMetricReader =
-        IntervalMetricReader.builder()
-            // Will force flush.
-            .setExportIntervalMillis(Long.MAX_VALUE)
-            .setMetricExporter(waitingMetricExporter)
-            .setMetricProducers(Collections.singletonList(metricProducer))
-            .build()
-            .startAndRegisterGlobal();
-
-    assertThat(IntervalMetricReader.forceFlushGlobal().join(10, TimeUnit.SECONDS).isSuccess())
-        .isTrue();
-
-    try {
-      assertThat(waitingMetricExporter.waitForNumberOfExports(1))
-          .containsExactly(Collections.singletonList(METRIC_DATA));
-    } finally {
-      intervalMetricReader.shutdown();
-      IntervalMetricReader.resetGlobalForTest();
+      reader.shutdown();
     }
   }
 
@@ -157,34 +123,26 @@ class IntervalMetricReaderTest {
   @Timeout(2)
   public void intervalExport_exporterThrowsException() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
-    IntervalMetricReader intervalMetricReader =
-        IntervalMetricReader.builder()
-            .setExportIntervalMillis(100)
-            .setMetricExporter(waitingMetricExporter)
-            .setMetricProducers(Collections.singletonList(metricProducer))
-            .buildAndStart();
-
+    MetricReaderFactory factory =
+        PeriodicMetricReader.create(waitingMetricExporter, Duration.ofMillis(100));
+    MetricReader reader = factory.apply(metricProducer);
     try {
       assertThat(waitingMetricExporter.waitForNumberOfExports(2))
           .containsExactly(
               Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
     } finally {
-      intervalMetricReader.shutdown();
+      reader.shutdown();
     }
   }
 
   @Test
   void oneLastExportAfterShutdown() throws Exception {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
-    IntervalMetricReader intervalMetricReader =
-        IntervalMetricReader.builder()
-            .setExportIntervalMillis(100_000)
-            .setMetricExporter(waitingMetricExporter)
-            .setMetricProducers(Collections.singletonList(metricProducer))
-            .buildAndStart();
-
+    MetricReaderFactory factory =
+        PeriodicMetricReader.create(waitingMetricExporter, Duration.ofSeconds(100));
+    MetricReader reader = factory.apply(metricProducer);
     // Assume that this will be called in less than 100 seconds.
-    intervalMetricReader.shutdown();
+    reader.shutdown();
 
     // This export was called during shutdown.
     assertThat(waitingMetricExporter.waitForNumberOfExports(1))

@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 /**
@@ -22,10 +24,19 @@ public interface MetricStorage {
   /**
    * Collects the metrics from this storage and resets for the next collection period.
    *
+   * <p>Note: This is a stateful operation and will reset any interval-related state for the {@code
+   * collector}.
+   *
+   * @param collector The identity of the current reader of metrics.
+   * @param allCollectors The set of all registered readers for metrics.
    * @param startEpochNanos The start timestamp for this SDK.
    * @param epochNanos The timestamp for this collection.
    * @return The {@link MetricData} from this collection period, or {@code null}.
    */
   @Nullable
-  MetricData collectAndReset(long startEpochNanos, long epochNanos);
+  MetricData collectAndReset(
+      CollectionHandle collector,
+      Set<CollectionHandle> allCollectors,
+      long startEpochNanos,
+      long epochNanos);
 }

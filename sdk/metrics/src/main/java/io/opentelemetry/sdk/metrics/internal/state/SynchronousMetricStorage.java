@@ -37,7 +37,6 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
       InstrumentDescriptor instrumentDescriptor,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      long startEpochNanos,
       ExemplarFilter exemplarFilter) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
     final Aggregator<T> aggregator =
@@ -53,9 +52,6 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
       return empty();
     }
     return new DefaultSynchronousMetricStorage<>(
-        metricDescriptor,
-        aggregator,
-        new InstrumentProcessor<>(aggregator, startEpochNanos),
-        view.getAttributesProcessor());
+        metricDescriptor, aggregator, view.getAttributesProcessor());
   }
 }

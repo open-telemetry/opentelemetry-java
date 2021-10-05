@@ -16,8 +16,13 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * A {@link SpanProcessor} implementation that uses {@code Disruptor} to execute all the hooks on an
  * async thread.
+ *
+ * @deprecated It is recommended to use the {@link
+ *     io.opentelemetry.sdk.trace.export.BatchSpanProcessor}. If you know you need to use disruptor,
+ *     switch to the {@code io.opentelemetry.contrib:disruptor-processor} artifact.
  */
 @ThreadSafe
+@Deprecated
 public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
 
   private final DisruptorEventQueue disruptorEventQueue;
@@ -68,7 +73,11 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
    * @param spanProcessor the {@code List<SpanProcessor>} to where the Span's events are pushed.
    * @return a new {@link DisruptorAsyncSpanProcessor}.
    * @throws NullPointerException if the {@code spanProcessor} is {@code null}.
+   * @deprecated It is recommended to use the {@link
+   *     io.opentelemetry.sdk.trace.export.BatchSpanProcessor}. If you know you need to use
+   *     disruptor, switch to the {@code io.opentelemetry.contrib:disruptor-processor} artifact.
    */
+  @Deprecated
   public static DisruptorAsyncSpanProcessorBuilder builder(SpanProcessor spanProcessor) {
     return new DisruptorAsyncSpanProcessorBuilder(Objects.requireNonNull(spanProcessor));
   }

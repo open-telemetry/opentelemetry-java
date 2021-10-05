@@ -84,7 +84,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 MetricExporterConfiguration.configureExporter(
-                    "logging", EMPTY, SdkMeterProvider.builder().build()))
+                    "logging", EMPTY, SdkMeterProvider.builder()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "Logging Metrics Exporter enabled but opentelemetry-exporter-logging not found on "
@@ -96,7 +96,7 @@ class NotOnClasspathTest {
     assertThatCode(
             () ->
                 MetricExporterConfiguration.configureExporter(
-                    "otlp", EMPTY, SdkMeterProvider.builder().build()))
+                    "otlp", EMPTY, SdkMeterProvider.builder()))
         .doesNotThrowAnyException();
   }
 
@@ -108,7 +108,7 @@ class NotOnClasspathTest {
     assertThatCode(
             () ->
                 MetricExporterConfiguration.configureExporter(
-                    "otlp", config, SdkMeterProvider.builder().build()))
+                    "otlp", config, SdkMeterProvider.builder()))
         .doesNotThrowAnyException();
   }
 
@@ -117,7 +117,7 @@ class NotOnClasspathTest {
     assertThatThrownBy(
             () ->
                 MetricExporterConfiguration.configureExporter(
-                    "prometheus", EMPTY, SdkMeterProvider.builder().build()))
+                    "prometheus", EMPTY, SdkMeterProvider.builder()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining(
             "Prometheus Metrics Server enabled but opentelemetry-exporter-prometheus not found on "

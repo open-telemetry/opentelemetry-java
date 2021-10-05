@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
@@ -37,6 +38,7 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,6 +87,43 @@ class OtlpGrpcSpanExporterTest {
 
   @Test
   @SuppressWarnings("PreferJavaTimeOverload")
+  void validConfig() {
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setTimeout(0, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setTimeout(Duration.ofMillis(0)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setTimeout(10, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setTimeout(Duration.ofMillis(10)))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setEndpoint("http://localhost:4317"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setEndpoint("http://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setEndpoint("https://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setEndpoint("http://foo:bar@localhost"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setCompression("gzip"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setCompression("none"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () -> OtlpGrpcSpanExporter.builder().addHeader("foo", "bar").addHeader("baz", "qux"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                OtlpGrpcSpanExporter.builder()
+                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
   void invalidConfig() {
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
@@ -114,7 +153,8 @@ class OtlpGrpcSpanExporterTest {
         .hasMessage("compressionMethod");
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Unsupported compression method. Supported compression methods include: gzip.");
+        .hasMessage(
+            "Unsupported compression method. Supported compression methods include: gzip, none.");
   }
 
   @Test

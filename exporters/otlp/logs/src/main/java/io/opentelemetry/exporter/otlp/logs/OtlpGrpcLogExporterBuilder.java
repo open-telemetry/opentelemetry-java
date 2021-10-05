@@ -84,14 +84,14 @@ public final class OtlpGrpcLogExporterBuilder {
   }
 
   /**
-   * Sets the method used to compress payloads. If unset, compression is disabled. Currently the
-   * only supported compression method is "gzip".
+   * Sets the method used to compress payloads. If unset, compression is disabled. Currently
+   * supported compression methods include "gzip" and "none".
    */
   public OtlpGrpcLogExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
     checkArgument(
-        compressionMethod.equals("gzip"),
-        "Unsupported compression method. Supported compression methods include: gzip.");
+        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
+        "Unsupported compression method. Supported compression methods include: gzip, none.");
     delegate.setCompression(compressionMethod);
     return this;
   }

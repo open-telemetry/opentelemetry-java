@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import java.util.List;
@@ -31,7 +31,7 @@ public final class EmptyAggregator implements Aggregator<Void> {
         protected void doRecordDouble(double value) {}
 
         @Override
-        protected Void doAccumulateThenReset(List<Exemplar> exemplars) {
+        protected Void doAccumulateThenReset(List<ExemplarData> exemplars) {
           return null;
         }
       };

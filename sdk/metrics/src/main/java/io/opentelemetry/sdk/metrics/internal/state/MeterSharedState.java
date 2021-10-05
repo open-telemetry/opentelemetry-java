@@ -11,10 +11,12 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.view.View;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,12 +47,16 @@ public abstract class MeterSharedState {
 
   /** Collects all accumulated metric stream points. */
   public List<MetricData> collectAll(
-      MeterProviderSharedState meterProviderSharedState, long epochNanos) {
+      CollectionHandle collector,
+      Set<CollectionHandle> allCollectors,
+      MeterProviderSharedState meterProviderSharedState,
+      long epochNanos) {
     Collection<MetricStorage> metrics = getMetricStorageRegistry().getMetrics();
     List<MetricData> result = new ArrayList<>(metrics.size());
     for (MetricStorage metric : metrics) {
       MetricData current =
-          metric.collectAndReset(meterProviderSharedState.getStartEpochNanos(), epochNanos);
+          metric.collectAndReset(
+              collector, allCollectors, meterProviderSharedState.getStartEpochNanos(), epochNanos);
       if (current != null) {
         result.add(current);
       }
@@ -73,7 +79,6 @@ public abstract class MeterSharedState {
               instrument,
               meterProviderSharedState.getResource(),
               getInstrumentationLibraryInfo(),
-              meterProviderSharedState.getStartEpochNanos(),
               meterProviderSharedState.getExemplarFilter());
       // TODO - move this in a better location.
       if (SynchronousMetricStorage.empty().equals(currentStorage)) {
@@ -109,7 +114,6 @@ public abstract class MeterSharedState {
               instrument,
               meterProviderSharedState.getResource(),
               getInstrumentationLibraryInfo(),
-              meterProviderSharedState.getStartEpochNanos(),
               metricUpdater);
       // TODO - move this in a better location.
       if (AsynchronousMetricStorage.empty().equals(currentStorage)) {
@@ -140,10 +144,9 @@ public abstract class MeterSharedState {
               instrument,
               meterProviderSharedState.getResource(),
               getInstrumentationLibraryInfo(),
-              meterProviderSharedState.getStartEpochNanos(),
               metricUpdater);
       // TODO - move this in a better location.
-      if (AsynchronousMetricStorage.empty().equals(currentStorage)) {
+      if (AsynchronousMetricStorage.empty() == currentStorage) {
         continue;
       }
       try {
