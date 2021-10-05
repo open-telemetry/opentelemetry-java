@@ -23,6 +23,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
@@ -156,6 +157,22 @@ class OtlpExporterIntegrationTest {
                     + collector.getHost()
                     + ":"
                     + collector.getMappedPort(COLLECTOR_OTLP_GRPC_PORT))
+            .setCompression("gzip")
+            .build();
+
+    testTraceExport(otlpGrpcTraceExporter);
+  }
+
+  @Test
+  void testOtlpHttpTraceExport() {
+    SpanExporter otlpGrpcTraceExporter =
+        OtlpHttpSpanExporter.builder()
+            .setEndpoint(
+                "http://"
+                    + collector.getHost()
+                    + ":"
+                    + collector.getMappedPort(COLLECTOR_OTLP_HTTP_PORT)
+                    + "/v1/traces")
             .setCompression("gzip")
             .build();
 
