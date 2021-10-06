@@ -6,8 +6,6 @@
 package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
-import static io.opentelemetry.api.internal.Utils.checkArgument;
-import static java.util.Objects.requireNonNull;
 
 import io.grpc.Codec;
 import io.grpc.ManagedChannel;
@@ -62,22 +60,17 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
 
   @Override
   public DefaultGrpcExporterBuilder<T> setTimeout(long timeout, TimeUnit unit) {
-    requireNonNull(unit, "unit");
-    checkArgument(timeout >= 0, "timeout must be non-negative");
     timeoutNanos = unit.toNanos(timeout);
     return this;
   }
 
   @Override
   public DefaultGrpcExporterBuilder<T> setTimeout(Duration timeout) {
-    requireNonNull(timeout, "timeout");
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   @Override
   public DefaultGrpcExporterBuilder<T> setEndpoint(String endpoint) {
-    requireNonNull(endpoint, "endpoint");
-
     URI uri;
     try {
       uri = new URI(endpoint);
@@ -97,10 +90,6 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
 
   @Override
   public DefaultGrpcExporterBuilder<T> setCompression(String compressionMethod) {
-    requireNonNull(compressionMethod, "compressionMethod");
-    checkArgument(
-        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
-        "Unsupported compression method. Supported compression methods include: gzip, none.");
     this.compressionEnabled = true;
     return this;
   }

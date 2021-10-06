@@ -5,9 +5,6 @@
 
 package io.opentelemetry.exporter.otlp.internal.grpc;
 
-import static io.opentelemetry.api.internal.Utils.checkArgument;
-import static java.util.Objects.requireNonNull;
-
 import io.grpc.ManagedChannel;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.exporter.otlp.internal.TlsUtil;
@@ -58,22 +55,17 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
 
   @Override
   public OkHttpGrpcExporterBuilder<T> setTimeout(long timeout, TimeUnit unit) {
-    requireNonNull(unit, "unit");
-    checkArgument(timeout >= 0, "timeout must be non-negative");
     timeoutNanos = unit.toNanos(timeout);
     return this;
   }
 
   @Override
   public OkHttpGrpcExporterBuilder<T> setTimeout(Duration timeout) {
-    requireNonNull(timeout, "timeout");
     return setTimeout(timeout.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   @Override
   public OkHttpGrpcExporterBuilder<T> setEndpoint(String endpoint) {
-    requireNonNull(endpoint, "endpoint");
-
     URI uri;
     try {
       uri = new URI(endpoint);
@@ -93,10 +85,6 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
 
   @Override
   public OkHttpGrpcExporterBuilder<T> setCompression(String compressionMethod) {
-    requireNonNull(compressionMethod, "compressionMethod");
-    checkArgument(
-        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
-        "Unsupported compression method. Supported compression methods include: gzip, none.");
     this.compressionEnabled = true;
     return this;
   }
