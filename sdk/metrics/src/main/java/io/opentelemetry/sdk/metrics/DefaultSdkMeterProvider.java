@@ -47,7 +47,7 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
   private final Set<CollectionHandle> collectors;
   private final List<MetricReader> readers;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
-  private final AtomicLong lastCollectionTimestamp = new AtomicLong(0);
+  private final AtomicLong lastCollectionTimestamp;
 
   // Minimum amount of time we allow between synchronous collections.
   // This meant to reduce overhead when multiple exporters attempt to read metrics quickly.
@@ -65,6 +65,8 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
+    this.lastCollectionTimestamp =
+        new AtomicLong(clock.nanoTime() - MINIMUM_COLLECTION_INTERVAL_NANOS);
 
     // Here we construct our own unique handle ids for this SDK.
     // These are guaranteed to be unique per-reader for this SDK, and only this SDK.
@@ -131,10 +133,9 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
       // Suppress too-frequent-collection.
       long currentNanoTime = sharedState.getClock().nanoTime();
       long pastNanoTime = lastCollectionTimestamp.get();
+      // It hasn't been long enough since the last collection.
       boolean disableSynchronousCollection =
-          // It hasn't been long enough and it's not the first collection.
-          (pastNanoTime != 0)
-              && (currentNanoTime - pastNanoTime) < MINIMUM_COLLECTION_INTERVAL_NANOS;
+          (currentNanoTime - pastNanoTime) < MINIMUM_COLLECTION_INTERVAL_NANOS;
       // If we're not disabling metrics, write the current collection time.
       // We don't care if this happens in more than one thread, suppression is optimistic, and the
       // interval is small enough some jitter isn't important.
