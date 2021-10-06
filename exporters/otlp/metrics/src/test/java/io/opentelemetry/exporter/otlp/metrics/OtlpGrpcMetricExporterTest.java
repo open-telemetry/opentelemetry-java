@@ -20,6 +20,8 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporter;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
@@ -62,7 +64,7 @@ class OtlpGrpcMetricExporterTest {
   private final Closer closer = Closer.create();
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OtlpGrpcMetricExporter.class);
+  LogCapturer logs = LogCapturer.create().captureForType(DefaultGrpcExporter.class);
 
   @BeforeEach
   public void setup() throws IOException {
@@ -351,6 +353,12 @@ class OtlpGrpcMetricExporterTest {
     } finally {
       exporter.shutdown();
     }
+  }
+
+  @Test
+  void usingGrpc() {
+    assertThat(OtlpGrpcMetricExporter.builder().delegate)
+        .isInstanceOf(DefaultGrpcExporterBuilder.class);
   }
 
   private static MetricData generateFakeMetric() {

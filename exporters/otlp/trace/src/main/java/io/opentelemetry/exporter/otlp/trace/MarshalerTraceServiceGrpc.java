@@ -9,6 +9,7 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 
 import io.grpc.MethodDescriptor;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
+import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.otlp.internal.traces.TraceRequestMarshaler;
 import java.io.InputStream;
 
@@ -57,7 +58,8 @@ final class MarshalerTraceServiceGrpc {
   }
 
   static final class TraceServiceFutureStub
-      extends io.grpc.stub.AbstractFutureStub<MarshalerTraceServiceGrpc.TraceServiceFutureStub> {
+      extends MarshalerServiceStub<
+          TraceRequestMarshaler, ExportTraceServiceResponse, TraceServiceFutureStub> {
     private TraceServiceFutureStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
@@ -68,7 +70,8 @@ final class MarshalerTraceServiceGrpc {
       return new MarshalerTraceServiceGrpc.TraceServiceFutureStub(channel, callOptions);
     }
 
-    com.google.common.util.concurrent.ListenableFuture<ExportTraceServiceResponse> export(
+    @Override
+    public com.google.common.util.concurrent.ListenableFuture<ExportTraceServiceResponse> export(
         TraceRequestMarshaler request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getExportMethod, getCallOptions()), request);

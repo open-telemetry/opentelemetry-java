@@ -17,6 +17,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
@@ -133,5 +134,11 @@ class ExportTest {
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Could not set trusted certificates");
+  }
+
+  @Test
+  void usingGrpc() {
+    assertThat(OtlpGrpcLogExporter.builder().delegate)
+        .isInstanceOf(DefaultGrpcExporterBuilder.class);
   }
 }

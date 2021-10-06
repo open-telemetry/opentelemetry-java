@@ -75,8 +75,8 @@ val DEPENDENCIES = listOf(
   // using old version of okhttp to avoid pulling in kotlin stdlib
   // not using (old) okhttp bom because that is pulling in old guava version
   // and overriding the guava bom
-  "com.squareup.okhttp3:okhttp:3.12.13",
-  "com.squareup.okhttp3:okhttp-tls:3.12.13",
+  "com.squareup.okhttp3:okhttp:3.14.9",
+  "com.squareup.okhttp3:okhttp-tls:3.14.9",
   "com.sun.net.httpserver:http:20070405",
   "com.tngtech.archunit:archunit-junit5:0.21.0",
   "com.uber.nullaway:nullaway:0.9.2",

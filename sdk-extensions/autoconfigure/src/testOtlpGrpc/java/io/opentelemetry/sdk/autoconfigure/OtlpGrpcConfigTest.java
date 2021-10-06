@@ -140,7 +140,9 @@ class OtlpGrpcConfigTest {
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
 
-    assertThat(spanExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
+    assertThat(spanExporter)
+        .extracting("delegate.timeoutNanos")
+        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             spanExporter
                 .export(Lists.newArrayList(generateFakeSpan()))
@@ -156,7 +158,9 @@ class OtlpGrpcConfigTest {
                     && headers.contains("header-key", "header-value")
                     && headers.contains("grpc-encoding", "gzip"));
 
-    assertThat(metricExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
+    assertThat(metricExporter)
+        .extracting("delegate.timeoutNanos")
+        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             metricExporter
                 .export(Lists.newArrayList(generateFakeMetric()))
@@ -193,7 +197,9 @@ class OtlpGrpcConfigTest {
         SpanExporterConfiguration.configureExporter(
             "otlp", DefaultConfigProperties.createForTest(props), Collections.emptyMap());
 
-    assertThat(spanExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
+    assertThat(spanExporter)
+        .extracting("delegate.timeoutNanos")
+        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             spanExporter
                 .export(Lists.newArrayList(generateFakeSpan()))
@@ -229,7 +235,9 @@ class OtlpGrpcConfigTest {
         MetricExporterConfiguration.configureOtlpMetrics(
             DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
 
-    assertThat(metricExporter).extracting("timeoutNanos").isEqualTo(TimeUnit.SECONDS.toNanos(15));
+    assertThat(metricExporter)
+        .extracting("delegate.timeoutNanos")
+        .isEqualTo(TimeUnit.SECONDS.toNanos(15));
     assertThat(
             metricExporter
                 .export(Lists.newArrayList(generateFakeMetric()))

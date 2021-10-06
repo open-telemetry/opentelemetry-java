@@ -23,6 +23,8 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporter;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.traces.ResourceSpansMarshaler;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
@@ -64,7 +66,7 @@ class OtlpGrpcSpanExporterTest {
   private final Closer closer = Closer.create();
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OtlpGrpcSpanExporter.class);
+  LogCapturer logs = LogCapturer.create().captureForType(DefaultGrpcExporter.class);
 
   @BeforeEach
   public void setup() throws IOException {
@@ -349,6 +351,12 @@ class OtlpGrpcSpanExporterTest {
     } finally {
       exporter.shutdown();
     }
+  }
+
+  @Test
+  void usingGrpc() {
+    assertThat(OtlpGrpcSpanExporter.builder().delegate)
+        .isInstanceOf(DefaultGrpcExporterBuilder.class);
   }
 
   private static SpanData generateFakeSpan() {
