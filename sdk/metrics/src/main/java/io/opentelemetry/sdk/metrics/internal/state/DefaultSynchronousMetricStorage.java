@@ -98,8 +98,10 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
       CollectionHandle collector,
       Set<CollectionHandle> allCollectors,
       long startEpochNanos,
-      long epochNanos) {
-    Map<Attributes, T> result = deltaMetricStorage.collectFor(collector, allCollectors, epochNanos);
+      long epochNanos,
+      boolean suppressSynchronousCollection) {
+    Map<Attributes, T> result =
+        deltaMetricStorage.collectFor(collector, allCollectors, suppressSynchronousCollection);
     return temporalMetricStorage.buildMetricFor(collector, result, startEpochNanos, epochNanos);
   }
 

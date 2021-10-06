@@ -50,13 +50,18 @@ public abstract class MeterSharedState {
       CollectionHandle collector,
       Set<CollectionHandle> allCollectors,
       MeterProviderSharedState meterProviderSharedState,
-      long epochNanos) {
+      long epochNanos,
+      boolean suppressSynchronousCollection) {
     Collection<MetricStorage> metrics = getMetricStorageRegistry().getMetrics();
     List<MetricData> result = new ArrayList<>(metrics.size());
     for (MetricStorage metric : metrics) {
       MetricData current =
           metric.collectAndReset(
-              collector, allCollectors, meterProviderSharedState.getStartEpochNanos(), epochNanos);
+              collector,
+              allCollectors,
+              meterProviderSharedState.getStartEpochNanos(),
+              epochNanos,
+              suppressSynchronousCollection);
       if (current != null) {
         result.add(current);
       }

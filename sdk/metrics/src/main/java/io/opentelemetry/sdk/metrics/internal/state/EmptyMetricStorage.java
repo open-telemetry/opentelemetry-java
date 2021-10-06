@@ -47,7 +47,8 @@ final class EmptyMetricStorage implements SynchronousMetricStorage {
       CollectionHandle collector,
       Set<CollectionHandle> allCollectors,
       long startEpochNanos,
-      long epochNanos) {
+      long epochNanos,
+      boolean suppressSynchronousCollection) {
     return null;
   }
 }
