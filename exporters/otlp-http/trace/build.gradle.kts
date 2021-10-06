@@ -16,10 +16,10 @@ dependencies {
   implementation("com.squareup.okhttp3:okhttp")
   implementation("com.squareup.okio:okio")
 
-  testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.squareup.okhttp3:okhttp-tls")
+  testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 }

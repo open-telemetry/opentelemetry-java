@@ -40,11 +40,11 @@ dependencies {
 
   testImplementation(project(path = ":sdk:trace-shaded-deps"))
 
-  testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.linecorp.armeria:armeria-grpc")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
+  testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testRuntimeOnly("org.slf4j:slf4j-simple")
 
   add("testFullConfigImplementation", project(":extensions:aws"))

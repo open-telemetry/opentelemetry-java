@@ -51,7 +51,7 @@ dependencies {
   jmh(project(":exporters:otlp:common")) {
     isTransitive = false
   }
-  jmh(project(":proto"))
+  jmh("io.opentelemetry.proto:opentelemetry-proto")
 
   jmh("com.google.guava:guava")
   jmh("io.grpc:grpc-api")
