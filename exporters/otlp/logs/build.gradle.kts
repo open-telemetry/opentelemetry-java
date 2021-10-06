@@ -29,12 +29,12 @@ dependencies {
   api("io.grpc:grpc-stub")
   implementation("io.grpc:grpc-api")
 
-  testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 
   testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("io.grpc:grpc-protobuf")
   testImplementation("io.grpc:grpc-testing")
+  testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation("org.slf4j:slf4j-simple")
 
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")

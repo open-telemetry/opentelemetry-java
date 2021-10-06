@@ -5,7 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.internal.grpc;
 
-import com.google.protobuf.CodedInputStream;
+import io.opentelemetry.exporter.otlp.internal.CodedInputStream;
 import java.io.IOException;
 
 /**
