@@ -155,12 +155,17 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
         }
       }
 
+      boolean compress = shouldUseCompression(exchange);
+      if (compress) {
+        exchange.getResponseHeaders().set("Content-Encoding", "gzip");
+      }
+
       if (exchange.getRequestMethod().equals("HEAD")) {
         exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, -1);
       } else {
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
         final OutputStreamWriter writer;
-        if (shouldUseCompression(exchange)) {
-          exchange.getResponseHeaders().set("Content-Encoding", "gzip");
+        if (compress) {
           writer =
               new OutputStreamWriter(
                   new GZIPOutputStream(exchange.getResponseBody()), StandardCharsets.UTF_8);
@@ -168,7 +173,6 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
           writer = new OutputStreamWriter(exchange.getResponseBody(), StandardCharsets.UTF_8);
         }
         try {
-          exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
           TextFormat.writeFormat(contentType, writer, Collections.enumeration(samples));
         } finally {
           writer.close();
