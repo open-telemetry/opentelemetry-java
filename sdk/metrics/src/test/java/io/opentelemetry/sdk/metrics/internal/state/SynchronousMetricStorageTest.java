@@ -75,7 +75,8 @@ public class SynchronousMetricStorageTest {
         new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
     BoundStorageHandle handle = accumulator.bind(labels);
     handle.recordDouble(1, labels, Context.root());
-    MetricData md = accumulator.collectAndReset(collector, allCollectors, 0, testClock.now());
+    MetricData md =
+        accumulator.collectAndReset(collector, allCollectors, 0, testClock.now(), false);
     assertThat(md)
         .hasDoubleGauge()
         .points()
@@ -97,7 +98,7 @@ public class SynchronousMetricStorageTest {
         accumulator.bind(Attributes.builder().put("K", "V").build());
     try {
       assertThat(duplicateHandle).isSameAs(handle);
-      accumulator.collectAndReset(collector, allCollectors, 0, testClock.now());
+      accumulator.collectAndReset(collector, allCollectors, 0, testClock.now(), false);
       BoundStorageHandle anotherDuplicateAggregatorHandle =
           accumulator.bind(Attributes.builder().put("K", "V").build());
       try {
@@ -112,6 +113,7 @@ public class SynchronousMetricStorageTest {
 
     // If we try to collect once all bound references are gone AND no recordings have occurred, we
     // should not see any labels (or metric).
-    assertThat(accumulator.collectAndReset(collector, allCollectors, 0, testClock.now())).isNull();
+    assertThat(accumulator.collectAndReset(collector, allCollectors, 0, testClock.now(), false))
+        .isNull();
   }
 }

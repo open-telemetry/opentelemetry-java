@@ -24,7 +24,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -45,6 +47,12 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
   private final Set<CollectionHandle> collectors;
   private final List<MetricReader> readers;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
+  private final AtomicLong lastCollectionTimestamp;
+
+  // Minimum amount of time we allow between synchronous collections.
+  // This meant to reduce overhead when multiple exporters attempt to read metrics quickly.
+  // TODO: This should be configurable at the SDK level.
+  private static final long MINIMUM_COLLECTION_INTERVAL_NANOS = TimeUnit.MILLISECONDS.toNanos(100);
 
   DefaultSdkMeterProvider(
       List<MetricReaderFactory> readerFactories,
@@ -57,6 +65,8 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
     this.registry =
         new ComponentRegistry<>(
             instrumentationLibraryInfo -> new SdkMeter(sharedState, instrumentationLibraryInfo));
+    this.lastCollectionTimestamp =
+        new AtomicLong(clock.nanoTime() - MINIMUM_COLLECTION_INTERVAL_NANOS);
 
     // Here we construct our own unique handle ids for this SDK.
     // These are guaranteed to be unique per-reader for this SDK, and only this SDK.
@@ -120,12 +130,24 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
     @Override
     public Collection<MetricData> collectAllMetrics() {
       Collection<SdkMeter> meters = registry.getComponents();
-      // TODO: This can be made more efficient by passing the list through the collection and
-      // appending
-      // rather than allocating individual lists and concatenating.
+      // Suppress too-frequent-collection.
+      long currentNanoTime = sharedState.getClock().nanoTime();
+      long pastNanoTime = lastCollectionTimestamp.get();
+      // It hasn't been long enough since the last collection.
+      boolean disableSynchronousCollection =
+          (currentNanoTime - pastNanoTime) < MINIMUM_COLLECTION_INTERVAL_NANOS;
+      // If we're not disabling metrics, write the current collection time.
+      // We don't care if this happens in more than one thread, suppression is optimistic, and the
+      // interval is small enough some jitter isn't important.
+      if (!disableSynchronousCollection) {
+        lastCollectionTimestamp.lazySet(currentNanoTime);
+      }
+
       List<MetricData> result = new ArrayList<>(meters.size());
       for (SdkMeter meter : meters) {
-        result.addAll(meter.collectAll(handle, collectors, sharedState.getClock().now()));
+        result.addAll(
+            meter.collectAll(
+                handle, collectors, sharedState.getClock().now(), disableSynchronousCollection));
       }
       return Collections.unmodifiableCollection(result);
     }

@@ -71,12 +71,16 @@ class DeltaMetricStorage<T> {
    *
    * @param collector The current reader of metrics.
    * @param collectors All possible readers of metrics.
+   * @param suppressCollection If true, don't actively pull synchronous instruments, measurements
+   *     should be up to date.
    * @return The delta accumulation of metrics since the last read of a the specified reader.
    */
   public synchronized Map<Attributes, T> collectFor(
-      CollectionHandle collector, Set<CollectionHandle> collectors) {
+      CollectionHandle collector, Set<CollectionHandle> collectors, boolean suppressCollection) {
     // First we force a collection
-    collectSynchronousDeltaAccumulationAndReset();
+    if (!suppressCollection) {
+      collectSynchronousDeltaAccumulationAndReset();
+    }
     // Now build a delta result.
     Map<Attributes, T> result = new HashMap<>();
     for (DeltaAccumulation<T> point : unreportedDeltas) {
@@ -97,6 +101,7 @@ class DeltaMetricStorage<T> {
    * related stale concurrent-map handles will occur. Any {@code null} measurements are ignored.
    */
   private synchronized void collectSynchronousDeltaAccumulationAndReset() {
+    // Grab accumulated measurements.
     Map<Attributes, T> result = new HashMap<>();
     for (Map.Entry<Attributes, AggregatorHandle<T>> entry : activeCollectionStorage.entrySet()) {
       boolean unmappedEntry = entry.getValue().tryUnmap();

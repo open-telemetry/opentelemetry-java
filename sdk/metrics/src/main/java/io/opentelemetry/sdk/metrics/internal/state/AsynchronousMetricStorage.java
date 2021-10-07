@@ -151,7 +151,8 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       CollectionHandle collector,
       Set<CollectionHandle> allCollectors,
       long startEpochNanos,
-      long epochNanos) {
+      long epochNanos,
+      boolean suppressSynchronousCollection) {
     collectLock.lock();
     try {
       metricUpdater.run();

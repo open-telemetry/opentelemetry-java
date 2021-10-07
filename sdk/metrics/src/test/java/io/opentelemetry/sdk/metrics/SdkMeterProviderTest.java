@@ -183,7 +183,7 @@ public class SdkMeterProviderTest {
 
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
     longCounter.add(10, Attributes.empty());
-    testClock.advance(Duration.ofNanos(50));
+    testClock.advance(Duration.ofSeconds(1));
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -198,13 +198,13 @@ public class SdkMeterProviderTest {
                     .satisfiesExactly(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasStartEpochNanos(testClock.now() - 1000000000)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)));
 
     longCounter.add(10, Attributes.empty());
-    testClock.advance(Duration.ofNanos(50));
+    testClock.advance(Duration.ofSeconds(1));
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -218,7 +218,7 @@ public class SdkMeterProviderTest {
                     .satisfiesExactly(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasStartEpochNanos(testClock.now() - 1000000000)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)));
@@ -251,7 +251,7 @@ public class SdkMeterProviderTest {
         sdkMeter.histogramBuilder("testDoubleValueRecorder").build();
     doubleValueRecorder.record(10, Attributes.empty());
 
-    testClock.advance(Duration.ofNanos(50));
+    testClock.advance(Duration.ofSeconds(1));
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .allSatisfy(
@@ -267,7 +267,7 @@ public class SdkMeterProviderTest {
                     .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasStartEpochNanos(testClock.now() - 1000000000)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
@@ -280,7 +280,7 @@ public class SdkMeterProviderTest {
             "testLongValueRecorder",
             "testDoubleValueRecorder");
 
-    testClock.advance(Duration.ofNanos(50));
+    testClock.advance(Duration.ofSeconds(1));
 
     longCounter.add(10, Attributes.empty());
     longUpDownCounter.add(10, Attributes.empty());
@@ -303,7 +303,7 @@ public class SdkMeterProviderTest {
                     .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasStartEpochNanos(testClock.now() - 1000000000)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
