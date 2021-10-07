@@ -7,16 +7,17 @@
 #### Exporters
 
 - BREAKING CHANGE: The Jaeger gRPC exporter does not directly use the `protobuf-java` library for
-marshaling trace data. Along with this, the `opentelemetry-exporter-jaeger` artifact does not
-contain generated protobuf classes for the Jaeger API. If you were using these in your application,
-you must update your build configuration to also include the new `jaeger-proto` artifact. This
-artifact will not be included in a future 2.0 release of the SDK so it is recommended to instead
-generated the protobuf classes in your own build.
+  marshaling trace data. Along with this, the `opentelemetry-exporter-jaeger` artifact does not
+  contain generated protobuf classes for the Jaeger API. If you were using these in your
+  application, you must update your build configuration to also include the new `jaeger-proto`
+  artifact. This artifact will not be included in a future 2.0 release of the SDK so it is
+  recommended to instead generated the protobuf classes in your own build.
 - BREAKING CHANGE: The `opentelemetry-exporter-otlp-http-*` exporter default endpoint ports have
   changed from `4317` to `4318`, in line
   with [recent changes](https://github.com/open-telemetry/opentelemetry-specification/pull/1970) to
   the spec.
-
+- The OTLP gRPC exporters will now function without the `grpc-java` dependency, if `okhttp` is present on the classpath.
+ 
 ### Auto-configuration (alpha)
 
 - BREAKING CHANGE: The behavior of `otel.exporter.otlp.endpoint` has changed when the protocol
@@ -26,6 +27,23 @@ generated the protobuf classes in your own build.
   appended to the configured endpoint. Values for signal specific endpoint configuration (
   e.g. `otel.exporter.otlp.traces.endpoint` and `otel.exporter.otlp.metrics.endpoint`) override the
   generic endpoint configuration and are used as-is without modification.
+- The `compression` option for exporters now explicitly supports the `none` value, in addition to the existing `gzip` value.
+
+### Metrics (alpha)
+
+- BREAKING CHANGE: The `IntervalMetricReader` has been removed, and replaced with
+  a `PeriodicMetricReader` that provides an implementation of the new `MetricReader` interface.
+- This release includes initial support for multiple exporters to be configured for a single SDK
+  instance. See the `SdkMeterProviderBuilder.registerMetricReader` method for more details.
+- This release includes initial support for the SDK recording of Metric Exemplars for sampled Spans.
+  See `SdkMeterProviderBuilder.setExemplarFilter` and the `ExemplarFilter` interface for  
+  more details.
+
+### Logging (alpha)
+
+- This release includes SDK extension interfaces for `LogProcessor`s and `LogExporter`s, and has
+  implementations for batch log processing and export via OTLP. These classes are intended for usage
+  in implementations of log appenders that emit OTLP log entries.
 
 ## Version 1.6.0 (2021-09-13):
 
