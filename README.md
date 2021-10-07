@@ -219,6 +219,8 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 - [Christian Neumüller](https://github.com/Oberon00), Dynatrace
 - [Carlos Alberto](https://github.com/carlosalberto), LightStep
 - [Jakub Wach](https://github.com/kubawach), Splunk
+- [Jack Berg](https://github.com/jack-berg), New Relic
+- [Josh Suereth](https://github.com/jsuereth), Google
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
 
