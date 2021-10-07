@@ -175,7 +175,7 @@ dependencies {
   dependencyManagement(platform(project(":dependencyManagement")))
   afterEvaluate {
     configurations.configureEach {
-      if (isCanBeResolved && !isCanBeConsumed) {
+      if (!isCanBeConsumed && this != dependencyManagement) {
         extendsFrom(dependencyManagement)
       }
     }
