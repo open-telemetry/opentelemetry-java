@@ -46,8 +46,8 @@ This project contains the following top level components:
 * [OpenCensus shim](opencensus-shim/) defines a bridge layer from OpenCensus to the OpenTelemetry API.
 * [examples](examples/) on how to use the APIs, SDK, and standard exporters.
 
-This project publishes a lot of artifacts. The easiest way to see the most recent stable artifacts is to use the 
-[`opentelemetry-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom). Unstable artifacts are referenced by 
+This project publishes a lot of artifacts. The easiest way to see the most recent stable artifacts is to use the
+[`opentelemetry-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom). Unstable artifacts are referenced by
 the [`opentelemetry-alpha-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom-alpha).
 
 We would love to hear from the larger community: please provide feedback proactively.
