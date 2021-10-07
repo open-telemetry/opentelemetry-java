@@ -136,6 +136,17 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  void extract_value_urlEncoding() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+
+    Context result =
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=value+1"), getter);
+
+    Baggage expectedBaggage = Baggage.builder().put("key", "value 1").build();
+    assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
+  }
+
+  @Test
   void extract_value_trailingSpaces() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
@@ -432,6 +443,7 @@ class W3CBaggagePropagatorTest {
     Baggage baggage =
         Baggage.builder()
             .put("nometa", "nometa-value")
+            .put("needsEncoding", "blah blah blah")
             .put("meta", "meta-value", BaggageEntryMetadata.create("somemetadata; someother=foo"))
             .build();
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
@@ -440,7 +452,8 @@ class W3CBaggagePropagatorTest {
     assertThat(carrier)
         .containsExactlyInAnyOrderEntriesOf(
             singletonMap(
-                "baggage", "meta=meta-value;somemetadata; someother=foo,nometa=nometa-value"));
+                "baggage",
+                "meta=meta-value;somemetadata; someother=foo,needsEncoding=blah+blah+blah,nometa=nometa-value"));
   }
 
   @Test

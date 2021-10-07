@@ -13,6 +13,9 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -50,7 +53,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     StringBuilder headerContent = new StringBuilder();
     baggage.forEach(
         (key, baggageEntry) -> {
-          headerContent.append(key).append("=").append(baggageEntry.getValue());
+          headerContent.append(key).append("=").append(encodeValue(baggageEntry.getValue()));
           String metadataValue = baggageEntry.getMetadata().getValue();
           if (metadataValue != null && !metadataValue.isEmpty()) {
             headerContent.append(";").append(metadataValue);
@@ -60,6 +63,15 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     if (headerContent.length() > 0) {
       headerContent.setLength(headerContent.length() - 1);
       setter.set(carrier, FIELD, headerContent.toString());
+    }
+  }
+
+  private static String encodeValue(String value) {
+    try {
+      return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      // this should never happen...our encoding is valid.
+      return "unencodable";
     }
   }
 

@@ -7,6 +7,9 @@ package io.opentelemetry.api.baggage.propagation;
 
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 
 /**
@@ -133,8 +136,21 @@ class Parser {
       @Nullable String key,
       @Nullable String value,
       BaggageEntryMetadata metadata) {
-    if (key != null && value != null) {
-      baggage.put(key, value, metadata);
+    String decodedValue = decodeValue(value);
+    if (key != null && decodedValue != null) {
+      baggage.put(key, decodedValue, metadata);
+    }
+  }
+
+  @Nullable
+  private static String decodeValue(@Nullable String value) {
+    if (value == null) {
+      return null;
+    }
+    try {
+      return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      return null;
     }
   }
 
