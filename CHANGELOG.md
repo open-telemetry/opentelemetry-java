@@ -17,7 +17,7 @@
   with [recent changes](https://github.com/open-telemetry/opentelemetry-specification/pull/1970) to
   the spec.
 - The OTLP gRPC exporters will now function without the `grpc-java` dependency, if `okhttp` is present on the classpath.
- 
+
 ### Auto-configuration (alpha)
 
 - BREAKING CHANGE: The behavior of `otel.exporter.otlp.endpoint` has changed when the protocol
@@ -36,7 +36,7 @@
 - This release includes initial support for multiple exporters to be configured for a single SDK
   instance. See the `SdkMeterProviderBuilder.registerMetricReader` method for more details.
 - This release includes initial support for the SDK recording of Metric Exemplars for sampled Spans.
-  See `SdkMeterProviderBuilder.setExemplarFilter` and the `ExemplarFilter` interface for  
+  See `SdkMeterProviderBuilder.setExemplarFilter` and the `ExemplarFilter` interface for
   more details.
 
 ### Logging (alpha)
