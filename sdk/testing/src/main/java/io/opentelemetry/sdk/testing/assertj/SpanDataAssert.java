@@ -339,11 +339,12 @@ public final class SpanDataAssert extends AbstractAssert<SpanDataAssert, SpanDat
   @SafeVarargs
   @SuppressWarnings("varargs")
   public final SpanDataAssert hasEventsSatisfyingExactly(Consumer<EventDataAssert>... assertions) {
-    assertThat(actual.getEvents())
-        .hasSize(assertions.length)
-        .zipSatisfy(
-            Arrays.asList(assertions),
-            (event, assertion) -> assertion.accept(new EventDataAssert(event)));
+    assertThat(actual.getEvents()).hasSize(assertions.length);
+
+    // Avoid zipSatisfy - https://github.com/assertj/assertj-core/issues/2300
+    for (int i = 0; i < assertions.length; i++) {
+      assertions[i].accept(new EventDataAssert(actual.getEvents().get(i)));
+    }
     return this;
   }
 

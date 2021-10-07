@@ -62,7 +62,10 @@ public final class TracesAssert
     List<Consumer<TraceAssert>> assertionsList =
         StreamSupport.stream(assertions.spliterator(), false).collect(toList());
     hasSize(assertionsList.size());
-    zipSatisfy(assertionsList, (trace, assertion) -> assertion.accept(new TraceAssert(trace)));
+    // Avoid zipSatisfy - https://github.com/assertj/assertj-core/issues/2300
+    for (int i = 0; i < assertionsList.size(); i++) {
+      assertionsList.get(i).accept(new TraceAssert(actual.get(i)));
+    }
     return this;
   }
 
