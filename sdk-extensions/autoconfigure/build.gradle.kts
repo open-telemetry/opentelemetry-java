@@ -35,7 +35,6 @@ dependencies {
   compileOnly(project(":exporters:otlp-http:trace"))
   compileOnly(project(":exporters:otlp-http:metrics"))
   compileOnly(project(":exporters:prometheus"))
-  compileOnly("io.prometheus:simpleclient_httpserver")
   compileOnly(project(":exporters:zipkin"))
 
   testImplementation(project(path = ":sdk:trace-shaded-deps"))
@@ -54,7 +53,6 @@ dependencies {
   add("testFullConfigImplementation", project(":exporters:otlp:all"))
   add("testFullConfigImplementation", project(":exporters:otlp:metrics"))
   add("testFullConfigImplementation", project(":exporters:prometheus"))
-  add("testFullConfigImplementation", "io.prometheus:simpleclient_httpserver")
   add("testFullConfigImplementation", project(":exporters:zipkin"))
   add("testFullConfigImplementation", project(":sdk-extensions:resources"))
 
@@ -78,12 +76,10 @@ dependencies {
   add("testConfigErrorImplementation", project(":exporters:otlp:all"))
   add("testConfigErrorImplementation", project(":exporters:otlp:metrics"))
   add("testConfigErrorImplementation", project(":exporters:prometheus"))
-  add("testConfigErrorImplementation", "io.prometheus:simpleclient_httpserver")
   add("testConfigErrorImplementation", project(":exporters:zipkin"))
   add("testConfigErrorImplementation", "org.junit-pioneer:junit-pioneer")
 
   add("testPrometheusImplementation", project(":exporters:prometheus"))
-  add("testPrometheusImplementation", "io.prometheus:simpleclient_httpserver")
 
   add("testResourceDisabledByPropertyImplementation", project(":sdk-extensions:resources"))
   add("testResourceDisabledByEnvImplementation", project(":sdk-extensions:resources"))
