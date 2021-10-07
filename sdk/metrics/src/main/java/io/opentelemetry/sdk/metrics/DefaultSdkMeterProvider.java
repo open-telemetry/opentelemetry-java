@@ -103,7 +103,7 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
 
   @Override
   public CompletableResultCode close() {
-    if (isClosed.compareAndSet(false, true)) {
+    if (!isClosed.compareAndSet(false, true)) {
       LOGGER.info("Multiple close calls");
       return CompletableResultCode.ofSuccess();
     }
