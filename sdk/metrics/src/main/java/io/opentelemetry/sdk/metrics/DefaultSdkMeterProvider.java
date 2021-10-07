@@ -145,7 +145,6 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
 
       List<MetricData> result = new ArrayList<>(meters.size());
       for (SdkMeter meter : meters) {
-        // TODO - check if collection is close to previous readers collection.
         result.addAll(
             meter.collectAll(
                 handle, collectors, sharedState.getClock().now(), disableSynchronousCollection));
