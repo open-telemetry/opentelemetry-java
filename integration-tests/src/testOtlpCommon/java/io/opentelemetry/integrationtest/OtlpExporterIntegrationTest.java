@@ -7,6 +7,7 @@ package io.opentelemetry.integrationtest;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.testcontainers.Testcontainers.exposeHostPorts;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -73,7 +74,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -207,9 +207,9 @@ abstract class OtlpExporterIntegrationTest {
     span.addEvent("event");
     span.end();
 
-    Awaitility.await()
+    await()
         .atMost(Duration.ofSeconds(30))
-        .until(() -> grpcServer.traceRequests.size() == 1);
+        .untilAsserted(() -> assertThat(grpcServer.traceRequests).hasSize(1));
 
     ExportTraceServiceRequest request = grpcServer.traceRequests.get(0);
     assertThat(request.getResourceSpansCount()).isEqualTo(1);
@@ -293,9 +293,9 @@ abstract class OtlpExporterIntegrationTest {
     longCounter.add(100, Attributes.builder().put("key", "value").build());
 
     try {
-      Awaitility.await()
+      await()
           .atMost(Duration.ofSeconds(30))
-          .until(() -> grpcServer.metricRequests.size() == 1);
+          .untilAsserted(() -> assertThat(grpcServer.metricRequests).hasSize(1));
     } finally {
       meterProvider.close();
     }
@@ -389,9 +389,9 @@ abstract class OtlpExporterIntegrationTest {
 
     logExporter.export(Collections.singletonList(logRecord));
 
-    Awaitility.await()
+    await()
         .atMost(Duration.ofSeconds(30))
-        .until(() -> grpcServer.logRequests.size() == 1);
+        .untilAsserted(() -> assertThat(grpcServer.logRequests).hasSize(1));
 
     ExportLogsServiceRequest request = grpcServer.logRequests.get(0);
     assertThat(request.getResourceLogsCount()).isEqualTo(1);
