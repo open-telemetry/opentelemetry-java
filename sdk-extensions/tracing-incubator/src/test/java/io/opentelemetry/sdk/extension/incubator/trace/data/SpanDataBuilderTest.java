@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // Testing deprecated class
 class SpanDataBuilderTest {
 
   private static final String TRACE_ID = "00000000000000000000000000abc123";
