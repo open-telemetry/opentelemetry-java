@@ -103,7 +103,7 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
       this.value = value;
       this.attributes = attributes;
       // Note: It may make sense in the future to attempt to pull this from an active span.
-      this.recordTime = clock.nanoTime();
+      this.recordTime = clock.now();
       updateFromContext(context);
     }
 

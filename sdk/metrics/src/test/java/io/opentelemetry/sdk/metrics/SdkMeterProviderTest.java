@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.common.AttributeKey;
@@ -19,9 +20,11 @@ import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
@@ -30,9 +33,14 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-public class SdkMeterProviderTest {
+@ExtendWith(MockitoExtension.class)
+class SdkMeterProviderTest {
   private static final Resource RESOURCE =
       Resource.create(Attributes.of(AttributeKey.stringKey("resource_key"), "resource_value"));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
@@ -40,6 +48,8 @@ public class SdkMeterProviderTest {
   private final TestClock testClock = TestClock.create();
   private final SdkMeterProviderBuilder sdkMeterProviderBuilder =
       SdkMeterProvider.builder().setClock(testClock).setResource(RESOURCE);
+
+  @Mock MetricReader metricReader;
 
   @Test
   void defaultMeterName() {
@@ -183,7 +193,7 @@ public class SdkMeterProviderTest {
 
     LongCounter longCounter = sdkMeter.counterBuilder("testLongCounter").build();
     longCounter.add(10, Attributes.empty());
-    testClock.advance(Duration.ofNanos(50));
+    testClock.advance(Duration.ofSeconds(1));
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -198,13 +208,13 @@ public class SdkMeterProviderTest {
                     .satisfiesExactly(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasStartEpochNanos(testClock.now() - 1000000000)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)));
 
     longCounter.add(10, Attributes.empty());
-    testClock.advance(Duration.ofNanos(50));
+    testClock.advance(Duration.ofSeconds(1));
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .satisfiesExactly(
@@ -218,7 +228,7 @@ public class SdkMeterProviderTest {
                     .satisfiesExactly(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasStartEpochNanos(testClock.now() - 1000000000)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)));
@@ -251,7 +261,7 @@ public class SdkMeterProviderTest {
         sdkMeter.histogramBuilder("testDoubleValueRecorder").build();
     doubleValueRecorder.record(10, Attributes.empty());
 
-    testClock.advance(Duration.ofNanos(50));
+    testClock.advance(Duration.ofSeconds(1));
 
     assertThat(sdkMeterReader.collectAllMetrics())
         .allSatisfy(
@@ -267,7 +277,7 @@ public class SdkMeterProviderTest {
                     .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasStartEpochNanos(testClock.now() - 1000000000)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
@@ -280,7 +290,7 @@ public class SdkMeterProviderTest {
             "testLongValueRecorder",
             "testDoubleValueRecorder");
 
-    testClock.advance(Duration.ofNanos(50));
+    testClock.advance(Duration.ofSeconds(1));
 
     longCounter.add(10, Attributes.empty());
     longUpDownCounter.add(10, Attributes.empty());
@@ -303,7 +313,7 @@ public class SdkMeterProviderTest {
                     .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(testClock.now() - 50)
+                                .hasStartEpochNanos(testClock.now() - 1000000000)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasBucketCounts(1)))
@@ -863,6 +873,20 @@ public class SdkMeterProviderTest {
                                 .hasStartEpochNanos(collectorOneTimeOne)
                                 .hasEpochNanos(testClock.now())
                                 .hasValue(1)));
+  }
+
+  @Test
+  void shutdown() {
+    when(metricReader.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    CompletableResultCode result =
+        SdkMeterProvider.builder()
+            .registerMetricReader(unused -> metricReader)
+            .build()
+            .shutdown()
+            .join(10, TimeUnit.SECONDS);
+
+    assertThat(result.isSuccess()).isTrue();
   }
 
   private static void registerViewForAllTypes(

@@ -31,6 +31,8 @@ public interface MetricStorage {
    * @param allCollectors The set of all registered readers for metrics.
    * @param startEpochNanos The start timestamp for this SDK.
    * @param epochNanos The timestamp for this collection.
+   * @param suppressSynchronousCollection Whether or not to suppress active (blocking) collection of
+   *     metrics, meaning recently collected data is "fresh enough"
    * @return The {@link MetricData} from this collection period, or {@code null}.
    */
   @Nullable
@@ -38,5 +40,6 @@ public interface MetricStorage {
       CollectionHandle collector,
       Set<CollectionHandle> allCollectors,
       long startEpochNanos,
-      long epochNanos);
+      long epochNanos,
+      boolean suppressSynchronousCollection);
 }

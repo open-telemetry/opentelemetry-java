@@ -87,7 +87,8 @@ class MetricStorageRegistryTest {
         CollectionHandle collector,
         Set<CollectionHandle> all,
         long startEpochNanos,
-        long epochNanos) {
+        long epochNanos,
+        boolean suppressSynchronousCollection) {
       return null;
     }
 
@@ -115,7 +116,8 @@ class MetricStorageRegistryTest {
         CollectionHandle collector,
         Set<CollectionHandle> allCollectors,
         long startEpochNanos,
-        long epochNanos) {
+        long epochNanos,
+        boolean suppressSynchronousCollection) {
       return null;
     }
 
