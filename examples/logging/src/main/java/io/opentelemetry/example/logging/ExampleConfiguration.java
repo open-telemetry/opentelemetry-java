@@ -5,10 +5,11 @@ import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
-import java.util.Collections;
+import java.time.Duration;
 
 /**
  * All SDK management takes place here, away from the instrumentation code, which should only access
@@ -25,16 +26,17 @@ public final class ExampleConfiguration {
    * @return A ready-to-use {@link OpenTelemetry} instance.
    */
   public static OpenTelemetry initOpenTelemetry() {
-    // This will be used to create instruments
-    SdkMeterProvider meterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
+    // Create an instance of PeriodicMetricReaderFactory and configure it
+    // to export via the logging exporter
+    MetricReaderFactory periodicReaderFactory =
+        PeriodicMetricReader.create(
+            new LoggingMetricExporter(), Duration.ofMillis(METRIC_EXPORT_INTERVAL_MS));
 
-    // Create an instance of IntervalMetricReader and configure it
-    // to read metrics from the meterProvider and export them to the logging exporter
-    IntervalMetricReader.builder()
-        .setMetricExporter(new LoggingMetricExporter())
-        .setMetricProducers(Collections.singleton(meterProvider))
-        .setExportIntervalMillis(METRIC_EXPORT_INTERVAL_MS)
-        .build();
+    // This will be used to create instruments
+    SdkMeterProvider meterProvider =
+        SdkMeterProvider.builder()
+            .registerMetricReader(periodicReaderFactory)
+            .buildAndRegisterGlobal();
 
     // Tracer provider configured to export spans with SimpleSpanProcessor using
     // the logging exporter.

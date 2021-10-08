@@ -12,10 +12,11 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.OpenTelemetryResourceAutoConfiguration;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import java.util.Collections;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -45,7 +46,7 @@ public final class ExampleConfiguration {
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).buildAndRegisterGlobal();
 
-    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
+    Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::shutdown));
 
     return openTelemetrySdk;
   }
@@ -59,16 +60,15 @@ public final class ExampleConfiguration {
     // set up the metric exporter and wire it into the SDK and a timed reader.
     OtlpGrpcMetricExporter metricExporter = OtlpGrpcMetricExporter.getDefault();
 
-    SdkMeterProvider meterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
-    IntervalMetricReader intervalMetricReader =
-        IntervalMetricReader.builder()
-            .setMetricExporter(metricExporter)
-            .setMetricProducers(Collections.singleton(meterProvider))
-            .setExportIntervalMillis(1000)
-            .buildAndStart();
+    MetricReaderFactory periodicReaderFactory =
+        PeriodicMetricReader.create(metricExporter, Duration.ofMillis(1000));
 
-    Runtime.getRuntime().addShutdownHook(new Thread(intervalMetricReader::shutdown));
+    SdkMeterProvider sdkMeterProvider =
+        SdkMeterProvider.builder()
+            .registerMetricReader(periodicReaderFactory)
+            .buildAndRegisterGlobal();
 
-    return meterProvider;
+    Runtime.getRuntime().addShutdownHook(new Thread(sdkMeterProvider::shutdown));
+    return sdkMeterProvider;
   }
 }
