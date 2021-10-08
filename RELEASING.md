@@ -47,9 +47,7 @@ Next, update the
 
 Create a PR to mark the new release in README.md and CHANGELOG.md on the main branch.
 
-Finally, update the files `website_docs` directory to point at the newly released version. Once that has
-been merged to the main branch, use the "Update OpenTelemetry Website" github action to create a PR
-in the website repository with the changes.
+Finally, update the files `website_docs` directory to point at the newly released version.
 
 ## Patch Release
 

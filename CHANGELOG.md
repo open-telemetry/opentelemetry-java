@@ -1,6 +1,9 @@
 # Changelog
 
-## Version 1.7.0 (unreleased):
+## Version 1.8.0 (unreleased):
+
+---
+## Version 1.7.0 (2021-10-08):
 
 ### General
 
@@ -60,6 +63,7 @@
   implementations for batch log processing and export via OTLP. These classes are intended for usage
   in implementations of log appenders that emit OTLP log entries.
 
+---
 ## Version 1.6.0 (2021-09-13):
 
 ### API
