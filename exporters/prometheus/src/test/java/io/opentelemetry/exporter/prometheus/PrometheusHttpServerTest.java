@@ -117,6 +117,20 @@ class PrometheusHttpServerTest {
   }
 
   @Test
+  void fetchFiltered() {
+    AggregatedHttpResponse response =
+        client.get("/?name[]=grpc_name_total&name[]=bears_total").aggregate().join();
+    assertThat(response.status()).isEqualTo(HttpStatus.OK);
+    assertThat(response.headers().get(HttpHeaderNames.CONTENT_TYPE))
+        .isEqualTo("text/plain; version=0.0.4; charset=utf-8");
+    assertThat(response.contentUtf8())
+        .isEqualTo(
+            "# HELP grpc_name_total long_description\n"
+                + "# TYPE grpc_name_total counter\n"
+                + "grpc_name_total{kp=\"vp\",} 5.0\n");
+  }
+
+  @Test
   void fetchPrometheusCompressed() {
     WebClient client =
         WebClient.builder("http://localhost:" + prometheusServer.getAddress().getPort())

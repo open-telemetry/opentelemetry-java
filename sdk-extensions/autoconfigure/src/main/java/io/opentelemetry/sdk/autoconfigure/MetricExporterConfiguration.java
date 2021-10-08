@@ -159,8 +159,6 @@ final class MetricExporterConfiguration {
         "opentelemetry-exporter-prometheus");
     PrometheusHttpServerBuilder prom = PrometheusHttpServer.builder();
 
-    // TODO: Move this portion into the PrometheusCollector so shutdown on SdkMeterProvider
-    // will collapse prometheus too?
     Integer port = config.getInt("otel.exporter.prometheus.port");
     if (port != null) {
       prom.setPort(port);
