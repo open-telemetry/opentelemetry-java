@@ -19,8 +19,8 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
   + [Logging exporter](#logging-exporter)
 * [Trace context propagation](#propagator)
 * [OpenTelemetry Resource](#opentelemetry-resource)
-  + [Resource Provider SPI](#resource-provider-spi) 
-  + [Disabling automatic ResourceProviders](#disabling-automatic-resourceproviders) 
+  + [Resource Provider SPI](#resource-provider-spi)
+  + [Disabling automatic ResourceProviders](#disabling-automatic-resourceproviders)
 * [Batch span processor](#batch-span-processor)
 * [Sampler](#sampler)
 * [Span limits](#span-limits)
@@ -158,7 +158,7 @@ If not specified, SDK defaults the service name to `unknown_service:java`.
 ### Resource Provider SPI
 
 The [autoconfigure-spi](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure-spi),
-part of the SDK extensions, provides a convenient ResourceProvider SPI that will add common 
+part of the SDK extensions, provides a convenient ResourceProvider SPI that will add common
 resource attributes automatically. The SDK extensions include a [predefined set of common resources](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/resources/src/main/resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider),
 [common cloud vendor resources](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/aws/src/main/resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider),
 or you can create your own.
