@@ -19,6 +19,8 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
   + [Logging exporter](#logging-exporter)
 * [Trace context propagation](#propagator)
 * [OpenTelemetry Resource](#opentelemetry-resource)
+  + [Resource Provider SPI](#resource-provider-spi) 
+  + [Disabling automatic ResourceProviders](#disabling-automatic-resourceproviders) 
 * [Batch span processor](#batch-span-processor)
 * [Sampler](#sampler)
 * [Span limits](#span-limits)
@@ -152,6 +154,31 @@ You would specify that by setting service name property in one of the following 
 * by `service.name` resource attribute like `OTEL_RESOURCE_ATTRIBUTES=service.name=authservice`, or `-Dotel.resource.attributes=service.name=cats,service.namespace=mammals`.
 
 If not specified, SDK defaults the service name to `unknown_service:java`.
+
+### Resource Provider SPI
+
+The [autoconfigure-spi](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure-spi),
+part of the SDK extensions, provides a convenient ResourceProvider SPI that will add common 
+resource attributes automatically. The SDK extensions include a [predefined set of common resources](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/resources/src/main/resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider),
+[common cloud vendor resources](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/aws/src/main/resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider),
+or you can create your own.
+
+### Disabling Automatic ResourceProviders
+
+If you are using the `ResourceProvider` SPI (many instrumentation agent distributions include this automatically),
+you can disable one or more of them by using the following configuration item:
+
+| System property                       | Environment variable                  | Description                                                                        |
+|---------------------------------------|---------------------------------------|------------------------------------------------------------------------------------|
+| otel.java.disabled.resource-providers | OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS | Disables one or more `ResourceProvider` types |
+
+The value must be a comma separated list of fully qualified `ResourceProvider` classnames.
+For example, if you do not wish to expose the name of the operating system through the resource, you
+could pass the following JVM argument:
+
+```
+-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider
+```
 
 ## Batch span processor
 
