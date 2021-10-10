@@ -14,6 +14,7 @@ testSets {
   create("testGrpcNetty")
   create("testGrpcNettyShaded")
   create("testGrpcOkhttp")
+  create("testOkHttpOnly")
 }
 
 dependencies {
@@ -28,12 +29,12 @@ dependencies {
   api("io.grpc:grpc-stub")
   implementation("io.grpc:grpc-api")
 
-  testImplementation(project(":proto"))
   testImplementation(project(":sdk:testing"))
 
   testImplementation("com.google.protobuf:protobuf-java")
   testImplementation("io.grpc:grpc-protobuf")
   testImplementation("io.grpc:grpc-testing")
+  testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation("org.slf4j:slf4j-simple")
 
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
@@ -50,10 +51,24 @@ dependencies {
   add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-junit5")
   add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
+
+  add("testOkHttpOnlyImplementation", "com.linecorp.armeria:armeria-grpc-protocol")
+  add("testOkHttpOnlyImplementation", "com.linecorp.armeria:armeria-junit5")
+  add("testOkHttpOnlyImplementation", "com.squareup.okhttp3:okhttp")
+  add("testOkHttpOnlyImplementation", "com.squareup.okhttp3:okhttp-tls")
+  add("testOkHttpOnlyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 }
 
 tasks {
   named("check") {
-    dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp")
+    dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp", "testOkHttpOnly")
+  }
+}
+
+configurations {
+  named("testOkHttpOnlyRuntimeClasspath") {
+    dependencies {
+      exclude("io.grpc")
+    }
   }
 }

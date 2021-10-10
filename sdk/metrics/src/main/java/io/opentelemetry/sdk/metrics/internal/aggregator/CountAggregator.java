@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
@@ -103,7 +103,7 @@ final class CountAggregator extends AbstractAggregator<LongAccumulation> {
     }
 
     @Override
-    protected LongAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
+    protected LongAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
       return LongAccumulation.create(current.sumThenReset(), exemplars);
     }
   }

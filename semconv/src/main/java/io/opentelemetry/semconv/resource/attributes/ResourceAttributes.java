@@ -16,7 +16,7 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class ResourceAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.6.1";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.7.0";
 
   /** Name of the cloud provider. */
   public static final AttributeKey<String> CLOUD_PROVIDER = stringKey("cloud.provider");

@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.logs;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
@@ -21,6 +22,8 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporter;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.logs.ResourceLogsMarshaler;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
@@ -33,6 +36,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,7 +61,7 @@ class OtlpGrpcLogsExporterTest {
   private final Closer closer = Closer.create();
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OtlpGrpcLogExporter.class);
+  LogCapturer logs = LogCapturer.create().captureForType(DefaultGrpcExporter.class);
 
   @BeforeEach
   public void setup() throws IOException {
@@ -74,6 +78,43 @@ class OtlpGrpcLogsExporterTest {
   @AfterEach
   void tearDown() throws Exception {
     closer.close();
+  }
+
+  @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void validConfig() {
+    assertThatCode(() -> OtlpGrpcLogExporter.builder().setTimeout(0, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcLogExporter.builder().setTimeout(Duration.ofMillis(0)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcLogExporter.builder().setTimeout(10, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcLogExporter.builder().setTimeout(Duration.ofMillis(10)))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpGrpcLogExporter.builder().setEndpoint("http://localhost:4317"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcLogExporter.builder().setEndpoint("http://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcLogExporter.builder().setEndpoint("https://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcLogExporter.builder().setEndpoint("http://foo:bar@localhost"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpGrpcLogExporter.builder().setCompression("gzip"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcLogExporter.builder().setCompression("none"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () -> OtlpGrpcLogExporter.builder().addHeader("foo", "bar").addHeader("baz", "qux"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                OtlpGrpcLogExporter.builder()
+                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -107,7 +148,8 @@ class OtlpGrpcLogsExporterTest {
         .hasMessage("compressionMethod");
     assertThatThrownBy(() -> OtlpGrpcLogExporter.builder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Unsupported compression method. Supported compression methods include: gzip.");
+        .hasMessage(
+            "Unsupported compression method. Supported compression methods include: gzip, none.");
   }
 
   @Test
@@ -304,6 +346,12 @@ class OtlpGrpcLogsExporterTest {
     } finally {
       exporter.shutdown();
     }
+  }
+
+  @Test
+  void usingGrpc() {
+    assertThat(OtlpGrpcLogExporter.builder().delegate)
+        .isInstanceOf(DefaultGrpcExporterBuilder.class);
   }
 
   private static LogRecord generateFakeLog() {

@@ -46,6 +46,10 @@ This project contains the following top level components:
 * [OpenCensus shim](opencensus-shim/) defines a bridge layer from OpenCensus to the OpenTelemetry API.
 * [examples](examples/) on how to use the APIs, SDK, and standard exporters.
 
+This project publishes a lot of artifacts. The easiest way to see the most recent stable artifacts is to use the
+[`opentelemetry-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom). Unstable artifacts are referenced by
+the [`opentelemetry-alpha-bom`](https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-bom-alpha).
+
 We would love to hear from the larger community: please provide feedback proactively.
 
 ## Requirements
@@ -61,7 +65,7 @@ to keep them from growing too large.
 We still aim to provide the same level of quality and guarantee for them as for the core components.
 Please don't hesitate to use them if you find them useful.
 
-## Project setup and contribute
+## Project setup and contributing
 
 Please refer to the [contribution guide](CONTRIBUTING.md) on how to set up for development and contribute!
 
@@ -83,7 +87,7 @@ dependency versions in sync.
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.6.0</version>
+        <version>1.7.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -102,7 +106,7 @@ dependency versions in sync.
 
 ```groovy
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.6.0")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.7.0")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
@@ -111,8 +115,8 @@ Note that if you want to use any artifacts that have not fully stabilized yet (s
 
 ```groovy
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.6.0")
-  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.6.0-alpha')
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.7.0")
+  implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.7.0-alpha')
 
   implementation('io.opentelemetry:opentelemetry-api')
   implementation('io.opentelemetry:opentelemetry-api-metrics')
@@ -139,7 +143,7 @@ We strongly recommend using our published BOM to keep all dependency versions in
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.6.0-SNAPSHOT</version>
+        <version>1.8.0-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -162,7 +166,7 @@ repositories {
 }
 
 dependencies {
-  implementation platform("io.opentelemetry:opentelemetry-bom:1.6.0-SNAPSHOT")
+  implementation platform("io.opentelemetry:opentelemetry-bom:1.8.0-SNAPSHOT")
   implementation('io.opentelemetry:opentelemetry-api')
 }
 ```
@@ -188,19 +192,20 @@ This is a **current** feature status list:
 
 | Component                   | Version |
 | --------------------------- | ------- |
-| Trace API                   | v<!--VERSION_STABLE-->1.6.0<!--/VERSION_STABLE-->  |
-| Trace SDK                   | v<!--VERSION_STABLE-->1.6.0<!--/VERSION_STABLE-->  |
-| Context                     | v<!--VERSION_STABLE-->1.6.0<!--/VERSION_STABLE-->  |
-| Baggage                     | v<!--VERSION_STABLE-->1.6.0<!--/VERSION_STABLE-->  |
-| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.6.0<!--/VERSION_STABLE-->  |
-| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.6.0<!--/VERSION_STABLE-->  |
-| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.6.0<!--/VERSION_STABLE-->  |
-| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.6.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Metrics API                 | v<!--VERSION_UNSTABLE-->1.6.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.6.0-alpha<!--/VERSION_UNSTABLE-->  |
-| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.6.0-alpha<!--/VERSION_UNSTABLE-->  |
-| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->1.6.0-alpha<!--/VERSION_UNSTABLE-->  |
-| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->1.6.0-alpha<!--/VERSION_UNSTABLE-->  |
+| Trace API                   | v<!--VERSION_STABLE-->1.7.0<!--/VERSION_STABLE-->  |
+| Trace SDK                   | v<!--VERSION_STABLE-->1.7.0<!--/VERSION_STABLE-->  |
+| Context                     | v<!--VERSION_STABLE-->1.7.0<!--/VERSION_STABLE-->  |
+| Baggage                     | v<!--VERSION_STABLE-->1.7.0<!--/VERSION_STABLE-->  |
+| Jaeger Trace Exporter       | v<!--VERSION_STABLE-->1.7.0<!--/VERSION_STABLE-->  |
+| Zipkin Trace Exporter       | v<!--VERSION_STABLE-->1.7.0<!--/VERSION_STABLE-->  |
+| OTLP Exporter (Spans)       | v<!--VERSION_STABLE-->1.7.0<!--/VERSION_STABLE-->  |
+| OTLP Exporter (Metrics)     | v<!--VERSION_UNSTABLE-->1.7.0-alpha<!--/VERSION_UNSTABLE-->  |
+| Metrics API                 | v<!--VERSION_UNSTABLE-->1.7.0-alpha<!--/VERSION_UNSTABLE-->  |
+| Metrics SDK                 | v<!--VERSION_UNSTABLE-->1.7.0-alpha<!--/VERSION_UNSTABLE-->  |
+| Logs SDK                    | v<!--VERSION_UNSTABLE-->1.7.0-alpha<!--/VERSION_UNSTABLE-->  |
+| Prometheus Metrics Exporter | v<!--VERSION_UNSTABLE-->1.7.0-alpha<!--/VERSION_UNSTABLE-->  |
+| OpenTracing Bridge          | v<!--VERSION_UNSTABLE-->1.7.0-alpha<!--/VERSION_UNSTABLE-->  |
+| OpenCensus Bridge           | v<!--VERSION_UNSTABLE-->1.7.0-alpha<!--/VERSION_UNSTABLE-->  |
 
 See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
 for details on upcoming releases. The dates and features described in issues
@@ -219,6 +224,8 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 - [Christian Neumüller](https://github.com/Oberon00), Dynatrace
 - [Carlos Alberto](https://github.com/carlosalberto), LightStep
 - [Jakub Wach](https://github.com/kubawach), Splunk
+- [Jack Berg](https://github.com/jack-berg), New Relic
+- [Josh Suereth](https://github.com/jsuereth), Google
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
 

@@ -15,8 +15,8 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AbstractSumAggregator.MergeStrategy;
@@ -100,8 +100,8 @@ class LongSumAggregatorTest {
   @Test
   void testExemplarsInAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
-    List<Exemplar> exemplars = Collections.singletonList(exemplar);
+    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
     LongSumAggregator aggregator =
         new LongSumAggregator(
@@ -124,8 +124,9 @@ class LongSumAggregatorTest {
 
   @Test
   void merge() {
-    Exemplar exemplar = DoubleExemplar.create(Attributes.empty(), 2L, "spanid", "traceid", 1);
-    List<Exemplar> exemplars = Collections.singletonList(exemplar);
+    ExemplarData exemplar =
+        DoubleExemplarData.create(Attributes.empty(), 2L, "spanid", "traceid", 1);
+    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
     for (InstrumentType instrumentType : InstrumentType.values()) {
       for (AggregationTemporality temporality : AggregationTemporality.values()) {
         LongSumAggregator aggregator =
@@ -184,7 +185,7 @@ class LongSumAggregatorTest {
   @Test
   void toMetricDataWithExemplars() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
     LongAccumulation accumulation = LongAccumulation.create(1, Collections.singletonList(exemplar));
     assertThat(
             aggregator.toMetricData(

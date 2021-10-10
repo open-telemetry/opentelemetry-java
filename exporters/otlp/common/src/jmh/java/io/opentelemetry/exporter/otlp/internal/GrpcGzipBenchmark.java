@@ -19,6 +19,7 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,8 +50,10 @@ public class GrpcGzipBenchmark {
   private static final Codec IDENTITY_CODEC = Codec.Identity.NONE;
 
   static {
+    InMemoryMetricReader metricReader = new InMemoryMetricReader();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
+            .registerMetricReader(metricReader)
             .setResource(
                 Resource.create(
                     Attributes.builder()
@@ -118,7 +121,7 @@ public class GrpcGzipBenchmark {
     histogram.record(3.0);
     histogram.record(4.0);
     histogram.record(5.0);
-    Collection<MetricData> metricData = meterProvider.collectAllMetrics();
+    Collection<MetricData> metricData = metricReader.collectAllMetrics();
 
     List<ResourceMetrics> resourceMetrics =
         Arrays.stream(ResourceMetricsMarshaler.create(metricData))

@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.common.io.Closer;
@@ -19,6 +20,8 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporter;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.metrics.ResourceMetricsMarshaler;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
@@ -35,6 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,7 +64,7 @@ class OtlpGrpcMetricExporterTest {
   private final Closer closer = Closer.create();
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OtlpGrpcMetricExporter.class);
+  LogCapturer logs = LogCapturer.create().captureForType(DefaultGrpcExporter.class);
 
   @BeforeEach
   public void setup() throws IOException {
@@ -77,6 +81,43 @@ class OtlpGrpcMetricExporterTest {
   @AfterEach
   void tearDown() throws Exception {
     closer.close();
+  }
+
+  @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void validConfig() {
+    assertThatCode(() -> OtlpGrpcMetricExporter.builder().setTimeout(0, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcMetricExporter.builder().setTimeout(Duration.ofMillis(0)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcMetricExporter.builder().setTimeout(10, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcMetricExporter.builder().setTimeout(Duration.ofMillis(10)))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpGrpcMetricExporter.builder().setEndpoint("http://localhost:4317"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcMetricExporter.builder().setEndpoint("http://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcMetricExporter.builder().setEndpoint("https://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcMetricExporter.builder().setEndpoint("http://foo:bar@localhost"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpGrpcMetricExporter.builder().setCompression("gzip"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcMetricExporter.builder().setCompression("none"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () -> OtlpGrpcMetricExporter.builder().addHeader("foo", "bar").addHeader("baz", "qux"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                OtlpGrpcMetricExporter.builder()
+                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -111,7 +152,8 @@ class OtlpGrpcMetricExporterTest {
         .hasMessage("compressionMethod");
     assertThatThrownBy(() -> OtlpGrpcMetricExporter.builder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Unsupported compression method. Supported compression methods include: gzip.");
+        .hasMessage(
+            "Unsupported compression method. Supported compression methods include: gzip, none.");
   }
 
   @Test
@@ -311,6 +353,12 @@ class OtlpGrpcMetricExporterTest {
     } finally {
       exporter.shutdown();
     }
+  }
+
+  @Test
+  void usingGrpc() {
+    assertThat(OtlpGrpcMetricExporter.builder().delegate)
+        .isInstanceOf(DefaultGrpcExporterBuilder.class);
   }
 
   private static MetricData generateFakeMetric() {

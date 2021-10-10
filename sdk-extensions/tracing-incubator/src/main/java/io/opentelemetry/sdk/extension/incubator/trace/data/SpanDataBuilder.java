@@ -35,11 +35,16 @@ import javax.annotation.concurrent.Immutable;
  * exporter.export(data);
  *
  * }</pre>
+ *
+ * @deprecated Use {@link DelegatingSpanData}.
  */
 // AutoValue generated hashCode is fine but we need to define equals to accept the base SpanData
 // type.
 @Immutable
 @AutoValue
+@AutoValue.CopyAnnotations
+@Deprecated
+@SuppressWarnings("deprecation")
 public abstract class SpanDataBuilder implements SpanData {
 
   /**

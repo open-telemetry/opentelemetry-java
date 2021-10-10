@@ -20,9 +20,12 @@ import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import java.util.Set;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -40,19 +43,24 @@ public class SynchronousMetricStorageTest {
               InstrumentationLibraryInfo.create("test", "1.0"),
               DESCRIPTOR,
               METRIC_DESCRIPTOR,
-              // TODO: do we need to verify anything here?
               ExemplarReservoir::noSamples);
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
+  private CollectionHandle collector;
+  private Set<CollectionHandle> allCollectors;
+
+  @BeforeEach
+  void setup() {
+    collector = CollectionHandle.createSupplier().get();
+    allCollectors = CollectionHandle.mutableSet();
+    allCollectors.add(collector);
+  }
 
   @Test
   void attributesProcessor_used() {
     AttributesProcessor spyAttributesProcessor = Mockito.spy(this.attributesProcessor);
     SynchronousMetricStorage accumulator =
         new DefaultSynchronousMetricStorage<>(
-            METRIC_DESCRIPTOR,
-            aggregator,
-            new InstrumentProcessor<>(aggregator, testClock.now()),
-            spyAttributesProcessor);
+            METRIC_DESCRIPTOR, aggregator, spyAttributesProcessor);
     accumulator.bind(Attributes.empty());
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
@@ -64,14 +72,11 @@ public class SynchronousMetricStorageTest {
         AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
     AttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);
     SynchronousMetricStorage accumulator =
-        new DefaultSynchronousMetricStorage<>(
-            METRIC_DESCRIPTOR,
-            aggregator,
-            new InstrumentProcessor<>(aggregator, testClock.now()),
-            spyLabelsProcessor);
+        new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
     BoundStorageHandle handle = accumulator.bind(labels);
     handle.recordDouble(1, labels, Context.root());
-    MetricData md = accumulator.collectAndReset(0, testClock.now());
+    MetricData md =
+        accumulator.collectAndReset(collector, allCollectors, 0, testClock.now(), false);
     assertThat(md)
         .hasDoubleGauge()
         .points()
@@ -87,17 +92,13 @@ public class SynchronousMetricStorageTest {
   @Test
   void sameAggregator_ForSameAttributes() {
     SynchronousMetricStorage accumulator =
-        new DefaultSynchronousMetricStorage<>(
-            METRIC_DESCRIPTOR,
-            aggregator,
-            new InstrumentProcessor<>(aggregator, testClock.now()),
-            attributesProcessor);
+        new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, attributesProcessor);
     BoundStorageHandle handle = accumulator.bind(Attributes.builder().put("K", "V").build());
     BoundStorageHandle duplicateHandle =
         accumulator.bind(Attributes.builder().put("K", "V").build());
     try {
       assertThat(duplicateHandle).isSameAs(handle);
-      accumulator.collectAndReset(0, testClock.now());
+      accumulator.collectAndReset(collector, allCollectors, 0, testClock.now(), false);
       BoundStorageHandle anotherDuplicateAggregatorHandle =
           accumulator.bind(Attributes.builder().put("K", "V").build());
       try {
@@ -112,6 +113,7 @@ public class SynchronousMetricStorageTest {
 
     // If we try to collect once all bound references are gone AND no recordings have occurred, we
     // should not see any labels (or metric).
-    assertThat(accumulator.collectAndReset(0, testClock.now())).isNull();
+    assertThat(accumulator.collectAndReset(collector, allCollectors, 0, testClock.now(), false))
+        .isNull();
   }
 }

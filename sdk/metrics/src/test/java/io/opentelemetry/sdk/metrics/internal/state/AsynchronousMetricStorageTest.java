@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
@@ -19,6 +20,7 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -30,6 +32,8 @@ public class AsynchronousMetricStorageTest {
       MeterSharedState.create(InstrumentationLibraryInfo.empty());
   private AttributesProcessor spyAttributesProcessor;
   private View view;
+  private CollectionHandle handle;
+  private Set<CollectionHandle> all;
 
   @BeforeEach
   void setup() {
@@ -51,6 +55,10 @@ public class AsynchronousMetricStorageTest {
     meterProviderSharedState =
         MeterProviderSharedState.create(
             testClock, Resource.empty(), viewRegistry, ExemplarFilter.sampleWithTraces());
+
+    handle = CollectionHandle.createSupplier().get();
+    all = CollectionHandle.mutableSet();
+    all.add(handle);
   }
 
   @Test
@@ -65,9 +73,8 @@ public class AsynchronousMetricStorageTest {
                 InstrumentValueType.DOUBLE),
             meterProviderSharedState.getResource(),
             meterSharedState.getInstrumentationLibraryInfo(),
-            meterProviderSharedState.getStartEpochNanos(),
             value -> value.observe(1.0, Attributes.empty()))
-        .collectAndReset(0, testClock.now());
+        .collectAndReset(handle, all, 0, testClock.now(), false);
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 
@@ -83,9 +90,8 @@ public class AsynchronousMetricStorageTest {
                 InstrumentValueType.LONG),
             meterProviderSharedState.getResource(),
             meterSharedState.getInstrumentationLibraryInfo(),
-            meterProviderSharedState.getStartEpochNanos(),
             value -> value.observe(1, Attributes.empty()))
-        .collectAndReset(0, testClock.nanoTime());
+        .collectAndReset(handle, all, 0, testClock.nanoTime(), false);
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 }

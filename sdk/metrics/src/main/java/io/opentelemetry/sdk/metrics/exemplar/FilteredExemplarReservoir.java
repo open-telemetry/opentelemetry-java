@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.exemplar;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.List;
 
 /** Implementation of a reservoir that has a pre-filter on measurements. */
@@ -35,7 +35,7 @@ class FilteredExemplarReservoir implements ExemplarReservoir {
   }
 
   @Override
-  public List<Exemplar> collectAndReset(Attributes pointAttributes) {
+  public List<ExemplarData> collectAndReset(Attributes pointAttributes) {
     return reservoir.collectAndReset(pointAttributes);
   }
 }

@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.state.BoundStorageHandle;
 import java.util.List;
@@ -98,7 +98,7 @@ public abstract class AggregatorHandle<T> implements BoundStorageHandle {
   }
 
   /** Implementation of the {@code accumulateThenReset}. */
-  protected abstract T doAccumulateThenReset(List<Exemplar> exemplars);
+  protected abstract T doAccumulateThenReset(List<ExemplarData> exemplars);
 
   @Override
   public final void recordLong(long value, Attributes attributes, Context context) {

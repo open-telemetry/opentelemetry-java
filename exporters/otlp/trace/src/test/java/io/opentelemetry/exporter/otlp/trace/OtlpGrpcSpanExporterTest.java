@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
@@ -22,6 +23,8 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporter;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.exporter.otlp.internal.traces.ResourceSpansMarshaler;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
@@ -35,6 +38,7 @@ import io.opentelemetry.sdk.trace.data.StatusData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +66,7 @@ class OtlpGrpcSpanExporterTest {
   private final Closer closer = Closer.create();
 
   @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OtlpGrpcSpanExporter.class);
+  LogCapturer logs = LogCapturer.create().captureForType(DefaultGrpcExporter.class);
 
   @BeforeEach
   public void setup() throws IOException {
@@ -79,6 +83,43 @@ class OtlpGrpcSpanExporterTest {
   @AfterEach
   void tearDown() throws Exception {
     closer.close();
+  }
+
+  @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void validConfig() {
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setTimeout(0, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setTimeout(Duration.ofMillis(0)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setTimeout(10, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setTimeout(Duration.ofMillis(10)))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setEndpoint("http://localhost:4317"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setEndpoint("http://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setEndpoint("https://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setEndpoint("http://foo:bar@localhost"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setCompression("gzip"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpGrpcSpanExporter.builder().setCompression("none"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () -> OtlpGrpcSpanExporter.builder().addHeader("foo", "bar").addHeader("baz", "qux"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                OtlpGrpcSpanExporter.builder()
+                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -112,7 +153,8 @@ class OtlpGrpcSpanExporterTest {
         .hasMessage("compressionMethod");
     assertThatThrownBy(() -> OtlpGrpcSpanExporter.builder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Unsupported compression method. Supported compression methods include: gzip.");
+        .hasMessage(
+            "Unsupported compression method. Supported compression methods include: gzip, none.");
   }
 
   @Test
@@ -309,6 +351,12 @@ class OtlpGrpcSpanExporterTest {
     } finally {
       exporter.shutdown();
     }
+  }
+
+  @Test
+  void usingGrpc() {
+    assertThat(OtlpGrpcSpanExporter.builder().delegate)
+        .isInstanceOf(DefaultGrpcExporterBuilder.class);
   }
 
   private static SpanData generateFakeSpan() {

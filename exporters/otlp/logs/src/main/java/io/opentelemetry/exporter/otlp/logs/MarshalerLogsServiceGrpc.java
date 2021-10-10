@@ -7,8 +7,13 @@ package io.opentelemetry.exporter.otlp.logs;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
+import io.grpc.stub.ClientCalls;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
+import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.otlp.internal.logs.LogsRequestMarshaler;
 import java.io.InputStream;
 
@@ -52,25 +57,26 @@ final class MarshalerLogsServiceGrpc {
               .setResponseMarshaller(RESPONSE_MARSHALER)
               .build();
 
-  static LogsServiceFutureStub newFutureStub(io.grpc.Channel channel) {
+  static LogsServiceFutureStub newFutureStub(Channel channel) {
     return LogsServiceFutureStub.newStub(LogsServiceFutureStub::new, channel);
   }
 
   static final class LogsServiceFutureStub
-      extends io.grpc.stub.AbstractFutureStub<MarshalerLogsServiceGrpc.LogsServiceFutureStub> {
-    private LogsServiceFutureStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+      extends MarshalerServiceStub<
+          LogsRequestMarshaler, ExportLogsServiceResponse, LogsServiceFutureStub> {
+    private LogsServiceFutureStub(Channel channel, CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @Override
     protected MarshalerLogsServiceGrpc.LogsServiceFutureStub build(
-        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+        Channel channel, CallOptions callOptions) {
       return new MarshalerLogsServiceGrpc.LogsServiceFutureStub(channel, callOptions);
     }
 
-    com.google.common.util.concurrent.ListenableFuture<ExportLogsServiceResponse> export(
-        LogsRequestMarshaler request) {
-      return io.grpc.stub.ClientCalls.futureUnaryCall(
+    @Override
+    public ListenableFuture<ExportLogsServiceResponse> export(LogsRequestMarshaler request) {
+      return ClientCalls.futureUnaryCall(
           getChannel().newCall(getExportMethod, getCallOptions()), request);
     }
   }

@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_TRACES;
+import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
+import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
@@ -107,7 +109,7 @@ final class SpanExporterConfiguration {
   static SpanExporter configureOtlp(ConfigProperties config) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_TRACES, config);
 
-    if (protocol.equals("http/protobuf")) {
+    if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
       ClasspathUtil.checkClassExists(
           "io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter",
           "OTLP HTTP Trace Exporter",
@@ -124,7 +126,7 @@ final class SpanExporterConfiguration {
           builder::setTrustedCertificates);
 
       return builder.build();
-    } else if (protocol.equals("grpc")) {
+    } else if (protocol.equals(PROTOCOL_GRPC)) {
       ClasspathUtil.checkClassExists(
           "io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter",
           "OTLP gRPC Trace Exporter",

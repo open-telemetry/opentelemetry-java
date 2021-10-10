@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -51,7 +51,7 @@ final class DoubleMinMaxSumCountAggregator extends AbstractMinMaxSumCountAggrega
     }
 
     @Override
-    protected MinMaxSumCountAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
+    protected MinMaxSumCountAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
       lock.writeLock().lock();
       try {
         MinMaxSumCountAccumulation toReturn =

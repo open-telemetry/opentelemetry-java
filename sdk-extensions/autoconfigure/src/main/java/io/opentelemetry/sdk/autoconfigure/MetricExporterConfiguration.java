@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.DATA_TYPE_METRICS;
+import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_GRPC;
+import static io.opentelemetry.sdk.autoconfigure.OtlpConfigUtil.PROTOCOL_HTTP_PROTOBUF;
 
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
@@ -16,10 +18,9 @@ import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReaderBuilder;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
 import java.time.Duration;
@@ -29,20 +30,20 @@ import javax.annotation.Nullable;
 
 final class MetricExporterConfiguration {
   static void configureExporter(
-      String name, ConfigProperties config, SdkMeterProvider meterProvider) {
+      String name, ConfigProperties config, SdkMeterProviderBuilder sdkMeterProviderBuilder) {
     switch (name) {
       case "otlp":
-        configureOtlpMetrics(config, meterProvider);
+        configureOtlpMetrics(config, sdkMeterProviderBuilder);
         return;
       case "prometheus":
-        configurePrometheusMetrics(config, meterProvider);
+        configurePrometheusMetrics(config, sdkMeterProviderBuilder);
         return;
       case "logging":
         ClasspathUtil.checkClassExists(
             "io.opentelemetry.exporter.logging.LoggingMetricExporter",
             "Logging Metrics Exporter",
             "opentelemetry-exporter-logging");
-        configureLoggingMetrics(config, meterProvider);
+        configureLoggingMetrics(config, sdkMeterProviderBuilder);
         return;
       case "none":
         return;
@@ -51,7 +52,7 @@ final class MetricExporterConfiguration {
         if (spiExporter == null) {
           throw new ConfigurationException("Unrecognized value for otel.metrics.exporter: " + name);
         }
-        configureIntervalMetricReader(config, meterProvider, spiExporter);
+        configurePeriodicMetricReader(config, sdkMeterProviderBuilder, spiExporter);
         return;
     }
   }
@@ -70,19 +71,18 @@ final class MetricExporterConfiguration {
   }
 
   private static void configureLoggingMetrics(
-      ConfigProperties config, SdkMeterProvider meterProvider) {
-    MetricExporter exporter = new LoggingMetricExporter();
-    configureIntervalMetricReader(config, meterProvider, exporter);
+      ConfigProperties config, SdkMeterProviderBuilder sdkMeterProviderBuilder) {
+    configurePeriodicMetricReader(config, sdkMeterProviderBuilder, new LoggingMetricExporter());
   }
 
   // Visible for testing
   @Nullable
   static MetricExporter configureOtlpMetrics(
-      ConfigProperties config, SdkMeterProvider meterProvider) {
+      ConfigProperties config, SdkMeterProviderBuilder sdkMeterProviderBuilder) {
     String protocol = OtlpConfigUtil.getOtlpProtocol(DATA_TYPE_METRICS, config);
 
     MetricExporter exporter;
-    if (protocol.equals("http/protobuf")) {
+    if (protocol.equals(PROTOCOL_HTTP_PROTOBUF)) {
       try {
         ClasspathUtil.checkClassExists(
             "io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter",
@@ -104,7 +104,7 @@ final class MetricExporterConfiguration {
           builder::setTrustedCertificates);
 
       exporter = builder.build();
-    } else if (protocol.equals("grpc")) {
+    } else if (protocol.equals(PROTOCOL_GRPC)) {
       try {
         ClasspathUtil.checkClassExists(
             "io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter",
@@ -132,32 +132,35 @@ final class MetricExporterConfiguration {
       throw new ConfigurationException("Unsupported OTLP metrics protocol: " + protocol);
     }
 
-    configureIntervalMetricReader(config, meterProvider, exporter);
+    configurePeriodicMetricReader(config, sdkMeterProviderBuilder, exporter);
 
     return exporter;
   }
 
-  private static void configureIntervalMetricReader(
-      ConfigProperties config, SdkMeterProvider meterProvider, MetricExporter exporter) {
-    IntervalMetricReaderBuilder readerBuilder =
-        IntervalMetricReader.builder()
-            .setMetricProducers(Collections.singleton(meterProvider))
-            .setMetricExporter(exporter);
+  private static void configurePeriodicMetricReader(
+      ConfigProperties config,
+      SdkMeterProviderBuilder sdkMeterProviderBuilder,
+      MetricExporter exporter) {
+
     Duration exportInterval = config.getDuration("otel.imr.export.interval");
-    if (exportInterval != null) {
-      readerBuilder.setExportIntervalMillis(exportInterval.toMillis());
+    if (exportInterval == null) {
+      exportInterval = Duration.ofMinutes(1);
     }
-    IntervalMetricReader reader = readerBuilder.build().startAndRegisterGlobal();
-    Runtime.getRuntime().addShutdownHook(new Thread(reader::shutdown));
+    // Register the reader (which will start when SDK is built).
+    // This will shutdown when the SDK is shutdown.
+    sdkMeterProviderBuilder.registerMetricReader(
+        PeriodicMetricReader.create(exporter, exportInterval));
   }
 
   private static void configurePrometheusMetrics(
-      ConfigProperties config, SdkMeterProvider meterProvider) {
+      ConfigProperties config, SdkMeterProviderBuilder sdkMeterProviderBuilder) {
     ClasspathUtil.checkClassExists(
         "io.opentelemetry.exporter.prometheus.PrometheusCollector",
         "Prometheus Metrics Server",
         "opentelemetry-exporter-prometheus");
-    PrometheusCollector.builder().setMetricProducer(meterProvider).buildAndRegister();
+    sdkMeterProviderBuilder.registerMetricReader(PrometheusCollector.create());
+    // TODO: Move this portion into the PrometheusCollector so shutdown on SdkMeterProvider
+    // will collapse prometheus too?
     Integer port = config.getInt("otel.exporter.prometheus.port");
     if (port == null) {
       port = 9464;

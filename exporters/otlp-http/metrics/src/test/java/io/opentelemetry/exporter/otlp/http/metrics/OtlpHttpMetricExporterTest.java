@@ -7,6 +7,7 @@ package io.opentelemetry.exporter.otlp.http.metrics;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -38,6 +39,7 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -96,6 +98,43 @@ class OtlpHttpMetricExporterTest {
 
   @Test
   @SuppressWarnings("PreferJavaTimeOverload")
+  void validConfig() {
+    assertThatCode(() -> OtlpHttpMetricExporter.builder().setTimeout(0, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpMetricExporter.builder().setTimeout(Duration.ofMillis(0)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpMetricExporter.builder().setTimeout(10, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpMetricExporter.builder().setTimeout(Duration.ofMillis(10)))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpHttpMetricExporter.builder().setEndpoint("http://localhost:4318"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpMetricExporter.builder().setEndpoint("http://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpMetricExporter.builder().setEndpoint("https://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpMetricExporter.builder().setEndpoint("http://foo:bar@localhost"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpHttpMetricExporter.builder().setCompression("gzip"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpMetricExporter.builder().setCompression("none"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () -> OtlpHttpMetricExporter.builder().addHeader("foo", "bar").addHeader("baz", "qux"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                OtlpHttpMetricExporter.builder()
+                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
   void invalidConfig() {
     assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setTimeout(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
@@ -125,7 +164,8 @@ class OtlpHttpMetricExporterTest {
         .hasMessage("compressionMethod");
     assertThatThrownBy(() -> OtlpHttpMetricExporter.builder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Unsupported compression method. Supported compression methods include: gzip.");
+        .hasMessage(
+            "Unsupported compression method. Supported compression methods include: gzip, none.");
   }
 
   @Test
@@ -151,6 +191,16 @@ class OtlpHttpMetricExporterTest {
     assertRequestCommon(request);
     assertThat(request.headers().get("Content-Encoding")).isEqualTo("gzip");
     assertThat(parseRequestBody(gzipDecompress(request.content().array()))).isEqualTo(payload);
+  }
+
+  @Test
+  void testExport_flush() {
+    OtlpHttpMetricExporter exporter = OtlpHttpMetricExporter.builder().build();
+    try {
+      assertThat(exporter.flush().isSuccess()).isTrue();
+    } finally {
+      exporter.shutdown();
+    }
   }
 
   private static void assertRequestCommon(AggregatedHttpRequest request) {

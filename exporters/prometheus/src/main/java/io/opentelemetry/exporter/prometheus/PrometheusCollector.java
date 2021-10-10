@@ -5,14 +5,24 @@
 
 package io.opentelemetry.exporter.prometheus;
 
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.prometheus.client.Collector;
+import io.prometheus.client.CollectorRegistry;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-public final class PrometheusCollector extends Collector {
+/**
+ * A reader of OpenTelemetry metrics that exports into Prometheus as a Collector.
+ *
+ * <p>Usage: <code>sdkMeterProvider.registerMetricReader(PrometheusCollector.create());</code>
+ */
+public final class PrometheusCollector extends Collector implements MetricReader {
   private final MetricProducer metricProducer;
 
   PrometheusCollector(MetricProducer metricProducer) {
@@ -26,15 +36,39 @@ public final class PrometheusCollector extends Collector {
     for (MetricData metricData : allMetrics) {
       allSamples.add(MetricAdapter.toMetricFamilySamples(metricData));
     }
-    return allSamples;
+    return Collections.unmodifiableList(allSamples);
   }
 
   /**
-   * Returns a new builder instance for this exporter.
-   *
-   * @return a new builder instance for this exporter.
+   * Returns a new collector to be registered with a {@link
+   * io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder}.
    */
-  public static PrometheusCollectorBuilder builder() {
-    return new PrometheusCollectorBuilder();
+  public static MetricReaderFactory create() {
+    return new Factory();
+  }
+
+  // Prometheus cannot flush.
+  @Override
+  public CompletableResultCode flush() {
+    return CompletableResultCode.ofSuccess();
+  }
+
+  @Override
+  public CompletableResultCode shutdown() {
+    CollectorRegistry.defaultRegistry.unregister(this);
+    return CompletableResultCode.ofSuccess();
+  }
+
+  /** Our implementation of the metric reader factory. */
+  // NOTE: This should be updated to (optionally) start the simple Http server exposing the metrics
+  // path.
+  private static class Factory implements MetricReaderFactory {
+    @Override
+    public MetricReader apply(MetricProducer producer) {
+      PrometheusCollector collector = new PrometheusCollector(producer);
+      // When SdkMeterProvider constructs us, we register with prometheus.
+      collector.register();
+      return collector;
+    }
   }
 }
