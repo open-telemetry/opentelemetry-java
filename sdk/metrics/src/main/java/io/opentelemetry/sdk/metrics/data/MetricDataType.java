@@ -36,4 +36,6 @@ public enum MetricDataType {
    * recorded.
    */
   HISTOGRAM,
+
+  EXPONENTIAL_HISTOGRAM,
 }

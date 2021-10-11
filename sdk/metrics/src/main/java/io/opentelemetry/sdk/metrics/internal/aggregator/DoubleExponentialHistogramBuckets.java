@@ -15,23 +15,26 @@ import javax.annotation.Nullable;
 class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
   public static final int MAX_BUCKETS = 320;
+  public static final int MAX_SCALE = 20;
 
-  private final WindowedCounterArray countsArray;
-  private final BucketMapper bucketMapper;
+  private WindowedCounterArray counts;
+  private BucketMapper bucketMapper;
+  private int scale;
 
-  DoubleExponentialHistogramBuckets(int scale) {
-    this.countsArray = new WindowedCounterArray(MAX_BUCKETS);
-    this.bucketMapper = new LogarithmMapper(scale);
+  DoubleExponentialHistogramBuckets() {
+    this.counts = new WindowedCounterArray(MAX_BUCKETS);
+    this.bucketMapper = new LogarithmMapper(MAX_SCALE);
+    this.scale = MAX_SCALE;
   }
 
-  public void record(double value) {
+  public boolean record(double value) {
     int index = bucketMapper.valueToIndex(Math.abs(value));
-    this.countsArray.increment(index, 1); // todo handle recording failure
+    return this.counts.increment(index, 1);
   }
 
   @Override
   public int getOffset() {
-    return (int) countsArray.getIndexStart();
+    return (int) counts.getIndexStart();
   }
 
   @Nonnull
@@ -39,9 +42,9 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   public List<Long> getBucketCounts() {
     // todo LongList optimisation
     List<Long> countList =
-        new ArrayList<>((int) (countsArray.getIndexEnd() - countsArray.getIndexStart() + 1));
-    for (int i = 0; i <= countsArray.getIndexEnd() - countsArray.getIndexStart(); i++) {
-      countList.add(i, countsArray.get(i + countsArray.getIndexStart()));
+        new ArrayList<>((int) (counts.getIndexEnd() - counts.getIndexStart() + 1));
+    for (int i = 0; i <= counts.getIndexEnd() - counts.getIndexStart(); i++) {
+      countList.add(i, counts.get(i + counts.getIndexStart()));
     }
     return countList;
   }
@@ -49,10 +52,44 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   @Override
   public long getTotalCount() {
     long totalCount = 0;
-    for (long i = countsArray.getIndexStart(); i <= countsArray.getIndexEnd(); i++) {
-      totalCount += countsArray.get(i);
+    for (long i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
+      totalCount += counts.get(i);
     }
     return totalCount;
+  }
+
+  public void downscale(int by) {
+    if (by <= 0) {
+      return;
+    }
+
+    if (!counts.isEmpty()) {
+      WindowedCounterArray newCounts = new WindowedCounterArray(counts.getMaxSize());
+
+      for (long i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
+        if (!newCounts.increment(i >> by, counts.get(i))) {
+          throw new RuntimeException("Failed to create new downscaled buckets.");
+        }
+      }
+      this.counts = newCounts;
+    }
+
+    this.scale = this.scale - by;
+    this.bucketMapper = new LogarithmMapper(scale);
+  }
+
+  public int getScaleReduction(double value) {
+    int index = bucketMapper.valueToIndex(value);
+    long newStart = Math.min(index, counts.getIndexStart());
+    long newEnd = Math.max(index, counts.getIndexEnd());
+    int scaleReduction = 0;
+
+    while (newEnd - newStart + 1 > counts.getMaxSize()) {
+      newStart >>= 1;
+      newEnd >>= 1;
+      scaleReduction++;
+    }
+    return scaleReduction;
   }
 
   @Override

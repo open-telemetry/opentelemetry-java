@@ -147,6 +147,28 @@ public interface MetricData {
   }
 
   /**
+   * Returns a new MetricData with a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#EXPONENTIAL_HISTOGRAM} type.
+   */
+  static MetricData createExponentialHistogram(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      ExponentialHistogramData data) {
+    return new AutoValue_MetricData(
+        resource,
+        instrumentationLibraryInfo,
+        name,
+        description,
+        unit,
+        MetricDataType.EXPONENTIAL_HISTOGRAM,
+        data);
+  }
+
+  /**
    * Returns the resource of this {@code MetricData}.
    *
    * @return the resource of this {@code MetricData}.

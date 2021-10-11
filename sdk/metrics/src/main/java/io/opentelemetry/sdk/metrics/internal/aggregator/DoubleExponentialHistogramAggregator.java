@@ -9,10 +9,12 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -20,7 +22,6 @@ import java.util.function.Supplier;
 final class DoubleExponentialHistogramAggregator
     extends AbstractAggregator<ExponentialHistogramAccumulation> {
 
-  private final int scale;
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
   DoubleExponentialHistogramAggregator(
@@ -28,17 +29,15 @@ final class DoubleExponentialHistogramAggregator
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       MetricDescriptor metricDescriptor,
       boolean stateful,
-      int scale,
       Supplier<ExemplarReservoir> reservoirSupplier) {
 
     super(resource, instrumentationLibraryInfo, metricDescriptor, stateful);
-    this.scale = scale;
     this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
   public AggregatorHandle<ExponentialHistogramAccumulation> createHandle() {
-    return new Handle(scale, reservoirSupplier.get());
+    return new Handle(reservoirSupplier.get());
   }
 
   @Override
@@ -48,30 +47,27 @@ final class DoubleExponentialHistogramAggregator
 
   @Override
   public ExponentialHistogramAccumulation accumulateDouble(double value) {
-    long zeroCount = 0;
-    DoubleExponentialHistogramBuckets positiveBuckets =
-        new DoubleExponentialHistogramBuckets(scale);
-    DoubleExponentialHistogramBuckets negativeBuckets =
-        new DoubleExponentialHistogramBuckets(scale);
-    if (Double.isFinite(value)) {
-      int c = Double.compare(value, 0);
-      if (c == 0) {
-        zeroCount++;
-      } else if (c > 0) {
-        positiveBuckets.record(value);
-      } else /* c < 0 */ {
-        negativeBuckets.record(value);
-      }
-    }
-    return ExponentialHistogramAccumulation.create(
-        this.scale, value, positiveBuckets, negativeBuckets, zeroCount);
+    AggregatorHandle<ExponentialHistogramAccumulation> handle = this.createHandle();
+    handle.recordDouble(value);
+    return handle.accumulateThenReset(Attributes.empty());
   }
 
   @Override
   public ExponentialHistogramAccumulation merge(
       ExponentialHistogramAccumulation previousAccumulation,
       ExponentialHistogramAccumulation accumulation) {
-    // todo
+//    final int scaleDiff = accumulation.getScale() - previousAccumulation.getScale();
+//    final int commonScale = Math.min(accumulation.getScale(), previousAccumulation.getScale());
+//
+//    int deltaA = accumulation.getScale() - commonScale;
+//    int deltaB = previousAccumulation.getScale() - commonScale;
+//
+//    ExponentialHistogramBuckets mergedPosBuckets = mergeBuckets(
+//        accumulation.getPositiveBuckets(),
+//        accumulation.getScale(),
+//        previousAccumulation.getPositiveBuckets(),
+//        previousAccumulation.getScale());
+
     return null;
   }
 
@@ -81,7 +77,7 @@ final class DoubleExponentialHistogramAggregator
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    return MetricData.createDoubleExponentialHistogram(
+    return MetricData.createExponentialHistogram(
         getResource(),
         getInstrumentationLibraryInfo(),
         getMetricDescriptor().getName(),
@@ -96,19 +92,19 @@ final class DoubleExponentialHistogramAggregator
   static final class Handle extends AggregatorHandle<ExponentialHistogramAccumulation> {
     // todo will need lock for any mutable values
 
-    private final int scale;
+    private int scale;
     private DoubleExponentialHistogramBuckets positiveBuckets;
     private DoubleExponentialHistogramBuckets negativeBuckets;
     private long zeroCount;
     private double sum;
 
-    Handle(int scale, ExemplarReservoir reservoir) {
+    Handle(ExemplarReservoir reservoir) {
       super(reservoir);
       this.sum = 0;
       this.zeroCount = 0;
-      this.scale = scale;
-      this.positiveBuckets = new DoubleExponentialHistogramBuckets(scale);
-      this.negativeBuckets = new DoubleExponentialHistogramBuckets(scale);
+      this.scale = DoubleExponentialHistogramBuckets.MAX_SCALE;
+      this.positiveBuckets = new DoubleExponentialHistogramBuckets();
+      this.negativeBuckets = new DoubleExponentialHistogramBuckets();
     }
 
     @Override
@@ -118,30 +114,45 @@ final class DoubleExponentialHistogramAggregator
               scale, sum, positiveBuckets, negativeBuckets, zeroCount, exemplars);
       this.sum = 0;
       this.zeroCount = 0;
-      this.positiveBuckets = new DoubleExponentialHistogramBuckets(scale);
-      this.negativeBuckets = new DoubleExponentialHistogramBuckets(scale);
+      this.positiveBuckets = new DoubleExponentialHistogramBuckets();
+      this.negativeBuckets = new DoubleExponentialHistogramBuckets();
       return acc;
     }
 
     @Override
     protected void doRecordDouble(double value) {
-      // todo review double comparisons (Double.compare()?)
-      if (Double.isFinite(value)) {
-        sum += value;
-        int c = Double.compare(value, 0);
-        if (c == 0) {
-          zeroCount++;
-        } else if (c > 0) {
-          positiveBuckets.record(value);
-        } else /* c < 0 */ {
-          negativeBuckets.record(value);
-        }
+
+      // ignore NaN and infinity
+      if (!Double.isFinite(value)) {
+        return;
+      }
+
+      sum += value;
+      int c = Double.compare(value, 0);
+
+      if (c == 0) {
+        zeroCount++;
+        return;
+      }
+
+      // Record; If recording fails, calculate scale reduction and scale down to fit new value.
+      // 2nd attempt at recording should work with new scale
+      DoubleExponentialHistogramBuckets buckets = (c > 0) ? positiveBuckets : negativeBuckets;
+      if (!buckets.record(value)) {
+        downScale(buckets.getScaleReduction(value));
+        buckets.record(value);
       }
     }
 
     @Override
     protected void doRecordLong(long value) {
       doRecordDouble((double) value);
+    }
+
+    private void downScale(int by) {
+      positiveBuckets.downscale(by);
+      negativeBuckets.downscale(by);
+      this.scale -= by;
     }
   }
 }

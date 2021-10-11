@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -19,8 +18,8 @@ abstract class ExponentialHistogramAccumulation {
   static ExponentialHistogramAccumulation create(
       int scale,
       double sum,
-      @Nonnull ExponentialHistogramBuckets positiveBuckets,
-      @Nonnull ExponentialHistogramBuckets negativeBuckets,
+      @Nonnull DoubleExponentialHistogramBuckets positiveBuckets,
+      @Nonnull DoubleExponentialHistogramBuckets negativeBuckets,
       long zeroCount,
       List<ExemplarData> exemplars) {
     return new AutoValue_ExponentialHistogramAccumulation(
@@ -30,8 +29,8 @@ abstract class ExponentialHistogramAccumulation {
   static ExponentialHistogramAccumulation create(
       int scale,
       double sum,
-      @Nonnull ExponentialHistogramBuckets positiveBuckets,
-      @Nonnull ExponentialHistogramBuckets negativeBuckets,
+      @Nonnull DoubleExponentialHistogramBuckets positiveBuckets,
+      @Nonnull DoubleExponentialHistogramBuckets negativeBuckets,
       long zeroCount) {
     return create(scale, sum, positiveBuckets, negativeBuckets, zeroCount, Collections.emptyList());
   }
@@ -40,9 +39,9 @@ abstract class ExponentialHistogramAccumulation {
 
   abstract double getSum();
 
-  abstract ExponentialHistogramBuckets getPositiveBuckets();
+  abstract DoubleExponentialHistogramBuckets getPositiveBuckets();
 
-  abstract ExponentialHistogramBuckets getNegativeBuckets();
+  abstract DoubleExponentialHistogramBuckets getNegativeBuckets();
 
   abstract long getZeroCount();
 

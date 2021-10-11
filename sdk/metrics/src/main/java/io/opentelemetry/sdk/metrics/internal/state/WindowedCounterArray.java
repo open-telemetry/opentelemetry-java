@@ -16,6 +16,7 @@ public class WindowedCounterArray {
   private final int maxSize; // Maximal window size
   private long
       indexBase; // Logical index of entry 0 in backingArray. Must be within [indexStart, indexEnd]
+  // TODO(jamesmoessis) make these indexes ints?
   private long indexStart; // inclusive
   private long indexEnd; // inclusive
 
