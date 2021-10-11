@@ -29,7 +29,7 @@ class SdkLongUpDownCounterTest {
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(SdkLongUpDownCounterTest.class.getName(), null);
   private final TestClock testClock = TestClock.create();
-  private final InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
   private final SdkMeterProvider sdkMeterProvider =
       SdkMeterProvider.builder()
           .setClock(testClock)

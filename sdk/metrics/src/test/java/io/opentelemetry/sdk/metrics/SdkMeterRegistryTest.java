@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link SdkMeterProvider}. */
 class SdkMeterRegistryTest {
   private final TestClock testClock = TestClock.create();
-  private final InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+  private final InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
   private final SdkMeterProvider meterProvider =
       SdkMeterProvider.builder()
           .setClock(testClock)
