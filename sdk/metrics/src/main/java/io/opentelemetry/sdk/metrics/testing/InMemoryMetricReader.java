@@ -40,23 +40,22 @@ import java.util.Collections;
  * </code></pre>
  */
 public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
-  // Note: we expect the `apply` method of `MetricReaderFactory` to be called
-  // prior to registering this being shared with other threads.
-  // This means this field does not need to be volatile because it will
-  // be filled out (and no longer mutated) prior to being shared with other threads.
-  private MetricProducer metricProducer;
-  private volatile Collection<MetricData> latest = Collections.emptyList();
+  private volatile MetricProducer metricProducer;
 
   /** Returns all metrics accumulated since the last call. */
   public Collection<MetricData> collectAllMetrics() {
-    flush();
-    return latest;
+    MetricProducer metricProducer = this.metricProducer;
+    if (metricProducer != null) {
+      return metricProducer.collectAllMetrics();
+    }
+    return Collections.emptyList();
   }
 
   @Override
   public CompletableResultCode flush() {
+    MetricProducer metricProducer = this.metricProducer;
     if (metricProducer != null) {
-      latest = metricProducer.collectAllMetrics();
+      metricProducer.collectAllMetrics();
     }
     return CompletableResultCode.ofSuccess();
   }
