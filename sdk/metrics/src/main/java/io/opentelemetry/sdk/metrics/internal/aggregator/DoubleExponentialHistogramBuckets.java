@@ -110,6 +110,8 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     hash ^= getOffset();
     hash *= 1000003;
     hash ^= getBucketCounts().hashCode();
+    hash *= 1000003;
+    hash ^= scale;
     // Don't need to hash getTotalCount() because equivalent bucket
     // counts imply equivalent overall count.
     return hash;
