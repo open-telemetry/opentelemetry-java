@@ -175,7 +175,8 @@ dependencies {
   dependencyManagement(platform(project(":dependencyManagement")))
   afterEvaluate {
     configurations.configureEach {
-      if (!isCanBeConsumed && this != dependencyManagement) {
+      val isIncludedBuild = project.gradle.parent != null
+      if (!isCanBeConsumed && (isIncludedBuild || isCanBeResolved) && this != dependencyManagement) {
         extendsFrom(dependencyManagement)
       }
     }

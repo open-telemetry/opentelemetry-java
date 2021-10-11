@@ -6,6 +6,12 @@ plugins {
 }
 
 publishing {
+  val isIncludedBuild = rootProject.gradle.parent != null
+  if (isIncludedBuild) {
+    tasks.withType(AbstractPublishToMaven::class).configureEach {
+      enabled = false
+    }
+  }
   publications {
     register<MavenPublication>("mavenPublication") {
       val release = findProperty("otel.release")
