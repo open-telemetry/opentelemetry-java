@@ -42,7 +42,7 @@ public class DoubleExponentialHistogramDataAggregatorTest {
           false,
           ExemplarReservoir::noSamples);
 
-  private static int valueToIndex(int scale, double value) {
+  private static long valueToIndex(int scale, double value) {
     double scaleFactor = Math.scalb(1D / Math.log(2), scale);
     return (int) Math.floor(Math.log(value) * scaleFactor);
   }
@@ -87,17 +87,17 @@ public class DoubleExponentialHistogramDataAggregatorTest {
     // Assert positive recordings are at correct index
     int posOffset = acc.getPositiveBuckets().getOffset();
     assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(5);
-    assertThat(positiveCounts.get(valueToIndex(expectedScale, 0.5) - posOffset)).isEqualTo(1);
-    assertThat(positiveCounts.get(valueToIndex(expectedScale, 1.0) - posOffset)).isEqualTo(1);
-    assertThat(positiveCounts.get(valueToIndex(expectedScale, 12.0) - posOffset)).isEqualTo(2);
-    assertThat(positiveCounts.get(valueToIndex(expectedScale, 15.213) - posOffset)).isEqualTo(1);
+    assertThat(positiveCounts.get((int) valueToIndex(expectedScale, 0.5) - posOffset)).isEqualTo(1);
+    assertThat(positiveCounts.get((int) valueToIndex(expectedScale, 1.0) - posOffset)).isEqualTo(1);
+    assertThat(positiveCounts.get((int) valueToIndex(expectedScale, 12.0) - posOffset)).isEqualTo(2);
+    assertThat(positiveCounts.get((int) valueToIndex(expectedScale, 15.213) - posOffset)).isEqualTo(1);
 
     // Assert negative recordings are at correct index
     int negOffset = acc.getNegativeBuckets().getOffset();
     assertThat(acc.getNegativeBuckets().getTotalCount()).isEqualTo(3);
-    assertThat(negativeCounts.get(valueToIndex(expectedScale, 13.2) - negOffset)).isEqualTo(1);
-    assertThat(negativeCounts.get(valueToIndex(expectedScale, 2.01) - negOffset)).isEqualTo(1);
-    assertThat(negativeCounts.get(valueToIndex(expectedScale, 1.0) - negOffset)).isEqualTo(1);
+    assertThat(negativeCounts.get((int) valueToIndex(expectedScale, 13.2) - negOffset)).isEqualTo(1);
+    assertThat(negativeCounts.get((int) valueToIndex(expectedScale, 2.01) - negOffset)).isEqualTo(1);
+    assertThat(negativeCounts.get((int) valueToIndex(expectedScale, 1.0) - negOffset)).isEqualTo(1);
   }
 
   @Test

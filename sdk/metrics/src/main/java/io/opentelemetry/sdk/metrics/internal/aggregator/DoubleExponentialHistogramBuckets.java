@@ -28,7 +28,7 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   }
 
   public boolean record(double value) {
-    int index = bucketMapper.valueToIndex(Math.abs(value));
+    long index = bucketMapper.valueToIndex(Math.abs(value));
     return this.counts.increment(index, 1);
   }
 
@@ -79,7 +79,7 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   }
 
   public int getScaleReduction(double value) {
-    int index = bucketMapper.valueToIndex(value);
+    long index = bucketMapper.valueToIndex(value);
     long newStart = Math.min(index, counts.getIndexStart());
     long newEnd = Math.max(index, counts.getIndexEnd());
     int scaleReduction = 0;
@@ -124,8 +124,8 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     }
 
     @Override
-    public int valueToIndex(double value) {
-      return (int) Math.floor(Math.log(value) * scaleFactor);
+    public long valueToIndex(double value) {
+      return (long) Math.floor(Math.log(value) * scaleFactor);
     }
   }
 }
