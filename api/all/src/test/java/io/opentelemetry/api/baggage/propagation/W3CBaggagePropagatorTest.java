@@ -140,7 +140,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=value+1"), getter);
+        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=value%201"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key", "value 1").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -453,7 +453,7 @@ class W3CBaggagePropagatorTest {
         .containsExactlyInAnyOrderEntriesOf(
             singletonMap(
                 "baggage",
-                "meta=meta-value;somemetadata; someother=foo,needsEncoding=blah+blah+blah,nometa=nometa-value"));
+                "meta=meta-value;somemetadata; someother=foo,needsEncoding=blah%20blah%20blah,nometa=nometa-value"));
   }
 
   @Test
