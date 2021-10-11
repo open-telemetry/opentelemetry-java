@@ -2,6 +2,12 @@
 
 ## Version 1.8.0 (unreleased):
 
+### Auto-configuration (alpha)
+
+- BREAKING CHANGE: Remove deprecated `otel.experimental.exporter.otlp.protocol`,
+  `otel.experimental.exporter.otlp.{signal}.protocol` properties. Please use
+  `otel.exporter.otlp.protocol`, `otel.exporter.otlp.{signal}.protocol` instead.
+
 ---
 ## Version 1.7.0 (2021-10-08):
 

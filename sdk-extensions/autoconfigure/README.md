@@ -68,9 +68,6 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 | otel.exporter.otlp.protocol | OTEL_EXPORTER_OTLP_PROTOCOL | The transport protocol to use on OTLP trace and metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
 | otel.exporter.otlp.traces.protocol | OTEL_EXPORTER_OTLP_TRACES_PROTOCOL | The transport protocol to use on OTLP trace requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
 | otel.exporter.otlp.metrics.protocol | OTEL_EXPORTER_OTLP_METRICS_PROTOCOL | The transport protocol to use on OTLP metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
-| otel.experimental.exporter.otlp.protocol | OTEL_EXPERIMENTAL_EXPORTER_OTLP_PROTOCOL | **DEPRECATED for removal in 1.8.0.** The transport protocol to use on OTLP trace and metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
-| otel.experimental.exporter.otlp.traces.protocol | OTEL_EXPERIMENTAL_EXPORTER_OTLP_TRACES_PROTOCOL | **DEPRECATED for removal in 1.8.0.** The transport protocol to use on OTLP trace requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
-| otel.experimental.exporter.otlp.metrics.protocol | OTEL_EXPERIMENTAL_EXPORTER_OTLP_METRICS_PROTOCOL | **DEPRECATED for removal in 1.8.0.** The transport protocol to use on OTLP metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
 
 To configure the service name for the OTLP exporter, add the `service.name` key
 to the OpenTelemetry Resource ([see below](#opentelemetry-resource)), e.g. `OTEL_RESOURCE_ATTRIBUTES=service.name=myservice`.
