@@ -158,8 +158,8 @@ If not specified, SDK defaults the service name to `unknown_service:java`.
 ### Resource Provider SPI
 
 The [autoconfigure-spi](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure-spi),
-part of the SDK extensions, provides a convenient ResourceProvider SPI that adds common
-resource attributes automatically. The SDK extensions include a [predefined set of common resources](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/resources/src/main/resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider),
+part of the SDK extensions, provides a convenient ResourceProvider SPI that adds 
+[common resource attributes](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/resources) automatically. The SDK extensions include a [predefined set of common resources](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/resources/src/main/resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider),
 [common cloud vendor resources](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/aws/src/main/resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider),
 or you can create your own.
 
