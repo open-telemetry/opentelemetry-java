@@ -174,7 +174,7 @@ you can disable one or more of them by using the following configuration item:
 
 The value must be a comma separated list of fully qualified `ResourceProvider` classnames.
 For example, if you do not wish to expose the name of the operating system through the resource, you
-could pass the following JVM argument:
+can pass the following JVM argument:
 
 ```
 -Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider
