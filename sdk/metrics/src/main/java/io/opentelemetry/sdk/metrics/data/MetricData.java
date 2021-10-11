@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 
 /**
@@ -304,5 +305,19 @@ public interface MetricData {
       return (DoubleHistogramData) getData();
     }
     return DoubleHistogramData.EMPTY;
+  }
+
+  /**
+   * Returns the {@link ExponentialHistogramData} if type is {@link
+   * MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
+   *
+   * @return the {@link ExponentialHistogramData} if type is {@link
+   *     MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
+   */
+  public final ExponentialHistogramData getExponentialHistogramData() {
+    if (getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
+      return (ExponentialHistogramData) getData();
+    }
+    return DEFAULT_EXPONENTIAL_HISTOGRAM_DATA;
   }
 }

@@ -9,12 +9,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -56,17 +54,8 @@ final class DoubleExponentialHistogramAggregator
   public ExponentialHistogramAccumulation merge(
       ExponentialHistogramAccumulation previousAccumulation,
       ExponentialHistogramAccumulation accumulation) {
-//    final int scaleDiff = accumulation.getScale() - previousAccumulation.getScale();
-//    final int commonScale = Math.min(accumulation.getScale(), previousAccumulation.getScale());
-//
-//    int deltaA = accumulation.getScale() - commonScale;
-//    int deltaB = previousAccumulation.getScale() - commonScale;
-//
-//    ExponentialHistogramBuckets mergedPosBuckets = mergeBuckets(
-//        accumulation.getPositiveBuckets(),
-//        accumulation.getScale(),
-//        previousAccumulation.getPositiveBuckets(),
-//        previousAccumulation.getScale());
+
+    // todo
 
     return null;
   }
@@ -83,14 +72,13 @@ final class DoubleExponentialHistogramAggregator
         getMetricDescriptor().getName(),
         getMetricDescriptor().getDescription(),
         getMetricDescriptor().getUnit(),
-        new DoubleExponentialHistogram(
+        DoubleExponentialHistogramData.create(
             this.isStateful() ? AggregationTemporality.CUMULATIVE : AggregationTemporality.DELTA,
             MetricDataUtils.toExponentialHistogramPointList(
                 accumulationByLabels, startEpochNanos, epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<ExponentialHistogramAccumulation> {
-    // todo will need lock for any mutable values
 
     private int scale;
     private DoubleExponentialHistogramBuckets positiveBuckets;
@@ -149,7 +137,7 @@ final class DoubleExponentialHistogramAggregator
       doRecordDouble((double) value);
     }
 
-    private void downScale(int by) {
+    void downScale(int by) {
       positiveBuckets.downscale(by);
       negativeBuckets.downscale(by);
       this.scale -= by;

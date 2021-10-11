@@ -10,8 +10,12 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -26,11 +30,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class DoubleExponentialHistogramAggregatorTest {
+public class DoubleExponentialHistogramDataAggregatorTest {
 
   @Mock ExemplarReservoir reservoir;
-
-  private static final int SCALE = 0;
 
   private static final DoubleExponentialHistogramAggregator aggregator =
       new DoubleExponentialHistogramAggregator(
@@ -45,8 +47,8 @@ public class DoubleExponentialHistogramAggregatorTest {
     return (int) Math.floor(Math.log(value) * scaleFactor);
   }
 
-
-  private static ExponentialHistogramAccumulation getTestAccumulation(List<ExemplarData> exemplars, double... recordings) {
+  private static ExponentialHistogramAccumulation getTestAccumulation(
+      List<ExemplarData> exemplars, double... recordings) {
     AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
     for (double r : recordings) {
       aggregatorHandle.recordDouble(r);
@@ -77,7 +79,7 @@ public class DoubleExponentialHistogramAggregatorTest {
     ExponentialHistogramAccumulation acc = aggregatorHandle.accumulateThenReset(Attributes.empty());
     List<Long> positiveCounts = Objects.requireNonNull(acc).getPositiveBuckets().getBucketCounts();
     List<Long> negativeCounts = acc.getNegativeBuckets().getBucketCounts();
-    int expectedScale = 6;
+    int expectedScale = 6; // should be downscaled from 20 to 6 after recordings
 
     assertThat(acc.getScale()).isEqualTo(expectedScale);
     assertThat(acc.getZeroCount()).isEqualTo(2);
@@ -85,34 +87,18 @@ public class DoubleExponentialHistogramAggregatorTest {
     // Assert positive recordings are at correct index
     int posOffset = acc.getPositiveBuckets().getOffset();
     assertThat(acc.getPositiveBuckets().getTotalCount()).isEqualTo(5);
-    assertThat(
-        positiveCounts.get(valueToIndex(expectedScale, 0.5) - posOffset))
-        .isEqualTo(1);
-    assertThat(
-        positiveCounts.get(valueToIndex(expectedScale, 1.0) - posOffset))
-        .isEqualTo(1);
-    assertThat(
-        positiveCounts.get(valueToIndex(expectedScale, 12.0) - posOffset))
-        .isEqualTo(2);
-    assertThat(
-        positiveCounts.get(valueToIndex(expectedScale, 15.213) - posOffset))
-        .isEqualTo(1);
+    assertThat(positiveCounts.get(valueToIndex(expectedScale, 0.5) - posOffset)).isEqualTo(1);
+    assertThat(positiveCounts.get(valueToIndex(expectedScale, 1.0) - posOffset)).isEqualTo(1);
+    assertThat(positiveCounts.get(valueToIndex(expectedScale, 12.0) - posOffset)).isEqualTo(2);
+    assertThat(positiveCounts.get(valueToIndex(expectedScale, 15.213) - posOffset)).isEqualTo(1);
 
     // Assert negative recordings are at correct index
     int negOffset = acc.getNegativeBuckets().getOffset();
     assertThat(acc.getNegativeBuckets().getTotalCount()).isEqualTo(3);
-    assertThat(
-        negativeCounts.get(valueToIndex(expectedScale, 13.2) - negOffset))
-        .isEqualTo(1);
-    assertThat(
-        negativeCounts.get(valueToIndex(expectedScale, 2.01) - negOffset))
-        .isEqualTo(1);
-    assertThat(
-        negativeCounts.get(valueToIndex(expectedScale, 1.0) - negOffset))
-        .isEqualTo(1);
+    assertThat(negativeCounts.get(valueToIndex(expectedScale, 13.2) - negOffset)).isEqualTo(1);
+    assertThat(negativeCounts.get(valueToIndex(expectedScale, 2.01) - negOffset)).isEqualTo(1);
+    assertThat(negativeCounts.get(valueToIndex(expectedScale, 1.0) - negOffset)).isEqualTo(1);
   }
-
-  // todo test boundaries of 32 bit index and double value;
 
   @Test
   void testExemplarsInAccumulation() {
@@ -155,57 +141,92 @@ public class DoubleExponentialHistogramAggregatorTest {
   @Test
   void testAccumulateData() {
     ExponentialHistogramAccumulation acc = aggregator.accumulateDouble(1.2);
-    ExponentialHistogramAccumulation expected =
-        getTestAccumulation(Collections.emptyList(), 1.2);
+    ExponentialHistogramAccumulation expected = getTestAccumulation(Collections.emptyList(), 1.2);
     assertThat(acc).isEqualTo(expected);
   }
 
-//  @Test
-//  void testMergeAccumulation() {
-//    Attributes attributes = Attributes.builder().put("test", "value").build();
-//    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
-//    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-//    List<ExemplarData> previousExemplars =
-//        Collections.singletonList(
-//            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
-//    ExponentialHistogramAccumulation previousAccumulation =
-//        getTestAccumulation( previousExemplars, 0, 4.1);
-//    ExponentialHistogramAccumulation nextAccumulation =
-//        getTestAccumulation( exemplars, -8.2, 2.3);
-//
-//    // Merged accumulations should equal accumulation with equivalent recordings, and latest
-//    // exemplars.
-//    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
-//        .isEqualTo(getTestAccumulation(exemplars, 0, 4.1, -8.2, 2.3));
-//  }
+  //  @Test
+  //  void testMergeAccumulation() {
+  //    Attributes attributes = Attributes.builder().put("test", "value").build();
+  //    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+  //    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+  //    List<ExemplarData> previousExemplars =
+  //        Collections.singletonList(
+  //            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+  //    ExponentialHistogramAccumulation previousAccumulation =
+  //        getTestAccumulation( previousExemplars, 0, 4.1);
+  //    ExponentialHistogramAccumulation nextAccumulation =
+  //        getTestAccumulation( exemplars, -8.2, 2.3);
+  //
+  //    // Merged accumulations should equal accumulation with equivalent recordings, and latest
+  //    // exemplars.
+  //    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
+  //        .isEqualTo(getTestAccumulation(exemplars, 0, 4.1, -8.2, 2.3));
+  //  }
+
+  @Test
+  void testInsert1M() {
+    AggregatorHandle<ExponentialHistogramAccumulation> handle = aggregator.createHandle();
+
+    final double min = 1.0 / (1 << 16);
+    final int n = 1024 * 1024 - 1;
+    double d = min;
+    for (int i = 0; i < n; i++) {
+      handle.recordDouble(d);
+      d += min;
+    }
+
+    ExponentialHistogramAccumulation acc = handle.accumulateThenReset(Attributes.empty());
+    assertThat(Objects.requireNonNull(acc).getScale()).isEqualTo(4);
+    assertThat(acc.getPositiveBuckets().getBucketCounts().size()).isEqualTo(320);
+  }
 
   @Test
   void testDownScale() {
-    // todo
+    DoubleExponentialHistogramAggregator.Handle handle =
+        (DoubleExponentialHistogramAggregator.Handle) aggregator.createHandle();
+    handle.downScale(20); // down to zero scale
+
+    // test histogram operates properly after being manually scaled down to 0
+    handle.recordDouble(0.5);
+    handle.recordDouble(1.0);
+    handle.recordDouble(2.0);
+    handle.recordDouble(4.0);
+    handle.recordDouble(16.0);
+
+    ExponentialHistogramAccumulation acc = handle.accumulateThenReset(Attributes.empty());
+    assertThat(Objects.requireNonNull(acc).getScale()).isEqualTo(0);
+    ExponentialHistogramBuckets buckets = acc.getPositiveBuckets();
+    assertThat(acc.getSum()).isEqualTo(23.5);
+    assertThat(buckets.getOffset()).isEqualTo(-1);
+    assertThat(buckets.getBucketCounts()).isEqualTo(Arrays.asList(1L, 1L, 1L, 1L, 0L, 1L));
   }
 
   @Test
   void testToMetricData() {
-    // todo
-  }
+    // todo create assert types in metrics-testing and use here to verify accumulations and
+    // exemplars
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    getTestAccumulation(Collections.singletonList(exemplar), 123.456);
 
-  @Test
-  void toMetricDataWithExemplars() {
-    // todo
-  }
+    MetricData metricData =
+        aggregator.toMetricData(
+            Collections.singletonMap(
+                Attributes.empty(),
+                getTestAccumulation(Collections.singletonList(exemplar), 123.456)),
+            0,
+            10,
+            100);
 
-  @Test
-  void testHistogramCounts() {
-    // todo
+    assertThat(metricData).isNotNull();
+    assertThat(metricData.getType()).isEqualTo(MetricDataType.EXPONENTIAL_HISTOGRAM);
+    assertThat(metricData.getExponentialHistogramData().getAggregationTemporality())
+        .isEqualTo(AggregationTemporality.DELTA);
   }
 
   @Test
   void testMultithreadedUpdates() throws InterruptedException {
-    // todo
-  }
-
-  @Test
-  void testScaleChange() {
     // todo
   }
 }

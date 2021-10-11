@@ -5,29 +5,25 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
+import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import java.util.Collection;
 
-public final class DoubleExponentialHistogram implements ExponentialHistogramData {
+@AutoValue
+public abstract class DoubleExponentialHistogramData implements ExponentialHistogramData {
 
-  private final AggregationTemporality temporality;
-  private final Collection<ExponentialHistogramPointData> points;
+  DoubleExponentialHistogramData() {}
 
-  DoubleExponentialHistogram(
+  public static DoubleExponentialHistogramData create(
       AggregationTemporality temporality, Collection<ExponentialHistogramPointData> points) {
-    this.temporality = temporality;
-    this.points = points;
+    return new AutoValue_DoubleExponentialHistogramData(temporality, points);
   }
 
   @Override
-  public AggregationTemporality getAggregationTemporality() {
-    return temporality;
-  }
+  public abstract AggregationTemporality getAggregationTemporality();
 
   @Override
-  public Collection<ExponentialHistogramPointData> getPoints() {
-    return points;
-  }
+  public abstract Collection<ExponentialHistogramPointData> getPoints();
 }
