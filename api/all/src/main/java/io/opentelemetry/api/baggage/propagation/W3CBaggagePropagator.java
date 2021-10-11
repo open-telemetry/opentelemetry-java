@@ -13,9 +13,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -28,6 +25,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   private static final String FIELD = "baggage";
   private static final List<String> FIELDS = singletonList(FIELD);
   private static final W3CBaggagePropagator INSTANCE = new W3CBaggagePropagator();
+  private static final PercentEscaper URL_ESCAPER = PercentEscaper.create();
 
   /** Singleton instance of the W3C Baggage Propagator. */
   public static W3CBaggagePropagator getInstance() {
@@ -67,12 +65,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   }
 
   private static String encodeValue(String value) {
-    try {
-      return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
-    } catch (UnsupportedEncodingException e) {
-      // this should never happen...our encoding is valid.
-      return "unencodable";
-    }
+    return URL_ESCAPER.escape(value);
   }
 
   @Override
