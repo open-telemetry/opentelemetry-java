@@ -3,11 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/* Copyright 2021 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ * This file is part of the NrSketch project.
+ */
+
 package io.opentelemetry.sdk.metrics.internal.state;
 
-// This class uses the smallest of byte, short, int, or long to hold the count.
-// It auto scales to the next larger type.
-
+/**
+ * This class uses the smallest of byte, short, int, or long to hold the count.
+ * It auto scales to the next larger type.
+ */
 class MultiTypeCounterArray {
   private byte bytesPerCounter;
   private byte[] byteArray;

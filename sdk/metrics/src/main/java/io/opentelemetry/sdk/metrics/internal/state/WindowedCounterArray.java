@@ -3,12 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/* Copyright 2021 New Relic Corporation. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ * This file is part of the NrSketch project.
+ */
+
 package io.opentelemetry.sdk.metrics.internal.state;
 
-// A logical array with an index window. Window can start anywhere in "long" range, including
-// negative numbers.
-// Window start and end is auto updated on array write. Write will fail when window size exceeds
-// maxSize
+/**
+ * A logical array with an index window. Window can start anywhere in "long" range, including
+ * negative numbers.
+ * Window start and end is auto updated on array write. Write will fail when window size exceeds
+ * maxSize
+ */
 public class WindowedCounterArray {
   public static final long NULL_INDEX = Long.MIN_VALUE;
 
