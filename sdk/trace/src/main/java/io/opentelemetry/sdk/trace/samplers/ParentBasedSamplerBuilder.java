@@ -5,14 +5,16 @@
 
 package io.opentelemetry.sdk.trace.samplers;
 
+import javax.annotation.Nullable;
+
 /** A builder for creating ParentBased sampler instances. */
 public final class ParentBasedSamplerBuilder {
 
   private final Sampler root;
-  private Sampler remoteParentSampled;
-  private Sampler remoteParentNotSampled;
-  private Sampler localParentSampled;
-  private Sampler localParentNotSampled;
+  @Nullable private Sampler remoteParentSampled;
+  @Nullable private Sampler remoteParentNotSampled;
+  @Nullable private Sampler localParentSampled;
+  @Nullable private Sampler localParentNotSampled;
 
   ParentBasedSamplerBuilder(Sampler root) {
     this.root = root;

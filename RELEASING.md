@@ -11,11 +11,11 @@ Open the release build workflow in your browser [here](https://github.com/open-t
 You will see a button that says "Run workflow". Press the button, enter the version number you want
 to release in the input field that pops up, and then press "Run workflow".
 
-This triggers the release process, which builds the artifacts. It will not automatically update the 
+This triggers the release process, which builds the artifacts. It will not automatically update the
 documentation, because the Github Actions cannot push changes to the main branch.
 
 ## Announcement
-   
+
 Once the GitHub workflow completes, go to Github [release
 page](https://github.com/open-telemetry/opentelemetry-java/releases), press
 `Draft a new release` to write release notes about the new release. If there is already a draft
@@ -31,7 +31,8 @@ for a list of major changes since last release.
 
 ## Update release versions in documentations and CHANGELOG files
 
-After releasing is done, you need to first update the docs.
+After releasing is done, you need to first update the docs. This needs to happen after artifacts have propagated
+to Maven Central so should probably be done an hour or two after the release workflow finishes.
 
 ```
 ./gradlew updateVersionInDocs -Prelease.version=x.y.z
@@ -46,14 +47,12 @@ Next, update the
 
 Create a PR to mark the new release in README.md and CHANGELOG.md on the main branch.
 
-Finally, update the files `website_docs` directory to point at the newly released version. Once that has
-been merged to the main branch, use the "Update OpenTelemetry Website" github action to create a PR 
-in the website repository with the changes.
+Finally, update the files `website_docs` directory to point at the newly released version.
 
 ## Patch Release
 
 All patch releases should include only bug-fixes, and must avoid
-adding/modifying the public APIs. 
+adding/modifying the public APIs.
 
 Open the patch release build workflow in your browser [here](https://github.com/open-telemetry/opentelemetry-java/actions/workflows/patch-release-build.yml).
 

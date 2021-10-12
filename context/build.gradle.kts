@@ -47,8 +47,9 @@ tasks {
   }
 
   named("check") {
-    dependsOn("grpcInOtelTest", "otelInGrpcTest", "braveInOtelTest", "otelInBraveTest",
-      "otelAsBraveTest", "storageWrappersTest", "strictContextEnabledTest")
+    dependsOn(
+      "grpcInOtelTest", "otelInGrpcTest", "braveInOtelTest", "otelInBraveTest",
+      "otelAsBraveTest", "storageWrappersTest", "strictContextEnabledTest"
+    )
   }
 }
-

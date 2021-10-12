@@ -1,9 +1,8 @@
 package io.opentelemetry.example.prometheus;
 
-import io.opentelemetry.api.metrics.LongValueObserver;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
-import io.opentelemetry.api.metrics.common.Labels;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.prometheus.client.exporter.HTTPServer;
 import java.io.IOException;
@@ -13,25 +12,23 @@ import java.util.concurrent.ThreadLocalRandom;
  * Example of using the {@link PrometheusCollector} to convert OTel metrics to Prometheus format and
  * expose these to a Prometheus instance via a {@link HTTPServer} exporter.
  *
- * <p>A {@link LongValueObserver} is used to periodically measure how many incoming messages are
- * awaiting processing. The {@link LongValueObserver} Updater gets executed every collection
- * interval.
+ * <p>A Gauge is used to periodically measure how many incoming messages are awaiting processing.
+ * The Gauge callback gets executed every collection interval.
  */
 public final class PrometheusExample {
   private long incomingMessageCount;
 
   public PrometheusExample(MeterProvider meterProvider) {
-    Meter meter = meterProvider.get("PrometheusExample", "0.13.1");
+    Meter meter = meterProvider.get("PrometheusExample");
     meter
-        .longValueObserverBuilder("incoming.messages")
+        .gaugeBuilder("incoming.messages")
         .setDescription("No of incoming messages awaiting processing")
         .setUnit("message")
-        .setUpdater(result -> result.observe(incomingMessageCount, Labels.empty()))
-        .build();
+        .buildWithCallback(result -> result.observe(incomingMessageCount, Attributes.empty()));
   }
 
   void simulate() {
-    for (int i = 10; i > 0; i--) {
+    for (int i = 500; i > 0; i--) {
       try {
         System.out.println(
             i + " Iterations to go, current incomingMessageCount is:  " + incomingMessageCount);

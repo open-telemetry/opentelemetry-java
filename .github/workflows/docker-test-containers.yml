@@ -11,13 +11,13 @@ jobs:
       matrix:
         include:
           - source: jaegertracing/all-in-one:1.17
-            target_tag: jaeger
-          - source: otel/opentelemetry-collector-dev:latest
-            target_tag: otel-collector-dev
+            target_image: jaeger
+          - source: otel/opentelemetry-collector-contrib:latest
+            target_image: otel-collector
           - source: shopify/toxiproxy:latest
-            target_tag: toxiproxy
+            target_image: toxiproxy
           - source: adoptopenjdk/openjdk8:latest
-            target_tag: openjdk8
+            target_image: openjdk8
     runs-on: ubuntu-latest
     steps:
       - name: Docker login
@@ -29,5 +29,5 @@ jobs:
       - name: Pull and push
         run: |
           docker pull ${{ matrix.source }}
-          docker tag ${{ matrix.source }} ghcr.io/open-telemetry/java-test-containers:${{ matrix.target_tag }}
-          docker push ghcr.io/open-telemetry/java-test-containers:${{ matrix.target_tag }}
+          docker tag ${{ matrix.source }} ghcr.io/open-telemetry/opentelemetry-java/${{ matrix.target_image }}
+          docker push ghcr.io/open-telemetry/opentelemetry-java/${{ matrix.target_image }}

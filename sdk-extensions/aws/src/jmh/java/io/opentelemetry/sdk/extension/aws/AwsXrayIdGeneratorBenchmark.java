@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.extension.aws;
 
-import io.opentelemetry.sdk.extension.aws.trace.AwsXrayIdGenerator;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -18,8 +17,10 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark)
+@SuppressWarnings("deprecation") // Moved to contrib
 public class AwsXrayIdGeneratorBenchmark {
-  private final AwsXrayIdGenerator idGenerator = AwsXrayIdGenerator.getInstance();
+  private final io.opentelemetry.sdk.extension.aws.trace.AwsXrayIdGenerator idGenerator =
+      io.opentelemetry.sdk.extension.aws.trace.AwsXrayIdGenerator.getInstance();
 
   @Benchmark
   @Measurement(iterations = 15, time = 1)

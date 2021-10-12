@@ -7,20 +7,29 @@ package io.opentelemetry.sdk.logging.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 public final class LogRecordBuilder {
+  private final Resource resource;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+
   private long timeUnixNano;
   private String traceId = "";
   private String spanId = "";
   private int flags;
   private LogRecord.Severity severity = LogRecord.Severity.UNDEFINED_SEVERITY_NUMBER;
-  private String severityText;
-  private String name;
-  private AnyValue body = AnyValue.stringAnyValue("");
+  @Nullable private String severityText;
+  @Nullable private String name;
+  private Body body = Body.stringBody("");
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 
-  LogRecordBuilder() {}
+  LogRecordBuilder(Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    this.resource = resource;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+  }
 
   public LogRecordBuilder setUnixTimeNano(long timestamp) {
     this.timeUnixNano = timestamp;
@@ -61,13 +70,13 @@ public final class LogRecordBuilder {
     return this;
   }
 
-  public LogRecordBuilder setBody(AnyValue body) {
+  public LogRecordBuilder setBody(Body body) {
     this.body = body;
     return this;
   }
 
   public LogRecordBuilder setBody(String body) {
-    return setBody(AnyValue.stringAnyValue(body));
+    return setBody(Body.stringBody(body));
   }
 
   public LogRecordBuilder setAttributes(Attributes attributes) {
@@ -85,6 +94,8 @@ public final class LogRecordBuilder {
       timeUnixNano = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     }
     return LogRecord.create(
+        resource,
+        instrumentationLibraryInfo,
         timeUnixNano,
         traceId,
         spanId,

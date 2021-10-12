@@ -7,7 +7,7 @@ package io.opentelemetry.example.otlp;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongValueRecorder;
+import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Span;
@@ -37,11 +37,10 @@ public final class OtlpExporterExample {
 
     Tracer tracer = openTelemetry.getTracer("io.opentelemetry.example");
     Meter meter = meterProvider.get("io.opentelemetry.example");
-    LongCounter counter = meter.longCounterBuilder("example_counter").build();
-    LongValueRecorder recorder =
-        meter.longValueRecorderBuilder("super_timer").setUnit("ms").build();
+    LongCounter counter = meter.counterBuilder("example_counter").build();
+    LongHistogram recorder = meter.histogramBuilder("super_timer").ofLongs().setUnit("ms").build();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 100; i++) {
       long startTime = System.currentTimeMillis();
       Span exampleSpan = tracer.spanBuilder("exampleSpan").startSpan();
       try (Scope scope = exampleSpan.makeCurrent()) {

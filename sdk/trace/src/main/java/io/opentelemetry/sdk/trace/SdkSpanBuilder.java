@@ -12,6 +12,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.internal.ImmutableSpanContext;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanContext;
@@ -19,7 +20,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.samplers.SamplingDecision;
@@ -101,8 +101,10 @@ final class SdkSpanBuilder implements SpanBuilder {
     addLink(
         LinkData.create(
             spanContext,
-            RecordEventsReadableSpan.applyAttributesLimit(
-                attributes, spanLimits.getMaxNumberOfAttributesPerLink()),
+            AttributeUtil.applyAttributesLimit(
+                attributes,
+                spanLimits.getMaxNumberOfAttributesPerLink(),
+                spanLimits.getMaxAttributeValueLength()),
             totalAttributeCount));
     return this;
   }
@@ -146,11 +148,7 @@ final class SdkSpanBuilder implements SpanBuilder {
     if (key == null || key.getKey().isEmpty() || value == null) {
       return this;
     }
-    if (attributes == null) {
-      attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
-    }
-
-    attributes.put(key, value);
+    attributes().put(key, value);
     return this;
   }
 
@@ -195,21 +193,20 @@ final class SdkSpanBuilder implements SpanBuilder {
     TraceState samplingResultTraceState =
         samplingResult.getUpdatedTraceState(parentSpanContext.getTraceState());
     SpanContext spanContext =
-        SpanContext.create(
+        ImmutableSpanContext.create(
             traceId,
             spanId,
             isSampled(samplingDecision) ? TraceFlags.getSampled() : TraceFlags.getDefault(),
-            samplingResultTraceState);
+            samplingResultTraceState,
+            /* remote= */ false,
+            tracerSharedState.isIdGeneratorSafeToSkipIdValidation());
 
     if (!isRecording(samplingDecision)) {
       return Span.wrap(spanContext);
     }
     Attributes samplingAttributes = samplingResult.getAttributes();
     if (!samplingAttributes.isEmpty()) {
-      if (attributes == null) {
-        attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
-      }
-      samplingAttributes.forEach((key, value) -> attributes.put((AttributeKey) key, value));
+      samplingAttributes.forEach((key, value) -> attributes().put((AttributeKey) key, value));
     }
 
     // Avoid any possibility to modify the attributes by adding attributes to the Builder after the
@@ -222,11 +219,11 @@ final class SdkSpanBuilder implements SpanBuilder {
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentSpanContext,
+        parentSpan,
         parentContext,
         spanLimits,
         tracerSharedState.getActiveSpanProcessor(),
-        getClock(parentSpan, tracerSharedState.getClock()),
+        tracerSharedState.getClock(),
         tracerSharedState.getResource(),
         recordedAttributes,
         immutableLinks,
@@ -234,13 +231,15 @@ final class SdkSpanBuilder implements SpanBuilder {
         startEpochNanos);
   }
 
-  private static AnchoredClock getClock(Span parent, Clock clock) {
-    if (parent instanceof RecordEventsReadableSpan) {
-      RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parent;
-      return parentRecordEventsSpan.getClock();
-    } else {
-      return AnchoredClock.create(clock);
+  private AttributesMap attributes() {
+    AttributesMap attributes = this.attributes;
+    if (attributes == null) {
+      this.attributes =
+          new AttributesMap(
+              spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
+      attributes = this.attributes;
     }
+    return attributes;
   }
 
   // Visible for testing

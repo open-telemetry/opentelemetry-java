@@ -1,8 +1,10 @@
 plugins {
-  id("otel.protobuf-conventions")
+  id("otel.java-conventions")
   id("otel.publish-conventions")
 
   id("otel.animalsniffer-conventions")
+
+  id("com.squareup.wire")
 }
 
 description = "OpenTelemetry - Jaeger Exporter"
@@ -12,20 +14,32 @@ dependencies {
   api(project(":sdk:all"))
   api("io.grpc:grpc-api")
 
-  implementation(project(":sdk:all"))
+  protoSource(project(":exporters:jaeger-proto"))
+
+  // TODO(anuraaga): otlp-common has a lot of code not specific to OTLP now. As it's just internal
+  // code, this mysterious dependency is possibly still OK but we may need a rename or splitting.
+  implementation(project(":exporters:otlp:common"))
   implementation(project(":semconv"))
 
-  implementation("io.grpc:grpc-protobuf")
   implementation("io.grpc:grpc-stub")
-  implementation("com.google.protobuf:protobuf-java")
-  implementation("com.google.protobuf:protobuf-java-util")
+  implementation("com.fasterxml.jackson.jr:jackson-jr-objects")
 
-  testImplementation("io.grpc:grpc-testing")
-  testImplementation("com.fasterxml.jackson.core:jackson-databind")
-  testImplementation("org.testcontainers:junit-jupiter")
+  testImplementation(project(":exporters:jaeger-proto"))
+
+  testImplementation("com.fasterxml.jackson.jr:jackson-jr-stree")
+  testImplementation("com.google.protobuf:protobuf-java-util")
   testImplementation("com.squareup.okhttp3:okhttp")
+  testImplementation("io.grpc:grpc-protobuf")
+  testImplementation("io.grpc:grpc-testing")
+  testImplementation("org.testcontainers:junit-jupiter")
 
   testImplementation(project(":sdk:testing"))
 
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
+}
+
+wire {
+  custom {
+    customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
+  }
 }

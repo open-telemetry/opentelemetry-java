@@ -14,6 +14,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
@@ -26,11 +27,9 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -80,7 +79,6 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   private int totalRecordedEvents = 0;
   // The status of the span.
   @GuardedBy("lock")
-  @Nullable
   private StatusData status = StatusData.unset();
   // The end time of the span.
   @GuardedBy("lock")
@@ -126,11 +124,10 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
    * @param context supplies the trace_id and span_id for the newly started span.
    * @param name the displayed name for the new span.
    * @param kind the span kind.
-   * @param parentSpanContext the parent span context, or {@link SpanContext#getInvalid()} if this
-   *     span is a root span.
+   * @param parentSpan the parent span, or {@link Span#getInvalid()} if this span is a root span.
    * @param spanLimits trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
-   * @param clock the clock used to get the time.
+   * @param tracerClock the tracer's clock
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
    * @param links the links set during span creation, may be truncated. The list MUST be immutable.
@@ -141,23 +138,46 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       SpanKind kind,
-      @Nullable SpanContext parentSpanContext,
-      @Nonnull Context parentContext,
+      Span parentSpan,
+      Context parentContext,
       SpanLimits spanLimits,
       SpanProcessor spanProcessor,
-      AnchoredClock clock,
+      Clock tracerClock,
       Resource resource,
-      AttributesMap attributes,
+      @Nullable AttributesMap attributes,
       List<LinkData> links,
       int totalRecordedLinks,
-      long startEpochNanos) {
+      long userStartEpochNanos) {
+    final boolean createdAnchoredClock;
+    final AnchoredClock clock;
+    if (parentSpan instanceof RecordEventsReadableSpan) {
+      RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parentSpan;
+      clock = parentRecordEventsSpan.clock;
+      createdAnchoredClock = false;
+    } else {
+      clock = AnchoredClock.create(tracerClock);
+      createdAnchoredClock = true;
+    }
+
+    final long startEpochNanos;
+    if (userStartEpochNanos != 0) {
+      startEpochNanos = userStartEpochNanos;
+    } else if (createdAnchoredClock) {
+      // If this is a new AnchoredClock, the start time is now, so just use it to avoid
+      // recomputing current time.
+      startEpochNanos = clock.startTime();
+    } else {
+      // AnchoredClock created in the past, so need to compute now.
+      startEpochNanos = clock.now();
+    }
+
     RecordEventsReadableSpan span =
         new RecordEventsReadableSpan(
             context,
             name,
             instrumentationLibraryInfo,
             kind,
-            parentSpanContext,
+            parentSpan.getSpanContext(),
             spanLimits,
             spanProcessor,
             clock,
@@ -165,7 +185,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
             attributes,
             links,
             totalRecordedLinks,
-            startEpochNanos == 0 ? clock.now() : startEpochNanos);
+            startEpochNanos);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     spanProcessor.onStart(parentContext, span);
@@ -187,6 +207,14 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
           name,
           endEpochNanos,
           hasEnded);
+    }
+  }
+
+  @Override
+  @Nullable
+  public <T> T getAttribute(AttributeKey<T> key) {
+    synchronized (lock) {
+      return attributes == null ? null : attributes.get(key);
     }
   }
 
@@ -260,7 +288,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         return this;
       }
       if (attributes == null) {
-        attributes = new AttributesMap(spanLimits.getMaxNumberOfAttributes());
+        attributes =
+            new AttributesMap(
+                spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
       }
 
       attributes.put(key, value);
@@ -299,7 +329,10 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         EventData.create(
             clock.now(),
             name,
-            applyAttributesLimit(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
+            AttributeUtil.applyAttributesLimit(
+                attributes,
+                spanLimits.getMaxNumberOfAttributesPerEvent(),
+                spanLimits.getMaxAttributeValueLength()),
             totalAttributeCount));
     return this;
   }
@@ -317,27 +350,12 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
         EventData.create(
             unit.toNanos(timestamp),
             name,
-            applyAttributesLimit(attributes, spanLimits.getMaxNumberOfAttributesPerEvent()),
+            AttributeUtil.applyAttributesLimit(
+                attributes,
+                spanLimits.getMaxNumberOfAttributesPerEvent(),
+                spanLimits.getMaxAttributeValueLength()),
             totalAttributeCount));
     return this;
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  static Attributes applyAttributesLimit(final Attributes attributes, final int limit) {
-    if (attributes.isEmpty() || attributes.size() <= limit) {
-      return attributes;
-    }
-
-    AttributesBuilder result = Attributes.builder();
-    int i = 0;
-    for (Map.Entry<AttributeKey<?>, Object> entry : attributes.asMap().entrySet()) {
-      if (i >= limit) {
-        break;
-      }
-      result.put((AttributeKey) entry.getKey(), entry.getValue());
-      i++;
-    }
-    return result.build();
   }
 
   private void addTimedEvent(EventData timedEvent) {
@@ -370,7 +388,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
 
   @Override
   public ReadWriteSpan recordException(Throwable exception) {
-    recordException(exception, null);
+    recordException(exception, Attributes.empty());
     return this;
   }
 
@@ -378,6 +396,9 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
   public ReadWriteSpan recordException(Throwable exception, Attributes additionalAttributes) {
     if (exception == null) {
       return this;
+    }
+    if (additionalAttributes == null) {
+      additionalAttributes = Attributes.empty();
     }
     long timestampNanos = clock.now();
 
@@ -389,10 +410,7 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
     StringWriter writer = new StringWriter();
     exception.printStackTrace(new PrintWriter(writer));
     attributes.put(SemanticAttributes.EXCEPTION_STACKTRACE, writer.toString());
-
-    if (additionalAttributes != null) {
-      attributes.putAll(additionalAttributes);
-    }
+    attributes.putAll(additionalAttributes);
 
     addEvent(
         SemanticAttributes.EXCEPTION_EVENT_NAME,
@@ -516,30 +534,28 @@ final class RecordEventsReadableSpan implements ReadWriteSpan {
       totalRecordedEvents = this.totalRecordedEvents;
       endEpochNanos = this.endEpochNanos;
     }
-    StringBuilder sb = new StringBuilder();
-    sb.append("RecordEventsReadableSpan{traceId=");
-    sb.append(context.getTraceId());
-    sb.append(", spanId=");
-    sb.append(context.getSpanId());
-    sb.append(", parentSpanContext=");
-    sb.append(parentSpanContext);
-    sb.append(", name=");
-    sb.append(name);
-    sb.append(", kind=");
-    sb.append(kind);
-    sb.append(", attributes=");
-    sb.append(attributes);
-    sb.append(", status=");
-    sb.append(status);
-    sb.append(", totalRecordedEvents=");
-    sb.append(totalRecordedEvents);
-    sb.append(", totalRecordedLinks=");
-    sb.append(totalRecordedLinks);
-    sb.append(", startEpochNanos=");
-    sb.append(startEpochNanos);
-    sb.append(", endEpochNanos=");
-    sb.append(endEpochNanos);
-    sb.append("}");
-    return sb.toString();
+    return "RecordEventsReadableSpan{traceId="
+        + context.getTraceId()
+        + ", spanId="
+        + context.getSpanId()
+        + ", parentSpanContext="
+        + parentSpanContext
+        + ", name="
+        + name
+        + ", kind="
+        + kind
+        + ", attributes="
+        + attributes
+        + ", status="
+        + status
+        + ", totalRecordedEvents="
+        + totalRecordedEvents
+        + ", totalRecordedLinks="
+        + totalRecordedLinks
+        + ", startEpochNanos="
+        + startEpochNanos
+        + ", endEpochNanos="
+        + endEpochNanos
+        + "}";
   }
 }

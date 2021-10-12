@@ -4,28 +4,60 @@ plugins {
 
   id("otel.jmh-conventions")
   id("otel.animalsniffer-conventions")
+
+  id("com.squareup.wire")
 }
 
 description = "OpenTelemetry Protocol Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.internal")
 
+val versions: Map<String, String> by project
 dependencies {
+  protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
+
   api(project(":api:all"))
-  api(project(":proto"))
   api(project(":sdk:all"))
   api(project(":sdk:metrics"))
+  compileOnly(project(":sdk-extensions:logging"))
 
-  implementation("com.google.protobuf:protobuf-java")
+  compileOnly("com.fasterxml.jackson.core:jackson-core")
 
+  // Similar to above note about :proto, we include helpers shared by gRPC or okhttp exporters but
+  // do not want to impose these dependency on all of our consumers.
+  compileOnly("com.squareup.okhttp3:okhttp")
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
   compileOnly("io.grpc:grpc-okhttp")
+  compileOnly("io.grpc:grpc-stub")
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
+  testImplementation(project(":sdk-extensions:logging"))
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("com.fasterxml.jackson.core:jackson-core")
+  testImplementation("com.google.protobuf:protobuf-java-util")
+  testImplementation("io.opentelemetry.proto:opentelemetry-proto")
+
+  testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("io.grpc:grpc-testing")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
 
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation(project(":sdk-extensions:resources"))
+  jmhImplementation("com.fasterxml.jackson.core:jackson-core")
+  jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
+  jmhRuntimeOnly("io.grpc:grpc-netty")
+}
+
+wire {
+  root(
+    "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest",
+    "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest",
+    "opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest"
+  )
+
+  custom {
+    customHandlerClass = "io.opentelemetry.gradle.ProtoFieldsWireHandler"
+  }
 }

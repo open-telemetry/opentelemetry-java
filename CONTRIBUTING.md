@@ -36,12 +36,12 @@ you must run a local docker daemon.
 check formatting:
 
     `./gradlew build`
-    
+
 4. If you are a Windows user, use the alternate command mentioned below to run tests and
 check formatting:
 
      `gradlew.bat`
-     
+
 ## Checks
 
 Before submitting a PR, you should make sure the style checks and unit tests pass. You can run these
@@ -60,7 +60,7 @@ particular PR, but merging to the base branch is authorized to restricted member
 
 ## Style guideline
 
-We follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html). 
+We follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html).
 Our build will fail if source code is not formatted according to that style. To fix any
 style failures the above [checks](#checks) show, automatically apply the formatting with:
 
@@ -68,7 +68,7 @@ style failures the above [checks](#checks) show, automatically apply the formatt
 $ ./gradlew spotlessApply
 ```
 
-To verify code style manually run the following command, 
+To verify code style manually run the following command,
 which uses [google-java-format](https://github.com/google/google-java-format) library:
 
 `./gradlew spotlessCheck`
@@ -99,12 +99,12 @@ of all `toString()` methods should be considered to be unstable unless explicitl
 If you notice any practice being applied in the project consistently that isn't listed here, please consider a pull request to add it.
 
 ### Pre-commit hook
-To completely delegate code style formatting to the machine, 
+To completely delegate code style formatting to the machine,
 you can add [git pre-commit hook](https://git-scm.com/docs/githooks).
 We provide an example script in `buildscripts/pre-commit` file.
 Just copy or symlink it into `.git/hooks` folder.
 
-### Editorconfig 
+### Editorconfig
 As additional convenience for IntelliJ Idea users, we provide `.editorconfig` file.
 Idea will automatically use it to adjust its code formatting settings.
 It does not support all required rules, so you still have to run `spotlessApply` from time to time.
@@ -135,13 +135,13 @@ It does not support all required rules, so you still have to run `spotlessApply`
   possible, for any new value classes. Remember to add package-private
   constructors to all AutoValue classes to prevent classes in other packages
   from extending them.
-  
-  
+
+
 ### Unit Tests
 
 * Unit tests target Java 8, so language features such as lambda and streams can be used in tests.
 
-## Common tasks
+## Specific tasks
 
 ### Updating OTLP proto dependency version
 
@@ -151,3 +151,47 @@ The OTLP proto dependency version is defined [here](proto/build.gradle). To bump
 2. Download the zip source code archive
 3. Run `shasum -a 256 ~/path/to/downloaded.zip` to compute its checksum
 4. Update `protoVersion` and `protoChecksum` in the build file with the new version and checksum
+
+### Composing builds
+
+Beware that this section is only meant for developers of opentelemetry-java, or closely related projects.
+The steps described here could change at any time and what you do for one version (commit) may break
+with the next one already.
+
+Gradle provides a feature called ["composite builds"](https://docs.gradle.org/current/userguide/composite_builds.html)
+that allows to replace some normally externally provided dependencies with a project that is built
+(included) in the same Gradle invocation. This can be useful to quickly test a new feature or bug fix you are
+developing in opentelemetry-java with the examples or the app or instrumentation library where you
+need the feature or run into the bug. Unfortunately, opentelemetry-java does not work out of the box
+with this feature because Gradle is unable to map the project names to the customized artifact
+coordinates (see e.g. [gradle/gradle#18291](https://github.com/gradle/gradle/issues/18291)
+and related issues. However, gradle supports manually declaring the mapping between ("substitution of")
+artifact coordinates and project names. To ease this tedious task, opentelemetry-java provides a
+gradle task `:generateBuildSubstitutions` that generates a code snippet with these substitutions in
+kts (Kotlin Script) format.
+
+Example usage could be as follows:
+
+1. Run `./gradlew generateBuildSubstitutions`
+2. Two files named `build/substitutions.gradle.kts` are generated in the bom and bom-alpha project's
+   directory, containing substitutions for the stable and alpha projects respectively.
+3. Copy & paste the content of these files to a new `settings.gradle.kts` or the one where you want
+   to include the opentelemetry build into, so that it contains something like the following:
+
+   ```kotlin
+   includeBuild("PATH/TO/OPENTELEMETRY-JAVA/ROOT/DIRECTORY") {
+     // Copy & paste following block from the generated substitutions.gradle.kts, *not* from here!
+     dependencySubstitution {
+       substitute(module("io.opentelemetry:opentelemetry-api")).using(project(":api:all"))
+       substitute(module("io.opentelemetry:opentelemetry-sdk")).using(project(":sdk:all"))
+       // ...
+     }
+   }
+   ```
+
+   See [the Gradle documentation](https://docs.gradle.org/current/userguide/composite_builds.html#included_build_declaring_substitutions)
+   for more information.
+
+4. If you now build your project, it will use the included build to supply the opentelemetry-java artifacts,
+   ignoring any version declarations. Use the prefix `:DIRECTORY:` to refer to tasks/projects within
+   the included build, where DIRECTORY is the name of the directory in the included build (only the part after the last `/`).

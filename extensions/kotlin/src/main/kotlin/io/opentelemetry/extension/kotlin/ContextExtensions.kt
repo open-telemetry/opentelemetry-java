@@ -1,3 +1,8 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.extension.kotlin
 
 import io.opentelemetry.context.Context
@@ -9,7 +14,7 @@ import kotlin.coroutines.CoroutineContext
  * and restores the previous [Context] on suspension.
  */
 fun Context.asContextElement(): CoroutineContext {
-    return KotlinContextElement(this)
+  return KotlinContextElement(this)
 }
 
 /**
@@ -17,16 +22,16 @@ fun Context.asContextElement(): CoroutineContext {
  * coroutine and restores the previous [Context] on suspension.
  */
 fun ImplicitContextKeyed.asContextElement(): CoroutineContext {
-    return KotlinContextElement(Context.current().with(this))
+  return KotlinContextElement(Context.current().with(this))
 }
 
 /**
  * Returns the [Context] in this [CoroutineContext] if present, or the root otherwise.
  */
 fun CoroutineContext.getOpenTelemetryContext(): Context {
-    val element = get(KotlinContextElement.KEY)
-    if (element is KotlinContextElement) {
-        return element.context
-    }
-    return Context.root()
+  val element = get(KotlinContextElement.KEY)
+  if (element is KotlinContextElement) {
+    return element.context
+  }
+  return Context.root()
 }

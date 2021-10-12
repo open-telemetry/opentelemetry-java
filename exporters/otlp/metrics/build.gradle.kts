@@ -10,9 +10,10 @@ description = "OpenTelemetry Protocol Metrics Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.metrics")
 
 testSets {
-    create("testGrpcNetty")
-    create("testGrpcNettyShaded")
-    create("testGrpcOkhttp")
+  create("testGrpcNetty")
+  create("testGrpcNettyShaded")
+  create("testGrpcOkhttp")
+  create("testOkHttpOnly")
 }
 
 dependencies {
@@ -20,15 +21,15 @@ dependencies {
 
   implementation(project(":exporters:otlp:common"))
 
-  implementation("io.grpc:grpc-api")
-  implementation("io.grpc:grpc-protobuf")
-  implementation("io.grpc:grpc-stub")
-  implementation("com.google.protobuf:protobuf-java")
+  api("io.grpc:grpc-stub")
 
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("com.google.protobuf:protobuf-java")
+  testImplementation("io.grpc:grpc-protobuf")
   testImplementation("io.grpc:grpc-testing")
   testRuntimeOnly("io.grpc:grpc-netty-shaded")
+  testImplementation("io.opentelemetry.proto:opentelemetry-proto")
 
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-junit5")
@@ -44,10 +45,24 @@ dependencies {
   add("testGrpcOkhttpImplementation", "com.linecorp.armeria:armeria-junit5")
   add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
+
+  add("testOkHttpOnlyImplementation", "com.linecorp.armeria:armeria-grpc-protocol")
+  add("testOkHttpOnlyImplementation", "com.linecorp.armeria:armeria-junit5")
+  add("testOkHttpOnlyImplementation", "com.squareup.okhttp3:okhttp")
+  add("testOkHttpOnlyImplementation", "com.squareup.okhttp3:okhttp-tls")
+  add("testOkHttpOnlyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 }
 
 tasks {
-  named("check") {
-    dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp")
+  check {
+    dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp", "testOkHttpOnly")
+  }
+}
+
+configurations {
+  named("testOkHttpOnlyRuntimeClasspath") {
+    dependencies {
+      exclude("io.grpc")
+    }
   }
 }

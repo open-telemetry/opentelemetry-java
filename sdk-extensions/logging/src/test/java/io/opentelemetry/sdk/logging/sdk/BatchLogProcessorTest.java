@@ -8,13 +8,35 @@ package io.opentelemetry.sdk.logging.sdk;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanId;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceId;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logging.util.TestLogExporter;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class BatchLogProcessorTest {
+
+  private static LogRecord createLog(LogRecord.Severity severity, String message) {
+    return LogRecord.builder(
+            Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+            InstrumentationLibraryInfo.create("instrumentation", "1"))
+        .setUnixTimeMillis(System.currentTimeMillis())
+        .setTraceId(TraceId.getInvalid())
+        .setSpanId(SpanId.getInvalid())
+        .setFlags(TraceFlags.getDefault().asByte())
+        .setSeverity(severity)
+        .setSeverityText("really severe")
+        .setName("log1")
+        .setBody(message)
+        .setAttributes(Attributes.builder().put("animal", "cat").build())
+        .build();
+  }
 
   @Test
   void testForceExport() {
@@ -28,7 +50,7 @@ class BatchLogProcessorTest {
             .setScheduleDelayMillis(2000) // longer than test
             .build();
     for (int i = 0; i < 17; i++) {
-      LogRecord record = LogRecord.builder().setBody(Integer.toString(i)).build();
+      LogRecord record = createLog(LogRecord.Severity.INFO, Integer.toString(i));
       processor.addLogRecord(record);
     }
     await().until(() -> exporter.getCallCount() > 0);

@@ -18,6 +18,8 @@ final class TracerSharedState {
   private final Object lock = new Object();
   private final Clock clock;
   private final IdGenerator idGenerator;
+  // tracks whether it is safe to skip id validation on ids from the above generator
+  private final boolean idGeneratorSafeToSkipIdValidation;
   private final Resource resource;
 
   private final Supplier<SpanLimits> spanLimitsSupplier;
@@ -35,6 +37,7 @@ final class TracerSharedState {
       List<SpanProcessor> spanProcessors) {
     this.clock = clock;
     this.idGenerator = idGenerator;
+    this.idGeneratorSafeToSkipIdValidation = idGenerator instanceof RandomIdGenerator;
     this.resource = resource;
     this.spanLimitsSupplier = spanLimitsSupplier;
     this.sampler = sampler;
@@ -47,6 +50,10 @@ final class TracerSharedState {
 
   IdGenerator getIdGenerator() {
     return idGenerator;
+  }
+
+  boolean isIdGeneratorSafeToSkipIdValidation() {
+    return idGeneratorSafeToSkipIdValidation;
   }
 
   Resource getResource() {

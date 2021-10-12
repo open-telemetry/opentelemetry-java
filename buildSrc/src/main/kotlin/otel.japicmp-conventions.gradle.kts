@@ -48,11 +48,6 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
     tasks {
       val jApiCmp by registering(JapicmpTask::class) {
         dependsOn("jar")
-        // the japicmp "old" version is either the user-specified one, or the latest release.
-        val apiBaseVersion: String? by project
-        val baselineVersion = apiBaseVersion ?: latestReleasedVersion
-        val baselineArtifact = findArtifact(baselineVersion)
-        oldClasspath = files(baselineArtifact)
 
         // the japicmp "new" version is either the user-specified one, or the locally built jar.
         val apiNewVersion: String? by project
@@ -62,10 +57,22 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
 
         //only output changes, not everything
         isOnlyModified = true
+
+        // the japicmp "old" version is either the user-specified one, or the latest release.
+        val apiBaseVersion: String? by project
+        val baselineVersion = apiBaseVersion ?: latestReleasedVersion
+        oldClasspath = try {
+          files(findArtifact(baselineVersion))
+        } catch (e: Exception) {
+          //if we can't find the baseline artifact, this is probably one that's never been published before,
+          //so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
+          isOnlyModified = false
+          files()
+        }
+
         //this is needed so that we only consider the current artifact, and not dependencies
         isIgnoreMissingClasses = true
-        // double wildcards don't seem to work here (*.internal.*)
-        packageExcludes = listOf("*.internal", "io.opentelemetry.internal.shaded.jctools.*")
+        packageExcludes = listOf("*.internal", "*.internal.*", "io.opentelemetry.internal.shaded.jctools.*")
         val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
         txtOutputFile = apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_${baselineVersion}/${base.archivesName.get()}.txt") }
           ?: file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${base.archivesName.get()}.txt")

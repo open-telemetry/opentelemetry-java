@@ -5,8 +5,9 @@
 
 package io.opentelemetry.exporter.jaeger.thrift;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.jr.ob.JSON;
+import com.fasterxml.jackson.jr.stree.JacksonJrsTreeCodec;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -30,8 +31,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers(disabledWithoutDocker = true)
 class JaegerThriftIntegrationTest {
-
-  private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final OkHttpClient client = new OkHttpClient();
 
   private static final int QUERY_PORT = 16686;
@@ -42,7 +41,7 @@ class JaegerThriftIntegrationTest {
 
   @Container
   public static GenericContainer<?> jaegerContainer =
-      new GenericContainer<>("ghcr.io/open-telemetry/java-test-containers:jaeger")
+      new GenericContainer<>("ghcr.io/open-telemetry/opentelemetry-java/jaeger")
           .withExposedPorts(THRIFT_HTTP_PORT, QUERY_PORT, HEALTH_PORT)
           .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("jaeger")))
           .waitingFor(Wait.forHttp("/").forPort(HEALTH_PORT));
@@ -102,9 +101,13 @@ class JaegerThriftIntegrationTest {
               .header("Accept", "application/json")
               .build();
 
-      final JsonNode json;
+      final TreeNode json;
       try (Response response = client.newCall(request).execute()) {
-        json = objectMapper.readTree(response.body().byteStream());
+        json =
+            JSON.builder()
+                .treeCodec(new JacksonJrsTreeCodec())
+                .build()
+                .treeFrom(response.body().byteStream());
       }
 
       return json.get("data").get(0).get("traceID") != null;

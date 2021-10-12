@@ -16,6 +16,7 @@ import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -34,11 +35,16 @@ import javax.annotation.concurrent.Immutable;
  * exporter.export(data);
  *
  * }</pre>
+ *
+ * @deprecated Use {@link DelegatingSpanData}.
  */
 // AutoValue generated hashCode is fine but we need to define equals to accept the base SpanData
 // type.
 @Immutable
 @AutoValue
+@AutoValue.CopyAnnotations
+@Deprecated
+@SuppressWarnings("deprecation")
 public abstract class SpanDataBuilder implements SpanData {
 
   /**
@@ -82,7 +88,7 @@ public abstract class SpanDataBuilder implements SpanData {
   // fine.
   @SuppressWarnings("EqualsHashCode")
   @Override
-  public final boolean equals(Object o) {
+  public final boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     }

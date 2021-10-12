@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.export.MetricProducer;
 /**
  * Simple implementation of the MetricExporter that pushes data to the backend.
  */
-public final class PushMetricExporter implements MetricExporter {  
+public final class PushMetricExporter implements MetricExporter {
   @Override
   ResultCode export(Collection<MetricData> metrics) {
     // A "push based" library calls to export metrics
@@ -44,12 +44,12 @@ public final class PushExporter {
         IntervalMetricReader.builder()
                     .readEnvironment() // Read configuration from environment variables
                     .readSystemProperties() // Read configuration from system properties
-                    .setExportIntervalMillis(100_000) 
+                    .setExportIntervalMillis(100_000)
                     .setMetricExporter(metricExporter)
                     .setMetricProducers(Collections.singletonList(producers))
                     .build();
   }
-  
+
   // Can be accessed by any "push based" library to export metrics.
   public MetricExporter getMetricExporter() {
     return metricExporter;
@@ -79,7 +79,7 @@ public final class PullMetricExporter implements MetricExporter, MetricProducer 
     metricsBuffer.addAll(metrics);
     return ResultCode.SUCCESS;
   }
-  
+
   synchronized Collection<MetricData> getAllMetrics() {
     List<MetricData> ret = metricsBuffer;
     metricsBuffer = new ArrayList<>();

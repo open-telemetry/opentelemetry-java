@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.logging.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
 
 /**
@@ -17,23 +19,40 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class LogRecord {
 
-  public static LogRecordBuilder builder() {
-    return new LogRecordBuilder();
+  public static LogRecordBuilder builder(
+      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new LogRecordBuilder(resource, instrumentationLibraryInfo);
   }
 
   static LogRecord create(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       long timeUnixNano,
       String traceId,
       String spanId,
       int flags,
       Severity severity,
-      String severityText,
-      String name,
-      AnyValue body,
+      @Nullable String severityText,
+      @Nullable String name,
+      Body body,
       Attributes attributes) {
     return new AutoValue_LogRecord(
-        timeUnixNano, traceId, spanId, flags, severity, severityText, name, body, attributes);
+        resource,
+        instrumentationLibraryInfo,
+        timeUnixNano,
+        traceId,
+        spanId,
+        flags,
+        severity,
+        severityText,
+        name,
+        body,
+        attributes);
   }
+
+  public abstract Resource getResource();
+
+  public abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 
   public abstract long getTimeUnixNano();
 
@@ -51,7 +70,7 @@ public abstract class LogRecord {
   @Nullable
   public abstract String getName();
 
-  public abstract AnyValue getBody();
+  public abstract Body getBody();
 
   public abstract Attributes getAttributes();
 

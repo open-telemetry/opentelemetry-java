@@ -13,12 +13,14 @@ import static io.opentelemetry.api.common.AttributeKey.longArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.longKey;
 import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.SpanKind;
@@ -48,6 +50,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -279,7 +282,7 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
-  void setStatus() {
+  void toSpanData_Status() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.CONSUMER);
     try {
       testClock.advance(Duration.ofSeconds(1));
@@ -295,10 +298,30 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
-  void getSpanKind() {
+  void toSpanData_Kind() {
     RecordEventsReadableSpan span = createTestSpan(SpanKind.SERVER);
     try {
       assertThat(span.toSpanData().getKind()).isEqualTo(SpanKind.SERVER);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getKind() {
+    RecordEventsReadableSpan span = createTestSpan(SpanKind.SERVER);
+    try {
+      assertThat(span.getKind()).isEqualTo(SpanKind.SERVER);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void getAttribute() {
+    RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
+    try {
+      assertThat(span.getAttribute(longKey("MyLongAttributeKey"))).isEqualTo(123L);
     } finally {
       span.end();
     }
@@ -667,6 +690,82 @@ class RecordEventsReadableSpanTest {
   }
 
   @Test
+  void attributeLength() {
+    int maxLength = 25;
+    RecordEventsReadableSpan span =
+        createTestSpan(SpanLimits.builder().setMaxAttributeValueLength(maxLength).build());
+    try {
+      String strVal = IntStream.range(0, maxLength).mapToObj(i -> "a").collect(joining());
+      String tooLongStrVal = strVal + strVal;
+
+      Attributes attributes =
+          Attributes.builder()
+              .put("string", tooLongStrVal)
+              .put("boolean", true)
+              .put("long", 1L)
+              .put("double", 1.0)
+              .put(stringArrayKey("stringArray"), Arrays.asList(strVal, tooLongStrVal))
+              .put(booleanArrayKey("booleanArray"), Arrays.asList(true, false))
+              .put(longArrayKey("longArray"), Arrays.asList(1L, 2L))
+              .put(doubleArrayKey("doubleArray"), Arrays.asList(1.0, 2.0))
+              .build();
+      span.setAllAttributes(attributes);
+
+      attributes = span.toSpanData().getAttributes();
+      assertThat(attributes.get(stringKey("string"))).isEqualTo(strVal);
+      assertThat(attributes.get(booleanKey("boolean"))).isEqualTo(true);
+      assertThat(attributes.get(longKey("long"))).isEqualTo(1L);
+      assertThat(attributes.get(doubleKey("double"))).isEqualTo(1.0);
+      assertThat(attributes.get(stringArrayKey("stringArray")))
+          .isEqualTo(Arrays.asList(strVal, strVal));
+      assertThat(attributes.get(booleanArrayKey("booleanArray")))
+          .isEqualTo(Arrays.asList(true, false));
+      assertThat(attributes.get(longArrayKey("longArray"))).isEqualTo(Arrays.asList(1L, 2L));
+      assertThat(attributes.get(doubleArrayKey("doubleArray"))).isEqualTo(Arrays.asList(1.0, 2.0));
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  void eventAttributeLength() {
+    int maxLength = 25;
+    RecordEventsReadableSpan span =
+        createTestSpan(SpanLimits.builder().setMaxAttributeValueLength(maxLength).build());
+    try {
+      String strVal = IntStream.range(0, maxLength).mapToObj(i -> "a").collect(joining());
+      String tooLongStrVal = strVal + strVal;
+
+      Attributes attributes =
+          Attributes.builder()
+              .put("string", tooLongStrVal)
+              .put("boolean", true)
+              .put("long", 1L)
+              .put("double", 1.0)
+              .put(stringArrayKey("stringArray"), Arrays.asList(strVal, tooLongStrVal))
+              .put(booleanArrayKey("booleanArray"), Arrays.asList(true, false))
+              .put(longArrayKey("longArray"), Arrays.asList(1L, 2L))
+              .put(doubleArrayKey("doubleArray"), Arrays.asList(1.0, 2.0))
+              .build();
+      span.setAllAttributes(attributes);
+
+      attributes = span.toSpanData().getAttributes();
+      assertThat(attributes.get(stringKey("string"))).isEqualTo(strVal);
+      assertThat(attributes.get(booleanKey("boolean"))).isEqualTo(true);
+      assertThat(attributes.get(longKey("long"))).isEqualTo(1L);
+      assertThat(attributes.get(doubleKey("double"))).isEqualTo(1.0);
+      assertThat(attributes.get(stringArrayKey("stringArray")))
+          .isEqualTo(Arrays.asList(strVal, strVal));
+      assertThat(attributes.get(booleanArrayKey("booleanArray")))
+          .isEqualTo(Arrays.asList(true, false));
+      assertThat(attributes.get(longArrayKey("longArray"))).isEqualTo(Arrays.asList(1L, 2L));
+      assertThat(attributes.get(doubleArrayKey("doubleArray"))).isEqualTo(Arrays.asList(1.0, 2.0));
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
   void droppingAttributes() {
     final int maxNumberOfAttributes = 8;
     SpanLimits spanLimits =
@@ -894,8 +993,10 @@ class RecordEventsReadableSpanTest {
 
   private RecordEventsReadableSpan createTestSpanWithAttributes(
       Map<AttributeKey, Object> attributes) {
+    SpanLimits spanLimits = SpanLimits.getDefault();
     AttributesMap attributesMap =
-        new AttributesMap(SpanLimits.getDefault().getMaxNumberOfAttributes());
+        new AttributesMap(
+            spanLimits.getMaxNumberOfAttributes(), spanLimits.getMaxAttributeValueLength());
     attributes.forEach(attributesMap::put);
     return createTestSpan(
         SpanKind.INTERNAL,
@@ -938,13 +1039,14 @@ class RecordEventsReadableSpanTest {
             instrumentationLibraryInfo,
             kind,
             parentSpanId != null
-                ? SpanContext.create(
-                    traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())
-                : SpanContext.getInvalid(),
+                ? Span.wrap(
+                    SpanContext.create(
+                        traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
+                : Span.getInvalid(),
             Context.root(),
             config,
             spanProcessor,
-            AnchoredClock.create(testClock),
+            testClock,
             resource,
             attributes,
             links,
@@ -1011,7 +1113,7 @@ class RecordEventsReadableSpanTest {
     TestClock clock = TestClock.create();
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
-    final AttributesMap attributesWithCapacity = new AttributesMap(32);
+    final AttributesMap attributesWithCapacity = new AttributesMap(32, Integer.MAX_VALUE);
     attributes.forEach((key, value) -> attributesWithCapacity.put((AttributeKey) key, value));
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
@@ -1026,13 +1128,14 @@ class RecordEventsReadableSpanTest {
             instrumentationLibraryInfo,
             kind,
             parentSpanId != null
-                ? SpanContext.create(
-                    traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault())
-                : SpanContext.getInvalid(),
+                ? Span.wrap(
+                    SpanContext.create(
+                        traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
+                : Span.getInvalid(),
             Context.root(),
             spanLimits,
             spanProcessor,
-            AnchoredClock.create(clock),
+            clock,
             resource,
             attributesWithCapacity,
             Collections.singletonList(link1),

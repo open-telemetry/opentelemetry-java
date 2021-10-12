@@ -8,10 +8,9 @@ plugins {
   eclipse
   idea
 
-  id("com.diffplug.spotless")
-
   id("otel.errorprone-conventions")
   id("otel.jacoco-conventions")
+  id("otel.spotless-conventions")
 }
 
 val otelJava = extensions.create<OtelJavaExtension>("otelJava")
@@ -26,7 +25,7 @@ base {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
+    languageVersion.set(JavaLanguageVersion.of(17))
   }
 
   withJavadocJar()
@@ -136,17 +135,33 @@ tasks {
   }
 }
 
+// Add version information to published artifacts.
+plugins.withId("otel.publish-conventions") {
+  tasks {
+    register("generateVersionResource") {
+      val moduleName = otelJava.moduleName
+      val propertiesDir = moduleName.map { File(buildDir, "generated/properties/${it.replace('.', '/')}") }
+
+      inputs.property("project.version", project.version.toString())
+      outputs.dir(propertiesDir)
+
+      doLast {
+        File(propertiesDir.get(), "version.properties").writeText("sdk.version=${project.version}")
+      }
+    }
+  }
+
+  sourceSets {
+    main {
+      output.dir("$buildDir/generated/properties", "builtBy" to "generateVersionResource")
+    }
+  }
+}
+
 configurations.configureEach {
   resolutionStrategy {
     failOnVersionConflict()
     preferProjectModules()
-  }
-}
-
-spotless {
-  java {
-    googleJavaFormat("1.9")
-    licenseHeaderFile(rootProject.file("buildscripts/spotless.license.java"), "(package|import|class|// Includes work from:)")
   }
 }
 
@@ -183,7 +198,6 @@ dependencies {
   testImplementation("io.github.netmikey.logunit:logunit-jul")
 
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
   errorprone("com.google.errorprone:error_prone_core")
   errorprone("com.uber.nullaway:nullaway")

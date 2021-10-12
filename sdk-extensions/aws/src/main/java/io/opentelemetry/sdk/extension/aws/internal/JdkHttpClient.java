@@ -56,7 +56,7 @@ public final class JdkHttpClient {
     final HttpURLConnection connection;
 
     try {
-      if (urlStr.startsWith("https")) {
+      if (urlStr.startsWith("https") && certPath != null) {
         connection = (HttpURLConnection) new URL(urlStr).openConnection();
         KeyStore keyStore = getKeystoreForTrustedCert(certPath);
         if (keyStore != null) {
@@ -125,6 +125,7 @@ public final class JdkHttpClient {
     return "";
   }
 
+  @Nullable
   private static SSLSocketFactory buildSslSocketFactory(KeyStore keyStore) {
     try {
       String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
@@ -141,6 +142,7 @@ public final class JdkHttpClient {
     return null;
   }
 
+  @Nullable
   private static KeyStore getKeystoreForTrustedCert(String certPath) {
     try (FileInputStream fis = new FileInputStream(certPath)) {
       KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());

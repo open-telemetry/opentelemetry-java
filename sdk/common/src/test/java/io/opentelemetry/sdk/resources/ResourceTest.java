@@ -17,6 +17,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.testing.EqualsTester;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
@@ -91,6 +92,35 @@ class ResourceTest {
     resource = Resource.create(attributes.build());
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(7);
+  }
+
+  @Test
+  void builder_ignoreNull() {
+    Resource resource =
+        Resource.builder()
+            .put((String) null, "cat")
+            .put("bear", (String) null)
+            .put(null, 1.0)
+            .put(null, false)
+            .put(null, "foo", "bar")
+            .put("dog", (String[]) null)
+            .put(null, 1.0, 2.0)
+            .put("mouse", (double[]) null)
+            .put(null, true, false)
+            .put("elephant", (boolean[]) null)
+            .put((AttributeKey<String>) null, "foo")
+            .put(stringKey("monkey"), null)
+            .put(stringKey(null), "foo")
+            .put(stringKey(""), "foo")
+            .put((AttributeKey<Long>) null, 10)
+            .put(longKey(null), 10)
+            .put(longKey(""), 10)
+            .putAll((Attributes) null)
+            .putAll((Resource) null)
+            .setSchemaUrl(null)
+            .build();
+
+    assertThat(resource).isEqualTo(Resource.empty());
   }
 
   @Test
@@ -207,11 +237,13 @@ class ResourceTest {
   @Test
   void testDefaultResources() {
     Resource resource = Resource.getDefault();
-    Attributes attributes = resource.getAttributes();
-    assertThat(attributes.get(ResourceAttributes.SERVICE_NAME)).isEqualTo("unknown_service:java");
-    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_NAME)).isEqualTo("opentelemetry");
-    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
-    assertThat(attributes.get(ResourceAttributes.TELEMETRY_SDK_VERSION)).isNotNull();
+    assertThat(resource.getAttribute(ResourceAttributes.SERVICE_NAME))
+        .isEqualTo("unknown_service:java");
+    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_NAME))
+        .isEqualTo("opentelemetry");
+    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_LANGUAGE)).isEqualTo("java");
+    assertThat(resource.getAttribute(ResourceAttributes.TELEMETRY_SDK_VERSION))
+        .isEqualTo(System.getProperty("otel.test.project-version"));
   }
 
   @Test
@@ -224,7 +256,7 @@ class ResourceTest {
 
     // then no exception is thrown
     // and
-    assertThat(builder.build().getAttributes().get(ResourceAttributes.SERVICE_NAME))
+    assertThat(builder.build().getAttribute(ResourceAttributes.SERVICE_NAME))
         .isEqualTo("unknown_service:java");
   }
 
@@ -239,7 +271,7 @@ class ResourceTest {
     // then
     Resource resource = builder.build();
     assertThat(resource).isNotSameAs(Resource.getDefault());
-    assertThat(resource.getAttributes().get(stringKey("dog says what?"))).isEqualTo("woof");
+    assertThat(resource.getAttribute(stringKey("dog says what?"))).isEqualTo("woof");
   }
 
   @Test

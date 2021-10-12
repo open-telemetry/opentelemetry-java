@@ -8,7 +8,6 @@ OpenTelemetry SDK
 
 ---
 #### Running micro-benchmarks
-From the root of the repo run `./gradlew clean :opentelemetry-sdk:jmh` to run all the benchmarks 
-or run `./gradlew clean :opentelemetry-sdk:jmh -PjmhIncludeSingleClass=<ClassNameHere>` 
+From the root of the repo run `./gradlew clean :opentelemetry-sdk:jmh` to run all the benchmarks
+or run `./gradlew clean :opentelemetry-sdk:jmh -PjmhIncludeSingleClass=<ClassNameHere>`
 to run a specific benchmark class.
-

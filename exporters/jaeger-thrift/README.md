@@ -2,7 +2,7 @@
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
-This is the OpenTelemetry exporter, sending span data to Jaeger via Thrift over HTTP. 
+This is the OpenTelemetry exporter, sending span data to Jaeger via Thrift over HTTP.
 
 ## Configuration
 
@@ -25,5 +25,5 @@ the [autoconfigure](../../sdk-extensions/autoconfigure) module.
 
 As with the OpenTelemetry SDK itself, this exporter is compatible with Java 8+ and Android API level 24+.
 
-[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporters-jaeger-thrift.svg
-[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporters-jaeger-thrift
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-exporter-jaeger-thrift.svg
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-exporter-jaeger-thrift

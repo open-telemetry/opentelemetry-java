@@ -13,7 +13,7 @@ on:
 
 jobs:
   prepare-release-branch:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     outputs:
       release-branch-name: ${{ steps.parse-release-branch.outputs.release-branch-name }}
     steps:
@@ -42,7 +42,7 @@ jobs:
           git checkout -b ${{ steps.parse-release-branch.outputs.release-branch-name }}
           git push --set-upstream origin ${{ steps.parse-release-branch.outputs.release-branch-name }}
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: prepare-release-branch
     steps:
       - name: Checkout release branch
@@ -52,7 +52,7 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: adopt
-          java-version: 11
+          java-version: 17
       - name: Setup git name
         run: |
           git config user.name github-actions
@@ -67,7 +67,7 @@ jobs:
           done
       - uses: burrunan/gradle-cache-action@v1.10
         with:
-          job-id: jdk11
+          job-id: jdk17
           remote-build-cache-proxy-enabled: false
           arguments: build --stacktrace -Prelease.version=${{ github.event.inputs.version }}
       - name: Publish artifacts

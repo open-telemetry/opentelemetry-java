@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
@@ -27,7 +28,7 @@ public final class EnvironmentResource {
    * OTEL_RESOURCE_ATTRIBUTES/OTEL_SERVICE_NAME environment variables.
    */
   public static Resource get() {
-    return create(ConfigProperties.get());
+    return create(DefaultConfigProperties.get());
   }
 
   static Resource create(ConfigProperties config) {
@@ -37,7 +38,7 @@ public final class EnvironmentResource {
   // visible for testing
   static Attributes getAttributes(ConfigProperties configProperties) {
     AttributesBuilder resourceAttributes = Attributes.builder();
-    configProperties.getCommaSeparatedMap(ATTRIBUTE_PROPERTY).forEach(resourceAttributes::put);
+    configProperties.getMap(ATTRIBUTE_PROPERTY).forEach(resourceAttributes::put);
     String serviceName = configProperties.getString(SERVICE_NAME_PROPERTY);
     if (serviceName != null) {
       resourceAttributes.put(ResourceAttributes.SERVICE_NAME, serviceName);

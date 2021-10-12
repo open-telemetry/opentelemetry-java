@@ -18,7 +18,7 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.5.0";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.7.0";
 
   /**
    * The full invoked ARN as provided on the {@code Context} passed to the function ({@code
@@ -344,6 +344,30 @@ public final class SemanticAttributes {
   /** Local hostname or similar, see note below. */
   public static final AttributeKey<String> NET_HOST_NAME = stringKey("net.host.name");
 
+  /** The internet connection type currently being used by the host. */
+  public static final AttributeKey<String> NET_HOST_CONNECTION_TYPE =
+      stringKey("net.host.connection.type");
+
+  /**
+   * This describes more details regarding the connection.type. It may be the type of cell
+   * technology connection, but it could be used for describing details about a wifi connection.
+   */
+  public static final AttributeKey<String> NET_HOST_CONNECTION_SUBTYPE =
+      stringKey("net.host.connection.subtype");
+
+  /** The name of the mobile carrier. */
+  public static final AttributeKey<String> NET_HOST_CARRIER_NAME =
+      stringKey("net.host.carrier.name");
+
+  /** The mobile carrier country code. */
+  public static final AttributeKey<String> NET_HOST_CARRIER_MCC = stringKey("net.host.carrier.mcc");
+
+  /** The mobile carrier network code. */
+  public static final AttributeKey<String> NET_HOST_CARRIER_MNC = stringKey("net.host.carrier.mnc");
+
+  /** The ISO 3166-1 alpha-2 2-character country code associated with the mobile carrier network. */
+  public static final AttributeKey<String> NET_HOST_CARRIER_ICC = stringKey("net.host.carrier.icc");
+
   /**
    * The <a href="../../resource/semantic_conventions/README.md#service">{@code service.name}</a> of
    * the remote service. SHOULD be equal to the actual {@code service.name} resource attribute of
@@ -427,7 +451,16 @@ public final class SemanticAttributes {
 
   /**
    * The value of the <a href="https://tools.ietf.org/html/rfc7230#section-5.4">HTTP host
-   * header</a>. When the header is empty or not present, this attribute should be the same.
+   * header</a>. An empty Host header should also be reported, see note.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>When the header is present but empty the attribute SHOULD be set to the empty string.
+   *       Note that this is a valid situation that is expected in certain cases, according the
+   *       aforementioned <a href="https://tools.ietf.org/html/rfc7230#section-5.4">section of RFC
+   *       7230</a>. When the header is not set the attribute MUST NOT be set.
+   * </ul>
    */
   public static final AttributeKey<String> HTTP_HOST = stringKey("http.host");
 
@@ -515,6 +548,12 @@ public final class SemanticAttributes {
    * <ul>
    *   <li>This is not necessarily the same as {@code net.peer.ip}, which would identify the
    *       network-level peer, which may be a proxy.
+   *   <li>This attribute should be set when a source of information different from the one used for
+   *       {@code net.peer.ip}, is available even if that other source just confirms the same value
+   *       as {@code net.peer.ip}. Rationale: For {@code net.peer.ip}, one typically does not know
+   *       if it comes from a proxy, reverse proxy, or the actual client. Setting {@code
+   *       http.client_ip} when it's the same as {@code net.peer.ip} means that one is at least
+   *       somewhat confident that the address is not that of the closest proxy.
    * </ul>
    */
   public static final AttributeKey<String> HTTP_CLIENT_IP = stringKey("http.client_ip");
@@ -665,6 +704,15 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> MESSAGING_OPERATION = stringKey("messaging.operation");
 
+  /**
+   * The identifier for the consumer receiving a message. For Kafka, set it to {@code
+   * {messaging.kafka.consumer_group} - {messaging.kafka.client_id}}, if both are present, or only
+   * {@code messaging.kafka.consumer_group}. For brokers, such as RabbitMQ and Artemis, set it to
+   * the {@code client_id} of the client consuming the message.
+   */
+  public static final AttributeKey<String> MESSAGING_CONSUMER_ID =
+      stringKey("messaging.consumer_id");
+
   /** RabbitMQ message routing key. */
   public static final AttributeKey<String> MESSAGING_RABBITMQ_ROUTING_KEY =
       stringKey("messaging.rabbitmq.routing_key");
@@ -762,6 +810,30 @@ public final class SemanticAttributes {
   /** {@code error.message} property of response if it is an error response. */
   public static final AttributeKey<String> RPC_JSONRPC_ERROR_MESSAGE =
       stringKey("rpc.jsonrpc.error_message");
+
+  /** Whether this is a received or sent message. */
+  public static final AttributeKey<String> MESSAGE_TYPE = stringKey("message.type");
+
+  /**
+   * MUST be calculated as two different counters starting from {@code 1} one for sent messages and
+   * one for received message.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>This way we guarantee that the values will be consistent between different
+   *       implementations.
+   * </ul>
+   */
+  public static final AttributeKey<Long> MESSAGE_ID = longKey("message.id");
+
+  /** Compressed size of the message in bytes. */
+  public static final AttributeKey<Long> MESSAGE_COMPRESSED_SIZE =
+      longKey("message.compressed_size");
+
+  /** Uncompressed size of the message in bytes. */
+  public static final AttributeKey<Long> MESSAGE_UNCOMPRESSED_SIZE =
+      longKey("message.uncompressed_size");
 
   // Enum definitions
   public static final class DbSystemValues {
@@ -917,6 +989,8 @@ public final class SemanticAttributes {
   }
 
   public static final class FaasInvokedProviderValues {
+    /** Alibaba Cloud. */
+    public static final String ALIBABA_CLOUD = "alibaba_cloud";
     /** Amazon Web Services. */
     public static final String AWS = "aws";
     /** Microsoft Azure. */
@@ -944,6 +1018,68 @@ public final class SemanticAttributes {
     public static final String OTHER = "other";
 
     private NetTransportValues() {}
+  }
+
+  public static final class NetHostConnectionTypeValues {
+    /** wifi. */
+    public static final String WIFI = "wifi";
+    /** wired. */
+    public static final String WIRED = "wired";
+    /** cell. */
+    public static final String CELL = "cell";
+    /** unavailable. */
+    public static final String UNAVAILABLE = "unavailable";
+    /** unknown. */
+    public static final String UNKNOWN = "unknown";
+
+    private NetHostConnectionTypeValues() {}
+  }
+
+  public static final class NetHostConnectionSubtypeValues {
+    /** GPRS. */
+    public static final String GPRS = "gprs";
+    /** EDGE. */
+    public static final String EDGE = "edge";
+    /** UMTS. */
+    public static final String UMTS = "umts";
+    /** CDMA. */
+    public static final String CDMA = "cdma";
+    /** EVDO Rel. 0. */
+    public static final String EVDO_0 = "evdo_0";
+    /** EVDO Rev. A. */
+    public static final String EVDO_A = "evdo_a";
+    /** CDMA2000 1XRTT. */
+    public static final String CDMA2000_1XRTT = "cdma2000_1xrtt";
+    /** HSDPA. */
+    public static final String HSDPA = "hsdpa";
+    /** HSUPA. */
+    public static final String HSUPA = "hsupa";
+    /** HSPA. */
+    public static final String HSPA = "hspa";
+    /** IDEN. */
+    public static final String IDEN = "iden";
+    /** EVDO Rev. B. */
+    public static final String EVDO_B = "evdo_b";
+    /** LTE. */
+    public static final String LTE = "lte";
+    /** EHRPD. */
+    public static final String EHRPD = "ehrpd";
+    /** HSPAP. */
+    public static final String HSPAP = "hspap";
+    /** GSM. */
+    public static final String GSM = "gsm";
+    /** TD-SCDMA. */
+    public static final String TD_SCDMA = "td_scdma";
+    /** IWLAN. */
+    public static final String IWLAN = "iwlan";
+    /** 5G NR (New Radio). */
+    public static final String NR = "nr";
+    /** 5G NRNSA (New Radio Non-Standalone). */
+    public static final String NRNSA = "nrnsa";
+    /** LTE CA. */
+    public static final String LTE_CA = "lte_ca";
+
+    private NetHostConnectionSubtypeValues() {}
   }
 
   public static final class HttpFlavorValues {
@@ -1016,6 +1152,15 @@ public final class SemanticAttributes {
     public static final long UNAUTHENTICATED = 16;
 
     private RpcGrpcStatusCodeValues() {}
+  }
+
+  public static final class MessageTypeValues {
+    /** sent. */
+    public static final String SENT = "SENT";
+    /** received. */
+    public static final String RECEIVED = "RECEIVED";
+
+    private MessageTypeValues() {}
   }
 
   // Manually defined and not YET in the YAML

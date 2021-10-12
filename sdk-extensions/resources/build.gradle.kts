@@ -22,36 +22,19 @@ dependencies {
   testImplementation("org.junit-pioneer:junit-pioneer")
 }
 
-sourceSets {
-  main {
-    output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
-  }
-}
-
-tasks {
-  register("generateVersionResource") {
-    val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk/extension/resources")
-    outputs.dir(propertiesDir)
-
-    doLast {
-      File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
-    }
-  }
-}
-
 for (version in mrJarVersions) {
   sourceSets {
-    create("java${version}") {
+    create("java$version") {
       java {
-        setSrcDirs(listOf("src/main/java${version}"))
+        setSrcDirs(listOf("src/main/java$version"))
       }
     }
   }
 
   tasks {
     named<JavaCompile>("compileJava${version}Java") {
-      sourceCompatibility = "${version}"
-      targetCompatibility = "${version}"
+      sourceCompatibility = "$version"
+      targetCompatibility = "$version"
       options.release.set(version)
     }
   }
@@ -74,8 +57,8 @@ for (version in mrJarVersions) {
 tasks {
   withType(Jar::class) {
     for (version in mrJarVersions) {
-      into("META-INF/versions/${version}") {
-        from(sourceSets["java${version}"].output)
+      into("META-INF/versions/$version") {
+        from(sourceSets["java$version"].output)
       }
     }
     manifest.attributes(

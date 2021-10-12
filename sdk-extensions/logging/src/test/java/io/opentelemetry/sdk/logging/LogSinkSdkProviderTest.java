@@ -14,10 +14,12 @@ import io.opentelemetry.api.trace.SpanId;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logging.util.TestLogExporter;
 import io.opentelemetry.sdk.logging.util.TestLogProcessor;
+import io.opentelemetry.sdk.resources.Resource;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +28,9 @@ import org.junit.jupiter.api.Test;
 class LogSinkSdkProviderTest {
 
   private static LogRecord createLog(LogRecord.Severity severity, String message) {
-    return LogRecord.builder()
+    return LogRecord.builder(
+            Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+            InstrumentationLibraryInfo.create("instrumentation", "1"))
         .setUnixTimeMillis(System.currentTimeMillis())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
@@ -119,7 +123,7 @@ class LogSinkSdkProviderTest {
     provider.addLogProcessor(processorOne);
     provider.addLogProcessor(processorTwo);
     LogSink sink = provider.get("test", "0.1");
-    LogRecord record = LogRecord.builder().setBody("test").build();
+    LogRecord record = createLog(LogRecord.Severity.INFO, "test");
     sink.offer(record);
     assertThat(processorOne.getRecords().size()).isEqualTo(1);
     assertThat(processorTwo.getRecords().size()).isEqualTo(1);

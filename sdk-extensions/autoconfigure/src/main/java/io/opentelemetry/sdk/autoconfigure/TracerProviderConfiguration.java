@@ -5,8 +5,10 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigurableSamplerProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
@@ -19,10 +21,12 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 final class TracerProviderConfiguration {
 
@@ -41,35 +45,42 @@ final class TracerProviderConfiguration {
     // processors to effect export.
     for (SdkTracerProviderConfigurer configurer :
         ServiceLoader.load(SdkTracerProviderConfigurer.class)) {
-      configurer.configure(tracerProviderBuilder);
+      configurer.configure(tracerProviderBuilder, config);
     }
 
-    String exporterName = config.getString("otel.traces.exporter");
-    if (exporterName == null) {
-      exporterName = "otlp";
-    }
-    SpanExporter exporter = SpanExporterConfiguration.configureExporter(exporterName, config);
-    if (exporter != null) {
-      tracerProviderBuilder.addSpanProcessor(
-          configureSpanProcessor(config, exporter, exporterName));
-    }
+    Map<String, SpanExporter> exportersByName =
+        SpanExporterConfiguration.configureSpanExporters(config);
+
+    configureSpanProcessors(config, exportersByName)
+        .forEach(tracerProviderBuilder::addSpanProcessor);
 
     SdkTracerProvider tracerProvider = tracerProviderBuilder.build();
     Runtime.getRuntime().addShutdownHook(new Thread(tracerProvider::close));
     return tracerProvider;
   }
 
-  // VisibleForTesting
-  static SpanProcessor configureSpanProcessor(
-      ConfigProperties config, SpanExporter exporter, String exporterName) {
-    if (exporterName.equals("logging")) {
-      return SimpleSpanProcessor.create(exporter);
+  static List<SpanProcessor> configureSpanProcessors(
+      ConfigProperties config, Map<String, SpanExporter> exportersByName) {
+    Map<String, SpanExporter> exportersByNameCopy = new HashMap<>(exportersByName);
+    List<SpanProcessor> spanProcessors = new ArrayList<>();
+
+    SpanExporter exporter = exportersByName.get("logging");
+    if (exporter != null) {
+      spanProcessors.add(SimpleSpanProcessor.create(exporter));
+      exportersByNameCopy.remove("logging");
     }
-    return configureSpanProcessor(config, exporter);
+
+    if (!exportersByNameCopy.isEmpty()) {
+      SpanExporter compositeSpanExporter = SpanExporter.composite(exportersByNameCopy.values());
+      spanProcessors.add(configureBatchSpanProcessor(config, compositeSpanExporter));
+    }
+
+    return spanProcessors;
   }
 
   // VisibleForTesting
-  static BatchSpanProcessor configureSpanProcessor(ConfigProperties config, SpanExporter exporter) {
+  static BatchSpanProcessor configureBatchSpanProcessor(
+      ConfigProperties config, SpanExporter exporter) {
     BatchSpanProcessorBuilder builder = BatchSpanProcessor.builder(exporter);
 
     Duration scheduleDelay = config.getDuration("otel.bsp.schedule.delay");
@@ -99,6 +110,11 @@ final class TracerProviderConfiguration {
   static SpanLimits configureSpanLimits(ConfigProperties config) {
     SpanLimitsBuilder builder = SpanLimits.builder();
 
+    Integer maxLength = config.getInt("otel.span.attribute.value.length.limit");
+    if (maxLength != null) {
+      builder.setMaxAttributeValueLength(maxLength);
+    }
+
     Integer maxAttrs = config.getInt("otel.span.attribute.count.limit");
     if (maxAttrs != null) {
       builder.setMaxNumberOfAttributes(maxAttrs);
@@ -120,12 +136,12 @@ final class TracerProviderConfiguration {
   // Visible for testing
   static Sampler configureSampler(String sampler, ConfigProperties config) {
     Map<String, Sampler> spiSamplers =
-        StreamSupport.stream(
-                ServiceLoader.load(ConfigurableSamplerProvider.class).spliterator(), false)
-            .collect(
-                Collectors.toMap(
-                    ConfigurableSamplerProvider::getName,
-                    provider -> provider.createSampler(config)));
+        SpiUtil.loadConfigurable(
+            ConfigurableSamplerProvider.class,
+            Collections.singletonList(sampler),
+            ConfigurableSamplerProvider::getName,
+            ConfigurableSamplerProvider::createSampler,
+            config);
 
     switch (sampler) {
       case "always_on":

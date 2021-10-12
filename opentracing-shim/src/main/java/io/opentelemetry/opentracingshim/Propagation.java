@@ -60,8 +60,10 @@ final class Propagation extends BaseShimObject {
     private TextMapSetter() {}
 
     @Override
-    public void set(TextMapInject carrier, String key, String value) {
-      carrier.put(key, value);
+    public void set(@Nullable TextMapInject carrier, String key, String value) {
+      if (carrier != null) {
+        carrier.put(key, value);
+      }
     }
   }
 
@@ -71,14 +73,17 @@ final class Propagation extends BaseShimObject {
       implements io.opentelemetry.context.propagation.TextMapGetter<Map<String, String>> {
     private TextMapGetter() {}
 
-    @Nullable
     @Override
     public Iterable<String> keys(Map<String, String> carrier) {
       return carrier.keySet();
     }
 
     @Override
-    public String get(Map<String, String> carrier, String key) {
+    @Nullable
+    public String get(@Nullable Map<String, String> carrier, String key) {
+      if (carrier == null) {
+        return null;
+      }
       for (Map.Entry<String, String> entry : carrier.entrySet()) {
         if (key.equalsIgnoreCase(entry.getKey())) {
           return entry.getValue();

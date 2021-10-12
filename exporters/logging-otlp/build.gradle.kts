@@ -14,7 +14,7 @@ dependencies {
 
   implementation(project(":exporters:otlp:common"))
 
-  implementation("org.curioswitch.curiostack:protobuf-jackson")
+  implementation("com.fasterxml.jackson.core:jackson-core")
 
   testImplementation(project(":sdk:testing"))
 

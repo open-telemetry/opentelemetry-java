@@ -5,15 +5,14 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
-import com.google.rpc.Code;
-import com.google.rpc.Status;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.exporter.otlp.internal.ProtoRequestBody;
+import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
+import io.opentelemetry.exporter.otlp.internal.traces.TraceRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -49,10 +48,10 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   private static final Attributes EXPORT_FAILURE_LABELS =
       Attributes.builder().put("exporter", EXPORTER_NAME).put("success", false).build();
 
-  private static final MediaType PROTOBUF_MEDIA_TYPE = MediaType.parse("application/x-protobuf");
+  private static final Logger internalLogger =
+      Logger.getLogger(OtlpHttpSpanExporter.class.getName());
 
-  private final ThrottlingLogger logger =
-      new ThrottlingLogger(Logger.getLogger(OtlpHttpSpanExporter.class.getName()));
+  private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
   private final BoundLongCounter spansSeen;
   private final BoundLongCounter spansExportedSuccess;
@@ -64,7 +63,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   private final boolean compressionEnabled;
 
   OtlpHttpSpanExporter(
-      OkHttpClient client, String endpoint, Headers headers, boolean compressionEnabled) {
+      OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
     Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http");
     this.spansSeen = meter.counterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
     LongCounter spansExportedCounter = meter.counterBuilder("spansExportedByExporter").build();
@@ -86,17 +85,14 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
     spansSeen.add(spans.size());
-    ExportTraceServiceRequest exportTraceServiceRequest =
-        ExportTraceServiceRequest.newBuilder()
-            .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
-            .build();
+
+    TraceRequestMarshaler exportRequest = TraceRequestMarshaler.create(spans);
 
     Request.Builder requestBuilder = new Request.Builder().url(endpoint);
     if (headers != null) {
       requestBuilder.headers(headers);
     }
-    RequestBody requestBody =
-        RequestBody.create(exportTraceServiceRequest.toByteArray(), PROTOBUF_MEDIA_TYPE);
+    RequestBody requestBody = new ProtoRequestBody(exportRequest);
     if (compressionEnabled) {
       requestBuilder.addHeader("Content-Encoding", "gzip");
       requestBuilder.post(gzipRequestBody(requestBody));
@@ -131,14 +127,14 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
                 spansExportedFailure.add(spans.size());
                 int code = response.code();
 
-                Status status = extractErrorStatus(response);
+                String status = extractErrorStatus(response);
 
                 logger.log(
                     Level.WARNING,
                     "Failed to export spans. Server responded with HTTP status code "
                         + code
                         + ". Error message: "
-                        + status.getMessage());
+                        + status);
                 result.fail();
               }
             });
@@ -167,21 +163,15 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
     };
   }
 
-  private static Status extractErrorStatus(Response response) {
+  private static String extractErrorStatus(Response response) {
     ResponseBody responseBody = response.body();
     if (responseBody == null) {
-      return Status.newBuilder()
-          .setMessage("Response body missing, HTTP status message: " + response.message())
-          .setCode(Code.UNKNOWN.getNumber())
-          .build();
+      return "Response body missing, HTTP status message: " + response.message();
     }
     try {
-      return Status.parseFrom(responseBody.bytes());
+      return GrpcStatusUtil.getStatusMessage(responseBody.bytes());
     } catch (IOException e) {
-      return Status.newBuilder()
-          .setMessage("Unable to parse response body, HTTP status message: " + response.message())
-          .setCode(Code.UNKNOWN.getNumber())
-          .build();
+      return "Unable to parse response body, HTTP status message: " + response.message();
     }
   }
 

@@ -1,5 +1,6 @@
-OpenTelemetry SDK Extension Java Flight Recorder (JFR) Events
-======================================================
+# OpenTelemetry SDK Extension Java Flight Recorder (JFR) Events
+
+[![Javadocs][javadoc-image]][javadoc-url]
 
 Create JFR events that can be recorded and viewed in Java Mission Control (JMC).
 * Creates Open Telemetry Tracing/Span events for spans
@@ -17,3 +18,6 @@ Create JFR events that can be recorded and viewed in Java Mission Control (JMC).
         * Span ID
 * Supports the Open Source version of JFR in Java 11.
     * Might support back port to OpenJDK 8, but not tested and classes are built with JDK 11 bytecode.
+
+[javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-sdk-extension-jfr-events.svg
+[javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-sdk-extension-jfr-events

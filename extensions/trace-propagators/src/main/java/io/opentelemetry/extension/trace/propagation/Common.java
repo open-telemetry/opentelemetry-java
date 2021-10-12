@@ -31,7 +31,11 @@ final class Common {
 
   private Common() {}
 
-  static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {
+  static SpanContext buildSpanContext(
+      @Nullable String traceId, @Nullable String spanId, @Nullable String sampled) {
+    if (traceId == null || spanId == null) {
+      return SpanContext.getInvalid();
+    }
     try {
       TraceFlags traceFlags =
           TRUE_INT.equals(sampled) || Boolean.parseBoolean(sampled) // accept either "1" or "true"

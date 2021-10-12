@@ -7,11 +7,16 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
+import io.opentelemetry.sdk.metrics.internal.view.ViewRegistryBuilder;
 import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -22,7 +27,10 @@ public final class SdkMeterProviderBuilder {
 
   private Clock clock = Clock.getDefault();
   private Resource resource = Resource.getDefault();
-  private final Map<InstrumentSelector, View> instrumentSelectorViews = new HashMap<>();
+  private final ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
+  private final List<MetricReaderFactory> metricReaders = new ArrayList<>();
+  // Default the sampling strategy.
+  private ExemplarFilter exemplarFilter = ExemplarFilter.sampleWithTraces();
 
   SdkMeterProviderBuilder() {}
 
@@ -39,7 +47,7 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
-   * Assign a {@link Resource} to be attached to all Spans created by Tracers.
+   * Assign a {@link Resource} to be attached to all metrics created by Meters.
    *
    * @param resource A Resource implementation.
    * @return this
@@ -47,6 +55,16 @@ public final class SdkMeterProviderBuilder {
   public SdkMeterProviderBuilder setResource(Resource resource) {
     Objects.requireNonNull(resource, "resource");
     this.resource = resource;
+    return this;
+  }
+
+  /**
+   * Assign an {@link ExemplarFilter} for all metrics created by Meters.
+   *
+   * @return this
+   */
+  public SdkMeterProviderBuilder setExemplarFilter(ExemplarFilter filter) {
+    this.exemplarFilter = filter;
     return this;
   }
 
@@ -77,7 +95,7 @@ public final class SdkMeterProviderBuilder {
   public SdkMeterProviderBuilder registerView(InstrumentSelector selector, View view) {
     Objects.requireNonNull(selector, "selector");
     Objects.requireNonNull(view, "view");
-    instrumentSelectorViews.put(selector, view);
+    viewRegistryBuilder.addView(selector, view);
     return this;
   }
 
@@ -95,6 +113,17 @@ public final class SdkMeterProviderBuilder {
   }
 
   /**
+   * Registers a {@link MetricReader} for this SDK.
+   *
+   * @param reader The factory for a reader of metrics.
+   * @return this
+   */
+  public SdkMeterProviderBuilder registerMetricReader(MetricReaderFactory reader) {
+    metricReaders.add(reader);
+    return this;
+  }
+
+  /**
    * Returns a new {@link SdkMeterProvider} built with the configuration of this {@link
    * SdkMeterProviderBuilder}. This provider is not registered as the global {@link
    * io.opentelemetry.api.metrics.MeterProvider}. It is recommended that you register one provider
@@ -105,9 +134,11 @@ public final class SdkMeterProviderBuilder {
    * @see GlobalMeterProvider
    */
   public SdkMeterProvider build() {
-    ViewRegistryBuilder viewRegistryBuilder = ViewRegistry.builder();
-    instrumentSelectorViews.forEach(viewRegistryBuilder::addView);
-    ViewRegistry viewRegistry = viewRegistryBuilder.build();
-    return new SdkMeterProvider(clock, resource, viewRegistry);
+    // If no exporters are configured, optimize by returning no-op implementation.
+    if (metricReaders.isEmpty()) {
+      return new NoopSdkMeterProvider();
+    }
+    return new DefaultSdkMeterProvider(
+        metricReaders, clock, resource, viewRegistryBuilder.build(), exemplarFilter);
   }
 }

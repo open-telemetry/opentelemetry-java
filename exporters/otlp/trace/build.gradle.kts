@@ -2,9 +2,9 @@ plugins {
   id("otel.java-conventions")
   id("otel.publish-conventions")
 
-  id("otel.jmh-conventions")
-  id("org.unbroken-dome.test-sets")
   id("otel.animalsniffer-conventions")
+
+  id("org.unbroken-dome.test-sets")
 }
 
 description = "OpenTelemetry Protocol Trace Exporter"
@@ -14,24 +14,35 @@ testSets {
   create("testGrpcNetty")
   create("testGrpcNettyShaded")
   create("testGrpcOkhttp")
+  create("testOkhttpOnly")
+
+  // Mainly to conveniently profile through IDEA. Don't add to check task, it's for
+  // manual invocation.
+  create("testSpanPipeline")
 }
 
 dependencies {
   api(project(":sdk:trace"))
 
+  implementation(project(":api:metrics"))
+
+  implementation(project(":exporters:otlp:common"))
+
   compileOnly("io.grpc:grpc-netty")
   compileOnly("io.grpc:grpc-netty-shaded")
   compileOnly("io.grpc:grpc-okhttp")
 
-  implementation(project(":exporters:otlp:common"))
+  compileOnly("com.squareup.okhttp3:okhttp")
+
+  api("io.grpc:grpc-stub")
   implementation("io.grpc:grpc-api")
-  implementation("io.grpc:grpc-protobuf")
-  implementation("io.grpc:grpc-stub")
-  implementation("com.google.protobuf:protobuf-java")
 
   testImplementation(project(":sdk:testing"))
 
+  testImplementation("com.google.protobuf:protobuf-java")
+  testImplementation("io.grpc:grpc-protobuf")
   testImplementation("io.grpc:grpc-testing")
+  testImplementation("io.opentelemetry.proto:opentelemetry-proto")
   testImplementation("org.slf4j:slf4j-simple")
 
   add("testGrpcNettyImplementation", "com.linecorp.armeria:armeria-grpc")
@@ -49,11 +60,27 @@ dependencies {
   add("testGrpcOkhttpRuntimeOnly", "io.grpc:grpc-okhttp")
   add("testGrpcOkhttpRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
 
-  jmh(project(":sdk:testing"))
+  add("testOkhttpOnlyImplementation", "com.linecorp.armeria:armeria-grpc-protocol")
+  add("testOkhttpOnlyImplementation", "com.linecorp.armeria:armeria-junit5")
+  add("testOkhttpOnlyImplementation", "com.squareup.okhttp3:okhttp")
+  add("testOkhttpOnlyImplementation", "com.squareup.okhttp3:okhttp-tls")
+  add("testOkhttpOnlyRuntimeOnly", "org.bouncycastle:bcpkix-jdk15on")
+
+  add("testSpanPipeline", "io.grpc:grpc-protobuf")
+  add("testSpanPipeline", "io.grpc:grpc-testing")
+  add("testSpanPipeline", "io.opentelemetry.proto:opentelemetry-proto")
 }
 
 tasks {
-  named("check") {
-    dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp")
+  check {
+    dependsOn("testGrpcNetty", "testGrpcNettyShaded", "testGrpcOkhttp", "testOkhttpOnly")
+  }
+}
+
+configurations {
+  named("testOkhttpOnlyRuntimeClasspath") {
+    dependencies {
+      exclude("io.grpc")
+    }
   }
 }

@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +32,7 @@ public class BatchSpanProcessorMultiThreadBenchmark {
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
-    private MetricProducer collector;
+    private InMemoryMetricReader collector;
     private BatchSpanProcessor processor;
     private Tracer tracer;
     private int numThreads = 1;
@@ -45,9 +45,8 @@ public class BatchSpanProcessorMultiThreadBenchmark {
 
     @Setup(Level.Iteration)
     public final void setup() {
-      final SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
-      // Note: these will (likely) no longer be the same in future SDK.
-      collector = sdkMeterProvider;
+      collector = InMemoryMetricReader.create();
+      SdkMeterProvider.builder().registerMetricReader(collector).buildAndRegisterGlobal();
       SpanExporter exporter = new DelayingSpanExporter(delayMs);
       processor = BatchSpanProcessor.builder(exporter).build();
       tracer =

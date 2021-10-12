@@ -97,10 +97,6 @@ class OtlpJsonLoggingMetricExporterTest {
             + "            \"key\": \"cat\","
             + "            \"value\": {\"stringValue\": \"meow\"}"
             + "          }],"
-            + "          \"labels\": [{"
-            + "            \"key\": \"cat\","
-            + "            \"value\": \"meow\""
-            + "          }],"
             + "          \"startTimeUnixNano\": \"1\","
             + "          \"timeUnixNano\": \"2\","
             + "          \"asDouble\": 4.0"
@@ -124,10 +120,6 @@ class OtlpJsonLoggingMetricExporterTest {
             + "            \"key\": \"cat\","
             + "            \"value\": {\"stringValue\": \"meow\"}"
             + "          }],"
-            + "          \"labels\": [{"
-            + "            \"key\": \"cat\","
-            + "            \"value\": \"meow\""
-            + "          }],"
             + "          \"startTimeUnixNano\": \"1\","
             + "          \"timeUnixNano\": \"2\","
             + "          \"asDouble\": 4.0"
@@ -139,7 +131,7 @@ class OtlpJsonLoggingMetricExporterTest {
             + "  }]"
             + "}",
         logs.getEvents().get(0).getMessage(),
-        /* strict= */ true);
+        /* strict= */ false);
     assertThat(logs.getEvents().get(0).getMessage()).doesNotContain("\n");
   }
 

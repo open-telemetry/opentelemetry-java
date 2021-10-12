@@ -1,4 +1,6 @@
-import org.gradle.api.plugins.JavaPlugin.*
+import net.ltgt.gradle.errorprone.CheckSeverity.*
+import net.ltgt.gradle.errorprone.errorprone
+import net.ltgt.gradle.nullaway.nullaway
 
 plugins {
   id("otel.java-conventions")
@@ -25,25 +27,16 @@ dependencies {
   testImplementation(project(":sdk:metrics-testing"))
   testImplementation(project(":sdk:testing"))
   testImplementation("com.google.guava:guava")
-}
 
-sourceSets {
-  main {
-    output.dir("build/generated/properties", "builtBy" to "generateVersionResource")
-  }
+  jmh(project(":sdk:trace"))
 }
 
 tasks {
-  register("generateVersionResource") {
-    val propertiesDir = file("build/generated/properties/io/opentelemetry/sdk/metrics")
-    outputs.dir(propertiesDir)
-
-    doLast {
-      File(propertiesDir, "version.properties").writeText("sdk.version=${project.version}")
+  named<JavaCompile>("compileJava") {
+    with(options) {
+      errorprone.nullaway {
+        severity.set(OFF)
+      }
     }
-  }
-  withType(JavaCompile::class) {
-    // Ignore deprecation warnings that AutoValue creates for now.
-    options.compilerArgs.add("-Xlint:-deprecation")
   }
 }

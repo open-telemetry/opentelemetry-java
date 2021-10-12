@@ -7,15 +7,21 @@ package io.opentelemetry.api.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.opentelemetry.api.internal.InternalAttributeKeyImpl;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Test;
 
 class AttributeKeyTest {
 
   @Test
-  @SuppressWarnings("AutoValueSubclassLeaked")
   void equalsVerifier() {
-    EqualsVerifier.forClass(AutoValue_AttributeKeyImpl.class).verify();
+    EqualsVerifier.forClass(InternalAttributeKeyImpl.class)
+        .withIgnoredFields("keyUtf8")
+        .withCachedHashCode(
+            "hashCode",
+            "buildHashCode",
+            (InternalAttributeKeyImpl<?>) AttributeKey.stringKey("test"))
+        .verify();
   }
 
   @Test

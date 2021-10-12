@@ -6,8 +6,8 @@
 package io.opentelemetry.exporter.otlp.http.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -19,27 +19,33 @@ import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.server.ServerBuilder;
 import com.linecorp.armeria.testing.junit5.server.mock.MockWebServerExtension;
+import com.linecorp.armeria.testing.junit5.server.mock.RecordedRequest;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.exporter.otlp.internal.SpanAdapter;
+import io.opentelemetry.exporter.otlp.internal.traces.ResourceSpansMarshaler;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
+import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import okhttp3.tls.HeldCertificate;
 import okio.Buffer;
 import okio.GzipSource;
@@ -72,6 +78,8 @@ class OtlpHttpSpanExporterTest {
       new MockWebServerExtension() {
         @Override
         protected void configureServer(ServerBuilder sb) {
+          sb.http(0);
+          sb.https(0);
           sb.tls(HELD_CERTIFICATE.keyPair().getPrivate(), HELD_CERTIFICATE.certificate());
         }
       };
@@ -85,10 +93,45 @@ class OtlpHttpSpanExporterTest {
   void setup() {
     builder =
         OtlpHttpSpanExporter.builder()
-            .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/traces")
-            .addHeader("foo", "bar")
-            .setTrustedCertificates(
-                HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8));
+            .setEndpoint("http://localhost:" + server.httpPort() + "/v1/traces")
+            .addHeader("foo", "bar");
+  }
+
+  @Test
+  @SuppressWarnings("PreferJavaTimeOverload")
+  void validConfig() {
+    assertThatCode(() -> OtlpHttpSpanExporter.builder().setTimeout(0, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpSpanExporter.builder().setTimeout(Duration.ofMillis(0)))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpSpanExporter.builder().setTimeout(10, TimeUnit.MILLISECONDS))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpSpanExporter.builder().setTimeout(Duration.ofMillis(10)))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpHttpSpanExporter.builder().setEndpoint("http://localhost:4318"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpSpanExporter.builder().setEndpoint("http://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpSpanExporter.builder().setEndpoint("https://localhost"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpSpanExporter.builder().setEndpoint("http://foo:bar@localhost"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(() -> OtlpHttpSpanExporter.builder().setCompression("gzip"))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> OtlpHttpSpanExporter.builder().setCompression("none"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () -> OtlpHttpSpanExporter.builder().addHeader("foo", "bar").addHeader("baz", "qux"))
+        .doesNotThrowAnyException();
+
+    assertThatCode(
+            () ->
+                OtlpHttpSpanExporter.builder()
+                    .setTrustedCertificates("foobar".getBytes(StandardCharsets.UTF_8)))
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -122,7 +165,8 @@ class OtlpHttpSpanExporterTest {
         .hasMessage("compressionMethod");
     assertThatThrownBy(() -> OtlpHttpSpanExporter.builder().setCompression("foo"))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Unsupported compression method. Supported compression methods include: gzip.");
+        .hasMessage(
+            "Unsupported compression method. Supported compression methods include: gzip, none.");
   }
 
   @Test
@@ -131,9 +175,33 @@ class OtlpHttpSpanExporterTest {
     OtlpHttpSpanExporter exporter = builder.build();
 
     ExportTraceServiceRequest payload = exportAndAssertResult(exporter, /* expectedResult= */ true);
-    AggregatedHttpRequest request = server.takeRequest().request();
+    RecordedRequest recorded = server.takeRequest();
+    AggregatedHttpRequest request = recorded.request();
     assertRequestCommon(request);
     assertThat(parseRequestBody(request.content().array())).isEqualTo(payload);
+
+    // OkHttp does not support HTTP/2 upgrade on plaintext.
+    assertThat(recorded.context().sessionProtocol().isMultiplex()).isFalse();
+  }
+
+  @Test
+  void testExportTls() {
+    server.enqueue(successResponse());
+    OtlpHttpSpanExporter exporter =
+        builder
+            .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/traces")
+            .setTrustedCertificates(
+                HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8))
+            .build();
+
+    ExportTraceServiceRequest payload = exportAndAssertResult(exporter, /* expectedResult= */ true);
+    RecordedRequest recorded = server.takeRequest();
+    AggregatedHttpRequest request = recorded.request();
+    assertRequestCommon(request);
+    assertThat(parseRequestBody(request.content().array())).isEqualTo(payload);
+
+    // OkHttp does support HTTP/2 upgrade on TLS.
+    assertThat(recorded.context().sessionProtocol().isMultiplex()).isTrue();
   }
 
   @Test
@@ -183,15 +251,10 @@ class OtlpHttpSpanExporterTest {
     OtlpHttpSpanExporter exporter = builder.build();
 
     exportAndAssertResult(exporter, /* expectedResult= */ false);
-    await()
-        .atMost(Duration.ofSeconds(10))
-        .untilAsserted(
-            () -> {
-              LoggingEvent log =
-                  logs.assertContains(
-                      "Failed to export spans. Server responded with HTTP status code 500. Error message: Server error!");
-              assertThat(log.getLevel()).isEqualTo(Level.WARN);
-            });
+    LoggingEvent log =
+        logs.assertContains(
+            "Failed to export spans. Server responded with HTTP status code 500. Error message: Server error!");
+    assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
   @Test
@@ -201,15 +264,10 @@ class OtlpHttpSpanExporterTest {
     OtlpHttpSpanExporter exporter = builder.build();
 
     exportAndAssertResult(exporter, /* expectedResult= */ false);
-    await()
-        .atMost(Duration.ofSeconds(10))
-        .untilAsserted(
-            () -> {
-              LoggingEvent log =
-                  logs.assertContains(
-                      "Failed to export spans. Server responded with HTTP status code 500. Error message: Unable to parse response body, HTTP status message:");
-              assertThat(log.getLevel()).isEqualTo(Level.WARN);
-            });
+    LoggingEvent log =
+        logs.assertContains(
+            "Failed to export spans. Server responded with HTTP status code 500. Error message: Unable to parse response body, HTTP status message:");
+    assertThat(log.getLevel()).isEqualTo(Level.WARN);
   }
 
   private static ExportTraceServiceRequest exportAndAssertResult(
@@ -218,9 +276,20 @@ class OtlpHttpSpanExporterTest {
     CompletableResultCode resultCode = otlpHttpSpanExporter.export(spans);
     resultCode.join(10, TimeUnit.SECONDS);
     assertThat(resultCode.isSuccess()).isEqualTo(expectedResult);
-    return ExportTraceServiceRequest.newBuilder()
-        .addAllResourceSpans(SpanAdapter.toProtoResourceSpans(spans))
-        .build();
+    List<ResourceSpans> resourceSpans =
+        Arrays.stream(ResourceSpansMarshaler.create(spans))
+            .map(
+                marshaler -> {
+                  ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                  try {
+                    marshaler.writeBinaryTo(bos);
+                    return ResourceSpans.parseFrom(bos.toByteArray());
+                  } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                  }
+                })
+            .collect(Collectors.toList());
+    return ExportTraceServiceRequest.newBuilder().addAllResourceSpans(resourceSpans).build();
   }
 
   private static HttpResponse successResponse() {

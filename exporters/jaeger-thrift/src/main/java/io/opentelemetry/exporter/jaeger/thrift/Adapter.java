@@ -7,7 +7,7 @@ package io.opentelemetry.exporter.jaeger.thrift;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.jr.ob.JSON;
 import io.jaegertracing.thriftjava.Log;
 import io.jaegertracing.thriftjava.Span;
 import io.jaegertracing.thriftjava.SpanRef;
@@ -21,6 +21,8 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +46,6 @@ final class Adapter {
   static final String KEY_SPAN_STATUS_CODE = "otel.status_code";
   static final String KEY_INSTRUMENTATION_LIBRARY_NAME = "otel.library.name";
   static final String KEY_INSTRUMENTATION_LIBRARY_VERSION = "otel.library.version";
-  public static final Gson GSON = new Gson();
 
   private Adapter() {}
 
@@ -206,7 +207,16 @@ final class Adapter {
       case DOUBLE:
         return new Tag(key.getKey(), TagType.DOUBLE).setVDouble((double) value);
       default:
-        return new Tag(key.getKey(), TagType.STRING).setVStr(GSON.toJson(value));
+        try {
+          return new Tag(key.getKey(), TagType.STRING).setVStr(JSON.std.asString(value));
+        } catch (IOException e) {
+          // Can't have an exception serializing a plain Java object to a String. Add an exception
+          // mostly to satisfy the compiler.
+          throw new UncheckedIOException(
+              "Error serializing a plain Java object to String. "
+                  + "This is a bug in the OpenTelemetry library.",
+              e);
+        }
     }
   }
 

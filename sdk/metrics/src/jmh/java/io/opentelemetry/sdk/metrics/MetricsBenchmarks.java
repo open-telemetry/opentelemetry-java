@@ -7,6 +7,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -18,6 +20,7 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.ThreadParams;
@@ -37,15 +40,28 @@ public class MetricsBenchmarks {
     @Param MetricsTestOperationBuilder opBuilder;
 
     MetricsTestOperationBuilder.Operation op;
+    Span span;
+    io.opentelemetry.context.Scope contextScope;
     final Attributes sharedLabelSet = Attributes.builder().put("KEY", "VALUE").build();
     Attributes threadUniqueLabelSet;
 
     @Setup
+    @SuppressWarnings("MustBeClosedChecker")
     public void setup(ThreadParams threadParams) {
       Meter meter = sdk.getMeter();
+      Tracer tracer = sdk.getTracer();
+      span = tracer.spanBuilder("benchmark").startSpan();
+      // We suppress warnings on closing here, as we rely on tests to make sure context is closed.
+      contextScope = span.makeCurrent();
       op = opBuilder.build(meter);
       threadUniqueLabelSet =
           Attributes.builder().put("KEY", String.valueOf(threadParams.getThreadIndex())).build();
+    }
+
+    @TearDown
+    public void tearDown(ThreadParams threadParms) {
+      contextScope.close();
+      span.end();
     }
   }
 

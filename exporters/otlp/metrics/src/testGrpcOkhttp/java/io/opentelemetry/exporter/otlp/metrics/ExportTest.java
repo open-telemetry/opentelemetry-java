@@ -15,6 +15,7 @@ import com.linecorp.armeria.testing.junit5.server.SelfSignedCertificateExtension
 import com.linecorp.armeria.testing.junit5.server.ServerExtension;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
@@ -85,6 +86,16 @@ class ExportTest {
       };
 
   @Test
+  void gzipCompressionExport() {
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.builder()
+            .setEndpoint("http://localhost:" + server.httpPort())
+            .setCompression("gzip")
+            .build();
+    assertThat(exporter.export(METRICS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
+  }
+
+  @Test
   void plainTextExport() {
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder()
@@ -130,5 +141,11 @@ class ExportTest {
                     .build())
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("Could not set trusted certificates");
+  }
+
+  @Test
+  void usingGrpc() {
+    assertThat(OtlpGrpcMetricExporter.builder().delegate)
+        .isInstanceOf(DefaultGrpcExporterBuilder.class);
   }
 }

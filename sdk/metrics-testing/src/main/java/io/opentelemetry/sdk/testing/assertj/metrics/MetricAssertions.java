@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
@@ -73,6 +74,10 @@ public final class MetricAssertions extends Assertions {
   /** Returns an assertion for {@link LongSumData}. */
   public static LongSumDataAssert assertThat(LongSumData metric) {
     return new LongSumDataAssert(metric);
+  }
+
+  public static ExemplarDataAssert assertThat(ExemplarData exemplar) {
+    return new ExemplarDataAssert(exemplar);
   }
 
   private MetricAssertions() {}

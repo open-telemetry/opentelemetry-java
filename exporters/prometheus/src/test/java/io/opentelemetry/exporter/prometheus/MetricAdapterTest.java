@@ -19,7 +19,7 @@ import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.LongExemplar;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
@@ -177,7 +177,7 @@ class MetricAdapterTest {
                       Collections.emptyList(),
                       Collections.singletonList(2L),
                       Collections.singletonList(
-                          LongExemplar.create(
+                          LongExemplarData.create(
                               Attributes.empty(),
                               TimeUnit.MILLISECONDS.toNanos(1L),
                               /* spanId= */ "span_id",
@@ -371,13 +371,13 @@ class MetricAdapterTest {
                     ImmutableList.of(1.0),
                     ImmutableList.of(4L, 9L),
                     ImmutableList.of(
-                        LongExemplar.create(
+                        LongExemplarData.create(
                             Attributes.empty(),
                             /*recordTime=*/ 0,
                             "other_span_id",
                             "other_trace_id",
                             /*value=*/ 0),
-                        LongExemplar.create(
+                        LongExemplarData.create(
                             Attributes.empty(),
                             /*recordTime=*/ TimeUnit.MILLISECONDS.toNanos(2),
                             "my_span_id",

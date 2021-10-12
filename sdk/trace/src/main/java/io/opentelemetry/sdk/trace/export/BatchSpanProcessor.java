@@ -91,7 +91,7 @@ public final class BatchSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (!span.getSpanContext().isSampled()) {
+    if (span == null || !span.getSpanContext().isSampled()) {
       return;
     }
     worker.addSpan(span);
@@ -250,8 +250,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
         }
       }
       exportCurrentBatch();
-      flushRequested.get().succeed();
-      flushRequested.set(null);
+      CompletableResultCode flushResult = flushRequested.get();
+      if (flushResult != null) {
+        flushResult.succeed();
+        flushRequested.set(null);
+      }
     }
 
     private void updateNextExportTime() {

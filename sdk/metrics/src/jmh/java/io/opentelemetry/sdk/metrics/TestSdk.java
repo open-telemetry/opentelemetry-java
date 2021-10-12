@@ -7,14 +7,13 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.view.View;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Arrays;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 
 @SuppressWarnings("ImmutableEnumChecker")
 public enum TestSdk {
@@ -25,6 +24,20 @@ public enum TestSdk {
           return MeterProvider.noop().get("io.opentelemetry.sdk.metrics");
         }
       }),
+  SDK_NO_EXEMPLARS(
+      new SdkBuilder() {
+        @Override
+        Meter build() {
+          return SdkMeterProvider.builder()
+              .setClock(Clock.getDefault())
+              .setResource(Resource.empty())
+              // Must register reader for real SDK.
+              .registerMetricReader(InMemoryMetricReader.create())
+              .setExemplarFilter(ExemplarFilter.neverSample())
+              .build()
+              .get("io.opentelemetry.sdk.metrics");
+        }
+      }),
   SDK(
       new SdkBuilder() {
         @Override
@@ -32,20 +45,8 @@ public enum TestSdk {
           return SdkMeterProvider.builder()
               .setClock(Clock.getDefault())
               .setResource(Resource.empty())
-              .registerView(
-                  InstrumentSelector.builder()
-                      .setInstrumentNameRegex(".*histogram_recorder")
-                      .setInstrumentType(InstrumentType.VALUE_RECORDER)
-                      .build(),
-                  // Histogram buckets the same as the metrics prototype/prometheus.
-                  View.builder()
-                      .setAggregatorFactory(
-                          AggregatorFactory.histogram(
-                              Arrays.<Double>asList(
-                                  5d, 10d, 25d, 50d, 75d, 100d, 250d, 500d, 750d, 1_000d, 2_500d,
-                                  5_000d, 7_500d, 10_000d),
-                              AggregationTemporality.CUMULATIVE))
-                      .build())
+              // Must register reader for real SDK.
+              .registerMetricReader(InMemoryMetricReader.create())
               .build()
               .get("io.opentelemetry.sdk.metrics");
         }
@@ -61,7 +62,18 @@ public enum TestSdk {
     return sdkBuilder.build();
   }
 
+  public Tracer getTracer() {
+    return sdkBuilder.buildTracer();
+  }
+
   private abstract static class SdkBuilder {
     abstract Meter build();
+
+    protected Tracer buildTracer() {
+      return SdkTracerProvider.builder()
+          .setSampler(Sampler.alwaysOn())
+          .build()
+          .get("io.opentelemetry.sdk.metrics");
+    }
   }
 }
