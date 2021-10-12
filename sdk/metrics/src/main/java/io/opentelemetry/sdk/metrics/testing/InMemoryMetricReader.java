@@ -33,7 +33,7 @@ import java.util.Collections;
  *   }
  *
  *   public static void main(String[] args) {
- *     InMemoryMetricReaderExample example = InMemoryMetricReader.createExample();
+ *     InMemoryMetricReaderExample example = new InMemoryMetricReaderExample();
  *     example.printMetrics();
  *   }
  * }
