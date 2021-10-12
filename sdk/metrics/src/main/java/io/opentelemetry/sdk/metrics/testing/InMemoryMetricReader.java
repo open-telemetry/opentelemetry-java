@@ -22,7 +22,7 @@ import java.util.Collections;
  *
  * <pre><code>
  * public class InMemoryMetricReaderExample {
- *   private final InMemoryMetricReader reader = new InMemoryMetricReader();
+ *   private final InMemoryMetricReader reader = InMemoryMetricReader.create();
  *   private final SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().registerMetricReader(reader).build();
  *   private final Meter meter = sdkMeterProvider.get("example");
  *   private final LongCounter metricCallCount = meter.counterBuilder("num_collects");
@@ -41,6 +41,11 @@ import java.util.Collections;
  */
 public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
   private volatile MetricProducer metricProducer;
+
+  /** Returns a new {@link InMemoryMetricReader}. */
+  public static InMemoryMetricReader create() {
+    return new InMemoryMetricReader();
+  }
 
   /** Returns all metrics accumulated since the last call. */
   public Collection<MetricData> collectAllMetrics() {
@@ -70,4 +75,12 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
     this.metricProducer = producer;
     return this;
   }
+
+  /**
+   * Constructs a new {@link InMemoryMetricReader}.
+   *
+   * @deprecated Use {@link #create()}.
+   */
+  @Deprecated
+  public InMemoryMetricReader() {}
 }

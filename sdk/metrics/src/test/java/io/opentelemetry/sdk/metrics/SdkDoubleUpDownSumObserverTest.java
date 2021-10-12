@@ -34,7 +34,7 @@ class SdkDoubleUpDownSumObserverTest {
 
   @Test
   void collectMetrics_NoRecords() {
-    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
@@ -50,7 +50,7 @@ class SdkDoubleUpDownSumObserverTest {
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_WithOneRecord() {
-    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     sdkMeterProvider
@@ -106,7 +106,7 @@ class SdkDoubleUpDownSumObserverTest {
   @Test
   @SuppressWarnings("unchecked")
   void collectMetrics_DeltaSumAggregator() {
-    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder
             .registerMetricReader(sdkMeterReader)
