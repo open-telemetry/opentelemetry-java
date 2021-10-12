@@ -29,7 +29,9 @@ import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logging.data.Body;
+import io.opentelemetry.sdk.logging.data.LogData;
 import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logging.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdGenerator;
 import java.io.ByteArrayOutputStream;
@@ -271,7 +273,7 @@ class OtlpHttpLogExporterTest {
 
   private static ExportLogsServiceRequest exportAndAssertResult(
       OtlpHttpLogExporter otlpHttpLogExporter, boolean expectedResult) {
-    List<LogRecord> logs = Collections.singletonList(generateFakeLog());
+    List<LogData> logs = Collections.singletonList(generateFakeLog());
     CompletableResultCode resultCode = otlpHttpLogExporter.export(logs);
     resultCode.join(10, TimeUnit.SECONDS);
     assertThat(resultCode.isSuccess()).isEqualTo(expectedResult);
@@ -301,18 +303,18 @@ class OtlpHttpLogExporterTest {
     return HttpResponse.of(httpStatus, APPLICATION_PROTOBUF, message.toByteArray());
   }
 
-  private static LogRecord generateFakeLog() {
+  private static LogData generateFakeLog() {
     return LogRecord.builder(
             Resource.getDefault(),
             InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
         .setName("log-name")
         .setBody(Body.stringBody("log body"))
         .setAttributes(Attributes.builder().put("key", "value").build())
-        .setSeverity(LogRecord.Severity.INFO)
-        .setSeverityText(LogRecord.Severity.INFO.name())
+        .setSeverity(Severity.INFO)
+        .setSeverityText(Severity.INFO.name())
         .setTraceId(IdGenerator.random().generateTraceId())
         .setSpanId(IdGenerator.random().generateSpanId())
-        .setUnixTimeNano(TimeUnit.MILLISECONDS.toNanos(Instant.now().toEpochMilli()))
+        .setEpochNanos(TimeUnit.MILLISECONDS.toNanos(Instant.now().toEpochMilli()))
         .setFlags(0)
         .build();
   }

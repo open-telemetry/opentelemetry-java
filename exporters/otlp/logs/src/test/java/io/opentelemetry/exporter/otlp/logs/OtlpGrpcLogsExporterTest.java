@@ -31,7 +31,9 @@ import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logging.data.LogData;
 import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logging.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -154,7 +156,7 @@ class OtlpGrpcLogsExporterTest {
 
   @Test
   void testExport() {
-    LogRecord log = generateFakeLog();
+    LogData log = generateFakeLog();
     OtlpGrpcLogExporter exporter =
         OtlpGrpcLogExporter.builder().setChannel(inProcessChannel).build();
     try {
@@ -168,7 +170,7 @@ class OtlpGrpcLogsExporterTest {
 
   @Test
   void testExport_MultipleLogs() {
-    List<LogRecord> logs = new ArrayList<>();
+    List<LogData> logs = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
       logs.add(generateFakeLog());
     }
@@ -182,7 +184,7 @@ class OtlpGrpcLogsExporterTest {
     }
   }
 
-  private static List<ResourceLogs> toResourceLogs(List<LogRecord> logs) {
+  private static List<ResourceLogs> toResourceLogs(List<LogData> logs) {
     return Arrays.stream(ResourceLogsMarshaler.create(logs))
         .map(
             marshaler -> {
@@ -216,7 +218,7 @@ class OtlpGrpcLogsExporterTest {
 
   @Test
   void testExport_AfterShutdown() {
-    LogRecord log = generateFakeLog();
+    LogData log = generateFakeLog();
     OtlpGrpcLogExporter exporter =
         OtlpGrpcLogExporter.builder().setChannel(inProcessChannel).build();
     exporter.shutdown();
@@ -354,15 +356,15 @@ class OtlpGrpcLogsExporterTest {
         .isInstanceOf(DefaultGrpcExporterBuilder.class);
   }
 
-  private static LogRecord generateFakeLog() {
+  private static LogData generateFakeLog() {
     return LogRecord.builder(
             Resource.create(Attributes.builder().put("testKey", "testValue").build()),
             InstrumentationLibraryInfo.create("instrumentation", "1"))
-        .setUnixTimeMillis(System.currentTimeMillis())
+        .setEpochMillis(System.currentTimeMillis())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
         .setFlags(TraceFlags.getDefault().asByte())
-        .setSeverity(LogRecord.Severity.ERROR)
+        .setSeverity(Severity.ERROR)
         .setSeverityText("really severe")
         .setName("log1")
         .setBody("message")

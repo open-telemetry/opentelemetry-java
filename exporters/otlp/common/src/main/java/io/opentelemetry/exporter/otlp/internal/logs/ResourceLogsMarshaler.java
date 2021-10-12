@@ -13,7 +13,7 @@ import io.opentelemetry.exporter.otlp.internal.ResourceMarshaler;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.proto.logs.v1.internal.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logging.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.util.Collection;
@@ -32,9 +32,9 @@ public final class ResourceLogsMarshaler extends MarshalerWithSize {
   private final InstrumentationLibraryLogsMarshaler[] instrumentationLibraryLogsMarshalers;
 
   /** Returns Marshalers of ResourceLogs created by grouping the provided logRecords. */
-  public static ResourceLogsMarshaler[] create(Collection<LogRecord> logRecords) {
+  public static ResourceLogsMarshaler[] create(Collection<LogData> logs) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Marshaler>>> resourceAndLibraryMap =
-        groupByResourceAndLibrary(logRecords);
+        groupByResourceAndLibrary(logs);
 
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         new ResourceLogsMarshaler[resourceAndLibraryMap.size()];
@@ -94,13 +94,13 @@ public final class ResourceLogsMarshaler extends MarshalerWithSize {
   }
 
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<Marshaler>>>
-      groupByResourceAndLibrary(Collection<LogRecord> logRecords) {
+      groupByResourceAndLibrary(Collection<LogData> logs) {
     return MarshalerUtil.groupByResourceAndLibrary(
-        logRecords,
+        logs,
         // TODO(anuraaga): Replace with an internal SdkData type of interface that exposes these
         // two.
-        LogRecord::getResource,
-        LogRecord::getInstrumentationLibraryInfo,
+        LogData::getResource,
+        LogData::getInstrumentationLibraryInfo,
         LogMarshaler::create);
   }
 }

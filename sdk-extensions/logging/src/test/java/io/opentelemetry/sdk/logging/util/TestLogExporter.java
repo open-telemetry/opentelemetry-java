@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.logging.util;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logging.data.LogData;
 import io.opentelemetry.sdk.logging.export.LogExporter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,12 +14,12 @@ import javax.annotation.Nullable;
 
 public class TestLogExporter implements LogExporter {
 
-  private final ArrayList<LogRecord> records = new ArrayList<>();
+  private final ArrayList<LogData> records = new ArrayList<>();
   @Nullable private Runnable onCall = null;
   private int callCount = 0;
 
   @Override
-  public synchronized CompletableResultCode export(Collection<LogRecord> records) {
+  public synchronized CompletableResultCode export(Collection<LogData> records) {
     this.records.addAll(records);
     callCount++;
     if (onCall != null) {
@@ -33,7 +33,7 @@ public class TestLogExporter implements LogExporter {
     return new CompletableResultCode().succeed();
   }
 
-  public synchronized ArrayList<LogRecord> getRecords() {
+  public synchronized ArrayList<LogData> getRecords() {
     return records;
   }
 

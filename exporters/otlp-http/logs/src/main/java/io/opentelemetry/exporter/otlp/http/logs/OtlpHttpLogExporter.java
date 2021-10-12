@@ -15,7 +15,7 @@ import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.logs.LogsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
-import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logging.data.LogData;
 import io.opentelemetry.sdk.logging.export.LogExporter;
 import java.io.IOException;
 import java.util.Collection;
@@ -83,7 +83,7 @@ public final class OtlpHttpLogExporter implements LogExporter {
    * @return the result of the operation
    */
   @Override
-  public CompletableResultCode export(Collection<LogRecord> logs) {
+  public CompletableResultCode export(Collection<LogData> logs) {
     logsSeen.add(logs.size());
 
     LogsRequestMarshaler exportRequest = LogsRequestMarshaler.create(logs);

@@ -13,7 +13,7 @@ import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.exporter.otlp.internal.StringAnyValueMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
-import io.opentelemetry.sdk.logging.data.LogRecord.Severity;
+import io.opentelemetry.sdk.logging.data.Severity;
 import java.io.IOException;
 
 final class LogMarshaler extends MarshalerWithSize {
@@ -28,26 +28,26 @@ final class LogMarshaler extends MarshalerWithSize {
   private final String traceId;
   private final String spanId;
 
-  static LogMarshaler create(io.opentelemetry.sdk.logging.data.LogRecord logRecord) {
+  static LogMarshaler create(io.opentelemetry.sdk.logging.data.LogData logData) {
     KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createRepeated(logRecord.getAttributes());
+        KeyValueMarshaler.createRepeated(logData.getAttributes());
 
     // For now, map all the bodies to String AnyValue.
     StringAnyValueMarshaler anyValueMarshaler =
-        new StringAnyValueMarshaler(MarshalerUtil.toBytes(logRecord.getBody().asString()));
+        new StringAnyValueMarshaler(MarshalerUtil.toBytes(logData.getBody().asString()));
 
     return new LogMarshaler(
-        logRecord.getTimeUnixNano(),
-        toProtoSeverityNumber(logRecord.getSeverity()),
-        MarshalerUtil.toBytes(logRecord.getSeverityText()),
-        MarshalerUtil.toBytes(logRecord.getName()),
+        logData.getEpochNanos(),
+        toProtoSeverityNumber(logData.getSeverity()),
+        MarshalerUtil.toBytes(logData.getSeverityText()),
+        MarshalerUtil.toBytes(logData.getName()),
         anyValueMarshaler,
         attributeMarshalers,
         // TODO (trask) implement droppedAttributesCount in LogRecord
         0,
-        logRecord.getFlags(),
-        logRecord.getTraceId(),
-        logRecord.getSpanId());
+        logData.getFlags(),
+        logData.getTraceId(),
+        logData.getSpanId());
   }
 
   private LogMarshaler(

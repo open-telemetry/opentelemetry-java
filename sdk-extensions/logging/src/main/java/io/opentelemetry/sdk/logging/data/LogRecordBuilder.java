@@ -12,15 +12,16 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
+/** Builder for {@link LogRecord}. */
 public final class LogRecordBuilder {
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
-  private long timeUnixNano;
+  private long epochNanos;
   private String traceId = "";
   private String spanId = "";
   private int flags;
-  private LogRecord.Severity severity = LogRecord.Severity.UNDEFINED_SEVERITY_NUMBER;
+  private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
   @Nullable private String name;
   private Body body = Body.stringBody("");
@@ -31,13 +32,13 @@ public final class LogRecordBuilder {
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
   }
 
-  public LogRecordBuilder setUnixTimeNano(long timestamp) {
-    this.timeUnixNano = timestamp;
+  public LogRecordBuilder setEpochNanos(long timestamp) {
+    this.epochNanos = timestamp;
     return this;
   }
 
-  public LogRecordBuilder setUnixTimeMillis(long timestamp) {
-    return setUnixTimeNano(TimeUnit.MILLISECONDS.toNanos(timestamp));
+  public LogRecordBuilder setEpochMillis(long timestamp) {
+    return setEpochNanos(TimeUnit.MILLISECONDS.toNanos(timestamp));
   }
 
   public LogRecordBuilder setTraceId(String traceId) {
@@ -55,7 +56,7 @@ public final class LogRecordBuilder {
     return this;
   }
 
-  public LogRecordBuilder setSeverity(LogRecord.Severity severity) {
+  public LogRecordBuilder setSeverity(Severity severity) {
     this.severity = severity;
     return this;
   }
@@ -90,13 +91,13 @@ public final class LogRecordBuilder {
    * @return value object being built
    */
   public LogRecord build() {
-    if (timeUnixNano == 0) {
-      timeUnixNano = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
+    if (epochNanos == 0) {
+      epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     }
     return LogRecord.create(
         resource,
         instrumentationLibraryInfo,
-        timeUnixNano,
+        epochNanos,
         traceId,
         spanId,
         flags,

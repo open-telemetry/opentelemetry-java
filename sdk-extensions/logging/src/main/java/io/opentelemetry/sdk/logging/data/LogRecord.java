@@ -10,14 +10,13 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
-/**
- * A LogRecord is an implementation of the <a
- * href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/logs/data-model.md">
- * OpenTelemetry logging model</a>.
- */
+@Immutable
 @AutoValue
-public abstract class LogRecord {
+public abstract class LogRecord implements LogData {
+
+  LogRecord() {}
 
   public static LogRecordBuilder builder(
       Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
@@ -27,7 +26,7 @@ public abstract class LogRecord {
   static LogRecord create(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      long timeUnixNano,
+      long epochNanos,
       String traceId,
       String spanId,
       int flags,
@@ -39,7 +38,7 @@ public abstract class LogRecord {
     return new AutoValue_LogRecord(
         resource,
         instrumentationLibraryInfo,
-        timeUnixNano,
+        epochNanos,
         traceId,
         spanId,
         flags,
@@ -48,68 +47,5 @@ public abstract class LogRecord {
         name,
         body,
         attributes);
-  }
-
-  public abstract Resource getResource();
-
-  public abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
-
-  public abstract long getTimeUnixNano();
-
-  public abstract String getTraceId();
-
-  public abstract String getSpanId();
-
-  public abstract int getFlags();
-
-  public abstract Severity getSeverity();
-
-  @Nullable
-  public abstract String getSeverityText();
-
-  @Nullable
-  public abstract String getName();
-
-  public abstract Body getBody();
-
-  public abstract Attributes getAttributes();
-
-  public enum Severity {
-    UNDEFINED_SEVERITY_NUMBER(0),
-    TRACE(1),
-    TRACE2(2),
-    TRACE3(3),
-    TRACE4(4),
-    DEBUG(5),
-    DEBUG2(6),
-    DEBUG3(7),
-    DEBUG4(8),
-    INFO(9),
-    INFO2(10),
-    INFO3(11),
-    INFO4(12),
-    WARN(13),
-    WARN2(14),
-    WARN3(15),
-    WARN4(16),
-    ERROR(17),
-    ERROR2(18),
-    ERROR3(19),
-    ERROR4(20),
-    FATAL(21),
-    FATAL2(22),
-    FATAL3(23),
-    FATAL4(24),
-    ;
-
-    private final int severityNumber;
-
-    Severity(int severityNumber) {
-      this.severityNumber = severityNumber;
-    }
-
-    public int getSeverityNumber() {
-      return severityNumber;
-    }
   }
 }

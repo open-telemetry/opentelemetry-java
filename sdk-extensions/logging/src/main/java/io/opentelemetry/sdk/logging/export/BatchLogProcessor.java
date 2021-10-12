@@ -14,6 +14,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.logging.LogProcessor;
+import io.opentelemetry.sdk.logging.data.LogData;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -40,7 +41,7 @@ public final class BatchLogProcessor implements LogProcessor {
             scheduleDelayMillis,
             maxExportBatchSize,
             exporterTimeoutMillis,
-            new ArrayBlockingQueue<LogRecord>(maxQueueSize));
+            new ArrayBlockingQueue<>(maxQueueSize));
     this.workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     this.workerThread.start();
   }
@@ -94,8 +95,8 @@ public final class BatchLogProcessor implements LogProcessor {
     private final int maxExportBatchSize;
     private final LogExporter logExporter;
     private final long exporterTimeoutMillis;
-    private final ArrayList<LogRecord> batch;
-    private final BlockingQueue<LogRecord> queue;
+    private final ArrayList<LogData> batch;
+    private final BlockingQueue<LogData> queue;
 
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private volatile boolean continueWork = true;
@@ -106,7 +107,7 @@ public final class BatchLogProcessor implements LogProcessor {
         long scheduleDelayMillis,
         int maxExportBatchSize,
         long exporterTimeoutMillis,
-        BlockingQueue<LogRecord> queue) {
+        BlockingQueue<LogData> queue) {
       this.logExporter = logExporter;
       this.maxExportBatchSize = maxExportBatchSize;
       this.exporterTimeoutMillis = exporterTimeoutMillis;
@@ -125,7 +126,7 @@ public final class BatchLogProcessor implements LogProcessor {
         }
 
         try {
-          LogRecord lastElement = queue.poll(100, TimeUnit.MILLISECONDS);
+          LogData lastElement = queue.poll(100, TimeUnit.MILLISECONDS);
           if (lastElement != null) {
             batch.add(lastElement);
           }
@@ -144,7 +145,7 @@ public final class BatchLogProcessor implements LogProcessor {
     private void flush() {
       int recordsToFlush = queue.size();
       while (recordsToFlush > 0) {
-        LogRecord record = queue.poll();
+        LogData record = queue.poll();
         assert record != null;
         batch.add(record);
         recordsToFlush--;

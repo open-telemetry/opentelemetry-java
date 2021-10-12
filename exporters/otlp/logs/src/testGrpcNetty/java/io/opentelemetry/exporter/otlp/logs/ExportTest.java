@@ -22,7 +22,9 @@ import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.logs.v1.LogsServiceGrpc;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logging.data.LogData;
 import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logging.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -35,16 +37,16 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 class ExportTest {
 
-  private static final List<LogRecord> LOGS =
+  private static final List<LogData> LOGS =
       Collections.singletonList(
           LogRecord.builder(
                   Resource.create(Attributes.builder().put("testKey", "testValue").build()),
                   InstrumentationLibraryInfo.create("instrumentation", "1"))
-              .setUnixTimeMillis(System.currentTimeMillis())
+              .setEpochMillis(System.currentTimeMillis())
               .setTraceId(TraceId.getInvalid())
               .setSpanId(SpanId.getInvalid())
               .setFlags(TraceFlags.getDefault().asByte())
-              .setSeverity(LogRecord.Severity.ERROR)
+              .setSeverity(Severity.ERROR)
               .setSeverityText("really severe")
               .setName("log1")
               .setBody("message")
