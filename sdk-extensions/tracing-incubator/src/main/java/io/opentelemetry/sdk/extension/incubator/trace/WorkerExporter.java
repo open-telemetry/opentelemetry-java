@@ -10,9 +10,9 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Queue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -99,7 +99,7 @@ class WorkerExporter {
    * @param batch a collection of {@link SpanData} to export
    * @param queue {@link ReadableSpan} queue to be drained and then exported
    */
-  public void flush(Collection<SpanData> batch, AbstractQueue<ReadableSpan> queue) {
+  public void flush(Collection<SpanData> batch, Queue<ReadableSpan> queue) {
     int spansToFlush = queue.size();
     while (spansToFlush > 0) {
       ReadableSpan span = queue.poll();

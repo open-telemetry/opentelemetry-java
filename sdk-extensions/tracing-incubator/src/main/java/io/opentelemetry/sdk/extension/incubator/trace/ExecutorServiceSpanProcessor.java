@@ -18,8 +18,10 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.internal.JcTools;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
-import org.jctools.queues.MpscArrayQueue;
 
 /**
  * A Batch {@link SpanProcessor} that uses a user-provided {@link
@@ -85,7 +86,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
             scheduleDelayNanos,
             maxExportBatchSize,
             exporterTimeoutNanos,
-            new MpscArrayQueue<>(maxQueueSize),
+            JcTools.newFixedSizeQueue(maxQueueSize),
             executorService,
             isShutdown,
             workerScheduleIntervalNanos);
@@ -152,7 +153,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
     private final BoundLongCounter droppedSpans;
     private final AtomicReference<CompletableResultCode> flushRequested = new AtomicReference<>();
     private final long scheduleDelayNanos;
-    private final MpscArrayQueue<ReadableSpan> queue;
+    private final Queue<ReadableSpan> queue;
     private final int maxExportBatchSize;
     private final SpanExporter spanExporter;
     private final ScheduledExecutorService executorService;
@@ -162,7 +163,7 @@ public final class ExecutorServiceSpanProcessor implements SpanProcessor {
         long scheduleDelayNanos,
         int maxExportBatchSize,
         long exporterTimeoutNanos,
-        MpscArrayQueue<ReadableSpan> queue,
+        Queue<ReadableSpan> queue,
         ScheduledExecutorService executorService,
         AtomicBoolean isShutdown,
         long workerScheduleIntervalNanos) {
