@@ -60,7 +60,7 @@ class SdkMeterProviderTest {
   @Test
   @SuppressWarnings("unchecked")
   void collectAllSyncInstruments() {
-    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
 
@@ -186,7 +186,7 @@ class SdkMeterProviderTest {
                 Aggregation.explicitBucketHistogram(
                     AggregationTemporality.DELTA, Collections.emptyList()))
             .build());
-    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
@@ -240,7 +240,7 @@ class SdkMeterProviderTest {
     registerViewForAllTypes(
         sdkMeterProviderBuilder,
         Aggregation.explicitBucketHistogram(AggregationTemporality.DELTA, Collections.emptyList()));
-    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
@@ -330,7 +330,7 @@ class SdkMeterProviderTest {
   @Test
   @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments() {
-    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
@@ -451,7 +451,7 @@ class SdkMeterProviderTest {
   @Test
   @SuppressWarnings("unchecked")
   void viewSdk_AllowRenames() {
-    InMemoryMetricReader reader = new InMemoryMetricReader();
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
             .registerMetricReader(reader)
@@ -492,7 +492,7 @@ class SdkMeterProviderTest {
             .setInstrumentType(InstrumentType.HISTOGRAM)
             .setInstrumentName("test")
             .build();
-    InMemoryMetricReader reader = new InMemoryMetricReader();
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
             .registerMetricReader(reader)
@@ -540,7 +540,7 @@ class SdkMeterProviderTest {
             .setInstrumentType(InstrumentType.OBSERVABLE_GAUGE)
             .setInstrumentName("test")
             .build();
-    InMemoryMetricReader reader = new InMemoryMetricReader();
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
             .registerMetricReader(reader)
@@ -588,7 +588,7 @@ class SdkMeterProviderTest {
             .setInstrumentType(InstrumentType.COUNTER)
             .setInstrumentName("test")
             .build();
-    InMemoryMetricReader reader = new InMemoryMetricReader();
+    InMemoryMetricReader reader = InMemoryMetricReader.create();
     SdkMeterProvider provider =
         sdkMeterProviderBuilder
             .registerMetricReader(reader)
@@ -636,7 +636,7 @@ class SdkMeterProviderTest {
         sdkMeterProviderBuilder,
         Aggregation.explicitBucketHistogram(
             AggregationTemporality.CUMULATIVE, Collections.emptyList()));
-    InMemoryMetricReader sdkMeterReader = new InMemoryMetricReader();
+    InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();
     Meter sdkMeter = sdkMeterProvider.get(SdkMeterProviderTest.class.getName());
@@ -725,8 +725,8 @@ class SdkMeterProviderTest {
   @Test
   @SuppressWarnings("unchecked")
   void sdkMeterProvider_supportsMultipleCollectorsCumulative() {
-    InMemoryMetricReader collector1 = new InMemoryMetricReader();
-    InMemoryMetricReader collector2 = new InMemoryMetricReader();
+    InMemoryMetricReader collector1 = InMemoryMetricReader.create();
+    InMemoryMetricReader collector2 = InMemoryMetricReader.create();
     SdkMeterProvider meterProvider =
         sdkMeterProviderBuilder
             .registerMetricReader(collector1)
@@ -798,8 +798,8 @@ class SdkMeterProviderTest {
   void sdkMeterProvider_supportsMultipleCollectorsDelta() {
     // Note: we use a view to do delta aggregation, but any view ALWAYS uses double-precision right
     // now.
-    InMemoryMetricReader collector1 = new InMemoryMetricReader();
-    InMemoryMetricReader collector2 = new InMemoryMetricReader();
+    InMemoryMetricReader collector1 = InMemoryMetricReader.create();
+    InMemoryMetricReader collector2 = InMemoryMetricReader.create();
     SdkMeterProvider meterProvider =
         sdkMeterProviderBuilder
             .registerMetricReader(collector1)

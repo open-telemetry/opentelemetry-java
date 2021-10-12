@@ -47,7 +47,7 @@ public class BatchSpanProcessorCpuBenchmark {
 
     @Setup(Level.Iteration)
     public final void setup() {
-      metricReader = new InMemoryMetricReader();
+      metricReader = InMemoryMetricReader.create();
       SdkMeterProvider.builder().registerMetricReader(metricReader).buildAndRegisterGlobal();
       SpanExporter exporter = new DelayingSpanExporter(delayMs);
       processor = BatchSpanProcessor.builder(exporter).build();
