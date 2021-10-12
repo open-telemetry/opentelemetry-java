@@ -18,7 +18,7 @@ import java.util.List;
 // buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
-  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.6.1";
+  public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.7.0";
 
   /**
    * The full invoked ARN as provided on the {@code Context} passed to the function ({@code
@@ -451,7 +451,16 @@ public final class SemanticAttributes {
 
   /**
    * The value of the <a href="https://tools.ietf.org/html/rfc7230#section-5.4">HTTP host
-   * header</a>. When the header is empty or not present, this attribute should be the same.
+   * header</a>. An empty Host header should also be reported, see note.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>When the header is present but empty the attribute SHOULD be set to the empty string.
+   *       Note that this is a valid situation that is expected in certain cases, according the
+   *       aforementioned <a href="https://tools.ietf.org/html/rfc7230#section-5.4">section of RFC
+   *       7230</a>. When the header is not set the attribute MUST NOT be set.
+   * </ul>
    */
   public static final AttributeKey<String> HTTP_HOST = stringKey("http.host");
 
@@ -539,6 +548,12 @@ public final class SemanticAttributes {
    * <ul>
    *   <li>This is not necessarily the same as {@code net.peer.ip}, which would identify the
    *       network-level peer, which may be a proxy.
+   *   <li>This attribute should be set when a source of information different from the one used for
+   *       {@code net.peer.ip}, is available even if that other source just confirms the same value
+   *       as {@code net.peer.ip}. Rationale: For {@code net.peer.ip}, one typically does not know
+   *       if it comes from a proxy, reverse proxy, or the actual client. Setting {@code
+   *       http.client_ip} when it's the same as {@code net.peer.ip} means that one is at least
+   *       somewhat confident that the address is not that of the closest proxy.
    * </ul>
    */
   public static final AttributeKey<String> HTTP_CLIENT_IP = stringKey("http.client_ip");
@@ -689,6 +704,15 @@ public final class SemanticAttributes {
    */
   public static final AttributeKey<String> MESSAGING_OPERATION = stringKey("messaging.operation");
 
+  /**
+   * The identifier for the consumer receiving a message. For Kafka, set it to {@code
+   * {messaging.kafka.consumer_group} - {messaging.kafka.client_id}}, if both are present, or only
+   * {@code messaging.kafka.consumer_group}. For brokers, such as RabbitMQ and Artemis, set it to
+   * the {@code client_id} of the client consuming the message.
+   */
+  public static final AttributeKey<String> MESSAGING_CONSUMER_ID =
+      stringKey("messaging.consumer_id");
+
   /** RabbitMQ message routing key. */
   public static final AttributeKey<String> MESSAGING_RABBITMQ_ROUTING_KEY =
       stringKey("messaging.rabbitmq.routing_key");
@@ -786,6 +810,30 @@ public final class SemanticAttributes {
   /** {@code error.message} property of response if it is an error response. */
   public static final AttributeKey<String> RPC_JSONRPC_ERROR_MESSAGE =
       stringKey("rpc.jsonrpc.error_message");
+
+  /** Whether this is a received or sent message. */
+  public static final AttributeKey<String> MESSAGE_TYPE = stringKey("message.type");
+
+  /**
+   * MUST be calculated as two different counters starting from {@code 1} one for sent messages and
+   * one for received message.
+   *
+   * <p>Notes:
+   *
+   * <ul>
+   *   <li>This way we guarantee that the values will be consistent between different
+   *       implementations.
+   * </ul>
+   */
+  public static final AttributeKey<Long> MESSAGE_ID = longKey("message.id");
+
+  /** Compressed size of the message in bytes. */
+  public static final AttributeKey<Long> MESSAGE_COMPRESSED_SIZE =
+      longKey("message.compressed_size");
+
+  /** Uncompressed size of the message in bytes. */
+  public static final AttributeKey<Long> MESSAGE_UNCOMPRESSED_SIZE =
+      longKey("message.uncompressed_size");
 
   // Enum definitions
   public static final class DbSystemValues {
@@ -1104,6 +1152,15 @@ public final class SemanticAttributes {
     public static final long UNAUTHENTICATED = 16;
 
     private RpcGrpcStatusCodeValues() {}
+  }
+
+  public static final class MessageTypeValues {
+    /** sent. */
+    public static final String SENT = "SENT";
+    /** received. */
+    public static final String RECEIVED = "RECEIVED";
+
+    private MessageTypeValues() {}
   }
 
   // Manually defined and not YET in the YAML

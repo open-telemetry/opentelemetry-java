@@ -38,7 +38,7 @@ public class BatchSpanProcessorDroppedSpansBenchmark {
 
     @Setup(Level.Iteration)
     public final void setup() {
-      metricReader = new InMemoryMetricReader();
+      metricReader = InMemoryMetricReader.create();
       SdkMeterProvider.builder().registerMetricReader(metricReader).buildAndRegisterGlobal();
       SpanExporter exporter = new DelayingSpanExporter(0);
       processor = BatchSpanProcessor.builder(exporter).build();
