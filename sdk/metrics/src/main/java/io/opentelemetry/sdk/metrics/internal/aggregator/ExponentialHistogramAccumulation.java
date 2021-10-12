@@ -26,15 +26,6 @@ abstract class ExponentialHistogramAccumulation {
         scale, sum, positiveBuckets, negativeBuckets, zeroCount, exemplars);
   }
 
-  static ExponentialHistogramAccumulation create(
-      int scale,
-      double sum,
-      @Nonnull DoubleExponentialHistogramBuckets positiveBuckets,
-      @Nonnull DoubleExponentialHistogramBuckets negativeBuckets,
-      long zeroCount) {
-    return create(scale, sum, positiveBuckets, negativeBuckets, zeroCount, Collections.emptyList());
-  }
-
   abstract int getScale();
 
   abstract double getSum();

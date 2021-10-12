@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.state.WindowedCounterArray;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -16,6 +17,8 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
   public static final int MAX_BUCKETS = 320;
   public static final int MAX_SCALE = 20;
+
+  private static final Logger logger = Logger.getLogger(DoubleExponentialHistogramBuckets.class.getName());
 
   private WindowedCounterArray counts;
   private BucketMapper bucketMapper;
@@ -58,8 +61,11 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     return totalCount;
   }
 
-  public void downscale(int by) {
+  void downscale(int by) {
     if (by <= 0) {
+      logger.warning(
+          String.format("downScale() expects positive integer but was given %d. "
+                  + "Cannot upscale exponential histogram.", by));
       return;
     }
 
@@ -78,7 +84,13 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     this.bucketMapper = new LogarithmMapper(scale);
   }
 
-  public int getScaleReduction(double value) {
+  /**
+   * Returns the minimum scale reduction required to record the given value in these buckets.
+   *
+   * @param value The proposed value to be recorded.
+   * @return The required scale reduction in order to fit the value in these buckets.
+   */
+  int getScaleReduction(double value) {
     long index = bucketMapper.valueToIndex(value);
     long newStart = Math.min(index, counts.getIndexStart());
     long newEnd = Math.max(index, counts.getIndexEnd());

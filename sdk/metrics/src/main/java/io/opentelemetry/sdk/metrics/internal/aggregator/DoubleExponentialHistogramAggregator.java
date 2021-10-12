@@ -96,7 +96,7 @@ final class DoubleExponentialHistogramAggregator
     }
 
     @Override
-    protected ExponentialHistogramAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
+    protected synchronized ExponentialHistogramAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
       ExponentialHistogramAccumulation acc =
           ExponentialHistogramAccumulation.create(
               scale, sum, positiveBuckets, negativeBuckets, zeroCount, exemplars);
@@ -108,7 +108,7 @@ final class DoubleExponentialHistogramAggregator
     }
 
     @Override
-    protected void doRecordDouble(double value) {
+    protected synchronized void doRecordDouble(double value) {
 
       // ignore NaN and infinity
       if (!Double.isFinite(value)) {
@@ -127,6 +127,8 @@ final class DoubleExponentialHistogramAggregator
       // 2nd attempt at recording should work with new scale
       DoubleExponentialHistogramBuckets buckets = (c > 0) ? positiveBuckets : negativeBuckets;
       if (!buckets.record(value)) {
+        // getScaleReduction() used with downScale() will scale down as required to record value,
+        // fit inside max allowed buckets, and make sure index can be represented by int.
         downScale(buckets.getScaleReduction(value));
         buckets.record(value);
       }
