@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleExponentialHistogramData;
 import io.opentelemetry.sdk.resources.Resource;
 
 /**

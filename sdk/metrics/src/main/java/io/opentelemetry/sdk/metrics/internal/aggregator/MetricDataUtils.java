@@ -6,11 +6,13 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.data.DoubleExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
