@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 /** A builder for {@link PrometheusHttpServer}. */
 public final class PrometheusHttpServerBuilder {
 
-  private static final int DEFAULT_PORT = 9464;
+  static final int DEFAULT_PORT = 9464;
   private static final String DEFAULT_HOST = "0.0.0.0";
 
   private String host = DEFAULT_HOST;
@@ -34,9 +34,12 @@ public final class PrometheusHttpServerBuilder {
     return this;
   }
 
-  /** Returns a new {@link PrometheusHttpServer} with the configuration of this builder. */
+  /**
+   * Returns a new {@link MetricReaderFactory} with the configuration of this builder which can be
+   * registered with a {@link io.opentelemetry.sdk.metrics.SdkMeterProvider}.
+   */
   public MetricReaderFactory build() {
-    return producer -> new PrometheusHttpServer(host, port, producer);
+    return new PrometheusHttpServerFactory(host, port);
   }
 
   PrometheusHttpServerBuilder() {}

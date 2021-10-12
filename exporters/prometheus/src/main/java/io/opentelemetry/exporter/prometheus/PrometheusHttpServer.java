@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
+import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.prometheus.client.Collector;
 import io.prometheus.client.Predicate;
 import io.prometheus.client.SampleNameFilter;
@@ -56,6 +57,15 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
 
   private final HttpServer server;
   private final ExecutorService executor;
+
+  /**
+   * Returns a new {@link MetricReaderFactory} which can be registered to an {@link
+   * io.opentelemetry.sdk.metrics.SdkMeterProvider} to expose Prometheus metrics on port {@value
+   * PrometheusHttpServerBuilder#DEFAULT_PORT}.
+   */
+  public static MetricReaderFactory create() {
+    return builder().build();
+  }
 
   /** Returns a new {@link PrometheusHttpServerBuilder}. */
   public static PrometheusHttpServerBuilder builder() {
