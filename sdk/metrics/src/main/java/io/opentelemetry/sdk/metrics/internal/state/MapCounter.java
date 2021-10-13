@@ -1,13 +1,14 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class MapCounter implements ExponentialCounter {
 
   private static final long NULL_INDEX = Long.MIN_VALUE;
 
-  private final HashMap<Integer, AtomicLong> backing;
+  private final Map<Integer, AtomicLong> backing;
   private final int maxSize;
   private long indexStart;
   private long indexEnd;
