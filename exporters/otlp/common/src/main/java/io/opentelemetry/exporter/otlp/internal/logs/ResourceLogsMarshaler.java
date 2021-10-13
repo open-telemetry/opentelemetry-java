@@ -13,7 +13,7 @@ import io.opentelemetry.exporter.otlp.internal.ResourceMarshaler;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.proto.logs.v1.internal.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logging.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.util.Collection;
