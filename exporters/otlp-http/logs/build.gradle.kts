@@ -9,7 +9,7 @@ description = "OpenTelemetry Protocol HTTP Logs Exporter"
 otelJava.moduleName.set("io.opentelemetry.exporter.otlp.http.logs")
 
 dependencies {
-  api(project(":sdk-extensions:logging"))
+  api(project(":sdk:logs"))
 
   implementation(project(":exporters:otlp:common"))
 

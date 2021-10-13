@@ -24,7 +24,7 @@ import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logging.data.Severity;
+import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,7 +49,7 @@ class LogsRequestMarshalerTest {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
             Collections.singleton(
-                io.opentelemetry.sdk.logging.data.LogRecord.builder(
+                io.opentelemetry.sdk.logs.data.LogRecord.builder(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
                         InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
                     .setName(NAME)
@@ -82,7 +82,7 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                io.opentelemetry.sdk.logging.data.LogRecord.builder(
+                io.opentelemetry.sdk.logs.data.LogRecord.builder(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
                         InstrumentationLibraryInfo.create("instrumentation", "1"))
                     .setName(NAME)

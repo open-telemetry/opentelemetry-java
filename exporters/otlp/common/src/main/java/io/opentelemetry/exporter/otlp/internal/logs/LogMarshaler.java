@@ -13,7 +13,7 @@ import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.exporter.otlp.internal.StringAnyValueMarshaler;
 import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
-import io.opentelemetry.sdk.logging.data.Severity;
+import io.opentelemetry.sdk.logs.data.Severity;
 import java.io.IOException;
 
 final class LogMarshaler extends MarshalerWithSize {
@@ -28,7 +28,7 @@ final class LogMarshaler extends MarshalerWithSize {
   private final String traceId;
   private final String spanId;
 
-  static LogMarshaler create(io.opentelemetry.sdk.logging.data.LogData logData) {
+  static LogMarshaler create(io.opentelemetry.sdk.logs.data.LogData logData) {
     KeyValueMarshaler[] attributeMarshalers =
         KeyValueMarshaler.createRepeated(logData.getAttributes());
 
