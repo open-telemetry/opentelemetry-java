@@ -15,9 +15,6 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
-  // this is needed for the fuzz test to run
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
-
   testImplementation("edu.berkeley.cs.jqf:jqf-fuzz")
   testImplementation("com.google.guava:guava-testlib")
 }

@@ -12,31 +12,32 @@ import edu.berkeley.cs.jqf.fuzz.JQF;
 import edu.berkeley.cs.jqf.fuzz.junit.GuidedFuzzing;
 import edu.berkeley.cs.jqf.fuzz.random.NoGuidance;
 import java.net.URLDecoder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 
-@RunWith(JQF.class)
-public class PercentEscaperFuzzTest {
-  private final PercentEscaper percentEscaper = new PercentEscaper();
+class PercentEscaperFuzzTest {
+  @RunWith(JQF.class)
+  public static class TestCases {
+    private final PercentEscaper percentEscaper = new PercentEscaper();
 
-  @Fuzz
-  public void roundTripWithUrlDecoder(String value) throws Exception {
-    String escaped = percentEscaper.escape(value);
-    String decoded = URLDecoder.decode(escaped, "UTF-8");
-    assertThat(decoded).isEqualTo(value);
+    @Fuzz
+    public void roundTripWithUrlDecoder(String value) throws Exception {
+      String escaped = percentEscaper.escape(value);
+      String decoded = URLDecoder.decode(escaped, "UTF-8");
+      assertThat(decoded).isEqualTo(value);
+    }
   }
 
-  /**
-   * There doesn't seem to be any way to make the fuzzing run more than the default 100 times
-   * without using custom guidance, but this does seem to do it.
-   */
+  // driver methods to avoid having to use the vintage junit engine, and to enable increasing the
+  // number of iterations:
+
   @Test
   @SuppressWarnings("SystemOut")
   public void lotsOfFuzz() {
     Result result =
         GuidedFuzzing.run(
-            PercentEscaperFuzzTest.class,
+            TestCases.class,
             "roundTripWithUrlDecoder",
             new NoGuidance(10000, System.out),
             System.out);
