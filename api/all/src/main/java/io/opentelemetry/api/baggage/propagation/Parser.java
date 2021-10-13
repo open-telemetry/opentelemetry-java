@@ -86,11 +86,7 @@ class Parser {
                 break;
               case KEY: // none
             }
-            putBaggage(
-                baggageBuilder,
-                key.getValue(),
-                value.getValue(),
-                BaggageEntryMetadata.create(meta));
+            putBaggage(baggageBuilder, key.getValue(), value.getValue(), meta);
             reset(i + 1);
             break;
           }
@@ -115,16 +111,14 @@ class Parser {
       case META:
         {
           String rest = baggageHeader.substring(metaStart).trim();
-          putBaggage(
-              baggageBuilder, key.getValue(), value.getValue(), BaggageEntryMetadata.create(rest));
+          putBaggage(baggageBuilder, key.getValue(), value.getValue(), rest);
           break;
         }
       case VALUE:
         {
           if (!skipToNext) {
             value.tryTerminating(baggageHeader.length(), baggageHeader);
-            putBaggage(
-                baggageBuilder, key.getValue(), value.getValue(), BaggageEntryMetadata.empty());
+            putBaggage(baggageBuilder, key.getValue(), value.getValue(), null);
             break;
           }
         }
@@ -135,10 +129,15 @@ class Parser {
       BaggageBuilder baggage,
       @Nullable String key,
       @Nullable String value,
-      BaggageEntryMetadata metadata) {
+      @Nullable String metadataValue) {
     String decodedValue = decodeValue(value);
+    metadataValue = decodeValue(metadataValue);
+    BaggageEntryMetadata baggageEntryMetadata =
+        metadataValue != null
+            ? BaggageEntryMetadata.create(metadataValue)
+            : BaggageEntryMetadata.empty();
     if (key != null && decodedValue != null) {
-      baggage.put(key, decodedValue, metadata);
+      baggage.put(key, decodedValue, baggageEntryMetadata);
     }
   }
 

@@ -453,13 +453,7 @@ class W3CBaggagePropagatorTest {
         .containsExactlyInAnyOrderEntriesOf(
             singletonMap(
                 "baggage",
-                "meta=meta-value;somemetadata; someother=foo,needsEncoding=blah%20blah%20blah,nometa=nometa-value"));
-  }
-
-  @Test
-  void inject_extract_roundtrips() {
-    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
-    Map<String, String> carrier = new HashMap<>();
+                "meta=meta-value;somemetadata%3B%20someother%3Dfoo,needsEncoding=blah%20blah%20blah,nometa=nometa-value"));
   }
 
   @Test

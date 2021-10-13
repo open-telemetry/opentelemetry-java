@@ -54,7 +54,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
           headerContent.append(key).append("=").append(encodeValue(baggageEntry.getValue()));
           String metadataValue = baggageEntry.getMetadata().getValue();
           if (metadataValue != null && !metadataValue.isEmpty()) {
-            headerContent.append(";").append(metadataValue);
+            headerContent.append(";").append(encodeValue(metadataValue));
           }
           headerContent.append(",");
         });
