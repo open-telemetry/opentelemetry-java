@@ -70,7 +70,7 @@ final class PercentEscaper {
   private static final String SAFE_CHARS =
       "-._~" // Unreserved characters.
           + "!$'()*"
-          //+ ",;=" // baggage delimiters, so let's escape them
+          // + ",;=" // baggage delimiters, so let's escape them
           + "&" // The subdelim characters.
           + "@:" // The gendelim characters permitted in paths.
           + "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

@@ -8,9 +8,6 @@ package io.opentelemetry.api.baggage.propagation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import com.pholser.junit.quickcheck.From;
-import com.pholser.junit.quickcheck.generator.java.lang.AbstractStringGenerator;
-import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import edu.berkeley.cs.jqf.fuzz.Fuzz;
 import edu.berkeley.cs.jqf.fuzz.JQF;
 import io.opentelemetry.api.baggage.Baggage;
