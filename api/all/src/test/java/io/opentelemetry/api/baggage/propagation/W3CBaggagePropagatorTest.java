@@ -457,6 +457,12 @@ class W3CBaggagePropagatorTest {
   }
 
   @Test
+  void inject_extract_roundtrips() {
+    W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
+    Map<String, String> carrier = new HashMap<>();
+  }
+
+  @Test
   void inject_nullContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     W3CBaggagePropagator.getInstance().inject(null, carrier, Map::put);

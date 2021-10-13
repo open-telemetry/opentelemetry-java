@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.api.baggage.propagation;
-
-// Includes work from Guava, trimmed down to only what we need. Guava copyright notice here:
+// Includes work from:
 /*
  * Copyright (C) 2008 The Guava Authors
  *
@@ -20,12 +18,25 @@ package io.opentelemetry.api.baggage.propagation;
  * the License.
  */
 
+package io.opentelemetry.api.baggage.propagation;
+
 import io.opentelemetry.api.internal.TemporaryBuffers;
 import javax.annotation.CheckForNull;
 
 /**
- * Escapes some set of Java characters using a UTF-8 based percent encoding scheme. The set of safe
- * characters (those which remain unescaped) can be specified on construction.
+ * Note: This class is based on code from guava. It is comprised of code from three classes:
+ *
+ * <ul>
+ *   <li><a
+ *       href="https://github.com/google/guava/blob/46093e2517b4f49c019ecff6dbe90cc22e8003b5/guava/src/com/google/common/escape/Escaper.java">com.google.common.escape.Escaper</a>
+ *   <li><a
+ *       href="https://github.com/google/guava/blob/46093e2517b4f49c019ecff6dbe90cc22e8003b5/guava/src/com/google/common/escape/UnicodeEscaper.java">com.google.common.escape.UnicodeEscaper</a>
+ *   <li><a
+ *       href="https://github.com/google/guava/blob/46093e2517b4f49c019ecff6dbe90cc22e8003b5/guava/src/com/google/common/net/PercentEscaper.java">com.google.common.net.PercentEscaper</a>
+ * </ul>
+ *
+ * <p>Escapes some set of Java characters using a UTF-8 based percent encoding scheme. The set of
+ * safe characters (those which remain unescaped) can be specified on construction.
  *
  * <p>This class is primarily used for creating URI escapers in {@code UrlEscapers} but can be used
  * directly if required. While URI escapers impose specific semantics on which characters are
@@ -58,7 +69,9 @@ final class PercentEscaper {
 
   private static final String SAFE_CHARS =
       "-._~" // Unreserved characters.
-          + "!$'()*,;&=+" // The subdelim characters.
+          + "!$'()*"
+          //+ ",;=" // baggage delimiters, so let's escape them
+          + "&" // The subdelim characters.
           + "@:" // The gendelim characters permitted in paths.
           + "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
