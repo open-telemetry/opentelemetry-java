@@ -175,6 +175,12 @@ dependencies {
   dependencyManagement(platform(project(":dependencyManagement")))
   afterEvaluate {
     configurations.configureEach {
+      // Normally, we configure the maven publication such that all the dependencies have the right
+      // version. However, a composite build does not consume the included builds via maven
+      // publications, so these settings are ignored. Thus we need to apply the dependencyManagement
+      // also to configurations such as "api" there, otherwise the including build will have any
+      // external dependencies of the included project without version, causing dependency
+      // resolution to fail.
       val isIncludedBuild = project.gradle.parent != null
       if (!isCanBeConsumed && (isIncludedBuild || isCanBeResolved) && this != dependencyManagement) {
         extendsFrom(dependencyManagement)

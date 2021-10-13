@@ -6,6 +6,7 @@ plugins {
 }
 
 publishing {
+  // We can't publish from an included build, see java-conventions.
   val isIncludedBuild = rootProject.gradle.parent != null
   if (isIncludedBuild) {
     tasks.withType(AbstractPublishToMaven::class).configureEach {
