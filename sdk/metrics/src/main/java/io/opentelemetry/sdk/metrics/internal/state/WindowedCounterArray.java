@@ -16,7 +16,7 @@ package io.opentelemetry.sdk.metrics.internal.state;
  * Window start and end is auto updated on array write. Write will fail when window size exceeds
  * maxSize
  */
-public class WindowedCounterArray {
+public class WindowedCounterArray implements ExponentialCounter {
   public static final long NULL_INDEX = Long.MIN_VALUE;
 
   private final MultiTypeCounterArray backingArray; // Physical storage, whose index starts from 0.

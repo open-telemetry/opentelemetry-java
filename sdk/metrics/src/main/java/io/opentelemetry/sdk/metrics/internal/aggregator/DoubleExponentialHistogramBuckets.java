@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
+import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounter;
+import io.opentelemetry.sdk.metrics.internal.state.MapCounter;
 import io.opentelemetry.sdk.metrics.internal.state.WindowedCounterArray;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +22,12 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
   private static final Logger logger = Logger.getLogger(DoubleExponentialHistogramBuckets.class.getName());
 
-  private WindowedCounterArray counts;
+  private ExponentialCounter counts;
   private BucketMapper bucketMapper;
   private int scale;
 
   DoubleExponentialHistogramBuckets() {
-    this.counts = new WindowedCounterArray(MAX_BUCKETS);
+    this.counts = new MapCounter(MAX_BUCKETS);
     this.bucketMapper = new LogarithmMapper(MAX_SCALE);
     this.scale = MAX_SCALE;
   }
@@ -70,7 +72,7 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     }
 
     if (!counts.isEmpty()) {
-      WindowedCounterArray newCounts = new WindowedCounterArray(counts.getMaxSize());
+      ExponentialCounter newCounts = new MapCounter(MAX_BUCKETS);
 
       for (long i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
         if (!newCounts.increment(i >> by, counts.get(i))) {
@@ -96,7 +98,7 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     long newEnd = Math.max(index, counts.getIndexEnd());
     int scaleReduction = 0;
 
-    while (newEnd - newStart + 1 > counts.getMaxSize()) {
+    while (newEnd - newStart + 1 > MAX_BUCKETS) {
       newStart >>= 1;
       newEnd >>= 1;
       scaleReduction++;
