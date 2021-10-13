@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -59,6 +60,7 @@ class PeriodicMetricReaderTest {
               /* isMonotonic= */ true, AggregationTemporality.CUMULATIVE, LONG_POINT_LIST));
 
   @Mock private MetricProducer metricProducer;
+  @Mock private MetricExporter metricExporter;
 
   @BeforeEach
   void setup() {
@@ -74,7 +76,7 @@ class PeriodicMetricReaderTest {
     when(scheduler.scheduleAtFixedRate(any(), anyLong(), anyLong(), any())).thenReturn(mock);
 
     MetricReaderFactory factory =
-        PeriodicMetricReader.builder(mock(MetricExporter.class))
+        PeriodicMetricReader.builder(metricExporter)
             .setScheduleDelay(Duration.ofMillis(1))
             .setExecutor(scheduler)
             .newMetricReaderFactory();
@@ -159,6 +161,26 @@ class PeriodicMetricReaderTest {
         .containsExactly(Collections.singletonList(METRIC_DATA));
 
     assertThat(waitingMetricExporter.hasShutdown.get()).isTrue();
+  }
+
+  @Test
+  @SuppressWarnings("PreferJavaTimeOverload") // Testing the overload
+  void invalidConfig() {
+    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setScheduleDelay(1, null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("unit");
+    assertThatThrownBy(
+            () ->
+                PeriodicMetricReader.builder(metricExporter)
+                    .setScheduleDelay(-1, TimeUnit.MILLISECONDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("delay must be non-negative");
+    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setScheduleDelay(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("delay");
+    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setExecutor(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("executor");
   }
 
   private static class WaitingMetricExporter implements MetricExporter {
