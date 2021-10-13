@@ -63,8 +63,8 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
    * io.opentelemetry.sdk.metrics.SdkMeterProvider} to expose Prometheus metrics on port {@value
    * PrometheusHttpServerBuilder#DEFAULT_PORT}.
    */
-  public static MetricReaderFactory create() {
-    return builder().build();
+  public static MetricReaderFactory newMetricReaderFactory() {
+    return builder().newMetricReaderFactory();
   }
 
   /** Returns a new {@link PrometheusHttpServerBuilder}. */

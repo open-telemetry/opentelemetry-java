@@ -42,7 +42,8 @@ class PrometheusIntegrationTest {
   @BeforeAll
   static void setUp(@TempDir Path tempDir) throws Exception {
     PrometheusHttpServerFactory factory =
-        (PrometheusHttpServerFactory) PrometheusHttpServer.builder().setPort(0).build();
+        (PrometheusHttpServerFactory)
+            PrometheusHttpServer.builder().setPort(0).newMetricReaderFactory();
     meterProvider = SdkMeterProvider.builder().registerMetricReader(factory).build();
 
     int port = factory.getAddress().getPort();

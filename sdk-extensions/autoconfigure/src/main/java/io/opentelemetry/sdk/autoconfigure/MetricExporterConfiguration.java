@@ -168,7 +168,7 @@ final class MetricExporterConfiguration {
       prom.setHost(host);
     }
 
-    sdkMeterProviderBuilder.registerMetricReader(prom.build());
+    sdkMeterProviderBuilder.registerMetricReader(prom.newMetricReaderFactory());
   }
 
   private MetricExporterConfiguration() {}

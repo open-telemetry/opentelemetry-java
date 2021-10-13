@@ -48,7 +48,7 @@ class PrometheusHttpServerTest {
             PrometheusHttpServer.builder()
                 .setHost("localhost")
                 .setPort(0)
-                .build()
+                .newMetricReaderFactory()
                 .apply(metricProducer);
 
     client = WebClient.of("http://localhost:" + prometheusServer.getAddress().getPort());
