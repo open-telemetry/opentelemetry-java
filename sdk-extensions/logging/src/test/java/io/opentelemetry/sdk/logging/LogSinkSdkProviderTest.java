@@ -15,7 +15,9 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logging.data.LogData;
 import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logging.data.Severity;
 import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logging.util.TestLogExporter;
 import io.opentelemetry.sdk.logging.util.TestLogProcessor;
@@ -27,11 +29,11 @@ import org.junit.jupiter.api.Test;
 
 class LogSinkSdkProviderTest {
 
-  private static LogRecord createLog(LogRecord.Severity severity, String message) {
+  private static LogRecord createLog(Severity severity, String message) {
     return LogRecord.builder(
             Resource.create(Attributes.builder().put("testKey", "testValue").build()),
             InstrumentationLibraryInfo.create("instrumentation", "1"))
-        .setUnixTimeMillis(System.currentTimeMillis())
+        .setEpochMillis(System.currentTimeMillis())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
         .setFlags(TraceFlags.getDefault().asByte())
@@ -50,13 +52,12 @@ class LogSinkSdkProviderTest {
     LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
     provider.addLogProcessor(processor);
     LogSink sink = provider.get("test", "0.1a");
-    LogRecord log = createLog(LogRecord.Severity.ERROR, "test");
+    LogRecord log = createLog(Severity.ERROR, "test");
     sink.offer(log);
     provider.forceFlush().join(500, TimeUnit.MILLISECONDS);
-    List<LogRecord> records = exporter.getRecords();
+    List<LogData> records = exporter.getRecords();
     assertThat(records).singleElement().isEqualTo(log);
-    assertThat(log.getSeverity().getSeverityNumber())
-        .isEqualTo(LogRecord.Severity.ERROR.getSeverityNumber());
+    assertThat(log.getSeverity().getSeverityNumber()).isEqualTo(Severity.ERROR.getSeverityNumber());
   }
 
   @Test
@@ -73,7 +74,7 @@ class LogSinkSdkProviderTest {
     LogSink sink = provider.get("test", "0.1a");
 
     for (int i = 0; i < 7; i++) {
-      sink.offer(createLog(LogRecord.Severity.WARN, "test #" + i));
+      sink.offer(createLog(Severity.WARN, "test #" + i));
     }
     // Ensure that more than batch size kicks off a flush
     await().atMost(Duration.ofSeconds(5)).until(() -> exporter.getRecords().size() > 0);
@@ -107,7 +108,7 @@ class LogSinkSdkProviderTest {
     long start = System.currentTimeMillis();
     int testRecordCount = 700;
     for (int i = 0; i < testRecordCount; i++) {
-      sink.offer(createLog(LogRecord.Severity.WARN, "test #" + i));
+      sink.offer(createLog(Severity.WARN, "test #" + i));
     }
     long end = System.currentTimeMillis();
     assertThat(end - start).isLessThan(250L);
@@ -123,7 +124,7 @@ class LogSinkSdkProviderTest {
     provider.addLogProcessor(processorOne);
     provider.addLogProcessor(processorTwo);
     LogSink sink = provider.get("test", "0.1");
-    LogRecord record = createLog(LogRecord.Severity.INFO, "test");
+    LogRecord record = createLog(Severity.INFO, "test");
     sink.offer(record);
     assertThat(processorOne.getRecords().size()).isEqualTo(1);
     assertThat(processorTwo.getRecords().size()).isEqualTo(1);

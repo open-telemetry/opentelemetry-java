@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.logging.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.logging.data.LogData;
 import io.opentelemetry.sdk.logging.data.LogRecord;
 import java.util.Collection;
 
@@ -14,7 +15,7 @@ import java.util.Collection;
  * ultimate destination.
  */
 public interface LogExporter {
-  CompletableResultCode export(Collection<LogRecord> records);
+  CompletableResultCode export(Collection<LogData> logs);
 
   CompletableResultCode shutdown();
 }

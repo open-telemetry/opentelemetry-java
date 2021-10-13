@@ -14,6 +14,7 @@ import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logging.data.Severity;
 import io.opentelemetry.sdk.logging.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logging.util.TestLogExporter;
 import io.opentelemetry.sdk.resources.Resource;
@@ -22,11 +23,11 @@ import org.junit.jupiter.api.Test;
 
 class BatchLogProcessorTest {
 
-  private static LogRecord createLog(LogRecord.Severity severity, String message) {
+  private static LogRecord createLog(Severity severity, String message) {
     return LogRecord.builder(
             Resource.create(Attributes.builder().put("testKey", "testValue").build()),
             InstrumentationLibraryInfo.create("instrumentation", "1"))
-        .setUnixTimeMillis(System.currentTimeMillis())
+        .setEpochMillis(System.currentTimeMillis())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
         .setFlags(TraceFlags.getDefault().asByte())
@@ -50,7 +51,7 @@ class BatchLogProcessorTest {
             .setScheduleDelayMillis(2000) // longer than test
             .build();
     for (int i = 0; i < 17; i++) {
-      LogRecord record = createLog(LogRecord.Severity.INFO, Integer.toString(i));
+      LogRecord record = createLog(Severity.INFO, Integer.toString(i));
       processor.addLogRecord(record);
     }
     await().until(() -> exporter.getCallCount() > 0);

@@ -24,6 +24,7 @@ import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logging.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -53,12 +54,12 @@ class LogsRequestMarshalerTest {
                         InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
                     .setName(NAME)
                     .setBody(BODY)
-                    .setSeverity(io.opentelemetry.sdk.logging.data.LogRecord.Severity.INFO)
+                    .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
                     .setTraceId(TRACE_ID)
                     .setSpanId(SPAN_ID)
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setUnixTimeNano(12345)
+                    .setEpochNanos(12345)
                     .build()));
 
     assertThat(resourceLogsMarshalers).hasSize(1);
@@ -86,12 +87,12 @@ class LogsRequestMarshalerTest {
                         InstrumentationLibraryInfo.create("instrumentation", "1"))
                     .setName(NAME)
                     .setBody(BODY)
-                    .setSeverity(io.opentelemetry.sdk.logging.data.LogRecord.Severity.INFO)
+                    .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
                     .setTraceId(TRACE_ID)
                     .setSpanId(SPAN_ID)
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setUnixTimeNano(12345)
+                    .setEpochNanos(12345)
                     .build()));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
