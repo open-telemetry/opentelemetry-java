@@ -58,6 +58,10 @@ tasks {
         // Prevents lazy initialization
         disable("InitializeInline")
 
+        // Seems to trigger even when a deprecated method isn't called anywhere.
+        // We don't get much benefit from it anyways.
+        disable("InlineMeSuggester")
+
         if (name.contains("Jmh") || name.contains("Test")) {
           // Allow underscore in test-type method names
           disable("MemberName")

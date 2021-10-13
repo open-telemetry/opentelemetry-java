@@ -149,7 +149,9 @@ final class MetricExporterConfiguration {
     // Register the reader (which will start when SDK is built).
     // This will shutdown when the SDK is shutdown.
     sdkMeterProviderBuilder.registerMetricReader(
-        PeriodicMetricReader.create(exporter, exportInterval));
+        PeriodicMetricReader.builder(exporter)
+            .setScheduleDelay(exportInterval)
+            .newMetricReaderFactory());
   }
 
   private static void configurePrometheusMetrics(
