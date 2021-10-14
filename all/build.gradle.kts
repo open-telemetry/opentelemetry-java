@@ -22,6 +22,8 @@ tasks {
   }
 }
 
+val testTasks = mutableListOf<Task>()
+
 dependencies {
   rootProject.subprojects.forEach { subproject ->
     // Generate aggregate coverage report for published modules that enable jacoco.
@@ -29,6 +31,9 @@ dependencies {
       subproject.plugins.withId("maven-publish") {
         implementation(project(subproject.path)) {
           isTransitive = false
+        }
+        subproject.tasks.withType<Test>().configureEach {
+          testTasks.add(this)
         }
       }
     }
@@ -64,6 +69,8 @@ val coverageDataPath by configurations.creating {
 
 tasks.named<JacocoReport>("jacocoTestReport") {
   enabled = true
+
+  dependsOn(testTasks)
 
   configurations.runtimeClasspath.get().forEach {
     additionalClassDirs(

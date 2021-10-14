@@ -24,6 +24,7 @@ import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -48,17 +49,17 @@ class LogsRequestMarshalerTest {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
             Collections.singleton(
-                io.opentelemetry.sdk.logging.data.LogRecord.builder(
+                io.opentelemetry.sdk.logs.data.LogRecord.builder(
                         Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
                         InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
                     .setName(NAME)
                     .setBody(BODY)
-                    .setSeverity(io.opentelemetry.sdk.logging.data.LogRecord.Severity.INFO)
+                    .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
                     .setTraceId(TRACE_ID)
                     .setSpanId(SPAN_ID)
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setUnixTimeNano(12345)
+                    .setEpochNanos(12345)
                     .build()));
 
     assertThat(resourceLogsMarshalers).hasSize(1);
@@ -81,17 +82,17 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                io.opentelemetry.sdk.logging.data.LogRecord.builder(
+                io.opentelemetry.sdk.logs.data.LogRecord.builder(
                         Resource.create(Attributes.builder().put("testKey", "testValue").build()),
                         InstrumentationLibraryInfo.create("instrumentation", "1"))
                     .setName(NAME)
                     .setBody(BODY)
-                    .setSeverity(io.opentelemetry.sdk.logging.data.LogRecord.Severity.INFO)
+                    .setSeverity(Severity.INFO)
                     .setSeverityText("INFO")
                     .setTraceId(TRACE_ID)
                     .setSpanId(SPAN_ID)
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setUnixTimeNano(12345)
+                    .setEpochNanos(12345)
                     .build()));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
