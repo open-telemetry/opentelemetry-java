@@ -45,6 +45,7 @@ public interface LogData {
    *
    * @return the trace id.
    */
+  @Nullable
   String getTraceId();
 
   /**
@@ -52,6 +53,7 @@ public interface LogData {
    *
    * @return the span id.
    */
+  @Nullable
   String getSpanId();
 
   /**

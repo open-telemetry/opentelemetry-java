@@ -98,6 +98,7 @@ class LogsRequestMarshalerTest {
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(logRecord.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
     assertThat(logRecord.getName()).isEqualTo(NAME);
+    assertThat(logRecord.getSeverityText()).isEqualTo("INFO");
     assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue(BODY).build());
     assertThat(logRecord.getAttributesList())
         .containsExactly(
@@ -115,17 +116,18 @@ class LogsRequestMarshalerTest {
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
                 io.opentelemetry.sdk.logs.data.LogRecord.builder(
-                    Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-                    InstrumentationLibraryInfo.create("instrumentation", "1"))
+                        Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+                        InstrumentationLibraryInfo.create("instrumentation", "1"))
                     .setBody(BODY)
                     .setSeverity(Severity.INFO)
                     .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
                     .setEpochNanos(12345)
                     .build()));
 
-    assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
-    assertThat(logRecord.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
-    assertThat(logRecord.getName()).isEqualTo(NAME);
+    assertThat(logRecord.getTraceId().toByteArray()).isEmpty();
+    assertThat(logRecord.getSpanId().toByteArray()).isEmpty();
+    assertThat(logRecord.getName()).isBlank();
+    assertThat(logRecord.getSeverityText()).isBlank();
     assertThat(logRecord.getBody()).isEqualTo(AnyValue.newBuilder().setStringValue(BODY).build());
     assertThat(logRecord.getAttributesList())
         .containsExactly(

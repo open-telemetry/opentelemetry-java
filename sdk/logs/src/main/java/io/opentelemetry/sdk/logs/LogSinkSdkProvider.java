@@ -21,7 +21,7 @@ public final class LogSinkSdkProvider {
    *
    * @return a new {@link LogSinkSdkProviderBuilder} for this class.
    */
-  static LogSinkSdkProviderBuilder builder() {
+  public static LogSinkSdkProviderBuilder builder() {
     return new LogSinkSdkProviderBuilder();
   }
 

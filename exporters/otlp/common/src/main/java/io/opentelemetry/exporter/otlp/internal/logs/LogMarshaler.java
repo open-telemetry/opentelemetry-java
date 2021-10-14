@@ -15,6 +15,7 @@ import io.opentelemetry.proto.logs.v1.internal.LogRecord;
 import io.opentelemetry.proto.logs.v1.internal.SeverityNumber;
 import io.opentelemetry.sdk.logs.data.Severity;
 import java.io.IOException;
+import javax.annotation.Nullable;
 
 final class LogMarshaler extends MarshalerWithSize {
   private final long timeUnixNano;
@@ -25,8 +26,8 @@ final class LogMarshaler extends MarshalerWithSize {
   private final KeyValueMarshaler[] attributeMarshalers;
   private final int droppedAttributesCount;
   private final int flags;
-  private final String traceId;
-  private final String spanId;
+  @Nullable private final String traceId;
+  @Nullable private final String spanId;
 
   static LogMarshaler create(io.opentelemetry.sdk.logs.data.LogData logData) {
     KeyValueMarshaler[] attributeMarshalers =
@@ -59,8 +60,8 @@ final class LogMarshaler extends MarshalerWithSize {
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
       int flags,
-      String traceId,
-      String spanId) {
+      @Nullable String traceId,
+      @Nullable String spanId) {
     super(
         calculateSize(
             timeUnixNano,
@@ -114,8 +115,8 @@ final class LogMarshaler extends MarshalerWithSize {
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
       int flags,
-      String traceId,
-      String spanId) {
+      @Nullable String traceId,
+      @Nullable String spanId) {
     int size = 0;
     size += MarshalerUtil.sizeFixed64(LogRecord.TIME_UNIX_NANO, timeUnixNano);
 
