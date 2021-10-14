@@ -25,6 +25,7 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
   private static final String FIELD = "baggage";
   private static final List<String> FIELDS = singletonList(FIELD);
   private static final W3CBaggagePropagator INSTANCE = new W3CBaggagePropagator();
+  private static final PercentEscaper URL_ESCAPER = PercentEscaper.create();
 
   /** Singleton instance of the W3C Baggage Propagator. */
   public static W3CBaggagePropagator getInstance() {
@@ -50,10 +51,10 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
     StringBuilder headerContent = new StringBuilder();
     baggage.forEach(
         (key, baggageEntry) -> {
-          headerContent.append(key).append("=").append(baggageEntry.getValue());
+          headerContent.append(key).append("=").append(encodeValue(baggageEntry.getValue()));
           String metadataValue = baggageEntry.getMetadata().getValue();
           if (metadataValue != null && !metadataValue.isEmpty()) {
-            headerContent.append(";").append(metadataValue);
+            headerContent.append(";").append(encodeValue(metadataValue));
           }
           headerContent.append(",");
         });
@@ -61,6 +62,10 @@ public final class W3CBaggagePropagator implements TextMapPropagator {
       headerContent.setLength(headerContent.length() - 1);
       setter.set(carrier, FIELD, headerContent.toString());
     }
+  }
+
+  private static String encodeValue(String value) {
+    return URL_ESCAPER.escape(value);
   }
 
   @Override
