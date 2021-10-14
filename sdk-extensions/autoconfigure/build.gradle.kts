@@ -53,10 +53,11 @@ dependencies {
   add("testFullConfigImplementation", project(":exporters:logging"))
   add("testFullConfigImplementation", project(":exporters:otlp:all"))
   add("testFullConfigImplementation", project(":exporters:otlp:metrics"))
-  add("testFullConfigImplementation", project(":exporters:prometheus"))
-  add("testFullConfigImplementation", "io.prometheus:simpleclient_httpserver")
   add("testFullConfigImplementation", project(":exporters:zipkin"))
+  add("testFullConfigImplementation", project(":exporters:prometheus"))
   add("testFullConfigImplementation", project(":sdk-extensions:resources"))
+  add("testFullConfigImplementation", "io.prometheus:simpleclient_httpserver")
+  add("testFullConfigImplementation", "org.junit-pioneer:junit-pioneer")
 
   add("testOtlpGrpcImplementation", project(":exporters:otlp:all"))
   add("testOtlpGrpcImplementation", project(":exporters:otlp:metrics"))

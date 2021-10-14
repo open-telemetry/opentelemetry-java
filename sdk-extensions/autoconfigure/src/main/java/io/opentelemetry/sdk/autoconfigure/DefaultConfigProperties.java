@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.PropertySource;
 import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -31,17 +33,32 @@ final class DefaultConfigProperties implements ConfigProperties {
   private final Map<String, String> config;
 
   static ConfigProperties get() {
-    return new DefaultConfigProperties(System.getProperties(), System.getenv());
+    return new DefaultConfigProperties(
+        System.getProperties(), System.getenv(), mergePropertySources());
   }
 
   // Visible for testing
   static ConfigProperties createForTest(Map<String, String> properties) {
-    return new DefaultConfigProperties(properties, Collections.emptyMap());
+    return new DefaultConfigProperties(properties, Collections.emptyMap(), Collections.emptyMap());
+  }
+
+  private static Map<String, String> mergePropertySources() {
+    Map<String, String> properties = new HashMap<>();
+    for (PropertySource source : ServiceLoader.load(PropertySource.class)) {
+      source
+          .getProperties()
+          .forEach(
+              (key, value) ->
+                  properties.put(key.toLowerCase(Locale.ROOT).replace('-', '.'), value));
+    }
+    return properties;
   }
 
   private DefaultConfigProperties(
-      Map<?, ?> systemProperties, Map<String, String> environmentVariables) {
-    Map<String, String> config = new HashMap<>();
+      Map<?, ?> systemProperties,
+      Map<String, String> environmentVariables,
+      Map<String, String> mergedPropertySources) {
+    Map<String, String> config = new HashMap<>(mergedPropertySources);
     environmentVariables.forEach(
         (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
     systemProperties.forEach(

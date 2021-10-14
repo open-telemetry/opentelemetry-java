@@ -1,2 +1,5 @@
 Comparing source compatibility of  against 
-No changes.
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.PropertySource  (not serializable)
+	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
+	+++  NEW SUPERCLASS: java.lang.Object
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.util.Map getProperties()
