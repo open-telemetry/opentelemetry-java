@@ -18,8 +18,8 @@ public final class LogRecordBuilder {
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
   private long epochNanos;
-  private String traceId = "";
-  private String spanId = "";
+  @Nullable private String traceId;
+  @Nullable private String spanId;
   private int flags;
   private Severity severity = Severity.UNDEFINED_SEVERITY_NUMBER;
   @Nullable private String severityText;
