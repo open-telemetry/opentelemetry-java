@@ -110,10 +110,12 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     if (!(obj instanceof DoubleExponentialHistogramBuckets)) {
       return false;
     }
-    final ExponentialHistogramBuckets other = (ExponentialHistogramBuckets) obj;
+    final DoubleExponentialHistogramBuckets other = (DoubleExponentialHistogramBuckets) obj;
     // Don't need to compare getTotalCount() because equivalent bucket counts
     // imply equivalent overall count.
-    return getBucketCounts().equals(other.getBucketCounts()) && getOffset() == other.getOffset();
+    return getBucketCounts().equals(other.getBucketCounts())
+        && this.getOffset() == other.getOffset()
+        && this.scale == other.scale;
   }
 
   @Override
