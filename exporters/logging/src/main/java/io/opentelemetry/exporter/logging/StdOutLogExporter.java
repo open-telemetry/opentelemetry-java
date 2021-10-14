@@ -20,29 +20,38 @@ public class StdOutLogExporter implements LogExporter {
 
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {
-    StringBuilder sb = new StringBuilder(60);
+    StringBuilder stringBuilder = new StringBuilder(60);
 
     for (LogData log : logs) {
-      sb.setLength(0);
-      InstrumentationLibraryInfo instrumentationLibraryInfo = log.getInstrumentationLibraryInfo();
-      sb.append("'")
-          .append(log.getBody())
-          .append("' : ")
-          .append(log.getTraceId())
-          .append(" ")
-          .append(log.getSpanId())
-          .append(" [libraryInfo: ")
-          .append(instrumentationLibraryInfo.getName())
-          .append(":")
-          .append(
-              instrumentationLibraryInfo.getVersion() == null
-                  ? ""
-                  : instrumentationLibraryInfo.getVersion())
-          .append("] ")
-          .append(log.getAttributes());
-      System.out.println(sb);
+      stringBuilder.setLength(0);
+      formatLog(stringBuilder, log);
+      System.out.println(stringBuilder);
     }
     return CompletableResultCode.ofSuccess();
+  }
+
+  // VisibleForTesting
+  static void formatLog(StringBuilder stringBuilder, LogData log) {
+    InstrumentationLibraryInfo instrumentationLibraryInfo = log.getInstrumentationLibraryInfo();
+    stringBuilder
+        .append(log.getEpochNanos())
+        .append(" ")
+        .append(log.getSeverity())
+        .append(" '")
+        .append(log.getBody().asString())
+        .append("' : ")
+        .append(log.getTraceId())
+        .append(" ")
+        .append(log.getSpanId())
+        .append(" [libraryInfo: ")
+        .append(instrumentationLibraryInfo.getName())
+        .append(":")
+        .append(
+            instrumentationLibraryInfo.getVersion() == null
+                ? ""
+                : instrumentationLibraryInfo.getVersion())
+        .append("] ")
+        .append(log.getAttributes());
   }
 
   @Override
