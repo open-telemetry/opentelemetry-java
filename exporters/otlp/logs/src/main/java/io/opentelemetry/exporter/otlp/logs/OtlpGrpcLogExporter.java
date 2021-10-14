@@ -8,8 +8,8 @@ package io.opentelemetry.exporter.otlp.logs;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcExporter;
 import io.opentelemetry.exporter.otlp.internal.logs.LogsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.logging.data.LogRecord;
-import io.opentelemetry.sdk.logging.export.LogExporter;
+import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.export.LogExporter;
 import java.util.Collection;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -50,7 +50,7 @@ public final class OtlpGrpcLogExporter implements LogExporter {
    * @return the result of the operation
    */
   @Override
-  public CompletableResultCode export(Collection<LogRecord> logs) {
+  public CompletableResultCode export(Collection<LogData> logs) {
     LogsRequestMarshaler request = LogsRequestMarshaler.create(logs);
     return delegate.export(request, logs.size());
   }

@@ -41,7 +41,7 @@ public class MetricsRequestMarshalerBenchmark {
   private static final Collection<MetricData> METRICS;
 
   static {
-    InMemoryMetricReader metricReader = new InMemoryMetricReader();
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
             .registerMetricReader(metricReader)

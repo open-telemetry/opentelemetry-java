@@ -28,7 +28,7 @@ class SdkMeterProviderBuilderTest {
   void defaultResource() {
     // We need a reader to have a resource.
     SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().registerMetricReader(new InMemoryMetricReader()).build();
+        SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build();
 
     assertThat(meterProvider)
         .extracting("sharedState")

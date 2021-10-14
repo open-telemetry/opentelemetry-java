@@ -47,6 +47,6 @@ class OpenTelemetrySdkAutoConfigurationTest {
     // we instantiated an SDK with a reader.
     assertThat(GlobalMeterProvider.get())
         .doesNotHaveSameClassAs(
-            SdkMeterProvider.builder().registerMetricReader(new InMemoryMetricReader()).build());
+            SdkMeterProvider.builder().registerMetricReader(InMemoryMetricReader.create()).build());
   }
 }

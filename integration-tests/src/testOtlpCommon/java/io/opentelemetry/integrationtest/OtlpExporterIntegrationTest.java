@@ -51,9 +51,10 @@ import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span.Link;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logging.data.Body;
-import io.opentelemetry.sdk.logging.data.LogRecord;
-import io.opentelemetry.sdk.logging.export.LogExporter;
+import io.opentelemetry.sdk.logs.data.Body;
+import io.opentelemetry.sdk.logs.data.LogRecord;
+import io.opentelemetry.sdk.logs.data.Severity;
+import io.opentelemetry.sdk.logs.export.LogExporter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
@@ -379,11 +380,11 @@ abstract class OtlpExporterIntegrationTest {
             .setName("log-name")
             .setBody(Body.stringBody("log body"))
             .setAttributes(Attributes.builder().put("key", "value").build())
-            .setSeverity(LogRecord.Severity.DEBUG)
+            .setSeverity(Severity.DEBUG)
             .setSeverityText("DEBUG")
             .setTraceId(IdGenerator.random().generateTraceId())
             .setSpanId(IdGenerator.random().generateSpanId())
-            .setUnixTimeNano(TimeUnit.MILLISECONDS.toNanos(Instant.now().toEpochMilli()))
+            .setEpochNanos(TimeUnit.MILLISECONDS.toNanos(Instant.now().toEpochMilli()))
             .setFlags(0)
             .build();
 
@@ -427,7 +428,7 @@ abstract class OtlpExporterIntegrationTest {
         .isEqualTo(logRecord.getTraceId());
     assertThat(SpanId.fromBytes(protoLog.getSpanId().toByteArray()))
         .isEqualTo(logRecord.getSpanId());
-    assertThat(protoLog.getTimeUnixNano()).isEqualTo(logRecord.getTimeUnixNano());
+    assertThat(protoLog.getTimeUnixNano()).isEqualTo(logRecord.getEpochNanos());
     assertThat(protoLog.getFlags()).isEqualTo(logRecord.getFlags());
   }
 

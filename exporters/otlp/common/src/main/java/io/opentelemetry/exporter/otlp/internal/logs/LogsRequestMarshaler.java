@@ -10,7 +10,8 @@ import io.opentelemetry.exporter.otlp.internal.MarshalerUtil;
 import io.opentelemetry.exporter.otlp.internal.MarshalerWithSize;
 import io.opentelemetry.exporter.otlp.internal.Serializer;
 import io.opentelemetry.proto.collector.logs.v1.internal.ExportLogsServiceRequest;
-import io.opentelemetry.sdk.logging.data.LogRecord;
+import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.util.Collection;
@@ -29,8 +30,8 @@ public final class LogsRequestMarshaler extends MarshalerWithSize {
    * Returns a {@link LogsRequestMarshaler} that can be used to convert the provided {@link
    * SpanData} into a serialized OTLP ExportLogsServiceRequest.
    */
-  public static LogsRequestMarshaler create(Collection<LogRecord> logsList) {
-    return new LogsRequestMarshaler(ResourceLogsMarshaler.create(logsList));
+  public static LogsRequestMarshaler create(Collection<LogData> logs) {
+    return new LogsRequestMarshaler(ResourceLogsMarshaler.create(logs));
   }
 
   private LogsRequestMarshaler(ResourceLogsMarshaler[] resourceLogsMarshalers) {

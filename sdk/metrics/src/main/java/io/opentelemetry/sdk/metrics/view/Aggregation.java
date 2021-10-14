@@ -73,7 +73,7 @@ public abstract class Aggregation {
   /**
    * Aggregates measurements into an explicit bucket histogram using the default bucket boundaries.
    */
-  public static Aggregation explictBucketHistogram() {
+  public static Aggregation explicitBucketHistogram() {
     return ExplicitBucketHistogramAggregation.DEFAULT;
   }
 
@@ -101,6 +101,6 @@ public abstract class Aggregation {
 
   /** Aggregates measurements using the best available Histogram. */
   public static Aggregation histogram() {
-    return explictBucketHistogram();
+    return explicitBucketHistogram();
   }
 }

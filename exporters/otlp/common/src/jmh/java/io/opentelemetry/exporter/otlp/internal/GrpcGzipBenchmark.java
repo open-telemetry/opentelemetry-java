@@ -50,7 +50,7 @@ public class GrpcGzipBenchmark {
   private static final Codec IDENTITY_CODEC = Codec.Identity.NONE;
 
   static {
-    InMemoryMetricReader metricReader = new InMemoryMetricReader();
+    InMemoryMetricReader metricReader = InMemoryMetricReader.create();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
             .registerMetricReader(metricReader)
