@@ -59,7 +59,7 @@ versions of the various components in sync.
       <dependency>
         <groupId>io.opentelemetry</groupId>
         <artifactId>opentelemetry-bom</artifactId>
-        <version>1.6.0</version>
+        <version>1.7.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -78,7 +78,7 @@ versions of the various components in sync.
 
 ```kotlin
 dependencies {
-  implementation(platform("io.opentelemetry:opentelemetry-bom:1.6.0"))
+  implementation(platform("io.opentelemetry:opentelemetry-bom:1.7.0"))
   implementation("io.opentelemetry:opentelemetry-api")
 }
 ```

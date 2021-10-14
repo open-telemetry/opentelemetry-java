@@ -40,7 +40,7 @@ public final class OtlpExporterExample {
     LongCounter counter = meter.counterBuilder("example_counter").build();
     LongHistogram recorder = meter.histogramBuilder("super_timer").ofLongs().setUnit("ms").build();
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 100; i++) {
       long startTime = System.currentTimeMillis();
       Span exampleSpan = tracer.spanBuilder("exampleSpan").startSpan();
       try (Scope scope = exampleSpan.makeCurrent()) {

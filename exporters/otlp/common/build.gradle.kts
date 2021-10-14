@@ -18,7 +18,7 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:all"))
   api(project(":sdk:metrics"))
-  compileOnly(project(":sdk-extensions:logging"))
+  compileOnly(project(":sdk:logs"))
 
   compileOnly("com.fasterxml.jackson.core:jackson-core")
 
@@ -32,7 +32,7 @@ dependencies {
 
   annotationProcessor("com.google.auto.value:auto-value")
 
-  testImplementation(project(":sdk-extensions:logging"))
+  testImplementation(project(":sdk:logs"))
   testImplementation(project(":sdk:testing"))
 
   testImplementation("com.fasterxml.jackson.core:jackson-core")
