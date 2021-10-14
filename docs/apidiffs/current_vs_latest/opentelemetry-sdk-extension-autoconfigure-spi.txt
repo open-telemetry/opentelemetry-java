@@ -1,5 +1,8 @@
 Comparing source compatibility of  against 
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.traces.SpanExporterWrapper  (not serializable)
++++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredComponentWrapper  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.trace.export.SpanExporter wrap(io.opentelemetry.sdk.trace.export.SpanExporter, io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.resources.Resource wrap(io.opentelemetry.sdk.resources.Resource, io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.samplers.Sampler wrap(io.opentelemetry.sdk.trace.samplers.Sampler, io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.sdk.trace.export.SpanExporter wrap(io.opentelemetry.sdk.trace.export.SpanExporter, io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
+	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.context.propagation.TextMapPropagator wrap(io.opentelemetry.context.propagation.TextMapPropagator, io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)

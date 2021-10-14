@@ -36,7 +36,7 @@ public class ConfigurableSpanExporterTest {
         .hasSize(1)
         .containsKey("testExporter")
         .extracting(map -> map.get("testExporter"))
-        .isInstanceOf(TestSpanExporterWrapper.WrappingSpanExporter.class)
+        .isInstanceOf(TestComponentWrapper.WrappingSpanExporter.class)
         .extracting("delegate")
         .isInstanceOf(TestConfigurableSpanExporterProvider.TestSpanExporter.class)
         .extracting("config")

@@ -24,16 +24,14 @@ import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.ComponentWrapping;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.traces.SpanExporterWrapper;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -76,19 +74,13 @@ final class SpanExporterConfiguration {
             ConfigurableSpanExporterProvider::createExporter,
             config);
 
-    List<SpanExporterWrapper> wrappers = new ArrayList<>();
-    ServiceLoader.load(SpanExporterWrapper.class).forEach(wrappers::add);
-
     return exporterNames.stream()
         .collect(
             toMap(
                 Function.identity(),
                 exporterName -> {
                   SpanExporter exporter = configureExporter(exporterName, config, spiExporters);
-                  for (SpanExporterWrapper wrapper : wrappers) {
-                    exporter = wrapper.wrap(exporter, config);
-                  }
-                  return exporter;
+                  return ComponentWrapping.wrap(exporter, config);
                 }));
   }
 

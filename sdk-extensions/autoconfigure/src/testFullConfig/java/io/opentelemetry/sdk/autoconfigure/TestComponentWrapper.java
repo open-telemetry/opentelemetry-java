@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredComponentWrapper;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.traces.SpanExporterWrapper;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.DelegatingSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class TestSpanExporterWrapper implements SpanExporterWrapper {
+public final class TestComponentWrapper implements AutoConfiguredComponentWrapper {
   @Override
   public SpanExporter wrap(SpanExporter delegate, ConfigProperties config) {
     return new WrappingSpanExporter(delegate) {
