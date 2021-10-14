@@ -286,7 +286,7 @@ abstract class OtlpExporterIntegrationTest {
   private static void testMetricExport(MetricExporter metricExporter) {
     MetricReaderFactory reader =
         PeriodicMetricReader.builder(metricExporter)
-            .setScheduleDelay(Duration.ofSeconds(5))
+            .setInterval(Duration.ofSeconds(5))
             .newMetricReaderFactory();
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder().setResource(RESOURCE).registerMetricReader(reader).build();

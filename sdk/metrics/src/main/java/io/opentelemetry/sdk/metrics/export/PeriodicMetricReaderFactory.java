@@ -9,13 +9,13 @@ import java.util.concurrent.ScheduledExecutorService;
 
 final class PeriodicMetricReaderFactory implements MetricReaderFactory {
   private final MetricExporter exporter;
-  private final long scheduleDelayNanos;
+  private final long intervalNanos;
   private final ScheduledExecutorService scheduler;
 
   PeriodicMetricReaderFactory(
       MetricExporter exporter, long scheduleDelayNanos, ScheduledExecutorService scheduler) {
     this.exporter = exporter;
-    this.scheduleDelayNanos = scheduleDelayNanos;
+    this.intervalNanos = scheduleDelayNanos;
     this.scheduler = scheduler;
   }
 
@@ -23,7 +23,7 @@ final class PeriodicMetricReaderFactory implements MetricReaderFactory {
   public MetricReader apply(MetricProducer producer) {
     PeriodicMetricReader result = new PeriodicMetricReader(producer, exporter, scheduler);
     // TODO - allow a different start delay.
-    result.start(scheduleDelayNanos);
+    result.start(intervalNanos);
     return result;
   }
 }

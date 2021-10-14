@@ -47,12 +47,12 @@ public final class PeriodicMetricReader implements MetricReader {
    *
    * @param exporter The exporter receiving metrics.
    * @param duration The duration (interval) between metric export calls.
-   * @deprecated Use {@link PeriodicMetricReader#builder(MetricExporter)}.
+   * @deprecated Use {@link PeriodicMetricReader#builder(MetricExporter)}. Will be removed in 1.8.0.
    */
   @Deprecated
   public static MetricReaderFactory newMetricReaderFactory(
       MetricExporter exporter, Duration duration) {
-    return builder(exporter).setScheduleDelay(duration).newMetricReaderFactory();
+    return builder(exporter).setInterval(duration).newMetricReaderFactory();
   }
 
   /**
@@ -61,15 +61,12 @@ public final class PeriodicMetricReader implements MetricReader {
    * @param exporter The exporter receiving metrics.
    * @param duration The duration (interval) between metric export calls.
    * @param scheduler The service to schedule export work.
-   * @deprecated Use {@link PeriodicMetricReader#builder(MetricExporter)}
+   * @deprecated Use {@link PeriodicMetricReader#builder(MetricExporter)}. Will be removed in 1.8.0.
    */
   @Deprecated
   public static MetricReaderFactory newMetricReaderFactory(
       MetricExporter exporter, Duration duration, ScheduledExecutorService scheduler) {
-    return builder(exporter)
-        .setScheduleDelay(duration)
-        .setExecutor(scheduler)
-        .newMetricReaderFactory();
+    return builder(exporter).setInterval(duration).setExecutor(scheduler).newMetricReaderFactory();
   }
 
   /** Returns a new {@link PeriodicMetricReaderBuilder}. */
@@ -121,14 +118,14 @@ public final class PeriodicMetricReader implements MetricReader {
     return result;
   }
 
-  void start(long scheduleDelayNanos) {
+  void start(long intervalNanos) {
     synchronized (lock) {
       if (scheduledFuture != null) {
         return;
       }
       scheduledFuture =
           scheduler.scheduleAtFixedRate(
-              scheduled, scheduleDelayNanos, scheduleDelayNanos, TimeUnit.NANOSECONDS);
+              scheduled, intervalNanos, intervalNanos, TimeUnit.NANOSECONDS);
     }
   }
 

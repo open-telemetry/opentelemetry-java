@@ -15,13 +15,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
+/** A builder for {@link PeriodicMetricReader}. */
 public final class PeriodicMetricReaderBuilder {
 
   static final long DEFAULT_SCHEDULE_DELAY_MINUTES = 5;
 
   private final MetricExporter metricExporter;
 
-  private long scheduleDelayNanos = TimeUnit.MINUTES.toNanos(DEFAULT_SCHEDULE_DELAY_MINUTES);
+  private long intervalNanos = TimeUnit.MINUTES.toNanos(DEFAULT_SCHEDULE_DELAY_MINUTES);
 
   @Nullable private ScheduledExecutorService executor;
 
@@ -30,23 +31,21 @@ public final class PeriodicMetricReaderBuilder {
   }
 
   /**
-   * Sets the delay interval between two consecutive reads. If unset, defaults to {@value
-   * DEFAULT_SCHEDULE_DELAY_MINUTES}min.
+   * Sets the interval of reads. If unset, defaults to {@value DEFAULT_SCHEDULE_DELAY_MINUTES}min.
    */
-  public PeriodicMetricReaderBuilder setScheduleDelay(long delay, TimeUnit unit) {
+  public PeriodicMetricReaderBuilder setInterval(long interval, TimeUnit unit) {
     requireNonNull(unit, "unit");
-    checkArgument(delay >= 0, "delay must be non-negative");
-    scheduleDelayNanos = unit.toNanos(delay);
+    checkArgument(interval > 0, "interval must be positive");
+    intervalNanos = unit.toNanos(interval);
     return this;
   }
 
   /**
-   * Sets the delay interval between two consecutive reads. If unset, defaults to {@value
-   * DEFAULT_SCHEDULE_DELAY_MINUTES}min.
+   * Sets the interval of reads. If unset, defaults to {@value DEFAULT_SCHEDULE_DELAY_MINUTES}min.
    */
-  public PeriodicMetricReaderBuilder setScheduleDelay(Duration delay) {
-    requireNonNull(delay, "delay");
-    return setScheduleDelay(delay.toNanos(), TimeUnit.NANOSECONDS);
+  public PeriodicMetricReaderBuilder setInterval(Duration interval) {
+    requireNonNull(interval, "interval");
+    return setInterval(interval.toNanos(), TimeUnit.NANOSECONDS);
   }
 
   /** Sets the {@link ScheduledExecutorService} to schedule reads on. */
@@ -66,6 +65,6 @@ public final class PeriodicMetricReaderBuilder {
       executor =
           Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader"));
     }
-    return new PeriodicMetricReaderFactory(metricExporter, scheduleDelayNanos, executor);
+    return new PeriodicMetricReaderFactory(metricExporter, intervalNanos, executor);
   }
 }

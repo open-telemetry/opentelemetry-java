@@ -150,7 +150,7 @@ final class MetricExporterConfiguration {
     // This will shutdown when the SDK is shutdown.
     sdkMeterProviderBuilder.registerMetricReader(
         PeriodicMetricReader.builder(exporter)
-            .setScheduleDelay(exportInterval)
+            .setInterval(exportInterval)
             .newMetricReaderFactory());
   }
 

@@ -252,7 +252,7 @@ public class OtlpPipelineStressTest {
             .setResource(resource)
             .registerMetricReader(
                 PeriodicMetricReader.builder(metricExporter)
-                    .setScheduleDelay(Duration.ofSeconds(1))
+                    .setInterval(Duration.ofSeconds(1))
                     .newMetricReaderFactory())
             .buildAndRegisterGlobal();
 

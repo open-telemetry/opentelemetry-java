@@ -77,7 +77,7 @@ class PeriodicMetricReaderTest {
 
     MetricReaderFactory factory =
         PeriodicMetricReader.builder(metricExporter)
-            .setScheduleDelay(Duration.ofMillis(1))
+            .setInterval(Duration.ofMillis(1))
             .setExecutor(scheduler)
             .newMetricReaderFactory();
 
@@ -92,7 +92,7 @@ class PeriodicMetricReaderTest {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     MetricReaderFactory factory =
         PeriodicMetricReader.builder(waitingMetricExporter)
-            .setScheduleDelay(Duration.ofMillis(100))
+            .setInterval(Duration.ofMillis(100))
             .newMetricReaderFactory();
 
     MetricReader reader = factory.apply(metricProducer);
@@ -113,7 +113,7 @@ class PeriodicMetricReaderTest {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     MetricReaderFactory factory =
         PeriodicMetricReader.builder(waitingMetricExporter)
-            .setScheduleDelay(Duration.ofNanos(Long.MAX_VALUE))
+            .setInterval(Duration.ofNanos(Long.MAX_VALUE))
             .newMetricReaderFactory();
 
     MetricReader reader = factory.apply(metricProducer);
@@ -133,7 +133,7 @@ class PeriodicMetricReaderTest {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
     MetricReaderFactory factory =
         PeriodicMetricReader.builder(waitingMetricExporter)
-            .setScheduleDelay(Duration.ofMillis(100))
+            .setInterval(Duration.ofMillis(100))
             .newMetricReaderFactory();
     MetricReader reader = factory.apply(metricProducer);
     try {
@@ -150,7 +150,7 @@ class PeriodicMetricReaderTest {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
     MetricReaderFactory factory =
         PeriodicMetricReader.builder(waitingMetricExporter)
-            .setScheduleDelay(Duration.ofSeconds(100))
+            .setInterval(Duration.ofSeconds(100))
             .newMetricReaderFactory();
     MetricReader reader = factory.apply(metricProducer);
     // Assume that this will be called in less than 100 seconds.
@@ -166,18 +166,17 @@ class PeriodicMetricReaderTest {
   @Test
   @SuppressWarnings("PreferJavaTimeOverload") // Testing the overload
   void invalidConfig() {
-    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setScheduleDelay(1, null))
+    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setInterval(1, null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("unit");
     assertThatThrownBy(
             () ->
-                PeriodicMetricReader.builder(metricExporter)
-                    .setScheduleDelay(-1, TimeUnit.MILLISECONDS))
+                PeriodicMetricReader.builder(metricExporter).setInterval(-1, TimeUnit.MILLISECONDS))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("delay must be non-negative");
-    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setScheduleDelay(null))
+        .hasMessage("interval must be positive");
+    assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setInterval(null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessage("delay");
+        .hasMessage("interval");
     assertThatThrownBy(() -> PeriodicMetricReader.builder(metricExporter).setExecutor(null))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("executor");
