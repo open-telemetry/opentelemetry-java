@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-class LogSinkSdkProviderTest {
+class SdkLogSinkProviderTest {
 
   private static LogRecord createLog(Severity severity, String message) {
     return LogRecord.builder(
@@ -49,7 +49,7 @@ class LogSinkSdkProviderTest {
   void testLogSinkSdkProvider() {
     TestLogExporter exporter = new TestLogExporter();
     LogProcessor processor = BatchLogProcessor.builder(exporter).build();
-    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().addLogProcessor(processor).build();
+    SdkLogSinkProvider provider = SdkLogSinkProvider.builder().addLogProcessor(processor).build();
     LogSink sink = provider.get("test", "0.1a");
     LogRecord log = createLog(Severity.ERROR, "test");
     sink.offer(log);
@@ -68,7 +68,7 @@ class LogSinkSdkProviderTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().addLogProcessor(processor).build();
+    SdkLogSinkProvider provider = SdkLogSinkProvider.builder().addLogProcessor(processor).build();
     LogSink sink = provider.get("test", "0.1a");
 
     for (int i = 0; i < 7; i++) {
@@ -99,7 +99,7 @@ class LogSinkSdkProviderTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().addLogProcessor(processor).build();
+    SdkLogSinkProvider provider = SdkLogSinkProvider.builder().addLogProcessor(processor).build();
     LogSink sink = provider.get("test", "0.1a");
 
     long start = System.currentTimeMillis();
@@ -117,8 +117,8 @@ class LogSinkSdkProviderTest {
   void testMultipleProcessors() {
     TestLogProcessor processorOne = new TestLogProcessor();
     TestLogProcessor processorTwo = new TestLogProcessor();
-    LogSinkSdkProvider provider =
-        LogSinkSdkProvider.builder()
+    SdkLogSinkProvider provider =
+        SdkLogSinkProvider.builder()
             .addLogProcessor(processorOne)
             .addLogProcessor(processorTwo)
             .build();

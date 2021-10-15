@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public final class LogSinkSdkProvider {
+public final class SdkLogSinkProvider {
   private final LogSink logSink = new SdkLogSink();
   private final List<LogProcessor> processors;
 
@@ -24,7 +24,7 @@ public final class LogSinkSdkProvider {
     return new LogSinkSdkProviderBuilder();
   }
 
-  LogSinkSdkProvider(List<LogProcessor> processors) {
+  SdkLogSinkProvider(List<LogProcessor> processors) {
     this.processors = processors;
   }
 

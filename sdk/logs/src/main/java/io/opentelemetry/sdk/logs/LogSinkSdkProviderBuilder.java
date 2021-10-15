@@ -30,7 +30,7 @@ public final class LogSinkSdkProviderBuilder {
     return this;
   }
 
-  public LogSinkSdkProvider build() {
-    return new LogSinkSdkProvider(logProcessors);
+  public SdkLogSinkProvider build() {
+    return new SdkLogSinkProvider(logProcessors);
   }
 }
