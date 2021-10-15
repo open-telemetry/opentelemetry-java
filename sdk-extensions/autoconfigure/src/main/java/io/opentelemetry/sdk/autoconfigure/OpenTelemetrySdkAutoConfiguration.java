@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer;
@@ -15,7 +16,10 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ServiceLoader;
+import java.util.function.Function;
 
 /**
  * Auto-configuration for the OpenTelemetry SDK. As an alternative to programmatically configuring
@@ -23,6 +27,16 @@ import java.util.ServiceLoader;
  * configure the SDK using environment properties specified by OpenTelemetry.
  */
 public final class OpenTelemetrySdkAutoConfiguration {
+
+  private final ConfigProperties config;
+
+  private final Function<? super TextMapPropagator, ? extends TextMapPropagator>
+      propagatorCustomizer;
+  private final Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer;
+  private final Function<? super Resource, ? extends Resource> resourceCustomizer;
+  private final Function<? super Sampler, ? extends Sampler> samplerCustomizer;
+
+  private final boolean setResultAsGlobal;
 
   /**
    * Returns an {@link OpenTelemetrySdk} automatically initialized through recognized system
@@ -32,7 +46,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
    * io.opentelemetry.api.GlobalOpenTelemetry} instance.
    */
   public static OpenTelemetrySdk initialize() {
-    return initialize(true);
+    return builder().newOpenTelemetrySdk();
   }
 
   /**
@@ -43,7 +57,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
    *     io.opentelemetry.api.GlobalOpenTelemetry} instance.
    */
   public static OpenTelemetrySdk initialize(boolean setResultAsGlobal) {
-    return initialize(setResultAsGlobal, DefaultConfigProperties.get());
+    return builder().setResultAsGlobal(setResultAsGlobal).newOpenTelemetrySdk();
   }
 
   /**
@@ -56,14 +70,41 @@ public final class OpenTelemetrySdkAutoConfiguration {
    *     to auto-configure the returned {@link OpenTelemetrySdk}.
    */
   public static OpenTelemetrySdk initialize(boolean setResultAsGlobal, ConfigProperties config) {
-    ContextPropagators propagators = PropagatorConfiguration.configurePropagators(config);
+    return builder().setResultAsGlobal(setResultAsGlobal).setConfig(config).newOpenTelemetrySdk();
+  }
 
-    Resource resource = OpenTelemetryResourceAutoConfiguration.configureResource(config);
+  /** Returns a new {@link OpenTelemetrySdkAutoConfigurationBuilder}. */
+  public static OpenTelemetrySdkAutoConfigurationBuilder builder() {
+    return new OpenTelemetrySdkAutoConfigurationBuilder();
+  }
+
+  OpenTelemetrySdkAutoConfiguration(
+      ConfigProperties config,
+      Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer,
+      Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer,
+      Function<? super Resource, ? extends Resource> resourceCustomizer,
+      Function<? super Sampler, ? extends Sampler> samplerCustomizer,
+      boolean setResultAsGlobal) {
+    this.config = config;
+    this.propagatorCustomizer = propagatorCustomizer;
+    this.spanExporterCustomizer = spanExporterCustomizer;
+    this.resourceCustomizer = resourceCustomizer;
+    this.samplerCustomizer = samplerCustomizer;
+    this.setResultAsGlobal = setResultAsGlobal;
+  }
+
+  OpenTelemetrySdk doInitialize() {
+    ContextPropagators propagators =
+        PropagatorConfiguration.configurePropagators(config, propagatorCustomizer);
+
+    Resource resource =
+        OpenTelemetryResourceAutoConfiguration.configureResource(config, resourceCustomizer);
 
     configureMeterProvider(resource, config);
 
     SdkTracerProvider tracerProvider =
-        TracerProviderConfiguration.configureTracerProvider(resource, config);
+        TracerProviderConfiguration.configureTracerProvider(
+            resource, config, spanExporterCustomizer, samplerCustomizer);
 
     OpenTelemetrySdk openTelemetrySdk =
         OpenTelemetrySdk.builder()
@@ -114,6 +155,4 @@ public final class OpenTelemetrySdkAutoConfiguration {
     // Make sure metrics shut down when JVM shuts down.
     Runtime.getRuntime().addShutdownHook(new Thread(meterProvider::close));
   }
-
-  private OpenTelemetrySdkAutoConfiguration() {}
 }

@@ -39,7 +39,9 @@ final class SpanExporterConfiguration {
   private static final String EXPORTER_NONE = "none";
 
   // Visible for testing
-  static Map<String, SpanExporter> configureSpanExporters(ConfigProperties config) {
+  static Map<String, SpanExporter> configureSpanExporters(
+      ConfigProperties config,
+      Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
     List<String> exporterNamesList = config.getList("otel.traces.exporter");
     Set<String> exporterNames = new HashSet<>(exporterNamesList);
     if (exporterNamesList.size() != exporterNames.size()) {
@@ -77,7 +79,9 @@ final class SpanExporterConfiguration {
         .collect(
             toMap(
                 Function.identity(),
-                exporterName -> configureExporter(exporterName, config, spiExporters)));
+                exporterName ->
+                    spanExporterCustomizer.apply(
+                        configureExporter(exporterName, config, spiExporters))));
   }
 
   // Visible for testing

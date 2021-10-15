@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.function.Function;
 
 /** Auto-configuration for the OpenTelemetry {@link Resource}. */
 public final class OpenTelemetryResourceAutoConfiguration {
@@ -30,6 +31,11 @@ public final class OpenTelemetryResourceAutoConfiguration {
    * environment variables.
    */
   public static Resource configureResource(ConfigProperties config) {
+    return configureResource(config, Function.identity());
+  }
+
+  static Resource configureResource(
+      ConfigProperties config, Function<? super Resource, ? extends Resource> resourceCustomizer) {
     Resource result = Resource.getDefault();
 
     // TODO(anuraaga): We use a hyphen only once in this artifact, for
@@ -46,7 +52,7 @@ public final class OpenTelemetryResourceAutoConfiguration {
 
     result = result.merge(EnvironmentResource.create(config));
 
-    return result;
+    return resourceCustomizer.apply(result);
   }
 
   private OpenTelemetryResourceAutoConfiguration() {}
