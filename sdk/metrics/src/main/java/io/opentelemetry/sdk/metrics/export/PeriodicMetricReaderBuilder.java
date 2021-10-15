@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 /** A builder for {@link PeriodicMetricReader}. */
 public final class PeriodicMetricReaderBuilder {
 
-  static final long DEFAULT_SCHEDULE_DELAY_MINUTES = 5;
+  static final long DEFAULT_SCHEDULE_DELAY_MINUTES = 1;
 
   private final MetricExporter metricExporter;
 
