@@ -5,14 +5,23 @@
 
 package io.opentelemetry.sdk.logs;
 
-import io.opentelemetry.sdk.logs.data.LogRecord;
+import io.opentelemetry.sdk.logs.data.LogBuilder;
+import io.opentelemetry.sdk.logs.data.LogData;
 
 /** A LogSink accepts logging records for transmission to an aggregator or log processing system. */
 public interface LogSink {
+
   /**
-   * Pass a record to the SDK for transmission to a logging exporter.
+   * Create a log builder. {@link LogBuilder#build()} can be passed to {@link #offer(LogData)}.
    *
-   * @param record record to transmit
+   * @return the builder
    */
-  void offer(LogRecord record);
+  LogBuilder builder();
+
+  /**
+   * Pass the {@link LogData} to the sink.
+   *
+   * @param logData the log
+   */
+  void offer(LogData logData);
 }

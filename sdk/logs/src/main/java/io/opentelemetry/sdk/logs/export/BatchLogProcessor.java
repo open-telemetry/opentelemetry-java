@@ -15,7 +15,6 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import io.opentelemetry.sdk.logs.LogProcessor;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -51,8 +50,8 @@ public final class BatchLogProcessor implements LogProcessor {
   }
 
   @Override
-  public void addLogRecord(LogRecord record) {
-    worker.addLogRecord(record);
+  public void process(LogData logData) {
+    worker.addLog(logData);
   }
 
   @Override
@@ -221,8 +220,8 @@ public final class BatchLogProcessor implements LogProcessor {
       return flushResult;
     }
 
-    public void addLogRecord(LogRecord record) {
-      if (!queue.offer(record)) {
+    public void addLog(LogData logData) {
+      if (!queue.offer(logData)) {
         queueFullRecordCounter.add(1);
       }
     }

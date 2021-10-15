@@ -7,30 +7,47 @@ package io.opentelemetry.sdk.logs;
 
 import static java.util.Objects.requireNonNull;
 
-import io.opentelemetry.sdk.logs.data.LogRecord;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class LogSinkSdkProviderBuilder {
 
   private final List<LogProcessor> logProcessors = new ArrayList<>();
+  private Resource resource = Resource.getDefault();
 
   LogSinkSdkProviderBuilder() {}
 
   /**
-   * Add a LogProcessor to the log pipeline that will be built. {@link LogProcessor} will be called
-   * each time a {@link LogRecord} is offered to a {@link LogSink}.
+   * Set the resource.
    *
-   * @param processor the processor to be added to the processing pipeline.
+   * @param resource the resource
+   * @return this
+   */
+  public LogSinkSdkProviderBuilder setResource(Resource resource) {
+    requireNonNull(resource, "resource");
+    this.resource = resource;
+    return this;
+  }
+
+  /**
+   * Add a log processor.
+   *
+   * @param processor the log processor
    * @return this
    */
   public LogSinkSdkProviderBuilder addLogProcessor(LogProcessor processor) {
-    requireNonNull(processor, "processor can not be null");
+    requireNonNull(processor, "processor");
     logProcessors.add(processor);
     return this;
   }
 
+  /**
+   * Create a {@link SdkLogSinkProvider} instance.
+   *
+   * @return an instance configured with the provided options
+   */
   public SdkLogSinkProvider build() {
-    return new SdkLogSinkProvider(logProcessors);
+    return new SdkLogSinkProvider(resource, logProcessors);
   }
 }

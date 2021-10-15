@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
 /** Builder for {@link LogRecord}. */
-public final class LogRecordBuilder {
+public final class LogRecordBuilder implements LogBuilder {
   private final Resource resource;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
@@ -32,54 +32,65 @@ public final class LogRecordBuilder {
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
   }
 
+  @Override
   public LogRecordBuilder setEpochNanos(long timestamp) {
     this.epochNanos = timestamp;
     return this;
   }
 
+  @Override
   public LogRecordBuilder setEpochMillis(long timestamp) {
     return setEpochNanos(TimeUnit.MILLISECONDS.toNanos(timestamp));
   }
 
+  @Override
   public LogRecordBuilder setTraceId(String traceId) {
     this.traceId = traceId;
     return this;
   }
 
+  @Override
   public LogRecordBuilder setSpanId(String spanId) {
     this.spanId = spanId;
     return this;
   }
 
+  @Override
   public LogRecordBuilder setFlags(int flags) {
     this.flags = flags;
     return this;
   }
 
+  @Override
   public LogRecordBuilder setSeverity(Severity severity) {
     this.severity = severity;
     return this;
   }
 
+  @Override
   public LogRecordBuilder setSeverityText(String severityText) {
     this.severityText = severityText;
     return this;
   }
 
+  @Override
   public LogRecordBuilder setName(String name) {
     this.name = name;
     return this;
   }
 
+  @Override
   public LogRecordBuilder setBody(Body body) {
     this.body = body;
     return this;
   }
 
+  @Override
   public LogRecordBuilder setBody(String body) {
     return setBody(Body.stringBody(body));
   }
 
+  @Override
   public LogRecordBuilder setAttributes(Attributes attributes) {
     this.attributeBuilder.putAll(attributes);
     return this;
@@ -90,6 +101,7 @@ public final class LogRecordBuilder {
    *
    * @return value object being built
    */
+  @Override
   public LogRecord build() {
     if (epochNanos == 0) {
       epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());

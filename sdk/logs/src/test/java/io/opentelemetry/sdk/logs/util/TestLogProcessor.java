@@ -7,18 +7,18 @@ package io.opentelemetry.sdk.logs.util;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogProcessor;
-import io.opentelemetry.sdk.logs.data.LogRecord;
+import io.opentelemetry.sdk.logs.data.LogData;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TestLogProcessor implements LogProcessor {
-  private final List<LogRecord> records = new ArrayList<>();
+  private final List<LogData> records = new ArrayList<>();
   private boolean shutdownCalled = false;
   private int flushes = 0;
 
   @Override
-  public void addLogRecord(LogRecord record) {
-    records.add(record);
+  public void process(LogData logData) {
+    records.add(logData);
   }
 
   @Override
@@ -33,7 +33,7 @@ public class TestLogProcessor implements LogProcessor {
     return CompletableResultCode.ofSuccess();
   }
 
-  public List<LogRecord> getRecords() {
+  public List<LogData> getRecords() {
     return records;
   }
 

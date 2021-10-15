@@ -52,7 +52,7 @@ class BatchLogProcessorTest {
             .build();
     for (int i = 0; i < 17; i++) {
       LogRecord record = createLog(Severity.INFO, Integer.toString(i));
-      processor.addLogRecord(record);
+      processor.process(record);
     }
     await().until(() -> exporter.getCallCount() > 0);
     assertThat(exporter.getRecords().size()).isEqualTo(batchSize);
