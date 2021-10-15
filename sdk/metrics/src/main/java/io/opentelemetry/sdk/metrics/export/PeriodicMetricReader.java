@@ -6,9 +6,7 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.internal.DaemonThreadFactory;
 import java.time.Duration;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +20,7 @@ import javax.annotation.Nullable;
  * interval. Metrics may also be dropped when it becomes time to export again, and there is an
  * export in progress.
  */
-public class PeriodicMetricReader implements MetricReader {
+public final class PeriodicMetricReader implements MetricReader {
   private static final Logger logger = Logger.getLogger(PeriodicMetricReader.class.getName());
 
   private final MetricProducer producer;
@@ -34,16 +32,12 @@ public class PeriodicMetricReader implements MetricReader {
   @Nullable private volatile ScheduledFuture<?> scheduledFuture;
 
   /**
-   * Builds a factory that will register and start a PeriodicMetricReader.
-   *
-   * <p>This will export once every 5 minutes.
-   *
-   * <p>This will spin up a new daemon thread to schedule the export on.
-   *
-   * @param exporter The exporter receiving metrics.
+   * Returns a new {@link MetricReaderFactory} which can be registered to a {@link
+   * io.opentelemetry.sdk.metrics.SdkMeterProvider} to start a {@link PeriodicMetricReader}
+   * exporting once every 5 minutes on a new daemon thread.
    */
-  public static MetricReaderFactory create(MetricExporter exporter) {
-    return create(exporter, Duration.ofMinutes(5));
+  public static MetricReaderFactory newMetricReaderFactory(MetricExporter exporter) {
+    return builder(exporter).newMetricReaderFactory();
   }
 
   /**
@@ -53,12 +47,12 @@ public class PeriodicMetricReader implements MetricReader {
    *
    * @param exporter The exporter receiving metrics.
    * @param duration The duration (interval) between metric export calls.
+   * @deprecated Use {@link PeriodicMetricReader#builder(MetricExporter)}. Will be removed in 1.8.0.
    */
-  public static MetricReaderFactory create(MetricExporter exporter, Duration duration) {
-    return create(
-        exporter,
-        duration,
-        Executors.newScheduledThreadPool(1, new DaemonThreadFactory("PeriodicMetricReader")));
+  @Deprecated
+  public static MetricReaderFactory newMetricReaderFactory(
+      MetricExporter exporter, Duration duration) {
+    return builder(exporter).setInterval(duration).newMetricReaderFactory();
   }
 
   /**
@@ -67,10 +61,17 @@ public class PeriodicMetricReader implements MetricReader {
    * @param exporter The exporter receiving metrics.
    * @param duration The duration (interval) between metric export calls.
    * @param scheduler The service to schedule export work.
+   * @deprecated Use {@link PeriodicMetricReader#builder(MetricExporter)}. Will be removed in 1.8.0.
    */
-  public static MetricReaderFactory create(
+  @Deprecated
+  public static MetricReaderFactory newMetricReaderFactory(
       MetricExporter exporter, Duration duration, ScheduledExecutorService scheduler) {
-    return new PeriodicMetricReaderFactory(exporter, duration, scheduler);
+    return builder(exporter).setInterval(duration).setExecutor(scheduler).newMetricReaderFactory();
+  }
+
+  /** Returns a new {@link PeriodicMetricReaderBuilder}. */
+  public static PeriodicMetricReaderBuilder builder(MetricExporter exporter) {
+    return new PeriodicMetricReaderBuilder(exporter);
   }
 
   PeriodicMetricReader(
@@ -117,19 +118,14 @@ public class PeriodicMetricReader implements MetricReader {
     return result;
   }
 
-  void start(Duration duration) {
-    // Autoconfigure sends us null or 0 durations and expects us to just not start.
-    if (duration == null || duration.isZero()) {
-      return;
-    }
-
+  void start(long intervalNanos) {
     synchronized (lock) {
       if (scheduledFuture != null) {
         return;
       }
       scheduledFuture =
           scheduler.scheduleAtFixedRate(
-              scheduled, duration.toMillis(), duration.toMillis(), TimeUnit.MILLISECONDS);
+              scheduled, intervalNanos, intervalNanos, TimeUnit.NANOSECONDS);
     }
   }
 
