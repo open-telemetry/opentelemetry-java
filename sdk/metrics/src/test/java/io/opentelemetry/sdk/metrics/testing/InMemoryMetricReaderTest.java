@@ -25,7 +25,7 @@ class InMemoryMetricReaderTest {
 
   @BeforeEach
   void setup() {
-    reader = InMemoryMetricReader.create();
+    reader = InMemoryMetricReader.createDelta();
     provider =
         SdkMeterProvider.builder()
             .registerMetricReader(reader)

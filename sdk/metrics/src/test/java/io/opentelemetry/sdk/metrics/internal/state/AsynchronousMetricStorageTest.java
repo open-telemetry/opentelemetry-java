@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
@@ -22,6 +23,7 @@ import io.opentelemetry.sdk.metrics.view.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import java.util.EnumSet;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,8 +43,7 @@ public class AsynchronousMetricStorageTest {
   private CollectionHandle handle;
   private Set<CollectionHandle> all;
 
-  @Mock
-  private MetricReader reader;
+  @Mock private MetricReader reader;
 
   @BeforeEach
   void setup() {
@@ -72,6 +73,8 @@ public class AsynchronousMetricStorageTest {
 
   @Test
   void doubleAsynchronousAccumulator_AttributesProcessor_used() {
+    Mockito.when(reader.getSupportedTemporality())
+        .thenReturn(EnumSet.allOf(AggregationTemporality.class));
     AsynchronousMetricStorage.doubleAsynchronousAccumulator(
             view,
             InstrumentDescriptor.create(
@@ -95,6 +98,8 @@ public class AsynchronousMetricStorageTest {
 
   @Test
   void longAsynchronousAccumulator_AttributesProcessor_used() {
+    Mockito.when(reader.getSupportedTemporality())
+        .thenReturn(EnumSet.allOf(AggregationTemporality.class));
     AsynchronousMetricStorage.longAsynchronousAccumulator(
             view,
             InstrumentDescriptor.create(

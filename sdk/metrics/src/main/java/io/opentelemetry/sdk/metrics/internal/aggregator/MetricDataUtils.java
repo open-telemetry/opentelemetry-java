@@ -22,7 +22,9 @@ final class MetricDataUtils {
   /** Returns true if the instrument does not allow negative measurements. */
   static boolean isMonotonicInstrument(InstrumentDescriptor descriptor) {
     InstrumentType type = descriptor.getType();
-    return type == InstrumentType.HISTOGRAM || type == InstrumentType.COUNTER || type == InstrumentType.OBSERVABLE_SUM;
+    return type == InstrumentType.HISTOGRAM
+        || type == InstrumentType.COUNTER
+        || type == InstrumentType.OBSERVABLE_SUM;
   }
 
   static List<LongPointData> toLongPointList(

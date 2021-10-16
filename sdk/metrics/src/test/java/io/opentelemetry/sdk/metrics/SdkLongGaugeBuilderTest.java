@@ -65,7 +65,7 @@ class SdkLongGaugeBuilderTest {
                     .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(0)
+                                .hasStartEpochNanos(testClock.now() - 1000000000L)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.builder().put("k", "v").build())
                                 .hasValue(12)));
@@ -82,7 +82,7 @@ class SdkLongGaugeBuilderTest {
                     .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(0)
+                                .hasStartEpochNanos(testClock.now() - 2000000000L)
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.builder().put("k", "v").build())
                                 .hasValue(12)));

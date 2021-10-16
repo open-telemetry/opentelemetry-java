@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
@@ -25,6 +26,7 @@ import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
+import java.util.EnumSet;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,8 +52,7 @@ public class SynchronousMetricStorageTest {
   private CollectionHandle collector;
   private Set<CollectionHandle> allCollectors;
 
-  @Mock
-  private MetricReader reader;
+  @Mock private MetricReader reader;
 
   @BeforeEach
   void setup() {
@@ -65,7 +66,7 @@ public class SynchronousMetricStorageTest {
     AttributesProcessor spyAttributesProcessor = Mockito.spy(this.attributesProcessor);
     SynchronousMetricStorage accumulator =
         new DefaultSynchronousMetricStorage<>(
-            METRIC_DESCRIPTOR, aggregator, spyAttributesProcessor);
+            METRIC_DESCRIPTOR, aggregator, spyAttributesProcessor, null);
     accumulator.bind(Attributes.empty());
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
@@ -77,9 +78,11 @@ public class SynchronousMetricStorageTest {
         AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
     AttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);
     SynchronousMetricStorage accumulator =
-        new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
+        new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor, null);
     BoundStorageHandle handle = accumulator.bind(labels);
     handle.recordDouble(1, labels, Context.root());
+    Mockito.when(reader.getSupportedTemporality())
+        .thenReturn(EnumSet.allOf(AggregationTemporality.class));
     MetricData md =
         accumulator.collectAndReset(
             CollectionInfo.create(collector, allCollectors, reader),
@@ -103,12 +106,14 @@ public class SynchronousMetricStorageTest {
   @Test
   void sameAggregator_ForSameAttributes() {
     SynchronousMetricStorage accumulator =
-        new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, attributesProcessor);
+        new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, attributesProcessor, null);
     BoundStorageHandle handle = accumulator.bind(Attributes.builder().put("K", "V").build());
     BoundStorageHandle duplicateHandle =
         accumulator.bind(Attributes.builder().put("K", "V").build());
     try {
       assertThat(duplicateHandle).isSameAs(handle);
+      Mockito.when(reader.getSupportedTemporality())
+          .thenReturn(EnumSet.allOf(AggregationTemporality.class));
       accumulator.collectAndReset(
           CollectionInfo.create(collector, allCollectors, reader),
           RESOURCE,

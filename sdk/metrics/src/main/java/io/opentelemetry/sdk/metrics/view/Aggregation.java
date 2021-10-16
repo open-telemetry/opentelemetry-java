@@ -33,6 +33,16 @@ public abstract class Aggregation {
   public abstract <T> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter);
 
+  /**
+   * Returns the user-configured {@link AggregationTemporality} for this aggregation.
+   *
+   * @return the temporality, or {code null} if no temporality was specified.
+   */
+  @Nullable
+  public AggregationTemporality getConfiguredTemporality() {
+    return null;
+  }
+
   /** The None Aggregation will ignore/drop all Instrument Measurements. */
   public static Aggregation none() {
     return NoAggregation.INSTANCE;
@@ -73,6 +83,16 @@ public abstract class Aggregation {
   public static Aggregation explicitBucketHistogram(AggregationTemporality temporality) {
     return explicitBucketHistogram(
         temporality, ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
+  }
+
+  /**
+   * Aggregates measurements into an explicit bucket histogram.
+   *
+   * @param bucketBoundaries A list of (inclusive) upper bounds for the histogram. Should be in
+   *     order from lowest to highest.
+   */
+  public static Aggregation explicitBucketHistogram(List<Double> bucketBoundaries) {
+    return new ExplicitBucketHistogramAggregation(null, bucketBoundaries);
   }
 
   /**

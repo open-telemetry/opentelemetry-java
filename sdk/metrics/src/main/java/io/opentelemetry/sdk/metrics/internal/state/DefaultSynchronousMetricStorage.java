@@ -30,15 +30,20 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
   private final DeltaMetricStorage<T> deltaMetricStorage;
   private final TemporalMetricStorage<T> temporalMetricStorage;
   private final AttributesProcessor attributesProcessor;
+  @Nullable
+  private final AggregationTemporality configuredTemporality;
 
   DefaultSynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
-      AttributesProcessor attributesProcessor) {
+      AttributesProcessor attributesProcessor,
+      @Nullable
+      AggregationTemporality configuredTemporality) {
     this.attributesProcessor = attributesProcessor;
     this.metricDescriptor = metricDescriptor;
     this.deltaMetricStorage = new DeltaMetricStorage<>(aggregator);
     this.temporalMetricStorage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ true);
+    this.configuredTemporality = configuredTemporality;
   }
 
   // This is a storage handle to use when the attributes processor requires
@@ -104,10 +109,15 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
       long epochNanos,
       boolean suppressSynchronousCollection) {
     AggregationTemporality temporality =
-        TemporalityUtils.resolveTemporality(collectionInfo.getSupportedAggregation(),
-            collectionInfo.getPreferredAggregation(), /** TODO- configured */null);
+        TemporalityUtils.resolveTemporality(
+            collectionInfo.getSupportedAggregation(),
+            collectionInfo.getPreferredAggregation(),
+            configuredTemporality);
     Map<Attributes, T> result =
-        deltaMetricStorage.collectFor(collectionInfo.getCollector(), collectionInfo.getAllCollectors(), suppressSynchronousCollection);
+        deltaMetricStorage.collectFor(
+            collectionInfo.getCollector(),
+            collectionInfo.getAllCollectors(),
+            suppressSynchronousCollection);
     return temporalMetricStorage.buildMetricFor(
         collectionInfo.getCollector(),
         resource,

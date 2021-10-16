@@ -19,14 +19,10 @@ import java.util.EnumSet;
  */
 public interface MetricExporter {
 
-  /**
-   * Returns the set of all supported temporalities for this exporter.
-   */
+  /** Returns the set of all supported temporalities for this exporter. */
   EnumSet<AggregationTemporality> getSupportedTemporality();
 
-  /**
-   * Returns the preferred temporality for metrics.
-   */
+  /** Returns the preferred temporality for metrics. */
   AggregationTemporality getPreferedTemporality();
 
   /**

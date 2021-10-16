@@ -17,14 +17,10 @@ import java.util.EnumSet;
  */
 public interface MetricReader {
 
-  /**
-   * Return The set of all supported temporalities for this exporter.
-   */
+  /** Return The set of all supported temporalities for this exporter. */
   EnumSet<AggregationTemporality> getSupportedTemporality();
 
-  /**
-   * Return The preferred temporality for metrics.
-   */
+  /** Return The preferred temporality for metrics. */
   AggregationTemporality getPreferedTemporality();
 
   /**

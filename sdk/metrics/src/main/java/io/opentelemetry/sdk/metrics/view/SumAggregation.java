@@ -13,19 +13,21 @@ import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import javax.annotation.Nullable;
 
 /** A sum aggregation configuration. */
 class SumAggregation extends Aggregation {
-  static final SumAggregation DEFAULT = new SumAggregation(AggregationTemporality.CUMULATIVE);
+  static final SumAggregation DEFAULT = new SumAggregation(null);
 
+  @Nullable
   private final AggregationTemporality temporality;
 
-  SumAggregation(AggregationTemporality temporality) {
+  SumAggregation(@Nullable AggregationTemporality temporality) {
     this.temporality = temporality;
   }
 
-  /** Returns the configured temporality for the sum aggregation. */
-  public AggregationTemporality getTemporality() {
+  @Override
+  public AggregationTemporality getConfiguredTemporality() {
     return temporality;
   }
 

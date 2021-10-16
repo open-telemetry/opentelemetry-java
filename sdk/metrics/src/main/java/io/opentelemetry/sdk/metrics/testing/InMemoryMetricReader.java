@@ -42,11 +42,31 @@ import java.util.EnumSet;
  * </code></pre>
  */
 public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
+  private final AggregationTemporality preferred;
   private volatile MetricProducer metricProducer;
 
   /** Returns a new {@link InMemoryMetricReader}. */
   public static InMemoryMetricReader create() {
-    return new InMemoryMetricReader();
+    return new InMemoryMetricReader(AggregationTemporality.CUMULATIVE);
+  }
+
+  /** Creates a new {@link InMemoryMetricReader} that prefers DELTA aggregation. */
+  public static InMemoryMetricReader createDelta() {
+    return new InMemoryMetricReader(AggregationTemporality.DELTA);
+  }
+
+  /**
+   * Constructs a new {@link InMemoryMetricReader}.
+   *
+   * @deprecated Use {@link #create()}.
+   */
+  @Deprecated
+  public InMemoryMetricReader() {
+    this(AggregationTemporality.CUMULATIVE);
+  }
+
+  private InMemoryMetricReader(AggregationTemporality preferred) {
+    this.preferred = preferred;
   }
 
   /** Returns all metrics accumulated since the last call. */
@@ -65,7 +85,7 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
 
   @Override
   public AggregationTemporality getPreferedTemporality() {
-    return AggregationTemporality.CUMULATIVE;
+    return preferred;
   }
 
   @Override
@@ -87,12 +107,4 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
     this.metricProducer = producer;
     return this;
   }
-
-  /**
-   * Constructs a new {@link InMemoryMetricReader}.
-   *
-   * @deprecated Use {@link #create()}.
-   */
-  @Deprecated
-  public InMemoryMetricReader() {}
 }

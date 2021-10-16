@@ -36,14 +36,9 @@ final class SdkMeter implements Meter {
 
   /** Collects all the metric recordings that changed since the previous call. */
   Collection<MetricData> collectAll(
-      CollectionInfo collectionInfo,
-      long epochNanos,
-      boolean suppressSynchronousCollection) {
+      CollectionInfo collectionInfo, long epochNanos, boolean suppressSynchronousCollection) {
     return meterSharedState.collectAll(
-        collectionInfo,
-        meterProviderSharedState,
-        epochNanos,
-        suppressSynchronousCollection);
+        collectionInfo, meterProviderSharedState, epochNanos, suppressSynchronousCollection);
   }
 
   @Override
