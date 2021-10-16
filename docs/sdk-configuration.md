@@ -111,14 +111,12 @@ class HelloWorld {
             .setTracerProvider(tracerProvider)
             .buildAndRegisterGlobal();
 
-    SdkMeterProvider meterProvider = SdkMeterProvider.builder().build();
-    GlobalMeterProvider.set(meterProvider);
-    IntervalMetricReader.builder()
-        .setMetricProducers(Collections.singletonList(meterProvider))
-        .setMetricExporter(
-            OtlpGrpcMetricExporter.builder().setEndpoint("https://collector-service:4317").build())
-        .build()
-        .start();
+    PeriodicMetricReaderFactory periodicMetricReaderFactory = PeriodicMetricReader.create(
+                OtlpGrpcMetricExporter.builder()
+                .setEndpoint("https://collector-service:4317").build(), Duration.ofMillis(1000));
+    SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder()
+                .registerMetricReader(periodicMetricReaderFactory)
+                .buildAndRegisterGlobal();
  }
 }
 ```
@@ -128,7 +126,7 @@ This
 - Exports spans using OTLP to `collector-service`
   - Uses the BatchSpanProcessor.
 - Exports metrics using OTLP to `collector-service`
-  - Uses the IntervalMetricReader
+  - Uses the PeriodicMetricReader
 - Uses ParentBased(AlwaysOn) sampler
 - Uses standard random IDs
 - Uses a default Resource which simply consists of the SDK (or any other resources we decide to)
@@ -186,24 +184,21 @@ class HelloWorld {
             .setTracerProvider(tracerProvider)
             .build();
 
+    PeriodicMetricReaderFactory periodicMetricReaderFactory = PeriodicMetricReader.create(
+                OtlpGrpcMetricExporter.builder()
+                .setEndpoint("https://collector-service:4317").build(), Duration.ofMillis(1000));
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
             .setResource(resource)
             .setClock(clock)
             .registerView(
                 InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
-                View.builder()
+                    View.builder()
                     .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
                     .setAggregatorFactory(AggregatorFactory.count(AggregationTemporality.DELTA))
                     .build())
-            .build();
-    GlobalMeterProvider.set(meterProvider);
-    IntervalMetricReader.builder()
-        .setMetricProducers(Collections.singletonList(meterProvider))
-        .setMetricExporter(
-            OtlpGrpcMetricExporter.builder().setEndpoint("https://collector-service:4317").build())
-        .build()
-        .start();
+            .registerMetricReader(periodicMetricReaderFactory)
+            .buildAndRegisterGlobal();
  }
 }
 ```
@@ -297,11 +292,17 @@ public class OpenTelemetryModule {
     }
 
     @Bean
-    public IntervalMetricReader metricReader(SdkMeterProvider meterProvider) {
-        return IntervalMetricReader.builder()
-            .setMetricProducers(List.of(meterProvider))
-            .setMetricExporter(
-                OtlpGrpcMetricExporter.builder().setEndpoint("https://collector-service:4317").build())
+    public MeterSdkProvider meterProvider(Resource resource, Clock clock, PeriodicMetricReaderFactory periodicMetricReaderFactory) {
+        return SdkMeterProvider.builder()
+            .setResource(resource)
+            .setClock(clock)
+            .registerView(
+                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                View.builder()
+                    .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
+                    .setAggregatorFactory(AggregatorFactory.count(AggregationTemporality.DELTA))
+                    .build())
+            .registerMetricReader(periodicMetricReaderFactory)
             .build();
     }
 
