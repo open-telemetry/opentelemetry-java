@@ -25,8 +25,10 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link LongLastValueAggregator}. */
 class LongLastValueAggregatorTest {
   private static final Resource RESOURCE = Resource.getDefault();
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO = InstrumentationLibraryInfo.empty();
-  private static final MetricDescriptor METRIC_DESCRIPTOR = MetricDescriptor.create("name", "description", "unit");
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.empty();
+  private static final MetricDescriptor METRIC_DESCRIPTOR =
+      MetricDescriptor.create("name", "description", "unit");
   private static final LongLastValueAggregator aggregator =
       new LongLastValueAggregator(ExemplarReservoir::noSamples);
 

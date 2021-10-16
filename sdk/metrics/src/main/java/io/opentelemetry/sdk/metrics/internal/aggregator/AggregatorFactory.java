@@ -99,6 +99,5 @@ public interface AggregatorFactory {
    * @return a new {@link Aggregator}.
    */
   <T> Aggregator<T> create(
-      InstrumentDescriptor instrumentDescriptor,
-      Supplier<ExemplarReservoir> reservoirFactory);
+      InstrumentDescriptor instrumentDescriptor, Supplier<ExemplarReservoir> reservoirFactory);
 }

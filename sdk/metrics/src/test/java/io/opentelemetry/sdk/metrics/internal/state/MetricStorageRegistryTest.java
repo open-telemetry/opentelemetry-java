@@ -8,7 +8,6 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -119,14 +118,14 @@ class MetricStorageRegistryTest {
 
     @Override
     public MetricData collectAndReset(
-      CollectionHandle collector,
-      Set<CollectionHandle> allCollectors,
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      AggregationTemporality temporality,
-      long startEpochNanos,
-      long epochNanos,
-      boolean suppressSynchronousCollection) {
+        CollectionHandle collector,
+        Set<CollectionHandle> allCollectors,
+        Resource resource,
+        InstrumentationLibraryInfo instrumentationLibraryInfo,
+        AggregationTemporality temporality,
+        long startEpochNanos,
+        long epochNanos,
+        boolean suppressSynchronousCollection) {
       return null;
     }
 

@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
@@ -14,8 +13,6 @@ import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 
 /** Explicit bucket histogram aggregation configuration. */
@@ -47,11 +44,7 @@ class ExplicitBucketHistogramAggregation extends Aggregation {
 
   @Override
   public <T> Aggregator<T> createAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor instrumentDescriptor,
-      MetricDescriptor metricDescriptor,
-      ExemplarFilter exemplarFilter) {
+      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
 
     return AggregatorFactory.histogram(bucketBoundaries)
         .create(

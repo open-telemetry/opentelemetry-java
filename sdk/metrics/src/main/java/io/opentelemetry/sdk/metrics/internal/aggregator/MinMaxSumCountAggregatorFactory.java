@@ -17,8 +17,7 @@ final class MinMaxSumCountAggregatorFactory implements AggregatorFactory {
   @Override
   @SuppressWarnings("unchecked")
   public <T> Aggregator<T> create(
-      InstrumentDescriptor instrumentDescriptor,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
+      InstrumentDescriptor instrumentDescriptor, Supplier<ExemplarReservoir> reservoirSupplier) {
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
         return (Aggregator<T>) new LongMinMaxSumCountAggregator(reservoirSupplier);

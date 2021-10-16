@@ -24,8 +24,10 @@ import org.junit.jupiter.api.Test;
 /** Unit tests for {@link AggregatorHandle}. */
 class DoubleLastValueAggregatorTest {
   private static final Resource RESOURCE = Resource.getDefault();
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO = InstrumentationLibraryInfo.empty();
-  private static final MetricDescriptor METRIC_DESCRIPTOR = MetricDescriptor.create("name", "description", "unit");
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.empty();
+  private static final MetricDescriptor METRIC_DESCRIPTOR =
+      MetricDescriptor.create("name", "description", "unit");
   private static final DoubleLastValueAggregator aggregator =
       new DoubleLastValueAggregator(ExemplarReservoir::noSamples);
 

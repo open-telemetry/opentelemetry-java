@@ -17,8 +17,7 @@ final class CountAggregatorFactory implements AggregatorFactory {
   @Override
   @SuppressWarnings("unchecked")
   public <T> Aggregator<T> create(
-      InstrumentDescriptor unused,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
+      InstrumentDescriptor unused, Supplier<ExemplarReservoir> reservoirSupplier) {
     return (Aggregator<T>) new CountAggregator(reservoirSupplier);
   }
 }

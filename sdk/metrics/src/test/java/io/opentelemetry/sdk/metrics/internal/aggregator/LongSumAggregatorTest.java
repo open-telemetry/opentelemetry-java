@@ -158,8 +158,8 @@ class LongSumAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-          resource,
-          library,
+            resource,
+            library,
             metricDescriptor,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
@@ -191,12 +191,14 @@ class LongSumAggregatorTest {
     LongAccumulation accumulation = LongAccumulation.create(1, Collections.singletonList(exemplar));
     assertThat(
             aggregator.toMetricData(
-              resource,
-              library,
+                resource,
+                library,
                 metricDescriptor,
                 Collections.singletonMap(Attributes.empty(), accumulation),
                 AggregationTemporality.CUMULATIVE,
-                0, 10, 100))
+                0,
+                10,
+                100))
         .hasLongSum()
         .points()
         .satisfiesExactly(point -> assertThat(point).hasValue(1).hasExemplars(exemplar));

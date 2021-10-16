@@ -41,10 +41,7 @@ class DeltaMetricStorageTest {
     allCollectors.add(collector2);
     storage =
         new DeltaMetricStorage<>(
-            AggregatorFactory.sum()
-                .create(
-                    DESCRIPTOR,
-                    ExemplarReservoir::noSamples));
+            AggregatorFactory.sum().create(DESCRIPTOR, ExemplarReservoir::noSamples));
   }
 
   @Test

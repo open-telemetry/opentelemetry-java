@@ -17,8 +17,7 @@ final class LastValueAggregatorFactory implements AggregatorFactory {
   @Override
   @SuppressWarnings("unchecked")
   public <T> Aggregator<T> create(
-      InstrumentDescriptor descriptor,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
+      InstrumentDescriptor descriptor, Supplier<ExemplarReservoir> reservoirSupplier) {
     switch (descriptor.getValueType()) {
       case LONG:
         return (Aggregator<T>) new LongLastValueAggregator(reservoirSupplier);

@@ -55,13 +55,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
-        view.getAggregation()
-            .createAggregator(
-                resource,
-                instrumentationLibraryInfo,
-                instrument,
-                metricDescriptor,
-                ExemplarFilter.neverSample());
+        view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
 
     final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>();
     if (Aggregator.empty() == aggregator) {
@@ -96,13 +90,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       Consumer<ObservableLongMeasurement> metricUpdater) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
-        view.getAggregation()
-            .createAggregator(
-                resource,
-                instrumentationLibraryInfo,
-                instrument,
-                metricDescriptor,
-                ExemplarFilter.neverSample());
+        view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
     final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>();
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
     // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.

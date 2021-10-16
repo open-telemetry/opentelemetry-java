@@ -119,8 +119,7 @@ class AggregatorFactoryTest {
 
   @Test
   void getHistogramAggregatorFactory() {
-    AggregatorFactory histogram =
-        AggregatorFactory.histogram(Collections.singletonList(1.0));
+    AggregatorFactory histogram = AggregatorFactory.histogram(Collections.singletonList(1.0));
     assertThat(
             histogram.create(
                 InstrumentDescriptor.create(
@@ -143,27 +142,17 @@ class AggregatorFactoryTest {
         .isInstanceOf(DoubleHistogramAggregator.class);
 
     assertThatThrownBy(
-            () ->
-                AggregatorFactory.histogram(
-                    Collections.singletonList(Double.NEGATIVE_INFINITY)))
+            () -> AggregatorFactory.histogram(Collections.singletonList(Double.NEGATIVE_INFINITY)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid bucket boundary: -Inf");
     assertThatThrownBy(
-            () ->
-                AggregatorFactory.histogram(
-                    Arrays.asList(1.0, Double.POSITIVE_INFINITY)))
+            () -> AggregatorFactory.histogram(Arrays.asList(1.0, Double.POSITIVE_INFINITY)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid bucket boundary: +Inf");
-    assertThatThrownBy(
-            () ->
-                AggregatorFactory.histogram(
-                    Arrays.asList(1.0, Double.NaN)))
+    assertThatThrownBy(() -> AggregatorFactory.histogram(Arrays.asList(1.0, Double.NaN)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid bucket boundary: NaN");
-    assertThatThrownBy(
-            () ->
-                AggregatorFactory.histogram(
-                    Arrays.asList(2.0, 1.0, 3.0)))
+    assertThatThrownBy(() -> AggregatorFactory.histogram(Arrays.asList(2.0, 1.0, 3.0)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid bucket boundary: 2.0 >= 1.0");
   }

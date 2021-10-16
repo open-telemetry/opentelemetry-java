@@ -5,14 +5,11 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -27,23 +24,14 @@ public abstract class Aggregation {
   /**
    * Returns a new {@link Aggregator}.
    *
-   * @param resource the Resource associated with the {@code Instrument} that will record
-   *     measurements.
-   * @param instrumentationLibraryInfo the InstrumentationLibraryInfo associated with the {@code
-   *     Instrument} that will record measurements.
    * @param instrumentDescriptor the descriptor of the {@code Instrument} that will record
    *     measurements.
-   * @param metricDescriptor the descriptor of the {@code MetricData} that should be generated.
    * @param exemplarFilter the filter on which measurements should turn into exemplars
    * @return a new {@link Aggregator}, or {@code null} if no measurements should be recorded.
    */
   @Nullable
   public abstract <T> Aggregator<T> createAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor instrumentDescriptor,
-      MetricDescriptor metricDescriptor,
-      ExemplarFilter exemplarFilter);
+      InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter);
 
   /** The None Aggregation will ignore/drop all Instrument Measurements. */
   public static Aggregation none() {

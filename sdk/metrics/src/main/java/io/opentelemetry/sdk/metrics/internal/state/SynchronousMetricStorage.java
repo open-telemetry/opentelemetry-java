@@ -40,13 +40,7 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
       ExemplarFilter exemplarFilter) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrumentDescriptor);
     final Aggregator<T> aggregator =
-        view.getAggregation()
-            .createAggregator(
-                resource,
-                instrumentationLibraryInfo,
-                instrumentDescriptor,
-                metricDescriptor,
-                exemplarFilter);
+        view.getAggregation().createAggregator(instrumentDescriptor, exemplarFilter);
     // We won't be storing this metric.
     if (Aggregator.empty() == aggregator) {
       return empty();

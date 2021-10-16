@@ -17,8 +17,7 @@ final class SumAggregatorFactory implements AggregatorFactory {
   @Override
   @SuppressWarnings("unchecked")
   public <T> Aggregator<T> create(
-      InstrumentDescriptor instrumentDescriptor,
-      Supplier<ExemplarReservoir> reservoirFactory) {
+      InstrumentDescriptor instrumentDescriptor, Supplier<ExemplarReservoir> reservoirFactory) {
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
         return (Aggregator<T>) new LongSumAggregator(instrumentDescriptor, reservoirFactory);

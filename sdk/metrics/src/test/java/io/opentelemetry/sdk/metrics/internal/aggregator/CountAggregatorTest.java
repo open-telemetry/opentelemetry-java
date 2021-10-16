@@ -26,8 +26,7 @@ class CountAggregatorTest {
       MetricDescriptor.create("name", "description", "unit");
 
   private static final CountAggregator aggregator =
-      new CountAggregator(
-          ExemplarReservoir::noSamples);
+      new CountAggregator(ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -64,11 +63,12 @@ class CountAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-          RESOURCE, LIBRARY,
-          SIMPLE_METRIC_DESCRIPTOR,
+            RESOURCE,
+            LIBRARY,
+            SIMPLE_METRIC_DESCRIPTOR,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
-                AggregationTemporality.CUMULATIVE,
+            AggregationTemporality.CUMULATIVE,
             0,
             10,
             100);
@@ -99,11 +99,12 @@ class CountAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
-          RESOURCE, LIBRARY,
-          SIMPLE_METRIC_DESCRIPTOR,
+            RESOURCE,
+            LIBRARY,
+            SIMPLE_METRIC_DESCRIPTOR,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
-                AggregationTemporality.DELTA,
+            AggregationTemporality.DELTA,
             0,
             10,
             100);

@@ -27,11 +27,12 @@ import org.junit.jupiter.api.Test;
 
 class LongMinMaxSumCountAggregatorTest {
   private static final Resource RESOURCE = Resource.getDefault();
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO = InstrumentationLibraryInfo.empty();
-  private static final MetricDescriptor METRIC_DESCRIPTOR = MetricDescriptor.create("name", "description", "unit");
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.empty();
+  private static final MetricDescriptor METRIC_DESCRIPTOR =
+      MetricDescriptor.create("name", "description", "unit");
   private static final LongMinMaxSumCountAggregator aggregator =
-      new LongMinMaxSumCountAggregator(
-          ExemplarReservoir::noSamples);
+      new LongMinMaxSumCountAggregator(ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {

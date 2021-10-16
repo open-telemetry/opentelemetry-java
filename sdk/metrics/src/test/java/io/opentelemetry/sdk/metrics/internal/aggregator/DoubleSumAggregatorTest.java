@@ -142,7 +142,8 @@ class DoubleSumAggregatorTest {
         assertThat(merged.getExemplars()).containsExactly(exemplar);
 
         DoubleAccumulation diffed =
-            aggregator.diff(DoubleAccumulation.create(1d), DoubleAccumulation.create(2d, exemplars));
+            aggregator.diff(
+                DoubleAccumulation.create(1d), DoubleAccumulation.create(2d, exemplars));
         assertThat(diffed.getValue())
             .withFailMessage(
                 "Invalid diff result for instrumentType %s, temporality %s: %s",

@@ -40,8 +40,7 @@ final class HistogramAggregatorFactory implements AggregatorFactory {
   @Override
   @SuppressWarnings("unchecked")
   public <T> Aggregator<T> create(
-      InstrumentDescriptor instrumentDescriptor,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
+      InstrumentDescriptor instrumentDescriptor, Supplier<ExemplarReservoir> reservoirSupplier) {
     // TODO: Handle the case where we have non-monotonic instrument.
     switch (instrumentDescriptor.getValueType()) {
       case LONG:

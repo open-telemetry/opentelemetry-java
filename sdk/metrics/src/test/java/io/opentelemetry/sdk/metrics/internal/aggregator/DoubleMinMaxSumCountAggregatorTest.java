@@ -27,9 +27,12 @@ import org.junit.jupiter.api.Test;
 
 class DoubleMinMaxSumCountAggregatorTest {
   private static final Resource RESOURCE = Resource.getDefault();
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO = InstrumentationLibraryInfo.empty();
-  private static final MetricDescriptor METRIC_DESCRIPTOR = MetricDescriptor.create("name", "description", "unit");
-  private static final DoubleMinMaxSumCountAggregator aggregator = new DoubleMinMaxSumCountAggregator(ExemplarReservoir::noSamples);
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.empty();
+  private static final MetricDescriptor METRIC_DESCRIPTOR =
+      MetricDescriptor.create("name", "description", "unit");
+  private static final DoubleMinMaxSumCountAggregator aggregator =
+      new DoubleMinMaxSumCountAggregator(ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
