@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
@@ -16,6 +18,12 @@ import java.util.Map;
 
 final class MetricDataUtils {
   private MetricDataUtils() {}
+
+  /** Returns true if the instrument does not allow negative measurements. */
+  static boolean isMonotonicInstrument(InstrumentDescriptor descriptor) {
+    InstrumentType type = descriptor.getType();
+    return type == InstrumentType.HISTOGRAM || type == InstrumentType.COUNTER || type == InstrumentType.OBSERVABLE_SUM;
+  }
 
   static List<LongPointData> toLongPointList(
       Map<Attributes, LongAccumulation> accumulationMap, long startEpochNanos, long epochNanos) {

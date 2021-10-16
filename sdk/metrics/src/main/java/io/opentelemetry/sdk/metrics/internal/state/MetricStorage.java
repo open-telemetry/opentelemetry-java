@@ -6,12 +6,10 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Set;
 import javax.annotation.Nullable;
 
 /**
@@ -30,11 +28,9 @@ public interface MetricStorage {
    * <p>Note: This is a stateful operation and will reset any interval-related state for the {@code
    * collector}.
    *
-   * @param collector The identity of the current reader of metrics.
-   * @param allCollectors The set of all registered readers for metrics.
+   * @param collectionInfo The identity of the current reader of metrics and other information.
    * @param resource The resource associated with the metrics.
    * @param instrumentationLibraryInfo The instrumentation library generating the metrics.
-   * @param temporality The requested temporality of the exporter.
    * @param startEpochNanos The start timestamp for this SDK.
    * @param epochNanos The timestamp for this collection.
    * @param suppressSynchronousCollection Whether or not to suppress active (blocking) collection of
@@ -43,11 +39,9 @@ public interface MetricStorage {
    */
   @Nullable
   MetricData collectAndReset(
-      CollectionHandle collector,
-      Set<CollectionHandle> allCollectors,
+      CollectionInfo collectionInfo,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      AggregationTemporality temporality,
       long startEpochNanos,
       long epochNanos,
       boolean suppressSynchronousCollection);

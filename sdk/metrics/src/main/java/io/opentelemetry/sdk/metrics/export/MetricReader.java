@@ -6,6 +6,8 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
+import java.util.EnumSet;
 
 /**
  * A registered reader of metrics.
@@ -14,6 +16,16 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
  * of global control over metrics during shutdown or memory pressure scenarios.
  */
 public interface MetricReader {
+
+  /**
+   * Return The set of all supported temporalities for this exporter.
+   */
+  EnumSet<AggregationTemporality> getSupportedTemporality();
+
+  /**
+   * Return The preferred temporality for metrics.
+   */
+  AggregationTemporality getPreferedTemporality();
 
   /**
    * Flushes metrics read by this reader.

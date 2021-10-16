@@ -6,12 +6,14 @@
 package io.opentelemetry.sdk.metrics.testing;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 
 /**
  * A {@link MetricReader} implementation that can be used to test OpenTelemetry integration.
@@ -54,6 +56,16 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
       return metricProducer.collectAllMetrics();
     }
     return Collections.emptyList();
+  }
+
+  @Override
+  public EnumSet<AggregationTemporality> getSupportedTemporality() {
+    return EnumSet.of(AggregationTemporality.CUMULATIVE, AggregationTemporality.DELTA);
+  }
+
+  @Override
+  public AggregationTemporality getPreferedTemporality() {
+    return AggregationTemporality.CUMULATIVE;
   }
 
   @Override

@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
@@ -15,21 +14,26 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class SynchronousMetricStorageTest {
   private static final Resource RESOURCE = Resource.empty();
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
@@ -45,6 +49,9 @@ public class SynchronousMetricStorageTest {
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
   private CollectionHandle collector;
   private Set<CollectionHandle> allCollectors;
+
+  @Mock
+  private MetricReader reader;
 
   @BeforeEach
   void setup() {
@@ -75,11 +82,9 @@ public class SynchronousMetricStorageTest {
     handle.recordDouble(1, labels, Context.root());
     MetricData md =
         accumulator.collectAndReset(
-            collector,
-            allCollectors,
+            CollectionInfo.create(collector, allCollectors, reader),
             RESOURCE,
             INSTRUMENTATION_LIBRARY_INFO,
-            AggregationTemporality.CUMULATIVE,
             0,
             testClock.now(),
             false);
@@ -105,11 +110,9 @@ public class SynchronousMetricStorageTest {
     try {
       assertThat(duplicateHandle).isSameAs(handle);
       accumulator.collectAndReset(
-          collector,
-          allCollectors,
+          CollectionInfo.create(collector, allCollectors, reader),
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
-          AggregationTemporality.CUMULATIVE,
           0,
           testClock.now(),
           false);
@@ -129,11 +132,9 @@ public class SynchronousMetricStorageTest {
     // should not see any labels (or metric).
     assertThat(
             accumulator.collectAndReset(
-                collector,
-                allCollectors,
+                CollectionInfo.create(collector, allCollectors, reader),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                AggregationTemporality.CUMULATIVE,
                 0,
                 testClock.now(),
                 false))

@@ -16,13 +16,12 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -127,19 +126,21 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   @Override
   @Nullable
   public MetricData collectAndReset(
-      CollectionHandle collector,
-      Set<CollectionHandle> allCollectors,
+      CollectionInfo collectionInfo,
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
-      AggregationTemporality temporality,
       long startEpochNanos,
       long epochNanos,
       boolean suppressSynchronousCollection) {
+    AggregationTemporality temporality =
+        TemporalityUtils.resolveTemporality(
+        collectionInfo.getSupportedAggregation(),
+        collectionInfo.getPreferredAggregation(), /** TODO- configured */null);
     collectLock.lock();
     try {
       metricUpdater.run();
       return storage.buildMetricFor(
-          collector,
+          collectionInfo.getCollector(),
           resource,
           instrumentationLibraryInfo,
           getMetricDescriptor(),
