@@ -8,11 +8,14 @@ package io.opentelemetry.sdk.metrics.internal.state;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -85,7 +88,10 @@ class MetricStorageRegistryTest {
     @Override
     public MetricData collectAndReset(
         CollectionHandle collector,
-        Set<CollectionHandle> all,
+        Set<CollectionHandle> allCollectors,
+        Resource resource,
+        InstrumentationLibraryInfo instrumentationLibraryInfo,
+        AggregationTemporality temporality,
         long startEpochNanos,
         long epochNanos,
         boolean suppressSynchronousCollection) {
@@ -113,11 +119,14 @@ class MetricStorageRegistryTest {
 
     @Override
     public MetricData collectAndReset(
-        CollectionHandle collector,
-        Set<CollectionHandle> allCollectors,
-        long startEpochNanos,
-        long epochNanos,
-        boolean suppressSynchronousCollection) {
+      CollectionHandle collector,
+      Set<CollectionHandle> allCollectors,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      AggregationTemporality temporality,
+      long startEpochNanos,
+      long epochNanos,
+      boolean suppressSynchronousCollection) {
       return null;
     }
 

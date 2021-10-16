@@ -138,4 +138,21 @@ class DeltaMetricStorage<T> {
           }
         });
   }
+
+  /**
+   * Diffs accumulations from {@code toMerge} into {@code result}.
+   *
+   * <p>Note: This mutates the result map.
+   */
+  static final <T> void diffInPlace(
+      Map<Attributes, T> result, Map<Attributes, T> toDiff, Aggregator<T> aggregator) {
+    toDiff.forEach(
+        (k, v) -> {
+          if (result.containsKey(k)) {
+            result.put(k, aggregator.diff(result.get(k), v));
+          } else {
+            result.put(k, v);
+          }
+        });
+  }
 }

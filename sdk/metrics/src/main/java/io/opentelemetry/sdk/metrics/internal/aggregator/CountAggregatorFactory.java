@@ -7,18 +7,15 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.function.Supplier;
 
 final class CountAggregatorFactory implements AggregatorFactory {
-  private final AggregationTemporality temporality;
+  static final AggregatorFactory INSTANCE = new CountAggregatorFactory();
 
-  CountAggregatorFactory(AggregationTemporality temporality) {
-    this.temporality = temporality;
-  }
+  private CountAggregatorFactory() {}
 
   @Override
   @SuppressWarnings("unchecked")
@@ -28,8 +25,6 @@ final class CountAggregatorFactory implements AggregatorFactory {
       InstrumentDescriptor unused,
       MetricDescriptor metricDescriptor,
       Supplier<ExemplarReservoir> reservoirSupplier) {
-    return (Aggregator<T>)
-        new CountAggregator(
-            resource, instrumentationLibraryInfo, metricDescriptor, temporality, reservoirSupplier);
+    return (Aggregator<T>) new CountAggregator(reservoirSupplier);
   }
 }

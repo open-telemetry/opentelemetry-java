@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
@@ -24,14 +25,8 @@ final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
   DoubleSumAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      InstrumentDescriptor instrumentDescriptor,
-      MetricDescriptor metricDescriptor,
-      AggregationTemporality temporality,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
-    super(
-        resource, instrumentationLibraryInfo, instrumentDescriptor, metricDescriptor, temporality);
+      InstrumentDescriptor instrumentDescriptor, Supplier<ExemplarReservoir> reservoirSupplier) {
+    super(instrumentDescriptor);
 
     this.reservoirSupplier = reservoirSupplier;
   }
@@ -42,19 +37,20 @@ final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation
   }
 
   @Override
-  public DoubleAccumulation accumulateDouble(double value) {
+  public DoubleAccumulation accumulateDoubleMeasurement(
+      double value, Attributes attributes, Context context) {
     return DoubleAccumulation.create(value);
   }
 
   @Override
-  DoubleAccumulation mergeSum(
+  public final DoubleAccumulation merge(
       DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
     return DoubleAccumulation.create(
         previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
-  DoubleAccumulation mergeDiff(
+  public final DoubleAccumulation diff(
       DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
     return DoubleAccumulation.create(
         accumulation.getValue() - previousAccumulation.getValue(), accumulation.getExemplars());
@@ -62,22 +58,26 @@ final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation
 
   @Override
   public MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MetricDescriptor descriptor,
       Map<Attributes, DoubleAccumulation> accumulationByLabels,
+      AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
     return MetricData.createDoubleSum(
-        getResource(),
-        getInstrumentationLibraryInfo(),
-        getMetricDescriptor().getName(),
-        getMetricDescriptor().getDescription(),
-        getMetricDescriptor().getUnit(),
+        resource,
+        instrumentationLibraryInfo,
+        descriptor.getName(),
+        descriptor.getDescription(),
+        descriptor.getUnit(),
         DoubleSumData.create(
             isMonotonic(),
-            temporality(),
+            temporality,
             MetricDataUtils.toDoublePointList(
                 accumulationByLabels,
-                temporality() == AggregationTemporality.CUMULATIVE
+                temporality == AggregationTemporality.CUMULATIVE
                     ? startEpochNanos
                     : lastCollectionEpoch,
                 epochNanos)));

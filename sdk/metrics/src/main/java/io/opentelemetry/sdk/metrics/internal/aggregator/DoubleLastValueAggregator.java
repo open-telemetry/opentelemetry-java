@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -32,15 +33,10 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-final class DoubleLastValueAggregator extends AbstractAggregator<DoubleAccumulation> {
+final class DoubleLastValueAggregator implements Aggregator<DoubleAccumulation> {
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  DoubleLastValueAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      MetricDescriptor descriptor,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
-    super(resource, instrumentationLibraryInfo, descriptor, /* stateful= */ true);
+  DoubleLastValueAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 
@@ -50,29 +46,40 @@ final class DoubleLastValueAggregator extends AbstractAggregator<DoubleAccumulat
   }
 
   @Override
-  public DoubleAccumulation accumulateDouble(double value) {
-    return DoubleAccumulation.create(value);
-  }
-
-  @Override
   public DoubleAccumulation merge(DoubleAccumulation previous, DoubleAccumulation current) {
     return current;
   }
 
   @Override
+  public DoubleAccumulation diff(DoubleAccumulation previous, DoubleAccumulation current) {
+    return current;
+  }
+
+  @Override
   public MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MetricDescriptor descriptor,
       Map<Attributes, DoubleAccumulation> accumulationByLabels,
+      AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
+    // Gauge does not need a start time, but we send one as advised by the data model
+    // for identifying resets.
     return MetricData.createDoubleGauge(
-        getResource(),
-        getInstrumentationLibraryInfo(),
-        getMetricDescriptor().getName(),
-        getMetricDescriptor().getDescription(),
-        getMetricDescriptor().getUnit(),
+        resource,
+        instrumentationLibraryInfo,
+        descriptor.getName(),
+        descriptor.getDescription(),
+        descriptor.getUnit(),
         DoubleGaugeData.create(
-            MetricDataUtils.toDoublePointList(accumulationByLabels, 0, epochNanos)));
+            MetricDataUtils.toDoublePointList(
+                accumulationByLabels,
+                (temporality == AggregationTemporality.CUMULATIVE)
+                    ? startEpochNanos
+                    : lastCollectionEpoch,
+                epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<DoubleAccumulation> {

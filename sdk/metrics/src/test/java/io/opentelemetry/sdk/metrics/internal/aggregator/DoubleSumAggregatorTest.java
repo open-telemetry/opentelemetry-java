@@ -18,7 +18,6 @@ import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AbstractSumAggregator.MergeStrategy;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -35,18 +34,19 @@ class DoubleSumAggregatorTest {
 
   @Mock ExemplarReservoir reservoir;
 
+  private static final Resource resource = Resource.getDefault();
+  private static final InstrumentationLibraryInfo library = InstrumentationLibraryInfo.empty();
+  private static final MetricDescriptor metricDescriptor =
+      MetricDescriptor.create("name", "description", "unit");
+
   private static final DoubleSumAggregator aggregator =
       new DoubleSumAggregator(
-          Resource.getDefault(),
-          InstrumentationLibraryInfo.empty(),
           InstrumentDescriptor.create(
               "instrument_name",
               "instrument_description",
               "instrument_unit",
               InstrumentType.COUNTER,
               InstrumentValueType.DOUBLE),
-          MetricDescriptor.create("name", "description", "unit"),
-          AggregationTemporality.CUMULATIVE,
           ExemplarReservoir::noSamples);
 
   @Test
@@ -102,16 +102,12 @@ class DoubleSumAggregatorTest {
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
     DoubleSumAggregator aggregator =
         new DoubleSumAggregator(
-            Resource.getDefault(),
-            InstrumentationLibraryInfo.empty(),
             InstrumentDescriptor.create(
                 "instrument_name",
                 "instrument_description",
                 "instrument_unit",
                 InstrumentType.COUNTER,
                 InstrumentValueType.DOUBLE),
-            MetricDescriptor.create("name", "description", "unit"),
-            AggregationTemporality.CUMULATIVE,
             () -> reservoir);
     AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
@@ -120,7 +116,7 @@ class DoubleSumAggregatorTest {
   }
 
   @Test
-  void merge() {
+  void mergeAndDiff() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
     List<ExemplarData> exemplars = Collections.singletonList(exemplar);
@@ -131,15 +127,9 @@ class DoubleSumAggregatorTest {
       for (AggregationTemporality temporality : AggregationTemporality.values()) {
         DoubleSumAggregator aggregator =
             new DoubleSumAggregator(
-                Resource.getDefault(),
-                InstrumentationLibraryInfo.empty(),
                 InstrumentDescriptor.create(
                     "name", "description", "unit", instrumentType, InstrumentValueType.LONG),
-                MetricDescriptor.create("name", "description", "unit"),
-                temporality,
                 ExemplarReservoir::noSamples);
-        MergeStrategy expectedMergeStrategy =
-            AbstractSumAggregator.resolveMergeStrategy(instrumentType, temporality);
         DoubleAccumulation merged =
             aggregator.merge(
                 DoubleAccumulation.create(1.0d, previousExemplars),
@@ -148,8 +138,17 @@ class DoubleSumAggregatorTest {
             .withFailMessage(
                 "Invalid merge result for instrumentType %s, temporality %s: %s",
                 instrumentType, temporality, merged)
-            .isEqualTo(expectedMergeStrategy == MergeStrategy.SUM ? 3.0d : 1.0d);
+            .isEqualTo(3.0d);
         assertThat(merged.getExemplars()).containsExactly(exemplar);
+
+        DoubleAccumulation diffed =
+            aggregator.diff(DoubleAccumulation.create(1d), DoubleAccumulation.create(2d, exemplars));
+        assertThat(diffed.getValue())
+            .withFailMessage(
+                "Invalid diff result for instrumentType %s, temporality %s: %s",
+                instrumentType, temporality, merged)
+            .isEqualTo(1d);
+        assertThat(diffed.getExemplars()).containsExactly(exemplar);
       }
     }
   }
@@ -162,8 +161,12 @@ class DoubleSumAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
+            resource,
+            library,
+            metricDescriptor,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
+            AggregationTemporality.CUMULATIVE,
             0,
             10,
             100);
@@ -192,7 +195,14 @@ class DoubleSumAggregatorTest {
         DoubleAccumulation.create(1, Collections.singletonList(exemplar));
     assertThat(
             aggregator.toMetricData(
-                Collections.singletonMap(Attributes.empty(), accumulation), 0, 10, 100))
+                resource,
+                library,
+                metricDescriptor,
+                Collections.singletonMap(Attributes.empty(), accumulation),
+                AggregationTemporality.CUMULATIVE,
+                0,
+                10,
+                100))
         .hasDoubleSum()
         .points()
         .satisfiesExactly(point -> assertThat(point).hasValue(1).hasExemplars(exemplar));

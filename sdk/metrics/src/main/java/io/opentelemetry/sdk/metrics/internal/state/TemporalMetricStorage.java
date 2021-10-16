@@ -6,9 +6,13 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -30,6 +34,7 @@ class TemporalMetricStorage<T> {
    * Builds the {@link MetricData} streams to report against a specific metric reader.
    *
    * @param collector The handle of the metric reader.
+   * @param temporality The aggregation temporality requested by the reader.
    * @param currentAccumulation THe current accumulation of metric data from instruments. This might
    *     be delta (for synchronous) or cumulative (for asynchronous).
    * @param startEpochNanos The timestamp when the metrics SDK started.
@@ -39,6 +44,11 @@ class TemporalMetricStorage<T> {
   @Nullable
   synchronized MetricData buildMetricFor(
       CollectionHandle collector,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MetricDescriptor descriptor,
+      // Temporality is requested by the collector.
+      AggregationTemporality temporality,
       Map<Attributes, T> currentAccumulation,
       long startEpochNanos,
       long epochNanos) {
@@ -49,9 +59,15 @@ class TemporalMetricStorage<T> {
     if (reportHistory.containsKey(collector)) {
       LastReportedAccumulation<T> last = reportHistory.get(collector);
       lastCollectionEpoch = last.getEpochNanos();
-      // We need to merge with previous accumulation.
-      if (aggregator.isStateful()) {
-        // We merge the current into last, and take over that memory.
+      // Use aggregation tempoarlity + instrument to determine if we do a merge or a diff of
+      // previous.
+      if (temporality == AggregationTemporality.DELTA && !isSynchronous) {
+        DeltaMetricStorage.diffInPlace(last.getAccumlation(), currentAccumulation, aggregator);
+        result = last.getAccumlation();
+      } else if (temporality == AggregationTemporality.CUMULATIVE && isSynchronous) {
+        // We need to make sure the current delta recording gets merged into the previous cumulative
+        // for the
+        // next cumulative measurement.
         DeltaMetricStorage.mergeInPlace(last.getAccumlation(), currentAccumulation, aggregator);
         result = last.getAccumlation();
       }
@@ -67,7 +83,15 @@ class TemporalMetricStorage<T> {
     if (result.isEmpty()) {
       return null;
     }
-    return aggregator.toMetricData(result, startEpochNanos, lastCollectionEpoch, epochNanos);
+    return aggregator.toMetricData(
+        resource,
+        instrumentationLibraryInfo,
+        descriptor,
+        result,
+        temporality,
+        startEpochNanos,
+        lastCollectionEpoch,
+        epochNanos);
   }
 
   /** Remembers what was presented to a specific exporter. */

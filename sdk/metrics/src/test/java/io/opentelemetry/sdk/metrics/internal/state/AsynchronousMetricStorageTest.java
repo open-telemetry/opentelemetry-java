@@ -11,6 +11,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
@@ -74,7 +75,9 @@ public class AsynchronousMetricStorageTest {
             meterProviderSharedState.getResource(),
             meterSharedState.getInstrumentationLibraryInfo(),
             value -> value.observe(1.0, Attributes.empty()))
-        .collectAndReset(handle, all, 0, testClock.now(), false);
+        .collectAndReset(handle, all, meterProviderSharedState.getResource(),
+            meterSharedState.getInstrumentationLibraryInfo(),
+            AggregationTemporality.CUMULATIVE, 0, testClock.now(), false);
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 
@@ -91,7 +94,9 @@ public class AsynchronousMetricStorageTest {
             meterProviderSharedState.getResource(),
             meterSharedState.getInstrumentationLibraryInfo(),
             value -> value.observe(1, Attributes.empty()))
-        .collectAndReset(handle, all, 0, testClock.nanoTime(), false);
+        .collectAndReset(handle, all, meterProviderSharedState.getResource(),
+            meterSharedState.getInstrumentationLibraryInfo(),
+            AggregationTemporality.CUMULATIVE,0, testClock.nanoTime(), false);
     Mockito.verify(spyAttributesProcessor).process(Attributes.empty(), Context.current());
   }
 }

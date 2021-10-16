@@ -36,16 +36,9 @@ class TemporalMetricStorageTest {
           "name", "description", "unit", InstrumentType.OBSERVABLE_SUM, InstrumentValueType.DOUBLE);
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
-  private static final Aggregator<DoubleAccumulation> CUMULATIVE_SUM =
-      AggregatorFactory.sum(AggregationTemporality.CUMULATIVE)
-          .create(
-              Resource.empty(),
-              InstrumentationLibraryInfo.create("test", "1.0"),
-              DESCRIPTOR,
-              METRIC_DESCRIPTOR,
-              ExemplarReservoir::noSamples);
-  private static final Aggregator<DoubleAccumulation> DELTA_SUM =
-      AggregatorFactory.sum(AggregationTemporality.DELTA)
+  private static final Aggregator<DoubleAccumulation> SUM =
+      // TODO: remove dependency on aggregator factory.
+      AggregatorFactory.sum()
           .create(
               Resource.empty(),
               InstrumentationLibraryInfo.create("test", "1.0"),
@@ -53,17 +46,8 @@ class TemporalMetricStorageTest {
               METRIC_DESCRIPTOR,
               ExemplarReservoir::noSamples);
 
-  private static final Aggregator<DoubleAccumulation> ASYNC_CUMULATIVE_SUM =
-      AggregatorFactory.sum(AggregationTemporality.CUMULATIVE)
-          .create(
-              Resource.empty(),
-              InstrumentationLibraryInfo.create("test", "1.0"),
-              ASYNC_DESCRIPTOR,
-              METRIC_DESCRIPTOR,
-              ExemplarReservoir::noSamples);
-
-  private static final Aggregator<DoubleAccumulation> ASYNC_DELTA_SUM =
-      AggregatorFactory.sum(AggregationTemporality.DELTA)
+  private static final Aggregator<DoubleAccumulation> ASYNC_SUM =
+      AggregatorFactory.sum()
           .create(
               Resource.empty(),
               InstrumentationLibraryInfo.create("test", "1.0"),
@@ -93,10 +77,18 @@ class TemporalMetricStorageTest {
 
   @Test
   void synchronousCumulative_joinsWithLastMeasurementForCumulative() {
+      AggregationTemporality temporality = AggregationTemporality.CUMULATIVE;
     TemporalMetricStorage<DoubleAccumulation> storage =
-        new TemporalMetricStorage<>(CUMULATIVE_SUM, /* isSynchronous= */ true);
+        new TemporalMetricStorage<>(SUM, /* isSynchronous= */ true);
     // Send in new measurement at time 10 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(3), 0, 10))
+    assertThat(storage.buildMetricFor(
+        collector1, 
+    Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR,    
+    
+    temporality,
+    createMeasurement(3), 0, 10))
         .hasDoubleSum()
         .isCumulative()
         .points()
@@ -104,7 +96,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3));
     // Send in new measurement at time 30 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(3), 0, 30))
+    assertThat(storage.buildMetricFor(collector1, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR,     temporality, createMeasurement(3), 0, 30))
         .hasDoubleSum()
         .isCumulative()
         .points()
@@ -112,7 +106,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(30).hasValue(6));
     // Send in new measurement at time 40 for collector 2
-    assertThat(storage.buildMetricFor(collector2, createMeasurement(4), 0, 60))
+    assertThat(storage.buildMetricFor(collector2, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR,     temporality, createMeasurement(4), 0, 60))
         .hasDoubleSum()
         .isCumulative()
         .points()
@@ -120,7 +116,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4));
     // Send in new measurement at time 35 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(2), 0, 35))
+    assertThat(storage.buildMetricFor(collector1, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR,     temporality, createMeasurement(2), 0, 35))
         .hasDoubleSum()
         .isCumulative()
         .points()
@@ -131,10 +129,13 @@ class TemporalMetricStorageTest {
 
   @Test
   void synchronousDelta_useLastTimestamp() {
+    AggregationTemporality temporality = AggregationTemporality.DELTA;
     TemporalMetricStorage<DoubleAccumulation> storage =
-        new TemporalMetricStorage<>(DELTA_SUM, /* isSynchronous= */ true);
+        new TemporalMetricStorage<>(SUM, /* isSynchronous= */ true);
     // Send in new measurement at time 10 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(3), 0, 10))
+    assertThat(storage.buildMetricFor(collector1, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR,  temporality, createMeasurement(3), 0, 10))
         .hasDoubleSum()
         .isDelta()
         .points()
@@ -142,7 +143,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3));
     // Send in new measurement at time 30 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(3), 0, 30))
+    assertThat(storage.buildMetricFor(collector1, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR,  temporality, createMeasurement(3), 0, 30))
         .hasDoubleSum()
         .isDelta()
         .points()
@@ -150,7 +153,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(10).hasEpochNanos(30).hasValue(3));
     // Send in new measurement at time 40 for collector 2
-    assertThat(storage.buildMetricFor(collector2, createMeasurement(4), 0, 60))
+    assertThat(storage.buildMetricFor(collector2, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR,  temporality, createMeasurement(4), 0, 60))
         .hasDoubleSum()
         .isDelta()
         .points()
@@ -158,7 +163,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4));
     // Send in new measurement at time 35 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(2), 0, 35))
+    assertThat(storage.buildMetricFor(collector1, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR,  temporality, createMeasurement(2), 0, 35))
         .hasDoubleSum()
         .isDelta()
         .points()
@@ -169,10 +176,13 @@ class TemporalMetricStorageTest {
 
   @Test
   void asynchronousCumulative_doesNotJoin() {
+    AggregationTemporality temporality = AggregationTemporality.CUMULATIVE;
     TemporalMetricStorage<DoubleAccumulation> storage =
-        new TemporalMetricStorage<>(ASYNC_CUMULATIVE_SUM, /* isSynchronous= */ false);
+        new TemporalMetricStorage<>(ASYNC_SUM, /* isSynchronous= */ false);
     // Send in new measurement at time 10 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(3), 0, 10))
+    assertThat(storage.buildMetricFor(collector1, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR, temporality, createMeasurement(3), 0, 10))
         .hasDoubleSum()
         .isCumulative()
         .points()
@@ -180,7 +190,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3));
     // Send in new measurement at time 30 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(3), 0, 30))
+    assertThat(storage.buildMetricFor(collector1, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR, temporality, createMeasurement(3), 0, 30))
         .hasDoubleSum()
         .isCumulative()
         .points()
@@ -188,7 +200,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(30).hasValue(3));
     // Send in new measurement at time 40 for collector 2
-    assertThat(storage.buildMetricFor(collector2, createMeasurement(4), 0, 60))
+    assertThat(storage.buildMetricFor(collector2, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR, temporality, createMeasurement(4), 0, 60))
         .hasDoubleSum()
         .isCumulative()
         .points()
@@ -196,7 +210,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4));
     // Send in new measurement at time 35 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(2), 0, 35))
+    assertThat(storage.buildMetricFor(collector1, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR, temporality, createMeasurement(2), 0, 35))
         .hasDoubleSum()
         .isCumulative()
         .points()
@@ -207,10 +223,13 @@ class TemporalMetricStorageTest {
 
   @Test
   void asynchronousDelta_diffsLastTimestamp() {
+    AggregationTemporality temporality = AggregationTemporality.DELTA;
     TemporalMetricStorage<DoubleAccumulation> storage =
-        new TemporalMetricStorage<>(ASYNC_DELTA_SUM, /* isSynchronous= */ false);
+        new TemporalMetricStorage<>(ASYNC_SUM, /* isSynchronous= */ false);
     // Send in new measurement at time 10 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(3), 0, 10))
+    assertThat(storage.buildMetricFor(collector1, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR, temporality, createMeasurement(3), 0, 10))
         .hasDoubleSum()
         .isDelta()
         .points()
@@ -218,7 +237,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(10).hasValue(3));
     // Send in new measurement at time 30 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(3), 0, 30))
+    assertThat(storage.buildMetricFor(collector1, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR, temporality, createMeasurement(3), 0, 30))
         .hasDoubleSum()
         .isDelta()
         .points()
@@ -226,7 +247,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(10).hasEpochNanos(30).hasValue(0));
     // Send in new measurement at time 40 for collector 2
-    assertThat(storage.buildMetricFor(collector2, createMeasurement(4), 0, 60))
+    assertThat(storage.buildMetricFor(collector2, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR, temporality, createMeasurement(4), 0, 60))
         .hasDoubleSum()
         .isDelta()
         .points()
@@ -234,7 +257,9 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(0).hasEpochNanos(60).hasValue(4));
     // Send in new measurement at time 35 for collector 1
-    assertThat(storage.buildMetricFor(collector1, createMeasurement(2), 0, 35))
+    assertThat(storage.buildMetricFor(collector1, Resource.empty(),
+    InstrumentationLibraryInfo.empty(),
+    METRIC_DESCRIPTOR, temporality, createMeasurement(2), 0, 35))
         .hasDoubleSum()
         .isDelta()
         .points()
@@ -242,4 +267,6 @@ class TemporalMetricStorageTest {
         .satisfiesExactly(
             point -> assertThat(point).hasStartEpochNanos(30).hasEpochNanos(35).hasValue(-1));
   }
+
+  // TODO - Mixed collector temporality test.
 }

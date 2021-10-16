@@ -20,38 +20,29 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link CountAggregator}. */
 class CountAggregatorTest {
+  private static final Resource RESOURCE = Resource.getDefault();
+  private static final InstrumentationLibraryInfo LIBRARY = InstrumentationLibraryInfo.empty();
   private static final MetricDescriptor SIMPLE_METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
 
-  private static final CountAggregator cumulativeAggregator =
+  private static final CountAggregator aggregator =
       new CountAggregator(
-          Resource.getDefault(),
-          InstrumentationLibraryInfo.empty(),
-          SIMPLE_METRIC_DESCRIPTOR,
-          AggregationTemporality.CUMULATIVE,
-          ExemplarReservoir::noSamples);
-  private static final CountAggregator deltaAggregator =
-      new CountAggregator(
-          Resource.getDefault(),
-          InstrumentationLibraryInfo.empty(),
-          SIMPLE_METRIC_DESCRIPTOR,
-          AggregationTemporality.DELTA,
           ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
-    assertThat(cumulativeAggregator.createHandle()).isInstanceOf(CountAggregator.Handle.class);
+    assertThat(aggregator.createHandle()).isInstanceOf(CountAggregator.Handle.class);
   }
 
   @Test
   void toPoint() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = cumulativeAggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty())).isNull();
   }
 
   @Test
   void recordLongOperations() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = cumulativeAggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(12);
     aggregatorHandle.recordLong(12);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(2);
@@ -59,7 +50,7 @@ class CountAggregatorTest {
 
   @Test
   void recordDoubleOperations() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = cumulativeAggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(12.3);
     aggregatorHandle.recordDouble(12.3);
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()).getValue()).isEqualTo(2);
@@ -68,13 +59,16 @@ class CountAggregatorTest {
   @Test
   @SuppressWarnings("unchecked")
   void toMetricData_CumulativeTemporality() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = cumulativeAggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
-        cumulativeAggregator.toMetricData(
+        aggregator.toMetricData(
+          RESOURCE, LIBRARY,
+          SIMPLE_METRIC_DESCRIPTOR,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
+                AggregationTemporality.CUMULATIVE,
             0,
             10,
             100);
@@ -100,13 +94,16 @@ class CountAggregatorTest {
   @Test
   @SuppressWarnings("unchecked")
   void toMetricData_DeltaTemporality() {
-    AggregatorHandle<LongAccumulation> aggregatorHandle = deltaAggregator.createHandle();
+    AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);
 
     MetricData metricData =
-        deltaAggregator.toMetricData(
+        aggregator.toMetricData(
+          RESOURCE, LIBRARY,
+          SIMPLE_METRIC_DESCRIPTOR,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
+                AggregationTemporality.DELTA,
             0,
             10,
             100);

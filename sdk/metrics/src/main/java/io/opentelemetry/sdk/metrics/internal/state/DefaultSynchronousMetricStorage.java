@@ -7,11 +7,14 @@ package io.opentelemetry.sdk.metrics.internal.state;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -97,12 +100,23 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
   public MetricData collectAndReset(
       CollectionHandle collector,
       Set<CollectionHandle> allCollectors,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      AggregationTemporality temporality,
       long startEpochNanos,
       long epochNanos,
       boolean suppressSynchronousCollection) {
     Map<Attributes, T> result =
         deltaMetricStorage.collectFor(collector, allCollectors, suppressSynchronousCollection);
-    return temporalMetricStorage.buildMetricFor(collector, result, startEpochNanos, epochNanos);
+    return temporalMetricStorage.buildMetricFor(
+        collector,
+        resource,
+        instrumentationLibraryInfo,
+        getMetricDescriptor(),
+        temporality,
+        result,
+        startEpochNanos,
+        epochNanos);
   }
 
   @Override

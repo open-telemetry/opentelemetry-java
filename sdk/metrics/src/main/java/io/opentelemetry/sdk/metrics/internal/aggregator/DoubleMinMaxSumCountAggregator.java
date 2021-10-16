@@ -6,11 +6,8 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.internal.GuardedBy;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
@@ -20,23 +17,13 @@ import javax.annotation.concurrent.ThreadSafe;
 final class DoubleMinMaxSumCountAggregator extends AbstractMinMaxSumCountAggregator {
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  DoubleMinMaxSumCountAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      MetricDescriptor descriptor,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
-    super(resource, instrumentationLibraryInfo, descriptor);
+  DoubleMinMaxSumCountAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 
   @Override
   public AggregatorHandle<MinMaxSumCountAccumulation> createHandle() {
     return new Handle(reservoirSupplier.get());
-  }
-
-  @Override
-  public MinMaxSumCountAccumulation accumulateDouble(double value) {
-    return MinMaxSumCountAccumulation.create(1, value, value, value);
   }
 
   static final class Handle extends AggregatorHandle<MinMaxSumCountAccumulation> {

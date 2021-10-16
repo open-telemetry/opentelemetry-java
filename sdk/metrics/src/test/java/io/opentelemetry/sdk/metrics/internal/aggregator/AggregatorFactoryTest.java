@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -26,7 +25,7 @@ class AggregatorFactoryTest {
 
   @Test
   void getCountAggregatorFactory() {
-    AggregatorFactory count = AggregatorFactory.count(AggregationTemporality.CUMULATIVE);
+    AggregatorFactory count = AggregatorFactory.count();
     assertThat(
             count.create(
                 Resource.getDefault(),
@@ -119,7 +118,7 @@ class AggregatorFactoryTest {
 
   @Test
   void getSumAggregatorFactory() {
-    AggregatorFactory sum = AggregatorFactory.sum(AggregationTemporality.DELTA);
+    AggregatorFactory sum = AggregatorFactory.sum();
     assertThat(
             sum.create(
                 Resource.getDefault(),
@@ -151,7 +150,7 @@ class AggregatorFactoryTest {
   @Test
   void getHistogramAggregatorFactory() {
     AggregatorFactory histogram =
-        AggregatorFactory.histogram(Collections.singletonList(1.0), AggregationTemporality.DELTA);
+        AggregatorFactory.histogram(Collections.singletonList(1.0));
     assertThat(
             histogram.create(
                 Resource.getDefault(),
@@ -179,61 +178,28 @@ class AggregatorFactoryTest {
                 ExemplarReservoir::noSamples))
         .isInstanceOf(DoubleHistogramAggregator.class);
 
-    assertThat(
-            histogram
-                .create(
-                    Resource.getDefault(),
-                    InstrumentationLibraryInfo.empty(),
-                    InstrumentDescriptor.create(
-                        "name",
-                        "description",
-                        "unit",
-                        InstrumentType.HISTOGRAM,
-                        InstrumentValueType.LONG),
-                    SIMPLE_METRIC_DESCRIPTOR,
-                    ExemplarReservoir::noSamples)
-                .isStateful())
-        .isFalse();
-    assertThat(
-            AggregatorFactory.histogram(
-                    Collections.singletonList(1.0), AggregationTemporality.CUMULATIVE)
-                .create(
-                    Resource.getDefault(),
-                    InstrumentationLibraryInfo.empty(),
-                    InstrumentDescriptor.create(
-                        "name",
-                        "description",
-                        "unit",
-                        InstrumentType.HISTOGRAM,
-                        InstrumentValueType.DOUBLE),
-                    SIMPLE_METRIC_DESCRIPTOR,
-                    ExemplarReservoir::noSamples)
-                .isStateful())
-        .isTrue();
-
     assertThatThrownBy(
             () ->
                 AggregatorFactory.histogram(
-                    Collections.singletonList(Double.NEGATIVE_INFINITY),
-                    AggregationTemporality.DELTA))
+                    Collections.singletonList(Double.NEGATIVE_INFINITY)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid bucket boundary: -Inf");
     assertThatThrownBy(
             () ->
                 AggregatorFactory.histogram(
-                    Arrays.asList(1.0, Double.POSITIVE_INFINITY), AggregationTemporality.DELTA))
+                    Arrays.asList(1.0, Double.POSITIVE_INFINITY)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid bucket boundary: +Inf");
     assertThatThrownBy(
             () ->
                 AggregatorFactory.histogram(
-                    Arrays.asList(1.0, Double.NaN), AggregationTemporality.DELTA))
+                    Arrays.asList(1.0, Double.NaN)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid bucket boundary: NaN");
     assertThatThrownBy(
             () ->
                 AggregatorFactory.histogram(
-                    Arrays.asList(2.0, 1.0, 3.0), AggregationTemporality.DELTA))
+                    Arrays.asList(2.0, 1.0, 3.0)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("invalid bucket boundary: 2.0 >= 1.0");
   }

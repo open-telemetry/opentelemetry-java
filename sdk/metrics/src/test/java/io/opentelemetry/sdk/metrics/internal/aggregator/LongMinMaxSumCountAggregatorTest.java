@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
@@ -25,11 +26,11 @@ import javax.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 class LongMinMaxSumCountAggregatorTest {
+  private static final Resource RESOURCE = Resource.getDefault();
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO = InstrumentationLibraryInfo.empty();
+  private static final MetricDescriptor METRIC_DESCRIPTOR = MetricDescriptor.create("name", "description", "unit");
   private static final LongMinMaxSumCountAggregator aggregator =
       new LongMinMaxSumCountAggregator(
-          Resource.getDefault(),
-          InstrumentationLibraryInfo.empty(),
-          MetricDescriptor.create("name", "description", "unit"),
           ExemplarReservoir::noSamples);
 
   @Test
@@ -74,8 +75,12 @@ class LongMinMaxSumCountAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
+            RESOURCE,
+            INSTRUMENTATION_LIBRARY_INFO,
+            METRIC_DESCRIPTOR,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
+            AggregationTemporality.CUMULATIVE,
             0,
             10,
             100);

@@ -11,6 +11,7 @@ import io.opentelemetry.api.metrics.LongCounterBuilder;
 import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
@@ -39,11 +40,13 @@ final class SdkMeter implements Meter {
   Collection<MetricData> collectAll(
       CollectionHandle collector,
       Set<CollectionHandle> allCollectors,
+      AggregationTemporality temporality,
       long epochNanos,
       boolean suppressSynchronousCollection) {
     return meterSharedState.collectAll(
         collector,
         allCollectors,
+        temporality,
         meterProviderSharedState,
         epochNanos,
         suppressSynchronousCollection);

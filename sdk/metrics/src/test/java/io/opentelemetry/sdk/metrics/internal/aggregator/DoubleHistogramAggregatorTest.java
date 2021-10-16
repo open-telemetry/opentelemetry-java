@@ -38,13 +38,12 @@ public class DoubleHistogramAggregatorTest {
   @Mock ExemplarReservoir reservoir;
 
   private static final double[] boundaries = new double[] {10.0, 100.0, 1000.0};
+  private static final Resource RESOURCE = Resource.getDefault();
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO = InstrumentationLibraryInfo.empty();
+  private static final MetricDescriptor METRIC_DESCRIPTOR = MetricDescriptor.create("name", "description", "unit");
   private static final DoubleHistogramAggregator aggregator =
       new DoubleHistogramAggregator(
-          Resource.getDefault(),
-          InstrumentationLibraryInfo.empty(),
-          MetricDescriptor.create("name", "description", "unit"),
           boundaries,
-          /* stateful= */ false,
           ExemplarReservoir::noSamples);
 
   @Test
@@ -71,11 +70,7 @@ public class DoubleHistogramAggregatorTest {
     Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(exemplars);
     DoubleHistogramAggregator aggregator =
         new DoubleHistogramAggregator(
-            Resource.getDefault(),
-            InstrumentationLibraryInfo.empty(),
-            MetricDescriptor.create("name", "description", "unit"),
             boundaries,
-            /* stateful= */ false,
             () -> reservoir);
     AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(0, attributes, Context.root());
@@ -101,9 +96,9 @@ public class DoubleHistogramAggregatorTest {
 
   @Test
   void accumulateData() {
-    assertThat(aggregator.accumulateDouble(11.1))
+    assertThat(aggregator.accumulateDoubleMeasurement(11.1, Attributes.empty(), Context.current()))
         .isEqualTo(HistogramAccumulation.create(11.1, new long[] {0, 1, 0, 0}));
-    assertThat(aggregator.accumulateLong(10))
+    assertThat(aggregator.accumulateLongMeasurement(10, Attributes.empty(), Context.current()))
         .isEqualTo(HistogramAccumulation.create(10.0, new long[] {1, 0, 0, 0}));
   }
 
@@ -131,8 +126,12 @@ public class DoubleHistogramAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
+            RESOURCE,
+            INSTRUMENTATION_LIBRARY_INFO,
+            METRIC_DESCRIPTOR,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
+            AggregationTemporality.DELTA,
             0,
             10,
             100);
@@ -151,7 +150,12 @@ public class DoubleHistogramAggregatorTest {
             2, new long[] {1, 0, 0, 0}, Collections.singletonList(exemplar));
     assertThat(
             aggregator.toMetricData(
-                Collections.singletonMap(Attributes.empty(), accumulation), 0, 10, 100))
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                METRIC_DESCRIPTOR,
+                Collections.singletonMap(Attributes.empty(), accumulation),
+                AggregationTemporality.CUMULATIVE,
+                0, 10, 100))
         .hasDoubleHistogram()
         .points()
         .satisfiesExactly(
@@ -165,9 +169,9 @@ public class DoubleHistogramAggregatorTest {
 
   @Test
   void testHistogramCounts() {
-    assertThat(aggregator.accumulateDouble(1.1).getCounts().length)
+    assertThat(aggregator.accumulateDoubleMeasurement(1.1, Attributes.empty(), Context.root()).getCounts().length)
         .isEqualTo(boundaries.length + 1);
-    assertThat(aggregator.accumulateLong(1).getCounts().length).isEqualTo(boundaries.length + 1);
+    assertThat(aggregator.accumulateLongMeasurement(1, Attributes.empty(), Context.root()).getCounts().length).isEqualTo(boundaries.length + 1);
 
     AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordDouble(1.1);

@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.MeterBuilder;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
@@ -147,7 +148,12 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
       for (SdkMeter meter : meters) {
         result.addAll(
             meter.collectAll(
-                handle, collectors, sharedState.getClock().now(), disableSynchronousCollection));
+                handle,
+                collectors,
+                // TODO - Allow readers to pass this in.
+                AggregationTemporality.CUMULATIVE,
+                sharedState.getClock().now(),
+                disableSynchronousCollection));
       }
       return Collections.unmodifiableCollection(result);
     }

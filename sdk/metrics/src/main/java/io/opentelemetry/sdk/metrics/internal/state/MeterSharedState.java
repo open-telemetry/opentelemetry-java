@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.ObservableDoubleMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.view.View;
@@ -49,6 +50,7 @@ public abstract class MeterSharedState {
   public List<MetricData> collectAll(
       CollectionHandle collector,
       Set<CollectionHandle> allCollectors,
+      AggregationTemporality temporality,
       MeterProviderSharedState meterProviderSharedState,
       long epochNanos,
       boolean suppressSynchronousCollection) {
@@ -59,6 +61,9 @@ public abstract class MeterSharedState {
           metric.collectAndReset(
               collector,
               allCollectors,
+              meterProviderSharedState.getResource(),
+              getInstrumentationLibraryInfo(),
+              temporality,
               meterProviderSharedState.getStartEpochNanos(),
               epochNanos,
               suppressSynchronousCollection);

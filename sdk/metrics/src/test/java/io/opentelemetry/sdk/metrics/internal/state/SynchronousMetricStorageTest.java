@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
@@ -30,6 +31,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class SynchronousMetricStorageTest {
+  private static final Resource RESOURCE = Resource.empty();
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO = InstrumentationLibraryInfo.create("test", "1.0");
   private static final InstrumentDescriptor DESCRIPTOR =
       InstrumentDescriptor.create(
           "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
@@ -39,8 +42,8 @@ public class SynchronousMetricStorageTest {
   private final Aggregator<Long> aggregator =
       AggregatorFactory.lastValue()
           .create(
-              Resource.empty(),
-              InstrumentationLibraryInfo.create("test", "1.0"),
+              RESOURCE,
+              INSTRUMENTATION_LIBRARY_INFO,
               DESCRIPTOR,
               METRIC_DESCRIPTOR,
               ExemplarReservoir::noSamples);
@@ -76,7 +79,8 @@ public class SynchronousMetricStorageTest {
     BoundStorageHandle handle = accumulator.bind(labels);
     handle.recordDouble(1, labels, Context.root());
     MetricData md =
-        accumulator.collectAndReset(collector, allCollectors, 0, testClock.now(), false);
+        accumulator.collectAndReset(collector, allCollectors, RESOURCE,
+        INSTRUMENTATION_LIBRARY_INFO, AggregationTemporality.CUMULATIVE, 0, testClock.now(), false);
     assertThat(md)
         .hasDoubleGauge()
         .points()
@@ -98,7 +102,8 @@ public class SynchronousMetricStorageTest {
         accumulator.bind(Attributes.builder().put("K", "V").build());
     try {
       assertThat(duplicateHandle).isSameAs(handle);
-      accumulator.collectAndReset(collector, allCollectors, 0, testClock.now(), false);
+      accumulator.collectAndReset(collector, allCollectors, RESOURCE,
+      INSTRUMENTATION_LIBRARY_INFO, AggregationTemporality.CUMULATIVE, 0, testClock.now(), false);
       BoundStorageHandle anotherDuplicateAggregatorHandle =
           accumulator.bind(Attributes.builder().put("K", "V").build());
       try {
@@ -113,7 +118,8 @@ public class SynchronousMetricStorageTest {
 
     // If we try to collect once all bound references are gone AND no recordings have occurred, we
     // should not see any labels (or metric).
-    assertThat(accumulator.collectAndReset(collector, allCollectors, 0, testClock.now(), false))
+    assertThat(accumulator.collectAndReset(collector, allCollectors, RESOURCE,
+    INSTRUMENTATION_LIBRARY_INFO, AggregationTemporality.CUMULATIVE, 0, testClock.now(), false))
         .isNull();
   }
 }

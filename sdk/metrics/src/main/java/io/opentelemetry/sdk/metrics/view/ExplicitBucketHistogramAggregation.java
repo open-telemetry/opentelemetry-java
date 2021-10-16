@@ -53,7 +53,7 @@ class ExplicitBucketHistogramAggregation extends Aggregation {
       MetricDescriptor metricDescriptor,
       ExemplarFilter exemplarFilter) {
 
-    return AggregatorFactory.histogram(bucketBoundaries, temporality)
+    return AggregatorFactory.histogram(bucketBoundaries)
         .create(
             resource,
             instrumentationLibraryInfo,

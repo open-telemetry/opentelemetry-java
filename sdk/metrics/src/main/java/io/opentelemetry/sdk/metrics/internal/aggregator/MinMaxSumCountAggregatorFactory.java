@@ -27,13 +27,9 @@ final class MinMaxSumCountAggregatorFactory implements AggregatorFactory {
       Supplier<ExemplarReservoir> reservoirSupplier) {
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
-        return (Aggregator<T>)
-            new LongMinMaxSumCountAggregator(
-                resource, instrumentationLibraryInfo, metricDescriptor, reservoirSupplier);
+        return (Aggregator<T>) new LongMinMaxSumCountAggregator(reservoirSupplier);
       case DOUBLE:
-        return (Aggregator<T>)
-            new DoubleMinMaxSumCountAggregator(
-                resource, instrumentationLibraryInfo, metricDescriptor, reservoirSupplier);
+        return (Aggregator<T>) new DoubleMinMaxSumCountAggregator(reservoirSupplier);
     }
     throw new IllegalArgumentException("Invalid instrument value type");
   }

@@ -39,7 +39,7 @@ class SumAggregation extends Aggregation {
       InstrumentDescriptor instrumentDescriptor,
       MetricDescriptor metricDescriptor,
       ExemplarFilter exemplarFilter) {
-    return AggregatorFactory.sum(temporality)
+    return AggregatorFactory.sum()
         .create(
             resource,
             instrumentationLibraryInfo,

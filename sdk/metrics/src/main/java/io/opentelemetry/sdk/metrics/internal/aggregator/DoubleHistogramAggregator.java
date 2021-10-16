@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
-final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumulation> {
+final class DoubleHistogramAggregator implements Aggregator<HistogramAccumulation> {
   private final double[] boundaries;
 
   // a cache for converting to MetricData
@@ -31,14 +31,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
 
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  DoubleHistogramAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      MetricDescriptor metricDescriptor,
-      double[] boundaries,
-      boolean stateful,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
-    super(resource, instrumentationLibraryInfo, metricDescriptor, stateful);
+  DoubleHistogramAggregator(double[] boundaries, Supplier<ExemplarReservoir> reservoirSupplier) {
     this.boundaries = boundaries;
 
     List<Double> boundaryList = new ArrayList<>(this.boundaries.length);
@@ -71,36 +64,41 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
   }
 
   @Override
+  public final HistogramAccumulation diff(
+      HistogramAccumulation previous, HistogramAccumulation current) {
+    long[] diffedCounts = new long[previous.getCounts().length];
+    for (int i = 0; i < previous.getCounts().length; ++i) {
+      diffedCounts[i] = current.getCounts()[i] - previous.getCounts()[i];
+    }
+    return HistogramAccumulation.create(
+        current.getSum() - previous.getSum(), diffedCounts, current.getExemplars());
+  }
+
+  @Override
   public final MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MetricDescriptor metricDescriptor,
       Map<Attributes, HistogramAccumulation> accumulationByLabels,
+      AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
     return MetricData.createDoubleHistogram(
-        getResource(),
-        getInstrumentationLibraryInfo(),
-        getMetricDescriptor().getName(),
-        getMetricDescriptor().getDescription(),
-        getMetricDescriptor().getUnit(),
+        resource,
+        instrumentationLibraryInfo,
+        metricDescriptor.getName(),
+        metricDescriptor.getDescription(),
+        metricDescriptor.getUnit(),
         DoubleHistogramData.create(
-            isStateful() ? AggregationTemporality.CUMULATIVE : AggregationTemporality.DELTA,
+            temporality,
             MetricDataUtils.toDoubleHistogramPointList(
                 accumulationByLabels,
-                isStateful() ? startEpochNanos : lastCollectionEpoch,
+                (temporality == AggregationTemporality.CUMULATIVE)
+                    ? startEpochNanos
+                    : lastCollectionEpoch,
                 epochNanos,
                 boundaryList)));
-  }
-
-  @Override
-  public HistogramAccumulation accumulateDouble(double value) {
-    long[] counts = new long[this.boundaries.length + 1];
-    counts[ExplicitBucketHistogramUtils.findBucketIndex(this.boundaries, value)] = 1;
-    return HistogramAccumulation.create(value, counts);
-  }
-
-  @Override
-  public HistogramAccumulation accumulateLong(long value) {
-    return accumulateDouble((double) value);
   }
 
   static final class Handle extends AggregatorHandle<HistogramAccumulation> {

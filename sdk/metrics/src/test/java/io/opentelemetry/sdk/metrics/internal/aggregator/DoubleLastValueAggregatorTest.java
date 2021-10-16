@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -22,12 +23,11 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link AggregatorHandle}. */
 class DoubleLastValueAggregatorTest {
+  private static final Resource RESOURCE = Resource.getDefault();
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO = InstrumentationLibraryInfo.empty();
+  private static final MetricDescriptor METRIC_DESCRIPTOR = MetricDescriptor.create("name", "description", "unit");
   private static final DoubleLastValueAggregator aggregator =
-      new DoubleLastValueAggregator(
-          Resource.getDefault(),
-          InstrumentationLibraryInfo.empty(),
-          MetricDescriptor.create("name", "description", "unit"),
-          ExemplarReservoir::noSamples);
+      new DoubleLastValueAggregator(ExemplarReservoir::noSamples);
 
   @Test
   void createHandle() {
@@ -82,8 +82,12 @@ class DoubleLastValueAggregatorTest {
 
     MetricData metricData =
         aggregator.toMetricData(
+            RESOURCE,
+            INSTRUMENTATION_LIBRARY_INFO,
+            METRIC_DESCRIPTOR,
             Collections.singletonMap(
                 Attributes.empty(), aggregatorHandle.accumulateThenReset(Attributes.empty())),
+            AggregationTemporality.DELTA,
             0,
             10,
             100);
@@ -97,7 +101,7 @@ class DoubleLastValueAggregatorTest {
             point ->
                 assertThat(point)
                     .hasAttributes(Attributes.empty())
-                    .hasStartEpochNanos(0)
+                    .hasStartEpochNanos(10)
                     .hasEpochNanos(100)
                     .hasValue(10));
   }

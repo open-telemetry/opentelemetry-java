@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -30,15 +31,10 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-final class LongLastValueAggregator extends AbstractAggregator<LongAccumulation> {
+final class LongLastValueAggregator implements Aggregator<LongAccumulation> {
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  LongLastValueAggregator(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      MetricDescriptor descriptor,
-      Supplier<ExemplarReservoir> reservoirSupplier) {
-    super(resource, instrumentationLibraryInfo, descriptor, /* stateful= */ false);
+  LongLastValueAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 
@@ -48,28 +44,39 @@ final class LongLastValueAggregator extends AbstractAggregator<LongAccumulation>
   }
 
   @Override
-  public LongAccumulation accumulateLong(long value) {
-    return LongAccumulation.create(value);
-  }
-
-  @Override
   public LongAccumulation merge(LongAccumulation previous, LongAccumulation current) {
     return current;
   }
 
   @Override
+  public LongAccumulation diff(LongAccumulation previous, LongAccumulation current) {
+    return current;
+  }
+
+  @Override
   public MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MetricDescriptor descriptor,
       Map<Attributes, LongAccumulation> accumulationByLabels,
+      AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
+    // Last-Value ignores temporality generally, but we can set a start time on the gauge.
     return MetricData.createLongGauge(
-        getResource(),
-        getInstrumentationLibraryInfo(),
-        getMetricDescriptor().getName(),
-        getMetricDescriptor().getDescription(),
-        getMetricDescriptor().getUnit(),
-        LongGaugeData.create(MetricDataUtils.toLongPointList(accumulationByLabels, 0, epochNanos)));
+        resource,
+        instrumentationLibraryInfo,
+        descriptor.getName(),
+        descriptor.getDescription(),
+        descriptor.getUnit(),
+        LongGaugeData.create(
+            MetricDataUtils.toLongPointList(
+                accumulationByLabels,
+                (temporality == AggregationTemporality.CUMULATIVE)
+                    ? startEpochNanos
+                    : lastCollectionEpoch,
+                epochNanos)));
   }
 
   static final class Handle extends AggregatorHandle<LongAccumulation> {
