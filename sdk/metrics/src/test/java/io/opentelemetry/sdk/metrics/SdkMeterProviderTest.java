@@ -430,7 +430,7 @@ class SdkMeterProviderTest {
                     .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(0) // Gauges have no start time?
+                                .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasValue(10)),
@@ -442,7 +442,7 @@ class SdkMeterProviderTest {
                     .satisfiesExactlyInAnyOrder(
                         point ->
                             assertThat(point)
-                                .hasStartEpochNanos(0) // Gauges have no start time?
+                                .hasStartEpochNanos(testClock.now())
                                 .hasEpochNanos(testClock.now())
                                 .hasAttributes(Attributes.empty())
                                 .hasValue(10.1)));
