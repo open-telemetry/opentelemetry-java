@@ -6,21 +6,16 @@
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
-import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleAccumulation;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,8 +25,6 @@ class DeltaMetricStorageTest {
   private static final InstrumentDescriptor DESCRIPTOR =
       InstrumentDescriptor.create(
           "name", "description", "unit", InstrumentType.COUNTER, InstrumentValueType.DOUBLE);
-  private static final MetricDescriptor METRIC_DESCRIPTOR =
-      MetricDescriptor.create("name", "description", "unit");
 
   private CollectionHandle collector1;
   private CollectionHandle collector2;
@@ -50,10 +43,7 @@ class DeltaMetricStorageTest {
         new DeltaMetricStorage<>(
             AggregatorFactory.sum()
                 .create(
-                    Resource.empty(),
-                    InstrumentationLibraryInfo.create("test", "1.0"),
                     DESCRIPTOR,
-                    METRIC_DESCRIPTOR,
                     ExemplarReservoir::noSamples));
   }
 

@@ -41,10 +41,7 @@ class SumAggregation extends Aggregation {
       ExemplarFilter exemplarFilter) {
     return AggregatorFactory.sum()
         .create(
-            resource,
-            instrumentationLibraryInfo,
             instrumentDescriptor,
-            metricDescriptor,
             () ->
                 ExemplarReservoir.filtered(
                     exemplarFilter,

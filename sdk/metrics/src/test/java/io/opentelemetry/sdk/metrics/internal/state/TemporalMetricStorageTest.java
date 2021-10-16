@@ -40,19 +40,13 @@ class TemporalMetricStorageTest {
       // TODO: remove dependency on aggregator factory.
       AggregatorFactory.sum()
           .create(
-              Resource.empty(),
-              InstrumentationLibraryInfo.create("test", "1.0"),
               DESCRIPTOR,
-              METRIC_DESCRIPTOR,
               ExemplarReservoir::noSamples);
 
   private static final Aggregator<DoubleAccumulation> ASYNC_SUM =
       AggregatorFactory.sum()
           .create(
-              Resource.empty(),
-              InstrumentationLibraryInfo.create("test", "1.0"),
               ASYNC_DESCRIPTOR,
-              METRIC_DESCRIPTOR,
               ExemplarReservoir::noSamples);
 
   private CollectionHandle collector1;

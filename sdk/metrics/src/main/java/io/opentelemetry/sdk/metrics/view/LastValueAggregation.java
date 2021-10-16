@@ -31,10 +31,7 @@ class LastValueAggregation extends Aggregation {
     // For the initial version we do not sample exemplars on gauges.
     return AggregatorFactory.lastValue()
         .create(
-            resource,
-            instrumentationLibraryInfo,
             instrumentDescriptor,
-            metricDescriptor,
             ExemplarReservoir::noSamples);
   }
 

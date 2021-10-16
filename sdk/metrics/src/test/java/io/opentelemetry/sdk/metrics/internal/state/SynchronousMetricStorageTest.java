@@ -42,10 +42,7 @@ public class SynchronousMetricStorageTest {
   private final Aggregator<Long> aggregator =
       AggregatorFactory.lastValue()
           .create(
-              RESOURCE,
-              INSTRUMENTATION_LIBRARY_INFO,
               DESCRIPTOR,
-              METRIC_DESCRIPTOR,
               ExemplarReservoir::noSamples);
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
   private CollectionHandle collector;

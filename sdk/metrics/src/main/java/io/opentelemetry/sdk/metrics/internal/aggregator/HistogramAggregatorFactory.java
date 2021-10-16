@@ -5,11 +5,8 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -43,11 +40,9 @@ final class HistogramAggregatorFactory implements AggregatorFactory {
   @Override
   @SuppressWarnings("unchecked")
   public <T> Aggregator<T> create(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
       InstrumentDescriptor instrumentDescriptor,
-      MetricDescriptor metricDescriptor,
       Supplier<ExemplarReservoir> reservoirSupplier) {
+    // TODO: Handle the case where we have non-monotonic instrument.
     switch (instrumentDescriptor.getValueType()) {
       case LONG:
       case DOUBLE:
