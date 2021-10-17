@@ -8,9 +8,9 @@ package io.opentelemetry.sdk.metrics.export;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.EnumSet;
+import javax.annotation.Nullable;
 
 /**
  * {@code MetricExporter} is the interface that all "push based" metric libraries should use to

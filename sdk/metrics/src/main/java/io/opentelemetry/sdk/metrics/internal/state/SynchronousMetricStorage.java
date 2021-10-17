@@ -46,7 +46,9 @@ public interface SynchronousMetricStorage extends MetricStorage, WriteableMetric
       return empty();
     }
     return new DefaultSynchronousMetricStorage<>(
-        metricDescriptor, aggregator, view.getAttributesProcessor(), view.getAggregation()
-        .getConfiguredTemporality());
+        metricDescriptor,
+        aggregator,
+        view.getAttributesProcessor(),
+        view.getAggregation().getConfiguredTemporality());
   }
 }

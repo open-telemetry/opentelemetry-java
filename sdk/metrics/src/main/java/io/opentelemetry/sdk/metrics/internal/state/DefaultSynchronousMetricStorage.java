@@ -30,15 +30,13 @@ public final class DefaultSynchronousMetricStorage<T> implements SynchronousMetr
   private final DeltaMetricStorage<T> deltaMetricStorage;
   private final TemporalMetricStorage<T> temporalMetricStorage;
   private final AttributesProcessor attributesProcessor;
-  @Nullable
-  private final AggregationTemporality configuredTemporality;
+  @Nullable private final AggregationTemporality configuredTemporality;
 
   DefaultSynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
       AttributesProcessor attributesProcessor,
-      @Nullable
-      AggregationTemporality configuredTemporality) {
+      @Nullable AggregationTemporality configuredTemporality) {
     this.attributesProcessor = attributesProcessor;
     this.metricDescriptor = metricDescriptor;
     this.deltaMetricStorage = new DeltaMetricStorage<>(aggregator);

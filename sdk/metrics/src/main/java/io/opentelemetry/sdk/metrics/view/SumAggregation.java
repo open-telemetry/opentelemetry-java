@@ -19,8 +19,7 @@ import javax.annotation.Nullable;
 class SumAggregation extends Aggregation {
   static final SumAggregation DEFAULT = new SumAggregation(null);
 
-  @Nullable
-  private final AggregationTemporality temporality;
+  @Nullable private final AggregationTemporality temporality;
 
   SumAggregation(@Nullable AggregationTemporality temporality) {
     this.temporality = temporality;

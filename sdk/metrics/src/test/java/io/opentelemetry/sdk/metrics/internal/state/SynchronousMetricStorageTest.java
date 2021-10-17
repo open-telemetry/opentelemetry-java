@@ -78,7 +78,8 @@ public class SynchronousMetricStorageTest {
         AttributesProcessor.append(Attributes.builder().put("modifiedK", "modifiedV").build());
     AttributesProcessor spyLabelsProcessor = Mockito.spy(attributesProcessor);
     SynchronousMetricStorage accumulator =
-        new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor, null);
+        new DefaultSynchronousMetricStorage<>(
+            METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor, null);
     BoundStorageHandle handle = accumulator.bind(labels);
     handle.recordDouble(1, labels, Context.root());
     Mockito.when(reader.getSupportedTemporality())
@@ -106,7 +107,8 @@ public class SynchronousMetricStorageTest {
   @Test
   void sameAggregator_ForSameAttributes() {
     SynchronousMetricStorage accumulator =
-        new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, attributesProcessor, null);
+        new DefaultSynchronousMetricStorage<>(
+            METRIC_DESCRIPTOR, aggregator, attributesProcessor, null);
     BoundStorageHandle handle = accumulator.bind(Attributes.builder().put("K", "V").build());
     BoundStorageHandle duplicateHandle =
         accumulator.bind(Attributes.builder().put("K", "V").build());

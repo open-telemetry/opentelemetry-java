@@ -38,8 +38,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   private final AsyncAccumulator<T> asyncAccumulator;
   private final TemporalMetricStorage<T> storage;
   private final Runnable metricUpdater;
-  @Nullable
-  private final AggregationTemporality configuredTemporality;
+  @Nullable private final AggregationTemporality configuredTemporality;
 
   /** Constructs asynchronous metric storage which stores nothing. */
   public static MetricStorage empty() {
@@ -79,7 +78,10 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           }
         };
     return new AsynchronousMetricStorage<>(
-        metricDescriptor, aggregator, measurementAccumulator, () -> metricUpdater.accept(result),
+        metricDescriptor,
+        aggregator,
+        measurementAccumulator,
+        () -> metricUpdater.accept(result),
         view.getAggregation().getConfiguredTemporality());
   }
 
@@ -112,7 +114,10 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           }
         };
     return new AsynchronousMetricStorage<>(
-        metricDescriptor, aggregator, measurementAccumulator, () -> metricUpdater.accept(result),
+        metricDescriptor,
+        aggregator,
+        measurementAccumulator,
+        () -> metricUpdater.accept(result),
         view.getAggregation().getConfiguredTemporality());
   }
 

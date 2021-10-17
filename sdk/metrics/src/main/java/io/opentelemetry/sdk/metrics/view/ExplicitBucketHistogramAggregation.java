@@ -13,19 +13,17 @@ import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
-import javax.annotation.Nullable;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /** Explicit bucket histogram aggregation configuration. */
 class ExplicitBucketHistogramAggregation extends Aggregation {
 
   static final Aggregation DEFAULT =
       new ExplicitBucketHistogramAggregation(
-          null,
-          ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
+          null, ExplicitBucketHistogramUtils.DEFAULT_HISTOGRAM_BUCKET_BOUNDARIES);
 
-  @Nullable
-  private final AggregationTemporality temporality;
+  @Nullable private final AggregationTemporality temporality;
   private final List<Double> bucketBoundaries;
 
   ExplicitBucketHistogramAggregation(
