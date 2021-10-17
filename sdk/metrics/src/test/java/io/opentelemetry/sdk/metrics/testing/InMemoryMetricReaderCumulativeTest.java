@@ -20,10 +20,7 @@ class InMemoryMetricReaderCumulativeTest {
   @BeforeEach
   void setup() {
     reader = InMemoryMetricReader.create();
-    provider =
-        SdkMeterProvider.builder()
-            .registerMetricReader(reader)
-            .build();
+    provider = SdkMeterProvider.builder().registerMetricReader(reader).build();
   }
 
   private void generateFakeMetric(int index) {

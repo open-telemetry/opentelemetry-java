@@ -20,10 +20,7 @@ class InMemoryMetricReaderDeltaTest {
   @BeforeEach
   void setup() {
     reader = InMemoryMetricReader.createDelta();
-    provider =
-        SdkMeterProvider.builder()
-            .registerMetricReader(reader)
-            .build();
+    provider = SdkMeterProvider.builder().registerMetricReader(reader).build();
   }
 
   private void generateFakeMetric(int index) {
