@@ -85,7 +85,7 @@ class DeltaMetricStorage<T> {
     Map<Attributes, T> result = new HashMap<>();
     for (DeltaAccumulation<T> point : unreportedDeltas) {
       if (!point.wasReadBy(collector)) {
-        mergeInPlace(result, point.read(collector), aggregator);
+        MetricStorageUtils.mergeInPlace(result, point.read(collector), aggregator);
       }
     }
     // Now run a quick cleanup of deltas before returning.
@@ -120,39 +120,5 @@ class DeltaMetricStorage<T> {
     if (!result.isEmpty()) {
       unreportedDeltas.add(new DeltaAccumulation<>(result));
     }
-  }
-
-  /**
-   * Merges accumulations from {@code toMerge} into {@code result}.
-   *
-   * <p>Note: This mutates the result map.
-   */
-  static final <T> void mergeInPlace(
-      Map<Attributes, T> result, Map<Attributes, T> toMerge, Aggregator<T> aggregator) {
-    toMerge.forEach(
-        (k, v) -> {
-          if (result.containsKey(k)) {
-            result.put(k, aggregator.merge(result.get(k), v));
-          } else {
-            result.put(k, v);
-          }
-        });
-  }
-
-  /**
-   * Diffs accumulations from {@code toMerge} into {@code result}.
-   *
-   * <p>Note: This mutates the result map.
-   */
-  static final <T> void diffInPlace(
-      Map<Attributes, T> result, Map<Attributes, T> toDiff, Aggregator<T> aggregator) {
-    toDiff.forEach(
-        (k, v) -> {
-          if (result.containsKey(k)) {
-            result.put(k, aggregator.diff(result.get(k), v));
-          } else {
-            result.put(k, v);
-          }
-        });
   }
 }

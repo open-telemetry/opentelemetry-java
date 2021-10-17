@@ -62,13 +62,13 @@ class TemporalMetricStorage<T> {
       // Use aggregation tempoarlity + instrument to determine if we do a merge or a diff of
       // previous.
       if (temporality == AggregationTemporality.DELTA && !isSynchronous) {
-        DeltaMetricStorage.diffInPlace(last.getAccumlation(), currentAccumulation, aggregator);
+        MetricStorageUtils.diffInPlace(last.getAccumlation(), currentAccumulation, aggregator);
         result = last.getAccumlation();
       } else if (temporality == AggregationTemporality.CUMULATIVE && isSynchronous) {
         // We need to make sure the current delta recording gets merged into the previous cumulative
         // for the
         // next cumulative measurement.
-        DeltaMetricStorage.mergeInPlace(last.getAccumlation(), currentAccumulation, aggregator);
+        MetricStorageUtils.mergeInPlace(last.getAccumlation(), currentAccumulation, aggregator);
         result = last.getAccumlation();
       }
     }
