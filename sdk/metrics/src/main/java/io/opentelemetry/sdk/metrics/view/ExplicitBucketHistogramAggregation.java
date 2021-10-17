@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleHistogramAggregator;
 import io.opentelemetry.sdk.metrics.internal.aggregator.ExplicitBucketHistogramUtils;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -25,11 +25,14 @@ class ExplicitBucketHistogramAggregation extends Aggregation {
 
   @Nullable private final AggregationTemporality temporality;
   private final List<Double> bucketBoundaries;
+  private final double[] bucketBoundaryArray;
 
   ExplicitBucketHistogramAggregation(
       @Nullable AggregationTemporality temporality, List<Double> bucketBoundaries) {
     this.temporality = temporality;
     this.bucketBoundaries = bucketBoundaries;
+    // We need to fail here if our bucket boundaries are ill-configured.
+    this.bucketBoundaryArray = ExplicitBucketHistogramUtils.createBoundaryArray(bucketBoundaries);
   }
 
   /** Returns the configured bucket boundaries for the histogram aggregation. */
@@ -44,12 +47,12 @@ class ExplicitBucketHistogramAggregation extends Aggregation {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <T> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
-
-    return AggregatorFactory.histogram(bucketBoundaries)
-        .create(
-            instrumentDescriptor,
+    return (Aggregator<T>)
+        new DoubleHistogramAggregator(
+            bucketBoundaryArray,
             () ->
                 ExemplarReservoir.filtered(
                     exemplarFilter,

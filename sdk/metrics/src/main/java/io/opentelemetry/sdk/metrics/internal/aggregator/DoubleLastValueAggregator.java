@@ -33,10 +33,10 @@ import javax.annotation.concurrent.ThreadSafe;
  * at any time.
  */
 @ThreadSafe
-final class DoubleLastValueAggregator implements Aggregator<DoubleAccumulation> {
+public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumulation> {
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  DoubleLastValueAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
+  public DoubleLastValueAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 

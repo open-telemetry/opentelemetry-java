@@ -12,7 +12,9 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleSumAggregator;
+import io.opentelemetry.sdk.metrics.internal.aggregator.LongSumAggregator;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /** A sum aggregation configuration. */
@@ -31,18 +33,24 @@ class SumAggregation extends Aggregation {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <T> Aggregator<T> createAggregator(
       InstrumentDescriptor instrumentDescriptor, ExemplarFilter exemplarFilter) {
-    return AggregatorFactory.sum()
-        .create(
-            instrumentDescriptor,
-            () ->
-                ExemplarReservoir.filtered(
-                    exemplarFilter,
-                    ExemplarReservoir.fixedSizeReservoir(
-                        Clock.getDefault(),
-                        Runtime.getRuntime().availableProcessors(),
-                        RandomSupplier.platformDefault())));
+    Supplier<ExemplarReservoir> reservoirFactory =
+        () ->
+            ExemplarReservoir.filtered(
+                exemplarFilter,
+                ExemplarReservoir.fixedSizeReservoir(
+                    Clock.getDefault(),
+                    Runtime.getRuntime().availableProcessors(),
+                    RandomSupplier.platformDefault()));
+    switch (instrumentDescriptor.getValueType()) {
+      case LONG:
+        return (Aggregator<T>) new LongSumAggregator(instrumentDescriptor, reservoirFactory);
+      case DOUBLE:
+        return (Aggregator<T>) new DoubleSumAggregator(instrumentDescriptor, reservoirFactory);
+    }
+    throw new IllegalArgumentException("Invalid instrument value type");
   }
 
   @Override

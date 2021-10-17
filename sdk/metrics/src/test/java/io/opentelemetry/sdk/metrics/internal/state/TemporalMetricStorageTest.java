@@ -13,12 +13,12 @@ import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleAccumulation;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,11 +37,10 @@ class TemporalMetricStorageTest {
   private static final MetricDescriptor METRIC_DESCRIPTOR =
       MetricDescriptor.create("name", "description", "unit");
   private static final Aggregator<DoubleAccumulation> SUM =
-      // TODO: remove dependency on aggregator factory.
-      AggregatorFactory.sum().create(DESCRIPTOR, ExemplarReservoir::noSamples);
+      Aggregation.sum().createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
 
   private static final Aggregator<DoubleAccumulation> ASYNC_SUM =
-      AggregatorFactory.sum().create(ASYNC_DESCRIPTOR, ExemplarReservoir::noSamples);
+      Aggregation.sum().createAggregator(ASYNC_DESCRIPTOR, ExemplarFilter.neverSample());
 
   private CollectionHandle collector1;
   private CollectionHandle collector2;

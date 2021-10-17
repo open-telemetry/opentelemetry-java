@@ -5,9 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
-import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -26,11 +23,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class DoubleMinMaxSumCountBenchmark {
   private static final Aggregator<MinMaxSumCountAccumulation> aggregator =
-      AggregatorFactory.minMaxSumCount()
-          .create(
-              InstrumentDescriptor.create(
-                  "name", "description", "1", InstrumentType.HISTOGRAM, InstrumentValueType.DOUBLE),
-              ExemplarReservoir::noSamples);
+      new DoubleMinMaxSumCountAggregator(ExemplarReservoir::noSamples);
   private AggregatorHandle<MinMaxSumCountAccumulation> aggregatorHandle;
 
   @Setup(Level.Trial)

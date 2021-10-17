@@ -31,10 +31,10 @@ import javax.annotation.Nullable;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-final class LongLastValueAggregator implements Aggregator<LongAccumulation> {
+public final class LongLastValueAggregator implements Aggregator<LongAccumulation> {
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  LongLastValueAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
+  public LongLastValueAggregator(Supplier<ExemplarReservoir> reservoirSupplier) {
     this.reservoirSupplier = reservoirSupplier;
   }
 

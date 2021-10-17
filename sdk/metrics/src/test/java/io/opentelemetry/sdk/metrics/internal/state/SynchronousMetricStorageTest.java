@@ -16,14 +16,14 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.time.TestClock;
 import java.util.EnumSet;
@@ -47,7 +47,7 @@ public class SynchronousMetricStorageTest {
       MetricDescriptor.create("name", "description", "unit");
   private final TestClock testClock = TestClock.create();
   private final Aggregator<Long> aggregator =
-      AggregatorFactory.lastValue().create(DESCRIPTOR, ExemplarReservoir::noSamples);
+      Aggregation.lastValue().createAggregator(DESCRIPTOR, ExemplarFilter.neverSample());
   private final AttributesProcessor attributesProcessor = AttributesProcessor.noop();
   private CollectionHandle collector;
   private Set<CollectionHandle> allCollectors;

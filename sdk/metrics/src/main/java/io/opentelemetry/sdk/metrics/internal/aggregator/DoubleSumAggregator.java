@@ -21,10 +21,22 @@ import java.util.Map;
 import java.util.concurrent.atomic.DoubleAdder;
 import java.util.function.Supplier;
 
-final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation> {
+/**
+ * Sum aggregator that keeps values as {@code double}s.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation> {
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  DoubleSumAggregator(
+  /**
+   * Constructs a histogram aggregator.
+   *
+   * @param instrumentDescriptor The instrument being recorded, used to compute monotonicity.
+   * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
+   */
+  public DoubleSumAggregator(
       InstrumentDescriptor instrumentDescriptor, Supplier<ExemplarReservoir> reservoirSupplier) {
     super(instrumentDescriptor);
 

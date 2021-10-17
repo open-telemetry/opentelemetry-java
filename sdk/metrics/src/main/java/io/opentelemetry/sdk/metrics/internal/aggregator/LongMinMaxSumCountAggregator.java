@@ -13,6 +13,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 import javax.annotation.concurrent.ThreadSafe;
 
+/**
+ * Aggregator that produces summary metrics.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
 @ThreadSafe
 final class LongMinMaxSumCountAggregator extends AbstractMinMaxSumCountAggregator {
   private final Supplier<ExemplarReservoir> reservoirSupplier;

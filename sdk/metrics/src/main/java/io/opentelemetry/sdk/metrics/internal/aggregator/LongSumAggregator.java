@@ -20,11 +20,17 @@ import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 
-final class LongSumAggregator extends AbstractSumAggregator<LongAccumulation> {
+/**
+ * Sum aggregator that keeps values as {@code long}s.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class LongSumAggregator extends AbstractSumAggregator<LongAccumulation> {
 
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  LongSumAggregator(
+  public LongSumAggregator(
       InstrumentDescriptor instrumentDescriptor, Supplier<ExemplarReservoir> reservoirSupplier) {
     super(instrumentDescriptor);
     this.reservoirSupplier = reservoirSupplier;

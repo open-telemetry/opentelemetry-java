@@ -633,9 +633,7 @@ class SdkMeterProviderTest {
   @SuppressWarnings("unchecked")
   void collectAllAsyncInstruments_CumulativeHistogram() {
     registerViewForAllTypes(
-        sdkMeterProviderBuilder,
-        Aggregation.explicitBucketHistogram(
-            AggregationTemporality.CUMULATIVE, Collections.emptyList()));
+        sdkMeterProviderBuilder, Aggregation.explicitBucketHistogram(Collections.emptyList()));
     InMemoryMetricReader sdkMeterReader = InMemoryMetricReader.create();
     SdkMeterProvider sdkMeterProvider =
         sdkMeterProviderBuilder.registerMetricReader(sdkMeterReader).build();

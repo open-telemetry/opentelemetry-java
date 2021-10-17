@@ -12,10 +12,10 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
-import io.opentelemetry.sdk.metrics.internal.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.DoubleAccumulation;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +41,7 @@ class DeltaMetricStorageTest {
     allCollectors.add(collector2);
     storage =
         new DeltaMetricStorage<>(
-            AggregatorFactory.sum().create(DESCRIPTOR, ExemplarReservoir::noSamples));
+            Aggregation.sum().createAggregator(DESCRIPTOR, ExemplarFilter.neverSample()));
   }
 
   @Test

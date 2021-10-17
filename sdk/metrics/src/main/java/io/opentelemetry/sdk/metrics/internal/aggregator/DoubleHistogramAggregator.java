@@ -23,7 +23,13 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
-final class DoubleHistogramAggregator implements Aggregator<HistogramAccumulation> {
+/**
+ * Aggregator that generated histograms.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
+ */
+public final class DoubleHistogramAggregator implements Aggregator<HistogramAccumulation> {
   private final double[] boundaries;
 
   // a cache for converting to MetricData
@@ -31,7 +37,14 @@ final class DoubleHistogramAggregator implements Aggregator<HistogramAccumulatio
 
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
-  DoubleHistogramAggregator(double[] boundaries, Supplier<ExemplarReservoir> reservoirSupplier) {
+  /**
+   * Constructs a histogram aggregator.
+   *
+   * @param boundaries Bucket boundaries, in-order.
+   * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.
+   */
+  public DoubleHistogramAggregator(
+      double[] boundaries, Supplier<ExemplarReservoir> reservoirSupplier) {
     this.boundaries = boundaries;
 
     List<Double> boundaryList = new ArrayList<>(this.boundaries.length);
