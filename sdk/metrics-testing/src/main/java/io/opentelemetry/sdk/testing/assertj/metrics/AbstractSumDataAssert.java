@@ -34,8 +34,7 @@ public class AbstractSumDataAssert<
       failWithActualExpectedAndMessage(
           actual,
           "montonic: fail",
-          "Exepcted Sum to be non-monotonic",
-          false,
+          "Exepcted Sum to be non-monotonic, found: %s",
           actual.isMonotonic());
     }
     return myself;
@@ -49,7 +48,6 @@ public class AbstractSumDataAssert<
           actual,
           "aggregationTemporality: CUMULATIVE",
           "Exepcted Sum to have cumulative aggregation but found <%s>",
-          AggregationTemporality.CUMULATIVE,
           actual.getAggregationTemporality());
     }
     return myself;
@@ -62,8 +60,7 @@ public class AbstractSumDataAssert<
       failWithActualExpectedAndMessage(
           actual,
           "aggregationTemporality: DELTA",
-          "Exepcted Sum to have cumulative aggregation but found <%s>",
-          AggregationTemporality.DELTA,
+          "Exepected Sum to have delta aggregation but found <%s>",
           actual.getAggregationTemporality());
     }
     return myself;
