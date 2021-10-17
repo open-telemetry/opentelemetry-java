@@ -14,13 +14,15 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * This interface represents information about the current collection/collector passed down between
- * the SDK meter provider and its internal storage mechanisms.
+ * Information about a {@link MetricReader} used when collecting metrics.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time.
  */
 @AutoValue
 @Immutable
 public abstract class CollectionInfo {
-  /** The current collection */
+  /** The current collection. */
   public abstract CollectionHandle getCollector();
   /** The set of all possible collectors. */
   public abstract Set<CollectionHandle> getAllCollectors();
@@ -36,7 +38,7 @@ public abstract class CollectionInfo {
     return getReader().getPreferedTemporality();
   }
 
-  /** Construct a new collection info object storign information for collection against a reader. */
+  /** Construct a new collection info object storing information for collection against a reader. */
   public static CollectionInfo create(
       CollectionHandle handle, Set<CollectionHandle> allCollectors, MetricReader reader) {
     return new AutoValue_CollectionInfo(handle, allCollectors, reader);
