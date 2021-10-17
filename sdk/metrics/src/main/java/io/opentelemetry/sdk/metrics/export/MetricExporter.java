@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.metrics.export;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.EnumSet;
 
@@ -20,10 +21,15 @@ import java.util.EnumSet;
 public interface MetricExporter {
 
   /** Returns the set of all supported temporalities for this exporter. */
-  EnumSet<AggregationTemporality> getSupportedTemporality();
+  default EnumSet<AggregationTemporality> getSupportedTemporality() {
+    return EnumSet.allOf(AggregationTemporality.class);
+  }
 
   /** Returns the preferred temporality for metrics. */
-  AggregationTemporality getPreferedTemporality();
+  @Nullable
+  default AggregationTemporality getPreferedTemporality() {
+    return null;
+  }
 
   /**
    * Exports the collection of given {@link MetricData}. Note that export operations can be

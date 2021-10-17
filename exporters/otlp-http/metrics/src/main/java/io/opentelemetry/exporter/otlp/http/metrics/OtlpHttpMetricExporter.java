@@ -10,6 +10,7 @@ import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.io.IOException;
@@ -51,6 +52,13 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
     this.endpoint = endpoint;
     this.headers = headers;
     this.compressionEnabled = compressionEnabled;
+  }
+
+  @Nullable
+  @Override
+  public final AggregationTemporality getPreferedTemporality() {
+    // TODO: Lookup based on specification, or constructor
+    return null;
   }
 
   /**
