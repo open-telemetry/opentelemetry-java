@@ -10,7 +10,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -55,11 +54,10 @@ final class DoubleExponentialHistogramAggregator
   /**
    * This function takes two accumulations and uses th
    *
-   * We take the previousAccumulation buckets by reference, and directly merge accumulation's
-   * counts into these buckets. A new ExponentialHistogramAccumulation is created, but
-   * referencing the same buckets as previousAccumulation's.
-   * This function assumes previousAccumulation will not be used after this function call,
-   * and would be replaced by the returned accumulation.
+   * <p>We take the previousAccumulation buckets by reference, and directly merge accumulation's
+   * counts into these buckets. A new ExponentialHistogramAccumulation is created, but referencing
+   * the same buckets as previousAccumulation's. This function assumes previousAccumulation will not
+   * be used after this function call, and would be replaced by the returned accumulation.
    * previousAccumulation will contain inconsistent data after calling this function.
    *
    * @param previousAccumulation the previously captured accumulation
@@ -87,13 +85,7 @@ final class DoubleExponentialHistogramAggregator
     negBuckets.downscale(negBuckets.getScale() - commonScale);
 
     return ExponentialHistogramAccumulation.create(
-        posBuckets.getScale(),
-        sum,
-        posBuckets,
-        negBuckets,
-        zeroCount,
-        accumulation.getExemplars()
-    );
+        posBuckets.getScale(), sum, posBuckets, negBuckets, zeroCount, accumulation.getExemplars());
   }
 
   @Override
@@ -132,7 +124,8 @@ final class DoubleExponentialHistogramAggregator
     }
 
     @Override
-    protected synchronized ExponentialHistogramAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
+    protected synchronized ExponentialHistogramAccumulation doAccumulateThenReset(
+        List<ExemplarData> exemplars) {
       ExponentialHistogramAccumulation acc =
           ExponentialHistogramAccumulation.create(
               scale, sum, positiveBuckets, negativeBuckets, zeroCount, exemplars);

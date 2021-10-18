@@ -19,7 +19,8 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   public static final int MAX_BUCKETS = 320;
   public static final int MAX_SCALE = 20;
 
-  private static final Logger logger = Logger.getLogger(DoubleExponentialHistogramBuckets.class.getName());
+  private static final Logger logger =
+      Logger.getLogger(DoubleExponentialHistogramBuckets.class.getName());
 
   private ExponentialCounter counts;
   private BucketMapper bucketMapper;
@@ -65,11 +66,12 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   void downscale(int by) {
     if (by == 0) {
       return;
-    }
-    else if (by < 0) {
+    } else if (by < 0) {
       logger.warning(
-          String.format("downScale() expects non-negative integer but was given %d. "
-                  + "Cannot upscale exponential histogram.", by));
+          String.format(
+              "downScale() expects non-negative integer but was given %d. "
+                  + "Cannot upscale exponential histogram.",
+              by));
       return;
     }
 
@@ -80,7 +82,8 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
         long count = counts.get(i);
         if (count > 0) {
           if (!newCounts.increment(i >> by, count)) {
-            throw new RuntimeException("Failed to create new downscaled buckets.");
+            // Theoretically won't happen unless there's an overflow on index
+            throw new IllegalStateException("Failed to create new downscaled buckets.");
           }
         }
       }
@@ -91,9 +94,7 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     this.bucketMapper = new LogarithmMapper(scale);
   }
 
-  /**
-   * This algorithm for merging is adapted from NrSketch.
-   */
+  /** This algorithm for merging is adapted from NrSketch. */
   void mergeWith(DoubleExponentialHistogramBuckets other) {
     if (other.counts.isEmpty()) {
       return;
@@ -112,16 +113,14 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
       newWindowStart = other.getOffset() >> deltaOther;
       newWindowEnd = other.counts.getIndexEnd() >> deltaOther;
     } else {
-      newWindowStart = Math.min(
-          this.getOffset() >> deltaThis,
-          other.getOffset() >> deltaOther);
-      newWindowEnd = Math.max(
-          (this.counts.getIndexEnd() >> deltaThis),
-          (other.counts.getIndexEnd() >> deltaOther));
+      newWindowStart = Math.min(this.getOffset() >> deltaThis, other.getOffset() >> deltaOther);
+      newWindowEnd =
+          Math.max(
+              (this.counts.getIndexEnd() >> deltaThis), (other.counts.getIndexEnd() >> deltaOther));
     }
 
     // downscale to fit new window
-    deltaThis += getScaleReduction(newWindowStart, newWindowEnd); // todo verify this is correct
+    deltaThis += getScaleReduction(newWindowStart, newWindowEnd);
     this.downscale(deltaThis);
 
     // since we changed scale of this, we need to know the new difference between the two scales
@@ -130,7 +129,7 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     for (long i = other.getOffset(); i <= other.counts.getIndexEnd(); i++) {
       if (!this.counts.increment(i >> deltaOther, other.counts.get(i))) {
         // This should never occur if scales and windows are calculated without bugs
-        throw new RuntimeException("Failed to merge histogram buckets.");
+        throw new IllegalStateException("Failed to merge exponential histogram buckets.");
       }
     }
   }
@@ -140,7 +139,9 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   }
 
   /**
-   * Returns the minimum scale reduction required to record the given value in these buckets.
+   * Returns the minimum scale reduction required to record the given value in these buckets,
+   * by calculating the new required window to allow the new value to be recorded. To be used
+   * with downScale().
    *
    * @param value The proposed value to be recorded.
    * @return The required scale reduction in order to fit the value in these buckets.
@@ -193,11 +194,12 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   @Override
   public String toString() {
     return String.format(
-            "DoubleExponentialHistogramBuckets{\n" +
-            "\tscale: %d\n" +
-            "\toffset: %d\n" +
-            "\thash: %04x\n" +
-            "\tcounts: %s}", scale, getOffset(), hashCode(), getBucketCounts());
+        "DoubleExponentialHistogramBuckets{"
+            + "scale: %d, "
+            + "offset: %d, "
+            + "hash: %04x, "
+            + "counts: %s }",
+        scale, getOffset(), hashCode(), getBucketCounts());
   }
 
   private static class LogarithmMapper implements BucketMapper {

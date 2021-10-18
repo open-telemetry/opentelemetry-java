@@ -9,8 +9,8 @@ import com.google.auto.value.AutoValue;
 import java.util.Collection;
 
 /**
- * A simple, autovalue implementation of {@link ExponentialHistogramData}. For more detailed
- * javadoc on the type, see {@link ExponentialHistogramData}.
+ * A simple, autovalue implementation of {@link ExponentialHistogramData}. For more detailed javadoc
+ * on the type, see {@link ExponentialHistogramData}.
  *
  * <p>See:
  * https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/datamodel.md#exponentialhistogram

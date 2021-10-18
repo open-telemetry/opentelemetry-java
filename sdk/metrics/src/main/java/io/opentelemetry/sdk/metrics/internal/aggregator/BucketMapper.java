@@ -11,8 +11,8 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
  */
 interface BucketMapper {
   /**
-   * Maps a recorded double value to a bucket index. If the index falls out of the range that can
-   * be represented by an int, then it is expected that the histogram would be downscaled.
+   * Maps a recorded double value to a bucket index. If the index falls out of the range that can be
+   * represented by an int, then it is expected that the histogram would be downscaled.
    *
    * @param value Measured value
    * @return the index of the bucket which the value maps to.

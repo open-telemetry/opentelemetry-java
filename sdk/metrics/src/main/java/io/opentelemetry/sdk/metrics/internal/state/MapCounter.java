@@ -1,9 +1,18 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.metrics.internal.state;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Simple-as-possible backing structure for exponential histogram buckets. Can be used as a baseline
+ * against other data structures.
+ */
 public class MapCounter implements ExponentialCounter {
 
   private static final long NULL_INDEX = Long.MIN_VALUE;
@@ -13,6 +22,11 @@ public class MapCounter implements ExponentialCounter {
   private long indexStart;
   private long indexEnd;
 
+  /**
+   * Instantiate a MapCounter with a maximum size of maxSize.
+   *
+   * @param maxSize maximum window size; The max difference allowed between indexStart and indexEnd.
+   */
   public MapCounter(int maxSize) {
     this.backing = new HashMap<>(maxSize);
     this.indexEnd = NULL_INDEX;
@@ -33,7 +47,7 @@ public class MapCounter implements ExponentialCounter {
   @Override
   public boolean increment(long index, long delta) {
     // todo verify do we actually need to restrict this?
-    if(index > Integer.MAX_VALUE || index < Integer.MIN_VALUE) {
+    if (index > Integer.MAX_VALUE || index < Integer.MIN_VALUE) {
       return false;
     }
     int i = (int) index; // safely castable due to above check
