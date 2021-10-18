@@ -28,7 +28,7 @@ public class MapCounter implements ExponentialCounter {
    * @param maxSize maximum window size; The max difference allowed between indexStart and indexEnd.
    */
   public MapCounter(int maxSize) {
-    this.backing = new HashMap<>(maxSize);
+    this.backing = new HashMap<>((int) Math.ceil(maxSize/0.75) + 1);
     this.indexEnd = NULL_INDEX;
     this.indexStart = NULL_INDEX;
     this.maxSize = maxSize;
