@@ -63,9 +63,12 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   }
 
   void downscale(int by) {
-    if (by <= 0) {
+    if (by == 0) {
+      return;
+    }
+    else if (by < 0) {
       logger.warning(
-          String.format("downScale() expects positive integer but was given %d. "
+          String.format("downScale() expects non-negative integer but was given %d. "
                   + "Cannot upscale exponential histogram.", by));
       return;
     }
@@ -74,8 +77,11 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
       ExponentialCounter newCounts = new MapCounter(MAX_BUCKETS);
 
       for (long i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
-        if (!newCounts.increment(i >> by, counts.get(i))) {
-          throw new RuntimeException("Failed to create new downscaled buckets.");
+        long count = counts.get(i);
+        if (count > 0) {
+          if (!newCounts.increment(i >> by, count)) {
+            throw new RuntimeException("Failed to create new downscaled buckets.");
+          }
         }
       }
       this.counts = newCounts;
@@ -86,15 +92,67 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   }
 
   /**
+   * This algorithm for merging is adapted from NrSketch.
+   */
+  void mergeWith(DoubleExponentialHistogramBuckets other) {
+    if (other.counts.isEmpty()) {
+      return;
+    }
+
+    // Find the common scale, and the extended window required to merge the two bucket sets
+    int commonScale = Math.min(this.scale, other.scale);
+
+    // Deltas are changes in scale
+    int deltaThis = this.scale - commonScale;
+    int deltaOther = other.scale - commonScale;
+
+    long newWindowStart;
+    long newWindowEnd;
+    if (this.counts.isEmpty()) {
+      newWindowStart = other.getOffset() >> deltaOther;
+      newWindowEnd = other.counts.getIndexEnd() >> deltaOther;
+    } else {
+      newWindowStart = Math.min(
+          this.getOffset() >> deltaThis,
+          other.getOffset() >> deltaOther);
+      newWindowEnd = Math.max(
+          (this.counts.getIndexEnd() >> deltaThis),
+          (other.counts.getIndexEnd() >> deltaOther));
+    }
+
+    // downscale to fit new window
+    deltaThis += getScaleReduction(newWindowStart, newWindowEnd); // todo verify this is correct
+    this.downscale(deltaThis);
+
+    // since we changed scale of this, we need to know the new difference between the two scales
+    deltaOther = other.scale - this.scale;
+
+    for (long i = other.getOffset(); i <= other.counts.getIndexEnd(); i++) {
+      if (!this.counts.increment(i >> deltaOther, other.counts.get(i))) {
+        // This should never occur if scales and windows are calculated without bugs
+        throw new RuntimeException("Failed to merge histogram buckets.");
+      }
+    }
+  }
+
+  int getScale() {
+    return scale;
+  }
+
+  /**
    * Returns the minimum scale reduction required to record the given value in these buckets.
    *
    * @param value The proposed value to be recorded.
    * @return The required scale reduction in order to fit the value in these buckets.
    */
   int getScaleReduction(double value) {
-    long index = bucketMapper.valueToIndex(value);
+    long index = bucketMapper.valueToIndex(Math.abs(value));
     long newStart = Math.min(index, counts.getIndexStart());
     long newEnd = Math.max(index, counts.getIndexEnd());
+    return getScaleReduction(newStart, newEnd);
+  }
+
+  int getScaleReduction(long newStart, long newEnd) {
     int scaleReduction = 0;
 
     while (newEnd - newStart + 1 > MAX_BUCKETS) {
@@ -130,6 +188,16 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     // Don't need to hash getTotalCount() because equivalent bucket
     // counts imply equivalent overall count.
     return hash;
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+            "DoubleExponentialHistogramBuckets{\n" +
+            "\tscale: %d\n" +
+            "\toffset: %d\n" +
+            "\thash: %04x\n" +
+            "\tcounts: %s}", scale, getOffset(), hashCode(), getBucketCounts());
   }
 
   private static class LogarithmMapper implements BucketMapper {

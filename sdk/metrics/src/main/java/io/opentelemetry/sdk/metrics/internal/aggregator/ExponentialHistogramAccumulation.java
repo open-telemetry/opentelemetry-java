@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 

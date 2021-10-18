@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExponentialHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -51,14 +52,48 @@ final class DoubleExponentialHistogramAggregator
     return handle.accumulateThenReset(Attributes.empty());
   }
 
+  /**
+   * This function takes two accumulations and uses th
+   *
+   * We take the previousAccumulation buckets by reference, and directly merge accumulation's
+   * counts into these buckets. A new ExponentialHistogramAccumulation is created, but
+   * referencing the same buckets as previousAccumulation's.
+   * This function assumes previousAccumulation will not be used after this function call,
+   * and would be replaced by the returned accumulation.
+   * previousAccumulation will contain inconsistent data after calling this function.
+   *
+   * @param previousAccumulation the previously captured accumulation
+   * @param accumulation the newly captured accumulation
+   * @return the merged accumulation.
+   */
   @Override
   public ExponentialHistogramAccumulation merge(
       ExponentialHistogramAccumulation previousAccumulation,
       ExponentialHistogramAccumulation accumulation) {
 
-    // todo
+    DoubleExponentialHistogramBuckets posBuckets = previousAccumulation.getPositiveBuckets();
+    DoubleExponentialHistogramBuckets negBuckets = previousAccumulation.getNegativeBuckets();
 
-    return null;
+    double sum = previousAccumulation.getSum() + accumulation.getSum();
+    long zeroCount = previousAccumulation.getZeroCount() + accumulation.getZeroCount();
+
+    // merge accumulation into previousAccumulation
+    posBuckets.mergeWith(accumulation.getPositiveBuckets());
+    negBuckets.mergeWith(accumulation.getNegativeBuckets());
+
+    // resolve possible scale difference after merge
+    int commonScale = Math.min(posBuckets.getScale(), negBuckets.getScale());
+    posBuckets.downscale(posBuckets.getScale() - commonScale);
+    negBuckets.downscale(negBuckets.getScale() - commonScale);
+
+    return ExponentialHistogramAccumulation.create(
+        posBuckets.getScale(),
+        sum,
+        posBuckets,
+        negBuckets,
+        zeroCount,
+        accumulation.getExemplars()
+    );
   }
 
   @Override

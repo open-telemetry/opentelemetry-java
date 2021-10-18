@@ -32,6 +32,7 @@ public class MapCounter implements ExponentialCounter {
 
   @Override
   public boolean increment(long index, long delta) {
+    // todo verify do we actually need to restrict this?
     if(index > Integer.MAX_VALUE || index < Integer.MIN_VALUE) {
       return false;
     }

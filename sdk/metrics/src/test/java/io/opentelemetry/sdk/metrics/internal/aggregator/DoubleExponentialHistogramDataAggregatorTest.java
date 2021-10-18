@@ -101,6 +101,11 @@ public class DoubleExponentialHistogramDataAggregatorTest {
   }
 
   @Test
+  void testRecordingAtLimits() {
+    // todo test recording of largest and smallest possible values
+  }
+
+  @Test
   void testExemplarsInAccumulation() {
     DoubleExponentialHistogramAggregator agg =
         new DoubleExponentialHistogramAggregator(
@@ -145,24 +150,24 @@ public class DoubleExponentialHistogramDataAggregatorTest {
     assertThat(acc).isEqualTo(expected);
   }
 
-  //  @Test
-  //  void testMergeAccumulation() {
-  //    Attributes attributes = Attributes.builder().put("test", "value").build();
-  //    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
-  //    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
-  //    List<ExemplarData> previousExemplars =
-  //        Collections.singletonList(
-  //            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
-  //    ExponentialHistogramAccumulation previousAccumulation =
-  //        getTestAccumulation( previousExemplars, 0, 4.1);
-  //    ExponentialHistogramAccumulation nextAccumulation =
-  //        getTestAccumulation( exemplars, -8.2, 2.3);
-  //
-  //    // Merged accumulations should equal accumulation with equivalent recordings, and latest
-  //    // exemplars.
-  //    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
-  //        .isEqualTo(getTestAccumulation(exemplars, 0, 4.1, -8.2, 2.3));
-  //  }
+    @Test
+    void testMergeAccumulation() {
+      Attributes attributes = Attributes.builder().put("test", "value").build();
+      ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+      List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+      List<ExemplarData> previousExemplars =
+          Collections.singletonList(
+              DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+      ExponentialHistogramAccumulation previousAccumulation =
+          getTestAccumulation( previousExemplars, 0,  4.1, 100, 100, 10000, 1000000);
+      ExponentialHistogramAccumulation nextAccumulation =
+          getTestAccumulation(exemplars, -1000, -2000000, -8.2, 2.3);
+
+      // Merged accumulations should equal accumulation with equivalent recordings and latest
+      // exemplars.
+      assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
+          .isEqualTo(getTestAccumulation(exemplars, 0,  4.1, 100, 100, 10000, 1000000, -1000, -2000000, -8.2, 2.3));
+    }
 
   @Test
   void testInsert1M() {
