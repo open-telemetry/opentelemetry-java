@@ -71,7 +71,7 @@ public final class LogEmitterProvider implements Closeable {
    */
   public LogEmitterBuilder logEmitterBuilder(@Nullable String instrumentationName) {
     if (instrumentationName == null || instrumentationName.isEmpty()) {
-      LOGGER.fine("Meter requested without instrumentation name.");
+      LOGGER.fine("LogEmitter requested without instrumentation name.");
       instrumentationName = DEFAULT_EMITTER_NAME;
     }
     return new LogEmitterBuilder(logEmitterComponentRegistry, instrumentationName);
