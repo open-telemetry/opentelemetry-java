@@ -14,15 +14,14 @@ import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
-import io.opentelemetry.exporter.prometheus.PrometheusCollector;
+import io.opentelemetry.exporter.prometheus.PrometheusHttpServer;
+import io.opentelemetry.exporter.prometheus.PrometheusHttpServerBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
-import io.prometheus.client.exporter.HTTPServer;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
@@ -149,33 +148,29 @@ final class MetricExporterConfiguration {
     // Register the reader (which will start when SDK is built).
     // This will shutdown when the SDK is shutdown.
     sdkMeterProviderBuilder.registerMetricReader(
-        PeriodicMetricReader.create(exporter, exportInterval));
+        PeriodicMetricReader.builder(exporter)
+            .setInterval(exportInterval)
+            .newMetricReaderFactory());
   }
 
   private static void configurePrometheusMetrics(
       ConfigProperties config, SdkMeterProviderBuilder sdkMeterProviderBuilder) {
     ClasspathUtil.checkClassExists(
-        "io.opentelemetry.exporter.prometheus.PrometheusCollector",
+        "io.opentelemetry.exporter.prometheus.PrometheusHttpServer",
         "Prometheus Metrics Server",
         "opentelemetry-exporter-prometheus");
-    sdkMeterProviderBuilder.registerMetricReader(PrometheusCollector.create());
-    // TODO: Move this portion into the PrometheusCollector so shutdown on SdkMeterProvider
-    // will collapse prometheus too?
+    PrometheusHttpServerBuilder prom = PrometheusHttpServer.builder();
+
     Integer port = config.getInt("otel.exporter.prometheus.port");
-    if (port == null) {
-      port = 9464;
+    if (port != null) {
+      prom.setPort(port);
     }
     String host = config.getString("otel.exporter.prometheus.host");
-    if (host == null) {
-      host = "0.0.0.0";
+    if (host != null) {
+      prom.setHost(host);
     }
-    final HTTPServer server;
-    try {
-      server = new HTTPServer(host, port, true);
-    } catch (IOException e) {
-      throw new IllegalStateException("Failed to create Prometheus server", e);
-    }
-    Runtime.getRuntime().addShutdownHook(new Thread(server::close));
+
+    sdkMeterProviderBuilder.registerMetricReader(prom.newMetricReaderFactory());
   }
 
   private MetricExporterConfiguration() {}

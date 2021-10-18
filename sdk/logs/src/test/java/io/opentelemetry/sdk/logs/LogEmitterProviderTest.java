@@ -5,20 +5,17 @@
 
 package io.opentelemetry.sdk.logs;
 
+import static io.opentelemetry.sdk.logs.util.TestUtil.createLogRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.logs.data.ReadableLogData;
-import io.opentelemetry.sdk.logs.data.ReadableLogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logs.util.TestLogExporter;
@@ -38,20 +35,6 @@ class LogEmitterProviderTest {
       Resource.create(Attributes.builder().put("key", "value").build());
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(INSTRUMENTATION_LIBRARY, INSTRUMENTATION_LIBRARY_VERSION);
-
-  private static LogRecord createLogRecord(Severity severity, String message) {
-    return ReadableLogRecord.builder()
-        .setEpochMillis(System.currentTimeMillis())
-        .setTraceId(TraceId.getInvalid())
-        .setSpanId(SpanId.getInvalid())
-        .setFlags(TraceFlags.getDefault().asByte())
-        .setSeverity(severity)
-        .setSeverityText("really severe")
-        .setName("log1")
-        .setBody(message)
-        .setAttributes(Attributes.builder().put("animal", "cat").build())
-        .build();
-  }
 
   private static LogData toLogData(LogRecord logRecord) {
     return ReadableLogData.create(RESOURCE, INSTRUMENTATION_LIBRARY_INFO, logRecord);
