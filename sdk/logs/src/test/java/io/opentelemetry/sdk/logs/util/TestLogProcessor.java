@@ -17,7 +17,7 @@ public class TestLogProcessor implements LogProcessor {
   private int flushes = 0;
 
   @Override
-  public void process(LogData logData) {
+  public void emit(LogData logData) {
     records.add(logData);
   }
 

@@ -11,6 +11,7 @@ import static org.awaitility.Awaitility.await;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
+import io.opentelemetry.sdk.logs.data.ReadableLogRecord;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logs.util.TestLogExporter;
 import io.opentelemetry.sdk.resources.Resource;
@@ -26,20 +27,19 @@ class DemoTest {
   void usageTest() {
     TestLogExporter testLogExporter = new TestLogExporter();
 
-    SdkLogSinkProvider sdkLogSinkProvider =
-        SdkLogSinkProvider.builder()
+    LogEmitterProvider logEmitterProvider =
+        LogEmitterProvider.builder()
             .setResource(Resource.builder().put("key", "value").build())
             .addLogProcessor(System.out::println)
             .addLogProcessor(
                 BatchLogProcessor.builder(testLogExporter).setExporterTimeoutMillis(1000).build())
             .build();
 
-    LogSink logSink = sdkLogSinkProvider.get("my-library");
+    LogEmitter logEmitter = logEmitterProvider.get("my-library");
 
     for (int i = 0; i < 10; i++) {
-      logSink.offer(
-          logSink
-              .builder()
+      logEmitter.emit(
+          ReadableLogRecord.builder()
               .setEpochMillis(System.currentTimeMillis())
               .setBody("my message " + i)
               .setAttributes(Attributes.builder().put("foo", "bar").build())

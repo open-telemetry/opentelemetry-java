@@ -10,13 +10,17 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.List;
 import javax.annotation.Nullable;
 
-final class LogSinkSharedState {
+/**
+ * Represents shared state and config between all {@link LogEmitter}s created by the same {@link
+ * LogEmitterProvider}.
+ */
+final class LogEmitterSharedState {
   private final Object lock = new Object();
   private final Resource resource;
   private final LogProcessor activeLogProcessor;
   @Nullable private volatile CompletableResultCode shutdownResult = null;
 
-  LogSinkSharedState(Resource resource, List<LogProcessor> logProcessors) {
+  LogEmitterSharedState(Resource resource, List<LogProcessor> logProcessors) {
     this.resource = resource;
     this.activeLogProcessor = LogProcessor.composite(logProcessors);
   }

@@ -5,47 +5,80 @@
 
 package io.opentelemetry.sdk.logs.data;
 
-import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 
-@Immutable
-@AutoValue
-public abstract class LogRecord implements LogData {
+/**
+ * Implementation of a log as defined in <a
+ * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/data-model.md">OpenTelemetry
+ * Log Data Model</a>.
+ */
+public interface LogRecord {
 
-  LogRecord() {}
+  /**
+   * Returns the epoch timestamp in nanos when the log was recorded.
+   *
+   * @return the epoch timestamp in nanos
+   */
+  long getEpochNanos();
 
-  public static LogRecordBuilder builder(
-      Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new LogRecordBuilder(resource, instrumentationLibraryInfo);
-  }
+  /**
+   * Returns the trace id for this log.
+   *
+   * @return the trace id
+   */
+  @Nullable
+  String getTraceId();
 
-  static LogRecord create(
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      long epochNanos,
-      @Nullable String traceId,
-      @Nullable String spanId,
-      int flags,
-      Severity severity,
-      @Nullable String severityText,
-      @Nullable String name,
-      Body body,
-      Attributes attributes) {
-    return new AutoValue_LogRecord(
-        resource,
-        instrumentationLibraryInfo,
-        epochNanos,
-        traceId,
-        spanId,
-        flags,
-        severity,
-        severityText,
-        name,
-        body,
-        attributes);
-  }
+  /**
+   * Returns the span id for this log.
+   *
+   * @return the span id
+   */
+  @Nullable
+  String getSpanId();
+
+  /**
+   * Returns the flags for this log.
+   *
+   * @return the flags
+   */
+  int getFlags();
+
+  /**
+   * Returns the severity for this log.
+   *
+   * @return the severity
+   */
+  Severity getSeverity();
+
+  /**
+   * Returns the severity text for this log.
+   *
+   * @return the severity text
+   */
+  @Nullable
+  String getSeverityText();
+
+  /**
+   * Returns the name for this log.
+   *
+   * @return the name
+   */
+  @Nullable
+  String getName();
+
+  /**
+   * Returns the body for this log.
+   *
+   * @return the body
+   */
+  Body getBody();
+
+  /**
+   * Returns the attributes for this log.
+   *
+   * @return the attributes
+   */
+  Attributes getAttributes();
 }

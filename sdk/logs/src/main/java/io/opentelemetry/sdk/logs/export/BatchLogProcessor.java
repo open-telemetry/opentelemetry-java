@@ -50,7 +50,7 @@ public final class BatchLogProcessor implements LogProcessor {
   }
 
   @Override
-  public void process(LogData logData) {
+  public void emit(LogData logData) {
     worker.addLog(logData);
   }
 
@@ -68,7 +68,7 @@ public final class BatchLogProcessor implements LogProcessor {
   private static class Worker implements Runnable {
     static {
       // TODO: As of Specification 1.4, this should have a telemetry schema version.
-      Meter meter = GlobalMeterProvider.get().meterBuilder("io.opentelemetry.sdk.trace").build();
+      Meter meter = GlobalMeterProvider.get().meterBuilder("io.opentelemetry.sdk.logs").build();
       LongCounter logRecordsProcessed =
           meter
               .counterBuilder("logRecordsProcessed")

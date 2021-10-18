@@ -17,5 +17,5 @@ final class NoopLogProcessor implements LogProcessor {
   private NoopLogProcessor() {}
 
   @Override
-  public void process(LogData logData) {}
+  public void emit(LogData logData) {}
 }

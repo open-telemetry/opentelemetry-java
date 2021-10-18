@@ -17,6 +17,8 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogRecord;
+import io.opentelemetry.sdk.logs.data.ReadableLogData;
+import io.opentelemetry.sdk.logs.data.ReadableLogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
 import io.opentelemetry.sdk.logs.util.TestLogExporter;
@@ -27,12 +29,18 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-class SdkLogSinkProviderTest {
+class LogEmitterProviderTest {
 
-  private static LogRecord createLog(Severity severity, String message) {
-    return LogRecord.builder(
-            Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-            InstrumentationLibraryInfo.create("instrumentation", "1"))
+  private static final String INSTRUMENTATION_LIBRARY =
+      LogEmitterProviderTest.class.getSimpleName();
+  private static final String INSTRUMENTATION_LIBRARY_VERSION = "0.1";
+  private static final Resource RESOURCE =
+      Resource.create(Attributes.builder().put("key", "value").build());
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.create(INSTRUMENTATION_LIBRARY, INSTRUMENTATION_LIBRARY_VERSION);
+
+  private static LogRecord createLogRecord(Severity severity, String message) {
+    return ReadableLogRecord.builder()
         .setEpochMillis(System.currentTimeMillis())
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
@@ -45,18 +53,22 @@ class SdkLogSinkProviderTest {
         .build();
   }
 
+  private static LogData toLogData(LogRecord logRecord) {
+    return ReadableLogData.create(RESOURCE, INSTRUMENTATION_LIBRARY_INFO, logRecord);
+  }
+
   @Test
-  void testLogSinkSdkProvider() {
+  void testLogEmitterProvider() {
     TestLogExporter exporter = new TestLogExporter();
     LogProcessor processor = BatchLogProcessor.builder(exporter).build();
-    SdkLogSinkProvider provider = SdkLogSinkProvider.builder().addLogProcessor(processor).build();
-    LogSink sink = provider.get("test", "0.1a");
-    LogRecord log = createLog(Severity.ERROR, "test");
-    sink.offer(log);
+    LogEmitterProvider provider =
+        LogEmitterProvider.builder().setResource(RESOURCE).addLogProcessor(processor).build();
+    LogEmitter emitter = provider.get(INSTRUMENTATION_LIBRARY, INSTRUMENTATION_LIBRARY_VERSION);
+    LogRecord logRecord = createLogRecord(Severity.ERROR, "test");
+    emitter.emit(logRecord);
     provider.forceFlush().join(500, TimeUnit.MILLISECONDS);
     List<LogData> records = exporter.getRecords();
-    assertThat(records).singleElement().isEqualTo(log);
-    assertThat(log.getSeverity().getSeverityNumber()).isEqualTo(Severity.ERROR.getSeverityNumber());
+    assertThat(records).singleElement().isEqualTo(toLogData(logRecord));
   }
 
   @Test
@@ -68,11 +80,11 @@ class SdkLogSinkProviderTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    SdkLogSinkProvider provider = SdkLogSinkProvider.builder().addLogProcessor(processor).build();
-    LogSink sink = provider.get("test", "0.1a");
+    LogEmitterProvider provider = LogEmitterProvider.builder().addLogProcessor(processor).build();
+    LogEmitter emitter = provider.get("test", "0.1a");
 
     for (int i = 0; i < 7; i++) {
-      sink.offer(createLog(Severity.WARN, "test #" + i));
+      emitter.emit(createLogRecord(Severity.WARN, "test #" + i));
     }
     // Ensure that more than batch size kicks off a flush
     await().atMost(Duration.ofSeconds(5)).until(() -> exporter.getRecords().size() > 0);
@@ -99,13 +111,13 @@ class SdkLogSinkProviderTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    SdkLogSinkProvider provider = SdkLogSinkProvider.builder().addLogProcessor(processor).build();
-    LogSink sink = provider.get("test", "0.1a");
+    LogEmitterProvider provider = LogEmitterProvider.builder().addLogProcessor(processor).build();
+    LogEmitter emitter = provider.get("test", "0.1a");
 
     long start = System.currentTimeMillis();
     int testRecordCount = 700;
     for (int i = 0; i < testRecordCount; i++) {
-      sink.offer(createLog(Severity.WARN, "test #" + i));
+      emitter.emit(createLogRecord(Severity.WARN, "test #" + i));
     }
     long end = System.currentTimeMillis();
     assertThat(end - start).isLessThan(250L);
@@ -117,18 +129,20 @@ class SdkLogSinkProviderTest {
   void testMultipleProcessors() {
     TestLogProcessor processorOne = new TestLogProcessor();
     TestLogProcessor processorTwo = new TestLogProcessor();
-    SdkLogSinkProvider provider =
-        SdkLogSinkProvider.builder()
+    LogEmitterProvider provider =
+        LogEmitterProvider.builder()
+            .setResource(RESOURCE)
             .addLogProcessor(processorOne)
             .addLogProcessor(processorTwo)
             .build();
-    LogSink sink = provider.get("test", "0.1");
-    LogRecord record = createLog(Severity.INFO, "test");
-    sink.offer(record);
+    LogEmitter emitter = provider.get(INSTRUMENTATION_LIBRARY, INSTRUMENTATION_LIBRARY_VERSION);
+    LogRecord logRecord = createLogRecord(Severity.INFO, "test");
+    emitter.emit(logRecord);
+    LogData logData = toLogData(logRecord);
     assertThat(processorOne.getRecords().size()).isEqualTo(1);
     assertThat(processorTwo.getRecords().size()).isEqualTo(1);
-    assertThat(processorOne.getRecords().get(0)).isEqualTo(record);
-    assertThat(processorTwo.getRecords().get(0)).isEqualTo(record);
+    assertThat(processorOne.getRecords().get(0)).isEqualTo(logData);
+    assertThat(processorTwo.getRecords().get(0)).isEqualTo(logData);
 
     CompletableResultCode flushResult = provider.forceFlush();
     flushResult.join(1, TimeUnit.SECONDS);

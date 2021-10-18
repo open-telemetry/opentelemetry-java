@@ -12,20 +12,29 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Implementation of {@link LogProcessor} that forwards all logs to a list of {@link LogProcessor}s.
+ */
 final class MultiLogProcessor implements LogProcessor {
 
   private final List<LogProcessor> logProcessors;
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
+  /**
+   * Create a new {@link MultiLogProcessor}.
+   *
+   * @param logProcessorsList list of log processors to forward logs to
+   * @return a multi log processor instance
+   */
   static LogProcessor create(List<LogProcessor> logProcessorsList) {
     return new MultiLogProcessor(
         new ArrayList<>(Objects.requireNonNull(logProcessorsList, "logProcessorsList")));
   }
 
   @Override
-  public void process(LogData logData) {
+  public void emit(LogData logData) {
     for (LogProcessor logProcessor : logProcessors) {
-      logProcessor.process(logData);
+      logProcessor.emit(logData);
     }
   }
 

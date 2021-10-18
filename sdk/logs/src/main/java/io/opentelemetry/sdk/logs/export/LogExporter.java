@@ -7,12 +7,12 @@ package io.opentelemetry.sdk.logs.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
+import io.opentelemetry.sdk.logs.data.ReadableLogRecordBuilder;
 import java.util.Collection;
 
 /**
- * An exporter is responsible for taking a list of {@link LogRecord}s and transmitting them to their
- * ultimate destination.
+ * An exporter is responsible for taking a list of {@link ReadableLogRecordBuilder}s and
+ * transmitting them to their ultimate destination.
  */
 public interface LogExporter {
   CompletableResultCode export(Collection<LogData> logs);

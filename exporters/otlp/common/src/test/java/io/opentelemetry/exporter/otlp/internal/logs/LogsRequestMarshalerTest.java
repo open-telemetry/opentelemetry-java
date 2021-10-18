@@ -24,6 +24,8 @@ import io.opentelemetry.proto.logs.v1.InstrumentationLibraryLogs;
 import io.opentelemetry.proto.logs.v1.LogRecord;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.logs.data.ReadableLogData;
+import io.opentelemetry.sdk.logs.data.ReadableLogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
@@ -49,18 +51,19 @@ class LogsRequestMarshalerTest {
     ResourceLogsMarshaler[] resourceLogsMarshalers =
         ResourceLogsMarshaler.create(
             Collections.singleton(
-                io.opentelemetry.sdk.logs.data.LogRecord.builder(
-                        Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
-                        InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"))
-                    .setName(NAME)
-                    .setBody(BODY)
-                    .setSeverity(Severity.INFO)
-                    .setSeverityText("INFO")
-                    .setTraceId(TRACE_ID)
-                    .setSpanId(SPAN_ID)
-                    .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setEpochNanos(12345)
-                    .build()));
+                ReadableLogData.create(
+                    Resource.builder().put("one", 1).setSchemaUrl("http://url").build(),
+                    InstrumentationLibraryInfo.create("testLib", "1.0", "http://url"),
+                    ReadableLogRecord.builder()
+                        .setName(NAME)
+                        .setBody(BODY)
+                        .setSeverity(Severity.INFO)
+                        .setSeverityText("INFO")
+                        .setTraceId(TRACE_ID)
+                        .setSpanId(SPAN_ID)
+                        .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                        .setEpochNanos(12345)
+                        .build())));
 
     assertThat(resourceLogsMarshalers).hasSize(1);
 
@@ -82,18 +85,19 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                io.opentelemetry.sdk.logs.data.LogRecord.builder(
-                        Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-                        InstrumentationLibraryInfo.create("instrumentation", "1"))
-                    .setName(NAME)
-                    .setBody(BODY)
-                    .setSeverity(Severity.INFO)
-                    .setSeverityText("INFO")
-                    .setTraceId(TRACE_ID)
-                    .setSpanId(SPAN_ID)
-                    .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setEpochNanos(12345)
-                    .build()));
+                ReadableLogData.create(
+                    Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+                    InstrumentationLibraryInfo.create("instrumentation", "1"),
+                    ReadableLogRecord.builder()
+                        .setName(NAME)
+                        .setBody(BODY)
+                        .setSeverity(Severity.INFO)
+                        .setSeverityText("INFO")
+                        .setTraceId(TRACE_ID)
+                        .setSpanId(SPAN_ID)
+                        .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                        .setEpochNanos(12345)
+                        .build())));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(logRecord.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
@@ -115,14 +119,15 @@ class LogsRequestMarshalerTest {
         parse(
             LogRecord.getDefaultInstance(),
             LogMarshaler.create(
-                io.opentelemetry.sdk.logs.data.LogRecord.builder(
-                        Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-                        InstrumentationLibraryInfo.create("instrumentation", "1"))
-                    .setBody(BODY)
-                    .setSeverity(Severity.INFO)
-                    .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setEpochNanos(12345)
-                    .build()));
+                ReadableLogData.create(
+                    Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+                    InstrumentationLibraryInfo.create("instrumentation", "1"),
+                    ReadableLogRecord.builder()
+                        .setBody(BODY)
+                        .setSeverity(Severity.INFO)
+                        .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
+                        .setEpochNanos(12345)
+                        .build())));
 
     assertThat(logRecord.getTraceId().toByteArray()).isEmpty();
     assertThat(logRecord.getSpanId().toByteArray()).isEmpty();

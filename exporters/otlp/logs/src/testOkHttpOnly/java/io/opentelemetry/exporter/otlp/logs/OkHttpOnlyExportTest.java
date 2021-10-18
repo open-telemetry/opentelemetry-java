@@ -20,7 +20,8 @@ import io.opentelemetry.exporter.otlp.internal.grpc.OkHttpGrpcExporterBuilder;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
+import io.opentelemetry.sdk.logs.data.ReadableLogData;
+import io.opentelemetry.sdk.logs.data.ReadableLogRecord;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.resources.Resource;
 import java.net.InetAddress;
@@ -40,19 +41,20 @@ class OkHttpOnlyExportTest {
 
   private static final List<LogData> LOGS =
       Collections.singletonList(
-          LogRecord.builder(
-                  Resource.create(Attributes.builder().put("testKey", "testValue").build()),
-                  InstrumentationLibraryInfo.create("instrumentation", "1"))
-              .setEpochMillis(System.currentTimeMillis())
-              .setTraceId(TraceId.getInvalid())
-              .setSpanId(SpanId.getInvalid())
-              .setFlags(TraceFlags.getDefault().asByte())
-              .setSeverity(Severity.ERROR)
-              .setSeverityText("really severe")
-              .setName("log1")
-              .setBody("message")
-              .setAttributes(Attributes.builder().put("animal", "cat").build())
-              .build());
+          ReadableLogData.create(
+              Resource.create(Attributes.builder().put("testKey", "testValue").build()),
+              InstrumentationLibraryInfo.create("instrumentation", "1"),
+              ReadableLogRecord.builder()
+                  .setEpochMillis(System.currentTimeMillis())
+                  .setTraceId(TraceId.getInvalid())
+                  .setSpanId(SpanId.getInvalid())
+                  .setFlags(TraceFlags.getDefault().asByte())
+                  .setSeverity(Severity.ERROR)
+                  .setSeverityText("really severe")
+                  .setName("log1")
+                  .setBody("message")
+                  .setAttributes(Attributes.builder().put("animal", "cat").build())
+                  .build()));
 
   private static final HeldCertificate HELD_CERTIFICATE;
 

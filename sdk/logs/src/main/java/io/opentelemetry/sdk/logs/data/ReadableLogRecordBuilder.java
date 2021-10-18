@@ -7,15 +7,11 @@ package io.opentelemetry.sdk.logs.data;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.resources.Resource;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
-/** Builder for {@link LogRecord}. */
-public final class LogRecordBuilder implements LogBuilder {
-  private final Resource resource;
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+/** Builder for {@link ReadableLogRecordBuilder}. */
+public final class ReadableLogRecordBuilder {
 
   private long epochNanos;
   @Nullable private String traceId;
@@ -27,88 +23,71 @@ public final class LogRecordBuilder implements LogBuilder {
   private Body body = Body.stringBody("");
   private final AttributesBuilder attributeBuilder = Attributes.builder();
 
-  LogRecordBuilder(Resource resource, InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    this.resource = resource;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-  }
+  ReadableLogRecordBuilder() {}
 
-  @Override
-  public LogRecordBuilder setEpochNanos(long timestamp) {
+  public ReadableLogRecordBuilder setEpochNanos(long timestamp) {
     this.epochNanos = timestamp;
     return this;
   }
 
-  @Override
-  public LogRecordBuilder setEpochMillis(long timestamp) {
+  public ReadableLogRecordBuilder setEpochMillis(long timestamp) {
     return setEpochNanos(TimeUnit.MILLISECONDS.toNanos(timestamp));
   }
 
-  @Override
-  public LogRecordBuilder setTraceId(String traceId) {
+  public ReadableLogRecordBuilder setTraceId(String traceId) {
     this.traceId = traceId;
     return this;
   }
 
-  @Override
-  public LogRecordBuilder setSpanId(String spanId) {
+  public ReadableLogRecordBuilder setSpanId(String spanId) {
     this.spanId = spanId;
     return this;
   }
 
-  @Override
-  public LogRecordBuilder setFlags(int flags) {
+  public ReadableLogRecordBuilder setFlags(int flags) {
     this.flags = flags;
     return this;
   }
 
-  @Override
-  public LogRecordBuilder setSeverity(Severity severity) {
+  public ReadableLogRecordBuilder setSeverity(Severity severity) {
     this.severity = severity;
     return this;
   }
 
-  @Override
-  public LogRecordBuilder setSeverityText(String severityText) {
+  public ReadableLogRecordBuilder setSeverityText(String severityText) {
     this.severityText = severityText;
     return this;
   }
 
-  @Override
-  public LogRecordBuilder setName(String name) {
+  public ReadableLogRecordBuilder setName(String name) {
     this.name = name;
     return this;
   }
 
-  @Override
-  public LogRecordBuilder setBody(Body body) {
+  public ReadableLogRecordBuilder setBody(Body body) {
     this.body = body;
     return this;
   }
 
-  @Override
-  public LogRecordBuilder setBody(String body) {
+  public ReadableLogRecordBuilder setBody(String body) {
     return setBody(Body.stringBody(body));
   }
 
-  @Override
-  public LogRecordBuilder setAttributes(Attributes attributes) {
+  public ReadableLogRecordBuilder setAttributes(Attributes attributes) {
     this.attributeBuilder.putAll(attributes);
     return this;
   }
 
   /**
-   * Build a LogRecord instance.
+   * Build a {@link ReadableLogRecord} instance.
    *
-   * @return value object being built
+   * @return the instance
    */
-  @Override
-  public LogRecord build() {
+  public ReadableLogRecord build() {
     if (epochNanos == 0) {
       epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     }
-    return LogRecord.create(
-        resource,
-        instrumentationLibraryInfo,
+    return ReadableLogRecord.create(
         epochNanos,
         traceId,
         spanId,
