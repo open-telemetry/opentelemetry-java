@@ -40,22 +40,14 @@ import okio.Okio;
 @ThreadSafe
 public final class OtlpHttpLogExporter implements LogExporter {
 
-  private static final String EXPORTER_NAME = OtlpHttpLogExporter.class.getSimpleName();
-  private static final Attributes EXPORTER_NAME_LABELS =
-      Attributes.builder().put("exporter", EXPORTER_NAME).build();
-  private static final Attributes EXPORT_SUCCESS_LABELS =
-      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", true).build();
-  private static final Attributes EXPORT_FAILURE_LABELS =
-      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", false).build();
-
   private static final Logger internalLogger =
       Logger.getLogger(OtlpHttpLogExporter.class.getName());
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
-  private final BoundLongCounter logsSeen;
-  private final BoundLongCounter logsExportedSuccess;
-  private final BoundLongCounter logsExportedFailure;
+  private final BoundLongCounter seen;
+  private final BoundLongCounter success;
+  private final BoundLongCounter failed;
 
   private final OkHttpClient client;
   private final String endpoint;
@@ -65,10 +57,11 @@ public final class OtlpHttpLogExporter implements LogExporter {
   OtlpHttpLogExporter(
       OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
     Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http");
-    this.logsSeen = meter.counterBuilder("logsSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
-    LongCounter logsExportedCounter = meter.counterBuilder("logsExportedByExporter").build();
-    this.logsExportedSuccess = logsExportedCounter.bind(EXPORT_SUCCESS_LABELS);
-    this.logsExportedFailure = logsExportedCounter.bind(EXPORT_FAILURE_LABELS);
+    Attributes attributes = Attributes.builder().put("type", "log").build();
+    seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
+    LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();
+    success = exported.bind(attributes.toBuilder().put("success", true).build());
+    failed = exported.bind(attributes.toBuilder().put("success", false).build());
 
     this.client = client;
     this.endpoint = endpoint;
@@ -84,7 +77,7 @@ public final class OtlpHttpLogExporter implements LogExporter {
    */
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {
-    logsSeen.add(logs.size());
+    seen.add(logs.size());
 
     LogsRequestMarshaler exportRequest = LogsRequestMarshaler.create(logs);
 
@@ -108,7 +101,7 @@ public final class OtlpHttpLogExporter implements LogExporter {
             new Callback() {
               @Override
               public void onFailure(Call call, IOException e) {
-                logsExportedFailure.add(logs.size());
+                failed.add(logs.size());
                 logger.log(
                     Level.SEVERE,
                     "Failed to export logs. The request could not be executed. Full error message: "
@@ -119,12 +112,12 @@ public final class OtlpHttpLogExporter implements LogExporter {
               @Override
               public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                  logsExportedSuccess.add(logs.size());
+                  success.add(logs.size());
                   result.succeed();
                   return;
                 }
 
-                logsExportedFailure.add(logs.size());
+                failed.add(logs.size());
                 int code = response.code();
 
                 String status = extractErrorStatus(response);
@@ -198,9 +191,9 @@ public final class OtlpHttpLogExporter implements LogExporter {
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = CompletableResultCode.ofSuccess();
     client.dispatcher().cancelAll();
-    this.logsSeen.unbind();
-    this.logsExportedSuccess.unbind();
-    this.logsExportedFailure.unbind();
+    this.seen.unbind();
+    this.success.unbind();
+    this.failed.unbind();
     return result;
   }
 }
