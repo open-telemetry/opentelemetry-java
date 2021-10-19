@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.extension.incubator.trace.data;
+package io.opentelemetry.sdk.trace.data;
 
 import static java.util.Objects.requireNonNull;
 
@@ -12,10 +12,6 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.data.EventData;
-import io.opentelemetry.sdk.trace.data.LinkData;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -45,11 +41,7 @@ import javax.annotation.Nullable;
  * //   }
  * // }
  * }</pre>
- *
- * @deprecated Use {@link io.opentelemetry.sdk.trace.data.DelegatingSpanData}, which is the exact
- *     same as this one.
  */
-@Deprecated
 public abstract class DelegatingSpanData implements SpanData {
 
   private final SpanData delegate;
