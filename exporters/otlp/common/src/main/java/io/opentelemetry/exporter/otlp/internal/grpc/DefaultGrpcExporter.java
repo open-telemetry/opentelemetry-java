@@ -59,7 +59,7 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
     seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
     LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();
     success = exported.bind(attributes.toBuilder().put("success", true).build());
-    failed = exported.bind(attributes.toBuilder().put("success", false).build());
+    failed = exported.bind(attributes.toBuilder().put("failure", false).build());
 
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;

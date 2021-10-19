@@ -40,22 +40,14 @@ import okio.Okio;
 @ThreadSafe
 public final class OtlpHttpSpanExporter implements SpanExporter {
 
-  private static final String EXPORTER_NAME = OtlpHttpSpanExporter.class.getSimpleName();
-  private static final Attributes EXPORTER_NAME_LABELS =
-      Attributes.builder().put("exporter", EXPORTER_NAME).build();
-  private static final Attributes EXPORT_SUCCESS_LABELS =
-      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", true).build();
-  private static final Attributes EXPORT_FAILURE_LABELS =
-      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", false).build();
-
   private static final Logger internalLogger =
       Logger.getLogger(OtlpHttpSpanExporter.class.getName());
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
-  private final BoundLongCounter spansSeen;
-  private final BoundLongCounter spansExportedSuccess;
-  private final BoundLongCounter spansExportedFailure;
+  private final BoundLongCounter seen;
+  private final BoundLongCounter success;
+  private final BoundLongCounter failed;
 
   private final OkHttpClient client;
   private final String endpoint;
@@ -65,10 +57,11 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   OtlpHttpSpanExporter(
       OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
     Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http");
-    this.spansSeen = meter.counterBuilder("spansSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
-    LongCounter spansExportedCounter = meter.counterBuilder("spansExportedByExporter").build();
-    this.spansExportedSuccess = spansExportedCounter.bind(EXPORT_SUCCESS_LABELS);
-    this.spansExportedFailure = spansExportedCounter.bind(EXPORT_FAILURE_LABELS);
+    Attributes attributes = Attributes.builder().put("type", "span").build();
+    seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
+    LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();
+    success = exported.bind(attributes.toBuilder().put("success", true).build());
+    failed = exported.bind(attributes.toBuilder().put("failure", true).build());
 
     this.client = client;
     this.endpoint = endpoint;
@@ -84,7 +77,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    spansSeen.add(spans.size());
+    seen.add(spans.size());
 
     TraceRequestMarshaler exportRequest = TraceRequestMarshaler.create(spans);
 
@@ -108,7 +101,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
             new Callback() {
               @Override
               public void onFailure(Call call, IOException e) {
-                spansExportedFailure.add(spans.size());
+                failed.add(spans.size());
                 logger.log(
                     Level.SEVERE,
                     "Failed to export spans. The request could not be executed. Full error message: "
@@ -119,12 +112,12 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
               @Override
               public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                  spansExportedSuccess.add(spans.size());
+                  success.add(spans.size());
                   result.succeed();
                   return;
                 }
 
-                spansExportedFailure.add(spans.size());
+                failed.add(spans.size());
                 int code = response.code();
 
                 String status = extractErrorStatus(response);
@@ -208,9 +201,9 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = CompletableResultCode.ofSuccess();
     client.dispatcher().cancelAll();
-    this.spansSeen.unbind();
-    this.spansExportedSuccess.unbind();
-    this.spansExportedFailure.unbind();
+    this.seen.unbind();
+    this.success.unbind();
+    this.failed.unbind();
     return result;
   }
 }
