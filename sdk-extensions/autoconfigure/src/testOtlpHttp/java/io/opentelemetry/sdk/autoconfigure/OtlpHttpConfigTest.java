@@ -43,6 +43,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -74,6 +75,15 @@ class OtlpHttpConfigTest {
   private static final BlockingQueue<ExportMetricsServiceRequest> metricRequests =
       new LinkedBlockingDeque<>();
   private static final BlockingQueue<RequestHeaders> requestHeaders = new LinkedBlockingDeque<>();
+  private static final String canonicalHostName;
+
+  static {
+    try {
+      canonicalHostName = InetAddress.getByName("localhost").getCanonicalHostName();
+    } catch (UnknownHostException e) {
+      throw new IllegalStateException("Error resolving canonical host name.", e);
+    }
+  }
 
   @RegisterExtension
   @Order(1)
@@ -88,7 +98,7 @@ class OtlpHttpConfigTest {
       heldCertificate =
           new HeldCertificate.Builder()
               .commonName("localhost")
-              .addSubjectAlternativeName(InetAddress.getByName("localhost").getCanonicalHostName())
+              .addSubjectAlternativeName(canonicalHostName)
               .build();
       Path file = Files.createTempFile("test-cert", ".pem");
       Files.write(file, heldCertificate.certificatePem().getBytes(StandardCharsets.UTF_8));
@@ -369,10 +379,10 @@ class OtlpHttpConfigTest {
   }
 
   private static String traceEndpoint() {
-    return String.format("https://localhost:%s/v1/traces", server.httpsPort());
+    return String.format("https://" + canonicalHostName + ":%s/v1/traces", server.httpsPort());
   }
 
   private static String metricEndpoint() {
-    return String.format("https://localhost:%s/v1/metrics", server.httpsPort());
+    return String.format("https://" + canonicalHostName + ":%s/v1/metrics", server.httpsPort());
   }
 }
