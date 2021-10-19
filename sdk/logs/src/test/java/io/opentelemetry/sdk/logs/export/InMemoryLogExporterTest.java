@@ -28,8 +28,8 @@ class InMemoryLogExporterTest {
 
   @BeforeEach
   void setup() {
-    logSinkSdkProvider = LogSinkSdkProvider.builder().build();
-    logSinkSdkProvider.addLogProcessor(SimpleLogProcessor.create(exporter));
+    logSinkSdkProvider =
+        LogSinkSdkProvider.builder().addLogProcessor(SimpleLogProcessor.create(exporter)).build();
     logSink = logSinkSdkProvider.get(null, null);
   }
 
