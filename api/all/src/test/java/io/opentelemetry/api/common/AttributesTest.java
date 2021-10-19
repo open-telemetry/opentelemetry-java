@@ -424,6 +424,10 @@ class AttributesTest {
 
   @Test
   void remove() {
+    AttributesBuilder builder = Attributes.builder();
+    assertThat(builder.remove(null)).isEqualTo(builder);
+    assertThat(builder.remove(stringKey(""))).isEqualTo(builder);
+
     Attributes attributes = Attributes.builder().remove(stringKey("key1")).build();
     assertThat(attributes.get(stringKey("key1"))).isNull();
 
