@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -17,7 +18,9 @@ import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.spi.OpenTelemetrySdkAutoConfigurationBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.sdk.trace.samplers.SamplingResult;
@@ -46,7 +49,6 @@ class OpenTelemetrySdkAutoConfigurationTest {
   @BeforeEach
   void resetGlobal() {
     GlobalOpenTelemetry.resetForTest();
-    ;
   }
 
   @Test
@@ -58,7 +60,7 @@ class OpenTelemetrySdkAutoConfigurationTest {
         .thenReturn(SamplingResult.recordAndSample());
     when(spanExporter2.export(any())).thenReturn(CompletableResultCode.ofSuccess());
 
-    OpenTelemetrySdkAutoConfiguration autoConfiguration =
+    OpenTelemetrySdkAutoConfigurationBuilder autoConfiguration =
         OpenTelemetrySdkAutoConfiguration.builder()
             .addPropagatorCustomizer(
                 previous -> {
@@ -70,6 +72,8 @@ class OpenTelemetrySdkAutoConfigurationTest {
                   assertThat(previous).isSameAs(propagator1);
                   return propagator2;
                 })
+            .addResourceCustomizer(
+                resource -> resource.merge(Resource.builder().put("key2", "value2").build()))
             .addSamplerCustomizer(
                 previous -> {
                   assertThat(previous).isEqualTo(Sampler.parentBased(Sampler.alwaysOn()));
@@ -97,13 +101,17 @@ class OpenTelemetrySdkAutoConfigurationTest {
             .addPropertySupplier(() -> Collections.singletonMap("otel.traces.exporter", "none"))
             .addPropertySupplier(
                 () -> Collections.singletonMap("otel.service.name", "test-service"))
-            .setResultAsGlobal(false)
-            .build();
+            .setResultAsGlobal(false);
 
     assertThat(autoConfiguration.newResource().getAttribute(ResourceAttributes.SERVICE_NAME))
         .isEqualTo("test-service");
+    assertThat(autoConfiguration.newResource().getAttribute(stringKey("key2"))).isEqualTo("value2");
 
-    assertThat(autoConfiguration.getConfig().getString("key")).isEqualTo("value");
+    assertThat(
+            ((DefaultOpenTelemetrySdkAutoConfigurationBuilder) autoConfiguration)
+                .getConfig()
+                .getString("key"))
+        .isEqualTo("value");
 
     GlobalOpenTelemetry.set(OpenTelemetry.noop());
     OpenTelemetrySdk sdk = autoConfiguration.newOpenTelemetrySdk();

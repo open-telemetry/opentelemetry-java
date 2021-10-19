@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.autoconfigure;
+package io.opentelemetry.sdk.autoconfigure.spi;
 
 /** A service provider interface (SPI) for customizing auto-configuration. */
 public interface OpenTelemetrySdkAutoConfigurationCustomizer {

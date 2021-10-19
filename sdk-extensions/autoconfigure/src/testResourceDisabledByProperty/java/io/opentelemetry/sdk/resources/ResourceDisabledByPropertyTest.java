@@ -15,7 +15,7 @@ class ResourceDisabledByPropertyTest {
 
   @Test
   void osAndProcessDisabled() {
-    Resource resource = OpenTelemetrySdkAutoConfiguration.builder().build().newResource();
+    Resource resource = OpenTelemetrySdkAutoConfiguration.builder().newResource();
 
     assertThat(resource.getAttribute(ResourceAttributes.OS_TYPE)).isNull();
     assertThat(resource.getAttribute(ResourceAttributes.PROCESS_PID)).isNull();
