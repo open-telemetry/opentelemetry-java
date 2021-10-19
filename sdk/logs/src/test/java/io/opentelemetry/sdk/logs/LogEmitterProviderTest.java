@@ -5,136 +5,176 @@
 
 package io.opentelemetry.sdk.logs;
 
-import static io.opentelemetry.sdk.logs.util.TestUtil.createLogRecord;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.awaitility.Awaitility.await;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.logs.data.LogData;
-import io.opentelemetry.sdk.logs.data.LogRecord;
-import io.opentelemetry.sdk.logs.data.ReadableLogData;
-import io.opentelemetry.sdk.logs.data.Severity;
-import io.opentelemetry.sdk.logs.export.BatchLogProcessor;
-import io.opentelemetry.sdk.logs.util.TestLogExporter;
-import io.opentelemetry.sdk.logs.util.TestLogProcessor;
 import io.opentelemetry.sdk.resources.Resource;
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import org.assertj.core.api.InstanceOfAssertFactories;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class LogEmitterProviderTest {
 
-  private static final String INSTRUMENTATION_LIBRARY =
-      LogEmitterProviderTest.class.getSimpleName();
-  private static final String INSTRUMENTATION_LIBRARY_VERSION = "0.1";
-  private static final Resource RESOURCE =
-      Resource.create(Attributes.builder().put("key", "value").build());
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create(INSTRUMENTATION_LIBRARY, INSTRUMENTATION_LIBRARY_VERSION);
+  @Mock private LogProcessor logProcessor;
 
-  private static LogData toLogData(LogRecord logRecord) {
-    return ReadableLogData.create(RESOURCE, INSTRUMENTATION_LIBRARY_INFO, logRecord);
+  private LogEmitterProvider logEmitterProvider;
+
+  @BeforeEach
+  void setup() {
+    logEmitterProvider = LogEmitterProvider.builder().addLogProcessor(logProcessor).build();
+    when(logProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
+    when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @Test
-  void testLogEmitterProvider() {
-    TestLogExporter exporter = new TestLogExporter();
-    LogProcessor processor = BatchLogProcessor.builder(exporter).build();
-    LogEmitterProvider provider =
-        LogEmitterProvider.builder().setResource(RESOURCE).addLogProcessor(processor).build();
-    LogEmitter emitter = provider.get(INSTRUMENTATION_LIBRARY, INSTRUMENTATION_LIBRARY_VERSION);
-    LogRecord logRecord = createLogRecord(Severity.ERROR, "test");
-    emitter.emit(logRecord);
-    provider.forceFlush().join(500, TimeUnit.MILLISECONDS);
-    List<LogData> records = exporter.getRecords();
-    assertThat(records).singleElement().isEqualTo(toLogData(logRecord));
+  void builder_defaultResource() {
+    assertThat(LogEmitterProvider.builder().build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getResource)
+        .isEqualTo(Resource.getDefault());
   }
 
   @Test
-  void testBatchSize() {
-    TestLogExporter exporter = new TestLogExporter();
-    LogProcessor processor =
-        BatchLogProcessor.builder(exporter)
-            .setScheduleDelayMillis(10000) // Long enough to not be in play
-            .setMaxExportBatchSize(5)
-            .setMaxQueueSize(10)
-            .build();
-    LogEmitterProvider provider = LogEmitterProvider.builder().addLogProcessor(processor).build();
-    LogEmitter emitter = provider.get("test", "0.1a");
+  void builder_resourceProvided() {
+    Resource resource = Resource.create(Attributes.builder().put("key", "value").build());
 
-    for (int i = 0; i < 7; i++) {
-      emitter.emit(createLogRecord(Severity.WARN, "test #" + i));
-    }
-    // Ensure that more than batch size kicks off a flush
-    await().atMost(Duration.ofSeconds(5)).until(() -> exporter.getRecords().size() > 0);
-    // Ensure that everything gets through
-    CompletableResultCode result = provider.forceFlush();
-    result.join(1, TimeUnit.SECONDS);
-    assertThat(exporter.getCallCount()).isGreaterThanOrEqualTo(2);
+    assertThat(LogEmitterProvider.builder().setResource(resource).build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getResource)
+        .isEqualTo(resource);
   }
 
   @Test
-  void testNoBlocking() {
-    TestLogExporter exporter = new TestLogExporter();
-    exporter.setOnCall(
-        () -> {
-          try {
-            Thread.sleep(250);
-          } catch (InterruptedException ex) {
-            fail("Exporter wait interrupted", ex);
-          }
-        });
-    LogProcessor processor =
-        BatchLogProcessor.builder(exporter)
-            .setScheduleDelayMillis(3000) // Long enough to not be in play
-            .setMaxExportBatchSize(5)
-            .setMaxQueueSize(10)
-            .build();
-    LogEmitterProvider provider = LogEmitterProvider.builder().addLogProcessor(processor).build();
-    LogEmitter emitter = provider.get("test", "0.1a");
-
-    long start = System.currentTimeMillis();
-    int testRecordCount = 700;
-    for (int i = 0; i < testRecordCount; i++) {
-      emitter.emit(createLogRecord(Severity.WARN, "test #" + i));
-    }
-    long end = System.currentTimeMillis();
-    assertThat(end - start).isLessThan(250L);
-    provider.forceFlush().join(1, TimeUnit.SECONDS);
-    assertThat(exporter.getRecords().size()).isLessThan(testRecordCount); // We dropped records
+  void builder_noProcessor() {
+    assertThat(LogEmitterProvider.builder().build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getActiveLogProcessor)
+        .isSameAs(NoopLogProcessor.getInstance());
   }
 
   @Test
-  void testMultipleProcessors() {
-    TestLogProcessor processorOne = new TestLogProcessor();
-    TestLogProcessor processorTwo = new TestLogProcessor();
-    LogEmitterProvider provider =
-        LogEmitterProvider.builder()
-            .setResource(RESOURCE)
-            .addLogProcessor(processorOne)
-            .addLogProcessor(processorTwo)
-            .build();
-    LogEmitter emitter = provider.get(INSTRUMENTATION_LIBRARY, INSTRUMENTATION_LIBRARY_VERSION);
-    LogRecord logRecord = createLogRecord(Severity.INFO, "test");
-    emitter.emit(logRecord);
-    LogData logData = toLogData(logRecord);
-    assertThat(processorOne.getRecords().size()).isEqualTo(1);
-    assertThat(processorTwo.getRecords().size()).isEqualTo(1);
-    assertThat(processorOne.getRecords().get(0)).isEqualTo(logData);
-    assertThat(processorTwo.getRecords().get(0)).isEqualTo(logData);
+  void builder_multipleProcessors() {
+    assertThat(
+            LogEmitterProvider.builder()
+                .addLogProcessor(logProcessor)
+                .addLogProcessor(logProcessor)
+                .build())
+        .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
+        .extracting(LogEmitterSharedState::getActiveLogProcessor)
+        .satisfies(
+            activeLogProcessor -> {
+              assertThat(activeLogProcessor).isInstanceOf(MultiLogProcessor.class);
+              assertThat(activeLogProcessor)
+                  .extracting(
+                      "logProcessors", as(InstanceOfAssertFactories.list(LogProcessor.class)))
+                  .hasSize(2);
+            });
+  }
 
-    CompletableResultCode flushResult = provider.forceFlush();
-    flushResult.join(1, TimeUnit.SECONDS);
-    assertThat(processorOne.getFlushes()).isEqualTo(1);
-    assertThat(processorTwo.getFlushes()).isEqualTo(1);
+  @Test
+  void get_SameName() {
+    assertThat(logEmitterProvider.get("test"))
+        .isSameAs(logEmitterProvider.get("test"))
+        .isSameAs(logEmitterProvider.get("test", null))
+        .isSameAs(logEmitterProvider.logEmitterBuilder("test").build())
+        .isNotSameAs(logEmitterProvider.get("test", "version"));
+  }
 
-    CompletableResultCode shutdownResult = provider.shutdown();
-    shutdownResult.join(1, TimeUnit.SECONDS);
-    assertThat(processorOne.shutdownHasBeenCalled()).isEqualTo(true);
-    assertThat(processorTwo.shutdownHasBeenCalled()).isEqualTo(true);
+  @Test
+  void get_SameNameAndVersion() {
+    assertThat(logEmitterProvider.get("test", "version"))
+        .isSameAs(logEmitterProvider.get("test", "version"))
+        .isSameAs(
+            logEmitterProvider
+                .logEmitterBuilder("test")
+                .setInstrumentationVersion("version")
+                .build())
+        .isNotSameAs(
+            logEmitterProvider
+                .logEmitterBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
+                .build());
+  }
+
+  @Test
+  void logEmitterBuilder_SameNameVersionAndSchema() {
+    assertThat(
+            logEmitterProvider
+                .logEmitterBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
+                .build())
+        .isSameAs(
+            logEmitterProvider
+                .logEmitterBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
+                .build());
+  }
+
+  @Test
+  void logEmitterBuilder_PropagatesToEmitter() {
+    InstrumentationLibraryInfo expected =
+        InstrumentationLibraryInfo.create("test", "version", "http://url");
+    assertThat(
+            logEmitterProvider
+                .logEmitterBuilder("test")
+                .setInstrumentationVersion("version")
+                .setSchemaUrl("http://url")
+                .build()
+                .getInstrumentationLibraryInfo())
+        .isEqualTo(expected);
+  }
+
+  @Test
+  void logEmitterBuilder_DefaultEmitterName() {
+    assertThat(
+            logEmitterProvider
+                .logEmitterBuilder(null)
+                .build()
+                .getInstrumentationLibraryInfo()
+                .getName())
+        .isEqualTo(LogEmitterProvider.DEFAULT_EMITTER_NAME);
+
+    assertThat(
+            logEmitterProvider
+                .logEmitterBuilder("")
+                .build()
+                .getInstrumentationLibraryInfo()
+                .getName())
+        .isEqualTo(LogEmitterProvider.DEFAULT_EMITTER_NAME);
+  }
+
+  @Test
+  void forceFlush() {
+    logEmitterProvider.forceFlush();
+    verify(logProcessor).forceFlush();
+  }
+
+  @Test
+  void shutdown() {
+    logEmitterProvider.shutdown();
+    logEmitterProvider.shutdown();
+    verify(logProcessor, times(1)).shutdown();
+  }
+
+  @Test
+  void close() {
+    logEmitterProvider.close();
+    verify(logProcessor).shutdown();
   }
 }

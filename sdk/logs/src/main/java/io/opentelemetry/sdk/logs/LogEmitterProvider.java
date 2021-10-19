@@ -18,8 +18,8 @@ import javax.annotation.Nullable;
 /** Provides instances of {@link LogEmitter}. */
 public final class LogEmitterProvider implements Closeable {
 
+  static final String DEFAULT_EMITTER_NAME = "unknown";
   private static final Logger LOGGER = Logger.getLogger(LogEmitterProvider.class.getName());
-  private static final String DEFAULT_EMITTER_NAME = "unknown";
 
   private final LogEmitterSharedState sharedState;
   private final ComponentRegistry<LogEmitter> logEmitterComponentRegistry;

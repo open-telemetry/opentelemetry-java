@@ -9,12 +9,11 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogRecord;
 import io.opentelemetry.sdk.logs.data.ReadableLogData;
-import io.opentelemetry.sdk.logs.data.ReadableLogRecordBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 
 /**
  * A {@link LogEmitter} is the entry point into a log pipeline. Log emitters accept {@link
- * ReadableLogRecordBuilder}, and after associating them with a {@link Resource} and {@link
+ * LogRecord}, and after associating them with a {@link Resource} and {@link
  * InstrumentationLibraryInfo}, pushes them to downstream {@link LogProcessor#emit(LogData)}.
  */
 public final class LogEmitter {
@@ -41,5 +40,10 @@ public final class LogEmitter {
         .emit(
             ReadableLogData.create(
                 logEmitterSharedState.getResource(), instrumentationLibraryInfo, logRecord));
+  }
+
+  // VisibleForTesting
+  InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return instrumentationLibraryInfo;
   }
 }
