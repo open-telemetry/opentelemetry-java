@@ -443,6 +443,7 @@ class AttributesTest {
             .put("key2", "value2")
             .put("key3", "value3")
             .remove(stringKey("key1"))
+            .remove(stringKey("key1"))
             .build();
     assertThat(attributes.get(stringKey("key1"))).isNull();
     assertThat(attributes.get(stringKey("key2"))).isEqualTo("value2");

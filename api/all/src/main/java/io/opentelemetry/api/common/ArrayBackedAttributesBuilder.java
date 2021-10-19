@@ -62,8 +62,9 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     }
     for (int i = 0; i < data.size() - 1; i += 2) {
       if (key.equals(data.get(i))) {
-        data.remove(i);
-        data.remove(i);
+        // null items are filtered out in ArrayBackedAttributes
+        data.set(i, null);
+        data.set(i + 1, null);
       }
     }
     return this;
