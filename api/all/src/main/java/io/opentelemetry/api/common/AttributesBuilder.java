@@ -150,4 +150,15 @@ public interface AttributesBuilder {
    * @return this Builder
    */
   AttributesBuilder putAll(Attributes attributes);
+
+  /**
+   * Remove any attributes that matches the {@link AttributeKey#getKey()} and {@link
+   * AttributeKey#getType()}.
+   *
+   * @return this Builder
+   */
+  default <T> AttributesBuilder remove(AttributeKey<T> key) {
+    // default implementation is no-op
+    return this;
+  }
 }

@@ -2,6 +2,10 @@
 
 ## Version 1.8.0 (unreleased):
 
+### API
+
+- New `AttributesBuilder#remove(String)` method improves ergonomics of modifying attributes.
+
 ### Auto-configuration (alpha)
 
 - BREAKING CHANGE: Remove deprecated `otel.experimental.exporter.otlp.protocol`,

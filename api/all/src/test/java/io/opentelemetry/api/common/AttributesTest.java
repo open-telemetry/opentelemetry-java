@@ -15,6 +15,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringArrayKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 
@@ -419,5 +420,67 @@ class AttributesTest {
     Attributes attributes = Attributes.of(stringKey("animal"), "cat");
     assertThat(attributes.get(stringKey("animal"))).isEqualTo("cat");
     assertThat(attributes.get(longKey("animal"))).isNull();
+  }
+
+  @Test
+  void remove() {
+    Attributes attributes = Attributes.builder().remove(stringKey("key1")).build();
+    assertThat(attributes.get(stringKey("key1"))).isNull();
+
+    attributes =
+        Attributes.builder().put("key1", "value1").build().toBuilder()
+            .remove(stringKey("key1"))
+            .build();
+    assertThat(attributes.get(stringKey("key1"))).isNull();
+
+    attributes =
+        Attributes.builder()
+            .put("key1", "value1")
+            .put("key2", "value2")
+            .put("key3", "value3")
+            .remove(stringKey("key1"))
+            .build();
+    assertThat(attributes.get(stringKey("key1"))).isNull();
+    assertThat(attributes.get(stringKey("key2"))).isEqualTo("value2");
+    assertThat(attributes.get(stringKey("key3"))).isEqualTo("value3");
+
+    attributes =
+        Attributes.builder()
+            .put("key1", "value1A")
+            .put("key1", true)
+            .remove(stringKey("key1"))
+            .build();
+    assertThat(attributes.get(booleanKey("key1"))).isEqualTo(true);
+  }
+
+  @Test
+  void remove_defaultImplementationDoesNotThrow() {
+    assertThatCode(
+            () -> {
+              AttributesBuilder myAttributesBuilder =
+                  new AttributesBuilder() {
+                    @Override
+                    public Attributes build() {
+                      return null;
+                    }
+
+                    @Override
+                    public <T> AttributesBuilder put(AttributeKey<Long> key, int value) {
+                      return null;
+                    }
+
+                    @Override
+                    public <T> AttributesBuilder put(AttributeKey<T> key, T value) {
+                      return null;
+                    }
+
+                    @Override
+                    public AttributesBuilder putAll(Attributes attributes) {
+                      return null;
+                    }
+                  };
+              myAttributesBuilder.remove(stringKey("foo"));
+            })
+        .doesNotThrowAnyException();
   }
 }

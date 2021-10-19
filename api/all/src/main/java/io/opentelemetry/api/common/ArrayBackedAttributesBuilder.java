@@ -55,6 +55,20 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     return this;
   }
 
+  @Override
+  public <T> AttributesBuilder remove(AttributeKey<T> key) {
+    if (key == null || key.getKey().isEmpty()) {
+      return this;
+    }
+    for (int i = 0; i < data.size() - 1; i += 2) {
+      if (key.equals(data.get(i))) {
+        data.remove(i);
+        data.remove(i);
+      }
+    }
+    return this;
+  }
+
   static List<Double> toList(double... values) {
     Double[] boxed = new Double[values.length];
     for (int i = 0; i < values.length; i++) {

@@ -5,7 +5,6 @@
 
 package io.opentelemetry.sdk.metrics.exemplar;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
@@ -16,7 +15,6 @@ import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.Nullable;
 
 /**
@@ -134,19 +132,12 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
   }
 
   /** Returns filtered attributes for exemplars. */
-  @SuppressWarnings("unchecked")
   private static Attributes filtered(Attributes original, Attributes metricPoint) {
     if (metricPoint.isEmpty()) {
       return original;
     }
-    AttributesBuilder result = Attributes.builder();
-    Set<AttributeKey<?>> keys = metricPoint.asMap().keySet();
-    original.forEach(
-        (k, v) -> {
-          if (!keys.contains(k)) {
-            result.<Object>put((AttributeKey<Object>) k, v);
-          }
-        });
+    AttributesBuilder result = original.toBuilder();
+    metricPoint.asMap().keySet().forEach(result::remove);
     return result.build();
   }
 }
