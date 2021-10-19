@@ -8,6 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -21,15 +22,22 @@ public final class OpenTelemetryResourceAutoConfiguration {
    *
    * <p>This method will auto-configure the returned {@link Resource} using system properties and
    * environment variables.
+   *
+   * @deprecated Use {@code OpenTelemetrySdkAutoConfiguration.builder().build().newResource()}.
    */
+  @Deprecated
   public static Resource configureResource() {
-    return configureResource(DefaultConfigProperties.get());
+    return configureResource(DefaultConfigProperties.get(Collections.emptyMap()));
   }
 
   /**
    * Returns a {@link Resource} automatically initialized through recognized system properties and
    * environment variables.
+   *
+   * @deprecated Use {@code
+   *     OpenTelemetrySdkAutoConfiguration.builder().setConfig(config).build().newResource()}.
    */
+  @Deprecated
   public static Resource configureResource(ConfigProperties config) {
     return configureResource(config, Function.identity());
   }

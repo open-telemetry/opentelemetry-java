@@ -42,9 +42,10 @@ final class TracerProviderConfiguration {
             .setSpanLimits(configureSpanLimits(config));
 
     String sampler = config.getString("otel.traces.sampler");
-    if (sampler != null) {
-      tracerProviderBuilder.setSampler(samplerCustomizer.apply(configureSampler(sampler, config)));
+    if (sampler == null) {
+      sampler = "parentbased_always_on";
     }
+    tracerProviderBuilder.setSampler(samplerCustomizer.apply(configureSampler(sampler, config)));
 
     // Run user configuration before setting exporters from environment to allow user span
     // processors to effect export.

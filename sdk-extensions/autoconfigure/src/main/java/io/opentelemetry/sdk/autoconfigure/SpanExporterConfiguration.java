@@ -60,7 +60,12 @@ final class SpanExporterConfiguration {
         throw new ConfigurationException(
             "otel.traces.exporter contains " + EXPORTER_NONE + " along with other exporters");
       }
-      return Collections.emptyMap();
+      SpanExporter noop = SpanExporter.composite();
+      SpanExporter customized = spanExporterCustomizer.apply(noop);
+      if (customized == noop) {
+        return Collections.emptyMap();
+      }
+      return Collections.singletonMap("none", customized);
     }
 
     if (exporterNames.isEmpty()) {

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 class EnvironmentResourceTest {
 
   @Test
+  @SuppressWarnings("deprecation") // Tests deprecated method
   void get() {
     assertThat(EnvironmentResource.get().getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
   }

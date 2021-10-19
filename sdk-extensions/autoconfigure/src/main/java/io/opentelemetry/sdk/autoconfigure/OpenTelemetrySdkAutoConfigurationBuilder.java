@@ -43,7 +43,7 @@ public final class OpenTelemetrySdkAutoConfigurationBuilder {
 
   /**
    * Sets the {@link ConfigProperties} to use when resolving properties for auto-configuration.
-   * {@link #addPropertySource(Supplier)} will have no effect if this method is used.
+   * {@link #addPropertySupplier(Supplier)} will have no effect if this method is used.
    */
   public OpenTelemetrySdkAutoConfigurationBuilder setConfig(ConfigProperties config) {
     requireNonNull(config, "config");
@@ -115,7 +115,7 @@ public final class OpenTelemetrySdkAutoConfigurationBuilder {
    * <p>Multiple calls will cause properties to be merged in order, with later ones overwriting
    * duplicate keys in earlier ones.
    */
-  public OpenTelemetrySdkAutoConfigurationBuilder addPropertySource(
+  public OpenTelemetrySdkAutoConfigurationBuilder addPropertySupplier(
       Supplier<Map<String, String>> propertiesSupplier) {
     requireNonNull(propertiesSupplier, "propertiesSupplier");
     this.propertiesSupplier = mergeProperties(this.propertiesSupplier, propertiesSupplier);
@@ -132,10 +132,10 @@ public final class OpenTelemetrySdkAutoConfigurationBuilder {
   }
 
   /**
-   * Returns a new {@link OpenTelemetrySdk}, configured using the settings of this {@link
-   * OpenTelemetrySdkAutoConfigurationBuilder}.
+   * Returns a new {@link OpenTelemetrySdkAutoConfiguration}, configured using the settings of this
+   * {@link OpenTelemetrySdkAutoConfigurationBuilder}.
    */
-  public OpenTelemetrySdk newOpenTelemetrySdk() {
+  public OpenTelemetrySdkAutoConfiguration build() {
     for (OpenTelemetrySdkAutoConfigurationCustomizer customizer :
         ServiceLoader.load(OpenTelemetrySdkAutoConfigurationCustomizer.class)) {
       customizer.customize(this);
@@ -143,16 +143,15 @@ public final class OpenTelemetrySdkAutoConfigurationBuilder {
 
     ConfigProperties config = this.config;
     if (config == null) {
-      config = DefaultConfigProperties.get();
+      config = DefaultConfigProperties.get(propertiesSupplier.get());
     }
     return new OpenTelemetrySdkAutoConfiguration(
-            config,
-            propagatorCustomizer,
-            spanExporterCustomizer,
-            resourceCustomizer,
-            samplerCustomizer,
-            setResultAsGlobal)
-        .doInitialize();
+        config,
+        propagatorCustomizer,
+        spanExporterCustomizer,
+        resourceCustomizer,
+        samplerCustomizer,
+        setResultAsGlobal);
   }
 
   private static Supplier<Map<String, String>> mergeProperties(

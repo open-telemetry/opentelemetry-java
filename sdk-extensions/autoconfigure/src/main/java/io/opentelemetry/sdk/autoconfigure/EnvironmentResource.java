@@ -10,6 +10,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.util.Collections;
 
 /**
  * Factory for a {@link Resource} which parses the standard "otel.resource.attributes" system
@@ -26,9 +27,13 @@ public final class EnvironmentResource {
    * Returns a {@link Resource} which contains information from the standard
    * "otel.resource.attributes"/"otel.service.name" system properties or
    * OTEL_RESOURCE_ATTRIBUTES/OTEL_SERVICE_NAME environment variables.
+   *
+   * @deprecated Use the information retrievable from {@link
+   *     OpenTelemetrySdkAutoConfiguration#newResource()}.
    */
+  @Deprecated
   public static Resource get() {
-    return create(DefaultConfigProperties.get());
+    return create(DefaultConfigProperties.get(Collections.emptyMap()));
   }
 
   static Resource create(ConfigProperties config) {

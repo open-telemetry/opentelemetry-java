@@ -46,7 +46,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
    * io.opentelemetry.api.GlobalOpenTelemetry} instance.
    */
   public static OpenTelemetrySdk initialize() {
-    return builder().newOpenTelemetrySdk();
+    return builder().build().newOpenTelemetrySdk();
   }
 
   /**
@@ -57,7 +57,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
    *     io.opentelemetry.api.GlobalOpenTelemetry} instance.
    */
   public static OpenTelemetrySdk initialize(boolean setResultAsGlobal) {
-    return builder().setResultAsGlobal(setResultAsGlobal).newOpenTelemetrySdk();
+    return builder().setResultAsGlobal(setResultAsGlobal).build().newOpenTelemetrySdk();
   }
 
   /**
@@ -70,7 +70,11 @@ public final class OpenTelemetrySdkAutoConfiguration {
    *     to auto-configure the returned {@link OpenTelemetrySdk}.
    */
   public static OpenTelemetrySdk initialize(boolean setResultAsGlobal, ConfigProperties config) {
-    return builder().setResultAsGlobal(setResultAsGlobal).setConfig(config).newOpenTelemetrySdk();
+    return builder()
+        .setResultAsGlobal(setResultAsGlobal)
+        .setConfig(config)
+        .build()
+        .newOpenTelemetrySdk();
   }
 
   /** Returns a new {@link OpenTelemetrySdkAutoConfigurationBuilder}. */
@@ -93,12 +97,15 @@ public final class OpenTelemetrySdkAutoConfiguration {
     this.setResultAsGlobal = setResultAsGlobal;
   }
 
-  OpenTelemetrySdk doInitialize() {
+  /**
+   * Returns a new {@link OpenTelemetrySdk} configured with the settings of this {@link
+   * OpenTelemetrySdkAutoConfiguration}.
+   */
+  public OpenTelemetrySdk newOpenTelemetrySdk() {
     ContextPropagators propagators =
         PropagatorConfiguration.configurePropagators(config, propagatorCustomizer);
 
-    Resource resource =
-        OpenTelemetryResourceAutoConfiguration.configureResource(config, resourceCustomizer);
+    Resource resource = newResource();
 
     configureMeterProvider(resource, config);
 
@@ -115,6 +122,14 @@ public final class OpenTelemetrySdkAutoConfiguration {
       GlobalOpenTelemetry.set(openTelemetrySdk);
     }
     return openTelemetrySdk;
+  }
+
+  /**
+   * Returns a new {@link Resource} configured with the settings of this {@link
+   * OpenTelemetrySdkAutoConfiguration}.
+   */
+  public Resource newResource() {
+    return OpenTelemetryResourceAutoConfiguration.configureResource(config, resourceCustomizer);
   }
 
   private static void configureMeterProvider(Resource resource, ConfigProperties config) {
@@ -154,5 +169,10 @@ public final class OpenTelemetrySdkAutoConfiguration {
 
     // Make sure metrics shut down when JVM shuts down.
     Runtime.getRuntime().addShutdownHook(new Thread(meterProvider::close));
+  }
+
+  // Visible for testing
+  ConfigProperties getConfig() {
+    return config;
   }
 }

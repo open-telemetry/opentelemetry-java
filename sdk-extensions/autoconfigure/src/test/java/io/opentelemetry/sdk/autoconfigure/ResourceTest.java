@@ -23,7 +23,7 @@ class ResourceTest {
 
   @Test
   void noResourceProviders() {
-    assertThat(OpenTelemetryResourceAutoConfiguration.configureResource())
+    assertThat(OpenTelemetrySdkAutoConfiguration.builder().build().newResource())
         .isEqualTo(
             Resource.getDefault().toBuilder().setSchemaUrl(ResourceAttributes.SCHEMA_URL).build());
   }
@@ -33,7 +33,7 @@ class ResourceTest {
     when(config.getString("otel.service.name")).thenReturn("test-service");
     when(config.getMap("otel.resource.attributes")).thenReturn(singletonMap("food", "cheesecake"));
 
-    assertThat(OpenTelemetryResourceAutoConfiguration.configureResource(config))
+    assertThat(OpenTelemetrySdkAutoConfiguration.builder().setConfig(config).build().newResource())
         .isEqualTo(
             Resource.getDefault().toBuilder()
                 .put(ResourceAttributes.SERVICE_NAME, "test-service")
