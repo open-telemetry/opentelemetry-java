@@ -38,8 +38,9 @@ class PrometheusCollectorTest {
 
   @BeforeEach
   void setUp() {
-    prometheusCollector =
-        PrometheusCollector.builder().setMetricProducer(metricProducer).buildAndRegister();
+    // Apply the SDK metric producer registers with prometheus.
+    prometheusCollector = new PrometheusCollector(metricProducer);
+    prometheusCollector.register();
   }
 
   @Test
@@ -51,10 +52,10 @@ class PrometheusCollectorTest {
         .isEqualTo(
             "# HELP grpc_name_total long_description\n"
                 + "# TYPE grpc_name_total counter\n"
-                + "grpc_name_total{kp=\"vp\",} 5.0\n"
+                + "grpc_name_total{kp=\"vp\",} 5.0 1633950672000\n"
                 + "# HELP http_name_total double_description\n"
                 + "# TYPE http_name_total counter\n"
-                + "http_name_total{kp=\"vp\",} 3.5\n");
+                + "http_name_total{kp=\"vp\",} 3.5 1633950672000\n");
   }
 
   private static ImmutableList<MetricData> generateTestData() {
@@ -69,7 +70,11 @@ class PrometheusCollectorTest {
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    LongPointData.create(123, 456, Attributes.of(stringKey("kp"), "vp"), 5)))),
+                    LongPointData.create(
+                        1633947011000000000L,
+                        1633950672000000000L,
+                        Attributes.of(stringKey("kp"), "vp"),
+                        5)))),
         MetricData.createDoubleSum(
             Resource.create(Attributes.of(stringKey("kr"), "vr")),
             InstrumentationLibraryInfo.create("http", "version"),
@@ -80,6 +85,10 @@ class PrometheusCollectorTest {
                 /* isMonotonic= */ true,
                 AggregationTemporality.CUMULATIVE,
                 Collections.singletonList(
-                    DoublePointData.create(123, 456, Attributes.of(stringKey("kp"), "vp"), 3.5)))));
+                    DoublePointData.create(
+                        1633947011000000000L,
+                        1633950672000000000L,
+                        Attributes.of(stringKey("kp"), "vp"),
+                        3.5)))));
   }
 }

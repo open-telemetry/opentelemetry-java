@@ -99,9 +99,11 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
         for (Point point : timeSeries.getPoints()) {
           type = mapAndAddPoint(unsupportedTypes, metric, attributes, points, point);
         }
-        MetricData md = toMetricData(type, metric.getMetricDescriptor(), points);
-        if (md != null) {
-          metricData.add(md);
+        if (type != null) {
+          MetricData md = toMetricData(type, metric.getMetricDescriptor(), points);
+          if (md != null) {
+            metricData.add(md);
+          }
         }
       }
     }
@@ -115,7 +117,6 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
     }
   }
 
-  @Nonnull
   private static MetricDescriptor.Type mapAndAddPoint(
       Set<MetricDescriptor.Type> unsupportedTypes,
       Metric metric,

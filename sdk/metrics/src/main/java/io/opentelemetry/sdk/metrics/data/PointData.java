@@ -40,5 +40,5 @@ public interface PointData {
    */
   Attributes getAttributes();
   /** List of exemplars collected from measurements that were used to form the data point. */
-  List<Exemplar> getExemplars();
+  List<ExemplarData> getExemplars();
 }

@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.metrics.exemplar;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -27,6 +27,10 @@ public interface ExemplarReservoir {
 
   /** Wraps a {@link ExemplarReservoir} with a measurement pre-filter. */
   public static ExemplarReservoir filtered(ExemplarFilter filter, ExemplarReservoir original) {
+    // Optimisation on memory usage.
+    if (filter == ExemplarFilter.neverSample()) {
+      return ExemplarReservoir.noSamples();
+    }
     return new FilteredExemplarReservoir(filter, original);
   }
 
@@ -65,9 +69,9 @@ public interface ExemplarReservoir {
    * <p>Additionally, clears the reservoir for the next sampling period.
    *
    * @param pointAttributes the {@link Attributes} associated with the metric point. {@link
-   *     Exemplar}s should filter these out of their final data state.
+   *     ExemplarData}s should filter these out of their final data state.
    * @return An (immutable) list of sampled exemplars for this point. Implementers are expected to
    *     filter out {@code pointAttributes} from the original recorded attributes.
    */
-  List<Exemplar> collectAndReset(Attributes pointAttributes);
+  List<ExemplarData> collectAndReset(Attributes pointAttributes);
 }

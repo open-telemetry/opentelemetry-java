@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -61,10 +61,11 @@ class DoubleLastValueAggregatorTest {
   @Test
   void mergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    Exemplar exemplar = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
-    List<Exemplar> exemplars = Collections.singletonList(exemplar);
-    List<Exemplar> previousExemplars =
-        Collections.singletonList(DoubleExemplar.create(attributes, 1L, "spanId", "traceId", 2));
+    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<ExemplarData> previousExemplars =
+        Collections.singletonList(
+            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
     DoubleAccumulation result =
         aggregator.merge(
             DoubleAccumulation.create(1, previousExemplars),

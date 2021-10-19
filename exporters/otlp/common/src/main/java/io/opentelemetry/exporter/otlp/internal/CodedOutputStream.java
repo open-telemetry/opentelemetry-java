@@ -102,24 +102,9 @@ abstract class CodedOutputStream {
   // Disallow construction outside of this class.
   private CodedOutputStream() {}
 
-  /** Write a single byte. */
-  final void writeRawByte(final byte value) throws IOException {
-    write(value);
-  }
-
-  /** Write a single byte, represented by an integer value. */
-  final void writeRawByte(final int value) throws IOException {
-    write((byte) value);
-  }
-
   /** Write an array of bytes. */
   final void writeRawBytes(final byte[] value) throws IOException {
     write(value, 0, value.length);
-  }
-
-  /** Write part of an array of bytes. */
-  final void writeRawBytes(final byte[] value, int offset, int length) throws IOException {
-    write(value, offset, length);
   }
 
   // -----------------------------------------------------------------
@@ -202,8 +187,6 @@ abstract class CodedOutputStream {
   abstract void write(byte value) throws IOException;
 
   abstract void write(byte[] value, int offset, int length) throws IOException;
-
-  abstract void writeLazy(byte[] value, int offset, int length) throws IOException;
 
   // =================================================================
 
@@ -382,57 +365,6 @@ abstract class CodedOutputStream {
    */
   abstract void flush() throws IOException;
 
-  /**
-   * If writing to a flat array, return the space left in the array. Otherwise, throws {@code
-   * UnsupportedOperationException}.
-   */
-  abstract int spaceLeft();
-
-  /**
-   * Verifies that {@link #spaceLeft()} returns zero. It's common to create a byte array that is
-   * exactly big enough to hold a message, then write to it with a {@code CodedOutputStream}.
-   * Calling {@code checkNoSpaceLeft()} after writing verifies that the message was actually as big
-   * as expected, which can help catch bugs.
-   */
-  final void checkNoSpaceLeft() {
-    if (spaceLeft() != 0) {
-      throw new IllegalStateException("Did not write as much data as expected.");
-    }
-  }
-
-  /**
-   * If you create a CodedOutputStream around a simple flat array, you must not attempt to write
-   * more bytes than the array has space. Otherwise, this exception will be thrown.
-   */
-  static class OutOfSpaceException extends IOException {
-    private static final long serialVersionUID = -6947486886997889499L;
-
-    private static final String MESSAGE =
-        "CodedOutputStream was writing to a flat byte array and ran out of space.";
-
-    OutOfSpaceException() {
-      super(MESSAGE);
-    }
-
-    OutOfSpaceException(String explanationMessage) {
-      super(MESSAGE + ": " + explanationMessage);
-    }
-
-    OutOfSpaceException(Throwable cause) {
-      super(MESSAGE, cause);
-    }
-
-    OutOfSpaceException(String explanationMessage, Throwable cause) {
-      super(MESSAGE + ": " + explanationMessage, cause);
-    }
-  }
-
-  /**
-   * Get the total number of bytes successfully written to this stream. The returned value is not
-   * guaranteed to be accurate if exceptions have been found in the middle of writing.
-   */
-  abstract int getTotalBytesWritten();
-
   // =================================================================
 
   /** Write a {@code bytes} field to the stream. */
@@ -453,18 +385,6 @@ abstract class CodedOutputStream {
       this.limit = buffer.length;
     }
 
-    @Override
-    final int spaceLeft() {
-      throw new UnsupportedOperationException(
-          "spaceLeft() can only be called on CodedOutputStreams that are "
-              + "writing to a flat array or ByteBuffer.");
-    }
-
-    @Override
-    final int getTotalBytesWritten() {
-      return totalBytesWritten;
-    }
-
     /**
      * This method does not perform bounds checking on the array. Checking array bounds is the
      * responsibility of the caller.
@@ -472,27 +392,6 @@ abstract class CodedOutputStream {
     final void buffer(byte value) {
       buffer[position++] = value;
       totalBytesWritten++;
-    }
-
-    /**
-     * This method does not perform bounds checking on the array. Checking array bounds is the
-     * responsibility of the caller.
-     */
-    final void bufferTag(final int fieldNumber, final int wireType) {
-      bufferUInt32NoTag(WireFormat.makeTag(fieldNumber, wireType));
-    }
-
-    /**
-     * This method does not perform bounds checking on the array. Checking array bounds is the
-     * responsibility of the caller.
-     */
-    final void bufferInt32NoTag(final int value) {
-      if (value >= 0) {
-        bufferUInt32NoTag(value);
-      } else {
-        // Must sign-extend.
-        bufferUInt64NoTag(value);
-      }
     }
 
     /**
@@ -666,11 +565,6 @@ abstract class CodedOutputStream {
         }
         totalBytesWritten += length;
       }
-    }
-
-    @Override
-    void writeLazy(byte[] value, int offset, int length) throws IOException {
-      write(value, offset, length);
     }
 
     private void flushIfNotAvailable(int requiredSize) throws IOException {

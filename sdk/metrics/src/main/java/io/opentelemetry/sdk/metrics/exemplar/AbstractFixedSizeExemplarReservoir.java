@@ -11,8 +11,8 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,12 +70,12 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
   }
 
   @Override
-  public final List<Exemplar> collectAndReset(Attributes pointAttributes) {
+  public final List<ExemplarData> collectAndReset(Attributes pointAttributes) {
     // Note: we are collecting exemplars from buckets piecemeal, but we
     // could still be sampling exemplars during this process.
-    List<Exemplar> results = new ArrayList<>();
+    List<ExemplarData> results = new ArrayList<>();
     for (int i = 0; i < this.storage.length; ++i) {
-      Exemplar result = this.storage[i].getAndReset(pointAttributes);
+      ExemplarData result = this.storage[i].getAndReset(pointAttributes);
       if (result != null) {
         results.add(result);
       }
@@ -103,7 +103,7 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
       this.value = value;
       this.attributes = attributes;
       // Note: It may make sense in the future to attempt to pull this from an active span.
-      this.recordTime = clock.nanoTime();
+      this.recordTime = clock.now();
       updateFromContext(context);
     }
 
@@ -116,11 +116,11 @@ abstract class AbstractFixedSizeExemplarReservoir implements ExemplarReservoir {
     }
 
     @Nullable
-    synchronized Exemplar getAndReset(Attributes pointAttributes) {
+    synchronized ExemplarData getAndReset(Attributes pointAttributes) {
       Attributes attributes = this.attributes;
       if (attributes != null) {
-        Exemplar result =
-            DoubleExemplar.create(
+        ExemplarData result =
+            DoubleExemplarData.create(
                 filtered(attributes, pointAttributes), recordTime, spanId, traceId, value);
         this.attributes = null;
         this.value = 0;

@@ -19,6 +19,8 @@ environment variables, e.g., `OTEL_TRACES_EXPORTER=zipkin`.
   + [Logging exporter](#logging-exporter)
 * [Trace context propagation](#propagator)
 * [OpenTelemetry Resource](#opentelemetry-resource)
+  + [Resource Provider SPI](#resource-provider-spi)
+  + [Disabling automatic ResourceProviders](#disabling-automatic-resourceproviders)
 * [Batch span processor](#batch-span-processor)
 * [Sampler](#sampler)
 * [Span limits](#span-limits)
@@ -50,9 +52,9 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 |------------------------------|-----------------------------|---------------------------------------------------------------------------|
 | otel.traces.exporter=otlp (default) | OTEL_TRACES_EXPORTER=otlp          | Select the OpenTelemetry exporter for tracing (default)                                   |
 | otel.metrics.exporter=otlp | OTEL_METRICS_EXPORTER=otlp          | Select the OpenTelemetry exporter for metrics                                 |
-| otel.exporter.otlp.endpoint  | OTEL_EXPORTER_OTLP_ENDPOINT | The OTLP traces and metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
-| otel.exporter.otlp.traces.endpoint  | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT | The OTLP traces endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
-| otel.exporter.otlp.metrics.endpoint  | OTEL_EXPORTER_OTLP_METRICS_ENDPOINT | The OTLP metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317`.            |
+| otel.exporter.otlp.endpoint  | OTEL_EXPORTER_OTLP_ENDPOINT | The OTLP traces and metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. If protocol is `http/protobuf` the version and signal will be appended to the path (e.g. `v1/traces` or `v1/metrics`). Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/{signal}` when protocol is `http/protobuf`.            |
+| otel.exporter.otlp.traces.endpoint  | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT | The OTLP traces endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/traces` when protocol is `http/protobuf`.            |
+| otel.exporter.otlp.metrics.endpoint  | OTEL_EXPORTER_OTLP_METRICS_ENDPOINT | The OTLP metrics endpoint to connect to. Must be a URL with a scheme of either `http` or `https` based on the use of TLS. Default is `http://localhost:4317` when protocol is `grpc`, and `http://localhost:4318/v1/metrics` when protocol is `http/protobuf`.             |
 | otel.exporter.otlp.certificate  | OTEL_EXPORTER_OTLP_CERTIFICATE | The path to the file containing trusted certificates to use when verifying an OTLP trace or metric server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used. |
 | otel.exporter.otlp.traces.certificate  | OTEL_EXPORTER_OTLP_TRACES_CERTIFICATE | The path to the file containing trusted certificates to use when verifying an OTLP trace server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used. |
 | otel.exporter.otlp.metrics.certificate  | OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE | The path to the file containing trusted certificates to use when verifying an OTLP metric server's TLS credentials. The file should contain one or more X.509 certificates in PEM format. By default the host platform's trusted root certificates are used. |
@@ -68,9 +70,6 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 | otel.exporter.otlp.protocol | OTEL_EXPORTER_OTLP_PROTOCOL | The transport protocol to use on OTLP trace and metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
 | otel.exporter.otlp.traces.protocol | OTEL_EXPORTER_OTLP_TRACES_PROTOCOL | The transport protocol to use on OTLP trace requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
 | otel.exporter.otlp.metrics.protocol | OTEL_EXPORTER_OTLP_METRICS_PROTOCOL | The transport protocol to use on OTLP metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
-| otel.experimental.exporter.otlp.protocol | OTEL_EXPERIMENTAL_EXPORTER_OTLP_PROTOCOL | **DEPRECATED for removal in 1.8.0.** The transport protocol to use on OTLP trace and metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
-| otel.experimental.exporter.otlp.traces.protocol | OTEL_EXPERIMENTAL_EXPORTER_OTLP_TRACES_PROTOCOL | **DEPRECATED for removal in 1.8.0.** The transport protocol to use on OTLP trace requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
-| otel.experimental.exporter.otlp.metrics.protocol | OTEL_EXPERIMENTAL_EXPORTER_OTLP_METRICS_PROTOCOL | **DEPRECATED for removal in 1.8.0.** The transport protocol to use on OTLP metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
 
 To configure the service name for the OTLP exporter, add the `service.name` key
 to the OpenTelemetry Resource ([see below](#opentelemetry-resource)), e.g. `OTEL_RESOURCE_ATTRIBUTES=service.name=myservice`.
@@ -153,6 +152,31 @@ You would specify that by setting service name property in one of the following 
 
 If not specified, SDK defaults the service name to `unknown_service:java`.
 
+### Resource Provider SPI
+
+The [autoconfigure-spi](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure-spi),
+part of the SDK extensions, provides a convenient ResourceProvider SPI that adds
+[common resource attributes](https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/resources) automatically. The SDK extensions include a [predefined set of common resources](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/resources/src/main/resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider),
+[common cloud vendor resources](https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/aws/src/main/resources/META-INF/services/io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider),
+or you can create your own.
+
+### Disabling Automatic ResourceProviders
+
+If you are using the `ResourceProvider` SPI (many instrumentation agent distributions include this automatically),
+you can disable one or more of them by using the following configuration item:
+
+| System property                       | Environment variable                  | Description                                                                        |
+|---------------------------------------|---------------------------------------|------------------------------------------------------------------------------------|
+| otel.java.disabled.resource-providers | OTEL_JAVA_DISABLED_RESOURCE_PROVIDERS | Disables one or more `ResourceProvider` types |
+
+The value must be a comma separated list of fully qualified `ResourceProvider` classnames.
+For example, if you don't want to expose the name of the operating system through the resource, you
+can pass the following JVM argument:
+
+```
+-Dotel.java.disabled.resource-providers=io.opentelemetry.sdk.extension.resources.OsResourceProvider
+```
+
 ## Batch span processor
 
 | System property           | Environment variable      | Description                                                                        |
@@ -190,6 +214,12 @@ These properties can be used to control the maximum size of recordings per span.
 | otel.span.attribute.count.limit        | OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT        | The maximum number of attributes per span. Default is `128`.           |
 | otel.span.event.count.limit            | OTEL_SPAN_EVENT_COUNT_LIMIT            | The maximum number of events per span. Default is `128`.               |
 | otel.span.link.count.limit             | OTEL_SPAN_LINK_COUNT_LIMIT             | The maximum number of links per span. Default is `128`                 |
+
+## Exemplars
+
+| System property          | Environment variable     | Description                                                                       |
+|--------------------------|--------------------------|-----------------------------------------------------------------------------------|
+| otel.metrics.exemplar.filter | OTEL_METRICS_EXEMPLAR_FILTER | The filter for exemplar sampling.  Can be `NONE`, `ALL` or `WITH_SAMPLED_TRACE`. Default is `WITH_SAMPLED_TRACE`.|
 
 ## Interval metric reader
 

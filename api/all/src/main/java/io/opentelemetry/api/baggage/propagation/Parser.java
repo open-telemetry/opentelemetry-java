@@ -7,6 +7,9 @@ package io.opentelemetry.api.baggage.propagation;
 
 import io.opentelemetry.api.baggage.BaggageBuilder;
 import io.opentelemetry.api.baggage.BaggageEntryMetadata;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 
 /**
@@ -83,11 +86,7 @@ class Parser {
                 break;
               case KEY: // none
             }
-            putBaggage(
-                baggageBuilder,
-                key.getValue(),
-                value.getValue(),
-                BaggageEntryMetadata.create(meta));
+            putBaggage(baggageBuilder, key.getValue(), value.getValue(), meta);
             reset(i + 1);
             break;
           }
@@ -112,16 +111,14 @@ class Parser {
       case META:
         {
           String rest = baggageHeader.substring(metaStart).trim();
-          putBaggage(
-              baggageBuilder, key.getValue(), value.getValue(), BaggageEntryMetadata.create(rest));
+          putBaggage(baggageBuilder, key.getValue(), value.getValue(), rest);
           break;
         }
       case VALUE:
         {
           if (!skipToNext) {
             value.tryTerminating(baggageHeader.length(), baggageHeader);
-            putBaggage(
-                baggageBuilder, key.getValue(), value.getValue(), BaggageEntryMetadata.empty());
+            putBaggage(baggageBuilder, key.getValue(), value.getValue(), null);
             break;
           }
         }
@@ -132,9 +129,27 @@ class Parser {
       BaggageBuilder baggage,
       @Nullable String key,
       @Nullable String value,
-      BaggageEntryMetadata metadata) {
-    if (key != null && value != null) {
-      baggage.put(key, value, metadata);
+      @Nullable String metadataValue) {
+    String decodedValue = decodeValue(value);
+    metadataValue = decodeValue(metadataValue);
+    BaggageEntryMetadata baggageEntryMetadata =
+        metadataValue != null
+            ? BaggageEntryMetadata.create(metadataValue)
+            : BaggageEntryMetadata.empty();
+    if (key != null && decodedValue != null) {
+      baggage.put(key, decodedValue, baggageEntryMetadata);
+    }
+  }
+
+  @Nullable
+  private static String decodeValue(@Nullable String value) {
+    if (value == null) {
+      return null;
+    }
+    try {
+      return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      return null;
     }
   }
 

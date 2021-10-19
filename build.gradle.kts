@@ -59,6 +59,36 @@ nexusPublishing {
   }
 }
 
+// The BOM projects register dependent tasks that actually do the generating.
+tasks.register("generateBuildSubstitutions") {
+  group = "publishing"
+  description = "Generate a code snippet that can be copy-pasted for use in composite builds."
+}
+
 subprojects {
   group = "io.opentelemetry"
+}
+
+tasks {
+  register("updateVersionInDocs") {
+    group = "documentation"
+    doLast {
+      val versionParts = version.toString().split('.')
+      val minorVersionNumber = Integer.parseInt(versionParts[1])
+      val nextSnapshot = "${versionParts[0]}.${minorVersionNumber + 1}.0-SNAPSHOT"
+
+      val readme = file("README.md")
+      if (readme.exists()) {
+        val readmeText = readme.readText()
+        val updatedText = readmeText
+          .replace("""<version>\d+\.\d+\.\d+</version>""".toRegex(), "<version>$version</version>")
+          .replace("""<version>\d+\.\d+\.\d+-SNAPSHOT</version>""".toRegex(), "<version>$nextSnapshot</version>")
+          .replace("""(implementation.*io\.opentelemetry:.*:)(\d+\.\d+\.\d+)(?!-SNAPSHOT)(.*)""".toRegex(), "\$1${version}\$3")
+          .replace("""(implementation.*io\.opentelemetry:.*:)(\d+\.\d+\.\d+-SNAPSHOT)(.*)""".toRegex(), "\$1${nextSnapshot}\$3")
+          .replace("""<!--VERSION_STABLE-->.*<!--/VERSION_STABLE-->""".toRegex(), "<!--VERSION_STABLE-->$version<!--/VERSION_STABLE-->")
+          .replace("""<!--VERSION_UNSTABLE-->.*<!--/VERSION_UNSTABLE-->""".toRegex(), "<!--VERSION_UNSTABLE-->$version-alpha<!--/VERSION_UNSTABLE-->")
+        readme.writeText(updatedText)
+      }
+    }
+  }
 }

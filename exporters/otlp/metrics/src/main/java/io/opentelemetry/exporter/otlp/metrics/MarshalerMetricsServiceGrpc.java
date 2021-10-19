@@ -7,8 +7,13 @@ package io.opentelemetry.exporter.otlp.metrics;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
 import io.grpc.MethodDescriptor;
+import io.grpc.stub.ClientCalls;
 import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerInputStream;
+import io.opentelemetry.exporter.otlp.internal.grpc.MarshalerServiceStub;
 import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
 import java.io.InputStream;
 
@@ -45,52 +50,37 @@ final class MarshalerMetricsServiceGrpc {
             }
           };
 
-  private static volatile MethodDescriptor<MetricsRequestMarshaler, ExportMetricsServiceResponse>
-      getExportMethod;
+  private static final MethodDescriptor<MetricsRequestMarshaler, ExportMetricsServiceResponse>
+      getExportMethod =
+          MethodDescriptor.<MetricsRequestMarshaler, ExportMetricsServiceResponse>newBuilder()
+              .setType(MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Export"))
+              .setRequestMarshaller(REQUEST_MARSHALLER)
+              .setResponseMarshaller(RESPONSE_MARSHALER)
+              .build();
 
-  static MetricsServiceFutureStub newFutureStub(io.grpc.Channel channel) {
+  static MetricsServiceFutureStub newFutureStub(Channel channel) {
     return MetricsServiceFutureStub.newStub(MetricsServiceFutureStub::new, channel);
   }
 
   static final class MetricsServiceFutureStub
-      extends io.grpc.stub.AbstractFutureStub<
-          MarshalerMetricsServiceGrpc.MetricsServiceFutureStub> {
-    private MetricsServiceFutureStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+      extends MarshalerServiceStub<
+          MetricsRequestMarshaler, ExportMetricsServiceResponse, MetricsServiceFutureStub> {
+    private MetricsServiceFutureStub(Channel channel, CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @Override
     protected MarshalerMetricsServiceGrpc.MetricsServiceFutureStub build(
-        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+        Channel channel, CallOptions callOptions) {
       return new MarshalerMetricsServiceGrpc.MetricsServiceFutureStub(channel, callOptions);
     }
 
-    com.google.common.util.concurrent.ListenableFuture<ExportMetricsServiceResponse> export(
-        MetricsRequestMarshaler request) {
-      return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getExportMethod(), getCallOptions()), request);
+    @Override
+    public ListenableFuture<ExportMetricsServiceResponse> export(MetricsRequestMarshaler request) {
+      return ClientCalls.futureUnaryCall(
+          getChannel().newCall(getExportMethod, getCallOptions()), request);
     }
-  }
-
-  private static MethodDescriptor<MetricsRequestMarshaler, ExportMetricsServiceResponse>
-      getExportMethod() {
-    MethodDescriptor<MetricsRequestMarshaler, ExportMetricsServiceResponse> getExportMethod;
-    if ((getExportMethod = MarshalerMetricsServiceGrpc.getExportMethod) == null) {
-      synchronized (MarshalerMetricsServiceGrpc.class) {
-        if ((getExportMethod = MarshalerMetricsServiceGrpc.getExportMethod) == null) {
-          MarshalerMetricsServiceGrpc.getExportMethod =
-              getExportMethod =
-                  MethodDescriptor
-                      .<MetricsRequestMarshaler, ExportMetricsServiceResponse>newBuilder()
-                      .setType(MethodDescriptor.MethodType.UNARY)
-                      .setFullMethodName(generateFullMethodName(SERVICE_NAME, "Export"))
-                      .setRequestMarshaller(REQUEST_MARSHALLER)
-                      .setResponseMarshaller(RESPONSE_MARSHALER)
-                      .build();
-        }
-      }
-    }
-    return getExportMethod;
   }
 
   private MarshalerMetricsServiceGrpc() {}

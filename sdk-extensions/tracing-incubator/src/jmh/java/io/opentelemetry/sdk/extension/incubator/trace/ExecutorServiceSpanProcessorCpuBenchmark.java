@@ -7,7 +7,7 @@ package io.opentelemetry.sdk.extension.incubator.trace;
 
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import io.opentelemetry.sdk.metrics.testing.InMemoryMetricReader;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -38,7 +38,7 @@ public class ExecutorServiceSpanProcessorCpuBenchmark {
 
   @State(Scope.Benchmark)
   public static class BenchmarkState {
-    private MetricProducer collector;
+    private InMemoryMetricReader metricReader;
     private ExecutorServiceSpanProcessor processor;
     private Tracer tracer;
     private int numThreads = 1;
@@ -51,9 +51,8 @@ public class ExecutorServiceSpanProcessorCpuBenchmark {
 
     @Setup(Level.Iteration)
     public final void setup() {
-      final SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
-      // Note: these will (likely) no longer be the same in future SDK.
-      collector = sdkMeterProvider;
+      metricReader = InMemoryMetricReader.create();
+      SdkMeterProvider.builder().registerMetricReader(metricReader).buildAndRegisterGlobal();
       SpanExporter exporter = new DelayingSpanExporter(delayMs);
       ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
       processor = ExecutorServiceSpanProcessor.builder(exporter, executor, true).build();
@@ -64,7 +63,7 @@ public class ExecutorServiceSpanProcessorCpuBenchmark {
     @TearDown(Level.Iteration)
     public final void recordMetrics() {
       BatchSpanProcessorMetrics metrics =
-          new BatchSpanProcessorMetrics(collector.collectAllMetrics(), numThreads);
+          new BatchSpanProcessorMetrics(metricReader.collectAllMetrics(), numThreads);
       exportedSpans = metrics.exportedSpans();
       droppedSpans = metrics.droppedSpans();
     }

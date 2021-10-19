@@ -118,14 +118,6 @@ class ImmutableBaggageTest {
   }
 
   @Test
-  void put_valueUnprintableChars() {
-    BaggageBuilder builder = ONE_ENTRY.toBuilder();
-    Baggage built = builder.build();
-    builder.put(K2, "\2ab\3cd");
-    assertThat(builder.build()).isEqualTo(built);
-  }
-
-  @Test
   void remove_existingKey() {
     BaggageBuilder builder = Baggage.builder();
     builder.put(K1, V1, TMD);

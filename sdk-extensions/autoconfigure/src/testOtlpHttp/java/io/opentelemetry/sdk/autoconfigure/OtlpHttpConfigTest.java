@@ -33,7 +33,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -161,21 +160,18 @@ class OtlpHttpConfigTest {
     metricRequests.clear();
     requestHeaders.clear();
     GlobalOpenTelemetry.resetForTest();
-    IntervalMetricReader.resetGlobalForTest();
   }
 
   @AfterEach
   public void tearDown() {
     GlobalOpenTelemetry.resetForTest();
-    IntervalMetricReader.resetGlobalForTest();
   }
 
   @Test
   void configureExportersGeneral() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.protocol", "http/protobuf");
-    props.put("otel.exporter.otlp.traces.endpoint", traceEndpoint());
-    props.put("otel.exporter.otlp.metrics.endpoint", metricEndpoint());
+    props.put("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
     props.put("otel.exporter.otlp.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.compression", "gzip");
@@ -184,8 +180,7 @@ class OtlpHttpConfigTest {
     SpanExporter spanExporter =
         SpanExporterConfiguration.configureExporter("otlp", properties, Collections.emptyMap());
     MetricExporter metricExporter =
-        MetricExporterConfiguration.configureOtlpMetrics(
-            properties, SdkMeterProvider.builder().build());
+        MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
 
     assertThat(spanExporter)
         .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
@@ -236,7 +231,9 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
     props.put("otel.exporter.otlp.compression", "foo");
     props.put("otel.exporter.otlp.timeout", "10s");
-    props.put("otel.exporter.otlp.traces.endpoint", traceEndpoint());
+    props.put(
+        "otel.exporter.otlp.traces.endpoint",
+        "https://localhost:" + server.httpsPort() + "/v1/traces");
     props.put("otel.exporter.otlp.traces.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.traces.compression", "gzip");
@@ -276,14 +273,16 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.headers", "header-key=dummy-value");
     props.put("otel.exporter.otlp.compression", "foo");
     props.put("otel.exporter.otlp.timeout", "10s");
-    props.put("otel.exporter.otlp.metrics.endpoint", metricEndpoint());
+    props.put(
+        "otel.exporter.otlp.metrics.endpoint",
+        "https://localhost:" + server.httpsPort() + "/v1/metrics");
     props.put("otel.exporter.otlp.metrics.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.metrics.compression", "gzip");
     props.put("otel.exporter.otlp.metrics.timeout", "15s");
     MetricExporter metricExporter =
         MetricExporterConfiguration.configureOtlpMetrics(
-            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder().build());
+            DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
 
     assertThat(metricExporter)
         .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
@@ -320,7 +319,7 @@ class OtlpHttpConfigTest {
     assertThatThrownBy(
             () ->
                 MetricExporterConfiguration.configureOtlpMetrics(
-                    properties, SdkMeterProvider.builder().build()))
+                    properties, SdkMeterProvider.builder()))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Invalid OTLP certificate path:");
   }
@@ -359,8 +358,8 @@ class OtlpHttpConfigTest {
   @Test
   void configuresGlobal() {
     System.setProperty("otel.exporter.otlp.protocol", "http/protobuf");
-    System.setProperty("otel.exporter.otlp.traces.endpoint", traceEndpoint());
-    System.setProperty("otel.exporter.otlp.metrics.endpoint", metricEndpoint());
+    System.setProperty(
+        "otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort() + "/");
     System.setProperty("otel.exporter.otlp.certificate", certificateExtension.filePath);
     System.setProperty("otel.imr.export.interval", "1s");
 
@@ -376,13 +375,5 @@ class OtlpHttpConfigTest {
               // potentially others.
               assertThat(metricRequests).isNotEmpty();
             });
-  }
-
-  private static String traceEndpoint() {
-    return String.format("https://" + canonicalHostName + ":%s/v1/traces", server.httpsPort());
-  }
-
-  private static String metricEndpoint() {
-    return String.format("https://" + canonicalHostName + ":%s/v1/metrics", server.httpsPort());
   }
 }

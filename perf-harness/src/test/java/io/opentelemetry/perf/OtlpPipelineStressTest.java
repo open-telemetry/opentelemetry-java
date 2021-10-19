@@ -21,14 +21,14 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.PointData;
-import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.metrics.testing.InMemoryMetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
-import java.util.Collections;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -105,7 +105,7 @@ public class OtlpPipelineStressTest {
 
   private SdkTracerProvider sdkTracerProvider;
   private OpenTelemetry openTelemetry;
-  private IntervalMetricReader intervalMetricReader;
+  private SdkMeterProvider meterProvider;
   private Proxy collectorProxy;
   private ToxiproxyClient toxiproxyClient;
 
@@ -131,7 +131,7 @@ public class OtlpPipelineStressTest {
 
   @AfterEach
   void tearDown() throws IOException {
-    intervalMetricReader.shutdown();
+    meterProvider.close();
     sdkTracerProvider.shutdown();
 
     toxiproxyClient.reset();
@@ -185,7 +185,7 @@ public class OtlpPipelineStressTest {
 
     Thread.sleep(10000);
     List<MetricData> finishedMetricItems = metricExporter.getFinishedMetricItems();
-    intervalMetricReader.shutdown();
+    meterProvider.close();
     Thread.sleep(1000);
     reportMetrics(finishedMetricItems);
     Thread.sleep(10000);
@@ -247,15 +247,14 @@ public class OtlpPipelineStressTest {
                 .build());
 
     // set up the metric exporter and wire it into the SDK and a timed reader.
-    SdkMeterProvider meterProvider =
-        SdkMeterProvider.builder().setResource(resource).buildAndRegisterGlobal();
-
-    intervalMetricReader =
-        IntervalMetricReader.builder()
-            .setMetricExporter(metricExporter)
-            .setMetricProducers(Collections.singleton(meterProvider))
-            .setExportIntervalMillis(1000)
-            .buildAndStart();
+    meterProvider =
+        SdkMeterProvider.builder()
+            .setResource(resource)
+            .registerMetricReader(
+                PeriodicMetricReader.builder(metricExporter)
+                    .setInterval(Duration.ofSeconds(1))
+                    .newMetricReaderFactory())
+            .buildAndRegisterGlobal();
 
     // set up the span exporter and wire it into the SDK
     OtlpGrpcSpanExporter spanExporter =

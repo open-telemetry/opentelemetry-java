@@ -7,8 +7,6 @@ plugins {
   id("net.ltgt.nullaway")
 }
 
-val enableNullaway: String? by project
-
 val disableErrorProne = properties["disableErrorProne"]?.toString()?.toBoolean() ?: false
 
 tasks {
@@ -60,6 +58,10 @@ tasks {
         // Prevents lazy initialization
         disable("InitializeInline")
 
+        // Seems to trigger even when a deprecated method isn't called anywhere.
+        // We don't get much benefit from it anyways.
+        disable("InlineMeSuggester")
+
         if (name.contains("Jmh") || name.contains("Test")) {
           // Allow underscore in test-type method names
           disable("MemberName")
@@ -68,15 +70,21 @@ tasks {
         option("NullAway:CustomContractAnnotations", "io.opentelemetry.api.internal.Contract")
       }
 
-      errorprone.nullaway {
-        // Enable nullaway on main sources.
-        // TODO(anuraaga): Remove enableNullaway flag when all errors fixed
-        if (!name.contains("Test") && !name.contains("Jmh") && enableNullaway == "true") {
-          severity.set(CheckSeverity.ERROR)
-        } else {
+      with(options) {
+        errorprone.nullaway {
+          annotatedPackages.add("io.opentelemetry")
+          // Disable nullaway by default, we enable for main sources below.
           severity.set(CheckSeverity.OFF)
         }
-        annotatedPackages.add("io.opentelemetry")
+      }
+    }
+  }
+
+  // Enable nullaway on main sources.
+  named<JavaCompile>("compileJava") {
+    with(options) {
+      errorprone.nullaway {
+        severity.set(CheckSeverity.ERROR)
       }
     }
   }

@@ -10,7 +10,7 @@ import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
@@ -123,7 +123,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
     }
 
     @Override
-    protected HistogramAccumulation doAccumulateThenReset(List<Exemplar> exemplars) {
+    protected HistogramAccumulation doAccumulateThenReset(List<ExemplarData> exemplars) {
       lock.lock();
       try {
         HistogramAccumulation acc =

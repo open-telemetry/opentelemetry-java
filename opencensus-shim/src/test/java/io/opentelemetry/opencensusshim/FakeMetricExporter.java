@@ -72,7 +72,7 @@ class FakeMetricExporter implements MetricExporter {
 
   @Override
   public CompletableResultCode flush() {
-    return null;
+    return CompletableResultCode.ofSuccess();
   }
 
   @Override

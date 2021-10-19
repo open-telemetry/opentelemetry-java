@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.util.concurrent.AtomicDouble;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.data.DoubleExemplar;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import java.util.Collections;
 import java.util.List;
@@ -127,7 +127,7 @@ public class AggregatorHandleTest {
   void testGenerateExemplarsOnCollect() {
     TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    Exemplar result = DoubleExemplar.create(attributes, 2L, "spanid", "traceid", 1);
+    ExemplarData result = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
     // We need to first record a value so that collect and reset does something.
     testAggregator.recordDouble(1.0, Attributes.empty(), Context.root());
     Mockito.when(reservoir.collectAndReset(attributes))
@@ -139,7 +139,7 @@ public class AggregatorHandleTest {
   private static class TestAggregatorHandle extends AggregatorHandle<Void> {
     final AtomicLong recordedLong = new AtomicLong();
     final AtomicDouble recordedDouble = new AtomicDouble();
-    final AtomicReference<List<Exemplar>> recordedExemplars = new AtomicReference<>();
+    final AtomicReference<List<ExemplarData>> recordedExemplars = new AtomicReference<>();
 
     TestAggregatorHandle(ExemplarReservoir reservoir) {
       super(reservoir);
@@ -147,7 +147,7 @@ public class AggregatorHandleTest {
 
     @Nullable
     @Override
-    protected Void doAccumulateThenReset(List<Exemplar> exemplars) {
+    protected Void doAccumulateThenReset(List<ExemplarData> exemplars) {
       recordedLong.set(0);
       recordedDouble.set(0);
       recordedExemplars.set(exemplars);

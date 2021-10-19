@@ -15,9 +15,10 @@ dependencies {
   api(project(":api:all"))
   api(project(":sdk:all"))
 
+  compileOnly(project(":sdk:trace-shaded-deps"))
+
   implementation(project(":api:metrics"))
   implementation(project(":semconv"))
-  implementation("org.jctools:jctools-core:3.3.0")
 
   annotationProcessor("com.google.auto.value:auto-value")
   testImplementation(project(":sdk:testing"))
@@ -39,7 +40,7 @@ dependencies {
   jmh(project(":exporters:otlp:common")) {
     isTransitive = false
   }
-  jmh(project(":proto"))
+  jmh("io.opentelemetry.proto:opentelemetry-proto")
 
   jmh("com.google.guava:guava")
   jmh("io.grpc:grpc-api")

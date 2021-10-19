@@ -23,7 +23,7 @@ import okhttp3.OkHttpClient;
 public final class OtlpHttpMetricExporterBuilder {
 
   private static final long DEFAULT_TIMEOUT_SECS = 10;
-  private static final String DEFAULT_ENDPOINT = "http://localhost:4317/v1/metrics";
+  private static final String DEFAULT_ENDPOINT = "http://localhost:4318/v1/metrics";
 
   private long timeoutNanos = TimeUnit.SECONDS.toNanos(DEFAULT_TIMEOUT_SECS);
   private String endpoint = DEFAULT_ENDPOINT;
@@ -76,15 +76,17 @@ public final class OtlpHttpMetricExporterBuilder {
   }
 
   /**
-   * Sets the method used to compress payloads. If unset, compression is disabled. Currently the
-   * only supported compression method is "gzip".
+   * Sets the method used to compress payloads. If unset, compression is disabled. Currently
+   * supported compression methods include "gzip" and "none".
    */
   public OtlpHttpMetricExporterBuilder setCompression(String compressionMethod) {
     requireNonNull(compressionMethod, "compressionMethod");
     checkArgument(
-        compressionMethod.equals("gzip"),
-        "Unsupported compression method. Supported compression methods include: gzip.");
-    this.compressionEnabled = true;
+        compressionMethod.equals("gzip") || compressionMethod.equals("none"),
+        "Unsupported compression method. Supported compression methods include: gzip, none.");
+    if (compressionMethod.equals("gzip")) {
+      this.compressionEnabled = true;
+    }
     return this;
   }
 

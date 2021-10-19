@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.data.DoubleHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -126,7 +126,8 @@ final class MetricAdapter {
                   labelNames,
                   labelValues,
                   doublePoint.getValue(),
-                  lastExemplarOrNull(doublePoint.getExemplars())));
+                  lastExemplarOrNull(doublePoint.getExemplars()),
+                  doublePoint.getEpochNanos()));
           break;
         case LONG_SUM:
         case LONG_GAUGE:
@@ -137,7 +138,8 @@ final class MetricAdapter {
                   labelNames,
                   labelValues,
                   longPoint.getValue(),
-                  lastExemplarOrNull(longPoint.getExemplars())));
+                  lastExemplarOrNull(longPoint.getExemplars()),
+                  longPoint.getEpochNanos()));
           break;
         case SUMMARY:
           addSummarySamples(
@@ -159,10 +161,23 @@ final class MetricAdapter {
       List<String> labelValues,
       List<Sample> samples) {
     samples.add(
-        new Sample(
-            name + SAMPLE_SUFFIX_COUNT, labelNames, labelValues, doubleSummaryPoint.getCount()));
+        createSample(
+            name + SAMPLE_SUFFIX_COUNT,
+            labelNames,
+            labelValues,
+            doubleSummaryPoint.getCount(),
+            null,
+            doubleSummaryPoint.getEpochNanos()));
+
     samples.add(
-        new Sample(name + SAMPLE_SUFFIX_SUM, labelNames, labelValues, doubleSummaryPoint.getSum()));
+        createSample(
+            name + SAMPLE_SUFFIX_SUM,
+            labelNames,
+            labelValues,
+            doubleSummaryPoint.getSum(),
+            null,
+            doubleSummaryPoint.getEpochNanos()));
+
     List<ValueAtPercentile> valueAtPercentiles = doubleSummaryPoint.getPercentileValues();
     List<String> labelNamesWithQuantile = new ArrayList<>(labelNames.size());
     labelNamesWithQuantile.addAll(labelNames);
@@ -172,8 +187,13 @@ final class MetricAdapter {
       labelValuesWithQuantile.addAll(labelValues);
       labelValuesWithQuantile.add(doubleToGoString(valueAtPercentile.getPercentile()));
       samples.add(
-          new Sample(
-              name, labelNamesWithQuantile, labelValuesWithQuantile, valueAtPercentile.getValue()));
+          createSample(
+              name,
+              labelNamesWithQuantile,
+              labelValuesWithQuantile,
+              valueAtPercentile.getValue(),
+              null,
+              doubleSummaryPoint.getEpochNanos()));
     }
   }
 
@@ -184,14 +204,22 @@ final class MetricAdapter {
       List<String> labelValues,
       List<Sample> samples) {
     samples.add(
-        new Sample(
+        createSample(
             name + SAMPLE_SUFFIX_COUNT,
             labelNames,
             labelValues,
-            doubleHistogramPointData.getCount()));
+            doubleHistogramPointData.getCount(),
+            null,
+            doubleHistogramPointData.getEpochNanos()));
+
     samples.add(
-        new Sample(
-            name + SAMPLE_SUFFIX_SUM, labelNames, labelValues, doubleHistogramPointData.getSum()));
+        createSample(
+            name + SAMPLE_SUFFIX_SUM,
+            labelNames,
+            labelValues,
+            doubleHistogramPointData.getSum(),
+            null,
+            doubleHistogramPointData.getEpochNanos()));
 
     List<String> labelNamesWithLe = new ArrayList<>(labelNames.size() + 1);
     labelNamesWithLe.addAll(labelNames);
@@ -217,23 +245,25 @@ final class MetricAdapter {
               filterExemplars(
                   doubleHistogramPointData.getExemplars(),
                   doubleHistogramPointData.getBucketLowerBound(i),
-                  boundary)));
+                  boundary),
+              doubleHistogramPointData.getEpochNanos()));
     }
   }
 
   @Nullable
-  private static Exemplar lastExemplarOrNull(Collection<Exemplar> exemplars) {
-    Exemplar result = null;
-    for (Exemplar e : exemplars) {
+  private static ExemplarData lastExemplarOrNull(Collection<ExemplarData> exemplars) {
+    ExemplarData result = null;
+    for (ExemplarData e : exemplars) {
       result = e;
     }
     return result;
   }
 
   @Nullable
-  private static Exemplar filterExemplars(Collection<Exemplar> exemplars, double min, double max) {
-    Exemplar result = null;
-    for (Exemplar e : exemplars) {
+  private static ExemplarData filterExemplars(
+      Collection<ExemplarData> exemplars, double min, double max) {
+    ExemplarData result = null;
+    for (ExemplarData e : exemplars) {
       double value = e.getValueAsDouble();
       if (value <= max && value > min) {
         result = e;
@@ -273,14 +303,28 @@ final class MetricAdapter {
       List<String> labelNames,
       List<String> labelValues,
       double value,
-      @Nullable Exemplar exemplar) {
+      @Nullable ExemplarData exemplar,
+      long timestampNanos) {
     if (exemplar != null) {
-      return new Sample(name, labelNames, labelValues, value, toPrometheusExemplar(exemplar));
+      return new Sample(
+          name,
+          labelNames,
+          labelValues,
+          value,
+          toPrometheusExemplar(exemplar),
+          TimeUnit.MILLISECONDS.convert(timestampNanos, TimeUnit.NANOSECONDS));
     }
-    return new Sample(name, labelNames, labelValues, value);
+    return new Sample(
+        name,
+        labelNames,
+        labelValues,
+        value,
+        null,
+        TimeUnit.MILLISECONDS.convert(timestampNanos, TimeUnit.NANOSECONDS));
   }
 
-  private static io.prometheus.client.exemplars.Exemplar toPrometheusExemplar(Exemplar exemplar) {
+  private static io.prometheus.client.exemplars.Exemplar toPrometheusExemplar(
+      ExemplarData exemplar) {
     if (exemplar.getSpanId() != null && exemplar.getTraceId() != null) {
       return new io.prometheus.client.exemplars.Exemplar(
           exemplar.getValueAsDouble(),

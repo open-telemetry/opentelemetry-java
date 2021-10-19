@@ -74,6 +74,7 @@ class KotlinCoroutinesTest {
 
   // Check whether concurrent coroutines leak context
   @Test
+  @DelicateCoroutinesApi
   fun stressTest() {
     val context1 = Context.root().with(ANIMAL, "cat")
     runBlocking(context1.asContextElement()) {

@@ -9,8 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.data.Exemplar;
-import io.opentelemetry.sdk.metrics.data.LongExemplar;
+import io.opentelemetry.sdk.metrics.data.ExemplarData;
+import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -62,10 +62,10 @@ class LongLastValueAggregatorTest {
   @Test
   void mergeAccumulation() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    Exemplar exemplar = LongExemplar.create(attributes, 2L, "spanid", "traceid", 1);
-    List<Exemplar> exemplars = Collections.singletonList(exemplar);
-    List<Exemplar> previousExemplars =
-        Collections.singletonList(LongExemplar.create(attributes, 1L, "spanId", "traceId", 2));
+    ExemplarData exemplar = LongExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<ExemplarData> previousExemplars =
+        Collections.singletonList(LongExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
     LongAccumulation result =
         aggregator.merge(
             LongAccumulation.create(1, previousExemplars), LongAccumulation.create(2, exemplars));
