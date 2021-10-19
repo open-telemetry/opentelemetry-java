@@ -32,6 +32,13 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     this.scale = MAX_SCALE;
   }
 
+  // For copying
+  DoubleExponentialHistogramBuckets(DoubleExponentialHistogramBuckets buckets) {
+    this.counts = new MapCounter( (MapCounter) buckets.counts); // copy counts
+    this.bucketMapper = new LogarithmMapper(buckets.scale);
+    this.scale = buckets.scale;
+  }
+
   public boolean record(double value) {
     long index = bucketMapper.valueToIndex(Math.abs(value));
     return this.counts.increment(index, 1);
@@ -94,8 +101,32 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     this.bucketMapper = new LogarithmMapper(scale);
   }
 
-  /** This algorithm for merging is adapted from NrSketch. */
-  void mergeWith(DoubleExponentialHistogramBuckets other) {
+  /**
+   * Immutable method for merging. This method copies the first set of buckets, performs
+   * the merge on the copy, and returns the copy.
+   *
+   * @param a first buckets
+   * @param b second buckets
+   * @return A new set of buckets, the result
+   */
+  static DoubleExponentialHistogramBuckets merge(DoubleExponentialHistogramBuckets a, DoubleExponentialHistogramBuckets b) {
+    if (b.counts.isEmpty()) {
+      return new DoubleExponentialHistogramBuckets(a);
+    } else if (a.counts.isEmpty()) {
+      return new DoubleExponentialHistogramBuckets(b);
+    }
+    DoubleExponentialHistogramBuckets copy = new DoubleExponentialHistogramBuckets(a);
+    copy.mergeWith(b);
+    return copy;
+  }
+
+  /** This method merges this instance with another set of buckets. It alters the underlying bucket
+   * counts and scale of this instance only, so it is to be used with caution. For immutability,
+   * use the static merge() method.
+   *
+   * <p> This algorithm for merging is adapted from NrSketch.
+   * */
+  private void mergeWith(DoubleExponentialHistogramBuckets other) {
     if (other.counts.isEmpty()) {
       return;
     }

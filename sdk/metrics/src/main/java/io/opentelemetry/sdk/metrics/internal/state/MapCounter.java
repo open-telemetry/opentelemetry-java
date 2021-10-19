@@ -34,6 +34,15 @@ public class MapCounter implements ExponentialCounter {
     this.maxSize = maxSize;
   }
 
+  // Constructor for copying
+  public MapCounter(MapCounter mapCounter) {
+    this.maxSize = mapCounter.maxSize;
+    this.backing = new HashMap<>((int) Math.ceil(maxSize/0.75) + 1);
+    this.indexStart = mapCounter.indexStart;
+    this.indexEnd = mapCounter.indexEnd;
+    mapCounter.backing.forEach((Integer i, AtomicLong v) -> this.backing.put(i, new AtomicLong(v.longValue())));
+  }
+
   @Override
   public long getIndexStart() {
     return indexStart;

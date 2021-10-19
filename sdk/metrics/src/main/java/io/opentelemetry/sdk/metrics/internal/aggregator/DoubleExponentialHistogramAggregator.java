@@ -52,13 +52,9 @@ final class DoubleExponentialHistogramAggregator
   }
 
   /**
-   * This function takes two accumulations and uses th
-   *
-   * <p>We take the previousAccumulation buckets by reference, and directly merge accumulation's
-   * counts into these buckets. A new ExponentialHistogramAccumulation is created, but referencing
-   * the same buckets as previousAccumulation's. This function assumes previousAccumulation will not
-   * be used after this function call, and would be replaced by the returned accumulation.
-   * previousAccumulation will contain inconsistent data after calling this function.
+   * This function is an immutable merge. It firstly combines the sum and zero count. Then it
+   * performs a merge using the buckets from both accumulation, without modifying those
+   * accumulations.
    *
    * @param previousAccumulation the previously captured accumulation
    * @param accumulation the newly captured accumulation
@@ -69,17 +65,18 @@ final class DoubleExponentialHistogramAggregator
       ExponentialHistogramAccumulation previousAccumulation,
       ExponentialHistogramAccumulation accumulation) {
 
-    DoubleExponentialHistogramBuckets posBuckets = previousAccumulation.getPositiveBuckets();
-    DoubleExponentialHistogramBuckets negBuckets = previousAccumulation.getNegativeBuckets();
-
     double sum = previousAccumulation.getSum() + accumulation.getSum();
     long zeroCount = previousAccumulation.getZeroCount() + accumulation.getZeroCount();
 
-    // merge accumulation into previousAccumulation
-    posBuckets.mergeWith(accumulation.getPositiveBuckets());
-    negBuckets.mergeWith(accumulation.getNegativeBuckets());
+    // Create merged buckets
+    DoubleExponentialHistogramBuckets posBuckets = DoubleExponentialHistogramBuckets.merge(
+        previousAccumulation.getPositiveBuckets(),
+        accumulation.getPositiveBuckets());
+    DoubleExponentialHistogramBuckets negBuckets = DoubleExponentialHistogramBuckets.merge(
+        previousAccumulation.getNegativeBuckets(),
+        accumulation.getNegativeBuckets());
 
-    // resolve possible scale difference after merge
+    // resolve possible scale difference due to merge
     int commonScale = Math.min(posBuckets.getScale(), negBuckets.getScale());
     posBuckets.downscale(posBuckets.getScale() - commonScale);
     negBuckets.downscale(negBuckets.getScale() - commonScale);
