@@ -171,7 +171,8 @@ class OtlpHttpConfigTest {
   void configureExportersGeneral() {
     Map<String, String> props = new HashMap<>();
     props.put("otel.exporter.otlp.protocol", "http/protobuf");
-    props.put("otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort());
+    props.put(
+        "otel.exporter.otlp.endpoint", "https://" + canonicalHostName + ":" + server.httpsPort());
     props.put("otel.exporter.otlp.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.compression", "gzip");
@@ -233,7 +234,7 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.timeout", "10s");
     props.put(
         "otel.exporter.otlp.traces.endpoint",
-        "https://localhost:" + server.httpsPort() + "/v1/traces");
+        "https://" + canonicalHostName + ":" + server.httpsPort() + "/v1/traces");
     props.put("otel.exporter.otlp.traces.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.traces.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.traces.compression", "gzip");
@@ -275,7 +276,7 @@ class OtlpHttpConfigTest {
     props.put("otel.exporter.otlp.timeout", "10s");
     props.put(
         "otel.exporter.otlp.metrics.endpoint",
-        "https://localhost:" + server.httpsPort() + "/v1/metrics");
+        "https://" + canonicalHostName + ":" + server.httpsPort() + "/v1/metrics");
     props.put("otel.exporter.otlp.metrics.certificate", certificateExtension.filePath);
     props.put("otel.exporter.otlp.metrics.headers", "header-key=header-value");
     props.put("otel.exporter.otlp.metrics.compression", "gzip");
@@ -359,7 +360,8 @@ class OtlpHttpConfigTest {
   void configuresGlobal() {
     System.setProperty("otel.exporter.otlp.protocol", "http/protobuf");
     System.setProperty(
-        "otel.exporter.otlp.endpoint", "https://localhost:" + server.httpsPort() + "/");
+        "otel.exporter.otlp.endpoint",
+        "https://" + canonicalHostName + ":" + server.httpsPort() + "/");
     System.setProperty("otel.exporter.otlp.certificate", certificateExtension.filePath);
     System.setProperty("otel.imr.export.interval", "1s");
 
