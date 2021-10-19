@@ -5,6 +5,9 @@
 
 package io.opentelemetry.exporter.otlp.internal.grpc;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -55,11 +58,11 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
       boolean compressionEnabled) {
     this.type = type;
     Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-grpc");
-    Attributes attributes = Attributes.builder().put("type", type).build();
+    Attributes attributes = Attributes.builder().put(stringKey("type"), type).build();
     seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
     LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();
-    success = exported.bind(attributes.toBuilder().put("success", true).build());
-    failed = exported.bind(attributes.toBuilder().put("success", false).build());
+    success = exported.bind(attributes.toBuilder().put(booleanKey("success"), true).build());
+    failed = exported.bind(attributes.toBuilder().put(booleanKey("success"), false).build());
 
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;

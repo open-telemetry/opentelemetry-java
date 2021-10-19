@@ -5,6 +5,9 @@
 
 package io.opentelemetry.exporter.otlp.http.metrics;
 
+import static io.opentelemetry.api.common.AttributeKey.booleanKey;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
@@ -57,11 +60,11 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   OtlpHttpMetricExporter(
       OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
     Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http");
-    Attributes attributes = Attributes.builder().put("type", "metric").build();
+    Attributes attributes = Attributes.builder().put(stringKey("type"), "metric").build();
     seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
     LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();
-    success = exported.bind(attributes.toBuilder().put("success", true).build());
-    failed = exported.bind(attributes.toBuilder().put("success", false).build());
+    success = exported.bind(attributes.toBuilder().put(booleanKey("success"), true).build());
+    failed = exported.bind(attributes.toBuilder().put(booleanKey("success"), false).build());
 
     this.client = client;
     this.endpoint = endpoint;
