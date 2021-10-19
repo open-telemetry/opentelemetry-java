@@ -10,11 +10,10 @@ import io.opentelemetry.sdk.logs.data.LogRecord;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 public final class LogSinkSdkProvider {
   private final LogSink logSink = new SdkLogSink();
-  private final List<LogProcessor> processors = new ArrayList<>();
+  private final List<LogProcessor> processors;
 
   /**
    * Returns a new {@link LogSinkSdkProviderBuilder} for this class.
@@ -25,15 +24,13 @@ public final class LogSinkSdkProvider {
     return new LogSinkSdkProviderBuilder();
   }
 
-  LogSinkSdkProvider() {}
+  LogSinkSdkProvider(List<LogProcessor> processors) {
+    this.processors = processors;
+  }
 
   public LogSink get(String instrumentationName, String instrumentationVersion) {
     // Currently there is no differentiation by instrumentation library
     return logSink;
-  }
-
-  public void addLogProcessor(LogProcessor processor) {
-    processors.add(Objects.requireNonNull(processor, "Processor can not be null"));
   }
 
   /**

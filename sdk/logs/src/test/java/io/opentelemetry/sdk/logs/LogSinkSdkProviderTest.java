@@ -28,8 +28,7 @@ class LogSinkSdkProviderTest {
   void testLogSinkSdkProvider() {
     TestLogExporter exporter = new TestLogExporter();
     LogProcessor processor = BatchLogProcessor.builder(exporter).build();
-    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
-    provider.addLogProcessor(processor);
+    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().addLogProcessor(processor).build();
     LogSink sink = provider.get("test", "0.1a");
     LogRecord log = createLog(Severity.ERROR, "test");
     sink.offer(log);
@@ -48,8 +47,7 @@ class LogSinkSdkProviderTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
-    provider.addLogProcessor(processor);
+    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().addLogProcessor(processor).build();
     LogSink sink = provider.get("test", "0.1a");
 
     for (int i = 0; i < 7; i++) {
@@ -80,8 +78,7 @@ class LogSinkSdkProviderTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
-    provider.addLogProcessor(processor);
+    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().addLogProcessor(processor).build();
     LogSink sink = provider.get("test", "0.1a");
 
     long start = System.currentTimeMillis();
@@ -99,9 +96,11 @@ class LogSinkSdkProviderTest {
   void testMultipleProcessors() {
     TestLogProcessor processorOne = new TestLogProcessor();
     TestLogProcessor processorTwo = new TestLogProcessor();
-    LogSinkSdkProvider provider = LogSinkSdkProvider.builder().build();
-    provider.addLogProcessor(processorOne);
-    provider.addLogProcessor(processorTwo);
+    LogSinkSdkProvider provider =
+        LogSinkSdkProvider.builder()
+            .addLogProcessor(processorOne)
+            .addLogProcessor(processorTwo)
+            .build();
     LogSink sink = provider.get("test", "0.1");
     LogRecord record = createLog(Severity.INFO, "test");
     sink.offer(record);
