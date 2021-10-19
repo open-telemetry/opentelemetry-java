@@ -29,7 +29,7 @@ public final class EnvironmentResource {
    * OTEL_RESOURCE_ATTRIBUTES/OTEL_SERVICE_NAME environment variables.
    *
    * @deprecated Use the information retrievable from {@link
-   *     OpenTelemetrySdkAutoConfiguration#newResource()}.
+   *     OpenTelemetrySdkAutoConfigurationBuilder#newResource()}.
    */
   @Deprecated
   public static Resource get() {

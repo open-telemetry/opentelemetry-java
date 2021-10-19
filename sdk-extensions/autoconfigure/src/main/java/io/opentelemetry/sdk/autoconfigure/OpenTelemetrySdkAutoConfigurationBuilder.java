@@ -41,6 +41,13 @@ public final class OpenTelemetrySdkAutoConfigurationBuilder {
 
   private boolean setResultAsGlobal = true;
 
+  OpenTelemetrySdkAutoConfigurationBuilder() {
+    for (OpenTelemetrySdkAutoConfigurationCustomizer customizer :
+        ServiceLoader.load(OpenTelemetrySdkAutoConfigurationCustomizer.class)) {
+      customizer.customize(this);
+    }
+  }
+
   /**
    * Sets the {@link ConfigProperties} to use when resolving properties for auto-configuration.
    * {@link #addPropertySupplier(Supplier)} will have no effect if this method is used.
@@ -132,15 +139,26 @@ public final class OpenTelemetrySdkAutoConfigurationBuilder {
   }
 
   /**
+   * Returns a new {@link OpenTelemetrySdk} configured with the settings of this {@link
+   * OpenTelemetrySdkAutoConfigurationBuilder}.
+   */
+  public OpenTelemetrySdk newOpenTelemetrySdk() {
+    return build().newOpenTelemetrySdk();
+  }
+
+  /**
+   * Returns a new {@link Resource} configured with the settings of this {@link
+   * OpenTelemetrySdkAutoConfigurationBuilder}.
+   */
+  public Resource newResource() {
+    return build().newResource();
+  }
+
+  /**
    * Returns a new {@link OpenTelemetrySdkAutoConfiguration}, configured using the settings of this
    * {@link OpenTelemetrySdkAutoConfigurationBuilder}.
    */
-  public OpenTelemetrySdkAutoConfiguration build() {
-    for (OpenTelemetrySdkAutoConfigurationCustomizer customizer :
-        ServiceLoader.load(OpenTelemetrySdkAutoConfigurationCustomizer.class)) {
-      customizer.customize(this);
-    }
-
+  private OpenTelemetrySdkAutoConfiguration build() {
     ConfigProperties config = this.config;
     if (config == null) {
       config = DefaultConfigProperties.get(propertiesSupplier.get());

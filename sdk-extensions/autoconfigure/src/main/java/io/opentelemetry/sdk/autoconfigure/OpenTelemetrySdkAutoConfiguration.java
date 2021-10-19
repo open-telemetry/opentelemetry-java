@@ -46,7 +46,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
    * io.opentelemetry.api.GlobalOpenTelemetry} instance.
    */
   public static OpenTelemetrySdk initialize() {
-    return builder().build().newOpenTelemetrySdk();
+    return builder().newOpenTelemetrySdk();
   }
 
   /**
@@ -57,7 +57,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
    *     io.opentelemetry.api.GlobalOpenTelemetry} instance.
    */
   public static OpenTelemetrySdk initialize(boolean setResultAsGlobal) {
-    return builder().setResultAsGlobal(setResultAsGlobal).build().newOpenTelemetrySdk();
+    return builder().setResultAsGlobal(setResultAsGlobal).newOpenTelemetrySdk();
   }
 
   /**
@@ -70,11 +70,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
    *     to auto-configure the returned {@link OpenTelemetrySdk}.
    */
   public static OpenTelemetrySdk initialize(boolean setResultAsGlobal, ConfigProperties config) {
-    return builder()
-        .setResultAsGlobal(setResultAsGlobal)
-        .setConfig(config)
-        .build()
-        .newOpenTelemetrySdk();
+    return builder().setResultAsGlobal(setResultAsGlobal).setConfig(config).newOpenTelemetrySdk();
   }
 
   /** Returns a new {@link OpenTelemetrySdkAutoConfigurationBuilder}. */
@@ -97,11 +93,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     this.setResultAsGlobal = setResultAsGlobal;
   }
 
-  /**
-   * Returns a new {@link OpenTelemetrySdk} configured with the settings of this {@link
-   * OpenTelemetrySdkAutoConfiguration}.
-   */
-  public OpenTelemetrySdk newOpenTelemetrySdk() {
+  OpenTelemetrySdk newOpenTelemetrySdk() {
     ContextPropagators propagators =
         PropagatorConfiguration.configurePropagators(config, propagatorCustomizer);
 
@@ -124,11 +116,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     return openTelemetrySdk;
   }
 
-  /**
-   * Returns a new {@link Resource} configured with the settings of this {@link
-   * OpenTelemetrySdkAutoConfiguration}.
-   */
-  public Resource newResource() {
+  Resource newResource() {
     return OpenTelemetryResourceAutoConfiguration.configureResource(config, resourceCustomizer);
   }
 
