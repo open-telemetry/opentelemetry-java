@@ -83,10 +83,10 @@ class PrometheusHttpServerTest {
         .isEqualTo(
             "# HELP grpc_name_total long_description\n"
                 + "# TYPE grpc_name_total counter\n"
-                + "grpc_name_total{kp=\"vp\",} 5.0\n"
+                + "grpc_name_total{kp=\"vp\",} 5.0 0\n"
                 + "# HELP http_name_total double_description\n"
                 + "# TYPE http_name_total counter\n"
-                + "http_name_total{kp=\"vp\",} 3.5\n");
+                + "http_name_total{kp=\"vp\",} 3.5 0\n");
   }
 
   @ParameterizedTest
@@ -109,10 +109,10 @@ class PrometheusHttpServerTest {
         .isEqualTo(
             "# TYPE grpc_name counter\n"
                 + "# HELP grpc_name long_description\n"
-                + "grpc_name_total{kp=\"vp\"} 5.0\n"
+                + "grpc_name_total{kp=\"vp\"} 5.0 0.000\n"
                 + "# TYPE http_name counter\n"
                 + "# HELP http_name double_description\n"
-                + "http_name_total{kp=\"vp\"} 3.5\n"
+                + "http_name_total{kp=\"vp\"} 3.5 0.000\n"
                 + "# EOF\n");
   }
 
@@ -127,7 +127,7 @@ class PrometheusHttpServerTest {
         .isEqualTo(
             "# HELP grpc_name_total long_description\n"
                 + "# TYPE grpc_name_total counter\n"
-                + "grpc_name_total{kp=\"vp\",} 5.0\n");
+                + "grpc_name_total{kp=\"vp\",} 5.0 0\n");
   }
 
   @Test
@@ -145,10 +145,10 @@ class PrometheusHttpServerTest {
         .isEqualTo(
             "# HELP grpc_name_total long_description\n"
                 + "# TYPE grpc_name_total counter\n"
-                + "grpc_name_total{kp=\"vp\",} 5.0\n"
+                + "grpc_name_total{kp=\"vp\",} 5.0 0\n"
                 + "# HELP http_name_total double_description\n"
                 + "# TYPE http_name_total counter\n"
-                + "http_name_total{kp=\"vp\",} 3.5\n");
+                + "http_name_total{kp=\"vp\",} 3.5 0\n");
   }
 
   @Test
