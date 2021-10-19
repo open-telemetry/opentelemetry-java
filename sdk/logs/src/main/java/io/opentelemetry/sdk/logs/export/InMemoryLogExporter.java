@@ -11,14 +11,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /** A {@link LogExporter} implementation that can be used to test OpenTelemetry integration. */
 public final class InMemoryLogExporter implements LogExporter {
-
-  // using LinkedBlockingQueue to avoid manual locks for thread-safe operations
-  private final Queue<LogData> finishedLogItems = new LinkedBlockingQueue<>();
+  private final List<LogData> finishedLogItems = Collections.synchronizedList(new ArrayList<>());
   private boolean isStopped = false;
 
   private InMemoryLogExporter() {}
@@ -38,7 +34,9 @@ public final class InMemoryLogExporter implements LogExporter {
    * @return a {@code List} of the finished {@code Log}s.
    */
   public List<LogData> getFinishedLogItems() {
-    return Collections.unmodifiableList(new ArrayList<>(finishedLogItems));
+    synchronized (finishedLogItems) {
+      return Collections.unmodifiableList(new ArrayList<>(finishedLogItems));
+    }
   }
 
   /**

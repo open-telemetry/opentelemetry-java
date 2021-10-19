@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * A {@link MetricExporter} implementation that can be used to test OpenTelemetry integration.
@@ -53,9 +51,8 @@ import java.util.concurrent.LinkedBlockingQueue;
  * </code></pre>
  */
 public final class InMemoryMetricExporter implements MetricExporter {
-
-  // using LinkedBlockingQueue to avoid manual locks for thread-safe operations
-  private final Queue<MetricData> finishedMetricItems = new LinkedBlockingQueue<>();
+  private final List<MetricData> finishedMetricItems =
+      Collections.synchronizedList(new ArrayList<>());
   private boolean isStopped = false;
 
   private InMemoryMetricExporter() {}
@@ -75,7 +72,9 @@ public final class InMemoryMetricExporter implements MetricExporter {
    * @return a {@code List} of the finished {@code Metric}s.
    */
   public List<MetricData> getFinishedMetricItems() {
-    return Collections.unmodifiableList(new ArrayList<>(finishedMetricItems));
+    synchronized (finishedMetricItems) {
+      return Collections.unmodifiableList(new ArrayList<>(finishedMetricItems));
+    }
   }
 
   /**
