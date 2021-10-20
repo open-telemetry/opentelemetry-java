@@ -27,9 +27,9 @@ class AlwaysOnSamplerTest {
   private final String parentSpanId = idsGenerator.generateSpanId();
   private final SpanContext sampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getSampled(), TraceState.getDefault());
-  private final Context sampledParentContext = Context.root().with(Span.wrap(sampledSpanContext));
+  private final Context sampledParentContext = Context.groot().with(Span.wrap(sampledSpanContext));
   private final Context notSampledParentContext =
-      Context.root()
+      Context.groot()
           .with(
               Span.wrap(
                   SpanContext.create(

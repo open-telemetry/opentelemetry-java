@@ -215,7 +215,7 @@ class B3PropagationIntegrationTest {
     return sdk.getPropagators()
         .getTextMapPropagator()
         .extract(
-            Context.root(),
+            Context.groot(),
             request,
             new TextMapGetter<HttpRequest>() {
               @Override

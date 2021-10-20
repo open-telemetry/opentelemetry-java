@@ -591,9 +591,9 @@ class B3PropagatorTest {
 
   @Test
   void extract_nullContext() {
-    assertThat(b3Propagator.extract(null, Collections.emptyMap(), getter)).isSameAs(Context.root());
+    assertThat(b3Propagator.extract(null, Collections.emptyMap(), getter)).isSameAs(Context.groot());
     assertThat(b3PropagatorSingleHeader.extract(null, Collections.emptyMap(), getter))
-        .isSameAs(Context.root());
+        .isSameAs(Context.groot());
   }
 
   @Test

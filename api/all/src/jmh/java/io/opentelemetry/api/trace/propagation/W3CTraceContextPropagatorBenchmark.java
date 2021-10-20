@@ -73,7 +73,7 @@ public class W3CTraceContextPropagatorBenchmark {
   public Context measureExtractCreateInject() {
     Context result = null;
     for (int i = 0; i < COUNT; i++) {
-      result = w3cTraceContextPropagator.extract(Context.root(), carriers.get(i), getter);
+      result = w3cTraceContextPropagator.extract(Context.groot(), carriers.get(i), getter);
       SpanContext current = Span.fromContext(result).getSpanContext();
       SpanContext clientSpanContext =
           SpanContext.create(

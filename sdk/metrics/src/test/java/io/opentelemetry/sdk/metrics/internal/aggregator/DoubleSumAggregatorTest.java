@@ -114,7 +114,7 @@ class DoubleSumAggregatorTest {
             AggregationTemporality.CUMULATIVE,
             () -> reservoir);
     AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
-    aggregatorHandle.recordDouble(0, attributes, Context.root());
+    aggregatorHandle.recordDouble(0, attributes, Context.groot());
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(DoubleAccumulation.create(0, exemplars));
   }

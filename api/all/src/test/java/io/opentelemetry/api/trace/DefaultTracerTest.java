@@ -35,7 +35,7 @@ class DefaultTracerTest {
     Span span =
         defaultTracer
             .spanBuilder(SPAN_NAME)
-            .setParent(Context.root().with(Span.wrap(spanContext)))
+            .setParent(Context.groot().with(Span.wrap(spanContext)))
             .startSpan();
     assertThat(span.getSpanContext()).isSameAs(spanContext);
   }
@@ -45,7 +45,7 @@ class DefaultTracerTest {
     Span parent = Span.wrap(spanContext);
 
     Span span =
-        defaultTracer.spanBuilder(SPAN_NAME).setParent(Context.root().with(parent)).startSpan();
+        defaultTracer.spanBuilder(SPAN_NAME).setParent(Context.groot().with(parent)).startSpan();
     assertThat(span.getSpanContext()).isSameAs(spanContext);
   }
 

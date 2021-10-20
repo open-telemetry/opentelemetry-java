@@ -74,7 +74,7 @@ public class W3CBaggagePropagatorBenchmark {
   @Warmup(iterations = 5, time = 1)
   public Context smallBaggage() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
-    return propagator.extract(Context.root(), SMALL_BAGGAGE, getter);
+    return propagator.extract(Context.groot(), SMALL_BAGGAGE, getter);
   }
 
   @Benchmark
@@ -85,6 +85,6 @@ public class W3CBaggagePropagatorBenchmark {
   @Warmup(iterations = 5, time = 1)
   public Context largeBaggage() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
-    return propagator.extract(Context.root(), LARGE_BAGGAGE, getter);
+    return propagator.extract(Context.groot(), LARGE_BAGGAGE, getter);
   }
 }

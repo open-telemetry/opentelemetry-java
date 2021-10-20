@@ -34,7 +34,7 @@ public class ContextBenchmark {
   private int middle;
 
   private List<ContextKey<String>> keys;
-  private Context context = Context.root();
+  private Context context = Context.groot();
 
   @Setup
   public void setup() {
@@ -71,12 +71,12 @@ public class ContextBenchmark {
 
   @Benchmark
   public Context writeOne() {
-    return Context.root().with(keys.get(0), "value");
+    return Context.groot().with(keys.get(0), "value");
   }
 
   @Benchmark
   public Context writeAll() {
-    Context context = Context.root();
+    Context context = Context.groot();
     for (int i = 0; i < size; i++) {
       context = context.with(keys.get(i), "value");
     }

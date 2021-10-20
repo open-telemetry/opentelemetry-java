@@ -47,7 +47,7 @@ class MultiSpanProcessorTest {
   @Test
   void empty() {
     SpanProcessor multiSpanProcessor = SpanProcessor.composite(Collections.emptyList());
-    multiSpanProcessor.onStart(Context.root(), readWriteSpan);
+    multiSpanProcessor.onStart(Context.groot(), readWriteSpan);
     multiSpanProcessor.onEnd(readableSpan);
     multiSpanProcessor.shutdown();
   }
@@ -63,9 +63,9 @@ class MultiSpanProcessorTest {
   void twoSpanProcessor() {
     SpanProcessor multiSpanProcessor =
         SpanProcessor.composite(Arrays.asList(spanProcessor1, spanProcessor2));
-    multiSpanProcessor.onStart(Context.root(), readWriteSpan);
-    verify(spanProcessor1).onStart(same(Context.root()), same(readWriteSpan));
-    verify(spanProcessor2).onStart(same(Context.root()), same(readWriteSpan));
+    multiSpanProcessor.onStart(Context.groot(), readWriteSpan);
+    verify(spanProcessor1).onStart(same(Context.groot()), same(readWriteSpan));
+    verify(spanProcessor2).onStart(same(Context.groot()), same(readWriteSpan));
 
     multiSpanProcessor.onEnd(readableSpan);
     verify(spanProcessor1).onEnd(same(readableSpan));
@@ -90,8 +90,8 @@ class MultiSpanProcessorTest {
     assertThat(multiSpanProcessor.isStartRequired()).isTrue();
     assertThat(multiSpanProcessor.isEndRequired()).isTrue();
 
-    multiSpanProcessor.onStart(Context.root(), readWriteSpan);
-    verify(spanProcessor1).onStart(same(Context.root()), same(readWriteSpan));
+    multiSpanProcessor.onStart(Context.groot(), readWriteSpan);
+    verify(spanProcessor1).onStart(same(Context.groot()), same(readWriteSpan));
     verify(spanProcessor2, times(0)).onStart(any(Context.class), any(ReadWriteSpan.class));
 
     multiSpanProcessor.onEnd(readableSpan);

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class BaggageTest {
   @Test
   void current_empty() {
-    try (Scope scope = Context.root().makeCurrent()) {
+    try (Scope scope = Context.groot().makeCurrent()) {
       assertThat(Baggage.current()).isEqualTo(Baggage.empty());
     }
   }
@@ -22,7 +22,7 @@ class BaggageTest {
   @Test
   void current() {
     try (Scope scope =
-        Context.root().with(Baggage.builder().put("foo", "bar").build()).makeCurrent()) {
+        Context.groot().with(Baggage.builder().put("foo", "bar").build()).makeCurrent()) {
       Baggage result = Baggage.current();
       assertThat(result.getEntryValue("foo")).isEqualTo("bar");
     }

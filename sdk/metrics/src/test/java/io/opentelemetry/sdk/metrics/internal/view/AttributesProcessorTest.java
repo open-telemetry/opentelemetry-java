@@ -22,7 +22,7 @@ public class AttributesProcessorTest {
     assertThat(
             processor.process(
                 Attributes.builder().put("remove", "me").put("test", "keep").build(),
-                Context.root()))
+                Context.groot()))
         .hasSize(1)
         .containsEntry("test", "keep");
   }
@@ -31,7 +31,7 @@ public class AttributesProcessorTest {
   public void append_works() {
     AttributesProcessor processor =
         AttributesProcessor.append(Attributes.builder().put("append", "me").build());
-    assertThat(processor.process(Attributes.empty(), Context.root()))
+    assertThat(processor.process(Attributes.empty(), Context.groot()))
         .hasSize(1)
         .containsEntry("append", "me");
   }
@@ -40,7 +40,7 @@ public class AttributesProcessorTest {
   public void append_doesNotOverrideExistingKeys() {
     AttributesProcessor processor =
         AttributesProcessor.append(Attributes.builder().put("test", "drop").build());
-    assertThat(processor.process(Attributes.builder().put("test", "keep").build(), Context.root()))
+    assertThat(processor.process(Attributes.builder().put("test", "keep").build(), Context.groot()))
         .hasSize(1)
         .containsEntry("test", "keep");
   }
@@ -49,7 +49,7 @@ public class AttributesProcessorTest {
   public void appendBaggage_works() {
     AttributesProcessor processor = AttributesProcessor.appendBaggageByKeyName(ignored -> true);
     Baggage baggage = Baggage.builder().put("baggage", "value").build();
-    Context context = Context.root().with(baggage);
+    Context context = Context.groot().with(baggage);
 
     assertThat(processor.process(Attributes.builder().put("test", "keep").build(), context))
         .hasSize(2)
@@ -61,7 +61,7 @@ public class AttributesProcessorTest {
   public void appendBaggage_doesNotOverrideExistingKeys() {
     AttributesProcessor processor = AttributesProcessor.appendBaggageByKeyName(ignored -> true);
     Baggage baggage = Baggage.builder().put("test", "drop").build();
-    Context context = Context.root().with(baggage);
+    Context context = Context.groot().with(baggage);
 
     assertThat(processor.process(Attributes.builder().put("test", "keep").build(), context))
         .hasSize(1)
@@ -73,7 +73,7 @@ public class AttributesProcessorTest {
     AttributesProcessor processor =
         AttributesProcessor.appendBaggageByKeyName(name -> "keep".equals(name));
     Baggage baggage = Baggage.builder().put("baggage", "value").put("keep", "baggage").build();
-    Context context = Context.root().with(baggage);
+    Context context = Context.groot().with(baggage);
 
     assertThat(processor.process(Attributes.builder().put("test", "keep").build(), context))
         .hasSize(2)
@@ -88,7 +88,7 @@ public class AttributesProcessorTest {
         AttributesProcessor.appendBaggageByKeyName(ignored -> true)
             .then(AttributesProcessor.filterByKeyName(name -> "baggage".equals(name)));
     Baggage baggage = Baggage.builder().put("baggage", "value").put("keep", "baggage").build();
-    Context context = Context.root().with(baggage);
+    Context context = Context.groot().with(baggage);
 
     assertThat(processor.process(Attributes.builder().put("test", "keep").build(), context))
         .containsEntry("baggage", "value")

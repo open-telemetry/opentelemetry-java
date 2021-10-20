@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 class OtelInBraveTest {
 
   private static final ContextKey<String> ANIMAL = ContextKey.named("animal");
-  private static final Context CONTEXT_WITH_ANIMAL = Context.root().with(ANIMAL, "japan");
+  private static final Context CONTEXT_WITH_ANIMAL = Context.groot().with(ANIMAL, "japan");
 
   private static final Tracing TRACING =
       Tracing.newBuilder().currentTraceContext(CurrentTraceContext.Default.create()).build();

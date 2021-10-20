@@ -26,7 +26,7 @@ class RateLimitingSamplerTest {
   private static final String TRACE_ID = "12345678876543211234567887654321";
   private static final String PARENT_SPAN_ID = "8765432112345678";
   private static final Context spanContext =
-      Context.root()
+      Context.groot()
           .with(
               Span.wrap(
                   SpanContext.create(

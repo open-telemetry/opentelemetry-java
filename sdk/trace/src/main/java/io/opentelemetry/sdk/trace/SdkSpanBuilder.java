@@ -67,7 +67,7 @@ final class SdkSpanBuilder implements SpanBuilder {
 
   @Override
   public SpanBuilder setNoParent() {
-    this.parent = Context.root();
+    this.parent = Context.groot();
     return this;
   }
 
