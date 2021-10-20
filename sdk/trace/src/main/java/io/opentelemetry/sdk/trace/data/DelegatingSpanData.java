@@ -197,7 +197,7 @@ public abstract class DelegatingSpanData implements SpanData {
 
   @Override
   public String toString() {
-    return "SpanDataImpl{"
+    return "DelegatingSpanData{"
         + "spanContext="
         + getSpanContext()
         + ", "
