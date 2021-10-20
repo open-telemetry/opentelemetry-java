@@ -728,7 +728,7 @@ class SdkSpanBuilderTest {
         assertThat(span.getSpanContext().getTraceId())
             .isNotEqualTo(parent.getSpanContext().getTraceId());
         Mockito.verify(mockedSpanProcessor)
-            .onStart(Mockito.same(Context.groot()), Mockito.same((ReadWriteSpan) span));
+            .onStart(Mockito.same(Context.root()), Mockito.same((ReadWriteSpan) span));
         Span spanNoParent =
             sdkTracer
                 .spanBuilder(SPAN_NAME)
@@ -740,7 +740,7 @@ class SdkSpanBuilderTest {
           assertThat(span.getSpanContext().getTraceId())
               .isNotEqualTo(parent.getSpanContext().getTraceId());
           Mockito.verify(mockedSpanProcessor)
-              .onStart(Mockito.same(Context.groot()), Mockito.same((ReadWriteSpan) spanNoParent));
+              .onStart(Mockito.same(Context.root()), Mockito.same((ReadWriteSpan) spanNoParent));
         } finally {
           spanNoParent.end();
         }
@@ -1040,8 +1040,8 @@ class SdkSpanBuilderTest {
               spanBuilder.setAttribute(stringKey("foo"), null);
               spanBuilder.setStartTimestamp(-1, TimeUnit.MILLISECONDS);
               spanBuilder.setStartTimestamp(1, null);
-              spanBuilder.setParent(Context.groot().with(Span.wrap(null)));
-              spanBuilder.setParent(Context.groot());
+              spanBuilder.setParent(Context.root().with(Span.wrap(null)));
+              spanBuilder.setParent(Context.root());
               spanBuilder.setNoParent();
               spanBuilder.addLink(Span.getInvalid().getSpanContext());
               spanBuilder.addLink(Span.getInvalid().getSpanContext(), Attributes.empty());

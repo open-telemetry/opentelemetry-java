@@ -126,7 +126,7 @@ public final class JaegerPropagator implements TextMapPropagator {
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
-      return Context.groot();
+      return Context.root();
     }
     if (getter == null) {
       return context;

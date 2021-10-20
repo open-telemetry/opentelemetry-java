@@ -109,7 +109,7 @@ public class AggregatorHandleTest {
   void testOfferMeasurementLongToExemplar() {
     TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    Context context = Context.groot();
+    Context context = Context.root();
     testAggregator.recordLong(1L, attributes, context);
     Mockito.verify(reservoir).offerMeasurement(1L, attributes, context);
   }
@@ -118,7 +118,7 @@ public class AggregatorHandleTest {
   void testOfferMeasurementDoubleToExemplar() {
     TestAggregatorHandle testAggregator = new TestAggregatorHandle(reservoir);
     Attributes attributes = Attributes.builder().put("test", "value").build();
-    Context context = Context.groot();
+    Context context = Context.root();
     testAggregator.recordDouble(1.0d, attributes, context);
     Mockito.verify(reservoir).offerMeasurement(1.0d, attributes, context);
   }
@@ -129,7 +129,7 @@ public class AggregatorHandleTest {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData result = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
     // We need to first record a value so that collect and reset does something.
-    testAggregator.recordDouble(1.0, Attributes.empty(), Context.groot());
+    testAggregator.recordDouble(1.0, Attributes.empty(), Context.root());
     Mockito.when(reservoir.collectAndReset(attributes))
         .thenReturn(Collections.singletonList(result));
     testAggregator.accumulateThenReset(attributes);

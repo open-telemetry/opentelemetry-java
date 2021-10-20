@@ -329,7 +329,7 @@ class OtTracePropagatorTest {
 
   @Test
   void extract_nullContext() {
-    assertThat(propagator.extract(null, Collections.emptyMap(), getter)).isSameAs(Context.groot());
+    assertThat(propagator.extract(null, Collections.emptyMap(), getter)).isSameAs(Context.root());
   }
 
   @Test

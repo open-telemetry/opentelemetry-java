@@ -28,27 +28,27 @@ class SpanTest {
 
   @Test
   void testGetSpan_DefaultContext() {
-    Span span = Span.fromContext(Context.groot());
+    Span span = Span.fromContext(Context.root());
     assertThat(span).isSameAs(Span.getInvalid());
   }
 
   @Test
   void testGetSpan_ExplicitContext() {
     Span span = Span.wrap(SpanContext.getInvalid());
-    Context context = Context.groot().with(span);
+    Context context = Context.root().with(span);
     assertThat(Span.fromContext(context)).isSameAs(span);
   }
 
   @Test
   void testGetSpanWithoutDefault_DefaultContext() {
-    Span span = Span.fromContextOrNull(Context.groot());
+    Span span = Span.fromContextOrNull(Context.root());
     assertThat(span).isNull();
   }
 
   @Test
   void testGetSpanWithoutDefault_ExplicitContext() {
     Span span = Span.wrap(SpanContext.getInvalid());
-    Context context = Context.groot().with(span);
+    Context context = Context.root().with(span);
     assertThat(Span.fromContextOrNull(context)).isSameAs(span);
   }
 

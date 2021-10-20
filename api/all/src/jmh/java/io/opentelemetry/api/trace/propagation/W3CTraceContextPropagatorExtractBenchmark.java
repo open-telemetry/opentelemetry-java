@@ -67,7 +67,7 @@ public class W3CTraceContextPropagatorExtractBenchmark {
   public Context measureExtract() {
     Context result = null;
     for (int i = 0; i < COUNT; i++) {
-      result = w3cTraceContextPropagator.extract(Context.groot(), carriers.get(i), getter);
+      result = w3cTraceContextPropagator.extract(Context.root(), carriers.get(i), getter);
     }
     return result;
   }

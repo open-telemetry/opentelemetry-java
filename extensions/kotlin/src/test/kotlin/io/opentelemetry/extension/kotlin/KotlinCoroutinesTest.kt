@@ -26,7 +26,7 @@ class KotlinCoroutinesTest {
 
   @Test
   fun runWithContext() {
-    val context1 = Context.groot().with(ANIMAL, "cat")
+    val context1 = Context.root().with(ANIMAL, "cat")
     assertThat(Context.current().get(ANIMAL)).isNull()
     runBlocking(Dispatchers.Default + context1.asContextElement()) {
       assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
@@ -68,7 +68,7 @@ class KotlinCoroutinesTest {
   @Test
   fun getOpenTelemetryContextOutsideOfContext() {
     runBlocking(Dispatchers.Default) {
-      assertThat(Context.groot()).isSameAs(coroutineContext.getOpenTelemetryContext())
+      assertThat(Context.root()).isSameAs(coroutineContext.getOpenTelemetryContext())
     }
   }
 
@@ -76,7 +76,7 @@ class KotlinCoroutinesTest {
   @Test
   @DelicateCoroutinesApi
   fun stressTest() {
-    val context1 = Context.groot().with(ANIMAL, "cat")
+    val context1 = Context.root().with(ANIMAL, "cat")
     runBlocking(context1.asContextElement()) {
       assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
       for (i in 0 until 100) {

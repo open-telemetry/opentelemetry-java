@@ -56,7 +56,7 @@ class StrictContextStorageTest {
   // strict storage.
   @AfterEach
   void resetContext() {
-    ThreadLocalContextStorage.INSTANCE.attach(Context.groot());
+    ThreadLocalContextStorage.INSTANCE.attach(Context.root());
   }
 
   // TODO(anuraaga): These rules conflict with error prone so one or the other needs to be

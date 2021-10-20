@@ -38,7 +38,7 @@ class FixedSizeExemplarReservoirTest {
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir =
         new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
-    reservoir.offerMeasurement(1L, Attributes.empty(), Context.groot());
+    reservoir.offerMeasurement(1L, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -50,7 +50,7 @@ class FixedSizeExemplarReservoirTest {
 
     // Measurement count is reset, we should sample a new measurement (and only one)
     clock.advance(Duration.ofSeconds(1));
-    reservoir.offerMeasurement(2L, Attributes.empty(), Context.groot());
+    reservoir.offerMeasurement(2L, Attributes.empty(), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -70,7 +70,7 @@ class FixedSizeExemplarReservoirTest {
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir =
         new FixedSizeExemplarReservoir(clock, 1, RandomSupplier.platformDefault());
-    reservoir.offerMeasurement(1L, all, Context.groot());
+    reservoir.offerMeasurement(1L, all, Context.root());
     assertThat(reservoir.collectAndReset(partial))
         .satisfiesExactly(
             exemplar ->
@@ -85,7 +85,7 @@ class FixedSizeExemplarReservoirTest {
     Attributes all =
         Attributes.builder().put("one", 1).put("two", "two").put("three", true).build();
     final Context context =
-        Context.groot()
+        Context.root()
             .with(
                 Span.wrap(
                     SpanContext.createFromRemoteParent(
@@ -124,9 +124,9 @@ class FixedSizeExemplarReservoirTest {
         };
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir = new FixedSizeExemplarReservoir(clock, 2, () -> mockRandom);
-    reservoir.offerMeasurement(1, Attributes.of(key, 1L), Context.groot());
-    reservoir.offerMeasurement(2, Attributes.of(key, 2L), Context.groot());
-    reservoir.offerMeasurement(3, Attributes.of(key, 3L), Context.groot());
+    reservoir.offerMeasurement(1, Attributes.of(key, 1L), Context.root());
+    reservoir.offerMeasurement(2, Attributes.of(key, 2L), Context.root());
+    reservoir.offerMeasurement(3, Attributes.of(key, 3L), Context.root());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .satisfiesExactlyInAnyOrder(
             exemplar -> assertThat(exemplar).hasEpochNanos(clock.now()).hasValue(2),

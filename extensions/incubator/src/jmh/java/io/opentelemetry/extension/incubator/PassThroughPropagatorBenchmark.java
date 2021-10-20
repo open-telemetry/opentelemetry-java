@@ -44,7 +44,7 @@ public class PassThroughPropagatorBenchmark {
   static {
     Map<String, String> incoming = new HashMap<>();
     W3CTraceContextPropagator.getInstance()
-        .inject(Context.groot().with(Span.wrap(SPAN_CONTEXT)), incoming, Map::put);
+        .inject(Context.root().with(Span.wrap(SPAN_CONTEXT)), incoming, Map::put);
     INCOMING = Collections.unmodifiableMap(incoming);
   }
 
@@ -67,14 +67,14 @@ public class PassThroughPropagatorBenchmark {
 
   @Benchmark
   public void passthrough() {
-    Context extracted = passthrough.extract(Context.groot(), INCOMING, getter);
+    Context extracted = passthrough.extract(Context.root(), INCOMING, getter);
     passthrough.inject(extracted, new HashMap<>(), Map::put);
   }
 
   @Benchmark
   public void parse() {
     Context extracted =
-        W3CTraceContextPropagator.getInstance().extract(Context.groot(), INCOMING, getter);
+        W3CTraceContextPropagator.getInstance().extract(Context.root(), INCOMING, getter);
     W3CTraceContextPropagator.getInstance().inject(extracted, new HashMap<>(), Map::put);
   }
 }

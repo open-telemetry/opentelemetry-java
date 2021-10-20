@@ -27,7 +27,7 @@ public class W3CTraceContextPropagatorFuzzTest {
   public void safeForRandomInputs(String traceParentHeader, String traceStateHeader) {
     Context context =
         w3cTraceContextPropagator.extract(
-            Context.groot(),
+            Context.root(),
             ImmutableMap.of("traceparent", traceParentHeader, "tracestate", traceStateHeader),
             new TextMapGetter<Map<String, String>>() {
               @Override

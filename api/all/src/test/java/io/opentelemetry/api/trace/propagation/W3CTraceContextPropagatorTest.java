@@ -514,7 +514,7 @@ class W3CTraceContextPropagatorTest {
   @Test
   void extract_nullContext() {
     assertThat(w3cTraceContextPropagator.extract(null, Collections.emptyMap(), getter))
-        .isSameAs(Context.groot());
+        .isSameAs(Context.root());
   }
 
   @Test
@@ -538,7 +538,7 @@ class W3CTraceContextPropagatorTest {
     invalidHeaders.put(W3CTraceContextPropagator.TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED);
     invalidHeaders.put(W3CTraceContextPropagator.TRACE_STATE, traceState);
     Context context =
-        W3CTraceContextPropagator.getInstance().extract(Context.groot(), invalidHeaders, getter);
+        W3CTraceContextPropagator.getInstance().extract(Context.root(), invalidHeaders, getter);
     assertThat(Span.fromContext(context).getSpanContext().getTraceState().get("bar")).isNull();
   }
 }

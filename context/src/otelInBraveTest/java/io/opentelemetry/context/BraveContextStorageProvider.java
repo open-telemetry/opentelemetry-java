@@ -110,7 +110,7 @@ public class BraveContextStorageProvider implements ContextStorageProvider {
         return ((ContextWrapper) nextExtra).context;
       }
     }
-    return Context.groot();
+    return Context.root();
   }
 
   private static final class ContextWrapper {

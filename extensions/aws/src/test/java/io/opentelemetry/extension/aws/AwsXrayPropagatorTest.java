@@ -356,7 +356,7 @@ class AwsXrayPropagatorTest {
   @Test
   void extract_nullContext() {
     assertThat(xrayPropagator.extract(null, Collections.emptyMap(), getter))
-        .isSameAs(Context.groot());
+        .isSameAs(Context.root());
   }
 
   @Test

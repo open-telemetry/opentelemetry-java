@@ -117,7 +117,7 @@ class LongSumAggregatorTest {
             AggregationTemporality.CUMULATIVE,
             () -> reservoir);
     AggregatorHandle<LongAccumulation> aggregatorHandle = aggregator.createHandle();
-    aggregatorHandle.recordLong(0, attributes, Context.groot());
+    aggregatorHandle.recordLong(0, attributes, Context.root());
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(LongAccumulation.create(0, exemplars));
   }
