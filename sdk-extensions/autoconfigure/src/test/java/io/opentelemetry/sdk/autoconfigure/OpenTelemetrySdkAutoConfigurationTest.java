@@ -130,8 +130,6 @@ class OpenTelemetrySdkAutoConfigurationTest {
     sdk.getTracerProvider().get("test").spanBuilder("test").startSpan().end();
 
     // Ensures the export happened.
-    sdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
-
-    sdk.getSdkTracerProvider().shutdown();
+    sdk.getSdkTracerProvider().shutdown().join(10, TimeUnit.SECONDS);
   }
 }
