@@ -440,9 +440,9 @@ class AttributesTest {
     attributes =
         Attributes.builder()
             .put("key1", "value1")
+            .put("key1", "value2")
             .put("key2", "value2")
             .put("key3", "value3")
-            .remove(stringKey("key1"))
             .remove(stringKey("key1"))
             .build();
     assertThat(attributes.get(stringKey("key1"))).isNull();
@@ -453,6 +453,7 @@ class AttributesTest {
         Attributes.builder()
             .put("key1", "value1A")
             .put("key1", true)
+            .remove(stringKey("key1"))
             .remove(stringKey("key1"))
             .build();
     assertThat(attributes.get(booleanKey("key1"))).isEqualTo(true);
