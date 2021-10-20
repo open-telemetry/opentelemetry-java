@@ -34,6 +34,8 @@ class TemporalMetricStorage<T> {
    * Builds the {@link MetricData} streams to report against a specific metric reader.
    *
    * @param collector The handle of the metric reader.
+   * @param resource The resource to attach these metrics against.
+   * @param instrumentationLibraryInfo The instrumentation library that generated these metrics.
    * @param temporality The aggregation temporality requested by the reader.
    * @param currentAccumulation THe current accumulation of metric data from instruments. This might
    *     be delta (for synchronous) or cumulative (for asynchronous).
