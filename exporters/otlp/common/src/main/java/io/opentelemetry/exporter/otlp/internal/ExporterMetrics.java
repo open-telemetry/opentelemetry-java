@@ -8,6 +8,7 @@ package io.opentelemetry.exporter.otlp.internal;
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.BoundLongCounter;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
@@ -22,16 +23,19 @@ import io.opentelemetry.api.metrics.Meter;
  */
 public class ExporterMetrics {
 
+  private static final AttributeKey<String> ATTRIBUTE_KEY_TYPE = stringKey("type");
+  private static final AttributeKey<Boolean> ATTRIBUTE_KEY_SUCCESS = booleanKey("success");
+
   private final BoundLongCounter seen;
   private final BoundLongCounter success;
   private final BoundLongCounter failed;
 
   private ExporterMetrics(Meter meter, String type) {
-    Attributes attributes = Attributes.builder().put(stringKey("type"), type).build();
+    Attributes attributes = Attributes.builder().put(ATTRIBUTE_KEY_TYPE, type).build();
     seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
     LongCounter exported = meter.counterBuilder("otlp.exporter.exported").build();
-    success = exported.bind(attributes.toBuilder().put(booleanKey("success"), true).build());
-    failed = exported.bind(attributes.toBuilder().put(booleanKey("success"), false).build());
+    success = exported.bind(attributes.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, true).build());
+    failed = exported.bind(attributes.toBuilder().put(ATTRIBUTE_KEY_SUCCESS, false).build());
   }
 
   /** Record number of records seen. */
