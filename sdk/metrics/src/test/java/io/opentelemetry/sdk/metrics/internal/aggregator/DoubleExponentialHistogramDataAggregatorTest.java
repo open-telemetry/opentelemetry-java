@@ -19,6 +19,7 @@ import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -104,9 +105,39 @@ public class DoubleExponentialHistogramDataAggregatorTest {
     assertThat(negativeCounts.get((int) valueToIndex(expectedScale, 1.0) - negOffset)).isEqualTo(1);
   }
 
+
+  //todo: seems like it can't handle values at the very limits. Verify if this is expected behaviour
   @Test
-  void testRecordingAtLimits() {
-    // todo test recording of largest and smallest possible values
+  void testRecordingLimits() {
+    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    aggregatorHandle.recordDouble(0);
+
+    aggregatorHandle.recordDouble(Double.MIN_NORMAL);
+    aggregatorHandle.recordDouble(Double.MAX_VALUE);
+
+    aggregatorHandle.recordDouble(Double.MAX_VALUE/2);
+
+    ExponentialHistogramAccumulation acc = aggregatorHandle.accumulateThenReset(Attributes.empty());
+    List<Long> counts = Objects.requireNonNull(acc).getPositiveBuckets().getBucketCounts();
+
+    assertThat(acc.getScale()).isEqualTo(-3);
+    assertThat(acc.getZeroCount()).isEqualTo(1);
+
+    int offset = acc.getPositiveBuckets().getOffset();
+    assertThat(counts.get( (int) valueToIndex(acc.getScale(), Double.MIN_NORMAL) - offset)).isEqualTo(1);
+    long index = valueToIndex(acc.getScale(), Double.MAX_VALUE);
+    assertThat(counts.get( (int) index - offset)).isEqualTo(1);
+    assertThat(counts.get( (int) valueToIndex(acc.getScale(), Double.MAX_VALUE/2) - offset)).isEqualTo(1);
+
+    double base = Math.pow(2, Math.pow(2, -acc.getScale()));
+    double lowerBound = Math.pow(base, valueToIndex(acc.getScale(), Double.MIN_NORMAL));
+    double upperBound = Math.pow(base, valueToIndex(acc.getScale(), Double.MIN_NORMAL) + 1);
+    assertThat(Double.MIN_NORMAL).isGreaterThanOrEqualTo(lowerBound).isLessThan(upperBound);
+
+    // scale = -3.
+    long i = valueToIndex(acc.getScale(), Double.MAX_VALUE); // 128
+    BigDecimal bigLowerBound = BigDecimal.valueOf(256).pow( (int) i);
+    assertThat(BigDecimal.valueOf(Double.MAX_VALUE)).isGreaterThanOrEqualTo(bigLowerBound); // fails, but passes if I set i to 129
   }
 
   @Test
@@ -173,6 +204,30 @@ public class DoubleExponentialHistogramDataAggregatorTest {
         .isEqualTo(
             getTestAccumulation(
                 exemplars, 0, 4.1, 100, 100, 10000, 1000000, -1000, -2000000, -8.2, 2.3));
+  }
+
+  @Test
+  void testMergeNonOverlap() {
+    ExponentialHistogramAccumulation previousAccumulation =
+        getTestAccumulation(Collections.emptyList(), 10, 100, 100, 10000, 100000);
+    ExponentialHistogramAccumulation nextAccumulation =
+        getTestAccumulation(Collections.emptyList(), 0.001, 0.01, 0.1, 1);
+
+    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
+        .isEqualTo(getTestAccumulation(
+                Collections.emptyList(), 0.001, 0.01, 0.1, 1, 10, 100, 100, 10000, 100000));
+  }
+
+  @Test
+  void testMergeOverlap() {
+    ExponentialHistogramAccumulation previousAccumulation =
+        getTestAccumulation(Collections.emptyList(), 0, 10, 100, 10000, 100000);
+    ExponentialHistogramAccumulation nextAccumulation =
+        getTestAccumulation(Collections.emptyList(), 100000, 10000, 100, 10, 0);
+
+    assertThat(aggregator.merge(previousAccumulation, nextAccumulation))
+        .isEqualTo(getTestAccumulation(
+            Collections.emptyList(), 0, 0, 10, 10, 100, 100, 10000, 10000, 100000, 100000));
   }
 
   @Test

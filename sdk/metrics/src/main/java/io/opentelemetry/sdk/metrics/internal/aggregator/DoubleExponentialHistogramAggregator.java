@@ -53,7 +53,7 @@ final class DoubleExponentialHistogramAggregator
 
   /**
    * This function is an immutable merge. It firstly combines the sum and zero count. Then it
-   * performs a merge using the buckets from both accumulation, without modifying those
+   * performs a merge using the buckets from both accumulations, without modifying those
    * accumulations.
    *
    * @param previousAccumulation the previously captured accumulation
