@@ -58,12 +58,12 @@ class ContextTest {
   // Make sure all tests clean up
   @AfterEach
   void tearDown() {
-    assertThat(Context.current()).isEqualTo(Context.root());
+    assertThat(Context.current()).isEqualTo(Context.groot());
   }
 
   @Test
   void startsWithRoot() {
-    assertThat(Context.current()).isEqualTo(Context.root());
+    assertThat(Context.current()).isEqualTo(Context.groot());
   }
 
   @Test
@@ -73,7 +73,7 @@ class ContextTest {
     try (Scope ignored = context.makeCurrent()) {
       assertThat(Context.current().get(ANIMAL)).isEqualTo("cat");
 
-      try (Scope ignored2 = Context.root().makeCurrent()) {
+      try (Scope ignored2 = Context.groot().makeCurrent()) {
         assertThat(Context.current().get(ANIMAL)).isNull();
       }
 
@@ -107,7 +107,7 @@ class ContextTest {
       Thread thread = new Thread(() -> current.set(Context.current()));
       thread.start();
       thread.join();
-      assertThat(current.get()).isEqualTo(Context.root());
+      assertThat(current.get()).isEqualTo(Context.groot());
     }
   }
 
@@ -489,20 +489,20 @@ class ContextTest {
 
   @Test
   void emptyContext() {
-    assertThat(Context.root().get(new HashCollidingKey())).isEqualTo(null);
+    assertThat(Context.groot().get(new HashCollidingKey())).isEqualTo(null);
   }
 
   @Test
   void string() {
-    assertThat(Context.root()).hasToString("{}");
-    assertThat(Context.root().with(ANIMAL, "cat")).hasToString("{animal=cat}");
-    assertThat(Context.root().with(ANIMAL, "cat").with(BAG, 10))
+    assertThat(Context.groot()).hasToString("{}");
+    assertThat(Context.groot().with(ANIMAL, "cat")).hasToString("{animal=cat}");
+    assertThat(Context.groot().with(ANIMAL, "cat").with(BAG, 10))
         .hasToString("{animal=cat, bag=10}");
   }
 
   @Test
   void hashcodeCollidingKeys() {
-    Context context = Context.root();
+    Context context = Context.groot();
     HashCollidingKey cheese = new HashCollidingKey();
     HashCollidingKey wine = new HashCollidingKey();
 

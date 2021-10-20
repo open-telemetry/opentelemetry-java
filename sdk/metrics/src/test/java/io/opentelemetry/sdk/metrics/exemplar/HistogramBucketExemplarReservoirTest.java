@@ -27,7 +27,7 @@ class HistogramBucketExemplarReservoirTest {
   public void oneBucket_samplesEverything() {
     TestClock clock = TestClock.create();
     ExemplarReservoir reservoir = new HistogramBucketExemplarReservoir(clock, new double[] {});
-    reservoir.offerMeasurement(1L, Attributes.empty(), Context.root());
+    reservoir.offerMeasurement(1L, Attributes.empty(), Context.groot());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -38,7 +38,7 @@ class HistogramBucketExemplarReservoirTest {
                     .hasValue(1));
     // Measurement count is reset, we should sample a new measurement (and only one)
     clock.advance(Duration.ofSeconds(1));
-    reservoir.offerMeasurement(2L, Attributes.empty(), Context.root());
+    reservoir.offerMeasurement(2L, Attributes.empty(), Context.groot());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -49,8 +49,8 @@ class HistogramBucketExemplarReservoirTest {
                     .hasValue(2));
     // only latest measurement is kept per-bucket
     clock.advance(Duration.ofSeconds(1));
-    reservoir.offerMeasurement(3L, Attributes.empty(), Context.root());
-    reservoir.offerMeasurement(4L, Attributes.empty(), Context.root());
+    reservoir.offerMeasurement(3L, Attributes.empty(), Context.groot());
+    reservoir.offerMeasurement(4L, Attributes.empty(), Context.groot());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(1)
         .satisfiesExactly(
@@ -67,10 +67,10 @@ class HistogramBucketExemplarReservoirTest {
     AttributeKey<Long> bucketKey = AttributeKey.longKey("bucket");
     ExemplarReservoir reservoir =
         new HistogramBucketExemplarReservoir(clock, new double[] {0, 10, 20});
-    reservoir.offerMeasurement(-1, Attributes.of(bucketKey, 0L), Context.root());
-    reservoir.offerMeasurement(1, Attributes.of(bucketKey, 1L), Context.root());
-    reservoir.offerMeasurement(11, Attributes.of(bucketKey, 2L), Context.root());
-    reservoir.offerMeasurement(21, Attributes.of(bucketKey, 3L), Context.root());
+    reservoir.offerMeasurement(-1, Attributes.of(bucketKey, 0L), Context.groot());
+    reservoir.offerMeasurement(1, Attributes.of(bucketKey, 1L), Context.groot());
+    reservoir.offerMeasurement(11, Attributes.of(bucketKey, 2L), Context.groot());
+    reservoir.offerMeasurement(21, Attributes.of(bucketKey, 3L), Context.groot());
     assertThat(reservoir.collectAndReset(Attributes.empty()))
         .hasSize(4)
         .satisfiesExactlyInAnyOrder(

@@ -38,7 +38,7 @@ class NoopTextMapPropagatorTest {
     assertThat(
             TextMapPropagator.noop()
                 .extract(null, Collections.emptyMap(), MapTextMapGetter.INSTANCE))
-        .isSameAs(Context.root());
+        .isSameAs(Context.groot());
   }
 
   @Test

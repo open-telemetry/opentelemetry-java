@@ -46,41 +46,58 @@ fun findArtifact(version: String): File {
 if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
   afterEvaluate {
     tasks {
+      val jar by existing(Jar::class)
+
       val jApiCmp by registering(JapicmpTask::class) {
-        dependsOn("jar")
-
-        // the japicmp "new" version is either the user-specified one, or the locally built jar.
-        val apiNewVersion: String? by project
-        val newArtifact = apiNewVersion?.let { findArtifact(it) }
-          ?: file(getByName<Jar>("jar").archiveFile)
-        newClasspath = files(newArtifact)
-
-        //only output changes, not everything
-        isOnlyModified = true
-
-        // the japicmp "old" version is either the user-specified one, or the latest release.
-        val apiBaseVersion: String? by project
-        val baselineVersion = apiBaseVersion ?: latestReleasedVersion
-        oldClasspath = try {
-          files(findArtifact(baselineVersion))
-        } catch (e: Exception) {
-          //if we can't find the baseline artifact, this is probably one that's never been published before,
-          //so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
-          isOnlyModified = false
-          files()
-        }
-
-        //this is needed so that we only consider the current artifact, and not dependencies
-        isIgnoreMissingClasses = true
-        packageExcludes = listOf("*.internal", "*.internal.*", "io.opentelemetry.internal.shaded.jctools.*")
-        val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
-        txtOutputFile = apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_${baselineVersion}/${base.archivesName.get()}.txt") }
-          ?: file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${base.archivesName.get()}.txt")
+        configureJapiCmp(this, jar)
       }
+
+      val jApiCmpCheckCompatibility by registering(JapicmpTask::class) {
+        configureJapiCmp(this, jar)
+
+        isOnlyBinaryIncompatibleModified = true
+        isFailOnModification = true
+      }
+
       // have the check task depend on the api comparison task, to make it more likely it will get used.
       named("check") {
         dependsOn(jApiCmp)
+        dependsOn(jApiCmpCheckCompatibility)
       }
     }
+  }
+}
+
+fun configureJapiCmp(task: JapicmpTask, jarTask: TaskProvider<Jar>) {
+  task.run {
+    dependsOn(jarTask)
+
+    // the japicmp "new" version is either the user-specified one, or the locally built jar.
+    val apiNewVersion: String? by project
+    val newArtifact = apiNewVersion?.let { findArtifact(it) }
+      ?: file(jarTask.get().archiveFile)
+    newClasspath = files(newArtifact)
+
+    //only output changes, not everything
+    isOnlyModified = true
+
+    // the japicmp "old" version is either the user-specified one, or the latest release.
+    val apiBaseVersion: String? by project
+    val baselineVersion = apiBaseVersion ?: latestReleasedVersion
+    oldClasspath = try {
+      files(findArtifact(baselineVersion))
+    } catch (e: Exception) {
+      //if we can't find the baseline artifact, this is probably one that's never been published before,
+      //so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
+      isOnlyModified = false
+      files()
+    }
+
+    //this is needed so that we only consider the current artifact, and not dependencies
+    isIgnoreMissingClasses = true
+    packageExcludes = listOf("*.internal", "*.internal.*", "io.opentelemetry.internal.shaded.jctools.*")
+    val baseVersionString = if (apiBaseVersion == null) "latest" else baselineVersion
+    txtOutputFile = apiNewVersion?.let { file("$rootDir/docs/apidiffs/${apiNewVersion}_vs_${baselineVersion}/${base.archivesName.get()}.txt") }
+      ?: file("$rootDir/docs/apidiffs/current_vs_${baseVersionString}/${base.archivesName.get()}.txt")
   }
 }

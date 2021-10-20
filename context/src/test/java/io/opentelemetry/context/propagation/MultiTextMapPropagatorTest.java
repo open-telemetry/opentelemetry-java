@@ -142,7 +142,7 @@ class MultiTextMapPropagatorTest {
     assertThat(
             new MultiTextMapPropagator(propagator1, propagator2)
                 .extract(null, Collections.emptyMap(), getter))
-        .isSameAs(Context.root());
+        .isSameAs(Context.groot());
   }
 
   @Test

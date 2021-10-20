@@ -147,7 +147,7 @@ public final class W3CTraceContextPropagator implements TextMapPropagator {
   @Override
   public <C> Context extract(Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
-      return Context.root();
+      return Context.groot();
     }
     if (getter == null) {
       return context;

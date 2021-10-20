@@ -42,8 +42,8 @@ class SpanBuilderTest {
               spanBuilder.setAttribute(stringKey("foo"), null);
               spanBuilder.setStartTimestamp(-1, TimeUnit.MILLISECONDS);
               spanBuilder.setStartTimestamp(1, null);
-              spanBuilder.setParent(Context.root().with(Span.wrap(null)));
-              spanBuilder.setParent(Context.root());
+              spanBuilder.setParent(Context.groot().with(Span.wrap(null)));
+              spanBuilder.setParent(Context.groot());
               spanBuilder.setNoParent();
               spanBuilder.addLink(Span.getInvalid().getSpanContext());
               spanBuilder.addLink(Span.getInvalid().getSpanContext(), Attributes.empty());

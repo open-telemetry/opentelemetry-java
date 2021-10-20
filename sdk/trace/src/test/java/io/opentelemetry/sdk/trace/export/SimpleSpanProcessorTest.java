@@ -77,7 +77,7 @@ class SimpleSpanProcessorTest {
 
   @Test
   void onStartSync() {
-    simpleSampledSpansProcessor.onStart(Context.root(), readWriteSpan);
+    simpleSampledSpansProcessor.onStart(Context.groot(), readWriteSpan);
     verifyNoInteractions(spanExporter);
   }
 

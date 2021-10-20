@@ -33,7 +33,7 @@ class NoopOpenTelemetryTest {
   void contextNoOp() {
     // Context.root() is not a no-op Context, so the default context is never root.
     Context context = Context.current();
-    assertThat(context).isNotSameAs(Context.root());
+    assertThat(context).isNotSameAs(Context.groot());
     // No allocations
     assertThat(context.with(Span.wrap(SPAN_CONTEXT))).isSameAs(context);
     assertThat(SPAN_CONTEXT.isValid()).isTrue();

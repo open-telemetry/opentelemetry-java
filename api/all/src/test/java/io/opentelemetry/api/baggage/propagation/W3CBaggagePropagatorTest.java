@@ -47,7 +47,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(), ImmutableMap.of("baggage", "key=value1,key=value2"), getter);
+            Context.groot(), ImmutableMap.of("baggage", "key=value1,key=value2"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key", "value2").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -58,7 +58,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "  key=value1"), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "  key=value1"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key", "value1").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -69,7 +69,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key     =value1"), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "key     =value1"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key", "value1").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -80,7 +80,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "   =value1"), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "   =value1"), getter);
 
     assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
@@ -90,7 +90,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "ke y=value1"), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "ke y=value1"), getter);
 
     assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
@@ -100,7 +100,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "ke?y=value1"), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "ke?y=value1"), getter);
 
     assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
@@ -111,7 +111,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(),
+            Context.groot(),
             ImmutableMap.of(
                 "baggage",
                 "ke<y=value1, ;sss,key=value;meta1=value1;meta2=value2,ke(y=value;meta=val "),
@@ -129,7 +129,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "  key=  value1"), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "  key=  value1"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key", "value1").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -140,7 +140,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=value%201"), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "key=value%201"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key", "value 1").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -151,7 +151,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=value1      "), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "key=value1      "), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key", "value1").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -163,7 +163,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(), ImmutableMap.of("baggage", "key=value1      ;meta1=meta2"), getter);
+            Context.groot(), ImmutableMap.of("baggage", "key=value1      ;meta1=meta2"), getter);
 
     Baggage expectedBaggage =
         Baggage.builder().put("key", "value1", BaggageEntryMetadata.create("meta1=meta2")).build();
@@ -175,7 +175,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key1="), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "key1="), getter);
 
     assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
@@ -186,7 +186,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(), ImmutableMap.of("baggage", "key1=;metakey=metaval"), getter);
+            Context.groot(), ImmutableMap.of("baggage", "key1=;metakey=metaval"), getter);
 
     assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
@@ -196,7 +196,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key1=     "), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "key1=     "), getter);
 
     assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
@@ -206,7 +206,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=valu e1"), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "key=valu e1"), getter);
 
     assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
@@ -216,7 +216,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=val\\ue1"), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "key=val\\ue1"), getter);
 
     assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
@@ -227,7 +227,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(), ImmutableMap.of("baggage", "key=  value1,key1=val"), getter);
+            Context.groot(), ImmutableMap.of("baggage", "key=  value1,key1=val"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key1", "val").put("key", "value1").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -239,7 +239,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(), ImmutableMap.of("baggage", "key=value1      ,key1=val"), getter);
+            Context.groot(), ImmutableMap.of("baggage", "key=value1      ,key1=val"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key1", "val").put("key", "value1").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -251,7 +251,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(), ImmutableMap.of("baggage", "key1=;metakey=metaval,key1=val"), getter);
+            Context.groot(), ImmutableMap.of("baggage", "key1=;metakey=metaval,key1=val"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key1", "val").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -262,7 +262,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key1=,key1=val"), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "key1=,key1=val"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key1", "val").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -274,7 +274,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(), ImmutableMap.of("baggage", "key1=     ,key1=val"), getter);
+            Context.groot(), ImmutableMap.of("baggage", "key1=     ,key1=val"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key1", "val").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -286,7 +286,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(), ImmutableMap.of("baggage", "key=valu e1,key1=val"), getter);
+            Context.groot(), ImmutableMap.of("baggage", "key=valu e1,key1=val"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key1", "val").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -298,7 +298,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(), ImmutableMap.of("baggage", "key=val\\ue1,key1=val"), getter);
+            Context.groot(), ImmutableMap.of("baggage", "key=val\\ue1,key1=val"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key1", "val").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -308,15 +308,15 @@ class W3CBaggagePropagatorTest {
   void extract_header_missing() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
-    Context result = propagator.extract(Context.root(), ImmutableMap.of(), getter);
-    assertThat(result).isEqualTo(Context.root());
+    Context result = propagator.extract(Context.groot(), ImmutableMap.of(), getter);
+    assertThat(result).isEqualTo(Context.groot());
   }
 
   @Test
   void extract_header_empty() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
-    Context result = propagator.extract(Context.root(), ImmutableMap.of("baggage", ""), getter);
+    Context result = propagator.extract(Context.groot(), ImmutableMap.of("baggage", ""), getter);
     assertThat(Baggage.fromContext(result)).isEqualTo(Baggage.empty());
   }
 
@@ -325,7 +325,7 @@ class W3CBaggagePropagatorTest {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
 
     Context result =
-        propagator.extract(Context.root(), ImmutableMap.of("baggage", "key=value"), getter);
+        propagator.extract(Context.groot(), ImmutableMap.of("baggage", "key=value"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key", "value").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -337,7 +337,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(), ImmutableMap.of("baggage", "key1=value1,key2=value2"), getter);
+            Context.groot(), ImmutableMap.of("baggage", "key1=value1,key2=value2"), getter);
 
     Baggage expectedBaggage = Baggage.builder().put("key1", "value1").put("key2", "value2").build();
     assertThat(Baggage.fromContext(result)).isEqualTo(expectedBaggage);
@@ -349,7 +349,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(),
+            Context.groot(),
             ImmutableMap.of("baggage", "key=value;metadata-key=value;othermetadata"),
             getter);
 
@@ -366,7 +366,7 @@ class W3CBaggagePropagatorTest {
 
     Context result =
         propagator.extract(
-            Context.root(),
+            Context.groot(),
             ImmutableMap.of(
                 "baggage",
                 "key1= value1; metadata-key = value; othermetadata, "
@@ -411,7 +411,7 @@ class W3CBaggagePropagatorTest {
   @Test
   void extract_nullContext() {
     assertThat(W3CBaggagePropagator.getInstance().extract(null, Collections.emptyMap(), getter))
-        .isSameAs(Context.root());
+        .isSameAs(Context.groot());
   }
 
   @Test
@@ -425,7 +425,7 @@ class W3CBaggagePropagatorTest {
   void inject_noBaggage() {
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Map<String, String> carrier = new HashMap<>();
-    propagator.inject(Context.root(), carrier, Map::put);
+    propagator.inject(Context.groot(), carrier, Map::put);
     assertThat(carrier).isEmpty();
   }
 
@@ -434,7 +434,7 @@ class W3CBaggagePropagatorTest {
     Baggage baggage = Baggage.empty();
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Map<String, String> carrier = new HashMap<>();
-    propagator.inject(Context.root().with(baggage), carrier, Map::put);
+    propagator.inject(Context.groot().with(baggage), carrier, Map::put);
     assertThat(carrier).isEmpty();
   }
 
@@ -448,7 +448,7 @@ class W3CBaggagePropagatorTest {
             .build();
     W3CBaggagePropagator propagator = W3CBaggagePropagator.getInstance();
     Map<String, String> carrier = new HashMap<>();
-    propagator.inject(Context.root().with(baggage), carrier, Map::put);
+    propagator.inject(Context.groot().with(baggage), carrier, Map::put);
     assertThat(carrier)
         .containsExactlyInAnyOrderEntriesOf(
             singletonMap(
