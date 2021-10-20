@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * A {@link SpanExporter} implementation that can be used to test OpenTelemetry integration.
@@ -41,7 +43,7 @@ import java.util.List;
  * }</pre>
  */
 public final class InMemorySpanExporter implements SpanExporter {
-  private final List<SpanData> finishedSpanItems = Collections.synchronizedList(new ArrayList<>());
+  private final Queue<SpanData> finishedSpanItems = new ConcurrentLinkedQueue<>();
   private boolean isStopped = false;
 
   /**
@@ -59,9 +61,7 @@ public final class InMemorySpanExporter implements SpanExporter {
    * @return a {@code List} of the finished {@code Span}s.
    */
   public List<SpanData> getFinishedSpanItems() {
-    synchronized (finishedSpanItems) {
-      return Collections.unmodifiableList(new ArrayList<>(finishedSpanItems));
-    }
+    return Collections.unmodifiableList(new ArrayList<>(finishedSpanItems));
   }
 
   /**
