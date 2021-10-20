@@ -33,6 +33,7 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation("com.google.guava:guava")
+  testImplementation("com.google.guava:guava-testlib")
 
   jmh(project(":sdk:metrics"))
   jmh(project(":sdk:testing")) {
