@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -67,7 +66,7 @@ final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccumulation
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    return MetricDataBuilder.createDoubleSum(
+    return MetricData.createDoubleSum(
         getResource(),
         getInstrumentationLibraryInfo(),
         getMetricDescriptor().getName(),

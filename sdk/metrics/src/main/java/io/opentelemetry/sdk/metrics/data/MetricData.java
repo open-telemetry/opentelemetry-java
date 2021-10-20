@@ -10,7 +10,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 
 /**
- * A {@link MetricDataBuilder} represents the data exported as part of aggregating one {@code
+ * A {@link MetricDataImpl} represents the data exported as part of aggregating one {@code
  * Instrument}.
  */
 public interface MetricData {
@@ -28,11 +28,143 @@ public interface MetricData {
       DoubleHistogramData.create(AggregationTemporality.CUMULATIVE, Collections.emptyList());
 
   /**
+   * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
+   */
+  static MetricData createDoubleGauge(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      DoubleGaugeData data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationLibraryInfo,
+        name,
+        description,
+        unit,
+        MetricDataType.DOUBLE_GAUGE,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#LONG_GAUGE} type.
+   */
+  static MetricData createLongGauge(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      LongGaugeData data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationLibraryInfo,
+        name,
+        description,
+        unit,
+        MetricDataType.LONG_GAUGE,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#DOUBLE_SUM} type.
+   */
+  static MetricData createDoubleSum(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      DoubleSumData data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationLibraryInfo,
+        name,
+        description,
+        unit,
+        MetricDataType.DOUBLE_SUM,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#LONG_SUM} type.
+   */
+  static MetricData createLongSum(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      LongSumData data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationLibraryInfo,
+        name,
+        description,
+        unit,
+        MetricDataType.LONG_SUM,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData wih a {@link MetricDataType#SUMMARY} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#SUMMARY} type.
+   */
+  static MetricData createDoubleSummary(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      DoubleSummaryData data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationLibraryInfo,
+        name,
+        description,
+        unit,
+        MetricDataType.SUMMARY,
+        data);
+  }
+
+  /**
+   * Returns a new MetricData with a {@link MetricDataType#HISTOGRAM} type.
+   *
+   * @return a new MetricData wih a {@link MetricDataType#HISTOGRAM} type.
+   */
+  static MetricData createDoubleHistogram(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      String name,
+      String description,
+      String unit,
+      DoubleHistogramData data) {
+    return MetricDataImpl.create(
+        resource,
+        instrumentationLibraryInfo,
+        name,
+        description,
+        unit,
+        MetricDataType.HISTOGRAM,
+        data);
+  }
+
+  /**
    * Returns the resource of this {@code MetricData}.
    *
    * @return the resource of this {@code MetricData}.
    */
-  public abstract Resource getResource();
+  Resource getResource();
 
   /**
    * Returns the instrumentation library specified when creating the {@code Meter} which created the
@@ -40,37 +172,37 @@ public interface MetricData {
    *
    * @return an instance of {@link InstrumentationLibraryInfo}
    */
-  public abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+  InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 
   /**
    * Returns the metric name.
    *
    * @return the metric name.
    */
-  public abstract String getName();
+  String getName();
 
   /**
    * Returns the description of this metric.
    *
    * @return the description of this metric.
    */
-  public abstract String getDescription();
+  String getDescription();
 
   /**
    * Returns the unit of this metric.
    *
    * @return the unit of this metric.
    */
-  public abstract String getUnit();
+  String getUnit();
 
   /**
    * Returns the type of this metric.
    *
    * @return the type of this metric.
    */
-  public abstract MetricDataType getType();
+  MetricDataType getType();
 
-  abstract Data<?> getData();
+  Data<?> getData();
 
   /**
    * Returns {@code true} if there are no points associated with this metric.

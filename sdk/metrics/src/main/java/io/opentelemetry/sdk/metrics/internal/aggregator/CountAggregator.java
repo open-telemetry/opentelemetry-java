@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -69,7 +68,7 @@ final class CountAggregator extends AbstractAggregator<LongAccumulation> {
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    return MetricDataBuilder.createLongSum(
+    return MetricData.createLongSum(
         getResource(),
         getInstrumentationLibraryInfo(),
         getMetricDescriptor().getName(),

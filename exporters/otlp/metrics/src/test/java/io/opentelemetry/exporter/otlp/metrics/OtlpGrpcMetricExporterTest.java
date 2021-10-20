@@ -33,7 +33,6 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -365,7 +364,7 @@ class OtlpGrpcMetricExporterTest {
   private static MetricData generateFakeMetric() {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
-    return MetricDataBuilder.createLongSum(
+    return MetricData.createLongSum(
         Resource.empty(),
         InstrumentationLibraryInfo.empty(),
         "name",

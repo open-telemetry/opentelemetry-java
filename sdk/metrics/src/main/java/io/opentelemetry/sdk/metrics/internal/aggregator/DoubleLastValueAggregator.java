@@ -10,7 +10,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.DoubleGaugeData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -66,7 +65,7 @@ final class DoubleLastValueAggregator extends AbstractAggregator<DoubleAccumulat
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    return MetricDataBuilder.createDoubleGauge(
+    return MetricData.createDoubleGauge(
         getResource(),
         getInstrumentationLibraryInfo(),
         getMetricDescriptor().getName(),

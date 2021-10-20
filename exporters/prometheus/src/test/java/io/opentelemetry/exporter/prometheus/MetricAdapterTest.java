@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -43,7 +42,7 @@ class MetricAdapterTest {
   private static final Attributes KP_VP_ATTR = Attributes.of(stringKey("kp"), "vp");
 
   private static final MetricData MONOTONIC_CUMULATIVE_DOUBLE_SUM =
-      MetricDataBuilder.createDoubleSum(
+      MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
@@ -56,7 +55,7 @@ class MetricAdapterTest {
                   DoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_DOUBLE_SUM =
-      MetricDataBuilder.createDoubleSum(
+      MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
@@ -69,7 +68,7 @@ class MetricAdapterTest {
                   DoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_DELTA_DOUBLE_SUM =
-      MetricDataBuilder.createDoubleSum(
+      MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
@@ -82,7 +81,7 @@ class MetricAdapterTest {
                   DoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_DELTA_DOUBLE_SUM =
-      MetricDataBuilder.createDoubleSum(
+      MetricData.createDoubleSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
@@ -95,7 +94,7 @@ class MetricAdapterTest {
                   DoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_CUMULATIVE_LONG_SUM =
-      MetricDataBuilder.createLongSum(
+      MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
@@ -108,7 +107,7 @@ class MetricAdapterTest {
                   LongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_CUMULATIVE_LONG_SUM =
-      MetricDataBuilder.createLongSum(
+      MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
@@ -121,7 +120,7 @@ class MetricAdapterTest {
                   LongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData MONOTONIC_DELTA_LONG_SUM =
-      MetricDataBuilder.createLongSum(
+      MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
@@ -134,7 +133,7 @@ class MetricAdapterTest {
                   LongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData NON_MONOTONIC_DELTA_LONG_SUM =
-      MetricDataBuilder.createLongSum(
+      MetricData.createLongSum(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
@@ -148,7 +147,7 @@ class MetricAdapterTest {
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
 
   private static final MetricData DOUBLE_GAUGE =
-      MetricDataBuilder.createDoubleGauge(
+      MetricData.createDoubleGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
@@ -159,7 +158,7 @@ class MetricAdapterTest {
                   DoublePointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData LONG_GAUGE =
-      MetricDataBuilder.createLongGauge(
+      MetricData.createLongGauge(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
@@ -170,7 +169,7 @@ class MetricAdapterTest {
                   LongPointData.create(
                       1633947011000000000L, 1633950672000000000L, KP_VP_ATTR, 5))));
   private static final MetricData SUMMARY =
-      MetricDataBuilder.createDoubleSummary(
+      MetricData.createDoubleSummary(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
@@ -186,7 +185,7 @@ class MetricAdapterTest {
                       7,
                       Collections.emptyList()))));
   private static final MetricData HISTOGRAM =
-      MetricDataBuilder.createDoubleHistogram(
+      MetricData.createDoubleHistogram(
           Resource.create(Attributes.of(stringKey("kr"), "vr")),
           InstrumentationLibraryInfo.create("full", "version"),
           "instrument.name",
