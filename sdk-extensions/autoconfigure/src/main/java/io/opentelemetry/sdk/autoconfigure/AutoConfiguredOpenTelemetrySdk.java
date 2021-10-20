@@ -10,9 +10,9 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 
 /**
- * An auto-configured OpenTelemetry SDK. As an alternative to programmatically configuring * the SDK
- * using {@link OpenTelemetrySdk#builder()}, this package can be used to automatically * configure
- * the SDK using environment properties specified by OpenTelemetry.
+ * An auto-configured OpenTelemetry SDK. As an alternative to programmatically configuring the SDK
+ * using {@link OpenTelemetrySdk#builder()}, this package can be used to automatically configure the
+ * SDK using environment properties specified by OpenTelemetry.
  */
 @AutoValue
 public abstract class AutoConfiguredOpenTelemetrySdk {

@@ -28,7 +28,7 @@ public final class OpenTelemetryResourceAutoConfiguration {
    * <p>This method will auto-configure the returned {@link Resource} using system properties and
    * environment variables.
    *
-   * @deprecated Use {@code OpenTelemetrySdkAutoConfiguration.builder().newResource()}.
+   * @deprecated Use {@code AutoConfiguredOpenTelemetrySdk.initialize().getResource()}.
    */
   @Deprecated
   public static Resource configureResource() {
@@ -40,7 +40,7 @@ public final class OpenTelemetryResourceAutoConfiguration {
    * environment variables.
    *
    * @deprecated Use {@code
-   *     OpenTelemetrySdkAutoConfiguration.builder().setConfig(config).newResource()}.
+   *     AutoConfiguredOpenTelemetrySdk.builder().setConfig(config).getResource()}.
    */
   @Deprecated
   public static Resource configureResource(ConfigProperties config) {

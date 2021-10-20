@@ -161,7 +161,7 @@ public final class GlobalOpenTelemetry {
     final Class<?> openTelemetrySdkAutoConfiguration;
     try {
       openTelemetrySdkAutoConfiguration =
-          Class.forName("io.opentelemetry.sdk.autoconfigure.OpenTelemetrySdkAutoConfiguration");
+          Class.forName("io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk");
     } catch (ClassNotFoundException e) {
       return null;
     }
