@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.autoconfigure;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.v1.resource.attributes.ResourceAttributes;
 import org.junit.jupiter.api.Test;
 
 class ResourceTest {

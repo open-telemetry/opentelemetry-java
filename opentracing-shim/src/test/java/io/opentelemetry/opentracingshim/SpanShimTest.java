@@ -15,7 +15,7 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.v1.trace.attributes.SemanticAttributes;
 import io.opentracing.log.Fields;
 import java.util.HashMap;
 import java.util.Map;

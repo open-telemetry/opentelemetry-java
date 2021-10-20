@@ -8,7 +8,7 @@ package io.opentelemetry.sdk.extension.resources;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.v1.resource.attributes.ResourceAttributes;
 import javax.annotation.Nullable;
 
 /** Factory of a {@link Resource} which provides information about the current operating system. */

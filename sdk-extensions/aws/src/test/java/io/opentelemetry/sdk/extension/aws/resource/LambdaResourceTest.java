@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.v1.resource.attributes.ResourceAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;

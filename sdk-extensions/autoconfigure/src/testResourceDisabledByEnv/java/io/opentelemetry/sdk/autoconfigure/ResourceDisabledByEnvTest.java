@@ -3,15 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.sdk.resources;
+package io.opentelemetry.sdk.autoconfigure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.sdk.autoconfigure.OpenTelemetryResourceAutoConfiguration;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.v1.resource.attributes.ResourceAttributes;
 import org.junit.jupiter.api.Test;
 
-class ResourceDisabledByPropertyTest {
+@SuppressWarnings("deprecation") // Using class that will be made package-private
+class ResourceDisabledByEnvTest {
 
   @Test
   void osAndProcessDisabled() {

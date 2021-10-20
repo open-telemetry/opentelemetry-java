@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package io.opentelemetry.semconv.trace.attributes;
+package io.opentelemetry.semconv.v1.trace.attributes;
 
 import static io.opentelemetry.api.common.AttributeKey.booleanKey;
 import static io.opentelemetry.api.common.AttributeKey.doubleKey;
@@ -14,12 +14,8 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import io.opentelemetry.api.common.AttributeKey;
 import java.util.List;
 
-/**
- * Semantic attributes.
- *
- * @deprecated Use {@link io.opentelemetry.semconv.v1.trace.attributes.SemanticAttributes}.
- */
-@Deprecated
+// DO NOT EDIT, this is an Auto-generated file from
+// buildscripts/semantic-convention/templates/SemanticAttributes.java.j2
 public final class SemanticAttributes {
   /** The URL of the OpenTelemetry schema for these keys and values. */
   public static final String SCHEMA_URL = "https://opentelemetry.io/schemas/1.7.0";

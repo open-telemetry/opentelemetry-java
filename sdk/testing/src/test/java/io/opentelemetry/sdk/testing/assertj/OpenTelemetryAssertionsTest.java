@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.v1.trace.attributes.SemanticAttributes;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;

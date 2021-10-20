@@ -5,10 +5,10 @@
 
 package io.opentelemetry.sdk.resources;
 
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.SERVICE_NAME;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_LANGUAGE;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_NAME;
-import static io.opentelemetry.semconv.resource.attributes.ResourceAttributes.TELEMETRY_SDK_VERSION;
+import static io.opentelemetry.semconv.v1.resource.attributes.ResourceAttributes.SERVICE_NAME;
+import static io.opentelemetry.semconv.v1.resource.attributes.ResourceAttributes.TELEMETRY_SDK_LANGUAGE;
+import static io.opentelemetry.semconv.v1.resource.attributes.ResourceAttributes.TELEMETRY_SDK_NAME;
+import static io.opentelemetry.semconv.v1.resource.attributes.ResourceAttributes.TELEMETRY_SDK_VERSION;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.api.common.AttributeKey;

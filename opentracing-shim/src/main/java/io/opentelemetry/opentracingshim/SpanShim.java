@@ -17,7 +17,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.ImplicitContextKeyed;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.v1.trace.attributes.SemanticAttributes;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.log.Fields;

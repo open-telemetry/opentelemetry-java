@@ -9,7 +9,7 @@ import static io.opentelemetry.sdk.extension.resources.ContainerResource.buildRe
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.v1.resource.attributes.ResourceAttributes;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

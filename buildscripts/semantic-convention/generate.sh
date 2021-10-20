@@ -24,26 +24,26 @@ cd ${SCRIPT_DIR}
 docker run --rm \
   -v ${SCRIPT_DIR}/opentelemetry-specification/semantic_conventions/trace:/source \
   -v ${SCRIPT_DIR}/templates:/templates \
-  -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/semconv/trace/attributes/:/output \
+  -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/semconv/v1/trace/attributes/:/output \
   otel/semconvgen:$GENERATOR_VERSION \
   -f /source code \
   --template /templates/SemanticAttributes.java.j2 \
   --output /output/SemanticAttributes.java \
   -Dclass=SemanticAttributes \
   -DschemaUrl=$SCHEMA_URL \
-  -Dpkg=io.opentelemetry.semconv.trace.attributes
+  -Dpkg=io.opentelemetry.semconv.v1.trace.attributes
 
 docker run --rm \
   -v ${SCRIPT_DIR}/opentelemetry-specification/semantic_conventions/resource:/source \
   -v ${SCRIPT_DIR}/templates:/templates \
-  -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/semconv/resource/attributes/:/output \
+  -v ${ROOT_DIR}/semconv/src/main/java/io/opentelemetry/semconv/v1/resource/attributes/:/output \
   otel/semconvgen:$GENERATOR_VERSION \
   -f /source code \
   --template /templates/SemanticAttributes.java.j2 \
   --output /output/ResourceAttributes.java \
   -Dclass=ResourceAttributes \
   -DschemaUrl=$SCHEMA_URL \
-  -Dpkg=io.opentelemetry.semconv.resource.attributes
+  -Dpkg=io.opentelemetry.semconv.v1.resource.attributes
 
 cd "$ROOT_DIR"
 ./gradlew spotlessApply
