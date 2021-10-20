@@ -26,22 +26,22 @@ import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class LogEmitterProviderTest {
+class SdkLogEmitterProviderTest {
 
   @Mock private LogProcessor logProcessor;
 
-  private LogEmitterProvider logEmitterProvider;
+  private SdkLogEmitterProvider sdkLogEmitterProvider;
 
   @BeforeEach
   void setup() {
-    logEmitterProvider = LogEmitterProvider.builder().addLogProcessor(logProcessor).build();
+    sdkLogEmitterProvider = SdkLogEmitterProvider.builder().addLogProcessor(logProcessor).build();
     when(logProcessor.forceFlush()).thenReturn(CompletableResultCode.ofSuccess());
     when(logProcessor.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
   }
 
   @Test
   void builder_defaultResource() {
-    assertThat(LogEmitterProvider.builder().build())
+    assertThat(SdkLogEmitterProvider.builder().build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
         .extracting(LogEmitterSharedState::getResource)
         .isEqualTo(Resource.getDefault());
@@ -51,7 +51,7 @@ class LogEmitterProviderTest {
   void builder_resourceProvided() {
     Resource resource = Resource.create(Attributes.builder().put("key", "value").build());
 
-    assertThat(LogEmitterProvider.builder().setResource(resource).build())
+    assertThat(SdkLogEmitterProvider.builder().setResource(resource).build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
         .extracting(LogEmitterSharedState::getResource)
         .isEqualTo(resource);
@@ -59,7 +59,7 @@ class LogEmitterProviderTest {
 
   @Test
   void builder_noProcessor() {
-    assertThat(LogEmitterProvider.builder().build())
+    assertThat(SdkLogEmitterProvider.builder().build())
         .extracting("sharedState", as(InstanceOfAssertFactories.type(LogEmitterSharedState.class)))
         .extracting(LogEmitterSharedState::getActiveLogProcessor)
         .isSameAs(NoopLogProcessor.getInstance());
@@ -68,7 +68,7 @@ class LogEmitterProviderTest {
   @Test
   void builder_multipleProcessors() {
     assertThat(
-            LogEmitterProvider.builder()
+            SdkLogEmitterProvider.builder()
                 .addLogProcessor(logProcessor)
                 .addLogProcessor(logProcessor)
                 .build())
@@ -86,24 +86,24 @@ class LogEmitterProviderTest {
 
   @Test
   void get_SameName() {
-    assertThat(logEmitterProvider.get("test"))
-        .isSameAs(logEmitterProvider.get("test"))
-        .isSameAs(logEmitterProvider.get("test", null))
-        .isSameAs(logEmitterProvider.logEmitterBuilder("test").build())
-        .isNotSameAs(logEmitterProvider.get("test", "version"));
+    assertThat(sdkLogEmitterProvider.get("test"))
+        .isSameAs(sdkLogEmitterProvider.get("test"))
+        .isSameAs(sdkLogEmitterProvider.get("test", null))
+        .isSameAs(sdkLogEmitterProvider.logEmitterBuilder("test").build())
+        .isNotSameAs(sdkLogEmitterProvider.get("test", "version"));
   }
 
   @Test
   void get_SameNameAndVersion() {
-    assertThat(logEmitterProvider.get("test", "version"))
-        .isSameAs(logEmitterProvider.get("test", "version"))
+    assertThat(sdkLogEmitterProvider.get("test", "version"))
+        .isSameAs(sdkLogEmitterProvider.get("test", "version"))
         .isSameAs(
-            logEmitterProvider
+            sdkLogEmitterProvider
                 .logEmitterBuilder("test")
                 .setInstrumentationVersion("version")
                 .build())
         .isNotSameAs(
-            logEmitterProvider
+            sdkLogEmitterProvider
                 .logEmitterBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
@@ -113,13 +113,13 @@ class LogEmitterProviderTest {
   @Test
   void logEmitterBuilder_SameNameVersionAndSchema() {
     assertThat(
-            logEmitterProvider
+            sdkLogEmitterProvider
                 .logEmitterBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
                 .build())
         .isSameAs(
-            logEmitterProvider
+            sdkLogEmitterProvider
                 .logEmitterBuilder("test")
                 .setInstrumentationVersion("version")
                 .setSchemaUrl("http://url")
@@ -131,11 +131,12 @@ class LogEmitterProviderTest {
     InstrumentationLibraryInfo expected =
         InstrumentationLibraryInfo.create("test", "version", "http://url");
     assertThat(
-            logEmitterProvider
-                .logEmitterBuilder("test")
-                .setInstrumentationVersion("version")
-                .setSchemaUrl("http://url")
-                .build()
+            ((SdkLogEmitter)
+                    sdkLogEmitterProvider
+                        .logEmitterBuilder("test")
+                        .setInstrumentationVersion("version")
+                        .setSchemaUrl("http://url")
+                        .build())
                 .getInstrumentationLibraryInfo())
         .isEqualTo(expected);
   }
@@ -143,38 +144,34 @@ class LogEmitterProviderTest {
   @Test
   void logEmitterBuilder_DefaultEmitterName() {
     assertThat(
-            logEmitterProvider
-                .logEmitterBuilder(null)
-                .build()
+            ((SdkLogEmitter) sdkLogEmitterProvider.logEmitterBuilder(null).build())
                 .getInstrumentationLibraryInfo()
                 .getName())
-        .isEqualTo(LogEmitterProvider.DEFAULT_EMITTER_NAME);
+        .isEqualTo(SdkLogEmitterProvider.DEFAULT_EMITTER_NAME);
 
     assertThat(
-            logEmitterProvider
-                .logEmitterBuilder("")
-                .build()
+            ((SdkLogEmitter) sdkLogEmitterProvider.logEmitterBuilder("").build())
                 .getInstrumentationLibraryInfo()
                 .getName())
-        .isEqualTo(LogEmitterProvider.DEFAULT_EMITTER_NAME);
+        .isEqualTo(SdkLogEmitterProvider.DEFAULT_EMITTER_NAME);
   }
 
   @Test
   void forceFlush() {
-    logEmitterProvider.forceFlush();
+    sdkLogEmitterProvider.forceFlush();
     verify(logProcessor).forceFlush();
   }
 
   @Test
   void shutdown() {
-    logEmitterProvider.shutdown();
-    logEmitterProvider.shutdown();
+    sdkLogEmitterProvider.shutdown();
+    sdkLogEmitterProvider.shutdown();
     verify(logProcessor, times(1)).shutdown();
   }
 
   @Test
   void close() {
-    logEmitterProvider.close();
+    sdkLogEmitterProvider.close();
     verify(logProcessor).shutdown();
   }
 }

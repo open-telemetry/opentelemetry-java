@@ -13,22 +13,22 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Builder class for {@link LogEmitterProvider} instances. */
-public final class LogEmitterProviderBuilder {
+/** Builder class for {@link SdkLogEmitterProvider} instances. */
+public final class SdkLogEmitterProviderBuilder {
 
   private final List<LogProcessor> logProcessors = new ArrayList<>();
   private Resource resource = Resource.getDefault();
 
-  LogEmitterProviderBuilder() {}
+  SdkLogEmitterProviderBuilder() {}
 
   /**
    * Assign a {@link Resource} to be attached to all {@link LogData} created by {@link LogEmitter}s
-   * obtained from the {@link LogEmitterProvider}.
+   * obtained from the {@link SdkLogEmitterProvider}.
    *
    * @param resource the resource
    * @return this
    */
-  public LogEmitterProviderBuilder setResource(Resource resource) {
+  public SdkLogEmitterProviderBuilder setResource(Resource resource) {
     requireNonNull(resource, "resource");
     this.resource = resource;
     return this;
@@ -37,23 +37,23 @@ public final class LogEmitterProviderBuilder {
   /**
    * Add a log processor. {@link LogProcessor#emit(LogData)} will be called each time {@link
    * LogEmitter#emit(LogRecord)} is called for emitter instances obtained from the {@link
-   * LogEmitterProvider}.
+   * SdkLogEmitterProvider}.
    *
    * @param processor the log processor
    * @return this
    */
-  public LogEmitterProviderBuilder addLogProcessor(LogProcessor processor) {
+  public SdkLogEmitterProviderBuilder addLogProcessor(LogProcessor processor) {
     requireNonNull(processor, "processor");
     logProcessors.add(processor);
     return this;
   }
 
   /**
-   * Create a {@link LogEmitterProvider} instance.
+   * Create a {@link SdkLogEmitterProvider} instance.
    *
    * @return an instance configured with the provided options
    */
-  public LogEmitterProvider build() {
-    return new LogEmitterProvider(resource, logProcessors);
+  public SdkLogEmitterProvider build() {
+    return new SdkLogEmitterProvider(resource, logProcessors);
   }
 }

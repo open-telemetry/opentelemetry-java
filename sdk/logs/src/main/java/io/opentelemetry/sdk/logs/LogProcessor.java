@@ -17,7 +17,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * {@link LogProcessor} is the interface to allow synchronous hooks for when {@link
- * LogEmitter#emit(LogRecord)} is called.
+ * SdkLogEmitter#emit(LogRecord)} is called.
  */
 @ThreadSafe
 public interface LogProcessor extends Closeable {

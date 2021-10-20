@@ -13,8 +13,8 @@ import static org.awaitility.Awaitility.await;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.logs.LogEmitter;
-import io.opentelemetry.sdk.logs.LogEmitterProvider;
 import io.opentelemetry.sdk.logs.LogProcessor;
+import io.opentelemetry.sdk.logs.SdkLogEmitterProvider;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.Severity;
 import io.opentelemetry.sdk.logs.util.TestLogExporter;
@@ -34,7 +34,8 @@ class BatchLogProcessorTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    LogEmitterProvider provider = LogEmitterProvider.builder().addLogProcessor(processor).build();
+    SdkLogEmitterProvider provider =
+        SdkLogEmitterProvider.builder().addLogProcessor(processor).build();
     LogEmitter emitter = provider.get("test", "0.1a");
 
     for (int i = 0; i < 7; i++) {
@@ -65,7 +66,8 @@ class BatchLogProcessorTest {
             .setMaxExportBatchSize(5)
             .setMaxQueueSize(10)
             .build();
-    LogEmitterProvider provider = LogEmitterProvider.builder().addLogProcessor(processor).build();
+    SdkLogEmitterProvider provider =
+        SdkLogEmitterProvider.builder().addLogProcessor(processor).build();
     LogEmitter emitter = provider.get("test", "0.1a");
 
     long start = System.currentTimeMillis();

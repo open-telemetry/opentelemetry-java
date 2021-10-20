@@ -8,25 +8,16 @@ package io.opentelemetry.sdk.logs;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.logs.data.LogData;
 import io.opentelemetry.sdk.logs.data.LogRecord;
-import io.opentelemetry.sdk.logs.data.ReadableLogData;
 import io.opentelemetry.sdk.resources.Resource;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A {@link LogEmitter} is the entry point into a log pipeline. Log emitters accept {@link
  * LogRecord}, and after associating them with a {@link Resource} and {@link
  * InstrumentationLibraryInfo}, pushes them to downstream {@link LogProcessor#emit(LogData)}.
  */
-public final class LogEmitter {
-
-  private final LogEmitterSharedState logEmitterSharedState;
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
-
-  LogEmitter(
-      LogEmitterSharedState logEmitterSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    this.logEmitterSharedState = logEmitterSharedState;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-  }
+@ThreadSafe
+public interface LogEmitter {
 
   /**
    * Emit a log record. Associates the log with a {@link Resource} and {@link
@@ -34,16 +25,5 @@ public final class LogEmitter {
    *
    * @param logRecord the log record
    */
-  public void emit(LogRecord logRecord) {
-    logEmitterSharedState
-        .getActiveLogProcessor()
-        .emit(
-            ReadableLogData.create(
-                logEmitterSharedState.getResource(), instrumentationLibraryInfo, logRecord));
-  }
-
-  // VisibleForTesting
-  InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return instrumentationLibraryInfo;
-  }
+  void emit(LogRecord logRecord);
 }

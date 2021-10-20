@@ -16,28 +16,29 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /** Provides instances of {@link LogEmitter}. */
-public final class LogEmitterProvider implements Closeable {
+public final class SdkLogEmitterProvider implements Closeable {
 
   static final String DEFAULT_EMITTER_NAME = "unknown";
-  private static final Logger LOGGER = Logger.getLogger(LogEmitterProvider.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(SdkLogEmitterProvider.class.getName());
 
   private final LogEmitterSharedState sharedState;
-  private final ComponentRegistry<LogEmitter> logEmitterComponentRegistry;
+  private final ComponentRegistry<SdkLogEmitter> logEmitterComponentRegistry;
 
   /**
-   * Returns a new {@link LogEmitterProviderBuilder} for {@link LogEmitterProvider}.
+   * Returns a new {@link SdkLogEmitterProviderBuilder} for {@link SdkLogEmitterProvider}.
    *
    * @return a new builder instance
    */
-  public static LogEmitterProviderBuilder builder() {
-    return new LogEmitterProviderBuilder();
+  public static SdkLogEmitterProviderBuilder builder() {
+    return new SdkLogEmitterProviderBuilder();
   }
 
-  LogEmitterProvider(Resource resource, List<LogProcessor> processors) {
+  SdkLogEmitterProvider(Resource resource, List<LogProcessor> processors) {
     this.sharedState = new LogEmitterSharedState(resource, processors);
     this.logEmitterComponentRegistry =
         new ComponentRegistry<>(
-            instrumentationLibraryInfo -> new LogEmitter(sharedState, instrumentationLibraryInfo));
+            instrumentationLibraryInfo ->
+                new SdkLogEmitter(sharedState, instrumentationLibraryInfo));
   }
 
   /**
@@ -74,7 +75,7 @@ public final class LogEmitterProvider implements Closeable {
       LOGGER.fine("LogEmitter requested without instrumentation name.");
       instrumentationName = DEFAULT_EMITTER_NAME;
     }
-    return new LogEmitterBuilder(logEmitterComponentRegistry, instrumentationName);
+    return new SdkLogEmitterBuilder(logEmitterComponentRegistry, instrumentationName);
   }
 
   /**

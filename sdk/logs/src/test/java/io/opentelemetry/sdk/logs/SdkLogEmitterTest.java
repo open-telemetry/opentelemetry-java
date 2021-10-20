@@ -22,19 +22,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class LogEmitterTest {
+class SdkLogEmitterTest {
 
-  private static final String INSTRUMENTATION_LIBRARY_NAME = LogEmitter.class.getName();
+  private static final String INSTRUMENTATION_LIBRARY_NAME = SdkLogEmitter.class.getName();
   private static final String INSTRUMENTATION_LIBRARY_VERSION = "0.0.1";
   private static final String SCHEMA_URL = "http://schemaurl";
 
   @Mock private LogProcessor logProcessor;
-  private LogEmitter logEmitter;
+  private LogEmitter sdkLogEmitter;
 
   @BeforeEach
   void setup() {
-    logEmitter =
-        LogEmitterProvider.builder()
+    sdkLogEmitter =
+        SdkLogEmitterProvider.builder()
             .addLogProcessor(logProcessor)
             .build()
             .logEmitterBuilder(INSTRUMENTATION_LIBRARY_NAME)
@@ -50,7 +50,7 @@ class LogEmitterTest {
             .setEpochMillis(System.currentTimeMillis())
             .setBody(Body.stringBody("message"))
             .build();
-    logEmitter.emit(logRecord);
+    sdkLogEmitter.emit(logRecord);
 
     ArgumentCaptor<LogData> captor = ArgumentCaptor.forClass(LogData.class);
     verify(logProcessor).emit(captor.capture());

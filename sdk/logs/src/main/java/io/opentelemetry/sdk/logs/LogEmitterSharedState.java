@@ -11,8 +11,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 /**
- * Represents shared state and config between all {@link LogEmitter}s created by the same {@link
- * LogEmitterProvider}.
+ * Represents shared state and config between all {@link SdkLogEmitter}s created by the same {@link
+ * SdkLogEmitterProvider}.
  */
 final class LogEmitterSharedState {
   private final Object lock = new Object();
