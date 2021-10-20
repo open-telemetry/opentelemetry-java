@@ -48,7 +48,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.Span {
   private static final Logger LOGGER = Logger.getLogger(OpenTelemetrySpanImpl.class.getName());
@@ -135,7 +135,7 @@ class OpenTelemetrySpanImpl extends Span implements io.opentelemetry.api.trace.S
   }
 
   @Override
-  public <T> io.opentelemetry.api.trace.Span setAttribute(AttributeKey<T> key, @Nonnull T value) {
+  public <T> io.opentelemetry.api.trace.Span setAttribute(AttributeKey<T> key, @Nullable T value) {
     return otelSpan.setAttribute(key, value);
   }
 

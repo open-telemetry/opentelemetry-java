@@ -37,7 +37,7 @@ import io.opentelemetry.api.trace.StatusCode;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 class OpenTelemetryNoRecordEventsSpanImpl extends Span implements io.opentelemetry.api.trace.Span {
   private static final EnumSet<Options> NOT_RECORD_EVENTS_SPAN_OPTIONS =
@@ -109,7 +109,7 @@ class OpenTelemetryNoRecordEventsSpanImpl extends Span implements io.opentelemet
   }
 
   @Override
-  public io.opentelemetry.api.trace.Span setAttribute(String key, @Nonnull String value) {
+  public io.opentelemetry.api.trace.Span setAttribute(String key, @Nullable String value) {
     return this;
   }
 
@@ -129,7 +129,7 @@ class OpenTelemetryNoRecordEventsSpanImpl extends Span implements io.opentelemet
   }
 
   @Override
-  public <T> io.opentelemetry.api.trace.Span setAttribute(AttributeKey<T> key, @Nonnull T value) {
+  public <T> io.opentelemetry.api.trace.Span setAttribute(AttributeKey<T> key, @Nullable T value) {
     return this;
   }
 

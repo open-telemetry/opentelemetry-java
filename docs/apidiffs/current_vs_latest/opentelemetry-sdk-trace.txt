@@ -3,7 +3,7 @@ Comparing source compatibility of  against
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW INTERFACE: io.opentelemetry.sdk.trace.data.SpanData
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) FINAL(+) boolean equals(java.lang.Object)
+	+++  NEW METHOD: PUBLIC(+) boolean equals(java.lang.Object)
 	+++  NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.Attributes getAttributes()
 	+++  NEW METHOD: PUBLIC(+) long getEndEpochNanos()
 	+++  NEW METHOD: PUBLIC(+) java.util.List getEvents()

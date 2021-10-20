@@ -15,6 +15,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.Context;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 enum NoopTracerProvider implements TracerProvider {
   INSTANCE;
@@ -62,7 +63,7 @@ enum NoopTracerProvider implements TracerProvider {
     }
 
     @Override
-    public SpanBuilder setAttribute(String key, String value) {
+    public SpanBuilder setAttribute(String key, @Nullable String value) {
       return this;
     }
 
@@ -82,7 +83,7 @@ enum NoopTracerProvider implements TracerProvider {
     }
 
     @Override
-    public <T> SpanBuilder setAttribute(AttributeKey<T> key, T value) {
+    public <T> SpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value) {
       return this;
     }
 

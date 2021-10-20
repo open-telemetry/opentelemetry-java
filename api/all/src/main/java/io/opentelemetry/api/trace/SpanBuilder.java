@@ -13,6 +13,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /**
  * {@link SpanBuilder} is used to construct {@link Span} instances which define arbitrary scopes of
@@ -175,7 +176,7 @@ public interface SpanBuilder {
    * @param value the value for this attribute.
    * @return this.
    */
-  SpanBuilder setAttribute(String key, String value);
+  SpanBuilder setAttribute(String key, @Nullable String value);
 
   /**
    * Sets an attribute to the newly created {@code Span}. If {@code SpanBuilder} previously
@@ -226,7 +227,7 @@ public interface SpanBuilder {
    * @param value the value for this attribute.
    * @return this.
    */
-  <T> SpanBuilder setAttribute(AttributeKey<T> key, T value);
+  <T> SpanBuilder setAttribute(AttributeKey<T> key, @Nullable T value);
 
   /**
    * Sets attributes to the {@link SpanBuilder}. If the {@link SpanBuilder} previously contained a

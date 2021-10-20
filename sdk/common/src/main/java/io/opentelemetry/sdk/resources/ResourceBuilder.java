@@ -29,7 +29,7 @@ public class ResourceBuilder {
    *
    * @return this Builder
    */
-  public ResourceBuilder put(String key, String value) {
+  public ResourceBuilder put(String key, @Nullable String value) {
     if (key != null && value != null) {
       attributesBuilder.put(key, value);
     }
@@ -142,7 +142,7 @@ public class ResourceBuilder {
   }
 
   /** Puts a {@link AttributeKey} with associated value into this. */
-  public <T> ResourceBuilder put(AttributeKey<T> key, T value) {
+  public <T> ResourceBuilder put(AttributeKey<T> key, @Nullable T value) {
     if (key != null && key.getKey() != null && !key.getKey().isEmpty() && value != null) {
       attributesBuilder.put(key, value);
     }
