@@ -5,8 +5,9 @@
 
 package io.opentelemetry.sdk.extension.aws.resource;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.extension.aws.internal.JdkHttpClient;
@@ -28,6 +29,8 @@ import java.util.logging.Logger;
  */
 public final class EksResource {
   private static final Logger logger = Logger.getLogger(EksResource.class.getName());
+
+  private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
   static final String K8S_SVC_URL = "https://kubernetes.default.svc";
   static final String AUTH_CONFIGMAP_PATH = "/api/v1/namespaces/kube-system/configmaps/aws-auth";
@@ -106,10 +109,34 @@ public final class EksResource {
         jdkHttpClient.fetchString(
             "GET", K8S_SVC_URL + CW_CONFIGMAP_PATH, requestProperties, K8S_CERT_PATH);
 
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      return mapper.readTree(json).at("/data/cluster.name").asText();
-    } catch (JsonProcessingException e) {
+    try (JsonParser parser = JSON_FACTORY.createParser(json)) {
+      parser.nextToken();
+
+      if (!parser.isExpectedStartObjectToken()) {
+        throw new IOException("Invalid JSON:" + json);
+      }
+
+      while (parser.nextToken() != JsonToken.END_OBJECT) {
+        parser.nextToken();
+        if (!parser.getCurrentName().equals("data")) {
+          parser.skipChildren();
+          continue;
+        }
+
+        if (!parser.isExpectedStartObjectToken()) {
+          throw new IOException("Invalid JSON:" + json);
+        }
+
+        while (parser.nextToken() != JsonToken.END_OBJECT) {
+          String value = parser.nextTextValue();
+          if (!parser.getCurrentName().equals("cluster.name")) {
+            parser.skipChildren();
+            continue;
+          }
+          return value;
+        }
+      }
+    } catch (IOException e) {
       logger.log(Level.WARNING, "Can't get cluster name on EKS.", e);
     }
     return "";
