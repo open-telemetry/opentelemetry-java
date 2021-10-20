@@ -9,8 +9,8 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredSdkCustomizer;
-import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredSdkCustomizerProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer;
 import io.opentelemetry.sdk.resources.Resource;
@@ -29,7 +29,8 @@ import javax.annotation.Nullable;
  * components can be customized, for example by delegating to them from a wrapper that tweaks
  * behavior such as filtering out telemetry attributes.
  */
-public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomizer {
+public final class AutoConfiguredOpenTelemetrySdkBuilder
+    implements AutoConfiguredOpenTelemetrySdkCustomizer {
 
   @Nullable private ConfigProperties config;
 
@@ -46,9 +47,9 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
 
   private boolean setResultAsGlobal = true;
 
-  AutoConfiguredSdkBuilder() {
-    for (AutoConfiguredSdkCustomizerProvider customizer :
-        ServiceLoader.load(AutoConfiguredSdkCustomizerProvider.class)) {
+  AutoConfiguredOpenTelemetrySdkBuilder() {
+    for (AutoConfiguredOpenTelemetrySdkCustomizerProvider customizer :
+        ServiceLoader.load(AutoConfiguredOpenTelemetrySdkCustomizerProvider.class)) {
       customizer.customize(this);
     }
   }
@@ -57,7 +58,7 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
    * Sets the {@link ConfigProperties} to use when resolving properties for auto-configuration.
    * {@link #addPropertySupplier(Supplier)} will have no effect if this method is used.
    */
-  public AutoConfiguredSdkBuilder setConfig(ConfigProperties config) {
+  public AutoConfiguredOpenTelemetrySdkBuilder setConfig(ConfigProperties config) {
     requireNonNull(config, "config");
     this.config = config;
     return this;
@@ -71,7 +72,7 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
    * <p>Multiple calls will execute the customizers in order.
    */
   @Override
-  public AutoConfiguredSdkBuilder addPropagatorCustomizer(
+  public AutoConfiguredOpenTelemetrySdkBuilder addPropagatorCustomizer(
       SdkComponentCustomizer<? super TextMapPropagator, ? extends TextMapPropagator>
           propagatorCustomizer) {
     requireNonNull(propagatorCustomizer, "propagatorCustomizer");
@@ -87,7 +88,7 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
    * <p>Multiple calls will execute the customizers in order.
    */
   @Override
-  public AutoConfiguredSdkBuilder addResourceCustomizer(
+  public AutoConfiguredOpenTelemetrySdkBuilder addResourceCustomizer(
       SdkComponentCustomizer<? super Resource, ? extends Resource> resourceCustomizer) {
     requireNonNull(resourceCustomizer, "resourceCustomizer");
     this.resourceCustomizer = mergeCustomizer(this.resourceCustomizer, resourceCustomizer);
@@ -102,7 +103,7 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
    * <p>Multiple calls will execute the customizers in order.
    */
   @Override
-  public AutoConfiguredSdkBuilder addSamplerCustomizer(
+  public AutoConfiguredOpenTelemetrySdkBuilder addSamplerCustomizer(
       SdkComponentCustomizer<? super Sampler, ? extends Sampler> samplerCustomizer) {
     requireNonNull(samplerCustomizer, "samplerCustomizer");
     this.samplerCustomizer = mergeCustomizer(this.samplerCustomizer, samplerCustomizer);
@@ -116,7 +117,7 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
    * <p>Multiple calls will execute the customizers in order.
    */
   @Override
-  public AutoConfiguredSdkBuilder addSpanExporterCustomizer(
+  public AutoConfiguredOpenTelemetrySdkBuilder addSpanExporterCustomizer(
       SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
     requireNonNull(spanExporterCustomizer, "spanExporterCustomizer");
     this.spanExporterCustomizer =
@@ -133,7 +134,7 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
    * duplicate keys in earlier ones.
    */
   @Override
-  public AutoConfiguredSdkBuilder addPropertySupplier(
+  public AutoConfiguredOpenTelemetrySdkBuilder addPropertySupplier(
       Supplier<Map<String, String>> propertiesSupplier) {
     requireNonNull(propertiesSupplier, "propertiesSupplier");
     this.propertiesSupplier = mergeProperties(this.propertiesSupplier, propertiesSupplier);
@@ -144,17 +145,17 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
    * Sets whether the configured {@link OpenTelemetrySdk} should be set as the application's
    * {@linkplain io.opentelemetry.api.GlobalOpenTelemetry global} instance.
    */
-  public AutoConfiguredSdkBuilder setResultAsGlobal(boolean setResultAsGlobal) {
+  public AutoConfiguredOpenTelemetrySdkBuilder setResultAsGlobal(boolean setResultAsGlobal) {
     this.setResultAsGlobal = setResultAsGlobal;
     return this;
   }
 
   /**
-   * Returns a new {@link AutoConfiguredSdk} holding components auto-configured using the settings
-   * of this {@link AutoConfiguredSdkBuilder}.
+   * Returns a new {@link AutoConfiguredOpenTelemetrySdk} holding components auto-configured using
+   * the settings of this {@link AutoConfiguredOpenTelemetrySdkBuilder}.
    */
   @SuppressWarnings("deprecation") // Using classes which will be made package-private later.
-  public AutoConfiguredSdk build() {
+  public AutoConfiguredOpenTelemetrySdk build() {
     ConfigProperties config = getConfig();
     Resource resource =
         OpenTelemetryResourceAutoConfiguration.configureResource(config, resourceCustomizer);
@@ -166,7 +167,7 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
             spanExporterCustomizer,
             samplerCustomizer,
             setResultAsGlobal);
-    return AutoConfiguredSdk.create(sdk, resource);
+    return AutoConfiguredOpenTelemetrySdk.create(sdk, resource);
   }
 
   // Visible for testing

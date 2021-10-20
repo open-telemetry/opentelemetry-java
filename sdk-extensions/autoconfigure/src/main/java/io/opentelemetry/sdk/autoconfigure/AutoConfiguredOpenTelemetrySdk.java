@@ -15,29 +15,29 @@ import io.opentelemetry.sdk.resources.Resource;
  * the SDK using environment properties specified by OpenTelemetry.
  */
 @AutoValue
-public abstract class AutoConfiguredSdk {
+public abstract class AutoConfiguredOpenTelemetrySdk {
 
   /**
-   * Returns an {@link AutoConfiguredSdk} automatically initialized through recognized system
-   * properties and environment variables.
+   * Returns an {@link AutoConfiguredOpenTelemetrySdk} automatically initialized through recognized
+   * system properties and environment variables.
    *
    * <p>This will automatically set the resulting SDK as the {@link
    * io.opentelemetry.api.GlobalOpenTelemetry} instance.
    */
-  public static AutoConfiguredSdk initialize() {
+  public static AutoConfiguredOpenTelemetrySdk initialize() {
     return builder().build();
   }
 
   /**
-   * Returns a new {@link AutoConfiguredSdkBuilder} which can be used to customize
+   * Returns a new {@link AutoConfiguredOpenTelemetrySdkBuilder} which can be used to customize
    * auto-configuration behavior.
    */
-  public static AutoConfiguredSdkBuilder builder() {
-    return new AutoConfiguredSdkBuilder();
+  public static AutoConfiguredOpenTelemetrySdkBuilder builder() {
+    return new AutoConfiguredOpenTelemetrySdkBuilder();
   }
 
-  static AutoConfiguredSdk create(OpenTelemetrySdk sdk, Resource resource) {
-    return new AutoValue_AutoConfiguredSdk(sdk, resource);
+  static AutoConfiguredOpenTelemetrySdk create(OpenTelemetrySdk sdk, Resource resource) {
+    return new AutoValue_AutoConfiguredOpenTelemetrySdk(sdk, resource);
   }
 
   /** Returns the {@link OpenTelemetrySdk} that was auto-configured. */
@@ -46,5 +46,5 @@ public abstract class AutoConfiguredSdk {
   /** Returns the {@link Resource} that was auto-configured. */
   public abstract Resource getResource();
 
-  AutoConfiguredSdk() {}
+  AutoConfiguredOpenTelemetrySdk() {}
 }

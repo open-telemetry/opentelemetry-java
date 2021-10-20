@@ -29,7 +29,7 @@ class ConfigErrorTest {
   @Test
   @SetSystemProperty(key = "otel.propagators", value = "cat")
   void invalidPropagator() {
-    assertThatThrownBy(() -> AutoConfiguredSdk.initialize().getOpenTelemetrySdk())
+    assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk())
         .isInstanceOf(ConfigurationException.class)
         .hasMessage(
             "Unrecognized value for otel.propagators: cat. Make sure the artifact "
@@ -40,7 +40,7 @@ class ConfigErrorTest {
   @SetSystemProperty(key = "otel.traces.sampler", value = "traceidratio")
   @SetSystemProperty(key = "otel.traces.sampler.arg", value = "bar")
   void invalidTraceIdRatio() {
-    assertThatThrownBy(() -> AutoConfiguredSdk.initialize().getOpenTelemetrySdk())
+    assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk())
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property otel.traces.sampler.arg=bar. Must be a double.");
   }
@@ -49,7 +49,7 @@ class ConfigErrorTest {
   @SetSystemProperty(key = "otel.traces.sampler", value = "parentbased_traceidratio")
   @SetSystemProperty(key = "otel.traces.sampler.arg", value = "bar")
   void invalidTraceIdRatioWithParent() {
-    assertThatThrownBy(() -> AutoConfiguredSdk.initialize().getOpenTelemetrySdk())
+    assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk())
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Invalid value for property otel.traces.sampler.arg=bar. Must be a double.");
   }
@@ -57,7 +57,7 @@ class ConfigErrorTest {
   @Test
   @SetSystemProperty(key = "otel.traces.sampler", value = "cat")
   void invalidSampler() {
-    assertThatThrownBy(() -> AutoConfiguredSdk.initialize().getOpenTelemetrySdk())
+    assertThatThrownBy(() -> AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk())
         .isInstanceOf(ConfigurationException.class)
         .hasMessage("Unrecognized value for otel.traces.sampler: cat");
   }

@@ -26,7 +26,7 @@ import java.util.ServiceLoader;
  * the SDK using {@link OpenTelemetrySdk#builder()}, this package can be used to automatically
  * configure the SDK using environment properties specified by OpenTelemetry.
  *
- * @deprecated Use {@link AutoConfiguredSdk}.
+ * @deprecated Use {@link AutoConfiguredOpenTelemetrySdk}.
  */
 @Deprecated
 public final class OpenTelemetrySdkAutoConfiguration {
@@ -38,11 +38,11 @@ public final class OpenTelemetrySdkAutoConfiguration {
    * <p>This will automatically set the resulting SDK as the {@link
    * io.opentelemetry.api.GlobalOpenTelemetry} instance.
    *
-   * @deprecated Use {@link AutoConfiguredSdk#initialize()}.
+   * @deprecated Use {@link AutoConfiguredOpenTelemetrySdk#initialize()}.
    */
   @Deprecated
   public static OpenTelemetrySdk initialize() {
-    return AutoConfiguredSdk.initialize().getOpenTelemetrySdk();
+    return AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
   }
 
   /**
@@ -56,7 +56,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
    */
   @Deprecated
   public static OpenTelemetrySdk initialize(boolean setResultAsGlobal) {
-    return AutoConfiguredSdk.builder()
+    return AutoConfiguredOpenTelemetrySdk.builder()
         .setResultAsGlobal(setResultAsGlobal)
         .build()
         .getOpenTelemetrySdk();
@@ -75,7 +75,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
    */
   @Deprecated
   public static OpenTelemetrySdk initialize(boolean setResultAsGlobal, ConfigProperties config) {
-    return AutoConfiguredSdk.builder()
+    return AutoConfiguredOpenTelemetrySdk.builder()
         .setResultAsGlobal(setResultAsGlobal)
         .setConfig(config)
         .build()

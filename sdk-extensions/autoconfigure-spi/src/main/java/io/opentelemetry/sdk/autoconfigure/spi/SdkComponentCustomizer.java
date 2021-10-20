@@ -5,7 +5,9 @@
 
 package io.opentelemetry.sdk.autoconfigure.spi;
 
-/** A customizer of an SDK component, for use with {@link AutoConfiguredSdkCustomizer}. */
+/**
+ * A customizer of an SDK component, for use with {@link AutoConfiguredOpenTelemetrySdkCustomizer}.
+ */
 @FunctionalInterface
 public interface SdkComponentCustomizer<I, O> {
 

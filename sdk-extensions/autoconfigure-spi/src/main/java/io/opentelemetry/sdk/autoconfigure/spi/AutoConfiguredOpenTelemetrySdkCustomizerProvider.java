@@ -6,11 +6,11 @@
 package io.opentelemetry.sdk.autoconfigure.spi;
 
 /** A service provider interface (SPI) for customizing auto-configuration. */
-public interface AutoConfiguredSdkCustomizerProvider {
+public interface AutoConfiguredOpenTelemetrySdkCustomizerProvider {
 
   /**
    * Method invoked when auto-configuring the SDK to allow further customization of
    * auto-configuration.
    */
-  void customize(AutoConfiguredSdkCustomizer autoConfiguration);
+  void customize(AutoConfiguredOpenTelemetrySdkCustomizer autoConfiguration);
 }

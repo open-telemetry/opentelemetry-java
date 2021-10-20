@@ -17,7 +17,7 @@ import java.util.Collections;
  * property or OTEL_RESOURCE_ATTRIBUTES environment variable. Will also use
  * OTEL_SERVICE_NAME/otel.service.name to specifically set the service name.
  *
- * @deprecated Use {@link AutoConfiguredSdk#getResource()}.
+ * @deprecated Use {@link AutoConfiguredOpenTelemetrySdk#getResource()}.
  */
 @Deprecated
 public final class EnvironmentResource {
@@ -31,7 +31,8 @@ public final class EnvironmentResource {
    * "otel.resource.attributes"/"otel.service.name" system properties or
    * OTEL_RESOURCE_ATTRIBUTES/OTEL_SERVICE_NAME environment variables.
    *
-   * @deprecated Use the information retrievable from {@link AutoConfiguredSdk#getResource()}.
+   * @deprecated Use the information retrievable from {@link
+   *     AutoConfiguredOpenTelemetrySdk#getResource()}.
    */
   @Deprecated
   public static Resource get() {

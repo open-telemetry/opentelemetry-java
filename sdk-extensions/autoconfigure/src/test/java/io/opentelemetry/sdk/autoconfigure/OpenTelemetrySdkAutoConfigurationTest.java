@@ -63,8 +63,8 @@ class OpenTelemetrySdkAutoConfigurationTest {
 
     when(spanExporter2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
 
-    AutoConfiguredSdkBuilder autoConfiguration =
-        AutoConfiguredSdk.builder()
+    AutoConfiguredOpenTelemetrySdkBuilder autoConfiguration =
+        AutoConfiguredOpenTelemetrySdk.builder()
             .addPropagatorCustomizer(
                 (previous, config) -> {
                   assertThat(previous).isSameAs(W3CTraceContextPropagator.getInstance());

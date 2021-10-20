@@ -17,7 +17,7 @@ import java.util.Set;
 /**
  * Auto-configuration for the OpenTelemetry {@link Resource}.
  *
- * @deprecated Use {@link AutoConfiguredSdk#getResource()}.
+ * @deprecated Use {@link AutoConfiguredOpenTelemetrySdk#getResource()}.
  */
 @Deprecated
 public final class OpenTelemetryResourceAutoConfiguration {

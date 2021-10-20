@@ -24,7 +24,7 @@ class OpenTelemetrySdkAutoConfigurationTest {
 
   @Test
   void initializeAndGet() {
-    OpenTelemetrySdk sdk = AutoConfiguredSdk.initialize().getOpenTelemetrySdk();
+    OpenTelemetrySdk sdk = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
     assertThat(GlobalOpenTelemetry.get())
         // ObfuscatedOpenTelemetry
         .extracting("delegate")
@@ -34,7 +34,10 @@ class OpenTelemetrySdkAutoConfigurationTest {
   @Test
   void initializeAndGet_noGlobal() {
     OpenTelemetrySdk sdk =
-        AutoConfiguredSdk.builder().setResultAsGlobal(false).build().getOpenTelemetrySdk();
+        AutoConfiguredOpenTelemetrySdk.builder()
+            .setResultAsGlobal(false)
+            .build()
+            .getOpenTelemetrySdk();
     // TODO: calling get() will call initialize() again and autoconfigure another instance of the
     // SDK; in that case the get() method will return OpenTelemetrySdk and not
     // ObfuscatedOpenTelemetry
