@@ -7,12 +7,12 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
-import io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 /**
  * Auto-configuration for the OpenTelemetry {@link Resource}.
@@ -50,7 +50,7 @@ public final class OpenTelemetryResourceAutoConfiguration {
   @SuppressWarnings("deprecation") // Uses class which will be made package private
   static Resource configureResource(
       ConfigProperties config,
-      SdkComponentCustomizer<? super Resource, ? extends Resource> resourceCustomizer) {
+      BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer) {
     Resource result = Resource.getDefault();
 
     // TODO(anuraaga): We use a hyphen only once in this artifact, for

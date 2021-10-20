@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -24,7 +25,7 @@ public interface AutoConfiguredOpenTelemetrySdkCustomizer {
    * <p>Multiple calls will execute the customizers in order.
    */
   AutoConfiguredOpenTelemetrySdkCustomizer addPropagatorCustomizer(
-      SdkComponentCustomizer<? super TextMapPropagator, ? extends TextMapPropagator>
+      BiFunction<? super TextMapPropagator, ConfigProperties, ? extends TextMapPropagator>
           propagatorCustomizer);
 
   /**
@@ -35,7 +36,7 @@ public interface AutoConfiguredOpenTelemetrySdkCustomizer {
    * <p>Multiple calls will execute the customizers in order.
    */
   AutoConfiguredOpenTelemetrySdkCustomizer addResourceCustomizer(
-      SdkComponentCustomizer<? super Resource, ? extends Resource> resourceCustomizer);
+      BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer);
 
   /**
    * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
@@ -45,7 +46,7 @@ public interface AutoConfiguredOpenTelemetrySdkCustomizer {
    * <p>Multiple calls will execute the customizers in order.
    */
   AutoConfiguredOpenTelemetrySdkCustomizer addSamplerCustomizer(
-      SdkComponentCustomizer<? super Sampler, ? extends Sampler> samplerCustomizer);
+      BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer);
 
   /**
    * Adds a {@link Function} to invoke with the default autoconfigured {@link SpanExporter} to allow
@@ -54,7 +55,8 @@ public interface AutoConfiguredOpenTelemetrySdkCustomizer {
    * <p>Multiple calls will execute the customizers in order.
    */
   AutoConfiguredOpenTelemetrySdkCustomizer addSpanExporterCustomizer(
-      SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter> exporterCustomizer);
+      BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
+          exporterCustomizer);
 
   /**
    * Adds a {@link Supplier} of a map of property names and values to use as defaults for the {@link

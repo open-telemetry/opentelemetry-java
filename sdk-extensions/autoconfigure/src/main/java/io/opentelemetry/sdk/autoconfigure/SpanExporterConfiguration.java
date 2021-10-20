@@ -24,7 +24,6 @@ import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
@@ -33,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 final class SpanExporterConfiguration {
@@ -42,7 +42,8 @@ final class SpanExporterConfiguration {
   // Visible for testing
   static Map<String, SpanExporter> configureSpanExporters(
       ConfigProperties config,
-      SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
+      BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
+          spanExporterCustomizer) {
     List<String> exporterNamesList = config.getList("otel.traces.exporter");
     Set<String> exporterNames = new HashSet<>(exporterNamesList);
     if (exporterNamesList.size() != exporterNames.size()) {

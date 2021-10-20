@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.resources.Resource;
@@ -28,14 +27,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.function.BiFunction;
 
 final class TracerProviderConfiguration {
 
   static SdkTracerProvider configureTracerProvider(
       Resource resource,
       ConfigProperties config,
-      SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer,
-      SdkComponentCustomizer<? super Sampler, ? extends Sampler> samplerCustomizer) {
+      BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
+          spanExporterCustomizer,
+      BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer) {
     SdkTracerProviderBuilder tracerProviderBuilder =
         SdkTracerProvider.builder()
             .setResource(resource)

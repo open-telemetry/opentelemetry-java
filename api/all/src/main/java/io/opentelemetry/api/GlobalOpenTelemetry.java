@@ -168,7 +168,10 @@ public final class GlobalOpenTelemetry {
 
     try {
       Method initialize = openTelemetrySdkAutoConfiguration.getMethod("initialize");
-      return (OpenTelemetry) initialize.invoke(null);
+      Object autoConfiguredSdk = initialize.invoke(null);
+      Method getOpenTelemetrySdk =
+          openTelemetrySdkAutoConfiguration.getMethod("getOpenTelemetrySdk");
+      return (OpenTelemetry) getOpenTelemetrySdk.invoke(autoConfiguredSdk);
     } catch (NoSuchMethodException | IllegalAccessException e) {
       throw new IllegalStateException(
           "OpenTelemetrySdkAutoConfiguration detected on classpath "

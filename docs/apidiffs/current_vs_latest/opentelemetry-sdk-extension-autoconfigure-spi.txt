@@ -2,17 +2,12 @@ Comparing source compatibility of  against
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer addPropagatorCustomizer(io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer addPropertySupplier(java.util.function.Supplier)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer addResourceCustomizer(io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer addSamplerCustomizer(io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer)
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer addSpanExporterCustomizer(io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer addPropagatorCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer addPropertiesSupplier(java.util.function.Supplier)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer addResourceCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer addSamplerCustomizer(java.util.function.BiFunction)
+	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer addSpanExporterCustomizer(java.util.function.BiFunction)
 +++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizerProvider  (not serializable)
 	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
 	+++  NEW SUPERCLASS: java.lang.Object
 	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) void customize(io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer)
-+++  NEW INTERFACE: PUBLIC(+) ABSTRACT(+) io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer  (not serializable)
-	+++  CLASS FILE FORMAT VERSION: 52.0 <- n.a.
-	+++  NEW SUPERCLASS: java.lang.Object
-	+++  NEW METHOD: PUBLIC(+) ABSTRACT(+) java.lang.Object apply(java.lang.Object, io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties)
-	+++  NEW ANNOTATION: java.lang.FunctionalInterface

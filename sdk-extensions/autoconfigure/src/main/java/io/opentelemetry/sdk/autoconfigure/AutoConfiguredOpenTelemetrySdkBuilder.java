@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -20,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -34,13 +34,13 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
 
   @Nullable private ConfigProperties config;
 
-  private SdkComponentCustomizer<? super TextMapPropagator, ? extends TextMapPropagator>
+  private BiFunction<? super TextMapPropagator, ConfigProperties, ? extends TextMapPropagator>
       propagatorCustomizer = (a, unused) -> a;
-  private SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter>
+  private BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
       spanExporterCustomizer = (a, unused) -> a;
-  private SdkComponentCustomizer<? super Resource, ? extends Resource> resourceCustomizer =
+  private BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer =
       (a, unused) -> a;
-  private SdkComponentCustomizer<? super Sampler, ? extends Sampler> samplerCustomizer =
+  private BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer =
       (a, unused) -> a;
 
   private Supplier<Map<String, String>> propertiesSupplier = Collections::emptyMap;
@@ -73,7 +73,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
    */
   @Override
   public AutoConfiguredOpenTelemetrySdkBuilder addPropagatorCustomizer(
-      SdkComponentCustomizer<? super TextMapPropagator, ? extends TextMapPropagator>
+      BiFunction<? super TextMapPropagator, ConfigProperties, ? extends TextMapPropagator>
           propagatorCustomizer) {
     requireNonNull(propagatorCustomizer, "propagatorCustomizer");
     this.propagatorCustomizer = mergeCustomizer(this.propagatorCustomizer, propagatorCustomizer);
@@ -89,7 +89,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
    */
   @Override
   public AutoConfiguredOpenTelemetrySdkBuilder addResourceCustomizer(
-      SdkComponentCustomizer<? super Resource, ? extends Resource> resourceCustomizer) {
+      BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer) {
     requireNonNull(resourceCustomizer, "resourceCustomizer");
     this.resourceCustomizer = mergeCustomizer(this.resourceCustomizer, resourceCustomizer);
     return this;
@@ -104,7 +104,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
    */
   @Override
   public AutoConfiguredOpenTelemetrySdkBuilder addSamplerCustomizer(
-      SdkComponentCustomizer<? super Sampler, ? extends Sampler> samplerCustomizer) {
+      BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer) {
     requireNonNull(samplerCustomizer, "samplerCustomizer");
     this.samplerCustomizer = mergeCustomizer(this.samplerCustomizer, samplerCustomizer);
     return this;
@@ -118,7 +118,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
    */
   @Override
   public AutoConfiguredOpenTelemetrySdkBuilder addSpanExporterCustomizer(
-      SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
+      BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
+          spanExporterCustomizer) {
     requireNonNull(spanExporterCustomizer, "spanExporterCustomizer");
     this.spanExporterCustomizer =
         mergeCustomizer(this.spanExporterCustomizer, spanExporterCustomizer);
@@ -179,9 +180,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
     return config;
   }
 
-  private static <I, O1, O2> SdkComponentCustomizer<I, O2> mergeCustomizer(
-      SdkComponentCustomizer<? super I, ? extends O1> first,
-      SdkComponentCustomizer<? super O1, ? extends O2> second) {
+  private static <I, O1, O2> BiFunction<I, ConfigProperties, O2> mergeCustomizer(
+      BiFunction<? super I, ConfigProperties, ? extends O1> first,
+      BiFunction<? super O1, ConfigProperties, ? extends O2> second) {
     return (I configured, ConfigProperties config) -> {
       O1 firstResult = first.apply(configured, config);
       return second.apply(firstResult, config);
