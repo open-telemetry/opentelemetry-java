@@ -245,13 +245,4 @@ public interface Context {
   default ScheduledExecutorService wrap(ScheduledExecutorService executor) {
     return new ContextScheduledExecutorService(this, executor);
   }
-
-  /**
-   * Returns an {@link ScheduledExecutorService} that will execute callbacks in the given {@code
-   * executor}, making this the {@linkplain Context#current() current context} before each
-   * execution.
-   */
-  default ScheduledExecutorService gwrap(ScheduledExecutorService executor) {
-    return new ContextScheduledExecutorService(this, executor);
-  }
 }
