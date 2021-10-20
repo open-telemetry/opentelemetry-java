@@ -19,6 +19,8 @@ dependencies {
 
   testImplementation(project(":sdk:testing"))
   testImplementation(project(":sdk:logs"))
+  testImplementation(project(":sdk:metrics"))
+  testImplementation(project(":sdk:trace"))
 
   testImplementation("org.skyscreamer:jsonassert")
 }
