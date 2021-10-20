@@ -131,7 +131,7 @@ public abstract class DelegatingSpanData implements SpanData {
   }
 
   @Override
-  public final boolean equals(@Nullable Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     }
