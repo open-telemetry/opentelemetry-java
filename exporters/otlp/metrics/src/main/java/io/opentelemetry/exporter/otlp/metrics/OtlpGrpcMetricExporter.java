@@ -47,7 +47,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
   @Nullable
   @Override
-  public final AggregationTemporality getPreferedTemporality() {
+  public AggregationTemporality getPreferredTemporality() {
     // TODO: Lookup based on specification, or constructor
     return null;
   }

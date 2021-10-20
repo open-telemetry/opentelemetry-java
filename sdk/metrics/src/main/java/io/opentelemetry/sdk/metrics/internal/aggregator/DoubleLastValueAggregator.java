@@ -63,7 +63,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
       Map<Attributes, DoubleAccumulation> accumulationByLabels,
       AggregationTemporality temporality,
       long startEpochNanos,
-      long lastCollectionEpoch,
+      long lastCollectionEpochNanos,
       long epochNanos) {
     // Gauge does not need a start time, but we send one as advised by the data model
     // for identifying resets.
@@ -78,7 +78,7 @@ public final class DoubleLastValueAggregator implements Aggregator<DoubleAccumul
                 accumulationByLabels,
                 (temporality == AggregationTemporality.CUMULATIVE)
                     ? startEpochNanos
-                    : lastCollectionEpoch,
+                    : lastCollectionEpochNanos,
                 epochNanos)));
   }
 

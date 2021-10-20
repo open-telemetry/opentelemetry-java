@@ -56,7 +56,7 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
 
   @Nullable
   @Override
-  public final AggregationTemporality getPreferedTemporality() {
+  public final AggregationTemporality getPreferredTemporality() {
     // TODO: Lookup based on specification, or constructor
     return null;
   }

@@ -204,7 +204,7 @@ class PeriodicMetricReaderTest {
     }
 
     @Override
-    public AggregationTemporality getPreferedTemporality() {
+    public AggregationTemporality getPreferredTemporality() {
       return null;
     }
 

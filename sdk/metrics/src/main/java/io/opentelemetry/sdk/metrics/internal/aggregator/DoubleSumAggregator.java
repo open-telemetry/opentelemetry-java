@@ -55,14 +55,14 @@ public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccum
   }
 
   @Override
-  public final DoubleAccumulation merge(
+  public DoubleAccumulation merge(
       DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
     return DoubleAccumulation.create(
         previousAccumulation.getValue() + accumulation.getValue(), accumulation.getExemplars());
   }
 
   @Override
-  public final DoubleAccumulation diff(
+  public DoubleAccumulation diff(
       DoubleAccumulation previousAccumulation, DoubleAccumulation accumulation) {
     return DoubleAccumulation.create(
         accumulation.getValue() - previousAccumulation.getValue(), accumulation.getExemplars());

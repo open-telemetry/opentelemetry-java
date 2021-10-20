@@ -90,8 +90,8 @@ public final class PeriodicMetricReader implements MetricReader {
   }
 
   @Override
-  public AggregationTemporality getPreferedTemporality() {
-    return exporter.getPreferedTemporality();
+  public AggregationTemporality getPreferredTemporality() {
+    return exporter.getPreferredTemporality();
   }
 
   @Override

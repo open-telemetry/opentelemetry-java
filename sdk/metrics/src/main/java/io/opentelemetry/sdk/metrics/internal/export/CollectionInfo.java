@@ -35,7 +35,7 @@ public abstract class CollectionInfo {
   /** The preferred aggregation, if any, for the current metric collection. */
   @Nullable
   public final AggregationTemporality getPreferredAggregation() {
-    return getReader().getPreferedTemporality();
+    return getReader().getPreferredTemporality();
   }
 
   /** Construct a new collection info object storing information for collection against a reader. */

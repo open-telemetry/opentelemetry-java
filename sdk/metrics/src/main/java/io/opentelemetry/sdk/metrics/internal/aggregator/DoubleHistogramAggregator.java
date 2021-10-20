@@ -24,7 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
- * Aggregator that generated histograms.
+ * Aggregator that generates histograms.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -66,7 +66,7 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
    * merging accumulations with different boundaries.
    */
   @Override
-  public final HistogramAccumulation merge(
+  public HistogramAccumulation merge(
       HistogramAccumulation previous, HistogramAccumulation current) {
     long[] mergedCounts = new long[previous.getCounts().length];
     for (int i = 0; i < previous.getCounts().length; ++i) {
@@ -77,8 +77,7 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
   }
 
   @Override
-  public final HistogramAccumulation diff(
-      HistogramAccumulation previous, HistogramAccumulation current) {
+  public HistogramAccumulation diff(HistogramAccumulation previous, HistogramAccumulation current) {
     long[] diffedCounts = new long[previous.getCounts().length];
     for (int i = 0; i < previous.getCounts().length; ++i) {
       diffedCounts[i] = current.getCounts()[i] - previous.getCounts()[i];
@@ -88,7 +87,7 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
   }
 
   @Override
-  public final MetricData toMetricData(
+  public MetricData toMetricData(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       MetricDescriptor metricDescriptor,

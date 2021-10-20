@@ -95,7 +95,7 @@ public final class InMemoryMetricExporter implements MetricExporter {
   }
 
   @Override
-  public AggregationTemporality getPreferedTemporality() {
+  public AggregationTemporality getPreferredTemporality() {
     return AggregationTemporality.CUMULATIVE;
   }
 

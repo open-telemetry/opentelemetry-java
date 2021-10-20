@@ -112,7 +112,7 @@ public final class PrometheusHttpServer implements Closeable, MetricReader {
   }
 
   @Override
-  public AggregationTemporality getPreferedTemporality() {
+  public AggregationTemporality getPreferredTemporality() {
     return AggregationTemporality.CUMULATIVE;
   }
 

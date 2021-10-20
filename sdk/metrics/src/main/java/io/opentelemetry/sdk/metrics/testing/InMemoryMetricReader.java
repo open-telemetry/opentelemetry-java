@@ -84,7 +84,7 @@ public class InMemoryMetricReader implements MetricReader, MetricReaderFactory {
   }
 
   @Override
-  public AggregationTemporality getPreferedTemporality() {
+  public AggregationTemporality getPreferredTemporality() {
     return preferred;
   }
 

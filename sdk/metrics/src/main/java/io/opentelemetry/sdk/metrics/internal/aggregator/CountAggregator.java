@@ -42,7 +42,7 @@ final class CountAggregator implements Aggregator<LongAccumulation> {
 
   @Override
   public LongAccumulation diff(LongAccumulation previous, LongAccumulation current) {
-    // For count of measurements, `diff` returns the "DELTA" of measurements that occured.
+    // For count of measurements, `diff` returns the "DELTA" of measurements that occurred.
     // Given how we aggregate, this effectively is just the current value for async
     // instruments.
     return current;

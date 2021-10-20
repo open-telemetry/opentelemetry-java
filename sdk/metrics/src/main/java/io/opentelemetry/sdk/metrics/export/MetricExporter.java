@@ -27,7 +27,7 @@ public interface MetricExporter {
 
   /** Returns the preferred temporality for metrics. */
   @Nullable
-  default AggregationTemporality getPreferedTemporality() {
+  default AggregationTemporality getPreferredTemporality() {
     return null;
   }
 

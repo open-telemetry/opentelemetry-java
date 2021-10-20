@@ -55,7 +55,7 @@ public final class PrometheusCollector extends Collector implements MetricReader
   }
 
   @Override
-  public AggregationTemporality getPreferedTemporality() {
+  public AggregationTemporality getPreferredTemporality() {
     return AggregationTemporality.CUMULATIVE;
   }
 

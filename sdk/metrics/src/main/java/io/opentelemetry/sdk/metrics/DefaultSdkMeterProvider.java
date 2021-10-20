@@ -98,8 +98,8 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
   @Override
   public CompletableResultCode forceFlush() {
     List<CompletableResultCode> results = new ArrayList<>();
-    for (CollectionInfo reader : collectionInfoMap.values()) {
-      results.add(reader.getReader().shutdown());
+    for (CollectionInfo collectionInfo : collectionInfoMap.values()) {
+      results.add(collectionInfo.getReader().shutdown());
     }
     return CompletableResultCode.ofAll(results);
   }
