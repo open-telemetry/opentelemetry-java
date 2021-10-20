@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -40,7 +41,7 @@ class OkHttpOnlyExportTest {
   private static final long START_NS = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
   private static final List<MetricData> METRICS =
       Collections.singletonList(
-          MetricData.createLongSum(
+          MetricDataBuilder.createLongSum(
               Resource.empty(),
               InstrumentationLibraryInfo.empty(),
               "name",

@@ -15,6 +15,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoublePointData;
 import io.opentelemetry.sdk.metrics.data.DoubleSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -30,7 +31,7 @@ class OtlpJsonLoggingMetricExporterTest {
       Resource.create(Attributes.builder().put("key", "value").build());
 
   private static final MetricData METRIC1 =
-      MetricData.createDoubleSum(
+      MetricDataBuilder.createDoubleSum(
           RESOURCE,
           InstrumentationLibraryInfo.create("instrumentation", "1"),
           "metric1",
@@ -43,7 +44,7 @@ class OtlpJsonLoggingMetricExporterTest {
                   DoublePointData.create(1, 2, Attributes.of(stringKey("cat"), "meow"), 4))));
 
   private static final MetricData METRIC2 =
-      MetricData.createDoubleSum(
+      MetricDataBuilder.createDoubleSum(
           RESOURCE,
           InstrumentationLibraryInfo.create("instrumentation2", "2"),
           "metric2",

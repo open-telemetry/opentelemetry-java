@@ -14,6 +14,7 @@ import io.opentelemetry.sdk.metrics.data.LongExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -87,7 +88,7 @@ class LongLastValueAggregatorTest {
             100);
     assertThat(metricData)
         .isEqualTo(
-            MetricData.createLongGauge(
+            MetricDataBuilder.createLongGauge(
                 Resource.getDefault(),
                 InstrumentationLibraryInfo.empty(),
                 "name",

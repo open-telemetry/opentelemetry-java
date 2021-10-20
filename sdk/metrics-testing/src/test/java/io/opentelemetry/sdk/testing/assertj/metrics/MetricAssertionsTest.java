@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -35,7 +36,7 @@ public class MetricAssertionsTest {
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("instrumentation_library", null);
   private static final MetricData HISTOGRAM_METRIC =
-      MetricData.createDoubleHistogram(
+      MetricDataBuilder.createDoubleHistogram(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "histogram",
@@ -47,7 +48,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData HISTOGRAM_DELTA_METRIC =
-      MetricData.createDoubleHistogram(
+      MetricDataBuilder.createDoubleHistogram(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "histogram_delta",
@@ -59,7 +60,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_SUMMARY_METRIC =
-      MetricData.createDoubleSummary(
+      MetricDataBuilder.createDoubleSummary(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "summary",
@@ -70,7 +71,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_GAUGE_METRIC =
-      MetricData.createDoubleGauge(
+      MetricDataBuilder.createDoubleGauge(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "gauge",
@@ -81,7 +82,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_SUM_METRIC =
-      MetricData.createDoubleSum(
+      MetricDataBuilder.createDoubleSum(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "sum",
@@ -94,7 +95,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData DOUBLE_DELTA_SUM_METRIC =
-      MetricData.createDoubleSum(
+      MetricDataBuilder.createDoubleSum(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "sum_delta",
@@ -117,7 +118,7 @@ public class MetricAssertionsTest {
           1, 2, Attributes.empty(), 3.0, Collections.singletonList(DOUBLE_EXEMPLAR));
 
   private static final MetricData LONG_GAUGE_METRIC =
-      MetricData.createLongGauge(
+      MetricDataBuilder.createLongGauge(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "gauge",
@@ -128,7 +129,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData LONG_SUM_METRIC =
-      MetricData.createLongSum(
+      MetricDataBuilder.createLongSum(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "sum",
@@ -141,7 +142,7 @@ public class MetricAssertionsTest {
               Collections.emptyList()));
 
   private static final MetricData LONG_DELTA_SUM_METRIC =
-      MetricData.createLongSum(
+      MetricDataBuilder.createLongSum(
           RESOURCE,
           INSTRUMENTATION_LIBRARY_INFO,
           /* name= */ "sum_delta",
@@ -223,7 +224,7 @@ public class MetricAssertionsTest {
   }
 
   @Test
-  void sumamry_failing() {
+  void summary_failing() {
     assertThatThrownBy(() -> assertThat(DOUBLE_GAUGE_METRIC).hasDoubleSummary())
         .isInstanceOf(AssertionError.class);
   }

@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleHistogramData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -76,7 +77,7 @@ final class DoubleHistogramAggregator extends AbstractAggregator<HistogramAccumu
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    return MetricData.createDoubleHistogram(
+    return MetricDataBuilder.createDoubleHistogram(
         getResource(),
         getInstrumentationLibraryInfo(),
         getMetricDescriptor().getName(),

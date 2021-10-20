@@ -35,6 +35,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
@@ -289,7 +290,7 @@ class OtlpGrpcConfigTest {
   }
 
   private static MetricData generateFakeMetric() {
-    return MetricData.createLongSum(
+    return MetricDataBuilder.createLongSum(
         Resource.empty(),
         InstrumentationLibraryInfo.empty(),
         "metric_name",

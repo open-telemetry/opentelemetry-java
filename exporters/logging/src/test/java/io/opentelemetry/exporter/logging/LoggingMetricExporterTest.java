@@ -17,7 +17,7 @@ import io.opentelemetry.sdk.metrics.data.DoubleSummaryData;
 import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.ByteArrayOutputStream;
@@ -55,7 +55,7 @@ class LoggingMetricExporterTest {
         InstrumentationLibraryInfo.create("manualInstrumentation", "1.0");
     exporter.export(
         Arrays.asList(
-            MetricData.createDoubleSummary(
+            MetricDataBuilder.createDoubleSummary(
                 resource,
                 instrumentationLibraryInfo,
                 "measureOne",
@@ -72,7 +72,7 @@ class LoggingMetricExporterTest {
                             Arrays.asList(
                                 ValueAtPercentile.create(0.0, 25),
                                 ValueAtPercentile.create(100.0, 433)))))),
-            MetricData.createLongSum(
+            MetricDataBuilder.createLongSum(
                 resource,
                 instrumentationLibraryInfo,
                 "counterOne",
@@ -87,7 +87,7 @@ class LoggingMetricExporterTest {
                             nowEpochNanos + 245,
                             Attributes.of(stringKey("z"), "y", stringKey("x"), "w"),
                             1010)))),
-            MetricData.createDoubleSum(
+            MetricDataBuilder.createDoubleSum(
                 resource,
                 instrumentationLibraryInfo,
                 "observedValue",

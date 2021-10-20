@@ -10,6 +10,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -63,7 +64,7 @@ final class LongLastValueAggregator extends AbstractAggregator<LongAccumulation>
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos) {
-    return MetricData.createLongGauge(
+    return MetricDataBuilder.createLongGauge(
         getResource(),
         getInstrumentationLibraryInfo(),
         getMetricDescriptor().getName(),

@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -39,7 +40,7 @@ class ExportTest {
   private static final long START_NS = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
   private static final List<MetricData> METRICS =
       Collections.singletonList(
-          MetricData.createLongSum(
+          MetricDataBuilder.createLongSum(
               Resource.empty(),
               InstrumentationLibraryInfo.empty(),
               "name",

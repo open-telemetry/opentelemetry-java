@@ -49,6 +49,7 @@ import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -299,7 +300,7 @@ class MetricsRequestMarshalerTest {
   void toProtoMetric_monotonic() {
     assertThat(
             toProtoMetric(
-                MetricData.createLongSum(
+                MetricDataBuilder.createLongSum(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
                     "name",
@@ -334,7 +335,7 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toProtoMetric(
-                MetricData.createDoubleSum(
+                MetricDataBuilder.createDoubleSum(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
                     "name",
@@ -373,7 +374,7 @@ class MetricsRequestMarshalerTest {
   void toProtoMetric_nonMonotonic() {
     assertThat(
             toProtoMetric(
-                MetricData.createLongSum(
+                MetricDataBuilder.createLongSum(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
                     "name",
@@ -408,7 +409,7 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toProtoMetric(
-                MetricData.createDoubleSum(
+                MetricDataBuilder.createDoubleSum(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
                     "name",
@@ -447,7 +448,7 @@ class MetricsRequestMarshalerTest {
   void toProtoMetric_gauges() {
     assertThat(
             toProtoMetric(
-                MetricData.createLongGauge(
+                MetricDataBuilder.createLongGauge(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
                     "name",
@@ -478,7 +479,7 @@ class MetricsRequestMarshalerTest {
                 .build());
     assertThat(
             toProtoMetric(
-                MetricData.createDoubleGauge(
+                MetricDataBuilder.createDoubleGauge(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
                     "name",
@@ -513,7 +514,7 @@ class MetricsRequestMarshalerTest {
   void toProtoMetric_summary() {
     assertThat(
             toProtoMetric(
-                MetricData.createDoubleSummary(
+                MetricDataBuilder.createDoubleSummary(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
                     "name",
@@ -568,7 +569,7 @@ class MetricsRequestMarshalerTest {
   void toProtoMetric_histogram() {
     assertThat(
             toProtoMetric(
-                MetricData.createDoubleHistogram(
+                MetricDataBuilder.createDoubleHistogram(
                     Resource.empty(),
                     InstrumentationLibraryInfo.empty(),
                     "name",
@@ -655,7 +656,7 @@ class MetricsRequestMarshalerTest {
     assertThat(
             toProtoResourceMetrics(
                 ImmutableList.of(
-                    MetricData.createDoubleSum(
+                    MetricDataBuilder.createDoubleSum(
                         resource,
                         instrumentationLibraryInfo,
                         "name",
@@ -666,7 +667,7 @@ class MetricsRequestMarshalerTest {
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
                                 DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
-                    MetricData.createDoubleSum(
+                    MetricDataBuilder.createDoubleSum(
                         resource,
                         instrumentationLibraryInfo,
                         "name",
@@ -677,7 +678,7 @@ class MetricsRequestMarshalerTest {
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
                                 DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
-                    MetricData.createDoubleSum(
+                    MetricDataBuilder.createDoubleSum(
                         Resource.empty(),
                         instrumentationLibraryInfo,
                         "name",
@@ -688,7 +689,7 @@ class MetricsRequestMarshalerTest {
                             AggregationTemporality.CUMULATIVE,
                             Collections.singletonList(
                                 DoublePointData.create(123, 456, KV_ATTR, 5.0)))),
-                    MetricData.createDoubleSum(
+                    MetricDataBuilder.createDoubleSum(
                         Resource.empty(),
                         InstrumentationLibraryInfo.empty(),
                         "name",

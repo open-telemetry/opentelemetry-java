@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.metrics.data.LongGaugeData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import io.opentelemetry.sdk.metrics.data.LongSumData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricDataBuilder;
 import io.opentelemetry.sdk.metrics.data.PointData;
 import io.opentelemetry.sdk.metrics.data.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -214,7 +215,7 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
     }
     switch (type) {
       case GAUGE_INT64:
-        return MetricData.createLongGauge(
+        return MetricDataBuilder.createLongGauge(
             Resource.getDefault(),
             INSTRUMENTATION_LIBRARY_INFO,
             metricDescriptor.getName(),
@@ -223,7 +224,7 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
             LongGaugeData.create((List<LongPointData>) points));
 
       case GAUGE_DOUBLE:
-        return MetricData.createDoubleGauge(
+        return MetricDataBuilder.createDoubleGauge(
             Resource.getDefault(),
             INSTRUMENTATION_LIBRARY_INFO,
             metricDescriptor.getName(),
@@ -232,7 +233,7 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
             DoubleGaugeData.create((List<DoublePointData>) points));
 
       case CUMULATIVE_INT64:
-        return MetricData.createLongSum(
+        return MetricDataBuilder.createLongSum(
             Resource.getDefault(),
             INSTRUMENTATION_LIBRARY_INFO,
             metricDescriptor.getName(),
@@ -241,7 +242,7 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
             LongSumData.create(
                 true, AggregationTemporality.CUMULATIVE, (List<LongPointData>) points));
       case CUMULATIVE_DOUBLE:
-        return MetricData.createDoubleSum(
+        return MetricDataBuilder.createDoubleSum(
             Resource.getDefault(),
             INSTRUMENTATION_LIBRARY_INFO,
             metricDescriptor.getName(),
@@ -250,7 +251,7 @@ public final class OpenTelemetryMetricsExporter extends MetricExporter {
             DoubleSumData.create(
                 true, AggregationTemporality.CUMULATIVE, (List<DoublePointData>) points));
       case SUMMARY:
-        return MetricData.createDoubleSummary(
+        return MetricDataBuilder.createDoubleSummary(
             Resource.getDefault(),
             INSTRUMENTATION_LIBRARY_INFO,
             metricDescriptor.getName(),
