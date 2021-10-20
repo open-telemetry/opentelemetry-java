@@ -18,7 +18,6 @@ import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.spi.OpenTelemetrySdkAutoConfigurationBuilder;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -27,6 +26,7 @@ import io.opentelemetry.sdk.trace.samplers.SamplingResult;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,10 +58,13 @@ class OpenTelemetrySdkAutoConfigurationTest {
 
     when(sampler2.shouldSample(any(), any(), any(), any(), any(), any()))
         .thenReturn(SamplingResult.recordAndSample());
+
     when(spanExporter2.export(any())).thenReturn(CompletableResultCode.ofSuccess());
 
-    OpenTelemetrySdkAutoConfigurationBuilder autoConfiguration =
-        OpenTelemetrySdkAutoConfiguration.builder()
+    when(spanExporter2.shutdown()).thenReturn(CompletableResultCode.ofSuccess());
+
+    AutoConfiguredSdkBuilder autoConfiguration =
+        AutoConfiguredSdk.builder()
             .addPropagatorCustomizer(
                 previous -> {
                   assertThat(previous).isSameAs(W3CTraceContextPropagator.getInstance());
@@ -103,18 +106,16 @@ class OpenTelemetrySdkAutoConfigurationTest {
                 () -> Collections.singletonMap("otel.service.name", "test-service"))
             .setResultAsGlobal(false);
 
-    assertThat(autoConfiguration.newResource().getAttribute(ResourceAttributes.SERVICE_NAME))
-        .isEqualTo("test-service");
-    assertThat(autoConfiguration.newResource().getAttribute(stringKey("key2"))).isEqualTo("value2");
-
     assertThat(
-            ((DefaultOpenTelemetrySdkAutoConfigurationBuilder) autoConfiguration)
-                .getConfig()
-                .getString("key"))
-        .isEqualTo("value");
+            autoConfiguration.build().getResource().getAttribute(ResourceAttributes.SERVICE_NAME))
+        .isEqualTo("test-service");
+    assertThat(autoConfiguration.build().getResource().getAttribute(stringKey("key2")))
+        .isEqualTo("value2");
+
+    assertThat(autoConfiguration.getConfig().getString("key")).isEqualTo("value");
 
     GlobalOpenTelemetry.set(OpenTelemetry.noop());
-    OpenTelemetrySdk sdk = autoConfiguration.newOpenTelemetrySdk();
+    OpenTelemetrySdk sdk = autoConfiguration.build().getOpenTelemetrySdk();
     // Verify setResultAsGlobal respected
     assertThat(sdk).isNotSameAs(GlobalOpenTelemetry.get());
 
@@ -125,6 +126,9 @@ class OpenTelemetrySdkAutoConfigurationTest {
         .isEqualTo(extracted);
 
     sdk.getTracerProvider().get("test").spanBuilder("test").startSpan().end();
+
+    // Ensures the export happened.
+    sdk.getSdkTracerProvider().forceFlush().join(10, TimeUnit.SECONDS);
 
     sdk.getSdkTracerProvider().shutdown();
   }

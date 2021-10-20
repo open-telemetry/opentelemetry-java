@@ -5,35 +5,36 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
-import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+@SuppressWarnings("deprecation") // Testing class which will be made package-private
 @ExtendWith(MockitoExtension.class)
 class ResourceTest {
-  @Mock ConfigProperties config;
 
   @Test
   void noResourceProviders() {
-    assertThat(OpenTelemetrySdkAutoConfiguration.builder().newResource())
+    assertThat(OpenTelemetryResourceAutoConfiguration.configureResource())
         .isEqualTo(
             Resource.getDefault().toBuilder().setSchemaUrl(ResourceAttributes.SCHEMA_URL).build());
   }
 
   @Test
   void customConfigResource() {
-    when(config.getString("otel.service.name")).thenReturn("test-service");
-    when(config.getMap("otel.resource.attributes")).thenReturn(singletonMap("food", "cheesecake"));
+    Map<String, String> props = new HashMap<>();
+    props.put("otel.service.name", "test-service");
+    props.put("otel.resource.attributes", "food=cheesecake");
 
-    assertThat(OpenTelemetrySdkAutoConfiguration.builder().setConfig(config).newResource())
+    assertThat(
+            OpenTelemetryResourceAutoConfiguration.configureResource(
+                DefaultConfigProperties.get(props)))
         .isEqualTo(
             Resource.getDefault().toBuilder()
                 .put(ResourceAttributes.SERVICE_NAME, "test-service")

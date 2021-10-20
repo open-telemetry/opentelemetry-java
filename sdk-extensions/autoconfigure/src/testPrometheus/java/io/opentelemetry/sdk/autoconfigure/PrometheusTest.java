@@ -33,7 +33,7 @@ class PrometheusTest {
     }
     System.setProperty("otel.exporter.prometheus.host", "127.0.0.1");
     System.setProperty("otel.exporter.prometheus.port", String.valueOf(port));
-    OpenTelemetrySdkAutoConfiguration.initialize();
+    AutoConfiguredSdk.initialize();
 
     GlobalMeterProvider.get()
         .get("test")

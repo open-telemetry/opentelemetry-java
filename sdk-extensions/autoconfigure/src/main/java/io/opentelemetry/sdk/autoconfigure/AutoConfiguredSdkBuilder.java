@@ -9,8 +9,9 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredSdkCustomizer;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredSdkCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.OpenTelemetrySdkAutoConfigurationCustomizer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -27,8 +28,7 @@ import javax.annotation.Nullable;
  * components can be customized, for example by delegating to them from a wrapper that tweaks
  * behavior such as filtering out telemetry attributes.
  */
-final class DefaultOpenTelemetrySdkAutoConfigurationBuilder
-    implements io.opentelemetry.sdk.autoconfigure.spi.OpenTelemetrySdkAutoConfigurationBuilder {
+public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomizer {
 
   @Nullable private ConfigProperties config;
 
@@ -43,22 +43,22 @@ final class DefaultOpenTelemetrySdkAutoConfigurationBuilder
 
   private boolean setResultAsGlobal = true;
 
-  DefaultOpenTelemetrySdkAutoConfigurationBuilder() {
-    for (OpenTelemetrySdkAutoConfigurationCustomizer customizer :
-        ServiceLoader.load(OpenTelemetrySdkAutoConfigurationCustomizer.class)) {
+  AutoConfiguredSdkBuilder() {
+    for (AutoConfiguredSdkCustomizerProvider customizer :
+        ServiceLoader.load(AutoConfiguredSdkCustomizerProvider.class)) {
       customizer.customize(this);
     }
   }
 
   @Override
-  public DefaultOpenTelemetrySdkAutoConfigurationBuilder setConfig(ConfigProperties config) {
+  public AutoConfiguredSdkBuilder setConfig(ConfigProperties config) {
     requireNonNull(config, "config");
     this.config = config;
     return this;
   }
 
   @Override
-  public DefaultOpenTelemetrySdkAutoConfigurationBuilder addPropagatorCustomizer(
+  public AutoConfiguredSdkBuilder addPropagatorCustomizer(
       Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer) {
     requireNonNull(propagatorCustomizer, "propagatorCustomizer");
     this.propagatorCustomizer = this.propagatorCustomizer.andThen(propagatorCustomizer);
@@ -66,7 +66,7 @@ final class DefaultOpenTelemetrySdkAutoConfigurationBuilder
   }
 
   @Override
-  public DefaultOpenTelemetrySdkAutoConfigurationBuilder addResourceCustomizer(
+  public AutoConfiguredSdkBuilder addResourceCustomizer(
       Function<? super Resource, ? extends Resource> resourceCustomizer) {
     requireNonNull(resourceCustomizer, "resourceCustomizer");
     this.resourceCustomizer = this.resourceCustomizer.andThen(resourceCustomizer);
@@ -74,7 +74,7 @@ final class DefaultOpenTelemetrySdkAutoConfigurationBuilder
   }
 
   @Override
-  public DefaultOpenTelemetrySdkAutoConfigurationBuilder addSamplerCustomizer(
+  public AutoConfiguredSdkBuilder addSamplerCustomizer(
       Function<? super Sampler, ? extends Sampler> samplerCustomizer) {
     requireNonNull(samplerCustomizer, "samplerCustomizer");
     this.samplerCustomizer = this.samplerCustomizer.andThen(samplerCustomizer);
@@ -82,7 +82,7 @@ final class DefaultOpenTelemetrySdkAutoConfigurationBuilder
   }
 
   @Override
-  public DefaultOpenTelemetrySdkAutoConfigurationBuilder addSpanExporterCustomizer(
+  public AutoConfiguredSdkBuilder addSpanExporterCustomizer(
       Function<? super SpanExporter, ? extends SpanExporter> exporterCustomizer) {
     requireNonNull(exporterCustomizer, "exporterCustomizer");
     this.spanExporterCustomizer = this.spanExporterCustomizer.andThen(exporterCustomizer);
@@ -90,7 +90,7 @@ final class DefaultOpenTelemetrySdkAutoConfigurationBuilder
   }
 
   @Override
-  public DefaultOpenTelemetrySdkAutoConfigurationBuilder addPropertySupplier(
+  public AutoConfiguredSdkBuilder addPropertySupplier(
       Supplier<Map<String, String>> propertiesSupplier) {
     requireNonNull(propertiesSupplier, "propertiesSupplier");
     this.propertiesSupplier = mergeProperties(this.propertiesSupplier, propertiesSupplier);
@@ -98,34 +98,29 @@ final class DefaultOpenTelemetrySdkAutoConfigurationBuilder
   }
 
   @Override
-  public DefaultOpenTelemetrySdkAutoConfigurationBuilder setResultAsGlobal(
-      boolean setResultAsGlobal) {
+  public AutoConfiguredSdkBuilder setResultAsGlobal(boolean setResultAsGlobal) {
     this.setResultAsGlobal = setResultAsGlobal;
     return this;
   }
 
-  @Override
-  public OpenTelemetrySdk newOpenTelemetrySdk() {
-    return build().newOpenTelemetrySdk();
-  }
-
-  @Override
-  public Resource newResource() {
-    return build().newResource();
-  }
-
   /**
-   * Returns a new {@link OpenTelemetrySdkAutoConfiguration}, configured using the settings of this
-   * {@link DefaultOpenTelemetrySdkAutoConfigurationBuilder}.
+   * Returns a new {@link AutoConfiguredSdk} holding components auto-configured using the settings
+   * of this {@link AutoConfiguredSdkBuilder}.
    */
-  private OpenTelemetrySdkAutoConfiguration build() {
-    return new OpenTelemetrySdkAutoConfiguration(
-        getConfig(),
-        propagatorCustomizer,
-        spanExporterCustomizer,
-        resourceCustomizer,
-        samplerCustomizer,
-        setResultAsGlobal);
+  @SuppressWarnings("deprecation") // Using classes which will be made package-private later.
+  public AutoConfiguredSdk build() {
+    ConfigProperties config = getConfig();
+    Resource resource =
+        OpenTelemetryResourceAutoConfiguration.configureResource(config, resourceCustomizer);
+    OpenTelemetrySdk sdk =
+        OpenTelemetrySdkAutoConfiguration.newOpenTelemetrySdk(
+            config,
+            resource,
+            propagatorCustomizer,
+            spanExporterCustomizer,
+            samplerCustomizer,
+            setResultAsGlobal);
+    return AutoConfiguredSdk.create(sdk, resource);
   }
 
   // Visible for testing

@@ -14,10 +14,10 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("deprecation") // Tests class which will be made package private
 class EnvironmentResourceTest {
 
   @Test
-  @SuppressWarnings("deprecation") // Tests deprecated method
   void get() {
     assertThat(EnvironmentResource.get().getSchemaUrl()).isEqualTo(ResourceAttributes.SCHEMA_URL);
   }

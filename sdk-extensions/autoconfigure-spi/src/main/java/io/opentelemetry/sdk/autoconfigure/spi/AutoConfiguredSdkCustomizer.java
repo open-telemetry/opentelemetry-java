@@ -15,13 +15,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /** A builder for customizing OpenTelemetry auto-configuration. */
-public interface OpenTelemetrySdkAutoConfigurationBuilder {
+public interface AutoConfiguredSdkCustomizer {
 
   /**
    * Sets the {@link ConfigProperties} to use when resolving properties for auto-configuration.
    * {@link #addPropertySupplier(Supplier)} will have no effect if this method is used.
    */
-  OpenTelemetrySdkAutoConfigurationBuilder setConfig(ConfigProperties config);
+  AutoConfiguredSdkCustomizer setConfig(ConfigProperties config);
 
   /**
    * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
@@ -30,7 +30,7 @@ public interface OpenTelemetrySdkAutoConfigurationBuilder {
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  OpenTelemetrySdkAutoConfigurationBuilder addPropagatorCustomizer(
+  AutoConfiguredSdkCustomizer addPropagatorCustomizer(
       Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer);
 
   /**
@@ -40,7 +40,7 @@ public interface OpenTelemetrySdkAutoConfigurationBuilder {
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  OpenTelemetrySdkAutoConfigurationBuilder addResourceCustomizer(
+  AutoConfiguredSdkCustomizer addResourceCustomizer(
       Function<? super Resource, ? extends Resource> resourceCustomizer);
 
   /**
@@ -50,7 +50,7 @@ public interface OpenTelemetrySdkAutoConfigurationBuilder {
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  OpenTelemetrySdkAutoConfigurationBuilder addSamplerCustomizer(
+  AutoConfiguredSdkCustomizer addSamplerCustomizer(
       Function<? super Sampler, ? extends Sampler> samplerCustomizer);
 
   /**
@@ -59,7 +59,7 @@ public interface OpenTelemetrySdkAutoConfigurationBuilder {
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  OpenTelemetrySdkAutoConfigurationBuilder addSpanExporterCustomizer(
+  AutoConfiguredSdkCustomizer addSpanExporterCustomizer(
       Function<? super SpanExporter, ? extends SpanExporter> exporterCustomizer);
 
   /**
@@ -70,24 +70,11 @@ public interface OpenTelemetrySdkAutoConfigurationBuilder {
    * <p>Multiple calls will cause properties to be merged in order, with later ones overwriting
    * duplicate keys in earlier ones.
    */
-  OpenTelemetrySdkAutoConfigurationBuilder addPropertySupplier(
-      Supplier<Map<String, String>> propertiesSupplier);
+  AutoConfiguredSdkCustomizer addPropertySupplier(Supplier<Map<String, String>> propertiesSupplier);
 
   /**
    * Sets whether the configured {@link OpenTelemetrySdk} should be set as the application's
    * {@linkplain io.opentelemetry.api.GlobalOpenTelemetry global} instance.
    */
-  OpenTelemetrySdkAutoConfigurationBuilder setResultAsGlobal(boolean setResultAsGlobal);
-
-  /**
-   * Returns a new {@link OpenTelemetrySdk} configured with the settings of this {@link
-   * OpenTelemetrySdkAutoConfigurationBuilder}.
-   */
-  OpenTelemetrySdk newOpenTelemetrySdk();
-
-  /**
-   * Returns a new {@link Resource} configured with the settings of this {@link
-   * OpenTelemetrySdkAutoConfigurationBuilder}.
-   */
-  Resource newResource();
+  AutoConfiguredSdkCustomizer setResultAsGlobal(boolean setResultAsGlobal);
 }

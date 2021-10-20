@@ -37,6 +37,8 @@ dependencies {
   compileOnly(project(":exporters:prometheus"))
   compileOnly(project(":exporters:zipkin"))
 
+  annotationProcessor("com.google.auto.value:auto-value")
+
   testImplementation(project(path = ":sdk:trace-shaded-deps"))
 
   testImplementation(project(":sdk:testing"))

@@ -14,7 +14,12 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Function;
 
-/** Auto-configuration for the OpenTelemetry {@link Resource}. */
+/**
+ * Auto-configuration for the OpenTelemetry {@link Resource}.
+ *
+ * @deprecated Use {@link AutoConfiguredSdk#getResource()}.
+ */
+@Deprecated
 public final class OpenTelemetryResourceAutoConfiguration {
 
   /**
@@ -42,6 +47,7 @@ public final class OpenTelemetryResourceAutoConfiguration {
     return configureResource(config, Function.identity());
   }
 
+  @SuppressWarnings("deprecation") // Uses class which will be made package private
   static Resource configureResource(
       ConfigProperties config, Function<? super Resource, ? extends Resource> resourceCustomizer) {
     Resource result = Resource.getDefault();
