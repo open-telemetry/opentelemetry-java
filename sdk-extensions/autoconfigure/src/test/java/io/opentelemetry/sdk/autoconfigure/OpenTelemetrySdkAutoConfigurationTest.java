@@ -98,12 +98,13 @@ class OpenTelemetrySdkAutoConfigurationTest {
                   assertThat(previous).isSameAs(spanExporter1);
                   return spanExporter2;
                 })
-            .addPropertySupplier(() -> Collections.singletonMap("key", "valueUnused"))
-            .addPropertySupplier(() -> Collections.singletonMap("key", "value"))
-            .addPropertySupplier(() -> Collections.singletonMap("otel.propagators", "tracecontext"))
-            .addPropertySupplier(() -> Collections.singletonMap("otel.metrics.exporter", "none"))
-            .addPropertySupplier(() -> Collections.singletonMap("otel.traces.exporter", "none"))
-            .addPropertySupplier(
+            .addPropertiesSupplier(() -> Collections.singletonMap("key", "valueUnused"))
+            .addPropertiesSupplier(() -> Collections.singletonMap("key", "value"))
+            .addPropertiesSupplier(
+                () -> Collections.singletonMap("otel.propagators", "tracecontext"))
+            .addPropertiesSupplier(() -> Collections.singletonMap("otel.metrics.exporter", "none"))
+            .addPropertiesSupplier(() -> Collections.singletonMap("otel.traces.exporter", "none"))
+            .addPropertiesSupplier(
                 () -> Collections.singletonMap("otel.service.name", "test-service"))
             .setResultAsGlobal(false);
 

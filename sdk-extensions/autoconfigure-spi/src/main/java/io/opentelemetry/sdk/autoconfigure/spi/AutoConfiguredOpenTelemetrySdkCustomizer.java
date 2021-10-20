@@ -64,6 +64,6 @@ public interface AutoConfiguredOpenTelemetrySdkCustomizer {
    * <p>Multiple calls will cause properties to be merged in order, with later ones overwriting
    * duplicate keys in earlier ones.
    */
-  AutoConfiguredOpenTelemetrySdkCustomizer addPropertySupplier(
+  AutoConfiguredOpenTelemetrySdkCustomizer addPropertiesSupplier(
       Supplier<Map<String, String>> propertiesSupplier);
 }

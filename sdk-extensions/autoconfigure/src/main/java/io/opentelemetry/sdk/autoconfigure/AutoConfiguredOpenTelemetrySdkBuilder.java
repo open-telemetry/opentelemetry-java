@@ -56,7 +56,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
 
   /**
    * Sets the {@link ConfigProperties} to use when resolving properties for auto-configuration.
-   * {@link #addPropertySupplier(Supplier)} will have no effect if this method is used.
+   * {@link #addPropertiesSupplier(Supplier)} will have no effect if this method is used.
    */
   public AutoConfiguredOpenTelemetrySdkBuilder setConfig(ConfigProperties config) {
     requireNonNull(config, "config");
@@ -134,7 +134,7 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
    * duplicate keys in earlier ones.
    */
   @Override
-  public AutoConfiguredOpenTelemetrySdkBuilder addPropertySupplier(
+  public AutoConfiguredOpenTelemetrySdkBuilder addPropertiesSupplier(
       Supplier<Map<String, String>> propertiesSupplier) {
     requireNonNull(propertiesSupplier, "propertiesSupplier");
     this.propertiesSupplier = mergeProperties(this.propertiesSupplier, propertiesSupplier);
