@@ -6,7 +6,6 @@
 package io.opentelemetry.sdk.autoconfigure.spi;
 
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -16,12 +15,6 @@ import java.util.function.Supplier;
 
 /** A builder for customizing OpenTelemetry auto-configuration. */
 public interface AutoConfiguredSdkCustomizer {
-
-  /**
-   * Sets the {@link ConfigProperties} to use when resolving properties for auto-configuration.
-   * {@link #addPropertySupplier(Supplier)} will have no effect if this method is used.
-   */
-  AutoConfiguredSdkCustomizer setConfig(ConfigProperties config);
 
   /**
    * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
@@ -71,10 +64,4 @@ public interface AutoConfiguredSdkCustomizer {
    * duplicate keys in earlier ones.
    */
   AutoConfiguredSdkCustomizer addPropertySupplier(Supplier<Map<String, String>> propertiesSupplier);
-
-  /**
-   * Sets whether the configured {@link OpenTelemetrySdk} should be set as the application's
-   * {@linkplain io.opentelemetry.api.GlobalOpenTelemetry global} instance.
-   */
-  AutoConfiguredSdkCustomizer setResultAsGlobal(boolean setResultAsGlobal);
 }

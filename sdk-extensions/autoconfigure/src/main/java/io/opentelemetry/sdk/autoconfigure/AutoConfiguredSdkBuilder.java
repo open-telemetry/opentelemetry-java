@@ -50,13 +50,23 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
     }
   }
 
-  @Override
+  /**
+   * Sets the {@link ConfigProperties} to use when resolving properties for auto-configuration.
+   * {@link #addPropertySupplier(Supplier)} will have no effect if this method is used.
+   */
   public AutoConfiguredSdkBuilder setConfig(ConfigProperties config) {
     requireNonNull(config, "config");
     this.config = config;
     return this;
   }
 
+  /**
+   * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
+   * allow customization. The return value of the {@link Function} will replace the passed-in
+   * argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
   @Override
   public AutoConfiguredSdkBuilder addPropagatorCustomizer(
       Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer) {
@@ -65,6 +75,13 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
     return this;
   }
 
+  /**
+   * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
+   * allow customization. The return value of the {@link Function} will replace the passed-in
+   * argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
   @Override
   public AutoConfiguredSdkBuilder addResourceCustomizer(
       Function<? super Resource, ? extends Resource> resourceCustomizer) {
@@ -73,6 +90,13 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
     return this;
   }
 
+  /**
+   * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
+   * allow customization. The return value of the {@link Function} will replace the passed-in
+   * argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
   @Override
   public AutoConfiguredSdkBuilder addSamplerCustomizer(
       Function<? super Sampler, ? extends Sampler> samplerCustomizer) {
@@ -81,6 +105,12 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
     return this;
   }
 
+  /**
+   * Adds a {@link Function} to invoke with the default autoconfigured {@link SpanExporter} to allow
+   * customization. The return value of the {@link Function} will replace the passed-in argument.
+   *
+   * <p>Multiple calls will execute the customizers in order.
+   */
   @Override
   public AutoConfiguredSdkBuilder addSpanExporterCustomizer(
       Function<? super SpanExporter, ? extends SpanExporter> exporterCustomizer) {
@@ -89,6 +119,14 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
     return this;
   }
 
+  /**
+   * Adds a {@link Supplier} of a map of property names and values to use as defaults for the {@link
+   * ConfigProperties} used during auto-configuration. The order of precedence of properties is
+   * system properties > environment variables > the suppliers registered with this method.
+   *
+   * <p>Multiple calls will cause properties to be merged in order, with later ones overwriting
+   * duplicate keys in earlier ones.
+   */
   @Override
   public AutoConfiguredSdkBuilder addPropertySupplier(
       Supplier<Map<String, String>> propertiesSupplier) {
@@ -97,7 +135,10 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
     return this;
   }
 
-  @Override
+  /**
+   * Sets whether the configured {@link OpenTelemetrySdk} should be set as the application's
+   * {@linkplain io.opentelemetry.api.GlobalOpenTelemetry global} instance.
+   */
   public AutoConfiguredSdkBuilder setResultAsGlobal(boolean setResultAsGlobal) {
     this.setResultAsGlobal = setResultAsGlobal;
     return this;
