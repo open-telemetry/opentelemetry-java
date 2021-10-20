@@ -19,7 +19,6 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.Function;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +30,7 @@ public class ConfigurableSpanExporterTest {
         DefaultConfigProperties.createForTest(
             ImmutableMap.of("test.option", "true", "otel.traces.exporter", "testExporter"));
     Map<String, SpanExporter> exportersByName =
-        SpanExporterConfiguration.configureSpanExporters(config, Function.identity());
+        SpanExporterConfiguration.configureSpanExporters(config, (a, unused) -> a);
 
     assertThat(exportersByName)
         .hasSize(1)
@@ -49,7 +48,7 @@ public class ConfigurableSpanExporterTest {
             ImmutableMap.of("otel.traces.exporter", "otlp,otlp,logging"));
 
     assertThatThrownBy(
-            () -> SpanExporterConfiguration.configureSpanExporters(config, Function.identity()))
+            () -> SpanExporterConfiguration.configureSpanExporters(config, (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains duplicates: [otlp]");
   }
@@ -60,7 +59,7 @@ public class ConfigurableSpanExporterTest {
         DefaultConfigProperties.createForTest(ImmutableMap.of("otel.traces.exporter", "otlp,none"));
 
     assertThatThrownBy(
-            () -> SpanExporterConfiguration.configureSpanExporters(config, Function.identity()))
+            () -> SpanExporterConfiguration.configureSpanExporters(config, (a, unused) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("otel.traces.exporter contains none along with other exporters");
   }

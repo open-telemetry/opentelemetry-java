@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSamplerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.resources.Resource;
@@ -27,15 +28,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.function.Function;
 
 final class TracerProviderConfiguration {
 
   static SdkTracerProvider configureTracerProvider(
       Resource resource,
       ConfigProperties config,
-      Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer,
-      Function<? super Sampler, ? extends Sampler> samplerCustomizer) {
+      SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer,
+      SdkComponentCustomizer<? super Sampler, ? extends Sampler> samplerCustomizer) {
     SdkTracerProviderBuilder tracerProviderBuilder =
         SdkTracerProvider.builder()
             .setResource(resource)
@@ -45,7 +45,8 @@ final class TracerProviderConfiguration {
     if (sampler == null) {
       sampler = "parentbased_always_on";
     }
-    tracerProviderBuilder.setSampler(samplerCustomizer.apply(configureSampler(sampler, config)));
+    tracerProviderBuilder.setSampler(
+        samplerCustomizer.apply(configureSampler(sampler, config), config));
 
     // Run user configuration before setting exporters from environment to allow user span
     // processors to effect export.

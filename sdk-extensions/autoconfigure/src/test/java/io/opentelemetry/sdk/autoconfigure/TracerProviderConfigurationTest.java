@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,8 +64,8 @@ class TracerProviderConfigurationTest {
         TracerProviderConfiguration.configureTracerProvider(
             resource,
             DefaultConfigProperties.createForTest(properties),
-            Function.identity(),
-            Function.identity());
+            (a, unused) -> a,
+            (a, unused) -> a);
     try {
       assertThat(tracerProvider.getSampler()).isEqualTo(Sampler.alwaysOff());
 

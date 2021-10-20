@@ -12,18 +12,19 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurablePropagatorProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 final class PropagatorConfiguration {
 
   static ContextPropagators configurePropagators(
       ConfigProperties config,
-      Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer) {
+      SdkComponentCustomizer<? super TextMapPropagator, ? extends TextMapPropagator>
+          propagatorCustomizer) {
     Set<TextMapPropagator> propagators = new LinkedHashSet<>();
     List<String> requestedPropagators = config.getList("otel.propagators");
     if (requestedPropagators.isEmpty()) {
@@ -39,7 +40,8 @@ final class PropagatorConfiguration {
             config);
 
     for (String propagatorName : requestedPropagators) {
-      propagators.add(propagatorCustomizer.apply(getPropagator(propagatorName, spiPropagators)));
+      propagators.add(
+          propagatorCustomizer.apply(getPropagator(propagatorName, spiPropagators), config));
     }
 
     return ContextPropagators.create(TextMapPropagator.composite(propagators));

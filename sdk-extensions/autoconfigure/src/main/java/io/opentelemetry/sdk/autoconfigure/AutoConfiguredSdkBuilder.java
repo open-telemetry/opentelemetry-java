@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredSdkCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredSdkCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
@@ -32,12 +33,14 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
 
   @Nullable private ConfigProperties config;
 
-  private Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer =
-      Function.identity();
-  private Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer =
-      Function.identity();
-  private Function<? super Resource, ? extends Resource> resourceCustomizer = Function.identity();
-  private Function<? super Sampler, ? extends Sampler> samplerCustomizer = Function.identity();
+  private SdkComponentCustomizer<? super TextMapPropagator, ? extends TextMapPropagator>
+      propagatorCustomizer = (a, unused) -> a;
+  private SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter>
+      spanExporterCustomizer = (a, unused) -> a;
+  private SdkComponentCustomizer<? super Resource, ? extends Resource> resourceCustomizer =
+      (a, unused) -> a;
+  private SdkComponentCustomizer<? super Sampler, ? extends Sampler> samplerCustomizer =
+      (a, unused) -> a;
 
   private Supplier<Map<String, String>> propertiesSupplier = Collections::emptyMap;
 
@@ -69,9 +72,10 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
    */
   @Override
   public AutoConfiguredSdkBuilder addPropagatorCustomizer(
-      Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer) {
+      SdkComponentCustomizer<? super TextMapPropagator, ? extends TextMapPropagator>
+          propagatorCustomizer) {
     requireNonNull(propagatorCustomizer, "propagatorCustomizer");
-    this.propagatorCustomizer = this.propagatorCustomizer.andThen(propagatorCustomizer);
+    this.propagatorCustomizer = mergeCustomizer(this.propagatorCustomizer, propagatorCustomizer);
     return this;
   }
 
@@ -84,9 +88,9 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
    */
   @Override
   public AutoConfiguredSdkBuilder addResourceCustomizer(
-      Function<? super Resource, ? extends Resource> resourceCustomizer) {
+      SdkComponentCustomizer<? super Resource, ? extends Resource> resourceCustomizer) {
     requireNonNull(resourceCustomizer, "resourceCustomizer");
-    this.resourceCustomizer = this.resourceCustomizer.andThen(resourceCustomizer);
+    this.resourceCustomizer = mergeCustomizer(this.resourceCustomizer, resourceCustomizer);
     return this;
   }
 
@@ -99,9 +103,9 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
    */
   @Override
   public AutoConfiguredSdkBuilder addSamplerCustomizer(
-      Function<? super Sampler, ? extends Sampler> samplerCustomizer) {
+      SdkComponentCustomizer<? super Sampler, ? extends Sampler> samplerCustomizer) {
     requireNonNull(samplerCustomizer, "samplerCustomizer");
-    this.samplerCustomizer = this.samplerCustomizer.andThen(samplerCustomizer);
+    this.samplerCustomizer = mergeCustomizer(this.samplerCustomizer, samplerCustomizer);
     return this;
   }
 
@@ -113,9 +117,10 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
    */
   @Override
   public AutoConfiguredSdkBuilder addSpanExporterCustomizer(
-      Function<? super SpanExporter, ? extends SpanExporter> exporterCustomizer) {
-    requireNonNull(exporterCustomizer, "exporterCustomizer");
-    this.spanExporterCustomizer = this.spanExporterCustomizer.andThen(exporterCustomizer);
+      SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
+    requireNonNull(spanExporterCustomizer, "spanExporterCustomizer");
+    this.spanExporterCustomizer =
+        mergeCustomizer(this.spanExporterCustomizer, spanExporterCustomizer);
     return this;
   }
 
@@ -171,6 +176,15 @@ public final class AutoConfiguredSdkBuilder implements AutoConfiguredSdkCustomiz
       config = DefaultConfigProperties.get(propertiesSupplier.get());
     }
     return config;
+  }
+
+  private static <I, O1, O2> SdkComponentCustomizer<I, O2> mergeCustomizer(
+      SdkComponentCustomizer<? super I, ? extends O1> first,
+      SdkComponentCustomizer<? super O1, ? extends O2> second) {
+    return (I configured, ConfigProperties config) -> {
+      O1 firstResult = first.apply(configured, config);
+      return second.apply(firstResult, config);
+    };
   }
 
   private static Supplier<Map<String, String>> mergeProperties(

@@ -24,7 +24,8 @@ public interface AutoConfiguredSdkCustomizer {
    * <p>Multiple calls will execute the customizers in order.
    */
   AutoConfiguredSdkCustomizer addPropagatorCustomizer(
-      Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer);
+      SdkComponentCustomizer<? super TextMapPropagator, ? extends TextMapPropagator>
+          propagatorCustomizer);
 
   /**
    * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
@@ -34,7 +35,7 @@ public interface AutoConfiguredSdkCustomizer {
    * <p>Multiple calls will execute the customizers in order.
    */
   AutoConfiguredSdkCustomizer addResourceCustomizer(
-      Function<? super Resource, ? extends Resource> resourceCustomizer);
+      SdkComponentCustomizer<? super Resource, ? extends Resource> resourceCustomizer);
 
   /**
    * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
@@ -44,7 +45,7 @@ public interface AutoConfiguredSdkCustomizer {
    * <p>Multiple calls will execute the customizers in order.
    */
   AutoConfiguredSdkCustomizer addSamplerCustomizer(
-      Function<? super Sampler, ? extends Sampler> samplerCustomizer);
+      SdkComponentCustomizer<? super Sampler, ? extends Sampler> samplerCustomizer);
 
   /**
    * Adds a {@link Function} to invoke with the default autoconfigured {@link SpanExporter} to allow
@@ -53,7 +54,7 @@ public interface AutoConfiguredSdkCustomizer {
    * <p>Multiple calls will execute the customizers in order.
    */
   AutoConfiguredSdkCustomizer addSpanExporterCustomizer(
-      Function<? super SpanExporter, ? extends SpanExporter> exporterCustomizer);
+      SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter> exporterCustomizer);
 
   /**
    * Adds a {@link Supplier} of a map of property names and values to use as defaults for the {@link

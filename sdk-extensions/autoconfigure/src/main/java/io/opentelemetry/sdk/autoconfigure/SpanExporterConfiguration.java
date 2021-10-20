@@ -24,6 +24,7 @@ import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
+import io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.time.Duration;
@@ -41,7 +42,7 @@ final class SpanExporterConfiguration {
   // Visible for testing
   static Map<String, SpanExporter> configureSpanExporters(
       ConfigProperties config,
-      Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
+      SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer) {
     List<String> exporterNamesList = config.getList("otel.traces.exporter");
     Set<String> exporterNames = new HashSet<>(exporterNamesList);
     if (exporterNamesList.size() != exporterNames.size()) {
@@ -61,7 +62,7 @@ final class SpanExporterConfiguration {
             "otel.traces.exporter contains " + EXPORTER_NONE + " along with other exporters");
       }
       SpanExporter noop = SpanExporter.composite();
-      SpanExporter customized = spanExporterCustomizer.apply(noop);
+      SpanExporter customized = spanExporterCustomizer.apply(noop, config);
       if (customized == noop) {
         return Collections.emptyMap();
       }
@@ -86,7 +87,7 @@ final class SpanExporterConfiguration {
                 Function.identity(),
                 exporterName ->
                     spanExporterCustomizer.apply(
-                        configureExporter(exporterName, config, spiExporters))));
+                        configureExporter(exporterName, config, spiExporters), config)));
   }
 
   // Visible for testing

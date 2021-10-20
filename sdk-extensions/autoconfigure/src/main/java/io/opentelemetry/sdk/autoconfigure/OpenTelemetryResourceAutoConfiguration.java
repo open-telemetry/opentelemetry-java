@@ -7,12 +7,12 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * Auto-configuration for the OpenTelemetry {@link Resource}.
@@ -44,12 +44,13 @@ public final class OpenTelemetryResourceAutoConfiguration {
    */
   @Deprecated
   public static Resource configureResource(ConfigProperties config) {
-    return configureResource(config, Function.identity());
+    return configureResource(config, (a, unused) -> a);
   }
 
   @SuppressWarnings("deprecation") // Uses class which will be made package private
   static Resource configureResource(
-      ConfigProperties config, Function<? super Resource, ? extends Resource> resourceCustomizer) {
+      ConfigProperties config,
+      SdkComponentCustomizer<? super Resource, ? extends Resource> resourceCustomizer) {
     Resource result = Resource.getDefault();
 
     // TODO(anuraaga): We use a hyphen only once in this artifact, for
@@ -66,7 +67,7 @@ public final class OpenTelemetryResourceAutoConfiguration {
 
     result = result.merge(EnvironmentResource.create(config));
 
-    return resourceCustomizer.apply(result);
+    return resourceCustomizer.apply(result, config);
   }
 
   private OpenTelemetryResourceAutoConfiguration() {}

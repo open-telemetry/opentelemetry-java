@@ -12,7 +12,6 @@ import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import java.util.Collections;
-import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
 class NotOnClasspathTest {
@@ -132,7 +131,7 @@ class NotOnClasspathTest {
                 PropagatorConfiguration.configurePropagators(
                     DefaultConfigProperties.createForTest(
                         Collections.singletonMap("otel.propagators", "b3")),
-                    Function.identity()))
+                    (a, config) -> a))
         .isInstanceOf(ConfigurationException.class)
         .hasMessageContaining("Unrecognized value for otel.propagators: b3");
   }

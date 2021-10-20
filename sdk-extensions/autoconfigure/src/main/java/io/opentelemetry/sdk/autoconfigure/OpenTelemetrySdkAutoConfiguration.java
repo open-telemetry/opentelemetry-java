@@ -10,6 +10,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.SdkComponentCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.metrics.SdkMeterProviderConfigurer;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
@@ -19,7 +20,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import java.util.ServiceLoader;
-import java.util.function.Function;
 
 /**
  * Auto-configuration for the OpenTelemetry SDK. As an alternative to programmatically configuring
@@ -85,9 +85,10 @@ public final class OpenTelemetrySdkAutoConfiguration {
   static OpenTelemetrySdk newOpenTelemetrySdk(
       ConfigProperties config,
       Resource resource,
-      Function<? super TextMapPropagator, ? extends TextMapPropagator> propagatorCustomizer,
-      Function<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer,
-      Function<? super Sampler, ? extends Sampler> samplerCustomizer,
+      SdkComponentCustomizer<? super TextMapPropagator, ? extends TextMapPropagator>
+          propagatorCustomizer,
+      SdkComponentCustomizer<? super SpanExporter, ? extends SpanExporter> spanExporterCustomizer,
+      SdkComponentCustomizer<? super Sampler, ? extends Sampler> samplerCustomizer,
       boolean setResultAsGlobal) {
     ContextPropagators propagators =
         PropagatorConfiguration.configurePropagators(config, propagatorCustomizer);

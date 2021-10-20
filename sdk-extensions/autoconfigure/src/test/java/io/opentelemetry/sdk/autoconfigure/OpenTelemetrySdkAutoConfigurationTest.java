@@ -66,34 +66,35 @@ class OpenTelemetrySdkAutoConfigurationTest {
     AutoConfiguredSdkBuilder autoConfiguration =
         AutoConfiguredSdk.builder()
             .addPropagatorCustomizer(
-                previous -> {
+                (previous, config) -> {
                   assertThat(previous).isSameAs(W3CTraceContextPropagator.getInstance());
                   return propagator1;
                 })
             .addPropagatorCustomizer(
-                previous -> {
+                (previous, config) -> {
                   assertThat(previous).isSameAs(propagator1);
                   return propagator2;
                 })
             .addResourceCustomizer(
-                resource -> resource.merge(Resource.builder().put("key2", "value2").build()))
+                (resource, config) ->
+                    resource.merge(Resource.builder().put("key2", "value2").build()))
             .addSamplerCustomizer(
-                previous -> {
+                (previous, config) -> {
                   assertThat(previous).isEqualTo(Sampler.parentBased(Sampler.alwaysOn()));
                   return sampler1;
                 })
             .addSamplerCustomizer(
-                previous -> {
+                (previous, config) -> {
                   assertThat(previous).isSameAs(sampler1);
                   return sampler2;
                 })
             .addSpanExporterCustomizer(
-                previous -> {
+                (previous, config) -> {
                   assertThat(previous).isSameAs(SpanExporter.composite());
                   return spanExporter1;
                 })
             .addSpanExporterCustomizer(
-                previous -> {
+                (previous, config) -> {
                   assertThat(previous).isSameAs(spanExporter1);
                   return spanExporter2;
                 })
