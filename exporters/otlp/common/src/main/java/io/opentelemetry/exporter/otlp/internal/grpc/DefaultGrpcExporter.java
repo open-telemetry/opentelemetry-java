@@ -5,20 +5,13 @@
 
 package io.opentelemetry.exporter.otlp.internal.grpc;
 
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.Codec;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.exporter.otlp.internal.ExporterMetrics;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
@@ -41,13 +34,10 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
   private final String type;
+  private final ExporterMetrics exporterMetrics;
   private final ManagedChannel managedChannel;
   private final MarshalerServiceStub<T, ?, ?> stub;
   private final long timeoutNanos;
-
-  private final BoundLongCounter seen;
-  private final BoundLongCounter success;
-  private final BoundLongCounter failed;
 
   /** Creates a new {@link DefaultGrpcExporter}. */
   DefaultGrpcExporter(
@@ -57,13 +47,7 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
       long timeoutNanos,
       boolean compressionEnabled) {
     this.type = type;
-    Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-grpc");
-    Attributes attributes = Attributes.builder().put(stringKey("type"), type).build();
-    seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
-    LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();
-    success = exported.bind(attributes.toBuilder().put(booleanKey("success"), true).build());
-    failed = exported.bind(attributes.toBuilder().put(booleanKey("success"), false).build());
-
+    this.exporterMetrics = ExporterMetrics.createGrpc(type);
     this.managedChannel = channel;
     this.timeoutNanos = timeoutNanos;
     Codec codec = compressionEnabled ? new Codec.Gzip() : Codec.Identity.NONE;
@@ -72,7 +56,7 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
 
   @Override
   public CompletableResultCode export(T exportRequest, int numItems) {
-    seen.add(numItems);
+    exporterMetrics.addSeen(numItems);
 
     CompletableResultCode result = new CompletableResultCode();
 
@@ -85,13 +69,13 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
         new FutureCallback<Object>() {
           @Override
           public void onSuccess(@Nullable Object unused) {
-            success.add(numItems);
+            exporterMetrics.addSuccess(numItems);
             result.succeed();
           }
 
           @Override
           public void onFailure(Throwable t) {
-            failed.add(numItems);
+            exporterMetrics.addFailed(numItems);
             Status status = Status.fromThrowable(t);
             switch (status.getCode()) {
               case UNIMPLEMENTED:
@@ -137,9 +121,7 @@ public final class DefaultGrpcExporter<T extends Marshaler> implements GrpcExpor
     if (managedChannel.isTerminated()) {
       return CompletableResultCode.ofSuccess();
     }
-    seen.unbind();
-    success.unbind();
-    failed.unbind();
+    exporterMetrics.unbind();
     return ManagedChannelUtil.shutdownChannel(managedChannel);
   }
 }

@@ -5,14 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.http.metrics;
 
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.exporter.otlp.internal.ExporterMetrics;
 import io.opentelemetry.exporter.otlp.internal.ProtoRequestBody;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.metrics.MetricsRequestMarshaler;
@@ -48,10 +41,7 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
-  private final BoundLongCounter seen;
-  private final BoundLongCounter success;
-  private final BoundLongCounter failed;
-
+  private final ExporterMetrics exporterMetrics;
   private final OkHttpClient client;
   private final String endpoint;
   @Nullable private final Headers headers;
@@ -59,13 +49,7 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
 
   OtlpHttpMetricExporter(
       OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
-    Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http");
-    Attributes attributes = Attributes.builder().put(stringKey("type"), "metric").build();
-    seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
-    LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();
-    success = exported.bind(attributes.toBuilder().put(booleanKey("success"), true).build());
-    failed = exported.bind(attributes.toBuilder().put(booleanKey("success"), false).build());
-
+    this.exporterMetrics = ExporterMetrics.createHttpProtobuf("metric");
     this.client = client;
     this.endpoint = endpoint;
     this.headers = headers;
@@ -80,7 +64,7 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
    */
   @Override
   public CompletableResultCode export(Collection<MetricData> metrics) {
-    seen.add(metrics.size());
+    exporterMetrics.addSeen(metrics.size());
 
     MetricsRequestMarshaler exportRequest = MetricsRequestMarshaler.create(metrics);
 
@@ -104,7 +88,7 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
             new Callback() {
               @Override
               public void onFailure(Call call, IOException e) {
-                failed.add(metrics.size());
+                exporterMetrics.addFailed(metrics.size());
                 logger.log(
                     Level.SEVERE,
                     "Failed to export metrics. The request could not be executed. Full error message: "
@@ -115,12 +99,12 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
               @Override
               public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                  success.add(metrics.size());
+                  exporterMetrics.addSuccess(metrics.size());
                   result.succeed();
                   return;
                 }
 
-                failed.add(metrics.size());
+                exporterMetrics.addFailed(metrics.size());
                 int code = response.code();
 
                 String status = extractErrorStatus(response);
@@ -204,6 +188,7 @@ public final class OtlpHttpMetricExporter implements MetricExporter {
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = CompletableResultCode.ofSuccess();
     client.dispatcher().cancelAll();
+    exporterMetrics.unbind();
     return result;
   }
 }

@@ -5,14 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.http.trace;
 
-import static io.opentelemetry.api.common.AttributeKey.booleanKey;
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.exporter.otlp.internal.ExporterMetrics;
 import io.opentelemetry.exporter.otlp.internal.ProtoRequestBody;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.traces.TraceRequestMarshaler;
@@ -48,10 +41,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
-  private final BoundLongCounter seen;
-  private final BoundLongCounter success;
-  private final BoundLongCounter failed;
-
+  private final ExporterMetrics exporterMetrics;
   private final OkHttpClient client;
   private final String endpoint;
   @Nullable private final Headers headers;
@@ -59,13 +49,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
 
   OtlpHttpSpanExporter(
       OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
-    Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http");
-    Attributes attributes = Attributes.builder().put(stringKey("type"), "span").build();
-    seen = meter.counterBuilder("otlp.exporter.seen").build().bind(attributes);
-    LongCounter exported = meter.counterBuilder("otlp.exported.exported").build();
-    success = exported.bind(attributes.toBuilder().put(booleanKey("success"), true).build());
-    failed = exported.bind(attributes.toBuilder().put(booleanKey("success"), false).build());
-
+    this.exporterMetrics = ExporterMetrics.createHttpProtobuf("span");
     this.client = client;
     this.endpoint = endpoint;
     this.headers = headers;
@@ -80,7 +64,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
    */
   @Override
   public CompletableResultCode export(Collection<SpanData> spans) {
-    seen.add(spans.size());
+    exporterMetrics.addSeen(spans.size());
 
     TraceRequestMarshaler exportRequest = TraceRequestMarshaler.create(spans);
 
@@ -104,7 +88,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
             new Callback() {
               @Override
               public void onFailure(Call call, IOException e) {
-                failed.add(spans.size());
+                exporterMetrics.addFailed(spans.size());
                 logger.log(
                     Level.SEVERE,
                     "Failed to export spans. The request could not be executed. Full error message: "
@@ -115,12 +99,12 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
               @Override
               public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                  success.add(spans.size());
+                  exporterMetrics.addSuccess(spans.size());
                   result.succeed();
                   return;
                 }
 
-                failed.add(spans.size());
+                exporterMetrics.addFailed(spans.size());
                 int code = response.code();
 
                 String status = extractErrorStatus(response);
@@ -204,9 +188,7 @@ public final class OtlpHttpSpanExporter implements SpanExporter {
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = CompletableResultCode.ofSuccess();
     client.dispatcher().cancelAll();
-    this.seen.unbind();
-    this.success.unbind();
-    this.failed.unbind();
+    exporterMetrics.unbind();
     return result;
   }
 }
