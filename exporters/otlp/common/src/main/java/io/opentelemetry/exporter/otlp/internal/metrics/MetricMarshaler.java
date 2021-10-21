@@ -55,6 +55,8 @@ final class MetricMarshaler extends MarshalerWithSize {
         dataMarshaler = HistogramMarshaler.create(metric.getDoubleHistogramData());
         dataField = Metric.HISTOGRAM;
         break;
+      case EXPONENTIAL_HISTOGRAM:
+        throw new UnsupportedOperationException("Exponential Histogram exporter not developed.");
     }
 
     if (dataMarshaler == null || dataField == null) {
