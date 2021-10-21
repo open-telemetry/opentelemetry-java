@@ -15,7 +15,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class LongSumData implements SumData<LongPointData> {
 
-  static final LongSumData DEFAULT =
+  static final LongSumData EMPTY =
       LongSumData.create(
           /* isMonotonic= */ false, AggregationTemporality.CUMULATIVE, Collections.emptyList());
 

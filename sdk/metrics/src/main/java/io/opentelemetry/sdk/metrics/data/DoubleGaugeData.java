@@ -14,7 +14,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class DoubleGaugeData implements GaugeData<DoublePointData> {
-  static final DoubleGaugeData DEFAULT = DoubleGaugeData.create(Collections.emptyList());
+  static final DoubleGaugeData EMPTY = DoubleGaugeData.create(Collections.emptyList());
 
   public static DoubleGaugeData create(Collection<DoublePointData> points) {
     return new AutoValue_DoubleGaugeData(points);

@@ -211,7 +211,7 @@ public interface MetricData {
     if (getType() == MetricDataType.DOUBLE_GAUGE) {
       return (DoubleGaugeData) getData();
     }
-    return DoubleGaugeData.DEFAULT;
+    return DoubleGaugeData.EMPTY;
   }
 
   /**
@@ -225,7 +225,7 @@ public interface MetricData {
     if (getType() == MetricDataType.LONG_GAUGE) {
       return (LongGaugeData) getData();
     }
-    return LongGaugeData.DEFAULT;
+    return LongGaugeData.EMPTY;
   }
 
   /**
@@ -239,7 +239,7 @@ public interface MetricData {
     if (getType() == MetricDataType.DOUBLE_SUM) {
       return (DoubleSumData) getData();
     }
-    return DoubleSumData.DEFAULT;
+    return DoubleSumData.EMPTY;
   }
 
   /**
@@ -253,7 +253,7 @@ public interface MetricData {
     if (getType() == MetricDataType.LONG_SUM) {
       return (LongSumData) getData();
     }
-    return LongSumData.DEFAULT;
+    return LongSumData.EMPTY;
   }
 
   /**
@@ -267,7 +267,7 @@ public interface MetricData {
     if (getType() == MetricDataType.SUMMARY) {
       return (DoubleSummaryData) getData();
     }
-    return DoubleSummaryData.DEFAULT;
+    return DoubleSummaryData.EMPTY;
   }
 
   /**
@@ -281,6 +281,6 @@ public interface MetricData {
     if (getType() == MetricDataType.HISTOGRAM) {
       return (DoubleHistogramData) getData();
     }
-    return DoubleHistogramData.DEFAULT;
+    return DoubleHistogramData.EMPTY;
   }
 }

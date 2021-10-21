@@ -15,7 +15,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class DoubleSumData implements SumData<DoublePointData> {
 
-  static final DoubleSumData DEFAULT =
+  static final DoubleSumData EMPTY =
       DoubleSumData.create(
           /* isMonotonic= */ false, AggregationTemporality.CUMULATIVE, Collections.emptyList());
 

@@ -26,7 +26,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class DoubleSummaryData implements Data<DoubleSummaryPointData> {
 
-  static final DoubleSummaryData DEFAULT = DoubleSummaryData.create(Collections.emptyList());
+  static final DoubleSummaryData EMPTY = DoubleSummaryData.create(Collections.emptyList());
 
   DoubleSummaryData() {}
 

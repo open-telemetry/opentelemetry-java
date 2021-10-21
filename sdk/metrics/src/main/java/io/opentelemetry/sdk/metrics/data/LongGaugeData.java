@@ -15,7 +15,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class LongGaugeData implements GaugeData<LongPointData> {
 
-  static final LongGaugeData DEFAULT = LongGaugeData.create(Collections.emptyList());
+  static final LongGaugeData EMPTY = LongGaugeData.create(Collections.emptyList());
 
   public static LongGaugeData create(Collection<LongPointData> points) {
     return new AutoValue_LongGaugeData(points);

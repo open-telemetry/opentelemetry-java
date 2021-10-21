@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 public abstract class DoubleHistogramData implements Data<DoubleHistogramPointData> {
 
-  static final DoubleHistogramData DEFAULT =
+  static final DoubleHistogramData EMPTY =
       DoubleHistogramData.create(AggregationTemporality.CUMULATIVE, Collections.emptyList());
 
   DoubleHistogramData() {}
