@@ -15,32 +15,38 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MapCounter implements ExponentialCounter {
 
+  public static final int MAX_SIZE = 320;
+
   private static final long NULL_INDEX = Long.MIN_VALUE;
 
   private final Map<Integer, AtomicLong> backing;
-  private final int maxSize;
   private long indexStart;
   private long indexEnd;
 
-  /**
-   * Instantiate a MapCounter with a maximum size of maxSize.
-   *
-   * @param maxSize maximum window size; The max difference allowed between indexStart and indexEnd.
-   */
-  public MapCounter(int maxSize) {
-    this.backing = new HashMap<>((int) Math.ceil(maxSize/0.75) + 1);
+  /** Instantiate a MapCounter. */
+  public MapCounter() {
+    this.backing = new HashMap<>((int) Math.ceil(MAX_SIZE / 0.75) + 1);
     this.indexEnd = NULL_INDEX;
     this.indexStart = NULL_INDEX;
-    this.maxSize = maxSize;
   }
 
-  // Constructor for copying
-  public MapCounter(MapCounter mapCounter) {
-    this.maxSize = mapCounter.maxSize;
-    this.backing = new HashMap<>((int) Math.ceil(maxSize/0.75) + 1);
-    this.indexStart = mapCounter.indexStart;
-    this.indexEnd = mapCounter.indexEnd;
-    mapCounter.backing.forEach((Integer i, AtomicLong v) -> this.backing.put(i, new AtomicLong(v.longValue())));
+  /**
+   * Create an independent copy of another ExponentialCounter.
+   *
+   * @param otherCounter another exponential counter to make a deep copy of.
+   */
+  public MapCounter(ExponentialCounter otherCounter) {
+    this.backing = new HashMap<>((int) Math.ceil(MAX_SIZE / 0.75) + 1);
+    this.indexStart = otherCounter.getIndexStart();
+    this.indexEnd = otherCounter.getIndexEnd();
+
+    // copy values
+    for (long i = indexStart; i <= indexEnd; i++) {
+      long val = otherCounter.get(i);
+      if (val != 0) {
+        this.backing.put((int) i, new AtomicLong(val));
+      }
+    }
   }
 
   @Override
@@ -55,10 +61,6 @@ public class MapCounter implements ExponentialCounter {
 
   @Override
   public boolean increment(long index, long delta) {
-    // todo verify do we actually need to restrict this?
-    if (index > Integer.MAX_VALUE || index < Integer.MIN_VALUE) {
-      return false;
-    }
     int i = (int) index; // safely castable due to above check
     if (indexStart == NULL_INDEX) {
       indexStart = index;
@@ -69,12 +71,12 @@ public class MapCounter implements ExponentialCounter {
 
     // Extend window if possible. if it would exceed maxSize, then return false.
     if (i > indexEnd) {
-      if (i - indexStart + 1 > maxSize) {
+      if (i - indexStart + 1 > MAX_SIZE) {
         return false;
       }
       indexEnd = i;
     } else if (i < indexStart) {
-      if (indexEnd - i + 1 > maxSize) {
+      if (indexEnd - i + 1 > MAX_SIZE) {
         return false;
       }
       indexStart = i;

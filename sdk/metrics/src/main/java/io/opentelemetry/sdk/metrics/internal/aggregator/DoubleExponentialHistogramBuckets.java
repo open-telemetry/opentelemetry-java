@@ -16,9 +16,9 @@ import javax.annotation.Nullable;
 
 class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
-  public static final int MAX_BUCKETS = 320;
   public static final int MAX_SCALE = 20;
 
+  private static final int MAX_BUCKETS = MapCounter.MAX_SIZE;
   private static final Logger logger =
       Logger.getLogger(DoubleExponentialHistogramBuckets.class.getName());
 
@@ -27,14 +27,14 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   private int scale;
 
   DoubleExponentialHistogramBuckets() {
-    this.counts = new MapCounter(MAX_BUCKETS);
+    this.counts = new MapCounter();
     this.bucketMapper = new LogarithmMapper(MAX_SCALE);
     this.scale = MAX_SCALE;
   }
 
   // For copying
   DoubleExponentialHistogramBuckets(DoubleExponentialHistogramBuckets buckets) {
-    this.counts = new MapCounter( (MapCounter) buckets.counts); // copy counts
+    this.counts = new MapCounter(buckets.counts); // copy counts
     this.bucketMapper = new LogarithmMapper(buckets.scale);
     this.scale = buckets.scale;
   }
@@ -83,7 +83,7 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     }
 
     if (!counts.isEmpty()) {
-      ExponentialCounter newCounts = new MapCounter(MAX_BUCKETS);
+      ExponentialCounter newCounts = new MapCounter();
 
       for (long i = counts.getIndexStart(); i <= counts.getIndexEnd(); i++) {
         long count = counts.get(i);
@@ -102,14 +102,15 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   }
 
   /**
-   * Immutable method for merging. This method copies the first set of buckets, performs
-   * the merge on the copy, and returns the copy.
+   * Immutable method for merging. This method copies the first set of buckets, performs the merge
+   * on the copy, and returns the copy.
    *
    * @param a first buckets
    * @param b second buckets
    * @return A new set of buckets, the result
    */
-  static DoubleExponentialHistogramBuckets merge(DoubleExponentialHistogramBuckets a, DoubleExponentialHistogramBuckets b) {
+  static DoubleExponentialHistogramBuckets merge(
+      DoubleExponentialHistogramBuckets a, DoubleExponentialHistogramBuckets b) {
     if (b.counts.isEmpty()) {
       return new DoubleExponentialHistogramBuckets(a);
     } else if (a.counts.isEmpty()) {
@@ -120,12 +121,13 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
     return copy;
   }
 
-  /** This method merges this instance with another set of buckets. It alters the underlying bucket
-   * counts and scale of this instance only, so it is to be used with caution. For immutability,
-   * use the static merge() method.
+  /**
+   * This method merges this instance with another set of buckets. It alters the underlying bucket
+   * counts and scale of this instance only, so it is to be used with caution. For immutability, use
+   * the static merge() method.
    *
-   * <p> This algorithm for merging is adapted from NrSketch.
-   * */
+   * <p>This algorithm for merging is adapted from NrSketch.
+   */
   private void mergeWith(DoubleExponentialHistogramBuckets other) {
     if (other.counts.isEmpty()) {
       return;
@@ -170,9 +172,9 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   }
 
   /**
-   * Returns the minimum scale reduction required to record the given value in these buckets,
-   * by calculating the new required window to allow the new value to be recorded. To be used
-   * with downScale().
+   * Returns the minimum scale reduction required to record the given value in these buckets, by
+   * calculating the new required window to allow the new value to be recorded. To be used with
+   * downScale().
    *
    * @param value The proposed value to be recorded.
    * @return The required scale reduction in order to fit the value in these buckets.
