@@ -14,6 +14,8 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 abstract class MetricDataImpl implements MetricData {
 
+  MetricDataImpl() {}
+
   static MetricDataImpl create(
       Resource resource,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
