@@ -110,9 +110,9 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
   }
 
   /**
-   * Ensures this {@link MetricData} is a {@code ExponentialHistogram}
+   * Ensures this {@link MetricData} is a {@code ExponentialHistogram}.
    *
-   * @return convenience API to assert agains the {@code ExponentialHistogram}
+   * @return convenience API to assert agains the {@code ExponentialHistogram}.
    */
   public ExponentialHistogramAssert hasExponentialHistogram() {
     isNotNull();

@@ -53,7 +53,8 @@ public final class MetricAssertions extends Assertions {
     return new DoubleSummaryPointDataAssert(point);
   }
 
-  public static ExponentialHistogramPointDataAssert assertThat(ExponentialHistogramPointData point) {
+  public static ExponentialHistogramPointDataAssert assertThat(
+      ExponentialHistogramPointData point) {
     return new ExponentialHistogramPointDataAssert(point);
   }
 

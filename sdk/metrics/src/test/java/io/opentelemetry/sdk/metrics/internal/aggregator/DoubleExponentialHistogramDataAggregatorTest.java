@@ -237,10 +237,11 @@ public class DoubleExponentialHistogramDataAggregatorTest {
   void testToMetricData() {
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
-    @SuppressWarnings("unchecked") Supplier<ExemplarReservoir> reservoirSupplier = Mockito.mock(Supplier.class);
-    Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(Collections.singletonList(exemplar));
+    @SuppressWarnings("unchecked")
+    Supplier<ExemplarReservoir> reservoirSupplier = Mockito.mock(Supplier.class);
+    Mockito.when(reservoir.collectAndReset(Attributes.empty()))
+        .thenReturn(Collections.singletonList(exemplar));
     Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);
-
 
     DoubleExponentialHistogramAggregator cumulativeAggregator =
         new DoubleExponentialHistogramAggregator(
@@ -250,7 +251,8 @@ public class DoubleExponentialHistogramDataAggregatorTest {
             /* stateful= */ true,
             reservoirSupplier);
 
-    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = cumulativeAggregator.createHandle();
+    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle =
+        cumulativeAggregator.createHandle();
     aggregatorHandle.recordDouble(0);
     aggregatorHandle.recordDouble(0);
     aggregatorHandle.recordDouble(123.456);
@@ -258,33 +260,30 @@ public class DoubleExponentialHistogramDataAggregatorTest {
 
     MetricData metricData =
         cumulativeAggregator.toMetricData(
-            Collections.singletonMap(Attributes.empty(), acc),
-            0,
-            10,
-            100);
+            Collections.singletonMap(Attributes.empty(), acc), 0, 10, 100);
 
     // Assertions run twice to verify immutability; recordings shouldn't modify the metric data
     for (int i = 0; i < 2; i++) {
       assertThat(metricData)
           .hasExponentialHistogram()
           .isCumulative()
-          .points().satisfiesExactly(
-            point -> {
-              assertThat(point)
-                  .hasSum(123.456)
-                  .hasScale(20)
-                  .hasZeroCount(2)
-                  .hasTotalCount(3)
-                  .hasExemplars(exemplar);
-              assertThat(point.getPositiveBuckets())
-                  .hasCounts(Collections.singletonList(1L))
-                  .hasOffset((int) valueToIndex(20, 123.456))
-                  .hasTotalCount(1);
-              assertThat(point.getNegativeBuckets())
-                  .hasTotalCount(0)
-                  .hasCounts(Collections.emptyList());
-            }
-      );
+          .points()
+          .satisfiesExactly(
+              point -> {
+                assertThat(point)
+                    .hasSum(123.456)
+                    .hasScale(20)
+                    .hasZeroCount(2)
+                    .hasTotalCount(3)
+                    .hasExemplars(exemplar);
+                assertThat(point.getPositiveBuckets())
+                    .hasCounts(Collections.singletonList(1L))
+                    .hasOffset((int) valueToIndex(20, 123.456))
+                    .hasTotalCount(1);
+                assertThat(point.getNegativeBuckets())
+                    .hasTotalCount(0)
+                    .hasCounts(Collections.emptyList());
+              });
       aggregatorHandle.recordDouble(1);
       aggregatorHandle.recordDouble(-1);
       aggregatorHandle.recordDouble(0);

@@ -1,10 +1,17 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package io.opentelemetry.sdk.testing.assertj.metrics;
 
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import org.assertj.core.api.Assertions;
 
-public class ExponentialHistogramPointDataAssert extends AbstractPointDataAssert<ExponentialHistogramPointDataAssert, ExponentialHistogramPointData> {
-  protected ExponentialHistogramPointDataAssert (ExponentialHistogramPointData actual) {
+public class ExponentialHistogramPointDataAssert
+    extends AbstractPointDataAssert<
+        ExponentialHistogramPointDataAssert, ExponentialHistogramPointData> {
+  protected ExponentialHistogramPointDataAssert(ExponentialHistogramPointData actual) {
     super(actual, ExponentialHistogramPointDataAssert.class);
   }
 
@@ -29,7 +36,7 @@ public class ExponentialHistogramPointDataAssert extends AbstractPointDataAssert
     return this;
   }
 
-  /** Ensures the {@code zeroCount} field matches the expected value */
+  /** Ensures the {@code zeroCount} field matches the expected value. */
   public ExponentialHistogramPointDataAssert hasZeroCount(long expected) {
     isNotNull();
     Assertions.assertThat(actual.getZeroCount()).as("zeroCount").isEqualTo(expected);
