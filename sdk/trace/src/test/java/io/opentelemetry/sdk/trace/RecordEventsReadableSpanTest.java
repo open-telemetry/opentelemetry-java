@@ -1043,7 +1043,7 @@ class RecordEventsReadableSpanTest {
                     SpanContext.create(
                         traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
                 : Span.getInvalid(),
-            Context.root(),
+            Context.groot(),
             config,
             spanProcessor,
             testClock,
@@ -1052,7 +1052,7 @@ class RecordEventsReadableSpanTest {
             links,
             1,
             0);
-    Mockito.verify(spanProcessor, Mockito.times(1)).onStart(Context.root(), span);
+    Mockito.verify(spanProcessor, Mockito.times(1)).onStart(Context.groot(), span);
     return span;
   }
 
@@ -1132,7 +1132,7 @@ class RecordEventsReadableSpanTest {
                     SpanContext.create(
                         traceId, parentSpanId, TraceFlags.getDefault(), TraceState.getDefault()))
                 : Span.getInvalid(),
-            Context.root(),
+            Context.groot(),
             spanLimits,
             spanProcessor,
             clock,

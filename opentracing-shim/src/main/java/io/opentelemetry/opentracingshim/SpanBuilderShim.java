@@ -192,12 +192,12 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
-      builder.setParent(Context.root().with(parentSpan.getSpan()));
+      builder.setParent(Context.groot().with(parentSpan.getSpan()));
       SpanContextShim contextShim = spanContextTable().get(parentSpan);
       baggage = contextShim == null ? null : contextShim.getBaggage();
     } else if (parentSpanContext != null) {
       builder.setParent(
-          Context.root()
+          Context.groot()
               .with(io.opentelemetry.api.trace.Span.wrap(parentSpanContext.getSpanContext())));
       baggage = parentSpanContext.getBaggage();
     }

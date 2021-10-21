@@ -39,9 +39,9 @@ class W3CBaggagePropagatorFuzzTest {
               .put("b", baggageValue, BaggageEntryMetadata.create(metadataBlob))
               .build();
       Map<String, String> carrier = new HashMap<>();
-      baggagePropagator.inject(Context.root().with(baggage), carrier, Map::put);
+      baggagePropagator.inject(Context.groot().with(baggage), carrier, Map::put);
       Context extractedContext =
-          baggagePropagator.extract(Context.root(), carrier, new MapTextMapGetter());
+          baggagePropagator.extract(Context.groot(), carrier, new MapTextMapGetter());
       Baggage extractedBaggage = Baggage.fromContext(extractedContext);
       assertThat(extractedBaggage).isEqualTo(baggage);
     }
@@ -56,9 +56,9 @@ class W3CBaggagePropagatorFuzzTest {
               .put("b", baggageValue, BaggageEntryMetadata.create(metadataBlob))
               .build();
       Map<String, String> carrier = new HashMap<>();
-      baggagePropagator.inject(Context.root().with(baggage), carrier, Map::put);
+      baggagePropagator.inject(Context.groot().with(baggage), carrier, Map::put);
       Context extractedContext =
-          baggagePropagator.extract(Context.root(), carrier, new MapTextMapGetter());
+          baggagePropagator.extract(Context.groot(), carrier, new MapTextMapGetter());
       Baggage extractedBaggage = Baggage.fromContext(extractedContext);
       assertThat(extractedBaggage).isEqualTo(baggage);
     }
