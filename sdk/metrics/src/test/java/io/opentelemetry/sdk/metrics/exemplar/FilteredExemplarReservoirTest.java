@@ -29,30 +29,30 @@ class FilteredExemplarReservoirTest {
   void testFilter_preventsSamplingDoubles() {
     when(filter.shouldSampleMeasurement(anyDouble(), any(), any())).thenReturn(false);
     ExemplarReservoir filtered = new FilteredExemplarReservoir(filter, reservoir);
-    filtered.offerMeasurement(1.0, Attributes.empty(), Context.groot());
+    filtered.offerMeasurement(1.0, Attributes.empty(), Context.root());
   }
 
   @Test
   void testFilter_allowsSamplingDoubles() {
     when(filter.shouldSampleMeasurement(anyDouble(), any(), any())).thenReturn(true);
     ExemplarReservoir filtered = new FilteredExemplarReservoir(filter, reservoir);
-    filtered.offerMeasurement(1.0, Attributes.empty(), Context.groot());
-    verify(reservoir).offerMeasurement(1.0, Attributes.empty(), Context.groot());
+    filtered.offerMeasurement(1.0, Attributes.empty(), Context.root());
+    verify(reservoir).offerMeasurement(1.0, Attributes.empty(), Context.root());
   }
 
   @Test
   void testFilter_preventsSamplingLongs() {
     when(filter.shouldSampleMeasurement(anyLong(), any(), any())).thenReturn(false);
     ExemplarReservoir filtered = new FilteredExemplarReservoir(filter, reservoir);
-    filtered.offerMeasurement(1L, Attributes.empty(), Context.groot());
+    filtered.offerMeasurement(1L, Attributes.empty(), Context.root());
   }
 
   @Test
   void testFilter_allowsSamplingLongs() {
     when(filter.shouldSampleMeasurement(anyLong(), any(), any())).thenReturn(true);
     ExemplarReservoir filtered = new FilteredExemplarReservoir(filter, reservoir);
-    filtered.offerMeasurement(1L, Attributes.empty(), Context.groot());
-    verify(reservoir).offerMeasurement(1L, Attributes.empty(), Context.groot());
+    filtered.offerMeasurement(1L, Attributes.empty(), Context.root());
+    verify(reservoir).offerMeasurement(1L, Attributes.empty(), Context.root());
   }
 
   @Test

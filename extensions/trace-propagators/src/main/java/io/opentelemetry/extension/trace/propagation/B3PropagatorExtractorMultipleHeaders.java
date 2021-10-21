@@ -22,7 +22,7 @@ final class B3PropagatorExtractorMultipleHeaders implements B3PropagatorExtracto
   public <C> Optional<Context> extract(
       Context context, @Nullable C carrier, TextMapGetter<C> getter) {
     if (context == null) {
-      return Optional.of(Context.groot());
+      return Optional.of(Context.root());
     }
     if (getter == null) {
       return Optional.of(context);

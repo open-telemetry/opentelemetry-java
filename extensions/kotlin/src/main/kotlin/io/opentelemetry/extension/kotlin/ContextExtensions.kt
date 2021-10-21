@@ -33,5 +33,5 @@ fun CoroutineContext.getOpenTelemetryContext(): Context {
   if (element is KotlinContextElement) {
     return element.context
   }
-  return Context.groot()
+  return Context.root()
 }

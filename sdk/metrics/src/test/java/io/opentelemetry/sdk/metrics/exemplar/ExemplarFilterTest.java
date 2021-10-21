@@ -23,7 +23,7 @@ class ExemplarFilterTest {
   void never_NeverReturnsTrue() {
     assertThat(
             ExemplarFilter.neverSample()
-                .shouldSampleMeasurement(1, Attributes.empty(), Context.groot()))
+                .shouldSampleMeasurement(1, Attributes.empty(), Context.root()))
         .isFalse();
   }
 
@@ -31,7 +31,7 @@ class ExemplarFilterTest {
   void always_AlwaysReturnsTrue() {
     assertThat(
             ExemplarFilter.alwaysSample()
-                .shouldSampleMeasurement(1, Attributes.empty(), Context.groot()))
+                .shouldSampleMeasurement(1, Attributes.empty(), Context.root()))
         .isTrue();
   }
 
@@ -39,14 +39,14 @@ class ExemplarFilterTest {
   void withSampledTrace_ReturnsFalseOnNoContext() {
     assertThat(
             ExemplarFilter.sampleWithTraces()
-                .shouldSampleMeasurement(1, Attributes.empty(), Context.groot()))
+                .shouldSampleMeasurement(1, Attributes.empty(), Context.root()))
         .isFalse();
   }
 
   @Test
   void withSampledTrace_sampleWithTrace() {
     final Context context =
-        Context.groot()
+        Context.root()
             .with(
                 Span.wrap(
                     SpanContext.createFromRemoteParent(
@@ -60,7 +60,7 @@ class ExemplarFilterTest {
   @Test
   void withSampledTrace_notSampleUnsampledTrace() {
     final Context context =
-        Context.groot()
+        Context.root()
             .with(
                 Span.wrap(
                     SpanContext.createFromRemoteParent(

@@ -42,7 +42,7 @@ class PassThroughPropagatorTest {
     incoming.put("food", "pizza");
     incoming.put("country", "japan");
 
-    Context context = propagator.extract(Context.groot(), incoming, getter);
+    Context context = propagator.extract(Context.root(), incoming, getter);
 
     Map<String, String> outgoing = new HashMap<>();
     propagator.inject(context, outgoing, Map::put);
@@ -57,7 +57,7 @@ class PassThroughPropagatorTest {
     incoming.put("food", "pizza");
     incoming.put("country", "japan");
 
-    Context context = propagator.extract(Context.groot(), incoming, getter);
+    Context context = propagator.extract(Context.root(), incoming, getter);
 
     Map<String, String> outgoing = new HashMap<>();
     propagator.inject(context, outgoing, Map::put);
@@ -68,7 +68,7 @@ class PassThroughPropagatorTest {
   void emptyMap() {
     Map<String, String> incoming = new HashMap<>();
 
-    Context context = propagator.extract(Context.groot(), incoming, getter);
+    Context context = propagator.extract(Context.root(), incoming, getter);
 
     Map<String, String> outgoing = new HashMap<>();
     propagator.inject(context, outgoing, Map::put);

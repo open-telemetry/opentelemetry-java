@@ -74,7 +74,7 @@ public class SynchronousMetricStorageTest {
     SynchronousMetricStorage accumulator =
         new DefaultSynchronousMetricStorage<>(METRIC_DESCRIPTOR, aggregator, spyLabelsProcessor);
     BoundStorageHandle handle = accumulator.bind(labels);
-    handle.recordDouble(1, labels, Context.groot());
+    handle.recordDouble(1, labels, Context.root());
     MetricData md =
         accumulator.collectAndReset(collector, allCollectors, 0, testClock.now(), false);
     assertThat(md)

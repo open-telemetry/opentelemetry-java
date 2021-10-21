@@ -23,7 +23,7 @@ class StrictContextWithCoroutinesTest {
 
   @Test
   fun noMakeCurrentSucceeds() {
-    val context1 = Context.groot().with(ANIMAL, "cat")
+    val context1 = Context.root().with(ANIMAL, "cat")
     assertThat(Context.current().get(ANIMAL)).isNull()
     runBlocking(Dispatchers.Default + context1.asContextElement()) {
       assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
@@ -32,7 +32,7 @@ class StrictContextWithCoroutinesTest {
 
   @Test
   fun noMakeCurrentNestedContextSucceeds() {
-    val context1 = Context.groot().with(ANIMAL, "cat")
+    val context1 = Context.root().with(ANIMAL, "cat")
     assertThat(Context.current().get(ANIMAL)).isNull()
     runBlocking(Dispatchers.Default + context1.asContextElement()) {
       assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")
@@ -50,7 +50,7 @@ class StrictContextWithCoroutinesTest {
 
   @Test
   fun makeCurrentInTopLevelCoroutineFails() {
-    val context1 = Context.groot().with(ANIMAL, "cat")
+    val context1 = Context.root().with(ANIMAL, "cat")
     assertThat(Context.current().get(ANIMAL)).isNull()
     assertThatThrownBy {
       runBlocking(Dispatchers.Default + context1.asContextElement()) {
@@ -64,7 +64,7 @@ class StrictContextWithCoroutinesTest {
 
   @Test
   fun makeCurrentInNestedCoroutineFails() {
-    val context1 = Context.groot().with(ANIMAL, "cat")
+    val context1 = Context.root().with(ANIMAL, "cat")
     assertThat(Context.current().get(ANIMAL)).isNull()
     assertThatThrownBy {
       runBlocking(Dispatchers.Default + context1.asContextElement()) {
@@ -81,7 +81,7 @@ class StrictContextWithCoroutinesTest {
 
   @Test
   fun makeCurrentInSuspendingFunctionFails() {
-    val context1 = Context.groot().with(ANIMAL, "cat")
+    val context1 = Context.root().with(ANIMAL, "cat")
     assertThat(Context.current().get(ANIMAL)).isNull()
     assertThatThrownBy {
       runBlocking(Dispatchers.Default + context1.asContextElement()) {
@@ -93,7 +93,7 @@ class StrictContextWithCoroutinesTest {
 
   @Test
   fun makeCurrentInSuspendingFunctionWithManualCloseFails() {
-    val context1 = Context.groot().with(ANIMAL, "cat")
+    val context1 = Context.root().with(ANIMAL, "cat")
     assertThat(Context.current().get(ANIMAL)).isNull()
     assertThatThrownBy {
       runBlocking(Dispatchers.Default + context1.asContextElement()) {
@@ -105,7 +105,7 @@ class StrictContextWithCoroutinesTest {
 
   @Test
   fun noMakeCurrentInSuspendingFunctionSucceeds() {
-    val context1 = Context.groot().with(ANIMAL, "cat")
+    val context1 = Context.root().with(ANIMAL, "cat")
     assertThat(Context.current().get(ANIMAL)).isNull()
     runBlocking(Dispatchers.Default + context1.asContextElement()) {
       assertThat(Context.current().get(ANIMAL)).isEqualTo("cat")

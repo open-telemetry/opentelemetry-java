@@ -84,7 +84,7 @@ public interface Context {
   /** Return the context associated with the current {@link Scope}. */
   static Context current() {
     Context current = ContextStorage.get().current();
-    return current != null ? current : groot();
+    return current != null ? current : root();
   }
 
   /**
@@ -95,7 +95,7 @@ public interface Context {
    * you are absolutely sure you need to disregard the current {@link Context} - this almost always
    * is only a workaround hiding an underlying context propagation issue.
    */
-  static Context groot() {
+  static Context root() {
     return ContextStorage.get().root();
   }
 

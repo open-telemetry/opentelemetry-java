@@ -78,7 +78,7 @@ public class DoubleHistogramAggregatorTest {
             /* stateful= */ false,
             () -> reservoir);
     AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
-    aggregatorHandle.recordDouble(0, attributes, Context.groot());
+    aggregatorHandle.recordDouble(0, attributes, Context.root());
     assertThat(aggregatorHandle.accumulateThenReset(Attributes.empty()))
         .isEqualTo(HistogramAccumulation.create(0, new long[] {1, 0, 0, 0}, exemplars));
   }

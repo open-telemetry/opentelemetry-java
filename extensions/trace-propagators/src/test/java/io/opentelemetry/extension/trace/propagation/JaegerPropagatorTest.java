@@ -164,7 +164,7 @@ class JaegerPropagatorTest {
             .put("meta", "meta-value", BaggageEntryMetadata.create("somemetadata; someother=foo"))
             .build();
     Map<String, String> carrier = new LinkedHashMap<>();
-    jaegerPropagator.inject(Context.groot().with(baggage), carrier, Map::put);
+    jaegerPropagator.inject(Context.root().with(baggage), carrier, Map::put);
     assertThat(carrier)
         .containsExactlyInAnyOrderEntriesOf(
             ImmutableMap.of(
@@ -448,7 +448,7 @@ class JaegerPropagatorTest {
   @Test
   void extract_nullContext() {
     assertThat(jaegerPropagator.extract(null, Collections.emptyMap(), getter))
-        .isSameAs(Context.groot());
+        .isSameAs(Context.root());
   }
 
   @Test

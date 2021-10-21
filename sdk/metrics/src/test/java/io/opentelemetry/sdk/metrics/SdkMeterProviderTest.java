@@ -601,7 +601,7 @@ class SdkMeterProviderTest {
             .build();
     Meter meter = provider.get(SdkMeterProviderTest.class.getName());
     Baggage baggage = Baggage.builder().put("baggage", "value").build();
-    Context context = Context.groot().with(baggage);
+    Context context = Context.root().with(baggage);
     LongCounter counter = meter.counterBuilder("test").build();
 
     // Make sure whether or not we explicitly pass baggage, all values have it appended.

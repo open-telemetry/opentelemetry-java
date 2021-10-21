@@ -68,7 +68,7 @@ public class W3CTraceContextPropagatorInjectBenchmark {
   private static List<Context> createContexts(List<SpanContext> spanContexts) {
     List<Context> contexts = new ArrayList<>();
     for (SpanContext context : spanContexts) {
-      contexts.add(Context.groot().with(Span.wrap(context)));
+      contexts.add(Context.root().with(Span.wrap(context)));
     }
     return contexts;
   }
