@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.internal.state.ExponentialCounter;
 import io.opentelemetry.sdk.metrics.internal.state.MapCounter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
@@ -53,6 +54,9 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   @Override
   public List<Long> getBucketCounts() {
     // todo LongList optimisation
+    if (counts.isEmpty()) {
+      return Collections.emptyList();
+    }
     int length = (int) (counts.getIndexEnd() - counts.getIndexStart() + 1);
     Long[] countsArr = new Long[(int) (counts.getIndexEnd() - counts.getIndexStart() + 1)];
     for (int i = 0; i < length; i++) {

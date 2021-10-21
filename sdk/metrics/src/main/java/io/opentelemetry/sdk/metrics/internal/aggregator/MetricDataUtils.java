@@ -13,7 +13,6 @@ import io.opentelemetry.sdk.metrics.data.DoubleSummaryPointData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramPointData;
 import io.opentelemetry.sdk.metrics.data.LongPointData;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -103,7 +102,7 @@ final class MetricDataUtils {
                     startEpochNanos,
                     epochNanos,
                     attributes,
-                    Collections.emptyList())));
+                    aggregator.getExemplars())));
     return points;
   }
 }

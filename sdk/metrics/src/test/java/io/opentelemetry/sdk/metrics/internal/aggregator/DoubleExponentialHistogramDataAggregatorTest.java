@@ -10,12 +10,10 @@ import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.asse
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.DoubleExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExemplarData;
 import io.opentelemetry.sdk.metrics.data.ExponentialHistogramBuckets;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricDataType;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarReservoir;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
 import io.opentelemetry.sdk.resources.Resource;
@@ -23,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -236,25 +235,60 @@ public class DoubleExponentialHistogramDataAggregatorTest {
 
   @Test
   void testToMetricData() {
-    // todo create assert types in metrics-testing and use here to verify accumulations and
-    // exemplars
     Attributes attributes = Attributes.builder().put("test", "value").build();
     ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
-    getTestAccumulation(Collections.singletonList(exemplar), 123.456);
+    @SuppressWarnings("unchecked") Supplier<ExemplarReservoir> reservoirSupplier = Mockito.mock(Supplier.class);
+    Mockito.when(reservoir.collectAndReset(Attributes.empty())).thenReturn(Collections.singletonList(exemplar));
+    Mockito.when(reservoirSupplier.get()).thenReturn(reservoir);
+
+
+    DoubleExponentialHistogramAggregator cumulativeAggregator =
+        new DoubleExponentialHistogramAggregator(
+            Resource.getDefault(),
+            InstrumentationLibraryInfo.empty(),
+            MetricDescriptor.create("name", "description", "unit"),
+            /* stateful= */ true,
+            reservoirSupplier);
+
+    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = cumulativeAggregator.createHandle();
+    aggregatorHandle.recordDouble(0);
+    aggregatorHandle.recordDouble(0);
+    aggregatorHandle.recordDouble(123.456);
+    ExponentialHistogramAccumulation acc = aggregatorHandle.accumulateThenReset(Attributes.empty());
 
     MetricData metricData =
-        aggregator.toMetricData(
-            Collections.singletonMap(
-                Attributes.empty(),
-                getTestAccumulation(Collections.singletonList(exemplar), 123.456)),
+        cumulativeAggregator.toMetricData(
+            Collections.singletonMap(Attributes.empty(), acc),
             0,
             10,
             100);
 
-    assertThat(metricData).isNotNull();
-    assertThat(metricData.getType()).isEqualTo(MetricDataType.EXPONENTIAL_HISTOGRAM);
-    assertThat(metricData.getExponentialHistogramData().getAggregationTemporality())
-        .isEqualTo(AggregationTemporality.DELTA);
+    // Assertions run twice to verify immutability; recordings shouldn't modify the metric data
+    for (int i = 0; i < 2; i++) {
+      assertThat(metricData)
+          .hasExponentialHistogram()
+          .isCumulative()
+          .points().satisfiesExactly(
+            point -> {
+              assertThat(point)
+                  .hasSum(123.456)
+                  .hasScale(20)
+                  .hasZeroCount(2)
+                  .hasTotalCount(3)
+                  .hasExemplars(exemplar);
+              assertThat(point.getPositiveBuckets())
+                  .hasCounts(Collections.singletonList(1L))
+                  .hasOffset((int) valueToIndex(20, 123.456))
+                  .hasTotalCount(1);
+              assertThat(point.getNegativeBuckets())
+                  .hasTotalCount(0)
+                  .hasCounts(Collections.emptyList());
+            }
+      );
+      aggregatorHandle.recordDouble(1);
+      aggregatorHandle.recordDouble(-1);
+      aggregatorHandle.recordDouble(0);
+    }
   }
 
   @Test

@@ -110,6 +110,24 @@ public class MetricDataAssert extends AbstractAssert<MetricDataAssert, MetricDat
   }
 
   /**
+   * Ensures this {@link MetricData} is a {@code ExponentialHistogram}
+   *
+   * @return convenience API to assert agains the {@code ExponentialHistogram}
+   */
+  public ExponentialHistogramAssert hasExponentialHistogram() {
+    isNotNull();
+    if (actual.getType() != MetricDataType.EXPONENTIAL_HISTOGRAM) {
+      failWithActualExpectedAndMessage(
+          actual,
+          "type: EXPONENTIAL_HISTOGRAM",
+          "Expected MetricData to have type <%s> but found <%s>",
+          MetricDataType.EXPONENTIAL_HISTOGRAM,
+          actual.getType());
+    }
+    return new ExponentialHistogramAssert(actual.getExponentialHistogramData());
+  }
+
+  /**
    * Ensures this {@link MetricData} is a {@code DoubleGauge}.
    *
    * @return convenience API to assert against the {@code DoubleGauge}.
