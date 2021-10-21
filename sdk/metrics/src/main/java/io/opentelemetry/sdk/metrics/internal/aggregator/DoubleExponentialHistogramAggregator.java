@@ -69,12 +69,12 @@ final class DoubleExponentialHistogramAggregator
     long zeroCount = previousAccumulation.getZeroCount() + accumulation.getZeroCount();
 
     // Create merged buckets
-    DoubleExponentialHistogramBuckets posBuckets = DoubleExponentialHistogramBuckets.merge(
-        previousAccumulation.getPositiveBuckets(),
-        accumulation.getPositiveBuckets());
-    DoubleExponentialHistogramBuckets negBuckets = DoubleExponentialHistogramBuckets.merge(
-        previousAccumulation.getNegativeBuckets(),
-        accumulation.getNegativeBuckets());
+    DoubleExponentialHistogramBuckets posBuckets =
+        DoubleExponentialHistogramBuckets.merge(
+            previousAccumulation.getPositiveBuckets(), accumulation.getPositiveBuckets());
+    DoubleExponentialHistogramBuckets negBuckets =
+        DoubleExponentialHistogramBuckets.merge(
+            previousAccumulation.getNegativeBuckets(), accumulation.getNegativeBuckets());
 
     // resolve possible scale difference due to merge
     int commonScale = Math.min(posBuckets.getScale(), negBuckets.getScale());
