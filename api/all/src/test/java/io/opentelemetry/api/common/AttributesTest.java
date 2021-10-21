@@ -423,9 +423,8 @@ class AttributesTest {
   }
 
   @Test
-  void remove() {
+  void remove_AttributeKey() {
     AttributesBuilder builder = Attributes.builder();
-    assertThat(builder.remove(null)).isEqualTo(builder);
     assertThat(builder.remove(stringKey(""))).isEqualTo(builder);
 
     Attributes attributes = Attributes.builder().remove(stringKey("key1")).build();
@@ -433,6 +432,7 @@ class AttributesTest {
 
     attributes =
         Attributes.builder().put("key1", "value1").build().toBuilder()
+            .remove(stringKey("key1"))
             .remove(stringKey("key1"))
             .build();
     assertThat(attributes.get(stringKey("key1"))).isNull();
@@ -460,33 +460,63 @@ class AttributesTest {
   }
 
   @Test
+  void remove_String() {
+    AttributesBuilder builder = Attributes.builder();
+    assertThat(builder.remove("")).isEqualTo(builder);
+
+    Attributes attributes = Attributes.builder().remove("key1").build();
+    assertThat(attributes.get(stringKey("key1"))).isNull();
+
+    attributes =
+        Attributes.builder().put("key1", "value1").build().toBuilder()
+            .remove("key1")
+            .remove("key1")
+            .build();
+    assertThat(attributes.get(stringKey("key1"))).isNull();
+
+    attributes =
+        Attributes.builder()
+            .put("key1", "value1")
+            .put("key1", "value2")
+            .put("key2", "value2")
+            .put("key3", "value3")
+            .remove("key1")
+            .build();
+    assertThat(attributes.get(stringKey("key1"))).isNull();
+    assertThat(attributes.get(stringKey("key2"))).isEqualTo("value2");
+    assertThat(attributes.get(stringKey("key3"))).isEqualTo("value3");
+
+    attributes =
+        Attributes.builder().put("key1", "value1A").put("key1", true).remove("key1").build();
+    assertThat(attributes.get(booleanKey("key1"))).isNull();
+  }
+
+  @Test
   void remove_defaultImplementationDoesNotThrow() {
-    assertThatCode(
-            () -> {
-              AttributesBuilder myAttributesBuilder =
-                  new AttributesBuilder() {
-                    @Override
-                    public Attributes build() {
-                      return null;
-                    }
+    AttributesBuilder myAttributesBuilder =
+        new AttributesBuilder() {
+          @Override
+          public Attributes build() {
+            return null;
+          }
 
-                    @Override
-                    public <T> AttributesBuilder put(AttributeKey<Long> key, int value) {
-                      return null;
-                    }
+          @Override
+          public <T> AttributesBuilder put(AttributeKey<Long> key, int value) {
+            return null;
+          }
 
-                    @Override
-                    public <T> AttributesBuilder put(AttributeKey<T> key, T value) {
-                      return null;
-                    }
+          @Override
+          public <T> AttributesBuilder put(AttributeKey<T> key, T value) {
+            return null;
+          }
 
-                    @Override
-                    public AttributesBuilder putAll(Attributes attributes) {
-                      return null;
-                    }
-                  };
-              myAttributesBuilder.remove(stringKey("foo"));
-            })
-        .doesNotThrowAnyException();
+          @Override
+          public AttributesBuilder putAll(Attributes attributes) {
+            return null;
+          }
+        };
+
+    assertThatCode(() -> myAttributesBuilder.remove(stringKey("foo"))).doesNotThrowAnyException();
+    assertThatCode(() -> myAttributesBuilder.remove("foo")).doesNotThrowAnyException();
   }
 }

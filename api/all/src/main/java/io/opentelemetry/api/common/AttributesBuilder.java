@@ -152,12 +152,22 @@ public interface AttributesBuilder {
   AttributesBuilder putAll(Attributes attributes);
 
   /**
-   * Remove any attributes that matches the {@link AttributeKey#getKey()} and {@link
-   * AttributeKey#getType()}.
+   * Remove any attributes where {@link AttributeKey#getKey()} and {@link AttributeKey#getType()}
+   * match the {@code key}.
    *
    * @return this Builder
    */
   default <T> AttributesBuilder remove(AttributeKey<T> key) {
+    // default implementation is no-op
+    return this;
+  }
+
+  /**
+   * Remove any attributes where {@link AttributeKey#getKey()} matches the {@code key}.
+   *
+   * @return this Builder
+   */
+  default AttributesBuilder remove(String key) {
     // default implementation is no-op
     return this;
   }

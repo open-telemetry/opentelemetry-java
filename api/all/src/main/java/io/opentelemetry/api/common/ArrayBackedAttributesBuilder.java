@@ -8,6 +8,7 @@ package io.opentelemetry.api.common;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 class ArrayBackedAttributesBuilder implements AttributesBuilder {
   private final List<Object> data;
@@ -60,8 +61,23 @@ class ArrayBackedAttributesBuilder implements AttributesBuilder {
     if (key == null || key.getKey().isEmpty()) {
       return this;
     }
+    return removeIf(
+        entryKey ->
+            key.getKey().equals(entryKey.getKey()) && key.getType().equals(entryKey.getType()));
+  }
+
+  @Override
+  public AttributesBuilder remove(String key) {
+    if (key == null || key.isEmpty()) {
+      return this;
+    }
+    return removeIf(entryKey -> key.equals(entryKey.getKey()));
+  }
+
+  private AttributesBuilder removeIf(Predicate<AttributeKey<?>> predicate) {
     for (int i = 0; i < data.size() - 1; i += 2) {
-      if (key.equals(data.get(i))) {
+      Object entry = data.get(i);
+      if (entry instanceof AttributeKey && predicate.test((AttributeKey<?>) entry)) {
         // null items are filtered out in ArrayBackedAttributes
         data.set(i, null);
         data.set(i + 1, null);

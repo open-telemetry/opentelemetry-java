@@ -2,3 +2,4 @@ Comparing source compatibility of  against
 ***! MODIFIED INTERFACE: PUBLIC ABSTRACT io.opentelemetry.api.common.AttributesBuilder  (not serializable)
 	===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributesBuilder remove(io.opentelemetry.api.common.AttributeKey)
+	+++! NEW METHOD: PUBLIC(+) io.opentelemetry.api.common.AttributesBuilder remove(java.lang.String)
