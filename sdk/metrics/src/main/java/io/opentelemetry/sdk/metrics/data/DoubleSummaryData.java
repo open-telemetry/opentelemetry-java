@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import java.util.Collection;
+import java.util.Collections;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -24,6 +25,9 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class DoubleSummaryData implements Data<DoubleSummaryPointData> {
+
+  static final DoubleSummaryData DEFAULT = DoubleSummaryData.create(Collections.emptyList());
+
   DoubleSummaryData() {}
 
   public static DoubleSummaryData create(Collection<DoubleSummaryPointData> points) {

@@ -7,25 +7,12 @@ package io.opentelemetry.sdk.metrics.data;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
 
 /**
  * A {@link MetricDataImpl} represents the data exported as part of aggregating one {@code
  * Instrument}.
  */
 public interface MetricData {
-
-  DoubleGaugeData DEFAULT_DOUBLE_GAUGE_DATA = DoubleGaugeData.create(Collections.emptyList());
-  LongGaugeData DEFAULT_LONG_GAUGE_DATA = LongGaugeData.create(Collections.emptyList());
-  DoubleSumData DEFAULT_DOUBLE_SUM_DATA =
-      DoubleSumData.create(
-          /* isMonotonic= */ false, AggregationTemporality.CUMULATIVE, Collections.emptyList());
-  LongSumData DEFAULT_LONG_SUM_DATA =
-      LongSumData.create(
-          /* isMonotonic= */ false, AggregationTemporality.CUMULATIVE, Collections.emptyList());
-  DoubleSummaryData DEFAULT_DOUBLE_SUMMARY_DATA = DoubleSummaryData.create(Collections.emptyList());
-  DoubleHistogramData DEFAULT_DOUBLE_HISTOGRAM_DATA =
-      DoubleHistogramData.create(AggregationTemporality.CUMULATIVE, Collections.emptyList());
 
   /**
    * Returns a new MetricData wih a {@link MetricDataType#DOUBLE_GAUGE} type.
@@ -224,7 +211,7 @@ public interface MetricData {
     if (getType() == MetricDataType.DOUBLE_GAUGE) {
       return (DoubleGaugeData) getData();
     }
-    return DEFAULT_DOUBLE_GAUGE_DATA;
+    return DoubleGaugeData.DEFAULT;
   }
 
   /**
@@ -238,7 +225,7 @@ public interface MetricData {
     if (getType() == MetricDataType.LONG_GAUGE) {
       return (LongGaugeData) getData();
     }
-    return DEFAULT_LONG_GAUGE_DATA;
+    return LongGaugeData.DEFAULT;
   }
 
   /**
@@ -252,7 +239,7 @@ public interface MetricData {
     if (getType() == MetricDataType.DOUBLE_SUM) {
       return (DoubleSumData) getData();
     }
-    return DEFAULT_DOUBLE_SUM_DATA;
+    return DoubleSumData.DEFAULT;
   }
 
   /**
@@ -266,7 +253,7 @@ public interface MetricData {
     if (getType() == MetricDataType.LONG_SUM) {
       return (LongSumData) getData();
     }
-    return DEFAULT_LONG_SUM_DATA;
+    return LongSumData.DEFAULT;
   }
 
   /**
@@ -280,7 +267,7 @@ public interface MetricData {
     if (getType() == MetricDataType.SUMMARY) {
       return (DoubleSummaryData) getData();
     }
-    return DEFAULT_DOUBLE_SUMMARY_DATA;
+    return DoubleSummaryData.DEFAULT;
   }
 
   /**
@@ -294,6 +281,6 @@ public interface MetricData {
     if (getType() == MetricDataType.HISTOGRAM) {
       return (DoubleHistogramData) getData();
     }
-    return DEFAULT_DOUBLE_HISTOGRAM_DATA;
+    return DoubleHistogramData.DEFAULT;
   }
 }
