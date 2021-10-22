@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import static io.opentelemetry.sdk.testing.assertj.metrics.MetricAssertions.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -21,7 +22,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -292,6 +299,84 @@ public class DoubleExponentialHistogramDataAggregatorTest {
 
   @Test
   void testMultithreadedUpdates() throws InterruptedException {
-    // todo
+    AggregatorHandle<ExponentialHistogramAccumulation> aggregatorHandle = aggregator.createHandle();
+    final ExponentialHistogram summarizer = new ExponentialHistogram();
+    final ImmutableList<Double> updates = ImmutableList.of(0D, 0.1D, -0.1D, 1D, -1D, 100D);
+    final int numberOfThreads = updates.size();
+    final int numberOfUpdates = 10000;
+    final ThreadPoolExecutor executor =
+        (ThreadPoolExecutor) Executors.newFixedThreadPool(numberOfThreads);
+
+    executor.invokeAll(
+        updates.stream()
+            .map(
+                v ->
+                    Executors.callable(
+                        () -> {
+                          for (int j = 0; j < numberOfUpdates; j++) {
+                            aggregatorHandle.recordDouble(v);
+                            if (ThreadLocalRandom.current().nextInt(10) == 0) {
+                              summarizer.process(
+                                  aggregatorHandle.accumulateThenReset(Attributes.empty()));
+                            }
+                          }
+                        }))
+            .collect(Collectors.toList()));
+
+    // make sure everything gets merged when all the aggregation is done.
+    summarizer.process(aggregatorHandle.accumulateThenReset(Attributes.empty()));
+
+    ExponentialHistogramAccumulation acc = Objects.requireNonNull(summarizer.accumulation);
+    assertThat(acc.getZeroCount()).isEqualTo(numberOfUpdates);
+    assertThat(acc.getSum()).isCloseTo(100.0D * 10000, Offset.offset(0.0001)); // float error
+    assertThat(acc.getScale()).isEqualTo(5);
+    assertThat(acc.getPositiveBuckets()).hasTotalCount(numberOfUpdates * 3).hasOffset(-107);
+    assertThat(acc.getNegativeBuckets()).hasTotalCount(numberOfUpdates * 2).hasOffset(-107);
+
+    // Verify positive buckets have correct counts
+    List<Long> posCounts = acc.getPositiveBuckets().getBucketCounts();
+    assertThat(
+            posCounts.get(
+                (int) valueToIndex(acc.getScale(), 0.1) - acc.getPositiveBuckets().getOffset()))
+        .isEqualTo(numberOfUpdates);
+    assertThat(
+            posCounts.get(
+                (int) valueToIndex(acc.getScale(), 1) - acc.getPositiveBuckets().getOffset()))
+        .isEqualTo(numberOfUpdates);
+    assertThat(
+            posCounts.get(
+                (int) valueToIndex(acc.getScale(), 100) - acc.getPositiveBuckets().getOffset()))
+        .isEqualTo(numberOfUpdates);
+
+    // Verify negative buckets have correct counts
+    List<Long> negCounts = acc.getNegativeBuckets().getBucketCounts();
+    assertThat(
+            negCounts.get(
+                (int) valueToIndex(acc.getScale(), 0.1) - acc.getPositiveBuckets().getOffset()))
+        .isEqualTo(numberOfUpdates);
+    assertThat(
+            negCounts.get(
+                (int) valueToIndex(acc.getScale(), 1) - acc.getPositiveBuckets().getOffset()))
+        .isEqualTo(numberOfUpdates);
+  }
+
+  private static final class ExponentialHistogram {
+    private final Object mutex = new Object();
+
+    @Nullable private ExponentialHistogramAccumulation accumulation;
+
+    void process(@Nullable ExponentialHistogramAccumulation other) {
+      if (other == null) {
+        return;
+      }
+
+      synchronized (mutex) {
+        if (accumulation == null) {
+          accumulation = other;
+          return;
+        }
+        accumulation = aggregator.merge(accumulation, other);
+      }
+    }
   }
 }
