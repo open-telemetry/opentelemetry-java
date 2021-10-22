@@ -5,11 +5,7 @@
 
 package io.opentelemetry.exporter.otlp.http.logs;
 
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.BoundLongCounter;
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.exporter.otlp.internal.ExporterMetrics;
 import io.opentelemetry.exporter.otlp.internal.ProtoRequestBody;
 import io.opentelemetry.exporter.otlp.internal.grpc.GrpcStatusUtil;
 import io.opentelemetry.exporter.otlp.internal.logs.LogsRequestMarshaler;
@@ -40,23 +36,12 @@ import okio.Okio;
 @ThreadSafe
 public final class OtlpHttpLogExporter implements LogExporter {
 
-  private static final String EXPORTER_NAME = OtlpHttpLogExporter.class.getSimpleName();
-  private static final Attributes EXPORTER_NAME_LABELS =
-      Attributes.builder().put("exporter", EXPORTER_NAME).build();
-  private static final Attributes EXPORT_SUCCESS_LABELS =
-      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", true).build();
-  private static final Attributes EXPORT_FAILURE_LABELS =
-      Attributes.builder().put("exporter", EXPORTER_NAME).put("success", false).build();
-
   private static final Logger internalLogger =
       Logger.getLogger(OtlpHttpLogExporter.class.getName());
 
   private final ThrottlingLogger logger = new ThrottlingLogger(internalLogger);
 
-  private final BoundLongCounter logsSeen;
-  private final BoundLongCounter logsExportedSuccess;
-  private final BoundLongCounter logsExportedFailure;
-
+  private final ExporterMetrics exporterMetrics;
   private final OkHttpClient client;
   private final String endpoint;
   @Nullable private final Headers headers;
@@ -64,12 +49,7 @@ public final class OtlpHttpLogExporter implements LogExporter {
 
   OtlpHttpLogExporter(
       OkHttpClient client, String endpoint, @Nullable Headers headers, boolean compressionEnabled) {
-    Meter meter = GlobalMeterProvider.get().get("io.opentelemetry.exporters.otlp-http");
-    this.logsSeen = meter.counterBuilder("logsSeenByExporter").build().bind(EXPORTER_NAME_LABELS);
-    LongCounter logsExportedCounter = meter.counterBuilder("logsExportedByExporter").build();
-    this.logsExportedSuccess = logsExportedCounter.bind(EXPORT_SUCCESS_LABELS);
-    this.logsExportedFailure = logsExportedCounter.bind(EXPORT_FAILURE_LABELS);
-
+    this.exporterMetrics = ExporterMetrics.createHttpProtobuf("log");
     this.client = client;
     this.endpoint = endpoint;
     this.headers = headers;
@@ -84,7 +64,7 @@ public final class OtlpHttpLogExporter implements LogExporter {
    */
   @Override
   public CompletableResultCode export(Collection<LogData> logs) {
-    logsSeen.add(logs.size());
+    exporterMetrics.addSeen(logs.size());
 
     LogsRequestMarshaler exportRequest = LogsRequestMarshaler.create(logs);
 
@@ -108,7 +88,7 @@ public final class OtlpHttpLogExporter implements LogExporter {
             new Callback() {
               @Override
               public void onFailure(Call call, IOException e) {
-                logsExportedFailure.add(logs.size());
+                exporterMetrics.addFailed(logs.size());
                 logger.log(
                     Level.SEVERE,
                     "Failed to export logs. The request could not be executed. Full error message: "
@@ -119,12 +99,12 @@ public final class OtlpHttpLogExporter implements LogExporter {
               @Override
               public void onResponse(Call call, Response response) {
                 if (response.isSuccessful()) {
-                  logsExportedSuccess.add(logs.size());
+                  exporterMetrics.addSuccess(logs.size());
                   result.succeed();
                   return;
                 }
 
-                logsExportedFailure.add(logs.size());
+                exporterMetrics.addFailed(logs.size());
                 int code = response.code();
 
                 String status = extractErrorStatus(response);
@@ -198,9 +178,7 @@ public final class OtlpHttpLogExporter implements LogExporter {
   public CompletableResultCode shutdown() {
     final CompletableResultCode result = CompletableResultCode.ofSuccess();
     client.dispatcher().cancelAll();
-    this.logsSeen.unbind();
-    this.logsExportedSuccess.unbind();
-    this.logsExportedFailure.unbind();
+    exporterMetrics.unbind();
     return result;
   }
 }
