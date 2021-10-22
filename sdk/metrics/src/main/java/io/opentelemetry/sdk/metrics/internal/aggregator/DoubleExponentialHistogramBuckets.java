@@ -15,7 +15,11 @@ import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
+/**
+ * This class handles the operations for recording, scaling, and exposing data related to
+ * the exponential histogram.
+ */
+final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 
   public static final int MAX_SCALE = 20;
 
@@ -53,12 +57,11 @@ class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
   @Nonnull
   @Override
   public List<Long> getBucketCounts() {
-    // todo LongList optimisation
     if (counts.isEmpty()) {
       return Collections.emptyList();
     }
     int length = (int) (counts.getIndexEnd() - counts.getIndexStart() + 1);
-    Long[] countsArr = new Long[(int) (counts.getIndexEnd() - counts.getIndexStart() + 1)];
+    Long[] countsArr = new Long[length];
     for (int i = 0; i < length; i++) {
       countsArr[i] = counts.get(i + counts.getIndexStart());
     }
