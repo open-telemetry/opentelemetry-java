@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link io.opentelemetry.sdk.metrics.data.MetricData}. */
-class MetricDataTest {
+class MetricDataImplTest {
   private static final long START_EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(1000);
   private static final long EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(2000);
   private static final long LONG_VALUE = 10;
