@@ -111,10 +111,15 @@ class HelloWorld {
             .setTracerProvider(tracerProvider)
             .buildAndRegisterGlobal();
 
-    PeriodicMetricReaderFactory periodicMetricReaderFactory = PeriodicMetricReader.create(
+    PeriodicMetricReaderFactory periodicMetricReaderFactory = 
+            PeriodicMetricReader.create(
                 OtlpGrpcMetricExporter.builder()
-                .setEndpoint("https://collector-service:4317").build(), Duration.ofMillis(1000));
-    SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder()
+                    .setEndpoint("https://collector-service:4317")
+                    .build(),
+                Duration.ofMillis(1000));
+    
+    SdkMeterProvider sdkMeterProvider = 
+            SdkMeterProvider.builder()
                 .registerMetricReader(periodicMetricReaderFactory)
                 .buildAndRegisterGlobal();
  }
@@ -184,15 +189,20 @@ class HelloWorld {
             .setTracerProvider(tracerProvider)
             .build();
 
-    PeriodicMetricReaderFactory periodicMetricReaderFactory = PeriodicMetricReader.create(
+    PeriodicMetricReaderFactory periodicMetricReaderFactory = 
+        PeriodicMetricReader.create(
                 OtlpGrpcMetricExporter.builder()
-                .setEndpoint("https://collector-service:4317").build(), Duration.ofMillis(1000));
+                    .setEndpoint("https://collector-service:4317")
+                    .build(),
+                Duration.ofMillis(1000));
     SdkMeterProvider meterProvider =
         SdkMeterProvider.builder()
             .setResource(resource)
             .setClock(clock)
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder()
+                        .setInstrumentType(InstrumentType.COUNTER)
+                        .build(),
                     View.builder()
                     .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
                     .setAggregatorFactory(AggregatorFactory.count(AggregationTemporality.DELTA))
@@ -283,7 +293,9 @@ public class OpenTelemetryModule {
             .setResource(resource)
             .setClock(clock)
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.COUNTER)
+                    .build(),
                 View.builder()
                     .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
                     .setAggregatorFactory(AggregatorFactory.count(AggregationTemporality.DELTA))
@@ -297,7 +309,9 @@ public class OpenTelemetryModule {
             .setResource(resource)
             .setClock(clock)
             .registerView(
-                InstrumentSelector.builder().setInstrumentType(InstrumentType.COUNTER).build(),
+                InstrumentSelector.builder()
+                    .setInstrumentType(InstrumentType.COUNTER)
+                    .build(),
                 View.builder()
                     .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
                     .setAggregatorFactory(AggregatorFactory.count(AggregationTemporality.DELTA))
