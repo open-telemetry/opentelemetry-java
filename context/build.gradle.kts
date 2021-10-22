@@ -3,36 +3,13 @@ plugins {
   id("otel.publish-conventions")
 
   id("otel.jmh-conventions")
-  id("org.unbroken-dome.test-sets")
   id("otel.animalsniffer-conventions")
 }
 
 description = "OpenTelemetry Context (Incubator)"
 otelJava.moduleName.set("io.opentelemetry.context")
 
-testSets {
-  create("grpcInOtelTest")
-  create("otelInGrpcTest")
-
-  create("braveInOtelTest")
-  create("otelInBraveTest")
-  create("otelAsBraveTest")
-
-  create("storageWrappersTest")
-
-  create("strictContextEnabledTest")
-}
-
 dependencies {
-  add("grpcInOtelTestImplementation", "io.grpc:grpc-context")
-  add("otelInGrpcTestImplementation", "io.grpc:grpc-context")
-
-  add("braveInOtelTestImplementation", "io.zipkin.brave:brave")
-  add("otelAsBraveTestImplementation", "io.zipkin.brave:brave")
-  add("otelInBraveTestImplementation", "io.zipkin.brave:brave")
-
-  add("strictContextEnabledTestImplementation", project(":api:all"))
-
   // MustBeClosed
   compileOnly("com.google.errorprone:error_prone_annotations")
 
@@ -41,15 +18,59 @@ dependencies {
   testImplementation("org.junit-pioneer:junit-pioneer")
 }
 
-tasks {
-  named<Test>("strictContextEnabledTest") {
-    jvmArgs("-Dio.opentelemetry.context.enableStrictContext=true")
-  }
+testing {
+  suites {
+    val grpcInOtelTest by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation("io.grpc:grpc-context")
+      }
+    }
 
+    val otelInGrpcTest by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation("io.grpc:grpc-context")
+      }
+    }
+
+    val braveInOtelTest by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation("io.zipkin.brave:brave")
+      }
+    }
+
+    val otelInBraveTest by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation("io.zipkin.brave:brave")
+      }
+    }
+
+    val otelAsBraveTest by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation("io.zipkin.brave:brave")
+      }
+    }
+
+    val storageWrappersTest by registering(JvmTestSuite::class) {
+    }
+
+    val strictContextEnabledTest by registering(JvmTestSuite::class) {
+      dependencies {
+        implementation(project(":api:all"))
+      }
+
+      targets {
+        all {
+          testTask.configure {
+            jvmArgs("-Dio.opentelemetry.context.enableStrictContext=true")
+          }
+        }
+      }
+    }
+  }
+}
+
+tasks {
   named("check") {
-    dependsOn(
-      "grpcInOtelTest", "otelInGrpcTest", "braveInOtelTest", "otelInBraveTest",
-      "otelAsBraveTest", "storageWrappersTest", "strictContextEnabledTest"
-    )
+    dependsOn(testing.suites)
   }
 }
