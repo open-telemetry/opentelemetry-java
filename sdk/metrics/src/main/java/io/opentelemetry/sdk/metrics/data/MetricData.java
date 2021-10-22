@@ -158,7 +158,7 @@ public interface MetricData {
       String description,
       String unit,
       ExponentialHistogramData data) {
-    return new AutoValue_MetricData(
+    return MetricDataImpl.create(
         resource,
         instrumentationLibraryInfo,
         name,
@@ -313,10 +313,10 @@ public interface MetricData {
    * @return the {@link ExponentialHistogramData} if type is {@link
    *     MetricDataType#EXPONENTIAL_HISTOGRAM}, otherwise a default empty data.
    */
-  public final ExponentialHistogramData getExponentialHistogramData() {
+  default ExponentialHistogramData getExponentialHistogramData() {
     if (getType() == MetricDataType.EXPONENTIAL_HISTOGRAM) {
       return (ExponentialHistogramData) getData();
     }
-    return DEFAULT_EXPONENTIAL_HISTOGRAM_DATA;
+    return DoubleExponentialHistogramData.EMPTY;
   }
 }

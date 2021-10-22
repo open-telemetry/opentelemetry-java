@@ -16,8 +16,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * This class handles the operations for recording, scaling, and exposing data related to
- * the exponential histogram.
+ * This class handles the operations for recording, scaling, and exposing data related to the
+ * exponential histogram.
  */
 final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuckets {
 

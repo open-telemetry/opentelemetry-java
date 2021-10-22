@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * A simple, autovalue implementation of {@link ExponentialHistogramData}. For more detailed javadoc
@@ -17,6 +18,9 @@ import java.util.Collection;
  */
 @AutoValue
 public abstract class DoubleExponentialHistogramData implements ExponentialHistogramData {
+
+  public static final DoubleExponentialHistogramData EMPTY =
+      create(AggregationTemporality.CUMULATIVE, Collections.emptyList());
 
   DoubleExponentialHistogramData() {}
 
