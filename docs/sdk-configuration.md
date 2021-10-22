@@ -167,7 +167,9 @@ class HelloWorld {
                     .build())
             .addSpanProcessor(
                 SimpleSpanProcessor.create(
-                    ZipkinSpanExporter.builder().setEndpoint("https://zipkin-service:9411").build()))
+                    ZipkinSpanExporter.builder()
+                        .setEndpoint("https://zipkin-service:9411")
+                        .build()))
             .setSampler(Sampler.traceIdRatioBased(0.5))
             .setSpanLimits(SpanLimits.builder().setMaxNumberOfAttributes(10).build())
             .setIdGenerator(TimestampedIdGenerator.create())
@@ -204,8 +206,6 @@ class HelloWorld {
                         .setInstrumentType(InstrumentType.COUNTER)
                         .build(),
                     View.builder()
-                    .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
-                    .setAggregatorFactory(AggregatorFactory.count(AggregationTemporality.DELTA))
                     .build())
             .registerMetricReader(periodicMetricReaderFactory)
             .buildAndRegisterGlobal();
@@ -297,8 +297,6 @@ public class OpenTelemetryModule {
                     .setInstrumentType(InstrumentType.COUNTER)
                     .build(),
                 View.builder()
-                    .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
-                    .setAggregatorFactory(AggregatorFactory.count(AggregationTemporality.DELTA))
                     .build())
             .build();
     }
@@ -313,8 +311,6 @@ public class OpenTelemetryModule {
                     .setInstrumentType(InstrumentType.COUNTER)
                     .build(),
                 View.builder()
-                    .setLabelsProcessorFactory(LabelsProcessorFactory.noop())
-                    .setAggregatorFactory(AggregatorFactory.count(AggregationTemporality.DELTA))
                     .build())
             .registerMetricReader(periodicMetricReaderFactory)
             .build();

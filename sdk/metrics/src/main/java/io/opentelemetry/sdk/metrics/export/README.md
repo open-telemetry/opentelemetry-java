@@ -19,6 +19,17 @@ import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 
 /**
+ * Simple implementation of the MetricExporter that pushes data to the backend.
+ */
+public final class PushMetricExporter implements MetricExporter {
+  @Override
+  ResultCode export(Collection<MetricData> metrics) {
+    // A "push based" library calls to export metrics
+    return pushToBackend(metrics);
+  }
+}
+
+/**
  * Class to build and register MeterProvider globally. MeterProvider is
  * initialized with PeriodicMetricReader which wraps the MetricsExporter
  * and automatically reads and exports the metrics every export interval.
