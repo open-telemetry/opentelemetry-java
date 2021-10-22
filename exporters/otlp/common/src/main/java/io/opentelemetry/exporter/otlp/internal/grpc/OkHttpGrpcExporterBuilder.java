@@ -40,7 +40,8 @@ public final class OkHttpGrpcExporterBuilder<T extends Marshaler>
   @Nullable private byte[] trustedCertificatesPem;
 
   /** Creates a new {@link OkHttpGrpcExporterBuilder}. */
-  OkHttpGrpcExporterBuilder(
+  // Visible for testing
+  public OkHttpGrpcExporterBuilder(
       String type, String grpcEndpointPath, long defaultTimeoutSecs, URI defaultEndpoint) {
     this.type = type;
     this.grpcEndpointPath = grpcEndpointPath;
