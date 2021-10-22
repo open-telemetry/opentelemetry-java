@@ -111,14 +111,14 @@ class HelloWorld {
             .setTracerProvider(tracerProvider)
             .buildAndRegisterGlobal();
 
-    PeriodicMetricReaderFactory periodicMetricReaderFactory = 
+    PeriodicMetricReaderFactory periodicMetricReaderFactory =
             PeriodicMetricReader.create(
                 OtlpGrpcMetricExporter.builder()
                     .setEndpoint("https://collector-service:4317")
                     .build(),
                 Duration.ofMillis(1000));
-    
-    SdkMeterProvider sdkMeterProvider = 
+
+    SdkMeterProvider sdkMeterProvider =
             SdkMeterProvider.builder()
                 .registerMetricReader(periodicMetricReaderFactory)
                 .buildAndRegisterGlobal();
@@ -191,7 +191,7 @@ class HelloWorld {
             .setTracerProvider(tracerProvider)
             .build();
 
-    PeriodicMetricReaderFactory periodicMetricReaderFactory = 
+    PeriodicMetricReaderFactory periodicMetricReaderFactory =
         PeriodicMetricReader.create(
                 OtlpGrpcMetricExporter.builder()
                     .setEndpoint("https://collector-service:4317")
