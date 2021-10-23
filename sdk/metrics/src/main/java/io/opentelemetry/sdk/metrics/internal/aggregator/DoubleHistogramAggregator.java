@@ -68,9 +68,10 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
   @Override
   public HistogramAccumulation merge(
       HistogramAccumulation previous, HistogramAccumulation current) {
-    long[] mergedCounts = new long[previous.getCounts().length];
-    for (int i = 0; i < previous.getCounts().length; ++i) {
-      mergedCounts[i] = previous.getCounts()[i] + current.getCounts()[i];
+    long[] previousCounts = previous.getCounts();
+    long[] mergedCounts = new long[previousCounts.length];
+    for (int i = 0; i < previousCounts.length; ++i) {
+      mergedCounts[i] = previousCounts[i] + current.getCounts()[i];
     }
     return HistogramAccumulation.create(
         previous.getSum() + current.getSum(), mergedCounts, current.getExemplars());
@@ -78,9 +79,10 @@ public final class DoubleHistogramAggregator implements Aggregator<HistogramAccu
 
   @Override
   public HistogramAccumulation diff(HistogramAccumulation previous, HistogramAccumulation current) {
-    long[] diffedCounts = new long[previous.getCounts().length];
-    for (int i = 0; i < previous.getCounts().length; ++i) {
-      diffedCounts[i] = current.getCounts()[i] - previous.getCounts()[i];
+    long[] previousCounts = previous.getCounts();
+    long[] diffedCounts = new long[previousCounts.length];
+    for (int i = 0; i < previousCounts.length; ++i) {
+      diffedCounts[i] = current.getCounts()[i] - previousCounts[i];
     }
     return HistogramAccumulation.create(
         current.getSum() - previous.getSum(), diffedCounts, current.getExemplars());
