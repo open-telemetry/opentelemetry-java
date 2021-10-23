@@ -1,4 +1,15 @@
+import japicmp.model.JApiChangeStatus
+import japicmp.model.JApiCompatibility
+import japicmp.model.JApiCompatibilityChange
 import me.champeau.gradle.japicmp.JapicmpTask
+import me.champeau.gradle.japicmp.report.Severity
+import me.champeau.gradle.japicmp.report.Violation
+import me.champeau.gradle.japicmp.report.stdrules.AbstractRecordingSeenMembers
+import me.champeau.gradle.japicmp.report.stdrules.BinaryIncompatibleRule
+import me.champeau.gradle.japicmp.report.stdrules.RecordSeenMembersSetup
+import me.champeau.gradle.japicmp.report.stdrules.SourceCompatibleRule
+import me.champeau.gradle.japicmp.report.stdrules.UnchangedMemberRule
+
 
 plugins {
   base
@@ -18,6 +29,24 @@ val latestReleasedVersion: String by lazy {
   configurations.remove(temp)
   logger.debug("Discovered latest release version: " + moduleVersion)
   moduleVersion
+}
+
+
+class AllowDefaultMethodRule : AbstractRecordingSeenMembers() {
+  override fun maybeAddViolation(member: JApiCompatibility): Violation? {
+    for (change in member.compatibilityChanges) {
+      if (change == JApiCompatibilityChange.METHOD_NEW_DEFAULT) {
+        // JApiCmp treats this as incompatible for the situation where an existing subclass may have
+        // a method with the same name and different signature. We accept this corner case for
+        // semver.
+        continue
+      }
+      if (!change.isBinaryCompatible) {
+        return Violation.notBinaryCompatible(member, Severity.error)
+      }
+    }
+    return null
+  }
 }
 
 /**
@@ -68,6 +97,18 @@ if (!project.hasProperty("otel.release") && !project.name.startsWith("bom")) {
           //so publish the whole API. We do that by flipping this flag, and comparing the current against nothing.
           isOnlyModified = false
           files()
+        }
+
+        // Reproduce defaults from https://github.com/melix/japicmp-gradle-plugin/blob/09f52739ef1fccda6b4310cf3f4b19dc97377024/src/main/java/me/champeau/gradle/japicmp/report/ViolationsGenerator.java#L130
+        // only changing the BinaryIncompatibleRule to our custom one that allows new default methods
+        // on interfaces.
+        richReport {
+          addSetupRule(RecordSeenMembersSetup::class.java)
+          addRule(JApiChangeStatus.NEW, SourceCompatibleRule::class.java)
+          addRule(JApiChangeStatus.MODIFIED, SourceCompatibleRule::class.java)
+          addRule(JApiChangeStatus.UNCHANGED, UnchangedMemberRule::class.java)
+          addRule(AllowDefaultMethodRule::class.java)
+          addRule(SourceCompatibleRule::class.java)
         }
 
         //this is needed so that we only consider the current artifact, and not dependencies

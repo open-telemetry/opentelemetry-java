@@ -223,7 +223,7 @@ public class MetricAssertionsTest {
   }
 
   @Test
-  void sumamry_failing() {
+  void summary_failing() {
     assertThatThrownBy(() -> assertThat(DOUBLE_GAUGE_METRIC).hasDoubleSummary())
         .isInstanceOf(AssertionError.class);
   }

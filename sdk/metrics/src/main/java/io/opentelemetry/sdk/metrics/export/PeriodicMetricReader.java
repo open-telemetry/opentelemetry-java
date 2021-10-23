@@ -7,7 +7,6 @@ package io.opentelemetry.sdk.metrics.export;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
-import java.time.Duration;
 import java.util.EnumSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -36,39 +35,10 @@ public final class PeriodicMetricReader implements MetricReader {
   /**
    * Returns a new {@link MetricReaderFactory} which can be registered to a {@link
    * io.opentelemetry.sdk.metrics.SdkMeterProvider} to start a {@link PeriodicMetricReader}
-   * exporting once every 5 minutes on a new daemon thread.
+   * exporting once every minute on a new daemon thread.
    */
   public static MetricReaderFactory newMetricReaderFactory(MetricExporter exporter) {
     return builder(exporter).newMetricReaderFactory();
-  }
-
-  /**
-   * Builds a factory that will register and start a PeriodicMetricReader.
-   *
-   * <p>This will spin up a new daemon thread to schedule the export on.
-   *
-   * @param exporter The exporter receiving metrics.
-   * @param duration The duration (interval) between metric export calls.
-   * @deprecated Use {@link PeriodicMetricReader#builder(MetricExporter)}. Will be removed in 1.8.0.
-   */
-  @Deprecated
-  public static MetricReaderFactory newMetricReaderFactory(
-      MetricExporter exporter, Duration duration) {
-    return builder(exporter).setInterval(duration).newMetricReaderFactory();
-  }
-
-  /**
-   * Builds a factory that will register and start a PeriodicMetricReader.
-   *
-   * @param exporter The exporter receiving metrics.
-   * @param duration The duration (interval) between metric export calls.
-   * @param scheduler The service to schedule export work.
-   * @deprecated Use {@link PeriodicMetricReader#builder(MetricExporter)}. Will be removed in 1.8.0.
-   */
-  @Deprecated
-  public static MetricReaderFactory newMetricReaderFactory(
-      MetricExporter exporter, Duration duration, ScheduledExecutorService scheduler) {
-    return builder(exporter).setInterval(duration).setExecutor(scheduler).newMetricReaderFactory();
   }
 
   /** Returns a new {@link PeriodicMetricReaderBuilder}. */

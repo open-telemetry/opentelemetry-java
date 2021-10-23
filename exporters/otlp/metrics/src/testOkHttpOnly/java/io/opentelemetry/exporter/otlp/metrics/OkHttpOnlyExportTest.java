@@ -57,13 +57,15 @@ class OkHttpOnlyExportTest {
                           5)))));
 
   private static final HeldCertificate HELD_CERTIFICATE;
+  private static final String canonicalHostName;
 
   static {
     try {
+      canonicalHostName = InetAddress.getByName("localhost").getCanonicalHostName();
       HELD_CERTIFICATE =
           new HeldCertificate.Builder()
               .commonName("localhost")
-              .addSubjectAlternativeName(InetAddress.getByName("localhost").getCanonicalHostName())
+              .addSubjectAlternativeName(canonicalHostName)
               .build();
     } catch (UnknownHostException e) {
       throw new IllegalStateException("Error building certificate.", e);
@@ -100,7 +102,7 @@ class OkHttpOnlyExportTest {
   void gzipCompressionExportButFails() {
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder()
-            .setEndpoint("http://localhost:" + server.httpPort())
+            .setEndpoint("http://" + canonicalHostName + ":" + server.httpPort())
             .setCompression("gzip")
             .build();
     // See note on test method on why this checks isFalse.
@@ -111,7 +113,7 @@ class OkHttpOnlyExportTest {
   void plainTextExport() {
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder()
-            .setEndpoint("http://localhost:" + server.httpPort())
+            .setEndpoint("http://" + canonicalHostName + ":" + server.httpPort())
             .build();
     assertThat(exporter.export(METRICS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
   }
@@ -120,7 +122,7 @@ class OkHttpOnlyExportTest {
   void authorityWithAuth() {
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder()
-            .setEndpoint("http://foo:bar@localhost:" + server.httpPort())
+            .setEndpoint("http://foo:bar@" + canonicalHostName + ":" + server.httpPort())
             .build();
     assertThat(exporter.export(METRICS).join(10, TimeUnit.SECONDS).isSuccess()).isTrue();
   }
@@ -129,7 +131,7 @@ class OkHttpOnlyExportTest {
   void testTlsExport() {
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder()
-            .setEndpoint("https://localhost:" + server.httpsPort())
+            .setEndpoint("https://" + canonicalHostName + ":" + server.httpsPort())
             .setTrustedCertificates(
                 HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8))
             .build();
@@ -140,7 +142,7 @@ class OkHttpOnlyExportTest {
   void testTlsExport_untrusted() {
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.builder()
-            .setEndpoint("https://localhost:" + server.httpsPort())
+            .setEndpoint("https://" + canonicalHostName + ":" + server.httpsPort())
             .build();
     assertThat(exporter.export(METRICS).join(10, TimeUnit.SECONDS).isSuccess()).isFalse();
   }

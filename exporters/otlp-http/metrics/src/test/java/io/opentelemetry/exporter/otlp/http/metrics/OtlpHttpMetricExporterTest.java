@@ -59,13 +59,15 @@ class OtlpHttpMetricExporterTest {
   private static final MediaType APPLICATION_PROTOBUF =
       MediaType.create("application", "x-protobuf");
   private static final HeldCertificate HELD_CERTIFICATE;
+  private static final String canonicalHostName;
 
   static {
     try {
+      canonicalHostName = InetAddress.getByName("localhost").getCanonicalHostName();
       HELD_CERTIFICATE =
           new HeldCertificate.Builder()
               .commonName("localhost")
-              .addSubjectAlternativeName(InetAddress.getByName("localhost").getCanonicalHostName())
+              .addSubjectAlternativeName(canonicalHostName)
               .build();
     } catch (UnknownHostException e) {
       throw new IllegalStateException("Error building certificate.", e);
@@ -90,7 +92,7 @@ class OtlpHttpMetricExporterTest {
   void setup() {
     builder =
         OtlpHttpMetricExporter.builder()
-            .setEndpoint("https://localhost:" + server.httpsPort() + "/v1/metrics")
+            .setEndpoint("https://" + canonicalHostName + ":" + server.httpsPort() + "/v1/metrics")
             .addHeader("foo", "bar")
             .setTrustedCertificates(
                 HELD_CERTIFICATE.certificatePem().getBytes(StandardCharsets.UTF_8));

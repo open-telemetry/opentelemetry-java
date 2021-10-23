@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * A {@link MetricExporter} implementation that can be used to test OpenTelemetry integration.
@@ -55,9 +55,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * </code></pre>
  */
 public final class InMemoryMetricExporter implements MetricExporter {
-
-  // using LinkedBlockingQueue to avoid manual locks for thread-safe operations
-  private final Queue<MetricData> finishedMetricItems = new LinkedBlockingQueue<>();
+  private final Queue<MetricData> finishedMetricItems = new ConcurrentLinkedQueue<>();
   private boolean isStopped = false;
 
   private InMemoryMetricExporter() {}
