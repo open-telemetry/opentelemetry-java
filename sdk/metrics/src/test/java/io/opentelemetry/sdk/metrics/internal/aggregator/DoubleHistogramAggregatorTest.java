@@ -118,6 +118,23 @@ public class DoubleHistogramAggregatorTest {
   }
 
   @Test
+  void diffAccumulation() {
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<ExemplarData> previousExemplars =
+        Collections.singletonList(
+            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+    HistogramAccumulation previousAccumulation =
+        HistogramAccumulation.create(2, new long[] {1, 1, 2}, previousExemplars);
+    HistogramAccumulation nextAccumulation =
+        HistogramAccumulation.create(5, new long[] {2, 2, 2}, exemplars);
+    // Assure most recent exemplars are kept.
+    assertThat(aggregator.diff(previousAccumulation, nextAccumulation))
+        .isEqualTo(HistogramAccumulation.create(3, new long[] {1, 1, 0}, exemplars));
+  }
+
+  @Test
   void toMetricData() {
     AggregatorHandle<HistogramAccumulation> aggregatorHandle = aggregator.createHandle();
     aggregatorHandle.recordLong(10);

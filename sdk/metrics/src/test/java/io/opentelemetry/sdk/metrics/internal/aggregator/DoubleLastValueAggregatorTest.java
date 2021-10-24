@@ -77,6 +77,22 @@ class DoubleLastValueAggregatorTest {
   }
 
   @Test
+  void diffAccumulation() {
+    Attributes attributes = Attributes.builder().put("test", "value").build();
+    ExemplarData exemplar = DoubleExemplarData.create(attributes, 2L, "spanid", "traceid", 1);
+    List<ExemplarData> exemplars = Collections.singletonList(exemplar);
+    List<ExemplarData> previousExemplars =
+        Collections.singletonList(
+            DoubleExemplarData.create(attributes, 1L, "spanId", "traceId", 2));
+    DoubleAccumulation result =
+        aggregator.diff(
+            DoubleAccumulation.create(1, previousExemplars),
+            DoubleAccumulation.create(2, exemplars));
+    // Assert that latest measurement is kept.
+    assertThat(result).isEqualTo(DoubleAccumulation.create(2, exemplars));
+  }
+
+  @Test
   @SuppressWarnings("unchecked")
   void toMetricData() {
     AggregatorHandle<DoubleAccumulation> aggregatorHandle = aggregator.createHandle();
