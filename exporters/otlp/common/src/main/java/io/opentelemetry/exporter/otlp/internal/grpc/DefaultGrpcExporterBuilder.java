@@ -6,6 +6,7 @@
 package io.opentelemetry.exporter.otlp.internal.grpc;
 
 import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+import static io.opentelemetry.exporter.otlp.internal.grpc.ManagedChannelUtil.toServiceConfig;
 
 import io.grpc.Codec;
 import io.grpc.ManagedChannel;
@@ -33,6 +34,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
 
   private final String type;
   private final Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>> stubFactory;
+  private final String grpcServiceName;
 
   @Nullable private ManagedChannel channel;
   private long timeoutNanos;
@@ -40,6 +42,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   private boolean compressionEnabled = false;
   @Nullable private Metadata metadata;
   @Nullable private byte[] trustedCertificatesPem;
+  @Nullable private RetryPolicy retryPolicy;
 
   /** Creates a new {@link DefaultGrpcExporterBuilder}. */
   // Visible for testing
@@ -47,9 +50,11 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
       String type,
       Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>> stubFactory,
       long defaultTimeoutSecs,
-      URI defaultEndpoint) {
+      URI defaultEndpoint,
+      String grpcServiceName) {
     this.type = type;
     this.stubFactory = stubFactory;
+    this.grpcServiceName = grpcServiceName;
     timeoutNanos = TimeUnit.SECONDS.toNanos(defaultTimeoutSecs);
     endpoint = defaultEndpoint;
   }
@@ -113,6 +118,7 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
 
   @Override
   public GrpcExporterBuilder<T> addRetryPolicy(RetryPolicy retryPolicy) {
+    this.retryPolicy = retryPolicy;
     return this;
   }
 
@@ -143,6 +149,10 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
                   + "X.509 in PEM format?",
               e);
         }
+      }
+
+      if (retryPolicy != null) {
+        managedChannelBuilder.defaultServiceConfig(toServiceConfig(grpcServiceName, retryPolicy));
       }
 
       channel = managedChannelBuilder.build();
