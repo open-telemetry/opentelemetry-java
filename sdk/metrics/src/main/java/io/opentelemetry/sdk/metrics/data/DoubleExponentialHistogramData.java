@@ -19,7 +19,7 @@ import java.util.Collections;
 @AutoValue
 public abstract class DoubleExponentialHistogramData implements ExponentialHistogramData {
 
-  public static final DoubleExponentialHistogramData EMPTY =
+  static final DoubleExponentialHistogramData EMPTY =
       create(AggregationTemporality.CUMULATIVE, Collections.emptyList());
 
   DoubleExponentialHistogramData() {}

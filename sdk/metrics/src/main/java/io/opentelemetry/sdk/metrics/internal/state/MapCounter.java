@@ -12,6 +12,9 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Simple-as-possible backing structure for exponential histogram buckets. Can be used as a baseline
  * against other data structures.
+ *
+ * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
+ * at any time
  */
 public class MapCounter implements ExponentialCounter {
 
@@ -61,7 +64,7 @@ public class MapCounter implements ExponentialCounter {
 
   @Override
   public boolean increment(long index, long delta) {
-    int i = (int) index; // safely castable due to above check
+    int i = (int) index;
     if (indexStart == NULL_INDEX) {
       indexStart = index;
       indexEnd = index;
