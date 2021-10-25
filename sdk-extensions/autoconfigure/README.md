@@ -70,9 +70,21 @@ The [OpenTelemetry Protocol (OTLP)](https://github.com/open-telemetry/openteleme
 | otel.exporter.otlp.protocol | OTEL_EXPORTER_OTLP_PROTOCOL | The transport protocol to use on OTLP trace and metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
 | otel.exporter.otlp.traces.protocol | OTEL_EXPORTER_OTLP_TRACES_PROTOCOL | The transport protocol to use on OTLP trace requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
 | otel.exporter.otlp.metrics.protocol | OTEL_EXPORTER_OTLP_METRICS_PROTOCOL | The transport protocol to use on OTLP metrics requests. Options include `grpc` and `http/protobuf`. Default is `grpc`. |
+| otel.experimental.exporter.otlp.retry.enabled | OTEL_EXPERIMENTAL_EXPORTER_OTLP_RETRY_ENABLED | If `true`, enable [experimental retry support](#otlp-exporter-retry). Default is `false`. |
 
 To configure the service name for the OTLP exporter, add the `service.name` key
 to the OpenTelemetry Resource ([see below](#opentelemetry-resource)), e.g. `OTEL_RESOURCE_ATTRIBUTES=service.name=myservice`.
+
+#### OTLP exporter retry
+
+[OTLP](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md#otlpgrpc-response) requires that [transient](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/exporter.md#retry) errors be handled with a retry strategy. When retry is enabled, retryable gRPC status codes will be retried using an exponential backoff with jitter algorithm as described in the [gRPC Retry Design](https://github.com/grpc/proposal/blob/master/A6-client-retries.md#exponential-backoff).
+
+The policy has the following configuration, which there is currently no way to customize.
+
+- `maxAttempts`: The maximum number of attempts, including the original request. Defaults to `5`.
+- `initialBackoff`: The initial backoff duration. Defaults to `1s`
+- `maxBackoff`: The maximum backoff duration. Defaults to `5s`.
+- `backoffMultiplier` THe backoff multiplier. Defaults to `1.5`.
 
 ### Jaeger exporter
 
