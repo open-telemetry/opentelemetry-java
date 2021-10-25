@@ -61,15 +61,14 @@ class TemporalMetricStorage<T> {
     if (reportHistory.containsKey(collector)) {
       LastReportedAccumulation<T> last = reportHistory.get(collector);
       lastCollectionEpoch = last.getEpochNanos();
-      // Use aggregation tempoarlity + instrument to determine if we do a merge or a diff of
+      // Use aggregation temporality + instrument to determine if we do a merge or a diff of
       // previous.
       if (temporality == AggregationTemporality.DELTA && !isSynchronous) {
         MetricStorageUtils.diffInPlace(last.getAccumlation(), currentAccumulation, aggregator);
         result = last.getAccumlation();
       } else if (temporality == AggregationTemporality.CUMULATIVE && isSynchronous) {
         // We need to make sure the current delta recording gets merged into the previous cumulative
-        // for the
-        // next cumulative measurement.
+        // for the next cumulative measurement.
         MetricStorageUtils.mergeInPlace(last.getAccumlation(), currentAccumulation, aggregator);
         result = last.getAccumlation();
       }

@@ -11,7 +11,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link InMemoryMetricExporter}. */
 class InMemoryMetricReaderCumulativeTest {
 
   private SdkMeterProvider provider;
