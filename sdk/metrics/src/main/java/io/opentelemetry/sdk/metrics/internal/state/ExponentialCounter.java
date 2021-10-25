@@ -9,7 +9,8 @@ package io.opentelemetry.sdk.metrics.internal.state;
  * Interface for use as backing data structure for exponential histogram buckets.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
- * at any time.*/
+ * at any time.
+ */
 public interface ExponentialCounter {
   /**
    * The first index with a recording. May be negative.
