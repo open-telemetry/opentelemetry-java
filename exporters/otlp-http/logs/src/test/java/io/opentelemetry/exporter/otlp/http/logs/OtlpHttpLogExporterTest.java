@@ -23,6 +23,7 @@ import com.linecorp.armeria.testing.junit5.server.mock.RecordedRequest;
 import io.github.netmikey.logunit.api.LogCapturer;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.exporter.otlp.internal.logs.ResourceLogsMarshaler;
+import io.opentelemetry.exporter.otlp.internal.okhttp.OkHttpExporter;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.logs.v1.ResourceLogs;
@@ -87,8 +88,7 @@ class OtlpHttpLogExporterTest {
         }
       };
 
-  @RegisterExtension
-  LogCapturer logs = LogCapturer.create().captureForType(OtlpHttpLogExporter.class);
+  @RegisterExtension LogCapturer logs = LogCapturer.create().captureForType(OkHttpExporter.class);
 
   private OtlpHttpLogExporterBuilder builder;
 
