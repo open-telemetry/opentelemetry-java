@@ -100,7 +100,8 @@ final class MetricExporterConfiguration {
           builder::addHeader,
           builder::setCompression,
           builder::setTimeout,
-          builder::setTrustedCertificates);
+          builder::setTrustedCertificates,
+          (unused) -> {});
 
       exporter = builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -124,7 +125,10 @@ final class MetricExporterConfiguration {
           builder::addHeader,
           builder::setCompression,
           builder::setTimeout,
-          builder::setTrustedCertificates);
+          builder::setTrustedCertificates,
+          retryPolicy ->
+              OtlpConfigUtil.getDelegateBuilder(OtlpGrpcMetricExporterBuilder.class, builder)
+                  .addRetryPolicy(retryPolicy));
 
       exporter = builder.build();
     } else {

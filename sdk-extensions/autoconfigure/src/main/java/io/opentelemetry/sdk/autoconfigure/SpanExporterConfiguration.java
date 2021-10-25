@@ -123,7 +123,8 @@ final class SpanExporterConfiguration {
           builder::addHeader,
           builder::setCompression,
           builder::setTimeout,
-          builder::setTrustedCertificates);
+          builder::setTrustedCertificates,
+          unused -> {});
 
       return builder.build();
     } else if (protocol.equals(PROTOCOL_GRPC)) {
@@ -140,7 +141,10 @@ final class SpanExporterConfiguration {
           builder::addHeader,
           builder::setCompression,
           builder::setTimeout,
-          builder::setTrustedCertificates);
+          builder::setTrustedCertificates,
+          retryPolicy ->
+              OtlpConfigUtil.getDelegateBuilder(OtlpGrpcSpanExporterBuilder.class, builder)
+                  .addRetryPolicy(retryPolicy));
 
       return builder.build();
     } else {

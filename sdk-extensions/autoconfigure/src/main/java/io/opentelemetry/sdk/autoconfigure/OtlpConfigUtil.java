@@ -5,9 +5,12 @@
 
 package io.opentelemetry.sdk.autoconfigure;
 
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
+import io.opentelemetry.exporter.otlp.internal.grpc.DefaultGrpcExporterBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -41,7 +44,8 @@ final class OtlpConfigUtil {
       BiConsumer<String, String> addHeader,
       Consumer<String> setCompression,
       Consumer<Duration> setTimeout,
-      Consumer<byte[]> setTrustedCertificates) {
+      Consumer<byte[]> setTrustedCertificates,
+      Consumer<RetryPolicy> setRetryPolicy) {
     String protocol = getOtlpProtocol(dataType, config);
     boolean isHttpProtobuf = protocol.equals(PROTOCOL_HTTP_PROTOBUF);
     URL endpoint =
@@ -105,6 +109,11 @@ final class OtlpConfigUtil {
       }
       setTrustedCertificates.accept(certificateBytes);
     }
+
+    Boolean retryEnabled = config.getBoolean("otel.experimental.exporter.otlp.retry.enabled");
+    if (retryEnabled != null && retryEnabled) {
+      setRetryPolicy.accept(RetryPolicy.getDefault());
+    }
   }
 
   private static URL createUrl(URL context, String spec) {
@@ -154,6 +163,16 @@ final class OtlpConfigUtil {
       default:
         throw new IllegalArgumentException(
             "Cannot determine signal path for unrecognized data type: " + dataType);
+    }
+  }
+
+  static <T> DefaultGrpcExporterBuilder<?> getDelegateBuilder(Class<T> type, T instance) {
+    try {
+      Field field = type.getDeclaredField("delegate");
+      field.setAccessible(true);
+      return (DefaultGrpcExporterBuilder<?>) field.get(instance);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new IllegalStateException("Unable to access delegate reflectively.", e);
     }
   }
 

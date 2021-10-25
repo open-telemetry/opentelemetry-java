@@ -13,6 +13,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.exporter.otlp.internal.Marshaler;
+import io.opentelemetry.exporter.otlp.internal.RetryPolicy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -107,6 +108,11 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
       metadata = new Metadata();
     }
     metadata.put(Metadata.Key.of(key, ASCII_STRING_MARSHALLER), value);
+    return this;
+  }
+
+  @Override
+  public GrpcExporterBuilder<T> addRetryPolicy(RetryPolicy retryPolicy) {
     return this;
   }
 
