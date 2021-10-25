@@ -12,6 +12,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractIterableAssert;
 import org.assertj.core.api.Assertions;
 
+/** Test assertions for {@link ExponentialHistogramData}. */
 public class ExponentialHistogramAssert
     extends AbstractAssert<ExponentialHistogramAssert, ExponentialHistogramData> {
 
