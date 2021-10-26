@@ -85,10 +85,10 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
       return;
     } else if (by < 0) {
       logger.warning(
-          String.format(
-              "downScale() expects non-negative integer but was given %d. "
-                  + "Cannot upscale exponential histogram.",
-              by));
+          "downScale() expects non-negative integer but was given"
+              + by
+              + ". "
+              + "Cannot upscale exponential histogram.");
       return;
     }
 
@@ -236,13 +236,16 @@ final class DoubleExponentialHistogramBuckets implements ExponentialHistogramBuc
 
   @Override
   public String toString() {
-    return String.format(
-        "DoubleExponentialHistogramBuckets{"
-            + "scale: %d, "
-            + "offset: %d, "
-            + "hash: %04x, "
-            + "counts: %s }",
-        scale, getOffset(), hashCode(), getBucketCounts());
+    return "DoubleExponentialHistogramBuckets{"
+        + "scale: "
+        + scale
+        + ", "
+        + "offset: "
+        + getOffset()
+        + ", "
+        + "counts: "
+        + counts
+        + " }";
   }
 
   private static class LogarithmMapper implements BucketMapper {
