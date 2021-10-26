@@ -184,7 +184,7 @@ class OtlpHttpConfigTest {
         MetricExporterConfiguration.configureOtlpMetrics(properties, SdkMeterProvider.builder());
 
     assertThat(spanExporter)
-        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
     assertThat(
@@ -202,7 +202,7 @@ class OtlpHttpConfigTest {
                     && headers.contains("content-encoding", "gzip"));
 
     assertThat(metricExporter)
-        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
     assertThat(
@@ -244,7 +244,7 @@ class OtlpHttpConfigTest {
             "otlp", DefaultConfigProperties.createForTest(props), Collections.emptyMap());
 
     assertThat(spanExporter)
-        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
     assertThat(
@@ -286,7 +286,7 @@ class OtlpHttpConfigTest {
             DefaultConfigProperties.createForTest(props), SdkMeterProvider.builder());
 
     assertThat(metricExporter)
-        .extracting("client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
+        .extracting("delegate.client", as(InstanceOfAssertFactories.type(OkHttpClient.class)))
         .extracting(OkHttpClient::callTimeoutMillis)
         .isEqualTo((int) TimeUnit.SECONDS.toMillis(15));
     assertThat(
