@@ -12,11 +12,10 @@ import io.opentelemetry.api.metrics.LongUpDownCounterBuilder;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.state.MeterSharedState;
 import java.util.Collection;
-import java.util.Set;
 
 /** {@link SdkMeter} is SDK implementation of {@link Meter}. */
 final class SdkMeter implements Meter {
@@ -37,16 +36,9 @@ final class SdkMeter implements Meter {
 
   /** Collects all the metric recordings that changed since the previous call. */
   Collection<MetricData> collectAll(
-      CollectionHandle collector,
-      Set<CollectionHandle> allCollectors,
-      long epochNanos,
-      boolean suppressSynchronousCollection) {
+      CollectionInfo collectionInfo, long epochNanos, boolean suppressSynchronousCollection) {
     return meterSharedState.collectAll(
-        collector,
-        allCollectors,
-        meterProviderSharedState,
-        epochNanos,
-        suppressSynchronousCollection);
+        collectionInfo, meterProviderSharedState, epochNanos, suppressSynchronousCollection);
   }
 
   @Override

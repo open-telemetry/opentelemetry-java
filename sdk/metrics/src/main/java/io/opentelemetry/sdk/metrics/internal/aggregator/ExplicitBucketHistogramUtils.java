@@ -26,7 +26,7 @@ public final class ExplicitBucketHistogramUtils {
 
   /** Converts bucket boundary "convenient" configuration into the "more efficient" array. */
   public static double[] createBoundaryArray(List<Double> boundaries) {
-    return boundaries.stream().mapToDouble(i -> i).toArray();
+    return validateBucketBoundaries(boundaries.stream().mapToDouble(i -> i).toArray());
   }
 
   /**
@@ -45,5 +45,38 @@ public final class ExplicitBucketHistogramUtils {
       }
     }
     return boundaries.length;
+  }
+
+  /**
+   * Validates errors in boundary configuration.
+   *
+   * @param boundaries The array of bucket boundaries.
+   * @return The original boundaries.
+   * @throws IllegalArgumentException if boundaries are not specified correctly.
+   */
+  public static double[] validateBucketBoundaries(double[] boundaries) {
+    for (double v : boundaries) {
+      if (Double.isNaN(v)) {
+        throw new IllegalArgumentException("invalid bucket boundary: NaN");
+      }
+    }
+    for (int i = 1; i < boundaries.length; ++i) {
+      if (boundaries[i - 1] >= boundaries[i]) {
+        throw new IllegalArgumentException(
+            "Bucket boundaries must be in increasing order: "
+                + boundaries[i - 1]
+                + " >= "
+                + boundaries[i]);
+      }
+    }
+    if (boundaries.length > 0) {
+      if (boundaries[0] == Double.NEGATIVE_INFINITY) {
+        throw new IllegalArgumentException("invalid bucket boundary: -Inf");
+      }
+      if (boundaries[boundaries.length - 1] == Double.POSITIVE_INFINITY) {
+        throw new IllegalArgumentException("invalid bucket boundary: +Inf");
+      }
+    }
+    return boundaries;
   }
 }

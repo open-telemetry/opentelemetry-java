@@ -6,8 +6,13 @@
 package io.opentelemetry.sdk.metrics.internal.aggregator;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
+import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -17,8 +22,9 @@ import javax.annotation.concurrent.Immutable;
  * during the accumulation phase for all the instrument.
  *
  * <p>The synchronous instruments will create an {@link AggregatorHandle} to record individual
- * measurements synchronously, and for asynchronous the {@link #accumulateDouble(double)} or {@link
- * #accumulateLong(long)} will be used when reading values from the instrument callbacks.
+ * measurements synchronously, and for asynchronous the {@link #accumulateDoubleMeasurement} or
+ * {@link #accumulateLongMeasurement} will be used when reading values from the instrument
+ * callbacks.
  *
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
@@ -46,9 +52,10 @@ public interface Aggregator<T> {
    * @param value the given value to be used to create the {@code Accumulation}.
    * @return a new {@code Accumulation} for the given value.
    */
-  default T accumulateLong(long value) {
-    throw new UnsupportedOperationException(
-        "This aggregator does not support recording long values.");
+  default T accumulateLongMeasurement(long value, Attributes attributes, Context context) {
+    AggregatorHandle<T> handle = createHandle();
+    handle.recordLong(value, attributes, context);
+    return handle.accumulateThenReset(attributes);
   }
 
   /**
@@ -58,56 +65,52 @@ public interface Aggregator<T> {
    * @param value the given value to be used to create the {@code Accumulation}.
    * @return a new {@code Accumulation} for the given value.
    */
-  default T accumulateDouble(double value) {
-    throw new UnsupportedOperationException(
-        "This aggregator does not support recording double values.");
+  default T accumulateDoubleMeasurement(double value, Attributes attributes, Context context) {
+    AggregatorHandle<T> handle = createHandle();
+    handle.recordDouble(value, attributes, context);
+    return handle.accumulateThenReset(attributes);
   }
 
   /**
    * Returns the result of the merge of the given accumulations.
    *
-   * <p>This is called in several scenarios:
+   * <p>This should always assume that the accumulations do not overlap and merge together for a new
+   * cumulative report.
    *
-   * <ul>
-   *   <li>When merging a delta synchronous accumulation with a previous cumulative to generate a
-   *       new cumulative.
-   *   <li>When merging two measurements reported during the same asynchronous instrument
-   *       collection.
-   *   <li>When merging two cumulative accumulations for calculating deltas from cumulative sums.
-   * </ul>
-   *
-   * @param previousAccumulation the previously captured accumulation
-   * @param accumulation the newly captured accumulation
+   * @param previousCumulative the previously captured accumulation
+   * @param delta the newly captured (delta) accumulation
    * @return the result of the merge of the given accumulations.
    */
-  T merge(T previousAccumulation, T accumulation);
+  T merge(T previousCumulative, T delta);
 
   /**
-   * Returns {@code true} if the processor needs to keep the previous collected state in order to
-   * compute the desired metric.
+   * Returns a new DELTA aggregation by comparing two cumulative measurements.
    *
-   * <p>This returns true in several scenarios:
-   *
-   * <ul>
-   *   <li>For synchronous instruments reporting cumulative aggregate values.
-   *   <li>For asynchronous sum instruments reporting delta values.
-   * </ul>
-   *
-   * @return {@code true} if the processor needs to keep the previous collected state.
+   * @param previousCumulative the previously captured accumulation.
+   * @param currentCumulative the newly captured (cumulative) accumulation.
+   * @return The resulting delta accumulation.
    */
-  boolean isStateful();
+  T diff(T previousCumulative, T currentCumulative);
 
   /**
    * Returns the {@link MetricData} that this {@code Aggregation} will produce.
    *
+   * @param resource the resource producing the metric.
+   * @param instrumentationLibrary the library that instrumented the metric.
+   * @param metricDescriptor the name, description and unit of the metric.
    * @param accumulationByLabels the map of Labels to Accumulation.
+   * @param temporality the temporality of the accumulation.
    * @param startEpochNanos the startEpochNanos for the {@code Point}.
    * @param epochNanos the epochNanos for the {@code Point}.
    * @return the {@link MetricDataType} that this {@code Aggregation} will produce.
    */
   @Nullable
   MetricData toMetricData(
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibrary,
+      MetricDescriptor metricDescriptor,
       Map<Attributes, T> accumulationByLabels,
+      AggregationTemporality temporality,
       long startEpochNanos,
       long lastCollectionEpoch,
       long epochNanos);

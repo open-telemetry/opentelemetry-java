@@ -16,13 +16,16 @@ import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.metrics.export.MetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricReaderFactory;
 import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.state.MeterProviderSharedState;
 import io.opentelemetry.sdk.metrics.internal.view.ViewRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,7 +48,7 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
   private final ComponentRegistry<SdkMeter> registry;
   private final MeterProviderSharedState sharedState;
   private final Set<CollectionHandle> collectors;
-  private final List<MetricReader> readers;
+  private final Map<CollectionHandle, CollectionInfo> collectionInfoMap;
   private final AtomicBoolean isClosed = new AtomicBoolean(false);
   private final AtomicLong lastCollectionTimestamp;
 
@@ -72,14 +75,14 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
     // These are guaranteed to be unique per-reader for this SDK, and only this SDK.
     // These are *only* mutated in our constructor, and safe to use concurrently after construction.
     collectors = CollectionHandle.mutableSet();
-    readers = new ArrayList<>();
+    collectionInfoMap = new HashMap<>();
     Supplier<CollectionHandle> handleSupplier = CollectionHandle.createSupplier();
     for (MetricReaderFactory readerFactory : readerFactories) {
       CollectionHandle handle = handleSupplier.get();
       // TODO: handle failure in creation or just crash?
       MetricReader reader = readerFactory.apply(new LeasedMetricProducer(handle));
+      collectionInfoMap.put(handle, CollectionInfo.create(handle, collectors, reader));
       collectors.add(handle);
-      readers.add(reader);
     }
   }
 
@@ -95,8 +98,8 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
   @Override
   public CompletableResultCode forceFlush() {
     List<CompletableResultCode> results = new ArrayList<>();
-    for (MetricReader reader : readers) {
-      results.add(reader.flush());
+    for (CollectionInfo collectionInfo : collectionInfoMap.values()) {
+      results.add(collectionInfo.getReader().shutdown());
     }
     return CompletableResultCode.ofAll(results);
   }
@@ -108,8 +111,8 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
       return CompletableResultCode.ofSuccess();
     }
     List<CompletableResultCode> results = new ArrayList<>();
-    for (MetricReader reader : readers) {
-      results.add(reader.shutdown());
+    for (CollectionInfo info : collectionInfoMap.values()) {
+      results.add(info.getReader().shutdown());
     }
     return CompletableResultCode.ofAll(results);
   }
@@ -147,7 +150,9 @@ final class DefaultSdkMeterProvider implements SdkMeterProvider {
       for (SdkMeter meter : meters) {
         result.addAll(
             meter.collectAll(
-                handle, collectors, sharedState.getClock().now(), disableSynchronousCollection));
+                collectionInfoMap.get(handle),
+                sharedState.getClock().now(),
+                disableSynchronousCollection));
       }
       return Collections.unmodifiableCollection(result);
     }

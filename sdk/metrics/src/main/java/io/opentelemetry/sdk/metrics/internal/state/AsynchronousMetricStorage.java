@@ -11,20 +11,19 @@ import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentDescriptor;
+import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.exemplar.ExemplarFilter;
 import io.opentelemetry.sdk.metrics.internal.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.internal.descriptor.MetricDescriptor;
-import io.opentelemetry.sdk.metrics.internal.export.CollectionHandle;
+import io.opentelemetry.sdk.metrics.internal.export.CollectionInfo;
 import io.opentelemetry.sdk.metrics.internal.view.AttributesProcessor;
 import io.opentelemetry.sdk.metrics.view.View;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
 /**
@@ -39,8 +38,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
   private final AsyncAccumulator<T> asyncAccumulator;
   private final TemporalMetricStorage<T> storage;
   private final Runnable metricUpdater;
-
-  private static final Logger logger = Logger.getLogger(AsynchronousMetricStorage.class.getName());
+  @Nullable private final AggregationTemporality configuredTemporality;
 
   /** Constructs asynchronous metric storage which stores nothing. */
   public static MetricStorage empty() {
@@ -57,13 +55,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       Consumer<ObservableDoubleMeasurement> metricUpdater) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
-        view.getAggregation()
-            .createAggregator(
-                resource,
-                instrumentationLibraryInfo,
-                instrument,
-                metricDescriptor,
-                ExemplarFilter.neverSample());
+        view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
 
     final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>();
     if (Aggregator.empty() == aggregator) {
@@ -77,7 +69,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           public void observe(double value, Attributes attributes) {
             measurementAccumulator.record(
                 attributesProcessor.process(attributes, Context.current()),
-                aggregator.accumulateDouble(value));
+                aggregator.accumulateDoubleMeasurement(value, attributes, Context.current()));
           }
 
           @Override
@@ -86,7 +78,11 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           }
         };
     return new AsynchronousMetricStorage<>(
-        metricDescriptor, aggregator, measurementAccumulator, () -> metricUpdater.accept(result));
+        metricDescriptor,
+        aggregator,
+        measurementAccumulator,
+        () -> metricUpdater.accept(result),
+        view.getAggregation().getConfiguredTemporality());
   }
 
   /** Constructs storage for {@code long} valued instruments. */
@@ -98,20 +94,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
       Consumer<ObservableLongMeasurement> metricUpdater) {
     final MetricDescriptor metricDescriptor = MetricDescriptor.create(view, instrument);
     Aggregator<T> aggregator =
-        view.getAggregation()
-            .createAggregator(
-                resource,
-                instrumentationLibraryInfo,
-                instrument,
-                metricDescriptor,
-                ExemplarFilter.neverSample());
-    if (aggregator.isStateful()) {
-      // The aggregator is expecting to diff SUMs for DELTA temporality.
-      logger.warning(
-          String.format(
-              "Unable to provide DELTA accumulation on %s for instrument: %s",
-              metricDescriptor, instrument));
-    }
+        view.getAggregation().createAggregator(instrument, ExemplarFilter.neverSample());
     final AsyncAccumulator<T> measurementAccumulator = new AsyncAccumulator<>();
     final AttributesProcessor attributesProcessor = view.getAttributesProcessor();
     // TODO: Find a way to grab the measurement JUST ONCE for all async metrics.
@@ -122,7 +105,7 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           public void observe(long value, Attributes attributes) {
             measurementAccumulator.record(
                 attributesProcessor.process(attributes, Context.current()),
-                aggregator.accumulateLong(value));
+                aggregator.accumulateLongMeasurement(value, attributes, Context.current()));
           }
 
           @Override
@@ -131,33 +114,52 @@ public final class AsynchronousMetricStorage<T> implements MetricStorage {
           }
         };
     return new AsynchronousMetricStorage<>(
-        metricDescriptor, aggregator, measurementAccumulator, () -> metricUpdater.accept(result));
+        metricDescriptor,
+        aggregator,
+        measurementAccumulator,
+        () -> metricUpdater.accept(result),
+        view.getAggregation().getConfiguredTemporality());
   }
 
   private AsynchronousMetricStorage(
       MetricDescriptor metricDescriptor,
       Aggregator<T> aggregator,
       AsyncAccumulator<T> asyncAccumulator,
-      Runnable metricUpdater) {
+      Runnable metricUpdater,
+      @Nullable AggregationTemporality configuredTemporality) {
     this.metricDescriptor = metricDescriptor;
     this.asyncAccumulator = asyncAccumulator;
     this.metricUpdater = metricUpdater;
     this.storage = new TemporalMetricStorage<>(aggregator, /* isSynchronous= */ false);
+    this.configuredTemporality = configuredTemporality;
   }
 
   @Override
   @Nullable
   public MetricData collectAndReset(
-      CollectionHandle collector,
-      Set<CollectionHandle> allCollectors,
+      CollectionInfo collectionInfo,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       long startEpochNanos,
       long epochNanos,
       boolean suppressSynchronousCollection) {
+    AggregationTemporality temporality =
+        TemporalityUtils.resolveTemporality(
+            collectionInfo.getSupportedAggregation(),
+            collectionInfo.getPreferredAggregation(),
+            configuredTemporality);
     collectLock.lock();
     try {
       metricUpdater.run();
       return storage.buildMetricFor(
-          collector, asyncAccumulator.collectAndReset(), startEpochNanos, epochNanos);
+          collectionInfo.getCollector(),
+          resource,
+          instrumentationLibraryInfo,
+          getMetricDescriptor(),
+          temporality,
+          asyncAccumulator.collectAndReset(),
+          startEpochNanos,
+          epochNanos);
     } finally {
       collectLock.unlock();
     }
