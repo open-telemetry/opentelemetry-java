@@ -31,7 +31,7 @@ public final class DoubleSumAggregator extends AbstractSumAggregator<DoubleAccum
   private final Supplier<ExemplarReservoir> reservoirSupplier;
 
   /**
-   * Constructs a histogram aggregator.
+   * Constructs a sum aggregator.
    *
    * @param instrumentDescriptor The instrument being recorded, used to compute monotonicity.
    * @param reservoirSupplier Supplier of exemplar reservoirs per-stream.

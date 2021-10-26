@@ -62,7 +62,13 @@ class TemporalMetricStorage<T> {
       LastReportedAccumulation<T> last = reportHistory.get(collector);
       lastCollectionEpoch = last.getEpochNanos();
       // Use aggregation temporality + instrument to determine if we do a merge or a diff of
-      // previous.
+      // previous.  We have the following four scenarios:
+      // 1. Delta Aggregation (temporality) + Cumulative recording (async instrument).
+      //    Here we diff with last cumulative to get a delta.
+      // 2. Cumulative Aggregation + Delta recording (sync instrument).
+      //    Here we merge with our last record to get a cumulative aggregation.
+      // 3. Cumulative Aggregation + Cumulative recording - do nothing
+      // 4. Delta Aggregation + Delta recording - do nothing.
       if (temporality == AggregationTemporality.DELTA && !isSynchronous) {
         MetricStorageUtils.diffInPlace(last.getAccumlation(), currentAccumulation, aggregator);
         result = last.getAccumlation();
@@ -73,7 +79,11 @@ class TemporalMetricStorage<T> {
         result = last.getAccumlation();
       }
     }
-    // Update last reported accumulation
+    // Update last reported (cumulative) accumulation.
+    // For synchronous instruments, we need the merge result.
+    // For asynchronous isntruments, we need the recorded value.
+    // This assumes aggregation remains consistent for the lifetime of a collector, and
+    // could be optimised to not record results for cases 3+4 listed above.
     if (isSynchronous) {
       // Sync instruments remember the full recording.
       reportHistory.put(collector, new LastReportedAccumulation<>(result, epochNanos));
