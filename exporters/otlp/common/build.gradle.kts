@@ -49,8 +49,6 @@ dependencies {
   jmhImplementation(project(":sdk:testing"))
   jmhImplementation(project(":sdk-extensions:resources"))
   jmhImplementation("com.fasterxml.jackson.core:jackson-core")
-  jmhImplementation("com.linecorp.armeria:armeria")
-  jmhImplementation("com.linecorp.armeria:armeria-grpc")
   jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
   jmhRuntimeOnly("io.grpc:grpc-netty")
 }
