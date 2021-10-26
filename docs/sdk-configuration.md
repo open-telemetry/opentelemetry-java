@@ -310,8 +310,7 @@ public class OpenTelemetryModule {
                 InstrumentSelector.builder()
                     .setInstrumentType(InstrumentType.COUNTER)
                     .build(),
-                View.builder()
-                    .build())
+                View.builder().build())
             .registerMetricReader(periodicMetricReaderFactory)
             .build();
     }
