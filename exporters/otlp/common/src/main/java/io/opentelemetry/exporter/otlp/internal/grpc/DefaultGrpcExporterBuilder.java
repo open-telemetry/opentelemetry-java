@@ -41,7 +41,8 @@ public final class DefaultGrpcExporterBuilder<T extends Marshaler>
   @Nullable private byte[] trustedCertificatesPem;
 
   /** Creates a new {@link DefaultGrpcExporterBuilder}. */
-  DefaultGrpcExporterBuilder(
+  // Visible for testing
+  public DefaultGrpcExporterBuilder(
       String type,
       Function<ManagedChannel, MarshalerServiceStub<T, ?, ?>> stubFactory,
       long defaultTimeoutSecs,

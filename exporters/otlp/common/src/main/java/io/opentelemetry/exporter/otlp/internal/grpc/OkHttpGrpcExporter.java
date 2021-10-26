@@ -51,7 +51,7 @@ import okhttp3.Response;
  * <p>This class is internal and is hence not for public use. Its APIs are unstable and can change
  * at any time.
  */
-public final class OkHttpGrpcExporter<T extends Marshaler, U> implements GrpcExporter<T> {
+public final class OkHttpGrpcExporter<T extends Marshaler> implements GrpcExporter<T> {
 
   private static final String GRPC_STATUS = "grpc-status";
   private static final String GRPC_MESSAGE = "grpc-message";
@@ -195,6 +195,7 @@ public final class OkHttpGrpcExporter<T extends Marshaler, U> implements GrpcExp
   @Override
   public CompletableResultCode shutdown() {
     client.dispatcher().cancelAll();
+    client.dispatcher().executorService().shutdownNow();
     this.seen.unbind();
     this.success.unbind();
     this.failed.unbind();

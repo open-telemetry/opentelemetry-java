@@ -3,6 +3,7 @@ plugins {
   id("otel.publish-conventions")
 
   id("otel.animalsniffer-conventions")
+  id("otel.jmh-conventions")
 
   id("org.unbroken-dome.test-sets")
 }
@@ -69,6 +70,13 @@ dependencies {
   add("testSpanPipeline", "io.grpc:grpc-protobuf")
   add("testSpanPipeline", "io.grpc:grpc-testing")
   add("testSpanPipeline", "io.opentelemetry.proto:opentelemetry-proto")
+
+  jmhImplementation(project(":sdk:testing"))
+  jmhImplementation("com.linecorp.armeria:armeria")
+  jmhImplementation("com.linecorp.armeria:armeria-grpc")
+  jmhImplementation("io.opentelemetry.proto:opentelemetry-proto")
+  jmhRuntimeOnly("com.squareup.okhttp3:okhttp")
+  jmhRuntimeOnly("io.grpc:grpc-netty")
 }
 
 tasks {
