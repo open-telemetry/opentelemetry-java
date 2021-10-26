@@ -6,8 +6,8 @@
 package io.opentelemetry.sdk.autoconfigure;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer;
-import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizerProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.data.DelegatingSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -15,9 +15,9 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-public class SpanExporterCustomizer implements AutoConfiguredOpenTelemetrySdkCustomizerProvider {
+public class SpanExporterCustomizer implements AutoConfigurationCustomizerProvider {
   @Override
-  public void customize(AutoConfiguredOpenTelemetrySdkCustomizer autoConfiguration) {
+  public void customize(AutoConfigurationCustomizer autoConfiguration) {
     autoConfiguration.addSpanExporterCustomizer(
         (delegate, config) ->
             new SpanExporter() {

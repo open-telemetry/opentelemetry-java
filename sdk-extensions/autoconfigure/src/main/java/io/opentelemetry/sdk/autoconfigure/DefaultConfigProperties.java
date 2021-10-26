@@ -45,7 +45,7 @@ final class DefaultConfigProperties implements ConfigProperties {
       Map<String, String> defaultProperties) {
     Map<String, String> config = new HashMap<>();
     defaultProperties.forEach(
-        (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
+        (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('-', '.'), value));
     environmentVariables.forEach(
         (name, value) -> config.put(name.toLowerCase(Locale.ROOT).replace('_', '.'), value));
     systemProperties.forEach(

@@ -100,6 +100,7 @@ class OpenTelemetrySdkAutoConfigurationTest {
                 })
             .addPropertiesSupplier(() -> Collections.singletonMap("key", "valueUnused"))
             .addPropertiesSupplier(() -> Collections.singletonMap("key", "value"))
+            .addPropertiesSupplier(() -> Collections.singletonMap("otel-key", "otel-value"))
             .addPropertiesSupplier(
                 () -> Collections.singletonMap("otel.propagators", "tracecontext"))
             .addPropertiesSupplier(() -> Collections.singletonMap("otel.metrics.exporter", "none"))
@@ -108,16 +109,16 @@ class OpenTelemetrySdkAutoConfigurationTest {
                 () -> Collections.singletonMap("otel.service.name", "test-service"))
             .setResultAsGlobal(false);
 
-    assertThat(
-            autoConfiguration.build().getResource().getAttribute(ResourceAttributes.SERVICE_NAME))
-        .isEqualTo("test-service");
-    assertThat(autoConfiguration.build().getResource().getAttribute(stringKey("key2")))
-        .isEqualTo("value2");
-
-    assertThat(autoConfiguration.getConfig().getString("key")).isEqualTo("value");
-
     GlobalOpenTelemetry.set(OpenTelemetry.noop());
-    OpenTelemetrySdk sdk = autoConfiguration.build().getOpenTelemetrySdk();
+    AutoConfiguredOpenTelemetrySdk autoConfigured = autoConfiguration.build();
+    assertThat(autoConfigured.getResource().getAttribute(ResourceAttributes.SERVICE_NAME))
+        .isEqualTo("test-service");
+    assertThat(autoConfigured.getResource().getAttribute(stringKey("key2"))).isEqualTo("value2");
+
+    assertThat(autoConfigured.getConfig().getString("key")).isEqualTo("value");
+    assertThat(autoConfigured.getConfig().getString("otel.key")).isEqualTo("otel-value");
+
+    OpenTelemetrySdk sdk = autoConfigured.getOpenTelemetrySdk();
     // Verify setResultAsGlobal respected
     assertThat(sdk).isNotSameAs(GlobalOpenTelemetry.get());
 

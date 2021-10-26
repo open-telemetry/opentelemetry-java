@@ -9,8 +9,8 @@ import static java.util.Objects.requireNonNull;
 
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizer;
-import io.opentelemetry.sdk.autoconfigure.spi.AutoConfiguredOpenTelemetrySdkCustomizerProvider;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
@@ -29,8 +28,7 @@ import javax.annotation.Nullable;
  * components can be customized, for example by delegating to them from a wrapper that tweaks
  * behavior such as filtering out telemetry attributes.
  */
-public final class AutoConfiguredOpenTelemetrySdkBuilder
-    implements AutoConfiguredOpenTelemetrySdkCustomizer {
+public final class AutoConfiguredOpenTelemetrySdkBuilder implements AutoConfigurationCustomizer {
 
   @Nullable private ConfigProperties config;
 
@@ -48,8 +46,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
   private boolean setResultAsGlobal = true;
 
   AutoConfiguredOpenTelemetrySdkBuilder() {
-    for (AutoConfiguredOpenTelemetrySdkCustomizerProvider customizer :
-        ServiceLoader.load(AutoConfiguredOpenTelemetrySdkCustomizerProvider.class)) {
+    for (AutoConfigurationCustomizerProvider customizer :
+        ServiceLoader.load(AutoConfigurationCustomizerProvider.class)) {
       customizer.customize(this);
     }
   }
@@ -65,8 +63,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
   }
 
   /**
-   * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
-   * allow customization. The return value of the {@link Function} will replace the passed-in
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link TextMapPropagator}
+   * to allow customization. The return value of the {@link BiFunction} will replace the passed-in
    * argument.
    *
    * <p>Multiple calls will execute the customizers in order.
@@ -81,9 +79,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
   }
 
   /**
-   * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
-   * allow customization. The return value of the {@link Function} will replace the passed-in
-   * argument.
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link Resource} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
@@ -96,9 +93,8 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
   }
 
   /**
-   * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
-   * allow customization. The return value of the {@link Function} will replace the passed-in
-   * argument.
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link Sampler} to allow
+   * customization. The return value of the {@link BiFunction} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
@@ -111,8 +107,9 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
   }
 
   /**
-   * Adds a {@link Function} to invoke with the default autoconfigured {@link SpanExporter} to allow
-   * customization. The return value of the {@link Function} will replace the passed-in argument.
+   * Adds a {@link BiFunction} to invoke with the default autoconfigured {@link SpanExporter} to
+   * allow customization. The return value of the {@link BiFunction} will replace the passed-in
+   * argument.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
@@ -168,11 +165,10 @@ public final class AutoConfiguredOpenTelemetrySdkBuilder
             spanExporterCustomizer,
             samplerCustomizer,
             setResultAsGlobal);
-    return AutoConfiguredOpenTelemetrySdk.create(sdk, resource);
+    return AutoConfiguredOpenTelemetrySdk.create(sdk, resource, config);
   }
 
-  // Visible for testing
-  ConfigProperties getConfig() {
+  private ConfigProperties getConfig() {
     ConfigProperties config = this.config;
     if (config == null) {
       config = DefaultConfigProperties.get(propertiesSupplier.get());

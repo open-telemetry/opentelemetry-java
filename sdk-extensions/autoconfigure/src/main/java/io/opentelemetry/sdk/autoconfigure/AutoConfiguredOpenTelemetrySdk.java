@@ -7,6 +7,7 @@ package io.opentelemetry.sdk.autoconfigure;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 
 /**
@@ -36,8 +37,9 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
     return new AutoConfiguredOpenTelemetrySdkBuilder();
   }
 
-  static AutoConfiguredOpenTelemetrySdk create(OpenTelemetrySdk sdk, Resource resource) {
-    return new AutoValue_AutoConfiguredOpenTelemetrySdk(sdk, resource);
+  static AutoConfiguredOpenTelemetrySdk create(
+      OpenTelemetrySdk sdk, Resource resource, ConfigProperties config) {
+    return new AutoValue_AutoConfiguredOpenTelemetrySdk(sdk, resource, config);
   }
 
   /** Returns the {@link OpenTelemetrySdk} that was auto-configured. */
@@ -45,6 +47,9 @@ public abstract class AutoConfiguredOpenTelemetrySdk {
 
   /** Returns the {@link Resource} that was auto-configured. */
   public abstract Resource getResource();
+
+  /** Returns the {@link ConfigProperties} used for auto-configuration. */
+  public abstract ConfigProperties getConfig();
 
   AutoConfiguredOpenTelemetrySdk() {}
 }

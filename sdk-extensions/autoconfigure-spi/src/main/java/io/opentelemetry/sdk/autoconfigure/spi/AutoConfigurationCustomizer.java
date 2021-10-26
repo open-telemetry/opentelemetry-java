@@ -15,7 +15,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /** A builder for customizing OpenTelemetry auto-configuration. */
-public interface AutoConfiguredOpenTelemetrySdkCustomizer {
+public interface AutoConfigurationCustomizer {
 
   /**
    * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
@@ -24,28 +24,26 @@ public interface AutoConfiguredOpenTelemetrySdkCustomizer {
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  AutoConfiguredOpenTelemetrySdkCustomizer addPropagatorCustomizer(
+  AutoConfigurationCustomizer addPropagatorCustomizer(
       BiFunction<? super TextMapPropagator, ConfigProperties, ? extends TextMapPropagator>
           propagatorCustomizer);
 
   /**
-   * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
-   * allow customization. The return value of the {@link Function} will replace the passed-in
-   * argument.
+   * Adds a {@link Function} to invoke with the default autoconfigured {@link Resource} to allow
+   * customization. The return value of the {@link Function} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  AutoConfiguredOpenTelemetrySdkCustomizer addResourceCustomizer(
+  AutoConfigurationCustomizer addResourceCustomizer(
       BiFunction<? super Resource, ConfigProperties, ? extends Resource> resourceCustomizer);
 
   /**
-   * Adds a {@link Function} to invoke with the default autoconfigured {@link TextMapPropagator} to
-   * allow customization. The return value of the {@link Function} will replace the passed-in
-   * argument.
+   * Adds a {@link Function} to invoke with the default autoconfigured {@link Sampler} to allow
+   * customization. The return value of the {@link Function} will replace the passed-in argument.
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  AutoConfiguredOpenTelemetrySdkCustomizer addSamplerCustomizer(
+  AutoConfigurationCustomizer addSamplerCustomizer(
       BiFunction<? super Sampler, ConfigProperties, ? extends Sampler> samplerCustomizer);
 
   /**
@@ -54,7 +52,7 @@ public interface AutoConfiguredOpenTelemetrySdkCustomizer {
    *
    * <p>Multiple calls will execute the customizers in order.
    */
-  AutoConfiguredOpenTelemetrySdkCustomizer addSpanExporterCustomizer(
+  AutoConfigurationCustomizer addSpanExporterCustomizer(
       BiFunction<? super SpanExporter, ConfigProperties, ? extends SpanExporter>
           exporterCustomizer);
 
@@ -66,6 +64,6 @@ public interface AutoConfiguredOpenTelemetrySdkCustomizer {
    * <p>Multiple calls will cause properties to be merged in order, with later ones overwriting
    * duplicate keys in earlier ones.
    */
-  AutoConfiguredOpenTelemetrySdkCustomizer addPropertiesSupplier(
+  AutoConfigurationCustomizer addPropertiesSupplier(
       Supplier<Map<String, String>> propertiesSupplier);
 }
