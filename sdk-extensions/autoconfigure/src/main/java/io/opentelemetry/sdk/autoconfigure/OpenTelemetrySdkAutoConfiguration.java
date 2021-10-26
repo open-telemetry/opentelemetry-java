@@ -105,7 +105,7 @@ public final class OpenTelemetrySdkAutoConfiguration {
     }
 
     String exporterName = config.getString("otel.metrics.exporter");
-    if (exporterName == null) {
+    if (exporterName == null || exporterName.equals("none")) {
       // In the event no exporters are configured set a noop exporter
       GlobalMeterProvider.set(MeterProvider.noop());
       return;
