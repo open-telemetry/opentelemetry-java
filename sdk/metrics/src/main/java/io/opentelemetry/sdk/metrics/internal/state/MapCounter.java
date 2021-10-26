@@ -106,11 +106,6 @@ public class MapCounter implements ExponentialCounter {
   }
 
   private void doIncrement(int index, long delta) {
-    AtomicLong value = backing.get(index);
-    if (value == null) {
-      backing.put(index, new AtomicLong(delta));
-    } else {
-      value.getAndAdd(delta);
-    }
+    backing.computeIfAbsent(index, k -> new AtomicLong(0)).getAndAdd(delta);
   }
 }
